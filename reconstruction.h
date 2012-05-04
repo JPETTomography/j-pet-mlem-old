@@ -91,4 +91,31 @@ void fill_pixel(const P &pix, int n_detectors,
   fill_pixel(pix.x(),pix.y(),pix.size_x(),pix.size_y(),n_detectors,p,n);
 }
 
+
+template<typename S, typename F> class ProbabilityMatrix {
+public:  
+  typedef pixel<S, F> pixel_t;
+ 
+  ProbabilityMatrix(const Ring2DDetector<S,F> &scanner):scanner_(scanner) {
+      for(int iy=0;iy<scanner_.n_pixels_y()/2;iy++) 
+	for(int ix=iy;ix<scanner_.n_pixels_x()/2;ix++) {
+      
+	  octant_.push_back(
+			    pixel_t(ix,iy,
+				    scanner_.pixel_size_x(),
+				    scanner_.pixel_size_y()
+				    )
+			    );
+	}
+  };
+  
+  
+  S octant_size() const {return octant_.size();}
+  pixel_t  octant(int i) {return octant_[i];}
+ private:
+  Ring2DDetector<S,F> scanner_;
+  std::vector<pixel_t > octant_;
+};
+
+
 #endif
