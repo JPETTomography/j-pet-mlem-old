@@ -4,6 +4,16 @@
 
 #include"event.h"
 
+
+template<typename S, typename F> class Ring2DDetector {
+  S n_detectors() const ;
+  S n_pixels_x() const ;
+  S n_pixels_y() const ;
+  F pixel_size_x() const;
+  F pixel_size_y() const;
+  F radius() const;
+};
+
 template<typename F> 
 std::pair<F,F>   tof(const event<F> ev,F R2) {
 
