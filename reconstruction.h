@@ -6,12 +6,12 @@
 
 #include"detector.h"
 
-template<typename S, typename F> class pixel {
+template<typename S, typename F> class Pixel {
 public:
   
   typedef S short_t;
 
-  pixel(S i_x, S i_y, F size_x, F size_y):
+  Pixel(S i_x, S i_y, F size_x, F size_y):
     i_x_(i_x),i_y_(i_y),size_x_(size_x), size_y_(size_y) {};
 					  
 
@@ -34,25 +34,25 @@ private:
 }; 
 
 
-template<typename P, typename F> class row;
+template<typename P, typename F> class Row;
 
 template<typename P, typename F> 
-std::ostream &operator<<(std::ostream &out, const row<P,F> &r);
+std::ostream &operator<<(std::ostream &out, const Row<P,F> &r);
 
-template<typename P, typename F> class row {
+template<typename P, typename F> class Row {
 public:
-  row(const P &pixel, const std::vector<Lor<typename P::short_t,F> > &vec):
+  Row(const P &pixel, const std::vector<Lor<typename P::short_t,F> > &vec):
    pixel_(pixel), row_(vec) {}; 
  private:
   P pixel_;
   std::vector<Lor<typename P::short_t,F> > row_;
 
-   friend  std::ostream &operator<< <>(std::ostream & out, const row &r);
+   friend  std::ostream &operator<< <>(std::ostream & out, const Row &r);
   
 };
 
 template<typename P, typename F> 
-std::ostream &operator<<(std::ostream &out, const row<P,F> &r) {
+std::ostream &operator<<(std::ostream &out, const Row<P,F> &r) {
 
   out<<"pixel "<<r.pixel_.i_x()<<" "<<r.pixel_.i_y();
   out<<" "<<r.pixel_.x()<<" "<<r.pixel_.y()<<" "<<r.row_.size()<<"\n";
@@ -94,7 +94,7 @@ void fill_pixel(const P &pix, int n_detectors,
 
 template<typename S, typename F> class ProbabilityMatrix {
 public:  
-  typedef pixel<S, F> pixel_t;
+  typedef Pixel<S, F> pixel_t;
  
   ProbabilityMatrix(const Ring2DDetector<S,F> &scanner):scanner_(scanner) {
       for(int iy=0;iy<scanner_.n_pixels_y()/2;iy++) 
@@ -116,6 +116,9 @@ public:
   Ring2DDetector<S,F> scanner_;
   std::vector<pixel_t > octant_;
 };
+
+
+//template<typename S, typename F> Row<S,F> *row_from_array();
 
 
 #endif

@@ -30,7 +30,7 @@ main(int argc, char *argv[]) {
   std::cout<<vm["n-detectors"].as<int>()<<" ";
   std::cout<<vm["n-pixels"].as<int>()<<std::endl;
 
-#if 1
+
   Ring2DDetector<int,double> detector(vm["n-detectors"].as<int>(),
 				      vm["n-pixels"].as<int>());
 
@@ -38,13 +38,13 @@ main(int argc, char *argv[]) {
   ProbabilityMatrix<int,double> probability_matrix(detector);
 
   const int max_lors=detector.n_detectors()*detector.n_detectors();
-  double step=2.0/detector.n_pixels_x();
+
   double *p = new double[max_lors];
 
   
   
   for(int ipix=0;ipix<probability_matrix.octant_size();++ipix) {
-    pixel<int,double> pix=probability_matrix.octant(ipix);
+    Pixel<int,double> pix=probability_matrix.octant(ipix);
 
     for(int i=0;i<max_lors;++i)
       p[i]=0.0;
@@ -62,13 +62,14 @@ main(int argc, char *argv[]) {
       }
     }
 
-    row<pixel<int,double>, double> pixel_row(pix,*lrs);
+    Row<Pixel<int,double>, double> pixel_row(pix,*lrs);
+    delete lrs;
 
     std::cout<<pixel_row;
 
 
   }
-#endif
+
 
 }
 
