@@ -51,21 +51,11 @@ main(int argc, char *argv[]) {
 
     fill_pixel(pix,detector.n_detectors(),p,1000000);
 
-    std::vector<Lor<int,double> > *lrs=new std::vector<Lor<int,double> >;
-    double sum=0.0;
-    for(int i=0;i<max_lors;++i) {
-      if(p[i]>0.0) {
-	int f=i/detector.n_detectors();
-	int s=i%detector.n_detectors();
-	lrs->push_back(Lor<int,double>(f,s,p[i]));
-	sum+=p[i];
-      }
-    }
 
-    Row<Pixel<int,double>, double> pixel_row(pix,*lrs);
-    delete lrs;
+    Row<Pixel<int,double>, double> *pixel_row=row_from_array(pix,p,detector.n_detectors(),max_lors);
 
-    std::cout<<pixel_row;
+    probability_matrix.push_back_row(pixel_row);
+    std::cout<<*pixel_row;
 
 
   }

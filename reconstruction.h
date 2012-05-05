@@ -95,7 +95,8 @@ void fill_pixel(const P &pix, int n_detectors,
 template<typename S, typename F> class ProbabilityMatrix {
 public:  
   typedef Pixel<S, F> pixel_t;
- 
+  typedef Row<pixel_t,F> row_t;
+
   ProbabilityMatrix(const Ring2DDetector<S,F> &scanner):scanner_(scanner) {
       for(int iy=0;iy<scanner_.n_pixels_y()/2;iy++) 
 	for(int ix=iy;ix<scanner_.n_pixels_x()/2;ix++) {
@@ -112,13 +113,41 @@ public:
   
   S octant_size() const {return octant_.size();}
   pixel_t  octant(int i) {return octant_[i];}
+  void push_back_row(row_t *row) {matrix_.push_back(row);}
+  row_t *row(int i) {return matrix_[i];}
+
+  ~ProbabilityMatrix() {
+    while(!matrix_.empty()) {
+      delete matrix_.back();
+      matrix_.pop_back();
+    }
+  }
+
  private:
   Ring2DDetector<S,F> scanner_;
   std::vector<pixel_t > octant_;
+  std::vector<Row<pixel_t,F> *> matrix_;
 };
 
 
-//template<typename S, typename F> Row<S,F> *row_from_array();
+template<typename S, typename F> 
+  Row<Pixel<S,F>,F> *row_from_array(const Pixel<S,F> &pix, F *p,int n_detectors,
+			   int max_lors) {
+
+   std::vector<Lor<S,F> > lrs;
+   lrs.reserve(4*n_detectors);
+    double sum=0.0;
+    for(int i=0;i<max_lors;++i) {
+      if(p[i]>0.0) {
+	int f=i/n_detectors;
+	int s=i%n_detectors;
+	lrs.push_back(Lor<S,F>(f,s,p[i]));
+	sum+=p[i];
+      }
+    }
+
+    return new Row<Pixel<S,F>, F>(pix,lrs);
+};
 
 
 #endif
