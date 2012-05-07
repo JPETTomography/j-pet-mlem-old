@@ -41,14 +41,39 @@ std::ostream &operator<<(std::ostream &out, const Row<P,F> &r);
 
 template<typename P, typename F> class Row {
 public:
+  typedef Lor<typename P::short_t,F> lor_t;
   Row(const P &pixel, const std::vector<Lor<typename P::short_t,F> > &vec):
    pixel_(pixel), row_(vec) {}; 
+
+   size_t fwrite(FILE *fout) const {
+     size_t size_w=0;
+     size_t size=row_.size();
+     size_w+=::fwrite(&pixel_,sizeof(P),1,fout);
+     size_w+=::fwrite(&size,sizeof(size_t),1,fout);
+     size_w+=::fwrite(&row_[0],sizeof(lor_t),row_.size(),fout);
+     return size_w;
+   }
+
  private:
+
+   size_t fread(FILE *fin) {
+     size_t size_w=0;
+     size_t size
+     size_w+=::fread(&pixel_,sizeof(P),1,fin);
+     size_w+=::fread(&size,sizeof(size_t),1,fin);
+     row_.resize(size);
+     size_w+=::fread(&row_[0],sizeof(lor_t),row_.size(),fout);
+     return size_w;
+   }
+
   P pixel_;
-  std::vector<Lor<typename P::short_t,F> > row_;
+  std::vector<lor_t > row_;
 
    friend  std::ostream &operator<< <>(std::ostream & out, const Row &r);
   
+
+   
+
 };
 
 template<typename P, typename F> 
@@ -121,6 +146,16 @@ public:
       delete matrix_.back();
       matrix_.pop_back();
     }
+  }
+
+
+  size_t fwrite(FILE *fout) const {
+    size_t size_w=0;
+    for(typename std::vector<Row<pixel_t,F> *>::const_iterator it=matrix_.begin();
+	it!=matrix_.end();++it) {
+      size_w+=(*it)->fwrite(fout);
+    }
+    return size_w;
   }
 
  private:

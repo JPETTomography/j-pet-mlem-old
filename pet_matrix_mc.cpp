@@ -60,6 +60,10 @@ main(int argc, char *argv[]) {
 
   }
 
+  
+  FILE *fout=fopen("prob.bin","w");
+  probability_matrix.fwrite(fout);
+  fclose(fout);
 
 }
 

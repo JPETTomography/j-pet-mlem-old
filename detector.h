@@ -55,9 +55,10 @@ std::pair<F,F>   tof(const event<F> ev,F R2) {
 
 template<typename T, typename F>
 struct Lor {
-Lor(T f, T s, F p = 0.0):first(f), second(s),count(p) {
-  if(s<f) std::swap(s,f);
-}
+  Lor() {};
+  Lor(T f, T s, F p = 0.0):first(f), second(s),count(p) {
+    if(s<f) std::swap(s,f);
+  }
   T first;
   T second;
   F count;
