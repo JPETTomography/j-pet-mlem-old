@@ -1,4 +1,22 @@
 #ifndef __TOF_EVENT__
+#define __TOF_EVENT__
+
+template<typename F> class  ToF_Track_2D {
+
+public:
+  typedef F float_t;
+  
+  ToF_Track_2D(F z_up,F z_dn, F dl): z_up(z_up), z_dn_(zd), dl_(dl){};
+
+  F z_up() const {return z_up_;}
+  F z_dn() const {return z_dn_;}
+  F dl()   const {return dl_;}
+  
+private:
+  F z_up_;
+  F z_dn_;
+  F dl_;
+};
 
 template<typename F> class  ToF_Event_2D {
 
@@ -6,14 +24,9 @@ template<typename F> class  ToF_Event_2D {
 public:
   typedef F float_t;
 
-  static void fromPS(ToF_Event_2D &event,F z_up, F z_dn, F dl,F R) {
-    event.tan_=(z_up-z_dn)/((F)2.0*R);
-    event.z_=(F)(0.5)*(z_up+z_dn);
-    event.y_=-dl/sqrt(event.tan_*event.tan_+1);
-  }
 
   ToF_Event_2D(){};
-  ToF_Event_2D(F z, F y, F t):z_(z),y_(y),tan_(t){}
+  ToF_Event_2D(F z, F y, F tan):z_(z),y_(y),tan_(tan){}
     
   
   F z() const {return z_;}

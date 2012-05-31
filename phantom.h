@@ -3,10 +3,10 @@
 
 #include<cmath>
 
-class Region {
+class ElipticalRegion {
  public:
 
- Region(double x, double y, double a, double b, double phi,double act):
+ ElipticalRegion(double x, double y, double a, double b, double phi,double act):
   x_(x),y_(y),a_(a),b_(b),phi_(phi),activity_(act) {
     sincos(&sin_,&cos_);
     inv_a2_=1.0/(a_*a_);
