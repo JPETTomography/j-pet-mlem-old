@@ -5,8 +5,10 @@ template<typename F> class  ToF_Track_2D {
 
 public:
   typedef F float_t;
-  
-  ToF_Track_2D(F z_up,F z_dn, F dl): z_up(z_up), z_dn_(zd), dl_(dl){};
+
+  ToF_Track_2D(){};
+
+  ToF_Track_2D(F z_up,F z_dn, F dl): z_up_(z_up), z_dn_(z_dn), dl_(dl){};
 
   F z_up() const {return z_up_;}
   F z_dn() const {return z_dn_;}
