@@ -47,6 +47,9 @@ Shader *shader;
 
 UniformMatrix<4,4> mvp_matrix_uniform("mvp_matrix");
 UniformScalar<GLuint> texture_uniform("texture0");
+UniformVector<GLfloat,4> start_color_uniform("start_color");
+UniformVector<GLfloat,4> end_color_uniform("end_color");
+
 
 
 
@@ -57,7 +60,7 @@ void SetupRC() {
   glEnable(GL_DEPTH_TEST);
 
   std::cerr<<"creating shader"<<std::endl;
-  shader= new Shader("project.vp","simple.fp"); 
+  shader= new Shader("project.vp","coldtohot.fp"); 
   std::cerr<<"created shader"<<std::endl;
   shader->add_attribute( GLT_ATTRIBUTE_VERTEX, "v_position");
   shader->add_attribute( GLT_ATTRIBUTE_TEXTURE0, "v_texture0");
@@ -68,6 +71,9 @@ void SetupRC() {
 				shader->shader()
 				);
   texture_uniform.add_shader(shader->shader());
+  
+  start_color_uniform.add_shader(shader->shader());
+  end_color_uniform.add_shader(shader->shader());
 
   glUseProgram(shader->shader());
   glm::vec3 eye(-100.0,0.0,0.0);
@@ -85,14 +91,15 @@ void SetupRC() {
   GLuint texture_size=width*height;
   GLfloat *pBits=(GLfloat *)malloc(sizeof(GLfloat)*texture_size);
   for(int i=0;i<texture_size;i++) {
-    pBits[i]=0.5f;
+    pBits[i]=i*(1.0/texture_size);
   }
-  
+
+
   glGenTextures(1, &textureID);
   glBindTexture(GL_TEXTURE_2D, textureID);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -113,16 +120,27 @@ void RenderScene() {
 				     glm::value_ptr(mvp_mat));
   
   texture_uniform.load_concrete(shader->shader(),0);
+  start_color_uniform.load_concrete(shader->shader(),
+				    glm::value_ptr(glm::vec4(0,0,1,1)));
+  end_color_uniform.load_concrete(shader->shader(),
+				  glm::value_ptr(glm::vec4(1,0,0,1)));
 
+  
   glBegin(GL_QUADS);
+
   glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,0.0f,0.0f);
   glVertex3f(0.0f, -250.0f, -250.0f);
-  glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,0.0f,1.0f);
+
+  glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,1.0f,0.0f);
   glVertex3f(0.0f, -250.0f,  250.0f);
+
   glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,1.0f,1.0f);
   glVertex3f(0.0f,  250.0f,  250.0f);
-  glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,1.0f,0.0f);
+
+  glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,0.0f,1.0f);
   glVertex3f(0.0f,  250.0f, -250.0f);
+
+
   glEnd();
 
   glutSwapBuffers();

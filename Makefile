@@ -66,8 +66,8 @@ DEPEND=$(subst .o,.d,$(MAIN)) $(subst .o,.d,$(OBJECTS)) $(subst .o,.d,$(TESTS_OB
 
 -include $(DEPEND)
 
-build: $(MAIN) $(OBJECTS)
-	$(LD) $(LDFLAGS) -o tof  $^	
+tof: $(MAIN) $(OBJECTS)
+	$(LD) $(LDFLAGS) -o $@  $^	
 
 test: $(OBJECTS) $(TESTS_OBJECTS) 
 	$(LD) $(LDFLAGS) -o test  $^  -lpthread
