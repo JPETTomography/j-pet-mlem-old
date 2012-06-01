@@ -82,12 +82,10 @@ void SetupRC() {
   
   GLuint width=100;
   GLuint height=100;
-  GLuint texture_size=width*height*3;
-  GLbyte *pBits=(GLbyte *)malloc(sizeof(unsigned char)*texture_size);
-  for(int i=0;i<texture_size;i+=3) {
-    pBits[i]=128;
-    pBits[i+1]=0;
-    pBits[i+2]=32;
+  GLuint texture_size=width*height;
+  GLfloat *pBits=(GLfloat *)malloc(sizeof(GLfloat)*texture_size);
+  for(int i=0;i<texture_size;i++) {
+    pBits[i]=0.5f;
   }
   
   glGenTextures(1, &textureID);
@@ -100,8 +98,8 @@ void SetupRC() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
-  GL_RGB, GL_UNSIGNED_BYTE, pBits);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0,
+  GL_RED, GL_FLOAT, pBits);
 
 }
 
