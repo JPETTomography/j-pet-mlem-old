@@ -49,6 +49,12 @@ UniformMatrix<4,4> mvp_matrix_uniform("mvp_matrix");
 
 DensityPlot *density_plot;
 
+
+#include"tof_event.h"
+#include"tof_detector.h"
+#include"phantom.h"
+#include"tof_monte_carlo.h"
+
 void SetupRC() {
 
 
@@ -100,7 +106,30 @@ void SetupRC() {
   PixelGrid<GLfloat> grid(Point<GLfloat>(-250,-250),
 			  Point<GLfloat>(250,250),width,height);
 
-  grid.insert(10,100,0.75);
+  typedef ToF_Detector_2D<GLfloat> detector_t;
+  typedef ToF_Event_2D<GLfloat> event_t;
+  ToF_Detector_2D<GLfloat> detector(350,500);
+  detector.set_sigma(11,32);
+  ToF_Monte_Carlo<GLfloat,ToF_Detector_2D<GLfloat> > mc(detector);
+  mc.gen_seeds(5565665);
+  const int  n=100000;
+  std::vector<event_t> events(n);
+  mc.fill_with_events_from_single_point(events,0,0,n);
+
+  std::vector<event_t> events_out(n);
+
+  mc.add_noise(events.begin(),events.end(),events_out.begin());
+
+  for(int i=0;i<n;i++) {
+    grid.insert(events_out[i].z(),
+		events_out[i].y(),
+		1.0f
+		);
+  }
+
+  GLfloat max=grid.max();
+  grid.divide_by(max);
+ 
   density_plot->set_pixmap(grid.pixels());
 
 

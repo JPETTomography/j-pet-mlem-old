@@ -90,14 +90,21 @@ public:
   F max() const {
     F max=(F)0.0;
     for(int i=0;i<n_;i++) {
-      max=(max_<pixels_[i])?pixels_[i]:max_;
+      max=(max<pixels_[i])?pixels_[i]:max;
     }
+    return max;
   }
 
   F sum() const {
     F sum=(F)0.0;
     for(int i=0;i<n_;i++) {
       sum+=pixels_[i]);
+    }
+  }
+
+  void divide_by(F d)  {
+    for(int i=0;i<n_;i++) {
+      pixels_[i]/=d;
     }
   }
 
