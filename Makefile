@@ -32,6 +32,7 @@ CXXFLAGS+=-I$(HOME)/downloads/gtest-1.6.0/
 CXXFLAGS+=-I$(HOME)/PROJECTS/OpenGL2.0/src/SSG/
 CXXFLAGS+=-I$(HOME)/PROJECTS/OpenGL2.0/src/OGLUtils/
 
+
 VPATH=$(HOME)/downloads/gtest-1.6.0/src
 VPATH+=$(HOME)/PROJECTS/OpenGL2.0/src/SSG/
 VPATH+=$(HOME)/PROJECTS/OpenGL2.0/src/OGLUtils/

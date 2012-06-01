@@ -116,13 +116,13 @@ void RenderScene() {
 
   glBegin(GL_QUADS);
   glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,0.0f,0.0f);
-  glVertex3f(0.0f, -100.0f, -100.0f);
+  glVertex3f(0.0f, -250.0f, -250.0f);
   glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,0.0f,1.0f);
-  glVertex3f(0.0f, -100.0f,  100.0f);
+  glVertex3f(0.0f, -250.0f,  250.0f);
   glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,1.0f,1.0f);
-  glVertex3f(0.0f,  100.0f,  100.0f);
+  glVertex3f(0.0f,  250.0f,  250.0f);
   glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,1.0f,0.0f);
-  glVertex3f(0.0f,  100.0f, -100.0f);
+  glVertex3f(0.0f,  250.0f, -250.0f);
   glEnd();
 
   glutSwapBuffers();
