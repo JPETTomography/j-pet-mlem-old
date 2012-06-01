@@ -29,12 +29,17 @@ endif
 
 LDFLAGS+=-lboost_program_options
 CXXFLAGS+=-I$(HOME)/downloads/gtest-1.6.0/
+CXXFLAGS+=-I$(HOME)/PROJECTS/OpenGL2.0/src/SSG/
+CXXFLAGS+=-I$(HOME)/PROJECTS/OpenGL2.0/src/OGLUtils/
 
 VPATH=$(HOME)/downloads/gtest-1.6.0/src
-
+VPATH+=$(HOME)/PROJECTS/OpenGL2.0/src/SSG/
+VPATH+=$(HOME)/PROJECTS/OpenGL2.0/src/OGLUtils/
+#VPATH+=${HOME}/PROJECTS/OpenGL/oglsuperbible5-read-only/Src/GLTools/src
 
 PREP_C =  perl -pe 's!(${notdir $*})\.o[ :]*!${dir $*}$$1.o $@ : !g' > $@
 
+LDFLAGS+= -lglut -llog4cxx -lGLEW
 
 define make-depend
   $(DP) $(CFLAGS) $(CXXFLAGS) $1 | \
@@ -51,9 +56,9 @@ endef
 
 
 
-MAIN=pet_matrix_mc.o
+MAIN=main.o
 #OBJECTS= sweep.o random.o
-OBJECTS=
+OBJECTS=Uniform.o Light.o Shader.o logger.o glutils.o glmutils.o
 TESTS_OBJECTS=$(subst .cpp,.o,$(wildcard *_test.cpp)) gtest-all.o
 
 DEPEND=$(subst .o,.d,$(MAIN)) $(subst .o,.d,$(OBJECTS)) $(subst .o,.d,$(TESTS_OBJECTS))
@@ -61,7 +66,7 @@ DEPEND=$(subst .o,.d,$(MAIN)) $(subst .o,.d,$(OBJECTS)) $(subst .o,.d,$(TESTS_OB
 -include $(DEPEND)
 
 build: $(MAIN) $(OBJECTS)
-	$(LD) $(LDFLAGS) -o pet_matrix_mc  $^	
+	$(LD) $(LDFLAGS) -o tof  $^	
 
 test: $(OBJECTS) $(TESTS_OBJECTS) 
 	$(LD) $(LDFLAGS) -o test  $^  -lpthread
