@@ -17,15 +17,12 @@
 #include"Shader.h"
 #include"Uniform.h"
 
-
+#include"density_plot.h"
 
 glm::mat4 v_matrix;
 glm::mat4 p_matrix;
 glm::mat4 mvp_mat;
 
-
-
-GLuint textureID;
 
 
 void ChangeSize(int w, int h) {
@@ -46,16 +43,14 @@ void ChangeSize(int w, int h) {
 Shader *shader;
 
 UniformMatrix<4,4> mvp_matrix_uniform("mvp_matrix");
-UniformScalar<GLuint> texture_uniform("texture0");
-UniformVector<GLfloat,4> start_color_uniform("start_color");
-UniformVector<GLfloat,4> end_color_uniform("end_color");
 
 
-
+DensityPlot *density_plot;
 
 void SetupRC() {
 
 
+  
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glEnable(GL_DEPTH_TEST);
 
@@ -70,10 +65,9 @@ void SetupRC() {
   mvp_matrix_uniform.add_shader(
 				shader->shader()
 				);
-  texture_uniform.add_shader(shader->shader());
+
   
-  start_color_uniform.add_shader(shader->shader());
-  end_color_uniform.add_shader(shader->shader());
+
 
   glUseProgram(shader->shader());
   glm::vec3 eye(-100.0,0.0,0.0);
@@ -91,57 +85,33 @@ void SetupRC() {
   GLuint texture_size=width*height;
   GLfloat *pBits=(GLfloat *)malloc(sizeof(GLfloat)*texture_size);
   for(int i=0;i<texture_size;i++) {
-    pBits[i]=i*(1.0/texture_size);
+    pBits[i]=i*1.0/texture_size;
   }
 
 
-  glGenTextures(1, &textureID);
-  glBindTexture(GL_TEXTURE_2D, textureID);
+  density_plot= new DensityPlot(100,100);
+  density_plot->set_vertex(0,0,-250,-250,0,0);
+  density_plot->set_vertex(1,0,-250,250,1,0);
+  density_plot->set_vertex(2,0, 250,250,1,1);
+  density_plot->set_vertex(3,0, 250,-250,0,1);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0,
-  GL_RED, GL_FLOAT, pBits);
+  density_plot->set_pixmap(pBits);
+
 
 }
 
 
 void RenderScene() {  
 
+  std::cerr<<"renderimg scene"<<std::endl;
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   glUseProgram(shader->shader());
   mvp_mat=p_matrix*v_matrix;
   mvp_matrix_uniform.load_4x4_matrix(shader->shader(),
 				     glm::value_ptr(mvp_mat));
+  density_plot->set_mvp_matrix(mvp_mat);
   
-  texture_uniform.load_concrete(shader->shader(),0);
-  start_color_uniform.load_concrete(shader->shader(),
-				    glm::value_ptr(glm::vec4(0,0,1,1)));
-  end_color_uniform.load_concrete(shader->shader(),
-				  glm::value_ptr(glm::vec4(1,0,0,1)));
-
-  
-  glBegin(GL_QUADS);
-
-  glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,0.0f,0.0f);
-  glVertex3f(0.0f, -250.0f, -250.0f);
-
-  glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,1.0f,0.0f);
-  glVertex3f(0.0f, -250.0f,  250.0f);
-
-  glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,1.0f,1.0f);
-  glVertex3f(0.0f,  250.0f,  250.0f);
-
-  glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,0.0f,1.0f);
-  glVertex3f(0.0f,  250.0f, -250.0f);
-
-
-  glEnd();
+  density_plot->render();
 
   glutSwapBuffers();
 
