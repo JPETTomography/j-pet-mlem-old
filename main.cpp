@@ -23,13 +23,21 @@ glm::mat4 v_matrix;
 glm::mat4 p_matrix;
 glm::mat4 mvp_mat;
 
+
+
+GLuint textureID;
+
+
 void ChangeSize(int w, int h) {
 
 
   
   glViewport(0, 0, w, h); 
+  GLfloat aspect=(GLfloat)w/(GLfloat)h;
   std::cerr<<"seting projection\n";
-  p_matrix=glm::ortho(-250.0f,250.0f,-400.0f,400.0f,-200.0f,200.0f);
+  GLfloat height= 800.0f;
+  p_matrix=glm::ortho(-height*aspect/2.0f,height*aspect/2.0f,
+		      -height/2.0f,height/2.0f,99.0f,101.0f);
   std::cerr<<p_matrix<<std::endl;
   std::cerr<<"set projection\n";
   
@@ -38,7 +46,7 @@ void ChangeSize(int w, int h) {
 Shader *shader;
 
 UniformMatrix<4,4> mvp_matrix_uniform("mvp_matrix");
-
+UniformScalar<GLuint> texture_uniform("texture0");
 
 
 
@@ -52,13 +60,15 @@ void SetupRC() {
   shader= new Shader("project.vp","simple.fp"); 
   std::cerr<<"created shader"<<std::endl;
   shader->add_attribute( GLT_ATTRIBUTE_VERTEX, "v_position");
+  shader->add_attribute( GLT_ATTRIBUTE_TEXTURE0, "v_texture0");
   shader->link();
 
   
   mvp_matrix_uniform.add_shader(
 				shader->shader()
 				);
-  
+  texture_uniform.add_shader(shader->shader());
+
   glUseProgram(shader->shader());
   glm::vec3 eye(-100.0,0.0,0.0);
   glm::vec3 center(0.0,0.0,0.0);
@@ -69,6 +79,30 @@ void SetupRC() {
   std::cerr<<v_matrix<<std::endl;
   std::cerr<<"set view matrix"<<std::endl;
   
+  
+  GLuint width=100;
+  GLuint height=100;
+  GLuint texture_size=width*height*3;
+  GLbyte *pBits=(GLbyte *)malloc(sizeof(unsigned char)*texture_size);
+  for(int i=0;i<texture_size;i+=3) {
+    pBits[i]=128;
+    pBits[i+1]=0;
+    pBits[i+2]=32;
+  }
+  
+  glGenTextures(1, &textureID);
+  glBindTexture(GL_TEXTURE_2D, textureID);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
+  GL_RGB, GL_UNSIGNED_BYTE, pBits);
+
 }
 
 
@@ -80,11 +114,16 @@ void RenderScene() {
   mvp_matrix_uniform.load_4x4_matrix(shader->shader(),
 				     glm::value_ptr(mvp_mat));
   
+  texture_uniform.load_concrete(shader->shader(),0);
 
   glBegin(GL_QUADS);
+  glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,0.0f,0.0f);
   glVertex3f(0.0f, -100.0f, -100.0f);
+  glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,0.0f,1.0f);
   glVertex3f(0.0f, -100.0f,  100.0f);
+  glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,1.0f,1.0f);
   glVertex3f(0.0f,  100.0f,  100.0f);
+  glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0,1.0f,0.0f);
   glVertex3f(0.0f,  100.0f, -100.0f);
   glEnd();
 
@@ -93,7 +132,7 @@ void RenderScene() {
 
 }
 
-
+ 
 int 
 main(int argc, char *argv[]) {
 
