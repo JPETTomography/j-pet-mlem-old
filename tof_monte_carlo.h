@@ -52,12 +52,30 @@ public:
   }
   
   template<typename In, typename Out> 
-  void  add_noise(In first, In last, Out out, int gen = 0) {
+  int  add_noise(In first, In last, Out out, int gen = 0) {
+    int count=0;
     while(first!=last) {
       *out=add_noise(*first);
       ++out;
       ++first;
+      ++count;
     }
+    return count;
+  }
+
+  template<typename In, typename Out> 
+  int  add_noise_to_detected(In first, In last, Out out, int gen = 0) {
+    int count=0;
+    while(first!=last) {
+      ToF_Track_2D<F> track=detector_.toPS(*first);
+      if(detector_.detected(track)) {
+      *out=add_noise(*first);
+      ++out;
+      ++count;
+      }
+      ++first;
+    }
+    return count;
   }
 
   ToF_Event_2D<F> emit_from_point(F x, F y,int gen=0)  {
@@ -65,14 +83,40 @@ public:
     return  ToF_Event_2D<F>(x,y,tan(phi));
   }
 
-  void 
+  int  
   fill_with_events_from_single_point(std::vector< ToF_Event_2D<F> > &events,
 				     F x, F y, int n) {
     for(int i=0;i<n;++i) {
       events[i]=emit_from_point(x,y);
     }
+    return n;
   }
 
+  template<typename Out> int  
+  fill_with_events_from_single_point(Out out,
+				     F x, F y, int n) {
+    for(int i=0;i<n;++i,++out) {
+      *out=emit_from_point(x,y);
+    }
+    return n;
+
+  }
+
+  template<typename Out> int  
+  fill_with_detected_events_from_single_point(Out out,
+					      F x, F y, int n) {
+    int count =0;
+    for(int i=0;i<n;++i) {
+      ToF_Event_2D<F> event=emit_from_point(x,y);
+      if(detector_.detected(event)) {
+	  *out=event;
+	  out++;
+	  count++;
+	}
+    }
+    return count;
+  }
+  
 private:
   taus_array taus_;
   D detector_;

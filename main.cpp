@@ -88,8 +88,8 @@ void SetupRC() {
   std::cerr<<"set view matrix"<<std::endl;
   
   
-  GLuint width=100;
-  GLuint height=100;
+  GLuint width = 100;
+  GLuint height= 100;
   GLuint texture_size=width*height;
   GLfloat *pBits=(GLfloat *)malloc(sizeof(GLfloat)*texture_size);
   for(int i=0;i<texture_size;i++) {
@@ -114,13 +114,16 @@ void SetupRC() {
   mc.gen_seeds(5565665);
   const int  n=100000;
   std::vector<event_t> events(n);
-  mc.fill_with_events_from_single_point(events,0,0,n);
-
+  std::vector<event_t>::iterator it=events.begin();
+  int count;
+  count=mc.fill_with_events_from_single_point(it,0,0,n/2);
+  it=events.begin()+count;
+  count+=mc.fill_with_events_from_single_point(it,200,-150,n/2);
   std::vector<event_t> events_out(n);
 
-  mc.add_noise(events.begin(),events.end(),events_out.begin());
+  count=mc.add_noise_to_detected(events.begin(),events.begin()+count,events_out.begin());
 
-  for(int i=0;i<n;i++) {
+  for(int i=0;i<count;i++) {
     grid.insert(events_out[i].z(),
 		events_out[i].y(),
 		1.0f
