@@ -22,7 +22,7 @@ class PixelGrid {
 public:
 
   PixelGrid(const Point<F> &ll, const Point<F> &ur, I nx, I ny):
-    nx_(nx),ny_(ny),
+    nx_(nx),ny_(ny),n_(nx_*ny_),
     pixels_(nx_*ny_,(F)0.0) {
     ll_x_=ll.x;
     ll_y_=ll.y;
@@ -87,11 +87,28 @@ public:
   F operator[](I i) const {return this->operator()(i);}
   F operator()(I ix,I iy) const {return pixels_[index(ix,iy)];}
 
+  F max() const {
+    F max=(F)0.0;
+    for(int i=0;i<n_;i++) {
+      max=(max_<pixels_[i])?pixels_[i]:max_;
+    }
+  }
+
+  F sum() const {
+    F sum=(F)0.0;
+    for(int i=0;i<n_;i++) {
+      sum+=pixels_[i]);
+    }
+  }
+
+  const F *pixels() const {return &pixels_[0];}
+
 private:
   F  ll_x_, ll_y_;
   F  ur_x_, ur_y_;
   I  nx_, ny_;
-  
+  I  n_;
+
   std::vector<F> pixels_;
   F dx_,dy_;
   

@@ -1,17 +1,20 @@
-#ifndef __PHANTOM_H_
+#ifndef __PHANTOM_H__
 #define __PHANTOM_H__
 
 #include<cmath>
 
-class ElipticalRegion {
+#include<vector>
+
+class Region {
  public:
 
- ElipticalRegion(double x, double y, double a, double b, double phi,double act):
+ Region(double x, double y, double a, double b, double phi,double act):
   x_(x),y_(y),a_(a),b_(b),phi_(phi),activity_(act) {
-    sincos(&sin_,&cos_);
+    sincos(phi,&sin_,&cos_);
     inv_a2_=1.0/(a_*a_);
     inv_b2_=1.0/(b_*b_);
   };
+
   double activity() const {return activity_;}
   bool in(double x,double y) const {
 
@@ -27,10 +30,7 @@ class ElipticalRegion {
 
   }
 
-  bool emited(double r) const {
-    return activity() > r;
-  }
-
+  
 
  private:
   double x_;
@@ -49,6 +49,48 @@ class ElipticalRegion {
   double sin_;
   double cos_;
 
-}
+};
+
+class Phantom {
+
+
+
+ typedef   std::vector<Region *> container;
+
+ public:
+ 
+  void addRegion(double x, double y, double a, double b, double phi,double act) {
+    regions_.push_back(new Region(x,y,a,b,phi,act));
+  }
+
+
+  bool activity(double x, double y) const {
+    container::const_reverse_iterator rit=regions_.rbegin();
+    for(;rit!=regions_.rend();++rit) {
+      if((*rit)->in(x,y))
+	return (*rit)->activity();
+
+    }
+
+    return 0.0;
+
+  }
+
+
+  bool emit(double x, double y, double rnd) const {
+    return activity(x,y)> rnd;
+  }
+
+
+  ~Phantom() {
+    container::iterator rit=regions_.begin();
+    for(;rit!=regions_.end();++rit) {
+      delete (*rit);
+    }
+  }
+  
+private:
+  container regions_; 
+};
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef __TOF_DETECTOR_H__
 #define __TOF_DETECTOR_H__
 
+#include"tausworthe.h"
 #include"tof_event.h"
 
 template<typename F>
@@ -8,6 +9,15 @@ class ToF_Detector_2D {
 public:
 
   ToF_Detector_2D(F R, F L):R_(R),L_(L) {};
+  
+
+  F sigma_x() const {return sigma_x_;}
+  F sigma_l() const {return sigma_l_;}
+
+  void set_sigma(F sigma_x, F sigma_l) {
+    sigma_x_=sigma_x;
+    sigma_l_=sigma_l;
+  }
 
   ToF_Event_2D<F> fromPS(const ToF_Track_2D<F> &track) {
     double tan=(track.z_up()-track.z_dn())/((F)2.0*R_);
@@ -23,13 +33,17 @@ public:
     double dl=-2.0*event.y()*sqrt(event.tan()*event.tan()+1);
     return ToF_Track_2D<F>(z_up,z_dn,dl);
 }
-  
+ 
+   
+
+ 
   typedef F float_t;
   
 private:
   F R_;
   F L_;
-
+  F sigma_x_;
+  F sigma_l_;
 
 };
 

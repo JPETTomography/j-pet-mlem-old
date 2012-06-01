@@ -24,6 +24,8 @@ glm::mat4 p_matrix;
 glm::mat4 mvp_mat;
 
 
+#include"pixel_grid.h"
+
 
 void ChangeSize(int w, int h) {
 
@@ -95,7 +97,11 @@ void SetupRC() {
   density_plot->set_vertex(2,0, 250,250,1,1);
   density_plot->set_vertex(3,0, 250,-250,0,1);
 
-  density_plot->set_pixmap(pBits);
+  PixelGrid<GLfloat> grid(Point<GLfloat>(-250,-250),
+			  Point<GLfloat>(250,250),width,height);
+
+  grid.insert(10,100,0.75);
+  density_plot->set_pixmap(grid.pixels());
 
 
 }
@@ -122,8 +128,7 @@ void RenderScene() {
 int 
 main(int argc, char *argv[]) {
 
-   set_root_logger("tof");
-  
+  set_root_logger("tof");
   
 
   glutInit(&argc, argv);

@@ -47,7 +47,7 @@ public:
     mvp_=mvp;
   }
 
-  void set_pixmap(GLfloat *p_bits) {
+  void set_pixmap(const GLfloat *p_bits) {
     glBindTexture(GL_TEXTURE_2D, map_texture_id_);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     std::cerr<<"p bits "<<p_bits[0]<<std::endl;
