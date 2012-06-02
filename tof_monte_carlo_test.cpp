@@ -25,6 +25,7 @@ protected:
 };
 
 
+
 TEST_F(tof_monte_carlo_test,add_noise_to_track_test) {
   ToF_Track_2D<double> track_in(-200,23,117);
   
@@ -46,14 +47,4 @@ TEST_F(tof_monte_carlo_test,add_noise_to_event_test) {
   ASSERT_NE(event_in.tan(),event_out.tan());
 
 }
-TEST_F(tof_monte_carlo_test,fill_test) {
-  
-  const int  n=1000;
-  std::vector<event_t> events(n);
-  mc->fill_with_events_from_single_point(events,0,0,n);
 
-  std::vector<event_t> events_out(n);
-
-  mc->add_noise(events.begin(),events.end(),events_out.begin());
-
-}

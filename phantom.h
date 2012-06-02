@@ -5,10 +5,10 @@
 
 #include<vector>
 
-class Region {
+class EllipticalRegion {
  public:
 
- Region(double x, double y, double a, double b, double phi,double act):
+ EllipticalRegion(double x, double y, double a, double b, double phi,double act):
   x_(x),y_(y),a_(a),b_(b),phi_(phi),activity_(act) {
     sincos(phi,&sin_,&cos_);
     inv_a2_=1.0/(a_*a_);
@@ -55,21 +55,25 @@ class Phantom {
 
 
 
- typedef   std::vector<Region *> container;
+ typedef   std::vector<EllipticalRegion *> container;
 
  public:
  
   void addRegion(double x, double y, double a, double b, double phi,double act) {
-    regions_.push_back(new Region(x,y,a,b,phi,act));
+    regions_.push_back(new EllipticalRegion(x,y,a,b,phi,act));
   }
 
 
-  bool activity(double x, double y) const {
+  double activity(double x, double y) const {
     container::const_reverse_iterator rit=regions_.rbegin();
     for(;rit!=regions_.rend();++rit) {
-      if((*rit)->in(x,y))
-	return (*rit)->activity();
 
+      //std::cerr<<(*rit)->activity()<<std::endl;
+      if((*rit)->in(x,y)) {
+
+	//std::cerr<<"RETURNING "<<(*rit)->activity()<<std::endl;
+	return (*rit)->activity();
+      }
     }
 
     return 0.0;
@@ -91,6 +95,9 @@ class Phantom {
   
 private:
   container regions_; 
+
+  
+
 };
 
 #endif
