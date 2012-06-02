@@ -6,7 +6,7 @@ CXXFLAGS+=-O3 -g
 else
 CC=icc -DGTEST_HAS_TR1_TUPLE=0
 CXX=icpc -DGTEST_HAS_TR1_TUPLE=0
-CXXFLAGS+=-O2 -g
+CXXFLAGS+=-O1 -g
 #CXXFLAGS+=-fast -g
 endif
 
@@ -37,7 +37,6 @@ CXXFLAGS+=-I$(HOME)/PROJECTS/OpenGL2.0/src/OGLUtils/
 VPATH=$(HOME)/downloads/gtest-1.6.0/src
 VPATH+=$(HOME)/PROJECTS/OpenGL2.0/src/SSG/
 VPATH+=$(HOME)/PROJECTS/OpenGL2.0/src/OGLUtils/
-#VPATH+=${HOME}/PROJECTS/OpenGL/oglsuperbible5-read-only/Src/GLTools/src
 
 PREP_C =  perl -pe 's!(${notdir $*})\.o[ :]*!${dir $*}$$1.o $@ : !g' > $@
 

@@ -103,6 +103,9 @@ void SetupRC() {
   density_plot->set_vertex(2,0, 250,250,1,1);
   density_plot->set_vertex(3,0, 250,-250,0,1);
 
+
+
+
   PixelGrid<GLfloat> grid(Point<GLfloat>(-250,-250),
 			  Point<GLfloat>(250,250),width,height);
 

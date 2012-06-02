@@ -59,6 +59,12 @@ class Phantom {
 
  public:
  
+
+#if 0
+ Phantom(double ll_x, double ll_y, double ur_x, double ur_y):
+ ll_x_(ll_x), ll_y_(ll_y),ur_x_(ur_x),ur_y_(ur_y) {}
+#endif
+
   void addRegion(double x, double y, double a, double b, double phi,double act) {
     regions_.push_back(new EllipticalRegion(x,y,a,b,phi,act));
   }
@@ -68,10 +74,9 @@ class Phantom {
     container::const_reverse_iterator rit=regions_.rbegin();
     for(;rit!=regions_.rend();++rit) {
 
-      //std::cerr<<(*rit)->activity()<<std::endl;
       if((*rit)->in(x,y)) {
 
-	//std::cerr<<"RETURNING "<<(*rit)->activity()<<std::endl;
+	
 	return (*rit)->activity();
       }
     }
@@ -94,6 +99,9 @@ class Phantom {
   }
   
 private:
+  double ll_x_,ll_y_;
+  double ur_x_,ur_y_;
+  
   container regions_; 
 
   
