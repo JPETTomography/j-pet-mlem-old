@@ -27,6 +27,9 @@ glm::mat4 mvp_mat;
 
 #include"pixel_grid.h"
 #include"topet_simulator.h"
+#include"detector_view.h"
+#include"phantom_view.h"
+
 
 
 void ChangeSize(int w, int h) {
@@ -51,14 +54,15 @@ UniformMatrix<4,4> mvp_matrix_uniform("mvp_matrix");
 
 DensityPlot *density_plot;
 GeometryPlot *geometry_plot;
-
+DetectorView<GLfloat> *detector_view;
+PhantomView *phantom_view;
 
 #include"tof_event.h"
 #include"tof_detector.h"
 #include"phantom.h"
 #include"tof_monte_carlo.h"
 
-  TOPETSimulator<GLfloat>  simulator;
+TOPETSimulator<GLfloat>  simulator;
 
 void SetupRC() {
 
@@ -113,6 +117,10 @@ void SetupRC() {
   density_plot->set_pixmap(simulator.emitted_density());
   
   geometry_plot=new GeometryPlot;
+
+  detector_view=new DetectorView<GLfloat>(geometry_plot,simulator.detector());
+  phantom_view=new PhantomView(geometry_plot,simulator.phantom());
+  
 }
 
 
@@ -152,18 +160,13 @@ void RenderScene() {
 
   geometry_plot->set_mvp_matrix(mvp_mat);
   geometry_plot->renderStart();
-  geometry_plot->renderZYEllipse(0,0,100,200,0.0);
-  geometry_plot->renderZYEllipse(0,-100,50,70,M_PI/3.0);
-  geometry_plot->renderZYEllipse(20,150,10,17,M_PI/4.0);
-  geometry_plot->renderZYRectangle(-250,-360,250,-340,0,true);
-  geometry_plot->renderZYRectangle(-250,340,250,360,0,true);
 
-
-
+  phantom_view->render();
+  detector_view->render();
+  
   geometry_plot->renderEnd();
 
   glutSwapBuffers();
-
 
 }
 

@@ -57,7 +57,7 @@ public:
     glEnd();
   }
 
-  void drawDisk(GLfloat r) {
+  void drawDisk(GLfloat r)  {
   const int n = 120;
     glBegin(GL_POLYGON) ;
     for(int i=0;i<n;i++ ){      
@@ -68,7 +68,7 @@ public:
     glEnd();
   }
 
-  void renderZYCircle(GLfloat zc, GLfloat yc, GLfloat r,bool filled = false) {
+  void renderZYCircle(GLfloat zc, GLfloat yc, GLfloat r,bool filled = false)  {
     std::cerr<<"rendering circle"<<std::endl;
 
     glm::mat4  M=mvp_;

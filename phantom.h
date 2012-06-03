@@ -30,7 +30,12 @@ class EllipticalRegion {
 
   }
 
-  
+
+  double x() const {return x_;}
+  double y() const {return y_;}
+  double a() const {return a_;}
+  double b() const {return b_;}
+  double phi() const {return phi_;}
 
  private:
   double x_;
@@ -59,7 +64,7 @@ class Phantom {
 
  public:
  
-
+ typedef container::const_iterator const_iterator;
 #if 0
  Phantom(double ll_x, double ll_y, double ur_x, double ur_y):
  ll_x_(ll_x), ll_y_(ll_y),ur_x_(ur_x),ur_y_(ur_y) {}
@@ -90,6 +95,10 @@ class Phantom {
     return activity(x,y)> rnd;
   }
 
+
+  const_iterator begin() const {return regions_.begin();}
+  const_iterator end() const {return regions_.end();}
+  
 
   ~Phantom() {
     container::iterator rit=regions_.begin();

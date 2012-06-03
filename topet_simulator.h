@@ -58,6 +58,8 @@ public:
     
   }
 
+   detector_t *detector()  {return detector_;}
+   Phantom *phantom()  {return phantom_;}
 
   void simulate_from_phantom(int n) {
     std::cerr<<"simulating "<<n<<" events"<<std::endl;
