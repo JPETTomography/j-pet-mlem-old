@@ -74,9 +74,6 @@ void SetupRC() {
 				shader->shader()
 				);
 
-  
-
-
   glUseProgram(shader->shader());
   glm::vec3 eye(-100.0,0.0,0.0);
   glm::vec3 center(0.0,0.0,0.0);
@@ -169,7 +166,7 @@ main(int argc, char *argv[]) {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
   glutInitWindowSize(600, 600);
-  glutCreateWindow("Cube");
+  glutCreateWindow("ToF");
   glutReshapeFunc(ChangeSize);
   glutDisplayFunc(RenderScene);
 
