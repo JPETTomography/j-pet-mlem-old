@@ -8,6 +8,10 @@ template<typename F>
 class ToF_Detector_2D {
 public:
 
+  typedef ToF_Track_2D<F> track_t;
+  typedef ToF_Event_2D<F> event_t;
+
+
  ToF_Detector_2D(F R, F L):R_(R),L_(L),L_h_(L/2.0) {};
   
 
@@ -42,6 +46,15 @@ public:
 
   }
 
+
+  bool detected(const ToF_Event_2D<F> &event) {
+    track_t track=toPS(event);
+    F z_up=track.z_up();
+    F z_dn=track.z_dn();
+    
+    return z_up < L_h_ && z_up > -L_h_ && z_dn < L_h_ && z_dn>-L_h_ ;
+
+  }
  
   typedef F float_t;
   

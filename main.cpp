@@ -25,6 +25,7 @@ glm::mat4 mvp_mat;
 
 
 #include"pixel_grid.h"
+#include"topet_simulator.h"
 
 
 void ChangeSize(int w, int h) {
@@ -101,7 +102,11 @@ void SetupRC() {
   density_plot->set_vertex(3,0, 250,-250,0,1);
 
 
-
+#if 1
+  TOPETSimulator<GLfloat>  simulator;
+  simulator.init();
+  simulator.simulate_from_single_point(10000);
+#else
 
   PixelGrid<GLfloat> grid(Point<GLfloat>(-250,-250),
 			  Point<GLfloat>(250,250),width,height);
@@ -132,10 +137,10 @@ void SetupRC() {
 
   GLfloat max=grid.max();
   grid.divide_by(max);
- 
+
   density_plot->set_pixmap(grid.pixels());
-
-
+ #endif
+  density_plot->set_pixmap(simulator.emitted_density());
 }
 
 
