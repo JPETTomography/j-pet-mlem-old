@@ -36,8 +36,8 @@ public:
 
 
     phantom_ = new Phantom;
-    phantom_->addRegion(   0.0,0.0,100.0,200.0,0.0,  0.25);
-    phantom_->addRegion(0.0,-100.0,50,70,M_PI/3.0,0.50); 
+    phantom_->addRegion(0.0,   0.0,100.0,200.0,0.0,  0.25);
+    phantom_->addRegion(0.0,-100.0, 50.0, 70.0,M_PI/3.0,0.50); 
     phantom_->addRegion(20,150,10,17,M_PI/4.0,0.80);
     fov_ll_x_=-250.0;
     fov_ll_y_=-250.0;

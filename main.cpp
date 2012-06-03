@@ -18,6 +18,7 @@
 #include"Uniform.h"
 
 #include"density_plot.h"
+#include"geometry_plot.h"
 
 glm::mat4 v_matrix;
 glm::mat4 p_matrix;
@@ -49,6 +50,7 @@ UniformMatrix<4,4> mvp_matrix_uniform("mvp_matrix");
 
 
 DensityPlot *density_plot;
+GeometryPlot *geometry_plot;
 
 
 #include"tof_event.h"
@@ -63,7 +65,7 @@ void SetupRC() {
 
   
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-  glEnable(GL_DEPTH_TEST);
+  //glEnable(GL_DEPTH_TEST);
 
   std::cerr<<"creating shader"<<std::endl;
   shader= new Shader("project.vp","coldtohot.fp"); 
@@ -109,7 +111,8 @@ void SetupRC() {
   //simulator.simulate_from_single_point(100000);
   simulator.simulate_from_phantom(10000000);
   density_plot->set_pixmap(simulator.emitted_density());
-
+  
+  geometry_plot=new GeometryPlot;
 }
 
 
@@ -146,6 +149,14 @@ void RenderScene() {
   density_plot->set_mvp_matrix(mvp_mat);
   
   density_plot->render();
+
+  geometry_plot->set_mvp_matrix(mvp_mat);
+  geometry_plot->renderStart();
+  geometry_plot->renderZYEllipse(0,0,100,200,0.0);
+  geometry_plot->renderZYEllipse(0,-100,50,70,M_PI/3.0);
+  geometry_plot->renderZYEllipse(20,150,10,17,M_PI/4.0);
+
+  geometry_plot->renderEnd();
 
   glutSwapBuffers();
 
