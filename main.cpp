@@ -102,45 +102,12 @@ void SetupRC() {
   density_plot->set_vertex(3,0, 250,-250,0,1);
 
 
-#if 1
   TOPETSimulator<GLfloat>  simulator;
   simulator.init();
-  simulator.simulate_from_single_point(10000);
-#else
-
-  PixelGrid<GLfloat> grid(Point<GLfloat>(-250,-250),
-			  Point<GLfloat>(250,250),width,height);
-
-  typedef ToF_Detector_2D<GLfloat> detector_t;
-  typedef ToF_Event_2D<GLfloat> event_t;
-  ToF_Detector_2D<GLfloat> detector(350,500);
-  detector.set_sigma(11,32);
-  ToF_Monte_Carlo<GLfloat,ToF_Detector_2D<GLfloat> > mc(detector);
-  mc.gen_seeds(5565665);
-  const int  n=100000;
-  std::vector<event_t> events(n);
-  std::vector<event_t>::iterator it=events.begin();
-  int count;
-  count=mc.fill_with_events_from_single_point(it,0,0,n/2);
-  it=events.begin()+count;
-  count+=mc.fill_with_events_from_single_point(it,200,-150,n/2);
-  std::vector<event_t> events_out(n);
-
-  count=mc.add_noise_to_detected(events.begin(),events.begin()+count,events_out.begin());
-
-  for(int i=0;i<count;i++) {
-    grid.insert(events_out[i].z(),
-		events_out[i].y(),
-		1.0f
-		);
-  }
-
-  GLfloat max=grid.max();
-  grid.divide_by(max);
-
-  density_plot->set_pixmap(grid.pixels());
- #endif
-  density_plot->set_pixmap(simulator.emitted_density());
+  //simulator.simulate_from_single_point(100000);
+  simulator.simulate_from_phantom(40000000);
+  //density_plot->set_pixmap(simulator.emitted_density());
+  density_plot->set_pixmap(simulator.tof_density());
 }
 
 

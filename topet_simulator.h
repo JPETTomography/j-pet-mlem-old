@@ -21,7 +21,10 @@ public:
     int height = 100;
     emitted_density_= new PixelGrid<F>(point_t(-250,-250),
 				      point_t(250,250),width,height);
-
+    detected_density_= new PixelGrid<F>(point_t(-250,-250),
+				      point_t(250,250),width,height);
+    tof_density_= new PixelGrid<F>(point_t(-250,-250),
+				       point_t(250,250),width,height);
 
     detector_=new detector_t(350,500);
     detector_->set_sigma(11,32);
@@ -30,14 +33,25 @@ public:
     mc_->gen_seeds(5565665);
 
 
+    phantom_ = new Phantom;
+    phantom_->addRegion(   0.0,0.0,200.0,100.0,0.0,  0.25);
+    phantom_->addRegion(-100.0,0.0,50,80,M_PI/3.0,0.50); 
+    phantom_->addRegion(150,20,10,17,M_PI/4.0,0.80);
+    fov_ll_x_=-250.0;
+    fov_ll_y_=-250.0;
+    
+    fov_ur_x_= 250.0;
+    fov_ur_y_= 250.0;
   }
 
 
   void simulate_from_phantom(int n) {
-    emitted_events_.erase();
-    emitted_events.reserve(n);
+    std::cerr<<"simulating "<<n<<" events"<<std::endl;
+    emitted_events_.clear();
+    emitted_events_.resize(n);
 
-    mc->fill_with_events_from_phantom(emitted_events_.begin(), phantom_,
+
+    int n_emitted_events=mc_->fill_with_events_from_phantom(emitted_events_.begin(), phantom_,
 				      fov_ll_x_,
 				      fov_ll_y_,
 				      fov_ur_x_,
@@ -45,6 +59,34 @@ public:
 				      n
 				      );
     
+    std::cerr<<"emited "<<n_emitted_events<<" events"<<std::endl;
+    
+    std::cerr<<"inserting "<<n<<" events"<<std::endl;
+    emitted_density_->insert(emitted_events_.begin(),n_emitted_events);
+    std::cerr<<"inserted "<<n<<" events"<<std::endl;
+
+    F max=emitted_density_->max();
+    emitted_density_->divide_by(max);
+
+    tof_events_.clear();
+    tof_events_.resize(n_emitted_events);
+    
+    std::cerr<<"adding  noise "<<std::endl;
+    int n_detected_events = 
+      mc_->add_noise_to_detected(
+				 emitted_events_.begin(),
+				 emitted_events_.begin()+n_emitted_events,
+				 tof_events_.begin()
+				 );
+    std::cerr<<"added   noise to "<<n_detected_events<<std::endl;
+
+    std::cerr<<"inserting "<<n_detected_events<<" events in tof"<<std::endl;
+    tof_density_->insert(tof_events_.begin(),n_detected_events);
+    std::cerr<<"inserted "<<n_detected_events<<" events in tof"<<std::endl;
+
+    F tof_max=tof_density_->max();
+    tof_density_->divide_by(tof_max);
+
 
   }
   
@@ -64,17 +106,43 @@ public:
 
     F max=emitted_density_->max();
     emitted_density_->divide_by(max);
+
+    tof_events_.clear();
+    tof_events_.resize(n_emitted_events);
+    
+    std::cerr<<"adding  noise "<<std::endl;
+    int n_detected_events = 
+      mc_->add_noise_to_detected(
+				 emitted_events_.begin(),
+				 emitted_events_.begin()+n_emitted_events,
+				 tof_events_.begin()
+				 );
+    std::cerr<<"added   noise to "<<n_detected_events<<std::endl;
+
+    std::cerr<<"inserting "<<n_detected_events<<" events in tof"<<std::endl;
+    tof_density_->insert(tof_events_.begin(),n_detected_events);
+    std::cerr<<"inserted "<<n_detected_events<<" events in tof"<<std::endl;
+
+    F tof_max=tof_density_->max();
+    tof_density_->divide_by(tof_max);
+
+
   }
 
   
   const  F *emitted_density() {return emitted_density_->pixels();}
+  const  F *detected_density() {return _density_->pixels();}
+  const  F *tof_density() {return tof_density_->pixels();}
 
 private:
 
-  void generate_events(int n) {
-  }
-
   
+  
+  F fov_ll_x_;
+  F fov_ll_y_;    
+  F fov_ur_x_;
+  F fov_ur_y_;
+
   detector_t *detector_;
   Phantom *phantom_;
   

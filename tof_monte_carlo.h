@@ -125,7 +125,7 @@ public:
 				F ur_x, F ur_y,
 				int n, int gen = 0 ) {
     F dx=ur_x-ll_x;
-    F dx=ur_y-ll_y;
+    F dy=ur_y-ll_y;
     int count=0;
     for(int i=0;i<n;++i) {
       F x=ll_x+dx*taus_.rnd(gen);

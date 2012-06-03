@@ -6,8 +6,8 @@ CXXFLAGS+=-O3 -g
 else
 CC=icc -DGTEST_HAS_TR1_TUPLE=0
 CXX=icpc -DGTEST_HAS_TR1_TUPLE=0
-CXXFLAGS+=-O1 -g
-#CXXFLAGS+=-fast -g
+#CXXFLAGS+=-O1 -g
+CXXFLAGS+=-fast -g
 endif
 
 
