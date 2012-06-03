@@ -76,6 +76,15 @@ public:
 					glm::value_ptr(mvp_));
   }
 
+  void renderZYLine(GLfloat z1, GLfloat y1,GLfloat z2, GLfloat y2) {
+    mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
+					    glm::value_ptr(mvp_));
+    glBegin(GL_LINE_STRIP);
+    glVertex3f(0.0f,y1,z1);
+    glVertex3f(0.0f,y2,z2);
+    glEnd();
+  }
+
   void renderZYEllipse(GLfloat zc, GLfloat yc, GLfloat rz, GLfloat ry, 
 		       GLfloat theta = 0) {
     std::cerr<<"rendering circle"<<std::endl;
@@ -85,8 +94,6 @@ public:
     M=glm::translate(M,glm::vec3(0,yc,zc));
     M=glm::rotate(M,degree_theta,glm::vec3(-1,0,0));
     M=glm::scale(M,glm::vec3(0,ry,rz));
-
-
 
     std::cerr<<M<<std::endl;
      mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),

@@ -158,6 +158,7 @@ void RenderScene() {
   geometry_plot->renderZYRectangle(-250,-360,250,-340);
   geometry_plot->renderZYRectangle(-250,340,250,360);
 
+
   geometry_plot->renderEnd();
 
   glutSwapBuffers();
