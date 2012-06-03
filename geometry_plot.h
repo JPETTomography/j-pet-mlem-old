@@ -77,7 +77,7 @@ public:
   }
 
   void renderZYEllipse(GLfloat zc, GLfloat yc, GLfloat rz, GLfloat ry, 
-		       GLfloat theta) {
+		       GLfloat theta = 0) {
     std::cerr<<"rendering circle"<<std::endl;
     GLfloat degree_theta=180.0*theta/M_PI;
     glm::mat4  M=mvp_;
@@ -94,6 +94,38 @@ public:
      drawCircle(1);
 
     mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
+					glm::value_ptr(mvp_));
+  }
+
+  void renderZYRectangle(GLfloat ll_z, GLfloat ll_y, GLfloat ur_z, GLfloat ur_y, 
+		       GLfloat theta =0) {
+    std::cerr<<"rendering rectangle"<<std::endl;
+    GLfloat degree_theta=180.0*theta/M_PI;
+    GLfloat a=ur_z-ll_z;
+    GLfloat b=ur_y-ll_y;
+    GLfloat zc=0.5f*(ur_z+ll_z);
+    GLfloat yc=0.5f*(ur_y+ll_y);
+    
+    glm::mat4  M=mvp_;
+    std::cerr<<M<<std::endl;
+    M=glm::translate(M,glm::vec3(0,yc,zc));
+    M=glm::rotate(M,degree_theta,glm::vec3(-1,0,0));
+    M=glm::scale(M,glm::vec3(0,b,a));
+
+
+
+    std::cerr<<M<<std::endl;
+     mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
+					glm::value_ptr(M));
+     
+     glBegin(GL_LINE_LOOP);
+     glVertex3f(0.0f,-0.5f,-0.5f);
+     glVertex3f(0.0f, 0.5f,-0.5f);
+     glVertex3f(0.0f, 0.5f, 0.5f);
+     glVertex3f(0.0f,-0.5f, 0.5f);
+     glEnd();
+
+     mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
 					glm::value_ptr(mvp_));
   }
 
