@@ -155,8 +155,9 @@ void RenderScene() {
   geometry_plot->renderZYEllipse(0,0,100,200,0.0);
   geometry_plot->renderZYEllipse(0,-100,50,70,M_PI/3.0);
   geometry_plot->renderZYEllipse(20,150,10,17,M_PI/4.0);
-  geometry_plot->renderZYRectangle(-250,-360,250,-340);
-  geometry_plot->renderZYRectangle(-250,340,250,360);
+  geometry_plot->renderZYRectangle(-250,-360,250,-340,0,true);
+  geometry_plot->renderZYRectangle(-250,340,250,360,0,true);
+
 
 
   geometry_plot->renderEnd();

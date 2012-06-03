@@ -57,8 +57,18 @@ public:
     glEnd();
   }
 
+  void drawDisk(GLfloat r) {
+  const int n = 120;
+    glBegin(GL_POLYGON) ;
+    for(int i=0;i<n;i++ ){      
+      GLfloat z=r*cos((2.0*M_PI/n)*i);
+      GLfloat y=r*sin((2.0*M_PI/n)*i);
+      glVertex3f(0.0,y,z);
+    }
+    glEnd();
+  }
 
-  void renderZYCircle(GLfloat zc, GLfloat yc, GLfloat r) {
+  void renderZYCircle(GLfloat zc, GLfloat yc, GLfloat r,bool filled = false) {
     std::cerr<<"rendering circle"<<std::endl;
 
     glm::mat4  M=mvp_;
@@ -71,22 +81,27 @@ public:
      mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
 					glm::value_ptr(M));
      drawCircle(1);
-
+     if(filled) 
+       drawDisk(1);
     mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
 					glm::value_ptr(mvp_));
   }
 
   void renderZYLine(GLfloat z1, GLfloat y1,GLfloat z2, GLfloat y2) {
-    mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
-					    glm::value_ptr(mvp_));
     glBegin(GL_LINE_STRIP);
     glVertex3f(0.0f,y1,z1);
     glVertex3f(0.0f,y2,z2);
     glEnd();
   }
 
+  void renderZYPoint(GLfloat z1, GLfloat y1) {
+    glBegin(GL_POINTS);
+    glVertex3f(0.0f,y1,z1);
+    glEnd();
+  }
+
   void renderZYEllipse(GLfloat zc, GLfloat yc, GLfloat rz, GLfloat ry, 
-		       GLfloat theta = 0) {
+		       GLfloat theta = 0,bool filled=false) {
     std::cerr<<"rendering circle"<<std::endl;
     GLfloat degree_theta=180.0*theta/M_PI;
     glm::mat4  M=mvp_;
@@ -99,13 +114,15 @@ public:
      mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
 					glm::value_ptr(M));
      drawCircle(1);
+     if(filled)
+       drawDisk(1);
 
     mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
 					glm::value_ptr(mvp_));
   }
 
   void renderZYRectangle(GLfloat ll_z, GLfloat ll_y, GLfloat ur_z, GLfloat ur_y, 
-		       GLfloat theta =0) {
+			 GLfloat theta =0,bool filled=false) {
     std::cerr<<"rendering rectangle"<<std::endl;
     GLfloat degree_theta=180.0*theta/M_PI;
     GLfloat a=ur_z-ll_z;
@@ -131,7 +148,14 @@ public:
      glVertex3f(0.0f, 0.5f, 0.5f);
      glVertex3f(0.0f,-0.5f, 0.5f);
      glEnd();
-
+     if(filled) {
+       glBegin(GL_POLYGON);
+       glVertex3f(0.0f,-0.5f,-0.5f);
+       glVertex3f(0.0f, 0.5f,-0.5f);
+       glVertex3f(0.0f, 0.5f, 0.5f);
+       glVertex3f(0.0f,-0.5f, 0.5f);
+     glEnd();
+     }
      mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
 					glm::value_ptr(mvp_));
   }
