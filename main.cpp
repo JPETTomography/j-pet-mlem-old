@@ -56,6 +56,8 @@ DensityPlot *density_plot;
 #include"phantom.h"
 #include"tof_monte_carlo.h"
 
+  TOPETSimulator<GLfloat>  simulator;
+
 void SetupRC() {
 
 
@@ -102,14 +104,36 @@ void SetupRC() {
   density_plot->set_vertex(3,0, 250,-250,0,1);
 
 
-  TOPETSimulator<GLfloat>  simulator;
+
   simulator.init();
   //simulator.simulate_from_single_point(100000);
-  simulator.simulate_from_phantom(40000000);
-  //density_plot->set_pixmap(simulator.emitted_density());
-  density_plot->set_pixmap(simulator.tof_density());
+  simulator.simulate_from_phantom(10000000);
+  density_plot->set_pixmap(simulator.emitted_density());
+
 }
 
+
+void keyboardHandler(unsigned char pressed,int x, int y) {
+  switch (pressed) {
+  case 'a':  
+    density_plot->set_pixmap(simulator.acceptance_density());
+    glutPostRedisplay();
+    break;
+  case 't':  
+    density_plot->set_pixmap(simulator.tof_density());
+    glutPostRedisplay();
+    break;
+  case 'e':  
+    density_plot->set_pixmap(simulator.emitted_density());    
+    glutPostRedisplay();
+    break;
+  case 'x':  
+    exit(0);
+    break;
+  }
+
+  
+}
 
 void RenderScene() {  
 
@@ -141,6 +165,7 @@ main(int argc, char *argv[]) {
   glutCreateWindow("ToF");
   glutReshapeFunc(ChangeSize);
   glutDisplayFunc(RenderScene);
+  glutKeyboardFunc(keyboardHandler);
 
   GLenum err = glewInit();
   if (GLEW_OK != err) {

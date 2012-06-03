@@ -25,6 +25,8 @@ public:
 				      point_t(250,250),width,height);
     tof_density_= new PixelGrid<F>(point_t(-250,-250),
 				       point_t(250,250),width,height);
+    acceptance_density_= new PixelGrid<F>(point_t(-250,-250),
+				       point_t(250,250),width,height);
 
     detector_=new detector_t(350,500);
     detector_->set_sigma(11,32);
@@ -34,14 +36,26 @@ public:
 
 
     phantom_ = new Phantom;
-    phantom_->addRegion(   0.0,0.0,200.0,100.0,0.0,  0.25);
-    phantom_->addRegion(-100.0,0.0,50,80,M_PI/3.0,0.50); 
-    phantom_->addRegion(150,20,10,17,M_PI/4.0,0.80);
+    phantom_->addRegion(   0.0,0.0,100.0,200.0,0.0,  0.25);
+    phantom_->addRegion(0.0,-100.0,50,70,M_PI/3.0,0.50); 
+    phantom_->addRegion(20,150,10,17,M_PI/4.0,0.80);
     fov_ll_x_=-250.0;
     fov_ll_y_=-250.0;
     
     fov_ur_x_= 250.0;
     fov_ur_y_= 250.0;
+
+
+    for(int ix=0;ix<acceptance_density_->nx();ix++) 
+      for(int iy=0;iy<acceptance_density_->ny();iy++) {
+	point_t c=acceptance_density_->center(ix,iy);
+    F acc=detector_->acceptance(c.x,c.y);
+	acceptance_density_->add(ix,iy,acc);
+      }
+   
+    F max=acceptance_density_->max();
+    acceptance_density_->divide_by(max);
+    
   }
 
 
@@ -133,6 +147,7 @@ public:
   const  F *emitted_density() {return emitted_density_->pixels();}
   const  F *detected_density() {return _density_->pixels();}
   const  F *tof_density() {return tof_density_->pixels();}
+  const  F *acceptance_density() {return acceptance_density_->pixels();}
 
 private:
 
@@ -151,10 +166,12 @@ private:
   PixelGrid<F> *emitted_density_;
   PixelGrid<F> *detected_density_;
   PixelGrid<F> *tof_density_;
+  PixelGrid<F> *acceptance_density_;
   
   std::vector<event_t> emitted_events_;
   std::vector<event_t> detected_events_;
   std::vector<event_t> tof_events_;
+
 
 };
 

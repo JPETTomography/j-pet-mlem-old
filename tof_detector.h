@@ -56,6 +56,27 @@ public:
 
   }
  
+
+  F acceptance(F x, F y) const {
+    F z_r=((R_+y)*L_h_+2.0*x*R_)/(R_-y);
+    F phi_l,phi_r;
+    if(z_r<L_h_) 
+      phi_l=atan( (L_h_+x)/(R_-y) );
+    else
+      phi_l=atan( (L_h_-x)/(R_+y) );
+    
+    F z_l=(-(R_+y)*L_h_+2.0*x*R_)/(R_-y);
+
+    if(z_l>-L_h_) 
+      phi_r=atan( (L_h_-x)/(R_-y) );
+    else
+      phi_r=atan( (L_h_+x)/(R_+y) );
+    
+
+    return (phi_r+phi_l)/M_PI;
+  }
+
+
   typedef F float_t;
   
 private:
