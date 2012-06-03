@@ -29,8 +29,10 @@ glm::mat4 mvp_mat;
 #include"topet_simulator.h"
 #include"detector_view.h"
 #include"phantom_view.h"
+#include"event_view.h"
 
 
+bool event_mode=false;
 
 void ChangeSize(int w, int h) {
 
@@ -56,6 +58,7 @@ DensityPlot *density_plot;
 GeometryPlot *geometry_plot;
 DetectorView<GLfloat> *detector_view;
 PhantomView *phantom_view;
+EventView<GLfloat> *event_view;
 
 #include"tof_event.h"
 #include"tof_detector.h"
@@ -120,7 +123,12 @@ void SetupRC() {
 
   detector_view=new DetectorView<GLfloat>(geometry_plot,simulator.detector());
   phantom_view=new PhantomView(geometry_plot,simulator.phantom());
-  
+  event_view = new EventView<GLfloat>(geometry_plot, simulator.detector(),
+				      simulator.tof_begin(),
+				      simulator.tof_end(),
+				      simulator.detected_begin()
+				      );
+				      
 }
 
 
@@ -138,7 +146,28 @@ void keyboardHandler(unsigned char pressed,int x, int y) {
     density_plot->set_pixmap(simulator.emitted_density());    
     glutPostRedisplay();
     break;
+  case 'd':  
+    density_plot->set_pixmap(simulator.detected_density());    
+    glutPostRedisplay();
+    break;
+  case 'v':
+    event_mode=!event_mode;
+    glutPostRedisplay();
+    break;
+  case 'n':
+    if(event_mode) {
+      ++(*event_view);
+      glutPostRedisplay();
+    }
+    break;
+  case '2':
+    if(event_mode) {
+      event_view->togle_two_sets_mode();
+      glutPostRedisplay();
+    }
+    break;
   case 'x':  
+  case 'q':  
     exit(0);
     break;
   }
@@ -163,9 +192,13 @@ void RenderScene() {
 
   phantom_view->render();
   detector_view->render();
+  if(event_mode)
+    event_view->render();
   
   geometry_plot->renderEnd();
 
+  
+  
   glutSwapBuffers();
 
 }

@@ -14,6 +14,7 @@ public:
   typedef ToF_Track_2D<F> track_t;
   typedef Point<F> point_t;
   typedef ToF_Detector_2D<F> detector_t;
+  typedef typename std::vector<event_t>::const_iterator const_iterator;
 
   void init() {
     
@@ -36,9 +37,9 @@ public:
 
 
     phantom_ = new Phantom;
-    phantom_->addRegion(0.0,   0.0,100.0,200.0,0.0,  0.25);
-    phantom_->addRegion(0.0,-100.0, 50.0, 70.0,M_PI/3.0,0.50); 
-    phantom_->addRegion(20,150,10,17,M_PI/4.0,0.80);
+    phantom_->addRegion(0.0,   0.0,200.0,100.0,0.0,  0.25);
+    phantom_->addRegion(-100.0,0.0, 50,70.0,M_PI/3.0,0.50); 
+    phantom_->addRegion(150,20,10,17,M_PI/4.0,0.80);
     fov_ll_x_=-250.0;
     fov_ll_y_=-250.0;
     
@@ -83,26 +84,46 @@ public:
 
     F max=emitted_density_->max();
     emitted_density_->divide_by(max);
-
-    tof_events_.clear();
-    tof_events_.resize(n_emitted_events);
+    
+    detected_events_.clear();
+    detected_events_.resize(n_emitted_events);
     
     std::cerr<<"adding  noise "<<std::endl;
-    int n_detected_events = 
-      mc_->add_noise_to_detected(
-				 emitted_events_.begin(),
-				 emitted_events_.begin()+n_emitted_events,
-				 tof_events_.begin()
-				 );
-    std::cerr<<"added   noise to "<<n_detected_events<<std::endl;
+    typename std::vector<event_t>::iterator it=detected_events_.begin();
+    int n_detected_events=0;
+    for(int i=0;i<n_emitted_events;i++) {
+      if(detector_->detected(emitted_events_[i])) {
+	(*it)=emitted_events_[i];
+	++it;
+	n_detected_events++;
+      }
+    }
+    detected_density_->insert(detected_events_.begin(),n_detected_events);
+    
+    
+    F detected_max=detected_density_->max();
+    detected_density_->divide_by(max);
+   
+    tof_events_.clear();
+    tof_events_.resize(n_detected_events);
+    
+    std::cerr<<"adding  noise "<<std::endl;
 
+
+    mc_->add_noise(
+		   detected_events_.begin(),
+		   detected_events_.begin()+n_detected_events,
+		   tof_events_.begin()
+		   );
+    std::cerr<<"added   noise to "<<n_detected_events<<std::endl;
+    
     std::cerr<<"inserting "<<n_detected_events<<" events in tof"<<std::endl;
     tof_density_->insert(tof_events_.begin(),n_detected_events);
     std::cerr<<"inserted "<<n_detected_events<<" events in tof"<<std::endl;
-
+    
     F tof_max=tof_density_->max();
     tof_density_->divide_by(tof_max);
-
+    
 
   }
   
@@ -147,9 +168,24 @@ public:
 
   
   const  F *emitted_density() {return emitted_density_->pixels();}
-  const  F *detected_density() {return _density_->pixels();}
+  const  F *detected_density() {return detected_density_->pixels();}
   const  F *tof_density() {return tof_density_->pixels();}
   const  F *acceptance_density() {return acceptance_density_->pixels();}
+
+
+  const_iterator emitted_begin() {return emitted_events_.begin();}
+  const_iterator emitted_end() {return emitted_events_.end();}
+
+  const_iterator detected_begin() {return detected_events_.begin();}
+  const_iterator detected_end() {return detected_events_.end();}
+
+  const_iterator tof_begin() {return tof_events_.begin();}
+  const_iterator tof_end() {return tof_events_.end();}
+
+  ~TOPETSimulator() {
+    delete detector_;
+    delete phantom_;
+  }
 
 private:
 

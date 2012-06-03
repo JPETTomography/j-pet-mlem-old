@@ -7,13 +7,15 @@
 template<typename F>
 class ToF_Detector_2D {
 public:
-
+  typedef F float_t;
   typedef ToF_Track_2D<F> track_t;
   typedef ToF_Event_2D<F> event_t;
 
 
  ToF_Detector_2D(F R, F L):R_(R),L_(L),L_h_(L/2.0) {};
   
+  F R() const {return R_;}
+  F L() const {return L_;}
 
   F sigma_x() const {return sigma_x_;}
   F sigma_l() const {return sigma_l_;}
@@ -77,7 +79,7 @@ public:
   }
 
 
-  typedef F float_t;
+  
   
 private:
   F R_;

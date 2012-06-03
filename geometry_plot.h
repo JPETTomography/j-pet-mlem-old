@@ -6,8 +6,7 @@ class GeometryPlot  {
 public:
   GeometryPlot():
     mvp_matrix_uniform_("mvp_matrix"),
-    start_color_uniform("start_color"),
-    end_color_uniform("end_color") {
+    color_uniform_("color") {
 
     std::cerr<<"creating density plot"<<std::endl;
     std::cerr<<"creating shader"<<std::endl;
@@ -19,12 +18,17 @@ public:
     mvp_matrix_uniform_.add_shader(
 				   shader_->shader()
 				   );
+    color_uniform_.add_shader(
+			      shader_->shader()
+			      );
     std::cerr<<"created geometry plot"<<std::endl;
+    color_=glm::vec4(0,0,0,1);
   };
 
 
-  void set_mv_matrix(glm::mat4 mv) {
-    mv_=mv;
+  void set_color(glm::vec4 color) {
+    color_=color;
+    
   }
 
   void set_mvp_matrix(glm::mat4 mvp) {
@@ -44,6 +48,7 @@ public:
     std::cerr<<"load mvp uniform"<<std::endl;
     mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
 					glm::value_ptr(mvp_));
+    color_uniform_.load_concrete(shader_->shader(),glm::value_ptr(color_));
   }
 
   void drawCircle(GLfloat r) {
@@ -80,6 +85,7 @@ public:
     std::cerr<<M<<std::endl;
      mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
 					glm::value_ptr(M));
+     color_uniform_.load_concrete(shader_->shader(),glm::value_ptr(color_));
      drawCircle(1);
      if(filled) 
        drawDisk(1);
@@ -88,6 +94,7 @@ public:
   }
 
   void renderZYLine(GLfloat z1, GLfloat y1,GLfloat z2, GLfloat y2) {
+    color_uniform_.load_concrete(shader_->shader(),glm::value_ptr(color_));
     glBegin(GL_LINE_STRIP);
     glVertex3f(0.0f,y1,z1);
     glVertex3f(0.0f,y2,z2);
@@ -95,6 +102,7 @@ public:
   }
 
   void renderZYPoint(GLfloat z1, GLfloat y1) {
+    color_uniform_.load_concrete(shader_->shader(),glm::value_ptr(color_));
     glBegin(GL_POINTS);
     glVertex3f(0.0f,y1,z1);
     glEnd();
@@ -113,6 +121,7 @@ public:
     std::cerr<<M<<std::endl;
      mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(),
 					glm::value_ptr(M));
+    color_uniform_.load_concrete(shader_->shader(),glm::value_ptr(color_));
      drawCircle(1);
      if(filled)
        drawDisk(1);
@@ -124,6 +133,7 @@ public:
   void renderZYRectangle(GLfloat ll_z, GLfloat ll_y, GLfloat ur_z, GLfloat ur_y, 
 			 GLfloat theta =0,bool filled=false) {
     std::cerr<<"rendering rectangle"<<std::endl;
+    color_uniform_.load_concrete(shader_->shader(),glm::value_ptr(color_));
     GLfloat degree_theta=180.0*theta/M_PI;
     GLfloat a=ur_z-ll_z;
     GLfloat b=ur_y-ll_y;
@@ -171,11 +181,10 @@ private:
   GLint current_shader_;
   UniformMatrix<4,4> mvp_matrix_uniform_;
   
-  UniformVector<GLfloat,4> start_color_uniform;
-  UniformVector<GLfloat,4> end_color_uniform;
+  UniformVector<GLfloat,4> color_uniform_;
   glm::mat4 mvp_;
   glm::mat4 mv_;
-
+  glm::vec4 color_;
   
 };
 
