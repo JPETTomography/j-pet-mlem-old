@@ -150,6 +150,10 @@ void keyboardHandler(unsigned char pressed,int x, int y) {
     density_plot->set_pixmap(simulator.detected_density());    
     glutPostRedisplay();
     break;
+  case 'c':  
+    density_plot->set_pixmap(simulator.corrected_density());    
+    glutPostRedisplay();
+    break;
   case 'v':
     event_mode=!event_mode;
     glutPostRedisplay();
