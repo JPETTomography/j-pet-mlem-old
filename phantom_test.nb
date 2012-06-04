@@ -1,0 +1,79 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[      1830,         69]
+NotebookOptionsPosition[      1524,         53]
+NotebookOutlinePosition[      1861,         68]
+CellTagsIndexPosition[      1818,         65]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"Disk", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"1", ",", "1"}], "}"}], ",", "2"}], "]"}], ",", "Red", ",", 
+    RowBox[{"Rotate", "[", 
+     RowBox[{
+      RowBox[{"Disk", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"0", ",", "1"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"1", ",", 
+          RowBox[{"1", "/", "2"}]}], "}"}]}], "]"}], ",", 
+      RowBox[{"Pi", "/", "3"}]}], "]"}]}], "}"}], "//", "Graphics"}]], "Input",\
+
+ CellChangeTimes->{{3.547645619527514*^9, 3.547645752290012*^9}}],
+
+Cell[BoxData[
+ GraphicsBox[{DiskBox[{1, 1}, 2], 
+   {RGBColor[1, 0, 0], 
+    GeometricTransformationBox[
+     DiskBox[{0, 1}, NCache[{1, Rational[1, 2]}, {1, 0.5}]], {{{
+      0.5, -0.8660254037844386}, {0.8660254037844386, 0.5}}, 
+      Center}]}}]], "Output",
+ CellChangeTimes->{{3.547645635051131*^9, 3.547645753267878*^9}}]
+}, Open  ]]
+},
+WindowSize->{740, 867},
+WindowMargins->{{147, Automatic}, {Automatic, 29}},
+FrontEndVersion->"8.0 for Linux x86 (32-bit) (November 7, 2010)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[579, 22, 599, 19, 50, "Input"],
+Cell[1181, 43, 327, 7, 374, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+
