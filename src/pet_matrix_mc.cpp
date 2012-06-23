@@ -15,10 +15,12 @@ namespace po = boost::program_options;
 
 main(int argc, char *argv[]) {
 
+  int n_emissions;
   po::options_description desc("Allowed options");
   desc.add_options()
     ("n-pixels,n", po::value<int>(), "set number of  rind scanners")
-    ("n-detectors,d", po::value<int>(), "set number of pixels in one dimension");
+    ("n-detectors,d", po::value<int>(), "set number of pixels in one dimension")    ("n-emissions,e", po::value<int>(&n_emissions)->default_value(1000000), "emissions per pixel");
+
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm); 
@@ -49,7 +51,7 @@ main(int argc, char *argv[]) {
     for(int i=0;i<max_lors;++i)
       p[i]=0.0;
 
-    fill_pixel(pix,detector.n_detectors(),p,1000000);
+    fill_pixel(pix,detector.n_detectors(),p,n_emissions);
 
 
     Row<Pixel<int,double>, double> *pixel_row=row_from_array(pix,p,detector.n_detectors(),max_lors);

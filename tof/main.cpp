@@ -116,7 +116,7 @@ void SetupRC() {
 
   simulator.init();
   //simulator.simulate_from_single_point(100000);
-  simulator.simulate_from_phantom(10000000,true);
+  simulator.simulate_from_phantom(10000000);
   density_plot->set_pixmap(simulator.emitted_density());
   
   geometry_plot=new GeometryPlot;
@@ -148,10 +148,6 @@ void keyboardHandler(unsigned char pressed,int x, int y) {
     break;
   case 'd':  
     density_plot->set_pixmap(simulator.detected_density());    
-    glutPostRedisplay();
-    break;
-  case 'c':  
-    density_plot->set_pixmap(simulator.corrected_density());    
     glutPostRedisplay();
     break;
   case 'v':
@@ -194,7 +190,7 @@ void RenderScene() {
   geometry_plot->set_mvp_matrix(mvp_mat);
   geometry_plot->renderStart();
 
-  //phantom_view->render();
+  phantom_view->render();
   detector_view->render();
   if(event_mode)
     event_view->render();

@@ -1,6 +1,7 @@
 #ifndef __TOF_DETECTOR_H__
 #define __TOF_DETECTOR_H__
 
+#include"tausworthe.h"
 #include"tof_event.h"
 
 template<typename F>

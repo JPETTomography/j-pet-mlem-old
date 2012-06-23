@@ -7,10 +7,6 @@
 #include"tof_detector.h"
 #include"phantom.h"
 
-template<typename G> void sc(G x, G *s , G *c) ;
-template<> void sc<double>(double x, double *s , double *c) {sincos(x,s,c);}
-template<> void sc<float>(float x, float *s , float *c) {sincosf(x,s,c);}
-
 
 template<typename F,  typename  D> class ToF_Monte_Carlo  {
 public:
@@ -20,6 +16,9 @@ public:
   
   void gen_seeds(unsigned long seed) {taus_.gen_seeds(seed);}
 
+  template<typename G> void sc(G x, G *s , G *c) ;
+  template<> void sc<double>(double x, double *s , double *c) {sincos(x,s,c);}
+  template<> void sc<float>(float x, float *s , float *c) {sincosf(x,s,c);}
 
   ToF_Track_2D<F> add_noise(const  ToF_Track_2D<F> &track,int gen = 0) {
     F r1=taus_.rnd(gen);

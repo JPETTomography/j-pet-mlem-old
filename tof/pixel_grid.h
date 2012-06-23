@@ -35,30 +35,6 @@ public:
   };
 
 
-  PixelGrid(const PixelGrid &org): 
-    nx_(org.nx()),ny_(org.ny()),
-    n_(nx_*ny_),  pixels_(nx_*ny_){
-    Point<F> ll=org.ll();
-    Point<F> ur=org.ur();
-    
-    ll_x_=ll.x;
-    ll_y_=ll.y;
-    ur_x_=ur.x;
-    ur_y_=ur.y;
-
-    for(int i=0;i<n_;i++) {
-      pixels_[i]=org.pixels_[i];
-    }
-  }
-
-  void operator=(const PixelGrid &org) {
-    
-    for(int i=0;i<n_;i++) {
-      pixels_[i]=org.pixels_[i];
-      //std::cerr<<"copying "<<pixels_[i]<<" "<<org.pixels_[i]<<std::endl;
-    }
-  }
-
   I nx() const {return nx_;}
   I ny() const {return ny_;}
 
@@ -149,12 +125,7 @@ void insert(In first, int n ,F w=(F)1.0) {
       pixels_[i]/=d;
     }
   }
-void divide_by(const PixelGrid &rhs )  {
-    for(int i=0;i<n_;i++) {
-      if(rhs.pixels_[i]>0.0)
-	pixels_[i]/=rhs.pixels_[i];
-    }
-  }
+
   const F *pixels() const {return &pixels_[0];}
 
 private:
