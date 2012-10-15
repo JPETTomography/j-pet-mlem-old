@@ -1,6 +1,7 @@
 #pragma once
 
-void sincos(double a, double &s, double &c) {
+template <typename F>
+void sincos(F a, F &s, F &c) {
   s = sin(a);
   c = cos(a);
 };

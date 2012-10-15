@@ -18,8 +18,8 @@ TSRC := $(filter %_test.cpp, $(SRC))
 SRC  := $(filter-out %_test.cpp, $(SRC))
 OBJ  := $(SRC:.cpp=.o)
 TOBJ := $(TSRC:.cpp=.o)
-DEP  := $(SRC:.cpp=.dep)
-TDEP := $(TSRC:.cpp=.dep)
+DEP  := $(SRC:.cpp=.d)
+TDEP := $(TSRC:.cpp=.d)
 BIN  := pet_matric_mc
 
 all: $(BIN)
