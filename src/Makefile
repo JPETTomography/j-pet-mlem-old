@@ -1,9 +1,16 @@
 ifneq ($(CC),icc)
-CXXFLAGS := -g -O3
+CPPFLAGS := -g -O3
 else
 CXX=icpc
 CPPFLAGS := -g -fast
 endif
+
+CXXFLAGS += -std=c++11
+# disabled until I get libc++ compiled boost here
+# ifeq ($(shell uname -s),Darwin)
+# CXXFLAGS += -stdlib=libc++
+# LDFLAGS  += -stdlib=libc++
+# endif
 
 ifdef OMP
 CPPFLAGS += -fopenmp

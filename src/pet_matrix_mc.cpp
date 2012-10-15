@@ -57,13 +57,13 @@ int main(int argc, char *argv[]) {
   double *p = new double[max_lors];
 
   for (int ipix = 0; ipix<probability_matrix.octant_size(); ++ipix) {
-    Pixel<int, double> pix = probability_matrix.octant(ipix);
+    auto pix = probability_matrix.octant(ipix);
 
     for (int i = 0; i<max_lors; ++i) p[i]=0.0;
 
     fill_pixel(pix, detector.n_detectors(), p,n_emissions);
 
-    Row<Pixel<int, double>, double> *pixel_row = row_from_array(pix, p,detector.n_detectors(), max_lors);
+    auto pixel_row = row_from_array(pix, p,detector.n_detectors(), max_lors);
 
     probability_matrix.push_back_row(pixel_row);
     std::cout << *pixel_row;

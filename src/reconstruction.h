@@ -74,9 +74,8 @@ template<typename P, typename F>
 std::ostream &operator << (std::ostream &out, const Row<P, F> &r) {
   out << "pixel " << r.pixel_.i_x() << " " << r.pixel_.i_y();
   out << " " << r.pixel_.x() << " " << r.pixel_.y() << " " << r.row_.size() << "\n";
-  typename std::vector<Lor<typename P::short_t, F> >::const_iterator it = r.row_.begin();
-  for(; it!=r.row_.end(); ++it)
-    out << (*it).first << " " << (*it).second << " " << (*it).count << "\n";
+  for(auto it: r.row_)
+    out << it.first << " " << it.second << " " << it.count << "\n";
   out << std::flush;
   return out;
 }
@@ -134,8 +133,8 @@ public:
 
   size_t fwrite(FILE *fout) const {
     size_t size_w = 0;
-    for(typename std::vector<Row<pixel_t, F> *>::const_iterator it = matrix_.begin(); it!=matrix_.end(); ++it) {
-      size_w+=(*it)->fwrite(fout);
+    for(auto it: matrix_) {
+      size_w+=it->fwrite(fout);
     }
     return size_w;
   }
