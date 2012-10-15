@@ -35,7 +35,7 @@ private:
 template<typename P, typename F> class Row;
 
 template<typename P, typename F>
-std::ostream &operator<<(std::ostream &out, const Row<P, F> &r);
+std::ostream &operator << (std::ostream &out, const Row<P, F> &r);
 
 template<typename P, typename F> class Row {
 public:
@@ -71,13 +71,13 @@ private:
 };
 
 template<typename P, typename F>
-std::ostream &operator<<(std::ostream &out, const Row<P, F> &r) {
-  out<<"pixel "<<r.pixel_.i_x()<<" "<<r.pixel_.i_y();
-  out<<" "<<r.pixel_.x()<<" "<<r.pixel_.y()<<" "<<r.row_.size()<<"\n";
+std::ostream &operator << (std::ostream &out, const Row<P, F> &r) {
+  out << "pixel " << r.pixel_.i_x() << " " << r.pixel_.i_y();
+  out << " " << r.pixel_.x() << " " << r.pixel_.y() << " " << r.row_.size() << "\n";
   typename std::vector<Lor<typename P::short_t, F> >::const_iterator it = r.row_.begin();
   for(; it!=r.row_.end(); ++it)
-    out<<(*it).first<<" "<<(*it).second<<" "<<(*it).count<<"\n";
-  out<<std::flush;
+    out << (*it).first << " " << (*it).second << " " << (*it).count << "\n";
+  out << std::flush;
   return out;
 }
 
