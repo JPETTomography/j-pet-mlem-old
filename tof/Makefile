@@ -31,7 +31,7 @@ CXXFLAGS += -I../lib/log4cxx/include
 LDFLAGS  += -L../lib/log4cxx/src/.libs
 LDFLAGS  += -llog4cxx
 ifneq ($(PLATFORM),Darwin)
-LDFLAGS  += -lglut
+LDFLAGS  += -lglut -lGL -lGLEW
 else
 LDFLAGS  += -lxml2
 LDFLAGS  += -framework OpenGL

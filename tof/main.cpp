@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #ifndef __APPLE__
+  #include <GL/glew.h>
   #include <GL/gl.h>
   #include <GL/glut.h>
 #else
