@@ -5,6 +5,40 @@
 #include"tof_monte_carlo.h"
 #include"pixel_grid.h"
 
+#if 0
+template<typename F,typename In>
+class Emitter {
+public:
+  
+  virtual int fill_with_events( In first,int n_tries)=0;
+
+};
+
+
+template<typename F,typename In>
+class PhantomEmmiter: public Emitter<F,In> {
+public:
+  
+  virtual int fill_with_events( In first,int n_tries) {
+    mc_->fill_with_events_from_phantom(emitted_events_.begin(), phantom_,
+				       fov_ll_x_,
+				       fov_ll_y_,
+				       fov_ur_x_,
+				       fov_ur_y_, 
+				       n
+				       );
+  }
+
+private:
+  Phantom *phantom_;
+  ToF_Monte_Carlo *mc_;
+  F fov_ll_x_;
+  F fov_ll_y_;
+  F fov_ur_x_;
+  F fov_ur_y_;
+};
+#endif
+
 
 template<typename F> class TOPETSimulator {
 
@@ -65,19 +99,43 @@ public:
    detector_t *detector()  {return detector_;}
    Phantom *phantom()  {return phantom_;}
 
-  void simulate_from_phantom(int n) {
+
+  void simulate_from_phantom(int n,  bool single=false) {
     std::cerr<<"simulating "<<n<<" events"<<std::endl;
     emitted_events_.clear();
     emitted_events_.resize(n);
 
 
-    int n_emitted_events=mc_->fill_with_events_from_phantom(emitted_events_.begin(), phantom_,
-				      fov_ll_x_,
-				      fov_ll_y_,
-				      fov_ur_x_,
-				      fov_ur_y_, 
-				      n
-				      );
+    int n_emitted_events;
+    if(!single) 
+     n_emitted_events= mc_->fill_with_events_from_phantom(
+					 emitted_events_.begin(), 
+					 phantom_,
+					 fov_ll_x_,
+					 fov_ll_y_,
+					 fov_ur_x_,
+					 fov_ur_y_, 
+					 n
+					 );
+    else {
+      n_emitted_events= 
+	mc_->fill_with_events_from_single_point( emitted_events_.begin(),
+						 0,0,n/4);
+      
+      n_emitted_events+= 
+	mc_->fill_with_events_from_single_point( emitted_events_.begin()+n_emitted_events,
+						 100,100,n/4);
+      n_emitted_events+= 
+	mc_->fill_with_events_from_single_point( emitted_events_.begin()+n_emitted_events,
+						 200,0,n/4);
+
+      n_emitted_events+= 
+	mc_->fill_with_events_from_single_point( emitted_events_.begin()+n_emitted_events,
+						 -50,70,n/4);
+  
+  
+  							 
+    }
     
     std::cerr<<"emited "<<n_emitted_events<<" events"<<std::endl;
     
