@@ -5,3 +5,4 @@ pubs/*.log
 pubs/*.pdf
 pubs/*.synctex.gz
 src/pet_matrix_mc
+tof/tof
