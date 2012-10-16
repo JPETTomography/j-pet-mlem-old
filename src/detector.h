@@ -6,20 +6,20 @@
 
 template<typename S, typename F> class Ring2DDetector {
 public:
-  Ring2DDetector(S n_detectors, S n_pixels):
-    n_detectors_(n_detectors),
-    n_pixels_x_(n_pixels),
-    n_pixels_y_(n_pixels),
-    pixel_size_x_(2.0/n_pixels),
-    pixel_size_y_(2.0/n_pixels),
-    radius_(sqrt(2.0)) {}
+  Ring2DDetector(S n_detectors, S n_pixels)
+  : n_detectors_(n_detectors)
+  , n_pixels_x_(n_pixels)
+  , n_pixels_y_(n_pixels)
+  , pixel_size_x_(2.0/n_pixels)
+  , pixel_size_y_(2.0/n_pixels)
+  , radius_(sqrt(2.0)) {}
 
-  S n_detectors() const {return n_detectors_; }
-  S n_pixels_x() const {return n_pixels_x_; }
-  S n_pixels_y() const {return n_pixels_y_; }
-  F pixel_size_x() const {return pixel_size_x_; }
-  F pixel_size_y() const {return pixel_size_y_; }
-  F radius() const {return radius_; }
+  S n_detectors()  const { return n_detectors_; }
+  S n_pixels_x()   const { return n_pixels_x_; }
+  S n_pixels_y()   const { return n_pixels_y_; }
+  F pixel_size_x() const { return pixel_size_x_; }
+  F pixel_size_y() const { return pixel_size_y_; }
+  F radius()       const { return radius_; }
 
 private:
   S n_detectors_;

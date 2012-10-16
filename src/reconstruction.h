@@ -141,7 +141,7 @@ public:
 
 private:
   Ring2DDetector<S, F> scanner_;
-  std::vector<pixel_t > octant_;
+  std::vector<pixel_t> octant_;
   std::vector<Row<pixel_t, F> *> matrix_;
 };
 
