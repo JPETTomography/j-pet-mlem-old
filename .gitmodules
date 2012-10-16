@@ -1,3 +1,6 @@
 [submodule "lib/glm"]
 	path = lib/glm
 	url = https://github.com/Groovounet/glm
+[submodule "lib/OpenGL2.0"]
+	path = lib/OpenGL2.0
+	url = sorbus.if.uj.edu.pl:/var/git/OpenGL2.0.git
