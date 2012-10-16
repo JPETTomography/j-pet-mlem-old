@@ -25,7 +25,7 @@ public:
       two_sets_mode_ = !two_sets_mode_;
   }
   void operator++() {
-    if(first_! = last_) {
+    if(first_ != last_) {
       ++first_;
       if(two_sets_)
   ++first2_;

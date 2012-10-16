@@ -1,9 +1,12 @@
-#ifndef __PHANTOM_H__
-#define __PHANTOM_H__
+#pragma once
 
 #include <cmath>
-
 #include <vector>
+
+#ifdef __APPLE__
+void sincos(double a, double *s, double *c) { *s = sin(a);  *c = cos(a);  };
+void sincosf(float a, float *s,  float *c)  { *s = sinf(a); *c = cosf(a); };
+#endif
 
 class EllipticalRegion {
  public:
@@ -67,7 +70,7 @@ class Phantom {
   }
   double activity(double x, double y) const {
     container::const_reverse_iterator rit = regions_.rbegin();
-    for(;rit! = regions_.rend();++rit) {
+    for(;rit != regions_.rend();++rit) {
 
       if((*rit)->in(x, y)) {
   return (*rit)->activity();
@@ -84,7 +87,7 @@ class Phantom {
   const_iterator end() const {return regions_.end();}
   ~Phantom() {
     container::iterator rit = regions_.begin();
-    for(;rit! = regions_.end();++rit) {
+    for(;rit != regions_.end();++rit) {
       delete (*rit);
     }
   }
@@ -95,5 +98,3 @@ private:
 
   container regions_;
 };
-
-#endif

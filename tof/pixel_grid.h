@@ -74,8 +74,8 @@ public:
 
 template<typename In>
 void insert(In first, In last, F w = (F)1.0) {
-  for(;first! = last;++first)
-    add(in(first->z(), firts.y()), w);
+  for(;first != last;++first)
+    add(in(first->z(), first.y()), w);
   }
 
 template<typename In>
@@ -105,7 +105,7 @@ void insert(In first, int n, F w = (F)1.0) {
   F sum() const {
     F sum = (F)0.0;
     for(int i = 0;i<n_;i++) {
-      sum += pixels_[i]);
+      sum += pixels_[i];
     }
   }
 

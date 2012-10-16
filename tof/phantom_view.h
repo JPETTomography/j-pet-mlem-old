@@ -9,7 +9,7 @@ public:
 
   void render() {
     Phantom::const_iterator it = phantom_->begin();
-    for(;it! = phantom_->end();++it) {
+    for(;it != phantom_->end();++it) {
       std::cerr << "next region " << std::endl;
       std::cerr << "x " << (*it)->x() << std::endl;
       gp_->renderZYEllipse((*it)->x(), (*it)->y(), (*it)->a(), (*it)->b(), (*it)->phi()

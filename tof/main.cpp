@@ -3,9 +3,14 @@
 
 #include <stdio.h>
 
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glut.h>
+#ifndef __APPLE__
+  #include <GL/gl.h>
+  #include <GL/glut.h>
+#else
+  #include <OpenGL/gl.h>
+  #include <GLUT/glut.h>
+#endif
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -169,17 +174,16 @@ main(int argc, char *argv[]) {
 
   set_root_logger("tof");
   glutInit(&argc, argv);
+#ifndef __APPLE__
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
+#else
+  glutInitDisplayString("double rgba depth>=16 stencil profile=32");
+#endif
   glutInitWindowSize(600, 600);
   glutCreateWindow("ToF");
   glutReshapeFunc(ChangeSize);
   glutDisplayFunc(RenderScene);
   glutKeyboardFunc(keyboardHandler);
-
-  GLenum err = glewInit();
-  if (GLEW_OK ! = err) {
-        fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
-  }
   SetupRC();
   glutMainLoop();
 

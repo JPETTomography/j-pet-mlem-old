@@ -1,9 +1,12 @@
 #pragma once
 
-#include <GL/glew.h>
-#include <GL/gl.h>
+#ifndef __APPLE__
+  #include <GL/gl.h>
+#else
+  #include <OpenGL/gl.h>
+#endif
 
-#include "Uniform.h"
+// #include "Uniform.h"
 
 class DensityPlot  {
 public:
