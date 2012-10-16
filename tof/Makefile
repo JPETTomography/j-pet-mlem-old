@@ -1,64 +1,45 @@
-
-ifeq "$(strip $(COMPILER))" "gcc"
-CC=g++
-CXX=g++
-CXXFLAGS+=-O3 -g
+ifneq ($(CC),icc)
+CPPFLAGS := -g -O3
 else
-CC=icc -DGTEST_HAS_TR1_TUPLE=0
-CXX=icpc -DGTEST_HAS_TR1_TUPLE=0
-#CXXFLAGS+=-O1 -g
-CXXFLAGS+=-fast -g
+CXX=icpc
+CPPFLAGS := -g -fast
 endif
-LD=$(CXX)
-DP=$(CXX) -MM
 
-SED=sed
-MV=mv
-
-ifdef OPENMP
-ifeq "$(strip $(COMPILER))" "gcc"
-CXXFLAGS+=-fopenmp
-LDFLAGS +=-fopenmp
-else
-CXXFLAGS+=-openmp
-LDFLAGS +=-openmp
+CXXFLAGS += -std=c++11
+ifeq ($(shell uname -s),Darwin)
+CXXFLAGS += -stdlib=libc++
+LDFLAGS  += -stdlib=libc++
 endif
+
+ifdef OMP
+CPPFLAGS += -fopenmp
+LDFLAGS  += -fopenmp
 endif
-LDFLAGS+=-lboost_program_options
-CXXFLAGS+=-I$(HOME)/downloads/gtest-1.6.0/
-CXXFLAGS+=-I$(HOME)/PROJECTS/OpenGL2.0/src/SSG/
-CXXFLAGS+=-I$(HOME)/PROJECTS/OpenGL2.0/src/OGLUtils/
-VPATH=$(HOME)/downloads/gtest-1.6.0/src
-VPATH+=$(HOME)/PROJECTS/OpenGL2.0/src/SSG/
-VPATH+=$(HOME)/PROJECTS/OpenGL2.0/src/OGLUtils/
 
-PREP_C =  perl -pe 's!(${notdir $*})\.o[ :]*!${dir $*}$$1.o $@ : !g' > $@
+CPPFLAGS += -MMD
+LDFLAGS  += -lboost_program_options
 
-LDFLAGS+= -lglut -llog4cxx -lGLEW
+CXXFLAGS += -I$(HOME)/downloads/gtest-1.6.0/
+CXXFLAGS += -I$(HOME)/PROJECTS/OpenGL2.0/src/SSG/
+CXXFLAGS += -I$(HOME)/PROJECTS/OpenGL2.0/src/OGLUtils/
 
-define make-depend
-	$(DP) $(CFLAGS) $(CXXFLAGS) $1 | \
-	perl -pe 's!(${notdir $2})[ :]*!${dir $2}$$1 $3 : !g' > $3.tmp
-	$(MV) $3.tmp $3
-endef
+LDFLAGS  += -lglut -llog4cxx -lGLEW
 
-%.o: %.cpp
-	$(call make-depend, $<, $@, $(subst .o, .d, $@))
-	$(CXX) -c $(CXXFLAGS) -o $@ $<
-MAIN=main.o
-#OBJECTS= sweep.o random.o
-OBJECTS=Uniform.o Light.o Shader.o logger.o glutils.o glmutils.o
-TESTS_OBJECTS=$(subst .cpp, .o, $(wildcard *_test.cpp)) gtest-all.o
+MAIN          := main.o
+OBJECTS       := Uniform.o Light.o Shader.o logger.o glutils.o glmutils.o
+TESTS_OBJECTS := $($(wildcard *_test.cpp):.cpp=.o) gtest-all.o
 
-DEPEND=$(subst .o, .d, $(MAIN)) $(subst .o, .d, $(OBJECTS)) $(subst .o, .d, $(TESTS_OBJECTS))
+DEPEND := $(MAIN:.o=.d) $(OBJECTS:.o=.d) $(TESTS_OBJECTS:.o=.d)
+
+all: tof
 
 -include $(DEPEND)
 
 tof: $(MAIN) $(OBJECTS)
-	$(LD) $(LDFLAGS) -o $@  $^
+	$(CXX) $(LDFLAGS) -o $@ $^
 
 test: $(OBJECTS) $(TESTS_OBJECTS)
-	$(LD) $(LDFLAGS) -o test  $^  -lpthread
+	$(CXX) $(LDFLAGS) -o test $^ -lpthread
 
 clean:
 	rm -f *.o *.d

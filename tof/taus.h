@@ -45,33 +45,33 @@ private:
   unsigned *seeds_;
 
 void taus_step(unsigned &z, int S1, int S2, int S3, unsigned M) {
-    unsigned b=(((z << S1)^z)>>S2);
-    z=(((z &M) << S3)^b);
+    unsigned b = (((z << S1)^z)>>S2);
+    z = (((z &M) << S3)^b);
   }
 
 void LCG_step(unsigned &z, unsigned A, unsigned C) {
-    z=(A*z+C);
+    z = (A*z+C);
   }
 };
 
 void taus_array::gen_seeds(long seed) {
   srand48(seed);
-  for(int i=0;i<4*n_generators_;++i) {
+  for(int i = 0;i<4*n_generators_;++i) {
     unsigned r;
-    while( (r=lrand48()) < 128) {};
-    seeds_[i]=r;
+    while( (r = lrand48()) < 128) {};
+    seeds_[i] = r;
   }
 }
 
 void taus_array::set_seeds(const unsigned   *seed) {
-  for(int i=0;i<4*n_generators_;++i) {
-    seeds_[i]=seed[i];
+  for(int i = 0;i<4*n_generators_;++i) {
+    seeds_[i] = seed[i];
   }
 }
 
 void taus_array::get_seeds(unsigned   *seed) const {
-  for(int i=0;i<4*n_generators_;++i) {
-    seed[i]=seeds_[i];
+  for(int i = 0;i<4*n_generators_;++i) {
+    seed[i] = seeds_[i];
   }
 }
 #endif

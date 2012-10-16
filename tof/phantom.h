@@ -11,20 +11,20 @@ class EllipticalRegion {
  EllipticalRegion(double x, double y, double a, double b, double phi, double act):
   x_(x), y_(y), a_(a), b_(b), phi_(phi), activity_(act) {
     sincos(phi, &sin_, &cos_);
-    inv_a2_=1.0/(a_*a_);
-    inv_b2_=1.0/(b_*b_);
+    inv_a2_ = 1.0/(a_*a_);
+    inv_b2_ = 1.0/(b_*b_);
   };
 
   double activity() const {return activity_;}
   bool in(double x, double y) const {
 
-    double dx=x-x_;
-    double dy=y-y_;
+    double dx = x-x_;
+    double dy = y-y_;
 
-    double r_x= dx * cos_+dy*sin_;
-    double r_y=-dx*sin_ +dy*cos_;
+    double r_x = dx * cos_+dy*sin_;
+    double r_y = -dx*sin_ +dy*cos_;
 
-    double r2=r_x*r_x*inv_a2_+r_y*r_y*inv_b2_;
+    double r2 = r_x*r_x*inv_a2_+r_y*r_y*inv_b2_;
 
     return r2<1.0;
 
@@ -66,8 +66,8 @@ class Phantom {
     regions_.push_back(new EllipticalRegion(x, y, a, b, phi, act));
   }
   double activity(double x, double y) const {
-    container::const_reverse_iterator rit=regions_.rbegin();
-    for(;rit!=regions_.rend();++rit) {
+    container::const_reverse_iterator rit = regions_.rbegin();
+    for(;rit! = regions_.rend();++rit) {
 
       if((*rit)->in(x, y)) {
   return (*rit)->activity();
@@ -83,8 +83,8 @@ class Phantom {
   const_iterator begin() const {return regions_.begin();}
   const_iterator end() const {return regions_.end();}
   ~Phantom() {
-    container::iterator rit=regions_.begin();
-    for(;rit!=regions_.end();++rit) {
+    container::iterator rit = regions_.begin();
+    for(;rit! = regions_.end();++rit) {
       delete (*rit);
     }
   }

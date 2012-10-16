@@ -8,8 +8,8 @@ protected:
   pixel_grid_test():
     ll(Point<>(-250, -200)), ur(Point<>(100, 50)), nx(70), ny(125), grid(ll, ur, nx, ny) {};
   virtual void SetUp() {
-    dx=5;
-    dy=2;
+    dx = 5;
+    dy = 2;
   }
 
 #if 1
@@ -24,15 +24,15 @@ protected:
 #endif
 };
 TEST_F(pixel_grid_test, point_index_set_test) {
-  double x=1.0;
-  double y=2.8;
+  double x = 1.0;
+  double y = 2.8;
   Point<> p(x, y);
 
   ASSERT_DOUBLE_EQ(x, p.x);
   ASSERT_DOUBLE_EQ(y, p.y);
 
-  int ix=10;
-  int iy=28;
+  int ix = 10;
+  int iy = 28;
   Index<> ind(ix, iy);
 
   ASSERT_EQ(ix, ind.x);
@@ -53,13 +53,13 @@ TEST_F(pixel_grid_test, index_test) {
 
 TEST_F(pixel_grid_test, center_test) {
   {
-    Point<> c=grid.center(0, 0);
+    Point<> c = grid.center(0, 0);
 
     ASSERT_DOUBLE_EQ(-247.5, c.x);
     ASSERT_DOUBLE_EQ(-199.0, c.y);
   }
   {
-    Point<> c=grid.center(50, 70);
+    Point<> c = grid.center(50, 70);
 
     ASSERT_DOUBLE_EQ(  2.5, c.x);
     ASSERT_DOUBLE_EQ(-59.0, c.y);
@@ -67,56 +67,56 @@ TEST_F(pixel_grid_test, center_test) {
 }
 TEST_F(pixel_grid_test, in_test) {
   {
-    Point<> c=grid.center(0, 0);
+    Point<> c = grid.center(0, 0);
 
     ASSERT_DOUBLE_EQ(-247.5, c.x);
     ASSERT_DOUBLE_EQ(-199.0, c.y);
 
-    Index<> ind=grid.in(c);
+    Index<> ind = grid.in(c);
     ASSERT_EQ(0, ind.x);
     ASSERT_EQ(0, ind.y);
 
   }
   {
-    Point<> c=grid.center(50, 70);
+    Point<> c = grid.center(50, 70);
 
     ASSERT_DOUBLE_EQ(  2.5, c.x);
     ASSERT_DOUBLE_EQ(-59.0, c.y);
 
-    Index<> ind=grid.in(c);
+    Index<> ind = grid.in(c);
     ASSERT_EQ(50, ind.x);
     ASSERT_EQ(70, ind.y);
 
   }
 
     {
-    Point<> c=grid.center(0, 0);
+    Point<> c = grid.center(0, 0);
 
     ASSERT_DOUBLE_EQ(-247.5, c.x);
     ASSERT_DOUBLE_EQ(-199.0, c.y);
 
-    Index<> ind=grid.in(Point<>(c.x+1.75, c.y-0.999) );
+    Index<> ind = grid.in(Point<>(c.x+1.75, c.y-0.999) );
     ASSERT_EQ(0, ind.x);
     ASSERT_EQ(0, ind.y);
 
   }
   {
-    Point<> c=grid.center(50, 70);
+    Point<> c = grid.center(50, 70);
 
     ASSERT_DOUBLE_EQ(  2.5, c.x);
     ASSERT_DOUBLE_EQ(-59.0, c.y);
-    Index<> ind=grid.in(Point<>(c.x-2.4999, c.y+0.999) );
+    Index<> ind = grid.in(Point<>(c.x-2.4999, c.y+0.999) );
     ASSERT_EQ(50, ind.x);
     ASSERT_EQ(70, ind.y);
 
   }
 
     {
-    Point<> c=grid.center(50, 70);
+    Point<> c = grid.center(50, 70);
 
     ASSERT_DOUBLE_EQ(  2.5, c.x);
     ASSERT_DOUBLE_EQ(-59.0, c.y);
-    Index<> ind=grid.in(Point<>(c.x-2.4999, c.y+1.0001) );
+    Index<> ind = grid.in(Point<>(c.x-2.4999, c.y+1.0001) );
     ASSERT_EQ(50, ind.x);
     ASSERT_NE(70, ind.y);
 
@@ -134,7 +134,7 @@ TEST_F(pixel_grid_test, add_test) {
 }
 TEST_F(pixel_grid_test, insert_test) {
   {
-    Point<> c=grid.center(0, 0);
+    Point<> c = grid.center(0, 0);
 
     ASSERT_DOUBLE_EQ(-247.5, c.x);
     ASSERT_DOUBLE_EQ(-199.0, c.y);
@@ -144,7 +144,7 @@ TEST_F(pixel_grid_test, insert_test) {
     ASSERT_DOUBLE_EQ(0.5, grid(0, 0));
   }
   {
-    Point<> c=grid.center(50, 70);
+    Point<> c = grid.center(50, 70);
 
     ASSERT_DOUBLE_EQ(  2.5, c.x);
     ASSERT_DOUBLE_EQ(-59.0, c.y);

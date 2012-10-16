@@ -4,6 +4,7 @@
 #include <GL/gl.h>
 
 #include "Uniform.h"
+
 class DensityPlot  {
 public:
   DensityPlot(GLuint  width, GLuint height)
@@ -16,7 +17,7 @@ public:
   , vertices_(4*5, 0.0f) {
     std::cerr << "creating density plot" << std::endl;
     std::cerr << "creating shader" << std::endl;
-    shader_= new Shader("project.vp", "coldtohot.fp");
+    shader_ = new Shader("project.vp", "coldtohot.fp");
     std::cerr << "created shader" << std::endl;
     shader_->add_attribute( GLT_ATTRIBUTE_VERTEX, "v_position");
     shader_->add_attribute( GLT_ATTRIBUTE_TEXTURE0, "v_texture0");
@@ -39,7 +40,7 @@ public:
   };
 
   void set_mvp_matrix(glm::mat4 mvp) {
-    mvp_=mvp;
+    mvp_ = mvp;
   }
 
   void set_pixmap(const GLfloat *p_bits) {
@@ -50,11 +51,11 @@ public:
   }
 
   void set_vertex(GLuint i, GLfloat x, GLfloat y, GLfloat z, GLfloat s, GLfloat t) {
-    vertices_[5*i]=x;
-    vertices_[5*i+1]=y;
-    vertices_[5*i+2]=z;
-    vertices_[5*i+3]=s;
-    vertices_[5*i+4]=t;
+    vertices_[5*i] = x;
+    vertices_[5*i+1] = y;
+    vertices_[5*i+2] = z;
+    vertices_[5*i+3] = s;
+    vertices_[5*i+4] = t;
   }
 
   void render() {
@@ -65,7 +66,7 @@ public:
     texture_uniform.load_concrete(shader_->shader(), 0);
     mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(), glm::value_ptr(mvp_));
     glBegin(GL_QUADS);
-    for(int i=0;i<4;i++) {
+    for(int i = 0;i<4;i++) {
       glVertexAttrib2f(GLT_ATTRIBUTE_TEXTURE0, vertices_[5*i+3], vertices_[5*i+4]);
       glVertex3f(vertices_[5*i], vertices_[5*i+1], vertices_[5*i+2] );
     }

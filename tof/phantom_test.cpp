@@ -7,8 +7,8 @@
 class elliptical_region_test : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    disk=new EllipticalRegion(1.0, 1.0, 2.0, 2.0, 0.0, 0.5);
-    region= new EllipticalRegion(0, 1, 1, 0.5, M_PI/3.0, 0.75);
+    disk = new EllipticalRegion(1.0, 1.0, 2.0, 2.0, 0.0, 0.5);
+    region = new EllipticalRegion(0, 1, 1, 0.5, M_PI/3.0, 0.75);
   }
   EllipticalRegion *disk;
   EllipticalRegion *region;

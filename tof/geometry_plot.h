@@ -7,7 +7,7 @@ public:
 
     std::cerr << "creating density plot" << std::endl;
     std::cerr << "creating shader" << std::endl;
-    shader_= new Shader("project.vp", "simple.fp");
+    shader_ = new Shader("project.vp", "simple.fp");
     std::cerr << "created shader" << std::endl;
 
     shader_->add_attribute( GLT_ATTRIBUTE_VERTEX, "v_position");
@@ -19,15 +19,15 @@ public:
             shader_->shader()
             );
     std::cerr << "created geometry plot" << std::endl;
-    color_=glm::vec4(0, 0, 0, 1);
+    color_ = glm::vec4(0, 0, 0, 1);
   };
   void set_color(glm::vec4 color) {
-    color_=color;
+    color_ = color;
 
   }
 
   void set_mvp_matrix(glm::mat4 mvp) {
-    mvp_=mvp;
+    mvp_ = mvp;
   }
   void renderStart() {
     std::cerr << "renderStart" << std::endl;
@@ -46,9 +46,9 @@ public:
   void drawCircle(GLfloat r) {
   const int n = 120;
     glBegin(GL_LINE_STRIP) ;
-    for(int i=0;i<n;i++ ){
-      GLfloat z=r*cos((2.0*M_PI/n)*i);
-      GLfloat y=r*sin((2.0*M_PI/n)*i);
+    for(int i = 0;i<n;i++ ){
+      GLfloat z = r*cos((2.0*M_PI/n)*i);
+      GLfloat y = r*sin((2.0*M_PI/n)*i);
       glVertex3f(0.0, y, z);
     }
     glEnd();
@@ -57,9 +57,9 @@ public:
   void drawDisk(GLfloat r)  {
   const int n = 120;
     glBegin(GL_POLYGON) ;
-    for(int i=0;i<n;i++ ){
-      GLfloat z=r*cos((2.0*M_PI/n)*i);
-      GLfloat y=r*sin((2.0*M_PI/n)*i);
+    for(int i = 0;i<n;i++ ){
+      GLfloat z = r*cos((2.0*M_PI/n)*i);
+      GLfloat y = r*sin((2.0*M_PI/n)*i);
       glVertex3f(0.0, y, z);
     }
     glEnd();
@@ -68,10 +68,10 @@ public:
   void renderZYCircle(GLfloat zc, GLfloat yc, GLfloat r, bool filled = false)  {
     std::cerr << "rendering circle" << std::endl;
 
-    glm::mat4  M=mvp_;
+    glm::mat4  M = mvp_;
     std::cerr << M << std::endl;
-    M=glm::translate(M, glm::vec3(0, yc, zc));
-    M=glm::scale(M, glm::vec3(0, r, r));
+    M = glm::translate(M, glm::vec3(0, yc, zc));
+    M = glm::scale(M, glm::vec3(0, r, r));
     std::cerr << M << std::endl;
      mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(), glm::value_ptr(M));
      color_uniform_.load_concrete(shader_->shader(), glm::value_ptr(color_));
@@ -96,14 +96,14 @@ public:
     glEnd();
   }
 
-  void renderZYEllipse(GLfloat zc, GLfloat yc, GLfloat rz, GLfloat ry, GLfloat theta = 0, bool filled=false) {
+  void renderZYEllipse(GLfloat zc, GLfloat yc, GLfloat rz, GLfloat ry, GLfloat theta = 0, bool filled = false) {
     std::cerr << "rendering circle" << std::endl;
-    GLfloat degree_theta=180.0*theta/M_PI;
-    glm::mat4  M=mvp_;
+    GLfloat degree_theta = 180.0*theta/M_PI;
+    glm::mat4  M = mvp_;
     std::cerr << M << std::endl;
-    M=glm::translate(M, glm::vec3(0, yc, zc));
-    M=glm::rotate(M, degree_theta, glm::vec3(-1, 0, 0));
-    M=glm::scale(M, glm::vec3(0, ry, rz));
+    M = glm::translate(M, glm::vec3(0, yc, zc));
+    M = glm::rotate(M, degree_theta, glm::vec3(-1, 0, 0));
+    M = glm::scale(M, glm::vec3(0, ry, rz));
 
     std::cerr << M << std::endl;
      mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(), glm::value_ptr(M));
@@ -115,20 +115,20 @@ public:
     mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(), glm::value_ptr(mvp_));
   }
 
-  void renderZYRectangle(GLfloat ll_z, GLfloat ll_y, GLfloat ur_z, GLfloat ur_y, GLfloat theta =0, bool filled=false) {
+  void renderZYRectangle(GLfloat ll_z, GLfloat ll_y, GLfloat ur_z, GLfloat ur_y, GLfloat theta = 0, bool filled = false) {
     std::cerr << "rendering rectangle" << std::endl;
     color_uniform_.load_concrete(shader_->shader(), glm::value_ptr(color_));
-    GLfloat degree_theta=180.0*theta/M_PI;
-    GLfloat a=ur_z-ll_z;
-    GLfloat b=ur_y-ll_y;
-    GLfloat zc=0.5f*(ur_z+ll_z);
-    GLfloat yc=0.5f*(ur_y+ll_y);
+    GLfloat degree_theta = 180.0*theta/M_PI;
+    GLfloat a = ur_z-ll_z;
+    GLfloat b = ur_y-ll_y;
+    GLfloat zc = 0.5f*(ur_z+ll_z);
+    GLfloat yc = 0.5f*(ur_y+ll_y);
 
-    glm::mat4  M=mvp_;
+    glm::mat4  M = mvp_;
     std::cerr << M << std::endl;
-    M=glm::translate(M, glm::vec3(0, yc, zc));
-    M=glm::rotate(M, degree_theta, glm::vec3(-1, 0, 0));
-    M=glm::scale(M, glm::vec3(0, b, a));
+    M = glm::translate(M, glm::vec3(0, yc, zc));
+    M = glm::rotate(M, degree_theta, glm::vec3(-1, 0, 0));
+    M = glm::scale(M, glm::vec3(0, b, a));
     std::cerr << M << std::endl;
      mvp_matrix_uniform_.load_4x4_matrix(shader_->shader(), glm::value_ptr(M));
 

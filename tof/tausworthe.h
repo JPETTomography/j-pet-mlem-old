@@ -4,12 +4,12 @@
 typedef  double FLOAT ;
 
 inline unsigned taus_step(unsigned &z, int S1, int S2, int S3, unsigned M) {
-    unsigned b=(((z << S1)^z)>>S2);
-    return z=(((z &M) << S3)^b);
+    unsigned b = (((z << S1)^z)>>S2);
+    return z = (((z &M) << S3)^b);
   }
 
 inline   unsigned LCG_step(unsigned &z, unsigned A, unsigned C) {
-    return z=(A*z+C);
+    return z = (A*z+C);
   }
 inline   FLOAT rnd(unsigned *z) {
   return 2.328306436538696e-10*(FLOAT)(

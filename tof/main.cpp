@@ -26,14 +26,14 @@ glm::mat4 mvp_mat;
 #include "detector_view.h"
 #include "phantom_view.h"
 #include "event_view.h"
-bool event_mode=false;
+bool event_mode = false;
 
 void ChangeSize(int w, int h) {
   glViewport(0, 0, w, h);
-  GLfloat aspect=(GLfloat)w/(GLfloat)h;
+  GLfloat aspect = (GLfloat)w/(GLfloat)h;
   std::cerr << "seting projection\n";
-  GLfloat height= 800.0f;
-  p_matrix=glm::ortho(-height*aspect/2.0f, height*aspect/2.0f, -height/2.0f, height/2.0f, 99.0f, 101.0f);
+  GLfloat height = 800.0f;
+  p_matrix = glm::ortho(-height*aspect/2.0f, height*aspect/2.0f, -height/2.0f, height/2.0f, 99.0f, 101.0f);
   std::cerr << p_matrix << std::endl;
   std::cerr << "set projection\n";
 }
@@ -59,7 +59,7 @@ void SetupRC() {
   //glEnable(GL_DEPTH_TEST);
 
   std::cerr << "creating shader" << std::endl;
-  shader= new Shader("project.vp", "coldtohot.fp");
+  shader = new Shader("project.vp", "coldtohot.fp");
   std::cerr << "created shader" << std::endl;
   shader->add_attribute( GLT_ATTRIBUTE_VERTEX, "v_position");
   shader->add_attribute( GLT_ATTRIBUTE_TEXTURE0, "v_texture0");
@@ -74,17 +74,17 @@ void SetupRC() {
   glm::vec3 up(0.0, 1.0, 0.0);
 
   std::cerr << "setting view matrix" << std::endl;
-  v_matrix=glm::lookAt(eye, center, up);
+  v_matrix = glm::lookAt(eye, center, up);
   std::cerr << v_matrix << std::endl;
   std::cerr << "set view matrix" << std::endl;
   GLuint width = 100;
-  GLuint height= 100;
-  GLuint texture_size=width*height;
-  GLfloat *pBits=(GLfloat *)malloc(sizeof(GLfloat)*texture_size);
-  for(int i=0;i<texture_size;i++) {
-    pBits[i]=i*1.0/texture_size;
+  GLuint height = 100;
+  GLuint texture_size = width*height;
+  GLfloat *pBits = (GLfloat *)malloc(sizeof(GLfloat)*texture_size);
+  for(int i = 0;i<texture_size;i++) {
+    pBits[i] = i*1.0/texture_size;
   }
-  density_plot= new DensityPlot(100, 100);
+  density_plot = new DensityPlot(100, 100);
   density_plot->set_vertex(0, 0, -250, -250, 0, 0);
   density_plot->set_vertex(1, 0, -250, 250, 1, 0);
   density_plot->set_vertex(2, 0, 250, 250, 1, 1);
@@ -94,10 +94,10 @@ void SetupRC() {
   simulator.simulate_from_phantom(10000000);
   density_plot->set_pixmap(simulator.emitted_density());
 
-  geometry_plot=new GeometryPlot;
+  geometry_plot = new GeometryPlot;
 
-  detector_view=new DetectorView<GLfloat>(geometry_plot, simulator.detector());
-  phantom_view=new PhantomView(geometry_plot, simulator.phantom());
+  detector_view = new DetectorView<GLfloat>(geometry_plot, simulator.detector());
+  phantom_view = new PhantomView(geometry_plot, simulator.phantom());
   event_view = new EventView<GLfloat>(geometry_plot, simulator.detector(), simulator.tof_begin(), simulator.tof_end(), simulator.detected_begin()
               );
 }
@@ -120,7 +120,7 @@ void keyboardHandler(unsigned char pressed, int x, int y) {
     glutPostRedisplay();
     break;
   case 'v':
-    event_mode=!event_mode;
+    event_mode = !event_mode;
     glutPostRedisplay();
     break;
   case 'n':
@@ -147,7 +147,7 @@ void RenderScene() {
   std::cerr << "renderimg scene" << std::endl;
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   glUseProgram(shader->shader());
-  mvp_mat=p_matrix*v_matrix;
+  mvp_mat = p_matrix*v_matrix;
   mvp_matrix_uniform.load_4x4_matrix(shader->shader(), glm::value_ptr(mvp_mat));
   density_plot->set_mvp_matrix(mvp_mat);
 
@@ -177,7 +177,7 @@ main(int argc, char *argv[]) {
   glutKeyboardFunc(keyboardHandler);
 
   GLenum err = glewInit();
-  if (GLEW_OK != err) {
+  if (GLEW_OK ! = err) {
         fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
   }
   SetupRC();

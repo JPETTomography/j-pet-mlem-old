@@ -22,10 +22,10 @@ public:
   }
   void togle_two_sets_mode()  {
     if(two_sets_)
-      two_sets_mode_=!two_sets_mode_;
+      two_sets_mode_ = !two_sets_mode_;
   }
   void operator++() {
-    if(first_!=last_) {
+    if(first_! = last_) {
       ++first_;
       if(two_sets_)
   ++first2_;
@@ -33,15 +33,15 @@ public:
   }
 
   void render() {
-    event_t  event= *first_;
-    track_t  track =detector_->toPS(event);
+    event_t  event = *first_;
+    track_t  track = detector_->toPS(event);
     gp_->renderZYLine(track.z_dn(), -detector_->R(), track.z_up(), detector_->R());
     gp_->renderZYCircle(event.z(), event.y(), 4, true);
 
     if(two_sets_mode_) {
       gp_->set_color(glm::vec4(1, 0, 1, 1));
-      event= *first2_;
-      track =detector_->toPS(event);
+      event = *first2_;
+      track = detector_->toPS(event);
       gp_->renderZYLine(track.z_dn(), -detector_->R(), track.z_up(), detector_->R());
       gp_->renderZYCircle(event.z(), event.y(), 4, true);
       gp_->set_color(glm::vec4(0, 0, 0, 1));

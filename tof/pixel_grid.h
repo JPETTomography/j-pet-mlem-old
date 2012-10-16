@@ -3,14 +3,14 @@
 
 #include <vector>
 
-template<typename F=double> class Point {
+template<typename F = double> class Point {
  public:
   Point(F xa, F ya):x(xa), y(ya){}
   F x;
   F y;
 };
 
-template<typename I=int> class Index {
+template<typename I = int> class Index {
  public:
   Index(I xa, I ya):x(xa), y(ya) {}
   I x;
@@ -23,13 +23,13 @@ public:
 
   PixelGrid(const Point<F> &ll, const Point<F> &ur, I nx, I ny):
     nx_(nx), ny_(ny), n_(nx_*ny_), pixels_(nx_*ny_, (F)0.0) {
-    ll_x_=ll.x;
-    ll_y_=ll.y;
-    ur_x_=ur.x;
-    ur_y_=ur.y;
+    ll_x_ = ll.x;
+    ll_y_ = ll.y;
+    ur_x_ = ur.x;
+    ur_y_ = ur.y;
 
-    dx_=(ur_x_-ll_x_)/nx_;
-    dy_=(ur_y_-ll_y_)/ny_;
+    dx_ = (ur_x_-ll_x_)/nx_;
+    dy_ = (ur_y_-ll_y_)/ny_;
 
   };
   I nx() const {return nx_;}
@@ -47,8 +47,8 @@ public:
   }
 
   Index<I> in(F x, F y) const {
-    I ix=(int) floor( (x-ll_x_)/dx_);
-    I iy=(int) floor( (y-ll_y_)/dy_);
+    I ix = (int) floor( (x-ll_x_)/dx_);
+    I iy = (int) floor( (y-ll_y_)/dy_);
     return Index<I>(ix, iy);
   };
 
@@ -56,11 +56,11 @@ public:
     return in(p.x, p.y);
   };
 
-  void add(I ix, I iy, F w=1.0) {
-    pixels_[index(ix, iy)]+=w;
+  void add(I ix, I iy, F w = 1.0) {
+    pixels_[index(ix, iy)] += w;
   }
 
-  void add(Index<I> ind, F w=1.0) {
+  void add(Index<I> ind, F w = 1.0) {
     add(ind.x, ind.y, w);
   }
 
@@ -73,14 +73,14 @@ public:
   }
 
 template<typename In>
-void insert(In first, In last, F w=(F)1.0) {
-  for(;first!=last;++first)
+void insert(In first, In last, F w = (F)1.0) {
+  for(;first! = last;++first)
     add(in(first->z(), firts.y()), w);
   }
 
 template<typename In>
-void insert(In first, int n, F w=(F)1.0) {
-  for(int i=0;i<n;++i, ++first)  {
+void insert(In first, int n, F w = (F)1.0) {
+  for(int i = 0;i<n;++i, ++first)  {
     //    std::cerr << "inserting " << i << " " << first->z() << " " << first->y() << std::endl;
 
     add(in(first->z(), first->y()), w);
@@ -95,23 +95,23 @@ void insert(In first, int n, F w=(F)1.0) {
   F operator()(I ix, I iy) const {return pixels_[index(ix, iy)];}
 
   F max() const {
-    F max=(F)0.0;
-    for(int i=0;i<n_;i++) {
-      max=(max<pixels_[i])?pixels_[i]:max;
+    F max = (F)0.0;
+    for(int i = 0;i<n_;i++) {
+      max = (max<pixels_[i])?pixels_[i]:max;
     }
     return max;
   }
 
   F sum() const {
-    F sum=(F)0.0;
-    for(int i=0;i<n_;i++) {
-      sum+=pixels_[i]);
+    F sum = (F)0.0;
+    for(int i = 0;i<n_;i++) {
+      sum += pixels_[i]);
     }
   }
 
   void divide_by(F d)  {
-    for(int i=0;i<n_;i++) {
-      pixels_[i]/=d;
+    for(int i = 0;i<n_;i++) {
+      pixels_[i] /= d;
     }
   }
 
