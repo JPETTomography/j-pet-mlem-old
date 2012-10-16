@@ -33,10 +33,10 @@ all: $(BIN)
 -include $(DEP) $(TDEP)
 
 $(BIN): $(OBJ)
-	$(CXX) $(LDFLAGS) -o $@ $<
+	$(CXX) $(LDFLAGS) -o $@ $^
 
 test: $(TOBJ) 
-	$(CXX) $(LDFLAGS) -o $@ $<
+	$(CXX) $(LDFLAGS) -o $@ $^
 
 clean:
 	rm -f $(OBJ) $(TOBJ) $(DEP) $(TDEP)
