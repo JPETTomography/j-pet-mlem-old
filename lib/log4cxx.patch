@@ -1,0 +1,64 @@
+diff --git a/include/log4cxx/xml/domconfigurator.h b/include/log4cxx/xml/domconfigurator.h
+index 427dacd..8bac573 100644
+--- a/include/log4cxx/xml/domconfigurator.h
++++ b/include/log4cxx/xml/domconfigurator.h
+@@ -208,7 +208,7 @@ files. You can enable log4cxx internal logging by setting the
+ 				spi::LoggerRepositoryPtr& repository);
+ 
+ 		protected:
+-			String DOMConfigurator::subst(const String& value);
++			String subst(const String& value);
+ 
+ 		protected:
+ 			void * appenderBag;
+diff --git a/src/socketoutputstream.cpp b/src/socketoutputstream.cpp
+index fe2012e..402ae7b 100644
+--- a/src/socketoutputstream.cpp
++++ b/src/socketoutputstream.cpp
+@@ -18,6 +18,8 @@
+ #include <log4cxx/helpers/socket.h>
+ #include <log4cxx/helpers/loglog.h>
+ 
++#include <cstring>
++
+ using namespace log4cxx;
+ using namespace log4cxx::helpers;
+ 
+diff --git a/src/stringtokenizer.cpp b/src/stringtokenizer.cpp
+index 98d11b6..925ee58 100644
+--- a/src/stringtokenizer.cpp
++++ b/src/stringtokenizer.cpp
+@@ -16,6 +16,8 @@
+  
+ #include <log4cxx/helpers/stringtokenizer.h>
+ 
++#include <cstring>
++
+ using namespace log4cxx;
+ using namespace log4cxx::helpers;
+ 
+diff --git a/src/timezone.cpp b/src/timezone.cpp
+index 8ca3d56..d3b88ea 100644
+--- a/src/timezone.cpp
++++ b/src/timezone.cpp
+@@ -17,6 +17,7 @@
+ #include <log4cxx/helpers/timezone.h>
+ #include <locale>
+ 
++#include <cstring>
+ 
+ int getYear(int64_t date)
+ {
+diff --git a/src/xmlsocketappender.cpp b/src/xmlsocketappender.cpp
+index 1f18ec3..0805b20 100644
+--- a/src/xmlsocketappender.cpp
++++ b/src/xmlsocketappender.cpp
+@@ -23,6 +23,8 @@
+ #include <log4cxx/level.h>
+ #include <log4cxx/helpers/transform.h>
+ 
++#include <cstring>
++
+ using namespace log4cxx;
+ using namespace log4cxx::helpers;
+ using namespace log4cxx::net;

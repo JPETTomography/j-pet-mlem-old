@@ -4,3 +4,9 @@
 [submodule "lib/OpenGL2.0"]
 	path = lib/OpenGL2.0
 	url = sorbus.if.uj.edu.pl:/var/git/OpenGL2.0.git
+[submodule "lib/googletest"]
+	path = lib/googletest
+	url = http://git.chromium.org/external/googletest.git
+[submodule "lib/log4cxx"]
+	path = lib/log4cxx
+	url = git://git.apache.org/log4cxx.git
