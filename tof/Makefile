@@ -11,10 +11,9 @@ CPPFLAGS += -I../lib/glm
 
 ifneq ($(TARGET),Darwin)
 LDFLAGS  += -lglut -lGL -lGLEW
+LDFLAGS  += -llog4cxx
+CPPFLAGS += -DHAVE_LOG4CXX
 else
-LDFLAGS  += -lxml2
 LDFLAGS  += -framework OpenGL
 LDFLAGS  += -framework GLUT
 endif
-
-LDFLAGS  += -llog4cxx
