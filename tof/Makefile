@@ -7,6 +7,7 @@ DEP      += $(OBJ:.o=.d)
 
 CPPFLAGS += -I../lib/OpenGL2.0/src/OGLUtils
 CPPFLAGS += -I../lib/OpenGL2.0/src/SSG
+CPPFLAGS += -I../lib/glm
 
 ifneq ($(TARGET),Darwin)
 LDFLAGS  += -lglut -lGL -lGLEW
