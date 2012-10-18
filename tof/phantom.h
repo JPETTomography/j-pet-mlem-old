@@ -4,8 +4,8 @@
 #include <vector>
 
 #ifdef __APPLE__
-void sincos(double a, double *s, double *c) { *s = sin(a);  *c = cos(a);  };
-void sincosf(float a, float *s,  float *c)  { *s = sinf(a); *c = cosf(a); };
+static inline void sincos(double a, double *s, double *c) { *s = sin(a);  *c = cos(a);  };
+static inline void sincosf(float a, float *s,  float *c)  { *s = sinf(a); *c = cosf(a); };
 #endif
 
 class EllipticalRegion {

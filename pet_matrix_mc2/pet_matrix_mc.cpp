@@ -5,11 +5,7 @@
 
 #include <random>
 #include <iostream>
-
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/variables_map.hpp>
-#include <boost/program_options/parsers.hpp>
-namespace po = boost::program_options;
+#include <cmdline.h>
 
 using namespace std;
 
@@ -58,34 +54,17 @@ private:
 
 int main(int argc, char *argv[]) {
 
-  size_t n_pixels;
-  size_t n_detectors;
-  size_t n_emissions;
+  cmdline::parser cl;
 
-  po::options_description desc("Options");
-  desc.add_options()
-    ("help,h", "shows this help")
-    ("n-pixels,n",    po::value<size_t>(&n_pixels)->default_value(256),
-     "set number of pixels in one dimension")
-    ("n-detectors,d", po::value<size_t>(&n_detectors)->default_value(64),
-     "set number of ring detector")
-    ("n-emissions,e", po::value<size_t>(&n_emissions)->default_value(1),
-     "emissions per pixel")
-  ;
+  cl.add<size_t>("n-pixels",    'n', "number of pixels in one dimension", false, 256);
+  cl.add<size_t>("n-detectors", 'd', "number of ring detectors",          false, 64);
+  cl.add<size_t>("n-emissions", 'e', "emissions per pixel",               false, 1);
 
-  po::variables_map vm;
-  try {
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
-  } catch(const std::exception &e) {
-    std::cerr << e.what() << std::endl;
-    return 1;
-  }
+  cl.parse_check(argc, argv);
 
-  if (vm.count("help")) {
-    std::cout << desc << std::endl;
-    return 1;
-  }
+  size_t n_pixels    = cl.get<size_t>("n-pixels");
+  size_t n_detectors = cl.get<size_t>("n-detectors");
+  size_t n_emissions = cl.get<size_t>("n-emissions");
 
   lor_map mc;
   random_device rd;

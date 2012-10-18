@@ -1,3 +1,4 @@
+*/t
 */*.o
 */*.d
 pubs/*.aux
@@ -5,5 +6,6 @@ pubs/*.log
 pubs/*.pdf
 pubs/*.synctex.gz
 pet_matrix_mc/pet_matrix_mc
-pet_matrix_mc2/pet_matrix_mc
+pet_matrix_mc2/pet_matrix_mc2
 tof/tof
+*.bin
