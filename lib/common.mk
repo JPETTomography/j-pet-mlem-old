@@ -27,12 +27,12 @@ CPPFLAGS += -I../lib/cmdline
 # binary is folder name
 BIN  := $(notdir $(realpath .))
 SRC  := $(filter-out %_test.cpp, $(wildcard *.cpp))
-OBJ  := $(SRC:.cpp=.o)
-DEP  := $(SRC:.cpp=.d)
+OBJ  += $(SRC:.cpp=.o)
+DEP  += $(SRC:.cpp=.d)
 
 TSRC := $(wildcard *_test.cpp)
-TOBJ := $(TSRC:.cpp=.o) t.o
-TDEP := $(TSRC:.cpp=.d) t.d
+TOBJ += $(TSRC:.cpp=.o) t.o
+TDEP += $(TSRC:.cpp=.d) t.d
 
 all: $(BIN)
 
