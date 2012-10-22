@@ -1,3 +1,5 @@
+excludeDirectories = 'lib'
+
 [ *.{cpp,h,c}; attr.untitled ]
 fileType = 'source.c++'
 
