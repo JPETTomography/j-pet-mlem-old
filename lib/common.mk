@@ -37,12 +37,10 @@ TDEP += t.d $(TSRC:.cpp=.d)
 all: $(BIN)
 
 # update submodules
-$(OBJ): $(SRC)
-$(SRC):  ../lib/cmdline/cmdline.h
+$(OBJ):  ../lib/cmdline/cmdline.h
 ../lib/cmdline/cmdline.h:
 	cd .. && git submodule update --init lib/cmdline
-$(TOBJ): $(TSRC)
-$(TSRC): ../lib/catch/include/catch.hpp
+$(TOBJ): ../lib/catch/include/catch.hpp
 ../lib/catch/include/catch.hpp:
 	cd .. && git submodule update --init lib/catch
 
