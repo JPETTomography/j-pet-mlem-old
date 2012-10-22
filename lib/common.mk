@@ -51,7 +51,7 @@ $(BIN): $(OBJ)
 	$(CXX) $(LDFLAGS) -o $@ $^
 
 # unit testing
-test: t ; ./t
+test: t ; @./t
 t: $(TOBJ)
 	 $(CXX) $(LDFLAGS) -o $@ $^
 t.o:
