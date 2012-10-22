@@ -1,9 +1,13 @@
 #pragma once
 
-#define GENERIC_LINE_EQUATION 0
+#include "point.h"
+
+#define GENERIC_LINE_EQUATION 1
 
 template<typename F = double>
 struct event {
+  typedef point<F> point_type;
+
   event(F a_x, F a_y, F a_phi)
   : x(a_x)
   , y(a_y)
@@ -32,6 +36,17 @@ struct event {
     m2p1 = m2 + 1.;
     b2   = m*m;
     bm   = b*m;
+#endif
+  }
+
+  event(point_type p, F phi)
+  : event(p.x, p.y, phi) {}
+
+  F operator () (const point_type &p) {
+#if GENERIC_LINE_EQUATION
+    return a*p.x + b*p.y - c;
+#else
+    return !flip ? (m*p.x + b - p.y) : (m*p.y + b - p.x);
 #endif
   }
 
