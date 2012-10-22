@@ -11,7 +11,7 @@
 
 #include "circle.h"
 #include "event.h"
-#include "detector.h"
+#include "ring_detector.h"
 #include "reconstruction.h"
 
 template <typename F> F deg(F rad) { return rad * 180/M_PI; }

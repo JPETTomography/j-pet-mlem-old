@@ -2,9 +2,9 @@
 
 #include <cmath>
 
-#include "detector.h"
+#include "ring_detector.h"
 
-TEST_CASE("detector/center", "detector center") {
+TEST_CASE("ring_detector/center", "ring detector center") {
   event<> event(0.0, 0.0, 2.0);
 
   auto time = tof(event, 1.0);
@@ -13,7 +13,7 @@ TEST_CASE("detector/center", "detector center") {
   REQUIRE( -1.0 == time.second );
 }
 
-TEST_CASE("detector/on_x_axis", "detector x axis") {
+TEST_CASE("ring_detector/on_x_axis", "ring detector x axis") {
   event<> event1(0.5, 0.0, 0.0);
 
   auto time = tof(event1, 1.0);
@@ -29,7 +29,7 @@ TEST_CASE("detector/on_x_axis", "detector x axis") {
   REQUIRE( -0.5 == time.second );
 }
 
-TEST_CASE("detector/on_y_axis", "detector y axis") {
+TEST_CASE("ring_detector/on_y_axis", "ring detector y axis") {
   event<> event1(0.0, 0.5, M_PI/2.0);
 
   auto time = tof(event1, 1.0);
@@ -45,7 +45,7 @@ TEST_CASE("detector/on_y_axis", "detector y axis") {
   REQUIRE( -0.5 == time.second );
 }
 
-TEST_CASE("detector/on_sym", "detector symmetry") {
+TEST_CASE("ring_detector/on_sym", "ring detector symmetry") {
   auto x = 0.5;
   auto y = 0.5;
 
@@ -66,7 +66,7 @@ TEST_CASE("detector/on_sym", "detector symmetry") {
   REQUIRE( Approx(-1.0 + dist) == time.second );
 }
 
-TEST_CASE("detector/radius", "detector radious") {
+TEST_CASE("ring_detector/radius", "ring detector radious") {
   auto x =  0.8;
   auto y = -0.6;
 
@@ -88,7 +88,7 @@ TEST_CASE("detector/radius", "detector radious") {
   REQUIRE( 1.0 == Approx(x_hit*x_hit+y_hit*y_hit) );
 }
 
-TEST_CASE("detector/lor_center", "LOR center") {
+TEST_CASE("ring_detector/lor_center", "LOR center") {
   event<> event1(0.0, 0.0, 0.001);
 
   auto time = tof(event1, 1.0);

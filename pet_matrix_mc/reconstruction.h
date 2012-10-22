@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-#include "detector.h"
+#include "ring_detector.h"
 
 template<typename S, typename F> class Pixel {
 public:
