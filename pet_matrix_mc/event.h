@@ -42,6 +42,8 @@ struct event {
   event(point_type p, F phi)
   : event(p.x, p.y, phi) {}
 
+  // evaluates line equation side on given point
+  // 0 means points lies on the line, -1 left, 1 right
   F operator () (const point_type &p) {
 #if GENERIC_LINE_EQUATION
     return a*p.x + b*p.y - c;
