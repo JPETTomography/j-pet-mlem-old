@@ -1,23 +1,52 @@
 #pragma once
 
-template <typename F>
-void sincos(F a, F &s, F &c) {
-  s = sin(a);
-  c = cos(a);
-};
+#define GENERIC_LINE_EQUATION 0
 
-template<typename F> class event {
-public:
-  event(F x, F y, F phi)
-  : x_(x)
-  , y_(y)
-  , phi_(phi) {};
+template<typename F = double>
+struct event {
+  event(F a_x, F a_y, F a_phi)
+  : x(a_x)
+  , y(a_y)
+  , phi(a_phi)
+  {
+#if GENERIC_LINE_EQUATION
+    // get line equation coefficients
+    // a x + b y == c
+    a =  std::sin(phi);
+    b = -std::cos(phi);
+    c = a*x + b*y;
 
-  F x()   const { return x_; }
-  F y()   const { return y_; }
-  F phi() const { return phi_; }
+    // helper variables
+    b2      = b*b;
+    b2c     = b2*c;
+    ac      = a*c;
+    a2_b2   = a*a + b2;
+    b_a2_b2 = b * a2_b2;
+#else
+    // using normal line equation
+    // switch coordinates when close to M_PI_2 to get accurate results
+    flip = phi > M_PI_4 && phi < 3.0 * M_PI_4;
+    m    = !flip ? tan(phi) : tan(phi - M_PI_2);
+    b    = !flip ? (y - m*x) : (x - m*y);
+    m2   = m*m;
+    m2p1 = m2 + 1.;
+    b2   = m*m;
+    bm   = b*m;
+#endif
+  }
 
-private:
-  F x_, y_;
-  F phi_;
+  F x, y;
+  F phi;
+
+  // line equation coefficients
+#if GENERIC_LINE_EQUATION
+  F a, b, c;
+  // precalculated variables
+  F b2, b2c, ac, a2_b2, b_a2_b2;
+#else
+  F m, b;
+  // precalculated variables
+  bool flip;
+  F m2, m2p1, b2, bm;
+#endif
 };

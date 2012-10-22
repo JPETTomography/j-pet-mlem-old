@@ -32,17 +32,17 @@ private:
 
 template<typename F>
 std::pair<F, F> tof(const event<F> ev, F R2) {
-  F s, c;
-  sincos(ev.phi(), s, c);
-  F x = ev.x();
-  F y = ev.y();
+  F s = std::sin(ev.phi);
+  F c = std::cos(ev.phi);
+  F x = ev.x;
+  F y = ev.y;
 
-  F b = x*c +y*s;
+  F b = x*c + y*s;
 
-  F delta = sqrt(b*b+R2-x*x-y*y);
+  F delta = sqrt(b*b + R2 - x*x - y*y);
 
-  F t1=-b+delta;
-  F t2=-b-delta;
+  F t1 = -b + delta;
+  F t2 = -b - delta;
 
   return std::make_pair(t1, t2);
 };
@@ -65,13 +65,13 @@ std::pair<short, short>   lor(const std::pair<F, F> &time,
 
   F a_step = 2.0*M_PI/n;
 
-  F s, c;
-  sincos(ev.phi(), s, c);
-  F x = ev.x();
-  F y = ev.y();
+  F s = std::sin(ev.phi);
+  F c = std::cos(ev.phi);
+  F x = ev.x;
+  F y = ev.y;
 
-  F x_hit = x+time.first*c;
-  F y_hit = y+time.first*s;
+  F x_hit = x + time.first*c;
+  F y_hit = y + time.first*s;
 
   F phi_hit= atan2(y_hit, x_hit);
   short l1=(short)floor(phi_hit/a_step);
