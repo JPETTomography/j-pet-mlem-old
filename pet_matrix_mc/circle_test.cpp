@@ -29,8 +29,8 @@ TEST_CASE("circle/secant", "circle secant") {
     CHECK( s.second.y ==  0. );
 
     auto a = c.secant_angles(zero, 0.);
-    if (a.first  == Approx(-M_PI)) a.first  += M_2_PI;
-    if (a.second == Approx(-M_PI)) a.second += M_2_PI;
+    if (a.first  == Approx(-M_PI)) a.first  += 2. * M_PI;
+    if (a.second == Approx(-M_PI)) a.second += 2. * M_PI;
 
     CHECK( std::min(a.first, a.second) == Approx(0.) );
     CHECK( std::max(a.first, a.second) == Approx(M_PI) );
