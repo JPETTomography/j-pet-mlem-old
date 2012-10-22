@@ -11,6 +11,7 @@
 
 #include "circle.h"
 #include "event.h"
+#include "detector.h"
 #include "ring_detector.h"
 #include "reconstruction.h"
 
