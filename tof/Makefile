@@ -17,3 +17,8 @@ else
 LDFLAGS  += -framework OpenGL
 LDFLAGS  += -framework GLUT
 endif
+
+# update submodules
+$(SRC): ../lib/glm/glm/glm.hpp
+../lib/glm/glm/glm.hpp:
+	cd .. && git submodule update --init lib/glm

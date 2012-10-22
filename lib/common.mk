@@ -31,10 +31,20 @@ OBJ  += $(SRC:.cpp=.o)
 DEP  += $(SRC:.cpp=.d)
 
 TSRC := $(wildcard *_test.cpp)
-TOBJ += $(TSRC:.cpp=.o) t.o
-TDEP += $(TSRC:.cpp=.d) t.d
+TOBJ += t.o $(TSRC:.cpp=.o)
+TDEP += t.d $(TSRC:.cpp=.d)
 
 all: $(BIN)
+
+# update submodules
+$(OBJ): $(SRC)
+$(SRC):  ../lib/cmdline/cmdline.h
+../lib/cmdline/cmdline.h:
+	cd .. && git submodule update --init lib/cmdline
+$(TOBJ): $(TSRC)
+$(TSRC): ../lib/catch/include/catch.hpp
+../lib/catch/include/catch.hpp:
+	cd .. && git submodule update --init lib/catch
 
 -include $(DEP) $(TDEP)
 
