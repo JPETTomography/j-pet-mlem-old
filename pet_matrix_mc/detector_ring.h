@@ -21,12 +21,16 @@ public:
   , c_outer(radious+h_detector)
   , n_detectors(a_n_detectors)
   , n_pixels(a_n_pixels)
+  , n_pixels_2(a_n_pixels/2)
   , n_t_matrix_pixels( a_n_pixels/2 * (a_n_pixels/2+1) / 2 )
   , n_lors( a_n_detectors * (a_n_detectors+1) / 2 )
   , s_pixel(a_s_pixel)
   {
     // reserve for all lors
     t_matrix = new pixels_type[n_lors]();
+
+    // reserve for pixel stats
+    t_hits = new hit_type[n_t_matrix_pixels];
 
     detector_type detector_base(h_detector, w_detector);
 
@@ -45,16 +49,22 @@ public:
       if (t_matrix[i]) delete [] t_matrix[i];
     }
     delete [] t_matrix;
+    delete [] t_hits;
   }
 
   template <class RandomGenerator, class AcceptanceModel>
-  void matrix_mc(RandomGenerator gen, AcceptanceModel model, size_t n_emissions) {
+  void matrix_mc(RandomGenerator gen, AcceptanceModel model, size_t n_emissions
+
+  , bool o_collect_mc_matrix = true
+  , bool o_collect_pixel_stats = false
+  , bool o_skip_intersection = false) {
+
     std::uniform_real_distribution<> one_dis(0, 1);
     std::uniform_real_distribution<> phi_dis(0, M_PI);
 
     // iterating only triangular matrix,
     // being upper right part or whole system matrix
-    for (auto y = 0; y < n_pixels/2; ++y)
+    for (auto y = 0; y < n_pixels_2; ++y)
       for (auto x = 0; x <= y; ++x)
         for (auto n = 0; n < n_emissions; ++n) {
           auto rx = ( x + one_dis(gen) ) * s_pixel;
@@ -111,20 +121,22 @@ public:
             std::cout << std::endl;
 #endif
             if (hits >= 2) {
-              lor = std::make_pair(
-                std::max(lor.first, lor.second),
-                std::min(lor.first, lor.second)
-              );
-              auto i_lor   = lor.first*(lor.first+1)/2 + lor.second;
-              auto i_pixel = y*(y+1)/2 + x;
-              auto pixels  = t_matrix[i_lor];
+              auto i_pixel = t_pixel_index(x, y);
 
-              // prealocate pixels for specific lor
-              if (!pixels) {
-                t_matrix[i_lor] = pixels = new hit_type[n_t_matrix_pixels];
+              if (o_collect_mc_matrix) {
+                auto i_lor  = lor_index(lor);
+                auto pixels = t_matrix[i_lor];
+
+                // prealocate pixels for specific lor
+                if (!pixels) {
+                  t_matrix[i_lor] = pixels = new hit_type[n_t_matrix_pixels];
+                }
+                ++pixels[i_pixel];
               }
 
-              ++pixels[i_pixel];
+              if (o_collect_pixel_stats) {
+                ++t_hits[i_pixel];
+              }
             }
           }
         }
@@ -140,12 +152,41 @@ public:
     return non_zero_lors;
   }
 
+  hit_type matrix(lor_type lor, size_t x, size_t y) const {
+    auto pixels = t_matrix[lor_index(lor)];
+    return pixels ? pixels[pixel_index(x, y)] : 0;
+  }
+
+  hit_type hits(size_t x, size_t y) const {
+    return t_hits[pixel_index(x, y)];
+  }
+
+private:
+  size_t lor_index(lor_type &lor) {
+    if (lor.first < lor.second) {
+      std::swap(lor.first, lor.second);
+    }
+    return lor.first*(lor.first+1)/2 + lor.second;
+  }
+
+  size_t t_pixel_index(size_t x, size_t y) {
+    return y*(y+1)/2 + x;
+  }
+
+  size_t pixel_index(size_t x, size_t y) {
+    x = std::abs(x - n_pixels_2); y = std::abs(y - n_pixels_2);
+    if (x > y) std::swap(x, y);
+    return t_pixel_index(x, y);
+  }
+
 private:
   matrix_type t_matrix;
+  pixels_type t_hits;
   size_t n_t_matrix_pixels;
   circle_type c_inner;
   circle_type c_outer;
   size_t n_pixels;
+  size_t n_pixels_2;
   size_t n_detectors;
   size_t n_lors;
   F s_pixel;
