@@ -106,13 +106,15 @@ int main(int argc, char *argv[]) {
   auto pixel_max = 0;
   auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
   auto lor       = cl.get<ssize_t>("lor");
-  for (auto y = 0; y < n_pixels; ++y) {
-    for (auto x = 0; x < n_pixels; ++x) {
-      auto hits = lor > 0 ? dr.matrix(lor, x, y) : dr.hits(x, y);
-      pixel_max = std::max(pixel_max, hits);
-      pixel_min = std::min(pixel_min, hits);
+
+  if (cl.exist("stats") || cl.exist("output"))
+    for (auto y = 0; y < n_pixels; ++y) {
+      for (auto x = 0; x < n_pixels; ++x) {
+        auto hits = lor > 0 ? dr.matrix(lor, x, y) : dr.hits(x, y);
+        pixel_max = std::max(pixel_max, hits);
+        pixel_min = std::min(pixel_min, hits);
+      }
     }
-  }
 
   if (cl.exist("stats")) {
     std::cerr
@@ -129,11 +131,6 @@ int main(int argc, char *argv[]) {
       << "Max hits: "
       << pixel_max
       << std::endl;
-  }
-
-  if (cl.exist("wait")) {
-    std::cerr << "Press Enter." << std::endl;
-    while(getc(stdin) != '\n');
   }
 
 #ifdef HAVE_LIBPNG
@@ -187,5 +184,11 @@ int main(int argc, char *argv[]) {
     if (png_ptr) png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
   }
 #endif
+
+  if (cl.exist("wait")) {
+    std::cerr << "Press Enter." << std::endl;
+    while(getc(stdin) != '\n');
+  }
+
   return 0;
 }
