@@ -27,10 +27,22 @@ TEST_CASE("detector/intersection", "polygon intersection") {
     CHECK( std::max(i1[0].y, i1[1].y) == Approx( 0. ) );
   }
 
-  auto dr = d.rotated(M_PI_4);
-  auto s  = std::sin(M_PI_4);
-  auto c  = std::sin(M_PI_4);
+  SECTION("detector/rotated", "rotated") {
+    auto dr = d.rotated(M_PI_4);
+    auto s  = std::sin(M_PI_4);
+    auto c  = std::sin(M_PI_4);
 
-  CHECK( dr[0].x == Approx( d[0].x*c - d[0].y*s ) );
-  CHECK( dr[0].y == Approx( d[0].x*s + d[0].y*c ) );
+    CHECK( dr[0].x == Approx( d[0].x*c - d[0].y*s ) );
+    CHECK( dr[0].y == Approx( d[0].x*s + d[0].y*c ) );
+  }
+
+  SECTION("detector/translated+rotated", "translated and rotated") {
+    decltype(d)::point_type p(2., 3.);
+    auto dtr = (d+p).rotated(M_PI_4);
+    auto s   = std::sin(M_PI_4);
+    auto c   = std::sin(M_PI_4);
+
+    CHECK( dtr[0].x == Approx( (d[0].x+p.x)*c - (d[0].y+p.y)*s ) );
+    CHECK( dtr[0].y == Approx( (d[0].x+p.x)*s + (d[0].y+p.y)*c ) );
+  }
 }
