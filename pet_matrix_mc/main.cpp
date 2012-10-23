@@ -89,17 +89,46 @@ int main(int argc, char *argv[]) {
   std::random_device rd;
   std::mt19937 gen(rd());
   detector_ring<> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
-  dr.matrix_mc(gen, always_accept<>(), n_emissions);
+  dr.matrix_mc(gen, always_accept<>(), n_emissions, true, true);
   
-  std::cout << "Done." << std::endl;
-  std::cout
+  auto pixel_max = 0;
+  auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
+  for (auto y = 0; y < n_pixels; ++y) {
+    for (auto x = 0; x < n_pixels; ++x) {
+      auto hits = dr.hits(x, y);
+      pixel_max = std::max(pixel_max, hits);
+      pixel_min = std::min(pixel_min, hits);
+    }
+  }
+
+  std::cerr << "Done." << std::endl;
+  std::cerr
     << "Non zero LORs: "
     << dr.non_zero_lors()
     << '/'
     << dr.lors()
     << std::endl;
-  std::cout << "Press Enter." << std::endl;
+  std::cerr
+    << "Min hits: "
+    << pixel_min
+    << std::endl;
+  std::cerr
+    << "Max hits: "
+    << pixel_max
+    << std::endl;
+  std::cerr << "Press Enter." << std::endl;
   while(getc(stdin) != '\n');
+
+  std::cout << "P2" << std::endl;
+  std::cout << "# pet_matrix.pgm" << std::endl;
+  std::cout << n_pixels << ' ' << n_pixels << std::endl;
+  std::cout << pixel_max << std::endl;
+  for (auto y = 0; y < n_pixels; ++y) {
+    for (auto x = 0; x < n_pixels; ++x) {
+      std::cout << dr.hits(x, y) << ' ';
+    }
+    std::cout << std::endl;
+  }
 
   return 0;
 }

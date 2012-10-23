@@ -162,19 +162,24 @@ public:
   }
 
 private:
-  size_t lor_index(lor_type &lor) {
+  size_t lor_index(lor_type &lor) const {
     if (lor.first < lor.second) {
       std::swap(lor.first, lor.second);
     }
     return lor.first*(lor.first+1)/2 + lor.second;
   }
 
-  size_t t_pixel_index(size_t x, size_t y) {
+  size_t t_pixel_index(size_t x, size_t y) const {
     return y*(y+1)/2 + x;
   }
 
-  size_t pixel_index(size_t x, size_t y) {
-    x = std::abs(x - n_pixels_2); y = std::abs(y - n_pixels_2);
+  size_t pixel_index(ssize_t x, ssize_t y) const {
+    // shift so 0,0 is now center
+    x -= n_pixels_2; y -= n_pixels_2;
+    // mirror
+    if (x < 0) x = -x-1;
+    if (y < 0) y = -y-1;
+    // triangulate
     if (x > y) std::swap(x, y);
     return t_pixel_index(x, y);
   }
