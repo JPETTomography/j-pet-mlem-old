@@ -38,3 +38,6 @@ struct point {
     return std::sqrt(x*x + y*y);
   }
 };
+
+template <typename F> F deg(F rad) { return rad * 180/M_PI; }
+template <typename F> F rad(F deg) { return deg * M_PI/180; }

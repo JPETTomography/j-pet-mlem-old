@@ -59,8 +59,8 @@ public:
   , bool o_collect_pixel_stats = false
   , bool o_skip_intersection = false) {
 
-    std::uniform_real_distribution<> one_dis(0, 1);
-    std::uniform_real_distribution<> phi_dis(0, M_PI);
+    std::uniform_real_distribution<> one_dis(0., 1.);
+    std::uniform_real_distribution<> phi_dis(0., M_PI);
 
     // iterating only triangular matrix,
     // being upper right part or whole system matrix

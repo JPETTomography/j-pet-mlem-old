@@ -12,10 +12,9 @@
 #include <png.h>
 
 #include "detector_ring.h"
+#include "model.h"
 
-template <typename F> F deg(F rad) { return rad * 180/M_PI; }
-template <typename F> F rad(F deg) { return deg * M_PI/180; }
-
+// redefine help formatting for greater readibility
 namespace cmdline {
   namespace detail {
     template <> inline std::string readable_typename<ssize_t>() { return "index"; }
@@ -35,13 +34,6 @@ namespace cmdline {
   }
 }
 
-template <typename F = double>
-class always_accept {
-public:
-  always_accept() {}
-  bool operator () (F) { return true; }
-};
-
 int main(int argc, char *argv[]) {
 
   cmdline::parser cl;
@@ -53,10 +45,15 @@ int main(int argc, char *argv[]) {
   cl.add<double>     ("s-pixel",     'p', "pixel size",                        false);
   cl.add<double>     ("w-detector",  'w', "detector width",                    false);
   cl.add<double>     ("h-detector",  'h', "detector height",                   false);
+  cl.add<std::string>("model",       'm', "acceptance model",                  false,
+                      "scintilator", cmdline::oneof<std::string>("always", "scintilator"));
+  cl.add<double>     ("acceptance",  'a', "acceptance probability factor",     false, 10.);
   cl.add             ("stats",       's', "show stats");
-  cl.add             ("wait",       '\0', "wait before exit");
+  cl.add             ("wait",          0, "wait before exit");
   cl.add<ssize_t>    ("lor",         'l', "select lor to output to a file",    false, -1);
+#ifdef HAVE_LIBPNG
   cl.add<std::string>("output",      'o', "output a file",                     false);
+#endif
 
   cl.parse_check(argc, argv);
 
@@ -101,7 +98,14 @@ int main(int argc, char *argv[]) {
   std::random_device rd;
   std::mt19937 gen(rd());
   detector_ring<> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
-  dr.matrix_mc(gen, always_accept<>(), n_emissions, true, true);
+
+  if (cl.get<std::string>("model") == "always")
+    dr.matrix_mc(gen, always_accept<>(), n_emissions, true, true);
+  if (cl.get<std::string>("model") == "scintilator")
+    dr.matrix_mc(
+      gen,
+      scintilator_accept<std::mt19937>(gen, cl.get<double>("acceptance")),
+      n_emissions, true, true);
   
   auto pixel_max = 0;
   auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
@@ -116,6 +120,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
+  // show stats if requested
   if (cl.exist("stats")) {
     std::cerr
       << "Non zero LORs: "
@@ -134,6 +139,7 @@ int main(int argc, char *argv[]) {
   }
 
 #ifdef HAVE_LIBPNG
+  // if we have libpng we can output some stuff
   auto output = cl.get<std::string>("output");
   if (output.size()) {
     FILE *fp = nullptr;
