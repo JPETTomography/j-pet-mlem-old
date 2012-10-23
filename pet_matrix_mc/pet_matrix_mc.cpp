@@ -20,15 +20,17 @@ template <typename F> F rad(F deg) { return deg * M_PI/180; }
 
 typedef std::map<std::pair<int, int>, std::vector<int>> lor_map;
 
-template <>
-inline std::string cmdline::detail::readable_typename<size_t>() { return "size"; }
-template <>
-inline std::string cmdline::detail::readable_typename<double>() { return "float"; }
+namespace cmdline {
+  namespace detail {
+    template <> inline std::string readable_typename<size_t>() { return "size"; }
+    template <> inline std::string readable_typename<double>() { return "float"; }
 
-template <>
-inline std::string cmdline::detail::default_value<double>(double def) {
-  if (def == 0.) return "auto";
-  return detail::lexical_cast<std::string>(def);
+    template <>
+    inline std::string default_value<double>(double def) {
+      if (def == 0.) return "auto";
+      return detail::lexical_cast<std::string>(def);
+    }
+  }
 }
 
 int main(int argc, char *argv[]) {
