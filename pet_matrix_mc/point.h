@@ -25,8 +25,16 @@ struct point {
     return {x+p.x, y+p.y};
   }
 
+  point operator - (point &p) {
+    return {x-p.x, y-p.y};
+  }
+
   point & operator += (point &p) {
     x += p.x; y += p.y;
     return *this;
+  }
+
+  F length() {
+    return std::sqrt(x*x + y*y);
   }
 };

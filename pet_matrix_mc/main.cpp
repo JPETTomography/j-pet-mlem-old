@@ -27,6 +27,13 @@ namespace cmdline {
   }
 }
 
+template <typename F = double>
+class always_accept {
+public:
+  always_accept() {}
+  bool operator () (F) { return true; }
+};
+
 int main(int argc, char *argv[]) {
 
   cmdline::parser cl;
@@ -82,7 +89,17 @@ int main(int argc, char *argv[]) {
   std::random_device rd;
   std::mt19937 gen(rd());
   detector_ring<> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
-  dr.matrix_mc(gen, n_emissions);
+  dr.matrix_mc(gen, always_accept<>(), n_emissions);
+  
+  std::cout << "Done." << std::endl;
+  std::cout
+    << "Non zero LORs: "
+    << dr.non_zero_lors()
+    << '/'
+    << dr.lors()
+    << std::endl;
+  std::cout << "Press Enter." << std::endl;
+  while(getc(stdin) != '\n');
 
   return 0;
 }

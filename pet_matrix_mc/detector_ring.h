@@ -6,10 +6,13 @@
 #include "detector.h"
 #include "circle.h"
 
-template <typename F = double>
+template <typename F = double, typename HitType = int>
 class detector_ring : public std::vector<detector<F>> {
 public:
-  typedef std::map<std::pair<int, int>, std::vector<int>> lor_map_type;
+  typedef HitType hit_type;
+  typedef hit_type *pixels_type;
+  typedef pixels_type *matrix_type;
+  typedef std::pair<size_t, size_t> lor_type;
   typedef circle<F> circle_type;
   typedef detector<F> detector_type;
 
@@ -18,9 +21,13 @@ public:
   , c_outer(radious+h_detector)
   , n_detectors(a_n_detectors)
   , n_pixels(a_n_pixels)
-  , n_t_matrix_pixels( (n_pixels/2 + n_pixels/2+1) / 2 )
+  , n_t_matrix_pixels( a_n_pixels/2 * (a_n_pixels/2+1) / 2 )
+  , n_lors( a_n_detectors * (a_n_detectors+1) / 2 )
   , s_pixel(a_s_pixel)
   {
+    // reserve for all lors
+    t_matrix = new pixels_type[n_lors]();
+
     detector_type detector_base(h_detector, w_detector);
 
     // move detector to the edge of inner ring
@@ -33,8 +40,15 @@ public:
     }
   }
 
-  template <class Generator>
-  void matrix_mc(Generator gen, size_t n_emissions) {
+  ~detector_ring() {
+    for (auto i = 0; i < n_lors; ++i) {
+      if (t_matrix[i]) delete [] t_matrix[i];
+    }
+    delete [] t_matrix;
+  }
+
+  template <class RandomGenerator, class AcceptanceModel>
+  void matrix_mc(RandomGenerator gen, AcceptanceModel model, size_t n_emissions) {
     std::uniform_real_distribution<> one_dis(0, 1);
     std::uniform_real_distribution<> phi_dis(0, M_PI);
 
@@ -58,8 +72,8 @@ public:
           auto inner = i_inner.first;
           auto outer = i_inner.first;
 
-          auto intersections = 0;
-          std::pair<int, int> lor;
+          auto hits = 0;
+          lor_type lor;
 
           // process both sides
           for (auto side = 0; side < 2; ++side) {
@@ -72,13 +86,15 @@ public:
             std::cout << '[' << side << "] " << inner  << '-' << outer << ':' << step;
 #endif
             do {
+              auto points = (*this)[i].intersections(e);
               // bail out if intersects
-              if ( (*this)[i].intersects(e) ) {
+              if ( points.size() == 2 &&
+                   model( (points[1]-points[0]).length() ) ) {
                 // FIXME: we shall count probability here now!
 #if DEBUG
                 std::cout << ' ' << i;
 #endif
-                (!(intersections++) ? lor.first : lor.second) = i;
+                (!(hits++) ? lor.first : lor.second) = i;
                 break;
               }
               // step
@@ -94,25 +110,43 @@ public:
 #if DEBUG
             std::cout << std::endl;
 #endif
-            if (intersections >= 2) {
+            if (hits >= 2) {
               lor = std::make_pair(
                 std::max(lor.first, lor.second),
                 std::min(lor.first, lor.second)
               );
-              auto pixels = t_matrix[lor];
-              pixels.reserve(n_t_matrix_pixels);
-              pixels[ (y * y+1) / 2 + x ] ++;
+              auto i_lor   = lor.first*(lor.first+1)/2 + lor.second;
+              auto i_pixel = y*(y+1)/2 + x;
+              auto pixels  = t_matrix[i_lor];
+
+              // prealocate pixels for specific lor
+              if (!pixels) {
+                t_matrix[i_lor] = pixels = new hit_type[n_t_matrix_pixels];
+              }
+
+              ++pixels[i_pixel];
             }
           }
         }
   }
 
+  size_t lors() const { return n_lors; }
+
+  F non_zero_lors() {
+    size_t non_zero_lors = 0;
+    for (auto i = 0; i < n_lors; ++i) {
+      if (t_matrix[i]) ++non_zero_lors;
+    }
+    return non_zero_lors;
+  }
+
 private:
-  lor_map_type t_matrix;
+  matrix_type t_matrix;
   size_t n_t_matrix_pixels;
   circle_type c_inner;
   circle_type c_outer;
   size_t n_pixels;
   size_t n_detectors;
+  size_t n_lors;
   F s_pixel;
 };
