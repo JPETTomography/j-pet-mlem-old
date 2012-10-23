@@ -157,6 +157,11 @@ public:
     return pixels ? pixels[pixel_index(x, y)] : 0;
   }
 
+  hit_type matrix(size_t lor, size_t x, size_t y) const {
+    auto pixels = t_matrix[lor];
+    return pixels ? pixels[pixel_index(x, y)] : 0;
+  }
+
   hit_type hits(size_t x, size_t y) const {
     return t_hits[pixel_index(x, y)];
   }
