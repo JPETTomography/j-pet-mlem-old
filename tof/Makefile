@@ -19,6 +19,9 @@ LDFLAGS  += -framework GLUT
 endif
 
 # update submodules
-$(SRC): ../lib/glm/glm/glm.hpp
+$(OBJ): ../lib/glm/glm/glm.hpp
 ../lib/glm/glm/glm.hpp:
 	cd .. && git submodule update --init lib/glm
+$(OBJ): ../lib/OpenGL2.0/src/OGLUtils/glmutils.h
+../lib/OpenGL2.0/src/OGLUtils/glmutils.h:
+	cd .. && git submodule update --init lib/OpenGL2.0
