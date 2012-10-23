@@ -9,16 +9,12 @@
 #include <iostream>
 #include <cmdline.h>
 
-#include "circle.h"
-#include "event.h"
-#include "detector.h"
+#include "detector_ring.h"
 #include "ring_detector.h"
 #include "reconstruction.h"
 
 template <typename F> F deg(F rad) { return rad * 180/M_PI; }
 template <typename F> F rad(F deg) { return deg * M_PI/180; }
-
-typedef std::map<std::pair<int, int>, std::vector<int>> lor_map;
 
 namespace cmdline {
   namespace detail {
@@ -85,102 +81,10 @@ int main(int argc, char *argv[]) {
     std::cerr << "--h-detector=" << h_detector << std::endl;
   }
 
-#if 1
-  lor_map mc;
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_real_distribution<> one_dis(0, 1);
-  std::uniform_real_distribution<> phi_dis(0, M_PI);
-  circle<> c_inner(radious);
-  circle<> c_outer(radious+h_detector);
-  detector<> detector_base(h_detector, w_detector);
-
-  // move detector to the edge of inner ring
-  detector_base += point<>(radious + h_detector/2, 0.);
-
-  // produce detector ring
-  std::vector<detector<>> detector_ring;
-  for (auto n = 0; n < n_detectors; ++n) {
-    detector_ring.push_back( detector_base.rotated(2. * M_PI / n_detectors) );
-  }
-
-  // iterating only triangular matrix,
-  // being upper right part or whole system matrix
-  for (auto y = 0; y < n_pixels/2; ++y)
-    for (auto x = 0; x <= y; ++x)
-      for (auto n = 0; n < n_emissions; ++n) {
-        auto rx = ( x + one_dis(gen) ) * s_pixel;
-        auto ry = ( y + one_dis(gen) ) * s_pixel;
-        // ensure we are within a triangle
-        if (rx > ry) continue;
-        // random point within a pixel
-        decltype(c_inner)::event_type e(rx, ry, phi_dis(gen));
-        // secant for p and phi
-        auto i_inner = c_inner.secant_sections(e, n_detectors);
-        auto i_outer = c_outer.secant_sections(e, n_detectors);
-#if DEBUG
-        std::cout << '(' << e.x << ',' << e.y << '@' << e.phi << ')' << std::endl;
-#endif
-        auto inner = i_inner.first;
-        auto outer = i_inner.first;
-        // process both sides
-        for (auto side = 0; side < 2; ++side) {
-          // starting from inner index
-          // iterating to outer index
-          auto i = inner;
-          auto prev_i = i;
-          auto step = inner <= outer ? 1 : -1;
-#if DEBUG
-          std::cout << '[' << side << "] " << inner  << '-' << outer << ':' << step;
-#endif
-          do {
-            // bail out if intersects
-            if ( detector_ring[i].intersects(e) ) {
-#if DEBUG
-              std::cout << ' ' << i;
-#endif
-              break;
-            }
-            // step
-            prev_i = i, i = (i + step) % n_detectors;
-#if DEBUG
-            std::cout << " s<" << i;
-#endif
-          } while (prev_i != outer);
-
-          // switch side
-          inner = i_inner.second;
-          outer = i_outer.second;
-#if DEBUG
-          std::cout << std::endl;
-#endif
-        }
-      }
-#else
-  Ring2DDetector<int, double> detector(n_detectors, n_pixels);
-  ProbabilityMatrix<int, double> probability_matrix(detector);
-
-  const int max_lors = detector.n_detectors()*detector.n_detectors();
-
-  double *p = new double[max_lors];
-
-  for (int ipix = 0; ipix < probability_matrix.octant_size(); ++ipix) {
-    auto pix = probability_matrix.octant(ipix);
-
-    for (int i = 0; i<max_lors; ++i) p[i]=0.0;
-
-    fill_pixel(pix, detector.n_detectors(), p, n_emissions);
-
-    auto pixel_row = row_from_array(pix, p,detector.n_detectors(), max_lors);
-
-    probability_matrix.push_back_row(pixel_row);
-    std::cout << *pixel_row;
-  }
-
-  FILE *fout = fopen("prob.bin", "w");
-  probability_matrix.fwrite(fout);
-  fclose(fout);
-#endif
+  detector_ring<> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
+  dr.matrix_mc(gen, n_emissions);
 
   return 0;
 }
