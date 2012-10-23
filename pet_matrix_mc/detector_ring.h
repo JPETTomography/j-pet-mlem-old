@@ -18,6 +18,7 @@ public:
   , c_outer(radious+h_detector)
   , n_detectors(a_n_detectors)
   , n_pixels(a_n_pixels)
+  , n_t_matrix_pixels( (n_pixels/2 + n_pixels/2+1) / 2 )
   , s_pixel(a_s_pixel)
   {
     detector_type detector_base(h_detector, w_detector);
@@ -56,6 +57,10 @@ public:
 #endif
           auto inner = i_inner.first;
           auto outer = i_inner.first;
+
+          auto intersections = 0;
+          std::pair<int, int> lor;
+
           // process both sides
           for (auto side = 0; side < 2; ++side) {
             // starting from inner index
@@ -69,9 +74,11 @@ public:
             do {
               // bail out if intersects
               if ( (*this)[i].intersects(e) ) {
+                // FIXME: we shall count probability here now!
 #if DEBUG
                 std::cout << ' ' << i;
 #endif
+                (!(intersections++) ? lor.first : lor.second) = i;
                 break;
               }
               // step
@@ -87,12 +94,22 @@ public:
 #if DEBUG
             std::cout << std::endl;
 #endif
+            if (intersections >= 2) {
+              lor = std::make_pair(
+                std::max(lor.first, lor.second),
+                std::min(lor.first, lor.second)
+              );
+              auto pixels = t_matrix[lor];
+              pixels.reserve(n_t_matrix_pixels);
+              pixels[ (y * y+1) / 2 + x ] ++;
+            }
           }
         }
   }
 
 private:
-  lor_map_type matrix;
+  lor_map_type t_matrix;
+  size_t n_t_matrix_pixels;
   circle_type c_inner;
   circle_type c_outer;
   size_t n_pixels;

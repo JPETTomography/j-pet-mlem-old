@@ -10,8 +10,6 @@
 #include <cmdline.h>
 
 #include "detector_ring.h"
-#include "ring_detector.h"
-#include "reconstruction.h"
 
 template <typename F> F deg(F rad) { return rad * 180/M_PI; }
 template <typename F> F rad(F deg) { return deg * M_PI/180; }
