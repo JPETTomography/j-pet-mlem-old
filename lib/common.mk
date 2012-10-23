@@ -1,11 +1,13 @@
 TARGET := $(shell uname -s)
 
 ifneq ($(CC),icc)
-CPPFLAGS := -g -O3
+OPT := -O3
 else
-CXX=icpc
-CPPFLAGS := -g -fast
+CXX := icpc
+OPT := -fast
 endif
+
+CPPFLAGS += -g $(OPT)
 
 CXXFLAGS += -std=c++11
 ifeq ($(TARGET),Darwin)
