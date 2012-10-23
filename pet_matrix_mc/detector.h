@@ -31,6 +31,16 @@ public:
     return r;
   }
 
+  detector & operator += (point_type &t) {
+    for(auto p: *this) p += t;
+    return *this;
+  }
+
+  detector & operator += (point_type t) {
+    for(auto p: *this) p += t;
+    return *this;
+  }
+
 private:
   detector() {}
 };

@@ -93,29 +93,68 @@ int main(int argc, char *argv[]) {
   std::uniform_real_distribution<> phi_dis(0, M_PI);
   circle<> c_inner(radious);
   circle<> c_outer(radious+h_detector);
+  detector<> detector_base(h_detector, w_detector);
+
+  // move detector to the edge of inner ring
+  detector_base += point<>(radious + h_detector/2, 0.);
+
+  // produce detector ring
+  std::vector<detector<>> detector_ring;
+  for (auto n = 0; n < n_detectors; ++n) {
+    detector_ring.push_back( detector_base.rotated(2. * M_PI / n_detectors) );
+  }
 
   // iterating only triangular matrix,
   // being upper right part or whole system matrix
   for (auto y = 0; y < n_pixels/2; ++y)
     for (auto x = 0; x <= y; ++x)
       for (auto n = 0; n < n_emissions; ++n) {
-        auto rx = x + one_dis(gen);
-        auto ry = y + one_dis(gen);
+        auto rx = ( x + one_dis(gen) ) * s_pixel;
+        auto ry = ( y + one_dis(gen) ) * s_pixel;
         // ensure we are within a triangle
         if (rx > ry) continue;
         // random point within a pixel
         decltype(c_inner)::event_type e(rx, ry, phi_dis(gen));
         // secant for p and phi
-        auto s_inner = c_inner.secant(e);
-        auto s_outer = c_outer.secant(e);
+        auto i_inner = c_inner.secant_sections(e, n_detectors);
+        auto i_outer = c_outer.secant_sections(e, n_detectors);
+#if DEBUG
+        std::cout << '(' << e.x << ',' << e.y << '@' << e.phi << ')' << std::endl;
+#endif
+        auto inner = i_inner.first;
+        auto outer = i_inner.first;
+        // process both sides
+        for (auto side = 0; side < 2; ++side) {
+          // starting from inner index
+          // iterating to outer index
+          auto i = inner;
+          auto prev_i = i;
+          auto step = inner <= outer ? 1 : -1;
+#if DEBUG
+          std::cout << '[' << side << "] " << inner  << '-' << outer << ':' << step;
+#endif
+          do {
+            // bail out if intersects
+            if ( detector_ring[i].intersects(e) ) {
+#if DEBUG
+              std::cout << ' ' << i;
+#endif
+              break;
+            }
+            // step
+            prev_i = i, i = (i + step) % n_detectors;
+#if DEBUG
+            std::cout << " s<" << i;
+#endif
+          } while (prev_i != outer);
 
-        std::cout << '(' << e.x << ',' << e.y << ')'
-                  << ' ' << deg(e.phi)
-                  << " s1 = (" << s_inner.first.x  << ',' << s_inner.first.y  << ')'
-                  << ' ' << deg(atan2(s_inner.first.y, s_inner.first.x))
-                  << " s2 = (" << s_inner.second.x << ',' << s_inner.second.y << ')'
-                  << ' ' << deg(atan2(s_inner.second.y, s_inner.second.x))
-                  << std::endl;
+          // switch side
+          inner = i_inner.second;
+          outer = i_outer.second;
+#if DEBUG
+          std::cout << std::endl;
+#endif
+        }
       }
 #else
   Ring2DDetector<int, double> detector(n_detectors, n_pixels);

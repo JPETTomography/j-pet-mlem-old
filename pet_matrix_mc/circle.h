@@ -18,6 +18,13 @@ public:
   typedef std::pair<point_type, point_type> secant_type;
 
   secant_type secant(event_type &e) {
+#if DEBUG
+    std::cout
+      << " x=" << e.x
+      << " y=" << e.y
+      << " phi=" << e.phi
+      << std::endl;
+#endif
 #if GENERIC_LINE_EQUATION
     auto sq  = sqrt( e.b2 * ( -(e.c*e.c) + e.a2_b2 * r2 ) );
     auto asq = e.a*sq;
@@ -44,12 +51,36 @@ public:
   std::pair<angle_type, angle_type>
   secant_angles(event_type &e) {
     auto s = secant(e);
+#if DEBUG
+    std::cout
+      << " x1=" << s.first.x
+      << " y1=" << s.first.y
+      << " x2=" << s.second.x
+      << " y2=" << s.second.y
+      << std::endl;
+#endif
     return std::make_pair( std::atan2(s.first.y,  s.first.x),
                            std::atan2(s.second.y, s.second.x) );
   }
 
+  std::pair<size_t, size_t>
+  secant_sections(event_type &e, size_t n_detectors) {
+    auto sa = secant_angles(e);
+#if DEBUG
+    std::cout
+      << "a1=" << sa.first
+      << "a2=" << sa.second
+      << std::endl;
+#endif
+    return std::make_pair(
+      static_cast<int>( round( sa.first  * n_detectors / (2. * M_PI) ) ) % n_detectors,
+      static_cast<int>( round( sa.second * n_detectors / (2. * M_PI) ) ) % n_detectors
+    );
+  }
+
   F radious()  const { return r;  }
   F radious2() const { return r2; }
+
 private:
   const F r;
   const F r2;
