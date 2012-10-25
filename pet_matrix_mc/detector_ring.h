@@ -92,7 +92,7 @@ public:
             // iterating to outer index
             auto i = inner;
             auto prev_i = i;
-            auto step = inner <= outer ? 1 : -1;
+            auto step = (n_detectors+inner-outer) % n_detectors > (n_detectors+outer-inner) % n_detectors ? 1 : -1;
 #if DEBUG
             std::cout << '[' << side << "] " << inner  << '-' << outer << ':' << step;
 #endif
