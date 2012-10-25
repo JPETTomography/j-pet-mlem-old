@@ -96,6 +96,10 @@ public:
 #if DEBUG
             std::cout << '[' << side << "] " << inner  << '-' << outer << ':' << step;
 #endif
+            if (o_skip_intersection) {
+              (!(hits++) ? lor.first : lor.second) = i;
+            }
+            else
             do {
               auto points = (*this)[i].intersections(e);
               // bail out if intersects
@@ -121,23 +125,24 @@ public:
 #if DEBUG
             std::cout << std::endl;
 #endif
-            if (hits >= 2) {
-              auto i_pixel = t_pixel_index(x, y);
+          }
 
-              if (o_collect_mc_matrix) {
-                auto i_lor  = lor_index(lor);
-                auto pixels = t_matrix[i_lor];
+          if (hits >= 2) {
+            auto i_pixel = t_pixel_index(x, y);
 
-                // prealocate pixels for specific lor
-                if (!pixels) {
-                  t_matrix[i_lor] = pixels = new hit_type[n_t_matrix_pixels];
-                }
-                ++pixels[i_pixel];
+            if (o_collect_mc_matrix) {
+              auto i_lor  = lor_index(lor);
+              auto pixels = t_matrix[i_lor];
+
+              // prealocate pixels for specific lor
+              if (!pixels) {
+                t_matrix[i_lor] = pixels = new hit_type[n_t_matrix_pixels];
               }
+              ++pixels[i_pixel];
+            }
 
-              if (o_collect_pixel_stats) {
-                ++t_hits[i_pixel];
-              }
+            if (o_collect_pixel_stats) {
+              ++t_hits[i_pixel];
             }
           }
         }

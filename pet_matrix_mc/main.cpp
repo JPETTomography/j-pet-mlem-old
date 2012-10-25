@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
                       "scintilator", cmdline::oneof<std::string>("always", "scintilator"));
   cl.add<double>     ("acceptance",  'a', "acceptance probability factor",     false, 10.);
   cl.add             ("stats",       's', "show stats");
+  cl.add             ("sector-only",   0, "sector only test");
   cl.add             ("wait",          0, "wait before exit");
   cl.add<ssize_t>    ("lor",         'l', "select lor to output to a file",    false, -1);
   cl.add<std::string>("png",           0, "output PNG with hit/system matrix", false);
@@ -100,12 +101,12 @@ int main(int argc, char *argv[]) {
   detector_ring<> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
 
   if (cl.get<std::string>("model") == "always")
-    dr.matrix_mc(gen, always_accept<>(), n_emissions, true, true);
+    dr.matrix_mc(gen, always_accept<>(), n_emissions, true, true, cl.exist("sector-only"));
   if (cl.get<std::string>("model") == "scintilator")
     dr.matrix_mc(
       gen,
       scintilator_accept<std::mt19937>(gen, cl.get<double>("acceptance")),
-      n_emissions, true, true);
+      n_emissions, true, true, cl.exist("sector-only"));
   
   auto pixel_max = 0;
   auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
