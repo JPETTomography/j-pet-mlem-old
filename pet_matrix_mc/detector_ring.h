@@ -176,7 +176,6 @@ public:
       for (auto x = 0; x < n_pixels; ++x) {
         row[x] = gain * (lor > 0 ? matrix(lor, x, y) : hits(x, y));
       }
-      row[n_pixels_2] = pixel_max;
       fw.write_row(row);
     }
   }
