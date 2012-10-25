@@ -9,10 +9,10 @@
 #include <iostream>
 
 #include <cmdline.h>
-#include <png.h>
 
 #include "detector_ring.h"
 #include "model.h"
+#include "png_writer.h"
 
 // redefine help formatting for greater readibility
 namespace cmdline {
@@ -51,9 +51,7 @@ int main(int argc, char *argv[]) {
   cl.add             ("stats",       's', "show stats");
   cl.add             ("wait",          0, "wait before exit");
   cl.add<ssize_t>    ("lor",         'l', "select lor to output to a file",    false, -1);
-#ifdef HAVE_LIBPNG
   cl.add<std::string>("output",      'o', "output a file",                     false);
-#endif
 
   cl.parse_check(argc, argv);
 
@@ -138,58 +136,11 @@ int main(int argc, char *argv[]) {
       << std::endl;
   }
 
-#ifdef HAVE_LIBPNG
   // if we have libpng we can output some stuff
-  auto output = cl.get<std::string>("output");
-  if (output.size()) {
-    FILE *fp = nullptr;
-    png_structp png_ptr = nullptr;
-    png_infop info_ptr = nullptr;
-
-    if (!( png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL) )) {
-      throw(std::string("cannot create png version"));
-      goto cleanup;
-    }
-
-    if (!( info_ptr = png_create_info_struct(png_ptr) )) {
-      throw(std::string("cannot create png info"));
-      goto cleanup;
-    }
-
-    if (setjmp(png_jmpbuf(png_ptr))) {
-      throw(std::string("cannot hook png exception"));
-      goto cleanup;
-    }
-
-    if (!( fp = fopen(output.c_str(), "wb") )) {
-      throw(std::string("cannot create output file"));
-      goto cleanup;
-    }
-
-    png_init_io(png_ptr, fp);
-
-    // 16 bit gray
-    png_set_IHDR(png_ptr, info_ptr, n_pixels, n_pixels,
-          16, PNG_COLOR_TYPE_GRAY, PNG_INTERLACE_NONE,
-          PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-    png_write_info(png_ptr, info_ptr);
-
-    for (auto y = 0; y < n_pixels; ++y) {
-      uint16_t row[n_pixels];
-      for (auto x = 0; x < n_pixels; ++x) {
-        row[x] = static_cast<double>(lor > 0 ? dr.matrix(lor, x, y) : dr.hits(x, y))
-          * std::numeric_limits<uint16_t>::max() / pixel_max;
-      }
-      png_write_row(png_ptr, reinterpret_cast<png_bytep>(row));
-    }
-    png_write_end(png_ptr, NULL);
-
-  cleanup:
-    if (fp) fclose(fp);
-    if (info_ptr) png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
-    if (png_ptr) png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+  if (cl.exist("output")) {
+    png_writer png(cl.get<std::string>("output"));
+    dr.output_bitmap(png, pixel_max, lor);
   }
-#endif
 
   if (cl.exist("wait")) {
     std::cerr << "Press Enter." << std::endl;

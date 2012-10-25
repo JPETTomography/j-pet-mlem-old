@@ -166,6 +166,20 @@ public:
     return t_hits[pixel_index(x, y)];
   }
 
+  template<class FileWriter>
+  void output_bitmap(FileWriter &fw, hit_type pixel_max, ssize_t lor) {
+    fw.template write_header<uint16_t>(n_pixels, n_pixels);
+    auto gain = static_cast<double>(std::numeric_limits<uint16_t>::max()) / pixel_max;
+    for (auto y = 0; y < n_pixels; ++y) {
+      uint16_t row[n_pixels];
+      for (auto x = 0; x < n_pixels; ++x) {
+        row[x] = gain * (lor > 0 ? matrix(lor, x, y) : hits(x, y));
+      }
+      row[n_pixels_2] = pixel_max;
+      fw.write_row(row);
+    }
+  }
+
 private:
   size_t lor_index(lor_type &lor) const {
     if (lor.first < lor.second) {
