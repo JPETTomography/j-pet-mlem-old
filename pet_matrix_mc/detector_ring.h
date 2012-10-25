@@ -15,6 +15,7 @@ public:
   typedef pixels_type *matrix_type;
   typedef std::pair<size_t, size_t> lor_type;
   typedef circle<F> circle_type;
+  typedef point<F> point_type;
   typedef detector<F> detector_type;
 
   detector_ring(size_t a_n_detectors, size_t a_n_pixels, F a_s_pixel, F radious, F w_detector, F h_detector)
@@ -57,12 +58,10 @@ public:
   void matrix_mc(RandomGenerator gen, AcceptanceModel model, size_t n_emissions
 
   , bool o_collect_mc_matrix = true
-  , bool o_collect_pixel_stats = false
-  , bool o_skip_intersection = false) {
+  , bool o_collect_pixel_stats = true) {
 
     std::uniform_real_distribution<> one_dis(0., 1.);
     std::uniform_real_distribution<> phi_dis(0., M_PI);
-
     // iterating only triangular matrix,
     // being upper right part or whole system matrix
     for (auto y = 0; y < n_pixels_2; ++y)
@@ -85,7 +84,9 @@ public:
 
           auto hits = 0;
           lor_type lor;
-
+#if COLLECT_INTERSECTIONS
+          std::vector<point_type> ipoints;
+#endif
           // process both sides
           for (auto side = 0; side < 2; ++side) {
             // starting from inner index
@@ -96,10 +97,9 @@ public:
 #if DEBUG
             std::cout << '[' << side << "] " << inner  << '-' << outer << ':' << step;
 #endif
-            if (o_skip_intersection) {
-              (!(hits++) ? lor.first : lor.second) = i;
-            }
-            else
+#if SKIP_INTERSECTION
+            (!(hits++) ? lor.first : lor.second) = i;
+#else
             do {
               auto points = (*this)[i].intersections(e);
               // bail out if intersects
@@ -110,6 +110,9 @@ public:
                 std::cout << ' ' << i;
 #endif
                 (!(hits++) ? lor.first : lor.second) = i;
+#if COLLECT_INTERSECTIONS
+                for(auto &p: points) ipoints.push_back(p);
+#endif
                 break;
               }
               // step
@@ -118,13 +121,10 @@ public:
               std::cout << " s<" << i;
 #endif
             } while (prev_i != outer);
-
+#endif
             // switch side
             inner = i_inner.second;
             outer = i_outer.second;
-#if DEBUG
-            std::cout << std::endl;
-#endif
           }
 
           if (hits >= 2) {
@@ -144,7 +144,17 @@ public:
             if (o_collect_pixel_stats) {
               ++t_hits[i_pixel];
             }
+
+#if COLLECT_INTERSECTIONS
+            for(auto &p: ipoints) intersection_points.push_back(p);
+#endif
+#if DEBUG
+            std::cout << " hit";
+#endif
           }
+#if DEBUG
+          std::cout << std::endl;
+#endif
         }
   }
 
@@ -160,16 +170,19 @@ public:
 
   hit_type matrix(lor_type lor, size_t x, size_t y) const {
     auto pixels = t_matrix[lor_index(lor)];
-    return pixels ? pixels[pixel_index(x, y)] : 0;
+    bool diag;
+    return pixels ? pixels[pixel_index(x, y, diag)] * (diag ? 2 : 1) : 0;
   }
 
   hit_type matrix(size_t lor, size_t x, size_t y) const {
     auto pixels = t_matrix[lor];
-    return pixels ? pixels[pixel_index(x, y)] : 0;
+    bool diag;
+    return pixels ? pixels[pixel_index(x, y, diag)] * (diag ? 2 : 1) : 0;
   }
 
   hit_type hits(size_t x, size_t y) const {
-    return t_hits[pixel_index(x, y)];
+    bool diag;
+    return t_hits[pixel_index(x, y, diag)] * (diag ? 1 : 1);
   }
 
   template<class FileWriter>
@@ -179,7 +192,8 @@ public:
     for (auto y = 0; y < n_pixels; ++y) {
       uint16_t row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
-        row[x] = std::numeric_limits<uint16_t>::max() - gain * (lor > 0 ? matrix(lor, x, y) : hits(x, y));
+        auto v = (lor > 0 ? matrix(lor, x, y) : hits(x, y));
+        row[x] = std::numeric_limits<uint16_t>::max() - gain * v;
       }
       fw.write_row(row);
     }
@@ -189,12 +203,14 @@ public:
     svg << dr.c_inner;
     svg << dr.c_outer;
 
-    // detector_type detector_base(.5, .5);
-    // detector_base += point<>(.5, 0.);
-    // svg << detector_base;
     for (auto detector: dr) {
       svg << detector;
     }
+#if COLLECT_INTERSECTIONS
+    for (auto &p: dr.intersection_points) {
+      svg << "<circle cx=\"" << p.x << "\" cy=\"" << p.y << "\" r=\"0.002\"/>" << std::endl;
+    }
+#endif
     return svg;
   }
 
@@ -210,7 +226,7 @@ private:
     return y*(y+1)/2 + x;
   }
 
-  size_t pixel_index(ssize_t x, ssize_t y) const {
+  size_t pixel_index(ssize_t x, ssize_t y, bool &diag) const {
     // shift so 0,0 is now center
     x -= n_pixels_2; y -= n_pixels_2;
     // mirror
@@ -218,10 +234,14 @@ private:
     if (y < 0) y = -y-1;
     // triangulate
     if (x > y) std::swap(x, y);
+    diag = (x == y);
     return t_pixel_index(x, y);
   }
 
 private:
+#if COLLECT_INTERSECTIONS
+  std::vector<point_type> intersection_points;
+#endif
   matrix_type t_matrix;
   pixels_type t_hits;
   size_t n_t_matrix_pixels;

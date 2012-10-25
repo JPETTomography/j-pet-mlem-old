@@ -20,12 +20,15 @@ public:
           << std::endl;
     *this << "<defs>" << std::endl;
     *this << "  <style type=\"text/css\"><![CDATA[" << std::endl;
-    *this << "    polygon { fill: transparent; stroke: red;   stroke-width: " << stroke << "; }" << std::endl;
+#if BLACK_BACKGROUND
+    *this << "    svg     { background: black; }" << std::endl;
+#endif
+    *this << "    polygon { fill: #ff9090;     stroke: red;   stroke-width: " << stroke << "; }" << std::endl;
     *this << "    circle  { fill: transparent; stroke: green; stroke-width: " << stroke << "; }" << std::endl;
     *this << "  ]]></style>" << std::endl;
     *this << "</defs>" << std::endl;
     *this << "<g transform=\"translate(2, 2)\">" << std::endl;
-    *this << "<g transform=\"scale(" << scale << ")\">" << std::endl;
+    *this << "<g transform=\"scale(" << scale << ',' << scale << ")\">" << std::endl;
     *this << "<g transform=\"translate(" << x_translate
                                   << "," << y_translate
                                   << ")\">" << std::endl;
