@@ -57,7 +57,7 @@ public:
     for(auto p: p) {
       svg << p.x << ' ' << p.y << ' ';
     }
-    svg << "\" stroke=\"red\" fill=\"transparent\" stroke-width=\".01\"/>" << std::endl;
+    svg << "\"/>" << std::endl;
     return svg;
   }
 };

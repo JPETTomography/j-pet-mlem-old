@@ -83,7 +83,7 @@ public:
   F radious2() const { return r2; }
 
   friend svg_ostream<F> & operator << (svg_ostream<F> &svg, circle &c) {
-    svg << "<circle cx=\"0\" cy=\"0\" r=\"" << c.r << "\" stroke=\"green\" fill=\"transparent\" stroke-width=\".01\"/>" << std::endl;
+    svg << "<circle cx=\"0\" cy=\"0\" r=\"" << c.r << "\"/>" << std::endl;
     return svg;
   }
 
