@@ -23,21 +23,8 @@ public:
     return r;
   }
 
-  detector operator + (point_type &t) {
-    detector r;
-    for(auto p: *this) {
-      r.push_back( p + t );
-    }
-    return r;
-  }
-
-  detector & operator += (point_type &t) {
-    for(auto p: *this) p += t;
-    return *this;
-  }
-
   detector & operator += (point_type t) {
-    for(auto p: *this) p += t;
+    for(auto &p: *this) p += t;
     return *this;
   }
 

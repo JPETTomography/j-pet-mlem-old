@@ -5,6 +5,7 @@
 
 #include "detector.h"
 #include "circle.h"
+#include "svg_ostream.h"
 
 template <typename F = double, typename HitType = int>
 class detector_ring : public std::vector<detector<F>> {
@@ -40,7 +41,7 @@ public:
     // produce detector ring
     std::vector<detector<>> detector_ring;
     for (auto n = 0; n < n_detectors; ++n) {
-      this->push_back( detector_base.rotated(2. * M_PI / n_detectors) );
+      this->push_back( detector_base.rotated(2. * M_PI * n / n_detectors) );
     }
   }
 
@@ -178,6 +179,19 @@ public:
       row[n_pixels_2] = pixel_max;
       fw.write_row(row);
     }
+  }
+
+  friend svg_ostream<F> & operator << (svg_ostream<F> &svg, detector_ring &dr) {
+    svg << dr.c_inner;
+    svg << dr.c_outer;
+
+    // detector_type detector_base(.5, .5);
+    // detector_base += point<>(.5, 0.);
+    // svg << detector_base;
+    for (auto detector: dr) {
+      svg << detector;
+    }
+    return svg;
   }
 
 private:

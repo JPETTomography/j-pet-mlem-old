@@ -13,6 +13,7 @@
 #include "detector_ring.h"
 #include "model.h"
 #include "png_writer.h"
+#include "svg_ostream.h"
 
 // redefine help formatting for greater readibility
 namespace cmdline {
@@ -52,6 +53,7 @@ int main(int argc, char *argv[]) {
   cl.add             ("wait",          0, "wait before exit");
   cl.add<ssize_t>    ("lor",         'l', "select lor to output to a file",    false, -1);
   cl.add<std::string>("output",      'o', "output a file",                     false);
+  cl.add<std::string>("svg",           0, "output a file",                     false);
 
   cl.parse_check(argc, argv);
 
@@ -140,6 +142,13 @@ int main(int argc, char *argv[]) {
   if (cl.exist("output")) {
     png_writer png(cl.get<std::string>("output"));
     dr.output_bitmap(png, pixel_max, lor);
+  }
+
+  if (cl.exist("svg")) {
+    svg_ostream<> svg(cl.get<std::string>("svg"),
+      radious+h_detector, radious+h_detector,
+      512., 512.);
+    svg << dr;
   }
 
   if (cl.exist("wait")) {

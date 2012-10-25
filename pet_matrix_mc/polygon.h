@@ -2,6 +2,7 @@
 
 #include "point.h"
 #include "event.h"
+#include "svg_ostream.h"
 
 template <typename F = double>
 class polygon : public std::vector<point<F>> {
@@ -49,5 +50,14 @@ public:
       p1 = p2;
     }
     return r;
+  }
+
+  friend svg_ostream<F> & operator << (svg_ostream<F> &svg, polygon &p) {
+    svg << "<polygon points=\"";
+    for(auto p: p) {
+      svg << p.x << ' ' << p.y << ' ';
+    }
+    svg << "\" stroke=\"red\" fill=\"transparent\" stroke-width=\".01\"/>" << std::endl;
+    return svg;
   }
 };
