@@ -174,7 +174,7 @@ public:
     for (auto y = 0; y < n_pixels; ++y) {
       uint16_t row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
-        row[x] = gain * (lor > 0 ? matrix(lor, x, y) : hits(x, y));
+        row[x] = std::numeric_limits<uint16_t>::max() - gain * (lor > 0 ? matrix(lor, x, y) : hits(x, y));
       }
       fw.write_row(row);
     }

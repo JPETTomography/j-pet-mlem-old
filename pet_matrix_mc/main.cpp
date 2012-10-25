@@ -52,8 +52,8 @@ int main(int argc, char *argv[]) {
   cl.add             ("stats",       's', "show stats");
   cl.add             ("wait",          0, "wait before exit");
   cl.add<ssize_t>    ("lor",         'l', "select lor to output to a file",    false, -1);
-  cl.add<std::string>("output",      'o', "output a file",                     false);
-  cl.add<std::string>("svg",           0, "output a file",                     false);
+  cl.add<std::string>("png",           0, "output PNG with hit/system matrix", false);
+  cl.add<std::string>("svg",           0, "output SVG detector ring geometry", false);
 
   cl.parse_check(argc, argv);
 
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
   auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
   auto lor       = cl.get<ssize_t>("lor");
 
-  if (cl.exist("stats") || cl.exist("output"))
+  if (cl.exist("stats") || cl.exist("png"))
     for (auto y = 0; y < n_pixels; ++y) {
       for (auto x = 0; x < n_pixels; ++x) {
         auto hits = lor > 0 ? dr.matrix(lor, x, y) : dr.hits(x, y);
@@ -138,9 +138,8 @@ int main(int argc, char *argv[]) {
       << std::endl;
   }
 
-  // if we have libpng we can output some stuff
-  if (cl.exist("output")) {
-    png_writer png(cl.get<std::string>("output"));
+  if (cl.exist("png")) {
+    png_writer png(cl.get<std::string>("png"));
     dr.output_bitmap(png, pixel_max, lor);
   }
 
@@ -149,6 +148,11 @@ int main(int argc, char *argv[]) {
       radious+h_detector, radious+h_detector,
       512., 512.);
     svg << dr;
+    if (cl.exist("png")) {
+      svg.link_image(cl.get<std::string>("png"),
+        -(s_pixel*n_pixels)/2., -(s_pixel*n_pixels)/2.,
+          s_pixel*n_pixels, s_pixel*n_pixels);
+    }
   }
 
   if (cl.exist("wait")) {

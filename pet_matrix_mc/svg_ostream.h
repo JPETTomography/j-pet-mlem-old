@@ -11,7 +11,7 @@ public:
     *this << "<?xml version=\"1.0\" standalone=\"no\"?>" << std::endl;
     *this << "<svg width=\"" << image_width
            << "\" height=\"" << image_height
-           << "\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">"
+           << "\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">"
           << std::endl;
     auto x_translate = x_max;
     auto y_translate = y_max;
@@ -22,10 +22,21 @@ public:
                                   << "," << y_translate
                                   << ")\">" << std::endl;
   }
+
   ~svg_ostream() {
     *this << "</g>" << std::endl;
     *this << "</g>" << std::endl;
     *this << "</g>" << std::endl;
     *this << "</svg>" << std::endl;
+  }
+
+  svg_ostream & link_image(std::string fn, F x, F y, F width, F height) {
+    *this << "<image xlink:href=\"" << fn
+          << "\" x=\"" << x
+          << "\" y=\"" << y
+          << "\" height=\"" << width
+          << "\" width=\""  << height
+          << "\"/>" << std::endl;
+    return *this;
   }
 };
