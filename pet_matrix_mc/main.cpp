@@ -64,31 +64,31 @@ int main(int argc, char *argv[]) {
   auto h_detector  = cl.get<double>("h-detector");
 
   // automatic pixel size
-  if (radious == 0.) {
-    if (cl.get<double>("s-pixel") == 0.) {
-      radious = sqrt(2.);
+  if (!cl.exist("radious")) {
+    if (!cl.exist("s-pixel")) {
+      radious = M_SQRT2; // exact result
     } else {
-      radious = sqrt(s_pixel * n_pixels);
+      radious = s_pixel * n_pixels / M_SQRT2;
     }
     std::cerr << "--radious=" << radious << std::endl;
   }
 
   // automatic radious
-  if (s_pixel == 0.) {
-    if (cl.get<double>("radious") == 0.) {
-      s_pixel = 2./n_pixels;
+  if (!cl.exist("s-pixel")) {
+    if (!cl.exist("radious")) {
+      s_pixel = 2. / n_pixels; // exact result
     } else {
-      s_pixel = radious*radious / n_pixels;
+      s_pixel = M_SQRT2 * radious / n_pixels;
     }
     std::cerr << "--s-pixel=" << s_pixel << std::endl;
   }
 
   // automatic detector size
-  if (w_detector == 0.) {
+  if (!cl.exist("w-detector")) {
     w_detector = 2 * M_PI * .9 * radious / n_detectors;
     std::cerr << "--w-detector=" << w_detector << std::endl;
   }
-  if (h_detector == 0.) {
+  if (!cl.exist("h-detector")) {
     h_detector = w_detector;
     std::cerr << "--h-detector=" << h_detector << std::endl;
   }
