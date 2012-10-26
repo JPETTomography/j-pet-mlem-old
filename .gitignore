@@ -9,3 +9,4 @@ pet_matrix_mc/pet_matrix_mc
 pet_matrix_mc/*.png
 tof/tof
 *.bin
+doc/html/
