@@ -10,6 +10,7 @@
 template <typename F = double, typename HitType = int>
 class detector_ring : public std::vector<detector<F>> {
 public:
+  typedef uint8_t bitmap_pixel_type;
   typedef HitType hit_type;
   typedef hit_type *pixels_type;
   typedef pixels_type *matrix_type;
@@ -182,18 +183,18 @@ public:
 
   hit_type hits(size_t x, size_t y) const {
     bool diag;
-    return t_hits[pixel_index(x, y, diag)] * (diag ? 1 : 1);
+    return t_hits[pixel_index(x, y, diag)] * (diag ? 2 : 1);
   }
 
   template<class FileWriter>
   void output_bitmap(FileWriter &fw, hit_type pixel_max, ssize_t lor) {
-    fw.template write_header<uint16_t>(n_pixels, n_pixels);
-    auto gain = static_cast<double>(std::numeric_limits<uint16_t>::max()) / pixel_max;
+    fw.template write_header<bitmap_pixel_type>(n_pixels, n_pixels);
+    auto gain = static_cast<double>(std::numeric_limits<bitmap_pixel_type>::max()) / pixel_max;
     for (auto y = 0; y < n_pixels; ++y) {
-      uint16_t row[n_pixels];
+      bitmap_pixel_type row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
         auto v = (lor > 0 ? matrix(lor, x, y) : hits(x, y));
-        row[x] = std::numeric_limits<uint16_t>::max() - gain * v;
+        row[x] = std::numeric_limits<bitmap_pixel_type>::max() - gain * v;
       }
       fw.write_row(row);
     }
