@@ -1,10 +1,13 @@
 TARGET := $(shell uname -s)
 
-ifneq ($(CC),icc)
-OPT := -O3
-else
+ifeq ($(CC),icc)
 CXX := icpc
 OPT := -fast
+else
+OPT := -O3
+ifeq ($(CC),gcc)
+CXX := g++
+endif
 endif
 
 CPPFLAGS += -g $(OPT)
