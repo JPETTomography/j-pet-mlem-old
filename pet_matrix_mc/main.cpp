@@ -49,11 +49,13 @@ int main(int argc, char *argv[]) {
   cl.add<std::string>("model",       'm', "acceptance model",                  false,
                       "scintilator", cmdline::oneof<std::string>("always", "scintilator"));
   cl.add<double>     ("acceptance",  'a', "acceptance probability factor",     false, 10.);
-  cl.add             ("stats",       's', "show stats");
+  cl.add             ("stats",         0, "show stats");
   cl.add             ("wait",          0, "wait before exit");
   cl.add<ssize_t>    ("lor",         'l', "select lor to output to a file",    false, -1);
   cl.add<std::string>("png",           0, "output PNG with hit/system matrix", false);
   cl.add<std::string>("svg",           0, "output SVG detector ring geometry", false);
+  cl.add<std::mt19937::result_type>
+                     ("seed",        's', "random number generator seed",      false);
 
   cl.parse_check(argc, argv);
 
@@ -96,7 +98,10 @@ int main(int argc, char *argv[]) {
   }
 
   std::random_device rd;
-  std::mt19937 gen(rd());
+  std::mt19937 seed_gen(cl.get<std::mt19937::result_type>("seed"));
+  std::mt19937 rd_gen(cl.get<std::mt19937::result_type>("seed"));
+  std::mt19937 &gen = cl.exist("seed") ? seed_gen : rd_gen;
+
   detector_ring<> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
 
   if (cl.get<std::string>("model") == "always")
