@@ -1,8 +1,5 @@
 TARGET := $(shell uname -s)
 
-CXX=/usr/bin/g++-4.7
-CC=/usr/bin/gcc-4.7
-
 ifneq ($(CC),icc)
 OPT := -O3
 else
