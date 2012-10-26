@@ -52,9 +52,9 @@ public:
     return r;
   }
 
-  friend svg_ostream<F> & operator << (svg_ostream<F> &svg, polygon &p) {
+  friend svg_ostream<F> & operator << (svg_ostream<F> &svg, polygon &pg) {
     svg << "<polygon points=\"";
-    for(auto p: p) {
+    for(auto p: pg) {
       svg << p.x << ' ' << p.y << ' ';
     }
     svg << "\"/>" << std::endl;
