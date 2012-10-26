@@ -77,9 +77,6 @@ public:
           // secant for p and phi
           auto i_inner = c_inner.secant_sections(e, n_detectors);
           auto i_outer = c_outer.secant_sections(e, n_detectors);
-#if DEBUG
-          std::cout << '(' << e.x << ',' << e.y << '@' << e.phi << ')' << std::endl;
-#endif
           auto inner = i_inner.first;
           auto outer = i_inner.first;
 
@@ -95,9 +92,6 @@ public:
             auto i = inner;
             auto prev_i = i;
             auto step = (n_detectors+inner-outer) % n_detectors > (n_detectors+outer-inner) % n_detectors ? 1 : -1;
-#if DEBUG
-            std::cout << '[' << side << "] " << inner  << '-' << outer << ':' << step;
-#endif
 #if SKIP_INTERSECTION
             (!(hits++) ? lor.first : lor.second) = i;
 #else
@@ -106,10 +100,6 @@ public:
               // bail out if intersects
               if ( points.size() == 2 &&
                    model( (points[1]-points[0]).length() ) ) {
-                // FIXME: we shall count probability here now!
-#if DEBUG
-                std::cout << ' ' << i;
-#endif
                 (!(hits++) ? lor.first : lor.second) = i;
 #if COLLECT_INTERSECTIONS
                 for(auto &p: points) ipoints.push_back(p);
@@ -118,9 +108,6 @@ public:
               }
               // step
               prev_i = i, i = (i + step) % n_detectors;
-#if DEBUG
-              std::cout << " s<" << i;
-#endif
             } while (prev_i != outer);
 #endif
             // switch side
@@ -149,13 +136,7 @@ public:
 #if COLLECT_INTERSECTIONS
             for(auto &p: ipoints) intersection_points.push_back(p);
 #endif
-#if DEBUG
-            std::cout << " hit";
-#endif
           }
-#if DEBUG
-          std::cout << std::endl;
-#endif
         }
   }
 
