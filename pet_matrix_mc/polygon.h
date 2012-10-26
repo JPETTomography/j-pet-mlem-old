@@ -37,13 +37,11 @@ public:
         if (r.size() == 2) return r;
       } else if (v1 * v2 < 0.) {
         // calculate intersection
-#if GENERIC_LINE_EQUATION
         auto m = e.a*(p1.x - p2.x) + e.b*(p1.y - p2.y);
         r.push_back({
           ( e.c*(p1.x - p2.x) + e.b*(p2.x*p1.y - p1.x*p2.y) ) / m,
           ( e.c*(p1.y - p2.y) + e.a*(p1.x*p2.y - p2.x*p1.y) ) / m
         });
-#endif
         if (r.size() == 2) return r;
       }
       v1 = v2;
