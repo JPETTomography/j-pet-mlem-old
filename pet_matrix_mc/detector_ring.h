@@ -5,6 +5,7 @@
 
 #include "detector.h"
 #include "circle.h"
+#include "bstream.h"
 #include "svg_ostream.h"
 
 #if _OPENMP
@@ -17,6 +18,8 @@ class detector_ring : public std::vector<detector<F>> {
 public:
   typedef uint8_t bitmap_pixel_type;
   typedef HitType hit_type;
+  typedef uint32_t file_int;
+  typedef uint16_t file_half;
   typedef hit_type *pixels_type;
   typedef pixels_type *matrix_type;
   typedef std::pair<size_t, size_t> lor_type;
@@ -40,6 +43,13 @@ public:
   , n_lors( a_n_detectors * (a_n_detectors+1) / 2 )
   , s_pixel(a_s_pixel)
   {
+    if(radious    <= 0.)   throw("invalid radious");
+    if(w_detector <= 0. ||
+       h_detector <= 0.)   throw("invalid detector size");
+    if(n_detectors % 4)    throw("number of detectors must be multiple of 4");
+    if(n_pixels  % 2)      throw("number of pixels must be multiple of 2");
+    if(s_pixel    <= 0.)   throw("invalid pixel size");
+
     // reserve for all lors
     t_matrix = new pixels_type[n_lors]();
 
@@ -234,15 +244,88 @@ public:
     return svg;
   }
 
+  constexpr static file_int fourcc(int a, int b, int c, int d) {
+    return ( (file_int) (((d)<<24) | ((c)<<16) | ((b)<<8) | (a)) );
+  };
+
+  // serialization
+  static const auto magic = fourcc('P','E','T','t');
+
+  friend obstream & operator << (obstream &out, detector_ring &dr) {
+    out << magic;
+    out << static_cast<file_int>(dr.n_pixels_2);
+
+    for (file_half a = 0; a < dr.n_detectors; ++a) {
+      for (file_half b = 0; b <= a; ++b) {
+        lor_type lor(a, b);
+        auto pixels = dr.t_matrix[lor_index(lor)];
+        if (pixels) {
+          out << a << b;
+          // find out count of non-zero pixels
+          file_int count = 0;
+          for (auto i = 0; i < dr.n_t_matrix_pixels; ++i) {
+            if (pixels[i]) count++;
+          }
+          out << count;
+          // write non-zero pixel pairs
+          for (file_half y = 0; y < dr.n_pixels_2; ++y) {
+            for (file_half x = 0; x <= y; ++x) {
+              file_int hits = pixels[t_pixel_index(x, y)];
+              if (hits) {
+                out << x << y << hits;
+              }
+            }
+          }
+        }
+      }
+    }
+    return out;
+  }
+
+  friend ibstream & operator >> (ibstream &in, detector_ring &dr) {
+    file_int in_magic;
+    in >> in_magic;
+    if (in_magic != magic) {
+      throw("invalid file type format");
+    }
+    file_int in_n_pixel_2;
+    in >> in_n_pixel_2;
+    if (in_n_pixel_2 != dr.n_pixels_2) {
+      throw("incompatible input matrix dimensions");
+    }
+    while (!in.eof()) {
+      file_half a, b;
+      in >> a >> b;
+      lor_type lor(a, b);
+      auto i_lor = lor_index(lor);
+      auto pixels = dr.t_matrix[i_lor];
+      if (!pixels) {
+        dr.t_matrix[i_lor] = pixels = new hit_type[dr.n_t_matrix_pixels];
+      }
+      file_int count;
+      in >> count;
+      // increment hits
+      for (auto i = 0; i < count; ++i) {
+        file_half x, y;
+        file_int hits;
+        in >> x >> y >> hits;
+        auto i_p = t_pixel_index(x, y);
+        pixels[i_p] += hits;
+        dr.t_hits[i_p] += hits;
+      }
+    }
+    return in;
+  }
+
 private:
-  size_t lor_index(lor_type &lor) const {
+  static size_t lor_index(lor_type &lor) {
     if (lor.first < lor.second) {
       std::swap(lor.first, lor.second);
     }
     return lor.first*(lor.first+1)/2 + lor.second;
   }
 
-  size_t t_pixel_index(size_t x, size_t y) const {
+  static constexpr size_t t_pixel_index(size_t x, size_t y) {
     return y*(y+1)/2 + x;
   }
 

@@ -43,6 +43,7 @@ namespace cmdline {
 
 int main(int argc, char *argv[]) {
 
+try {
   cmdline::parser cl;
 
 #if _OPENMP
@@ -61,6 +62,7 @@ int main(int argc, char *argv[]) {
   cl.add             ("stats",         0, "show stats");
   cl.add             ("wait",          0, "wait before exit");
   cl.add<ssize_t>    ("lor",         'l', "select lor to output to a file",    false, -1);
+  cl.add<std::string>("output",      'o', "output binary triangular sparse system matrix", false);
   cl.add<std::string>("png",           0, "output PNG with hit/system matrix", false);
   cl.add<std::string>("svg",           0, "output SVG detector ring geometry", false);
   cl.add<std::mt19937::result_type>
@@ -119,6 +121,11 @@ int main(int argc, char *argv[]) {
 
   detector_ring<> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
 
+  for (auto fn: cl.rest()) {
+    ibstream in(fn, std::ios::binary);
+    in >> dr;
+  }
+
   if (cl.get<std::string>("model") == "always")
     dr.matrix_mc(gen, always_accept<>(), n_emissions);
   if (cl.get<std::string>("model") == "scintilator")
@@ -158,6 +165,11 @@ int main(int argc, char *argv[]) {
       << std::endl;
   }
 
+  if (cl.exist("output")) {
+    obstream out(cl.get<std::string>("output"), std::ios::binary | std::ios::trunc);
+    out << dr;
+  }
+
   if (cl.exist("png")) {
     png_writer png(cl.get<std::string>("png"));
     dr.output_bitmap(png, pixel_max, lor);
@@ -181,4 +193,11 @@ int main(int argc, char *argv[]) {
   }
 
   return 0;
+
+} catch(std::string &ex) {
+  std::cerr << "error: " << ex << std::endl;
+} catch(const char *ex) {
+  std::cerr << "error: " << ex << std::endl;
+}
+
 }
