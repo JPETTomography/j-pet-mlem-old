@@ -45,6 +45,7 @@ int main(int argc, char *argv[]) {
 
 try {
   cmdline::parser cl;
+  cl.footer("matrix_file ...");
 
 #if _OPENMP
   cl.add<size_t>     ("n-threads",   't', "number of OpenMP threads",          false);
