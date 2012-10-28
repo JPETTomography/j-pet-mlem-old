@@ -7,6 +7,10 @@
 #include "circle.h"
 #include "svg_ostream.h"
 
+#if _OPENMP
+#include <omp.h>
+#endif
+
 /// Provides model for 2D ring of detectors
 template <typename F = double, typename HitType = int>
 class detector_ring : public std::vector<detector<F>> {
@@ -76,8 +80,13 @@ public:
     std::uniform_real_distribution<> phi_dis(0., M_PI);
     // iterating only triangular matrix,
     // being upper right part or whole system matrix
-    for (auto y = 0; y < n_pixels_2; ++y)
-      for (auto x = 0; x <= y; ++x)
+#if _OPENMP
+    #pragma omp parallel for schedule(dynamic)
+#endif
+    // descending, since biggest chunks start first, but may end last
+    for (ssize_t y = n_pixels_2 - 1; y >= 0; --y) {
+      for (auto x = 0; x <= y; ++x) {
+        // if (x > y) continue;
         for (auto n = 0; n < n_emissions; ++n) {
           auto rx = ( x + one_dis(gen) ) * s_pixel;
           auto ry = ( y + one_dis(gen) ) * s_pixel;
@@ -142,7 +151,16 @@ public:
               // prealocate pixels for specific lor
               // all are nulls upon startup
               if (!pixels) {
+#if _OPENMP
+                // entering critical section, and check again
+                // because it may have changed in meantime
+                #pragma omp critical
+                if ( !(pixels = t_matrix[i_lor]) ) {
+                  pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels];
+                }
+#else
                 t_matrix[i_lor] = pixels = new hit_type[n_t_matrix_pixels];
+#endif
               }
               ++pixels[i_pixel];
             }
@@ -156,6 +174,8 @@ public:
 #endif
           }
         }
+      }
+    }
   }
 
   size_t lors() const { return n_lors; }

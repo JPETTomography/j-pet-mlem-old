@@ -15,6 +15,10 @@
 #include "png_writer.h"
 #include "svg_ostream.h"
 
+#if _OPENMP
+#include <omp.h>
+#endif
+
 // @cond PRIVATE
 // redefine help formatting for greater readibility
 namespace cmdline {
@@ -41,6 +45,9 @@ int main(int argc, char *argv[]) {
 
   cmdline::parser cl;
 
+#if _OPENMP
+  cl.add<size_t>     ("n-threads",   't', "number of OpenMP threads",          false);
+#endif
   cl.add<size_t>     ("n-pixels",    'n', "number of pixels in one dimension", false, 256);
   cl.add<size_t>     ("n-detectors", 'd', "number of ring detectors",          false, 64);
   cl.add<size_t>     ("n-emissions", 'e', "emissions per pixel",               false, 1);
@@ -60,6 +67,12 @@ int main(int argc, char *argv[]) {
                      ("seed",        's', "random number generator seed",      false);
 
   cl.parse_check(argc, argv);
+
+#if _OPENMP
+  if (cl.exist("n-threads")) {
+    omp_set_num_threads(cl.get<size_t>("n-threads"));
+  }
+#endif
 
   auto n_pixels    = cl.get<size_t>("n-pixels");
   auto n_detectors = cl.get<size_t>("n-detectors");

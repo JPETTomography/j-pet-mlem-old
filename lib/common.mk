@@ -10,6 +10,11 @@ CXX := g++
 endif
 endif
 
+# just in case
+ifdef OPENMP
+OMP := 1
+endif
+
 CPPFLAGS += -g
 ifeq ($(OPT),fast)
 CPPFLAGS += -fast
@@ -19,13 +24,21 @@ endif
 
 CXXFLAGS += -std=c++11
 ifeq ($(TARGET),Darwin)
+# force GCC, as clang has not OpenMP on OSX
+ifdef OMP
+CC  := gcc
+CXX := g++
+endif
+ifneq ($(CXX),g++)
 CXXFLAGS += -stdlib=libc++
 LDFLAGS  += -stdlib=libc++
+endif
 endif
 
 ifdef OMP
 CPPFLAGS += -fopenmp
 LDFLAGS  += -fopenmp
+SUFFIX   := -omp
 endif
 
 CPPFLAGS += -MMD
@@ -35,7 +48,7 @@ CPPFLAGS += -I../lib/catch/include
 CPPFLAGS += -I../lib/cmdline
 
 # binary is folder name
-BIN  := $(notdir $(realpath .))
+BIN  := $(notdir $(realpath .))$(SUFFIX)
 SRC  := $(filter-out %_test.cpp, $(wildcard *.cpp))
 OBJ  += $(SRC:.cpp=.o)
 DEP  += $(SRC:.cpp=.d)
