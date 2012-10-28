@@ -2,15 +2,20 @@ TARGET := $(shell uname -s)
 
 ifeq ($(CC),icc)
 CXX := icpc
-OPT := -fast
+OPT := fast
 else
-OPT := -O3
+OPT := 3
 ifeq ($(CC),gcc)
 CXX := g++
 endif
 endif
 
-CPPFLAGS += -g $(OPT)
+CPPFLAGS += -g
+ifeq ($(OPT),fast)
+CPPFLAGS += -fast
+else
+CPPFLAGS += -O$(OPT)
+endif
 
 CXXFLAGS += -std=c++11
 ifeq ($(TARGET),Darwin)
