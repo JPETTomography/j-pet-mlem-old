@@ -11,3 +11,8 @@ tof/tof
 tof/tof-omp
 *.bin
 doc/html/
+/*.svg
+/*.png
+/*.bin
+/*.pdf
+/*.txt
