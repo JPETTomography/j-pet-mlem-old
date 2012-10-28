@@ -15,6 +15,7 @@
 #include "png_writer.h"
 #include "svg_ostream.h"
 
+// @cond PRIVATE
 // redefine help formatting for greater readibility
 namespace cmdline {
   namespace detail {
@@ -34,6 +35,7 @@ namespace cmdline {
     }
   }
 }
+// @end cond
 
 int main(int argc, char *argv[]) {
 

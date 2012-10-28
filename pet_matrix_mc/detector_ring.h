@@ -7,6 +7,7 @@
 #include "circle.h"
 #include "svg_ostream.h"
 
+/// Provides model for 2D ring of detectors
 template <typename F = double, typename HitType = int>
 class detector_ring : public std::vector<detector<F>> {
 public:
@@ -19,6 +20,12 @@ public:
   typedef point<F> point_type;
   typedef detector<F> detector_type;
 
+  /// @param a_n_detectors number of detectors on ring
+  /// @param a_n_pixels    number of pixels in directions
+  /// @param a_s_pixel     size of single pixel
+  /// @param radious       radious of ring
+  /// @param w_detector    width of single detector (along ring)
+  /// @param h_detector    height/depth of single detector (perpendicular to ring)
   detector_ring(size_t a_n_detectors, size_t a_n_pixels, F a_s_pixel, F radious, F w_detector, F h_detector)
   : c_inner(radious)
   , c_outer(radious+h_detector)
@@ -37,10 +44,11 @@ public:
 
     detector_type detector_base(h_detector, w_detector);
 
-    // move detector to the edge of inner ring
+    // move detector to the right edge of inner ring
+    // along zero angle polar coordinate
     detector_base += point<>(radious + h_detector/2, 0.);
 
-    // produce detector ring
+    // produce detector ring rotating base detector n times
     std::vector<detector<>> detector_ring;
     for (auto n = 0; n < n_detectors; ++n) {
       this->push_back( detector_base.rotated(2. * M_PI * n / n_detectors) );
@@ -55,6 +63,9 @@ public:
     delete [] t_hits;
   }
 
+  /// Executes Monte-Carlo system matrix generation for given detector ring
+  /// @param gen   random number generator
+  /// @param model acceptance model (returns bool for call operator with given length)
   template <class RandomGenerator, class AcceptanceModel>
   void matrix_mc(RandomGenerator gen, AcceptanceModel model, size_t n_emissions
 
@@ -85,19 +96,24 @@ public:
 #if COLLECT_INTERSECTIONS
           std::vector<point_type> ipoints;
 #endif
-          // process both sides
+          // process possible hit detectors on both sides
           for (auto side = 0; side < 2; ++side) {
             // starting from inner index
             // iterating to outer index
             auto i = inner;
             auto prev_i = i;
-            auto step = (n_detectors+inner-outer) % n_detectors > (n_detectors+outer-inner) % n_detectors ? 1 : -1;
+
+            // tells in which direction we got shorter modulo distance
+            auto step = (n_detectors+inner-outer) % n_detectors
+                      > (n_detectors+outer-inner) % n_detectors ? 1 : -1;
+
 #if SKIP_INTERSECTION
             (!(hits++) ? lor.first : lor.second) = i;
 #else
             do {
               auto points = (*this)[i].intersections(e);
-              // bail out if intersects
+              // check if we got 2 point intersection
+              // then test the model against these points distance
               if ( points.size() == 2 &&
                    model( (points[1]-points[0]).length() ) ) {
                 (!(hits++) ? lor.first : lor.second) = i;
@@ -106,7 +122,7 @@ public:
 #endif
                 break;
               }
-              // step
+              // step towards outer detector
               prev_i = i, i = (i + step) % n_detectors;
             } while (prev_i != outer);
 #endif
@@ -115,6 +131,7 @@ public:
             outer = i_outer.second;
           }
 
+          // do we have hit on both sides?
           if (hits >= 2) {
             auto i_pixel = t_pixel_index(x, y);
 
@@ -123,6 +140,7 @@ public:
               auto pixels = t_matrix[i_lor];
 
               // prealocate pixels for specific lor
+              // all are nulls upon startup
               if (!pixels) {
                 t_matrix[i_lor] = pixels = new hit_type[n_t_matrix_pixels];
               }
