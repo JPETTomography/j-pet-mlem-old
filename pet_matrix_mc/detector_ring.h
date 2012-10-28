@@ -259,7 +259,7 @@ public:
   };
 
   // serialization
-  static const auto magic = fourcc('P','E','T','t');
+  static const file_int magic = fourcc('P','E','T','t');
 
   friend obstream & operator << (obstream &out, detector_ring &dr) {
     out << magic;

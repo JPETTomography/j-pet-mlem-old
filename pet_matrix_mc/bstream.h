@@ -4,7 +4,7 @@
 
 class ibstream : public std::ifstream {
 public:
-  ibstream(std::string fn, std::ios_base::openmode mode = 0)
+  ibstream(std::string fn, std::ios_base::openmode mode = std::ios_base::in)
   : std::ifstream(fn, mode | std::ios_base::in) {}
 
   template <typename T>
@@ -16,7 +16,7 @@ public:
 
 class obstream : public std::ofstream {
 public:
-  obstream(std::string fn, std::ios_base::openmode mode = 0)
+  obstream(std::string fn, std::ios_base::openmode mode = std::ios_base::out)
   : std::ofstream(fn, mode | std::ios_base::out) {}
 
   template <typename T>

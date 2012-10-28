@@ -38,7 +38,6 @@ endif
 ifdef OMP
 CPPFLAGS += -fopenmp
 LDFLAGS  += -fopenmp
-SUFFIX   := -omp
 endif
 
 CPPFLAGS += -MMD
@@ -48,7 +47,7 @@ CPPFLAGS += -I../lib/catch/include
 CPPFLAGS += -I../lib/cmdline
 
 # binary is folder name
-BIN  := $(notdir $(realpath .))$(SUFFIX)
+BIN  := $(notdir $(realpath .))
 SRC  := $(filter-out %_test.cpp, $(wildcard *.cpp))
 OBJ  += $(SRC:.cpp=.o)
 DEP  += $(SRC:.cpp=.d)
