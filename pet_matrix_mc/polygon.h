@@ -25,7 +25,6 @@ public:
 
   intersections_type
   intersections(event_type &e) {
-    auto first = false;
     auto p1 = this->back();
     auto v1 = e(p1);
     intersections_type r;
