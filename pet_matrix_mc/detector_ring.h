@@ -38,8 +38,8 @@ public:
   typedef detector<F> detector_type;
 
   /// @param a_n_detectors number of detectors on ring
-  /// @param a_n_pixels    number of pixels in directions
-  /// @param a_s_pixel     size of single pixel
+  /// @param a_n_pixels    number of pixels in each directions
+  /// @param a_s_pixel     size of single pixel (pixels are squares)
   /// @param radious       radious of ring
   /// @param w_detector    width of single detector (along ring)
   /// @param h_detector    height/depth of single detector (perpendicular to ring)
@@ -118,7 +118,7 @@ public:
           auto i_inner = c_inner.secant_sections(e, n_detectors);
           auto i_outer = c_outer.secant_sections(e, n_detectors);
           auto inner = i_inner.first;
-          auto outer = i_inner.first;
+          auto outer = i_outer.first;
 
           auto hits = 0;
           lor_type lor;
@@ -193,7 +193,7 @@ public:
             for(auto &p: ipoints) intersection_points.push_back(p);
 #endif
           }
-        }
+        } // loop over emmisions from pixel
       }
     }
   }
