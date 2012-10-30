@@ -1,6 +1,7 @@
 /// Sparse triangle part system matrix binary file format
 /// -----------------------------------------------------
 /// uint32_t magic = 'PETt'
+/// uint32_t pixels/2 
 /// while (!eof)
 ///   uint16_t lor_a, lor_b // pair
 ///   uint32_t pixel_pair_count
@@ -277,6 +278,8 @@ public:
             if (pixels[i]) count++;
           }
           out << count;
+
+	  // std::cerr<<a<<" "<<b<<" "<<count<<std::endl;
           // write non-zero pixel pairs
           for (file_half y = 0; y < dr.n_pixels_2; ++y) {
             for (file_half x = 0; x <= y; ++x) {
