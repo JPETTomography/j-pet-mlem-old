@@ -1,0 +1,18 @@
+#version 150
+
+in vec4 v_position;
+in vec2 v_texture0;
+
+
+
+uniform mat4 mvp_matrix;
+
+out vec2 f_texture0;
+
+
+void main() {
+ f_texture0=v_texture0;
+     
+ gl_Position=mvp_matrix*v_position;
+ 
+}
