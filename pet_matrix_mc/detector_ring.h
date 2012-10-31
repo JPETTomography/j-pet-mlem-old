@@ -202,68 +202,13 @@ class detector_ring : public std::vector<detector<F>> {
           // random point within a pixel
 
 	  auto angle= phi_dis(gen);
-          typename decltype(c_inner)::event_type e(rx, ry, angle);
 
-
-          // secant for p and phi
-          auto i_inner = c_inner.secant_sections(e, n_detectors);
-          auto i_outer = c_outer.secant_sections(e, n_detectors);
-         
-	  auto inner = i_inner.first;
-          auto outer = i_outer.first;
-
-          auto hits = 0;
-          lor_type lor;
+	  lor_type lor;
 
 	
-
-#if COLLECT_INTERSECTIONS
-          std::vector<point_type> ipoints;
-#endif
-          // process possible hit detectors on both sides
-          for (auto side = 0; side < 2; ++side) {
-            // starting from inner index
-            // iterating to outer index
-            auto i = inner;
-            auto prev_i = i;
-
-            // tells in which direction we got shorter modulo distance
-            auto step = ( 
-			 (n_detectors+inner-outer) % n_detectors 
-			 > 
-			 (n_detectors+outer-inner) % n_detectors
-			  ) ? 1 : -1;
-
-#if SKIP_INTERSECTION
-            (!(hits++) ? lor.first : lor.second) = i;
-#else
-            do {
-              auto points = (*this)[i].intersections(e);
-              // check if we got 2 point intersection
-              // then test the model against these points distance
-           
-	      if ( points.size() == 2 &&
-                   model( (points[1]-points[0]).length() ) 
-		   ) {
-		
-		hits++;
-		(!side ? lor.first : lor.second) = i;
+	  auto hits = emit_event(model,rx,ry,angle,lor);
 
 
-#if COLLECT_INTERSECTIONS
-                for(auto &p: points) ipoints.push_back(p);
-#endif
-                break;
-              }
-              // step towards outer detector
-              prev_i = i, i = (i + step) % n_detectors;
-            } while (prev_i != outer);
-#endif
-            // switch side
-            inner = i_inner.second;
-            outer = i_outer.second;
-          }
-	 
 
           // do we have hit on both sides?
           if (hits >= 2) {
