@@ -7,7 +7,7 @@ CXXFLAGS += -std=gnu++0x
 else
 OPT := 3
 ifeq ($(findstring gcc,$(CC)),gcc)
-CXX := g++
+CXX := $(subst gcc,g++,$(CC))
 endif
 CXXFLAGS += -std=c++11
 endif
