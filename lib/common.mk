@@ -1,5 +1,8 @@
 TARGET := $(shell uname -s)
 
+CXXFLAGS+=$(CXXUFLAGS)
+LDFLAGS+=$(LDUFLAGS)
+
 ifeq ($(CC),icc)
 CXX := icpc
 OPT := fast
