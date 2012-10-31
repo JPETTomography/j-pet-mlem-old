@@ -97,12 +97,12 @@ class detector_ring : public std::vector<detector<F>> {
    * @param rx, ry coordinates of the emission point
    * @param output parameter contains the lor of the event
    */
-  template <class RandomGenerator, class AcceptanceModel>
-    short emit_from_point(RandomGenerator gen, AcceptanceModel model, 
-			  F rx, F ry,
+  template <class AcceptanceModel>
+    short emit_event(AcceptanceModel &model, 
+		     F rx, F ry, F angle,
 			  lor_type &lor) {
 
-    typename decltype(c_inner)::event_type e(rx, ry, phi_dis(gen));
+    typename decltype(c_inner)::event_type e(rx, ry, angle);
 
     // secant for p and phi
     auto i_inner = c_inner.secant_sections(e, n_detectors);
@@ -201,7 +201,9 @@ class detector_ring : public std::vector<detector<F>> {
 	  if (  rx > ry) continue;
           // random point within a pixel
 
-          typename decltype(c_inner)::event_type e(rx, ry, phi_dis(gen));
+	  auto angle= phi_dis(gen);
+          typename decltype(c_inner)::event_type e(rx, ry, angle);
+
 
           // secant for p and phi
           auto i_inner = c_inner.secant_sections(e, n_detectors);
@@ -212,6 +214,8 @@ class detector_ring : public std::vector<detector<F>> {
 
           auto hits = 0;
           lor_type lor;
+
+	
 
 #if COLLECT_INTERSECTIONS
           std::vector<point_type> ipoints;
@@ -259,6 +263,7 @@ class detector_ring : public std::vector<detector<F>> {
             inner = i_inner.second;
             outer = i_outer.second;
           }
+	 
 
           // do we have hit on both sides?
           if (hits >= 2) {

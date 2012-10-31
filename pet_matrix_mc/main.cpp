@@ -3,7 +3,7 @@
 //   Adam Strzelecki <adam.strzlecki@uj.edu.pl>
 //   Piotr Bialas <piotr.bialas@uj.edu.pl>
 //
-// Using Monte Carlo method and square detectorilators
+// Using Monte Carlo method and square detector scintilators
 
 #include <random>
 #include <iostream>
