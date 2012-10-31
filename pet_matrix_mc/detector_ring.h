@@ -97,6 +97,12 @@ class detector_ring : public std::vector<detector<F>> {
    * @param rx, ry coordinates of the emission point
    * @param output parameter contains the lor of the event
    */
+
+
+  bool get_intersection_lengths(F rx, F ry , F angle,  lor_type &lor, std::pair<F,F> length) {
+    return false;
+  };
+
   template <class AcceptanceModel>
     short emit_event(AcceptanceModel &model, 
 		     F rx, F ry, F angle,
@@ -156,6 +162,8 @@ class detector_ring : public std::vector<detector<F>> {
       } while (prev_i != outer);
 #endif
       // switch side
+
+      if(hits==0) break;
       inner = i_inner.second;
       outer = i_outer.second;
     }
@@ -329,7 +337,6 @@ class detector_ring : public std::vector<detector<F>> {
           }
           out << count;
 
-	  // std::cerr<<a<<" "<<b<<" "<<count<<std::endl;
           // write non-zero pixel pairs
           for (file_half y = 0; y < dr.n_pixels_2; ++y) {
             for (file_half x = 0; x <= y; ++x) {
