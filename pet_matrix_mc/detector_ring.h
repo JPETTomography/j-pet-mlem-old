@@ -99,10 +99,6 @@ class detector_ring : public std::vector<detector<F>> {
    */
 
 
-  bool get_intersection_lengths(F rx, F ry , F angle,  lor_type &lor, std::pair<F,F> length) {
-    return false;
-  };
-
   template <class AcceptanceModel>
     short emit_event(AcceptanceModel &model, 
 		     F rx, F ry, F angle,
@@ -178,6 +174,27 @@ class detector_ring : public std::vector<detector<F>> {
     return hits;
   }
   
+  void add_to_t_matrix(lor_type &lor, size_t i_pixel) {
+    auto i_lor  = lor_index(lor);
+    auto pixels = t_matrix[i_lor];
+
+    // prealocate pixels for specific lor
+    // all are nulls upon startup
+    if (!pixels) {
+#if _OPENMP
+      // entering critical section, and check again
+      // because it may have changed in meantime
+#pragma omp critical
+      if ( !(pixels = t_matrix[i_lor]) ) {
+	pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels];
+      }
+#else
+      t_matrix[i_lor] = pixels = new hit_type[n_t_matrix_pixels];
+#endif
+    }
+    ++pixels[i_pixel];
+  }
+
 
   /// Executes Monte-Carlo system matrix generation for given detector ring
   /// @param gen   random number generator
@@ -198,10 +215,12 @@ class detector_ring : public std::vector<detector<F>> {
     // descending, since biggest chunks start first, but may end last
     for (ssize_t y = n_pixels_2 - 1; y >= 0; --y) {
       for (auto x = 0; x <= y; ++x) {
-        // if (x > y) continue;
+
 	if(  (x*x+y*y)*s_pixel*s_pixel >  fov_radius*fov_radius) continue;
-        for (auto n = 0; n < n_emissions; ++n) {
-          auto rx = ( x + one_dis(gen) ) * s_pixel;
+        
+	for (auto n = 0; n < n_emissions; ++n) {
+          
+	  auto rx = ( x + one_dis(gen) ) * s_pixel;
           auto ry = ( y + one_dis(gen) ) * s_pixel;
 
 
@@ -223,26 +242,9 @@ class detector_ring : public std::vector<detector<F>> {
             auto i_pixel = t_pixel_index(x, y);
 
             if (o_collect_mc_matrix) {
-              auto i_lor  = lor_index(lor);
-              auto pixels = t_matrix[i_lor];
-
-              // prealocate pixels for specific lor
-              // all are nulls upon startup
-              if (!pixels) {
-#if _OPENMP
-                // entering critical section, and check again
-                // because it may have changed in meantime
-#pragma omp critical
-                if ( !(pixels = t_matrix[i_lor]) ) {
-                  pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels];
-                }
-#else
-                t_matrix[i_lor] = pixels = new hit_type[n_t_matrix_pixels];
-#endif
-              }
-              ++pixels[i_pixel];
+	      add_to_t_matrix(lor,i_pixel);
             }
-
+	    
             if (o_collect_pixel_stats) {
               ++t_hits[i_pixel];
             }
