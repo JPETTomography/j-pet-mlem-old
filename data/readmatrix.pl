@@ -17,11 +17,11 @@ while(my $file=shift @ARGV) {
     my $buffer;
     read FILE,$buffer,8;
     my ($magic,$pixels_2)=unpack "a4I", $buffer;
-    print "$magic $pixels_2\n";
+    print "#$magic $pixels_2\n";
     while(!(eof FILE)) {
 	read FILE,$buffer,8;
 	my ($lor_i,$lor_j,$count)=unpack "SSI",$buffer;
-	print "i = $lor_i j = $lor_j count = $count\n";
+	print "$lor_i $lor_j $count\n";
 	read FILE, $buffer,8*$count;
     }
 

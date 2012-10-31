@@ -3,10 +3,12 @@ TARGET := $(shell uname -s)
 ifeq ($(CC),icc)
 CXX := icpc
 OPT := fast
+CXXFLAGS += -std=gnu++0x
 else
 OPT := 3
-ifeq ($(CC),gcc)
+ifeq ($(findstring gcc,$(CC)),gcc)
 CXX := g++
+CXXFLAGS += -std=c++11
 endif
 endif
 
@@ -22,7 +24,7 @@ else
 CPPFLAGS += -O$(OPT)
 endif
 
-CXXFLAGS += -std=c++11
+
 ifeq ($(TARGET),Darwin)
 # force GCC, as clang has not OpenMP on OSX
 ifdef OMP

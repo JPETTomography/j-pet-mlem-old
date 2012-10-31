@@ -24,7 +24,7 @@ public:
     *this << "    svg     { background: black; }" << std::endl;
 #endif
     *this << "    polygon { fill: #ff9090;     stroke: red;   stroke-width: " << stroke << "; }" << std::endl;
-    *this << "    circle  { fill: transparent; stroke: green; stroke-width: " << stroke << "; }" << std::endl;
+    *this << "    circle  { fill: white; stroke: green; stroke-width: " << stroke << "; }" << std::endl;
     *this << "  ]]></style>" << std::endl;
     *this << "</defs>" << std::endl;
     *this << "<g transform=\"translate(2, 2)\">" << std::endl;

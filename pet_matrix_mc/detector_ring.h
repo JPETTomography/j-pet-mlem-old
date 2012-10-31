@@ -1,7 +1,7 @@
 /// Sparse triangle part system matrix binary file format
 /// -----------------------------------------------------
 /// uint32_t magic = 'PETt'
-/// uint32_t pixels/2 
+/// uint32_t n_ pixels_2 
 /// while (!eof)
 ///   uint16_t lor_a, lor_b // pair
 ///   uint32_t pixel_pair_count
@@ -61,6 +61,8 @@ public:
     if(n_pixels  % 2)      throw("number of pixels must be multiple of 2");
     if(s_pixel    <= 0.)   throw("invalid pixel size");
 
+    fov_radius=radious/::sqrt(2.0);
+
     // reserve for all lors
     t_matrix = new pixels_type[n_lors]();
 
@@ -108,11 +110,14 @@ public:
     for (ssize_t y = n_pixels_2 - 1; y >= 0; --y) {
       for (auto x = 0; x <= y; ++x) {
         // if (x > y) continue;
+	if(  (x*x+y*y)*s_pixel*s_pixel >  fov_radius*fov_radius) continue;
         for (auto n = 0; n < n_emissions; ++n) {
           auto rx = ( x + one_dis(gen) ) * s_pixel;
           auto ry = ( y + one_dis(gen) ) * s_pixel;
+
+
           // ensure we are within a triangle
-          if (rx > ry) continue;
+	  if (  rx > ry) continue;
           // random point within a pixel
           typename decltype(c_inner)::event_type e(rx, ry, phi_dis(gen));
           // secant for p and phi
@@ -241,8 +246,9 @@ public:
   }
 
   friend svg_ostream<F> & operator << (svg_ostream<F> &svg, detector_ring &dr) {
-    svg << dr.c_inner;
     svg << dr.c_outer;
+    svg << dr.c_inner;
+
 
     for (auto detector: dr) {
       svg << detector;
@@ -368,4 +374,5 @@ private:
   size_t n_detectors;
   size_t n_lors;
   F s_pixel;
+  F fov_radius;
 };
