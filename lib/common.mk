@@ -8,8 +8,8 @@ else
 OPT := 3
 ifeq ($(findstring gcc,$(CC)),gcc)
 CXX := g++
-CXXFLAGS += -std=c++11
 endif
+CXXFLAGS += -std=c++11
 endif
 
 # just in case
