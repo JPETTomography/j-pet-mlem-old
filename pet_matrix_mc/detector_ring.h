@@ -134,7 +134,8 @@ class detector_ring : public std::vector<detector<F>> {
 
 #if SKIP_INTERSECTION
       (!(hits++) ? lor.first : lor.second) = i;
-#else
+#else      
+      std::cerr<<inner<<" "<<outer<<std::endl;
       do {
 	auto points = (*this)[i].intersections(e);
 	// check if we got 2 point intersection
@@ -155,6 +156,7 @@ class detector_ring : public std::vector<detector<F>> {
 	}
 	// step towards outer detector
 	prev_i = i, i = (i + step) % n_detectors;
+	std::cerr<<prev_i<<" "<<outer<<std::endl;
       } while (prev_i != outer);
 #endif
       // switch side
@@ -217,12 +219,15 @@ class detector_ring : public std::vector<detector<F>> {
       for (auto x = 0; x <= y; ++x) {
 
 	if(  (x*x+y*y)*s_pixel*s_pixel >  fov_radius*fov_radius) continue;
-        
+
+	std::cerr<<x<<" "<<y<<std::endl;
+
 	for (auto n = 0; n < n_emissions; ++n) {
           
 	  auto rx = ( x + one_dis(gen) ) * s_pixel;
           auto ry = ( y + one_dis(gen) ) * s_pixel;
 
+	  std::cerr<<rx<<" "<<ry<<std::endl;
 
           // ensure we are within a triangle
 	  if (  rx > ry) continue;
@@ -235,6 +240,7 @@ class detector_ring : public std::vector<detector<F>> {
 	
 	  auto hits = emit_event(model,rx,ry,angle,lor);
 
+	  std::cerr<<"emmited "<<hits<<std::endl;
 
 
           // do we have hit on both sides?
