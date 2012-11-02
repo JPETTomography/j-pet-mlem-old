@@ -35,7 +35,7 @@ TEST_CASE("detector/intersection", "polygon intersection") {
     CHECK( dr[0].x == Approx( d[0].x*c - d[0].y*s ) );
     CHECK( dr[0].y == Approx( d[0].x*s + d[0].y*c ) );
   }
-
+#if 0
   SECTION("detector/translated+rotated", "translated and rotated") {
     decltype(d)::point_type p(2., 3.);
     auto dtr = (d+p).rotated(M_PI_4);
@@ -45,4 +45,5 @@ TEST_CASE("detector/intersection", "polygon intersection") {
     CHECK( dtr[0].x == Approx( (d[0].x+p.x)*c - (d[0].y+p.y)*s ) );
     CHECK( dtr[0].y == Approx( (d[0].x+p.x)*s + (d[0].y+p.y)*c ) );
   }
+#endif
 }
