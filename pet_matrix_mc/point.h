@@ -39,5 +39,10 @@ struct point {
   }
 };
 
+template<typename F> bool compare(const point<F> &a, const point<F> &b,F tol) {
+  return (  ::abs(a.x-b.x)<tol && ::abs(a.y-b.y)<tol);
+}
+ 
+
 template <typename F> F deg(F rad) { return rad * 180/M_PI; }
 template <typename F> F rad(F deg) { return deg * M_PI/180; }
