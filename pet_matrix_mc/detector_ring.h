@@ -37,6 +37,7 @@ class detector_ring : public std::vector<detector<F>> {
   typedef circle<F> circle_type;
   typedef point<F> point_type;
   typedef detector<F> detector_type;
+ typedef event<F>  event_type;
 
   /// @param a_n_detectors number of detectors on ring
   /// @param a_n_pixels    number of pixels in each directions
@@ -91,14 +92,11 @@ class detector_ring : public std::vector<detector<F>> {
   }
 
   /**
-   * @param gen random number generator
    * @param model acceptance model 
    *        (returns bool for call operator with given length)
    * @param rx, ry coordinates of the emission point
    * @param output parameter contains the lor of the event
    */
-
-
   template <class AcceptanceModel>
     short emit_event(AcceptanceModel &model, 
 		     F rx, F ry, F angle,
@@ -147,17 +145,15 @@ class detector_ring : public std::vector<detector<F>> {
 		
 	  hits++;
 	  (!side ? lor.first : lor.second) = i;
-
-
 #if COLLECT_INTERSECTIONS
 	  for(auto &p: points) ipoints.push_back(p);
 #endif
 	  break;
-	}
+	} 
 	// step towards outer detector
 	prev_i = i, i = (i + step) % n_detectors;
-	//std::cerr<<prev_i<<" "<<outer<<std::endl;
-      } while (prev_i != outer);
+
+      } while (prev_i != outer); //loop over intersected  detectors
 #endif
       // switch side
 

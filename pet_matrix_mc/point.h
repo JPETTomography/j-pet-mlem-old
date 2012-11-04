@@ -1,4 +1,5 @@
 #pragma once
+#include<cmath>
 
 template <typename F = double>
 struct point {
@@ -40,7 +41,7 @@ struct point {
 };
 
 template<typename F> bool compare(const point<F> &a, const point<F> &b,F tol) {
-  return (  ::abs(a.x-b.x)<tol && ::abs(a.y-b.y)<tol);
+  return (  fabs(a.x-b.x)<tol && fabs(a.y-b.y)<tol);
 }
  
 
