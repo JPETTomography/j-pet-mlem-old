@@ -83,7 +83,9 @@ t: $(TOBJ)
 	 $(CXX) $(LDFLAGS) -o $@ $^
 t.o:
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ \
-	-D CATCH_CONFIG_MAIN -x c++ ../lib/catch/include/catch.hpp
+	-D CATCH_CONFIG_MAIN \
+	-D CATCH_CONFIG_USE_ANSI_COLOUR_CODES \
+	-x c++ ../lib/catch/include/catch.hpp
 
 # cleaning
 clean:
