@@ -43,7 +43,12 @@ TEST_CASE("polygon/intersection", "polygon intersection") {
 
 TEST_CASE("polygon/intersection/math","rectangle intersections from mathematica") {
   std::ifstream in("polygon.test");
-  if(in) {
+
+  if(!in) {
+    WARN("cannot open file `polygon.test'");
+    return;
+  }
+
   int n_events;
   in>>n_events;
   std::cerr<<n_events<<std::endl;
@@ -100,6 +105,4 @@ TEST_CASE("polygon/intersection/math","rectangle intersections from mathematica"
       }
     }
   }
-  } else
-    WARN("cannot open file `polygon.test'");
 }
