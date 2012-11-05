@@ -17,7 +17,7 @@ bool is_in(T val, I it, int n) {
 }
 
 TEST_CASE("detector_ring/math", "detector ring test") {
-  std::ifstream  in("detector_ring.test");
+  std::ifstream in("detector_ring.test");
 
   if(!in) {
     WARN("cannot open file `detector_ring.test'");
@@ -46,7 +46,7 @@ TEST_CASE("detector_ring/math", "detector ring test") {
     int detector[n_detectors];
     for(int i=0;i<n_detectors;i++) {
       in>>detector[i];
-      detector[i]--; //mathematica counts positions from 1
+      detector[i]--; // mathematica counts positions from 1
     }
 
     for(int i=0;i<n_detectors;i++) {
@@ -57,7 +57,7 @@ TEST_CASE("detector_ring/math", "detector ring test") {
       decltype(ring)::point_type p2(x,y);
 
       auto inters = ring[detector[i]].intersections(event);
-      CHECK(inters.size()==2);
+      CHECK( inters.size() == 2 );
 
       double tol=1e-14;
 
@@ -69,12 +69,12 @@ TEST_CASE("detector_ring/math", "detector ring test") {
       CHECK( (first_to_first || first_to_second)== true);
     }
 
-    //this is not yet a complete tests....
+    // this is not yet a complete tests....
     decltype(ring)::lor_type lor;
     always_accept<> model;
-    auto hits=ring.emit_event(model,x,y,phi,lor);
+    auto hits = ring.emit_event(model,x,y,phi,lor);
 
-    if(hits>=2) {
+    if (hits >= 2) {
       CHECK(is_in(lor.first ,detector,n_detectors)==true);
       CHECK(is_in(lor.second,detector,n_detectors)==true);
     }

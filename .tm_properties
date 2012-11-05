@@ -1,4 +1,5 @@
 excludeDirectories = 'lib'
+excludeInFolderSearch = "{$excludeInFolderSearch,lib}"
 
 [ *.{cpp,h,c}; attr.untitled ]
 fileType = 'source.c++'
