@@ -130,7 +130,7 @@ try {
   if (cl.get<std::string>("model") == "scintilator")
     dr.matrix_mc(
       gen,
-      scintilator_accept<decltype(gen)>(gen, cl.get<double>("acceptance")),
+      scintilator_accept<>(cl.get<double>("acceptance")),
       n_emissions);
 
   auto pixel_max = 0;
