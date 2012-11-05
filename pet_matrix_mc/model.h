@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 template <typename F = double>
 class always_accept {
 public:
