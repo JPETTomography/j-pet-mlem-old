@@ -116,9 +116,7 @@ try {
   }
 
   std::random_device rd;
-  std::mt19937 seed_gen(cl.get<std::mt19937::result_type>("seed"));
-  std::mt19937 rd_gen(cl.get<std::mt19937::result_type>("seed"));
-  std::mt19937 &gen = cl.exist("seed") ? seed_gen : rd_gen;
+  std::mt19937 gen(cl.exist("seed") ? cl.get<std::mt19937::result_type>("seed") : rd());
 
   detector_ring<> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
 
@@ -132,7 +130,7 @@ try {
   if (cl.get<std::string>("model") == "scintilator")
     dr.matrix_mc(
       gen,
-      scintilator_accept<std::mt19937>(gen, cl.get<double>("acceptance")),
+      scintilator_accept<decltype(gen)>(gen, cl.get<double>("acceptance")),
       n_emissions);
 
   auto pixel_max = 0;

@@ -192,7 +192,7 @@ public:
   /// @param gen   random number generator
   /// @param model acceptance model (returns bool for call operator with given length)
   template <class RandomGenerator, class AcceptanceModel>
-  void matrix_mc(RandomGenerator gen, AcceptanceModel model, size_t n_emissions
+  void matrix_mc(RandomGenerator &gen, AcceptanceModel model, size_t n_emissions
 
   , bool o_collect_mc_matrix = true
   , bool o_collect_pixel_stats = true) {

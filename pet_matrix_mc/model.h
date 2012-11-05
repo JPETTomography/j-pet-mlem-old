@@ -12,7 +12,7 @@ public:
 template <class RandomGenerator, typename F = double>
 class scintilator_accept {
 public:
-  scintilator_accept(RandomGenerator a_gen, F a_unit_prob)
+  scintilator_accept(RandomGenerator &a_gen, F a_unit_prob)
   : gen(a_gen)
   , one_dis(0., 1.)
   , unit_prob(a_unit_prob)
@@ -23,7 +23,7 @@ public:
   }
 
 private:
-  RandomGenerator gen;
+  RandomGenerator &gen;
   std::uniform_real_distribution<F> one_dis;
   F unit_prob;
 };
