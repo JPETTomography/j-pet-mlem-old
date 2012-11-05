@@ -22,13 +22,11 @@ use PDL::Graphics::LUT;
 my $radius=0.450;
 my $width =0.006;
 my $height=0.020;
-my $n_detectors=280;
-
 
 
 my $win=pgwin(Device=>'/xs',Aspect=>1,WindowWidth=>10);
 
-
+my $n_detectors=shift @ARGV;
 
 while(my $file=shift @ARGV) {
     print STDERR $file,"\n";

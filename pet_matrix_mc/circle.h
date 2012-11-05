@@ -45,8 +45,8 @@ public:
 
     
     return std::make_pair(
-      static_cast<int>( floor( angle_1  * n_detectors / (2.0 * M_PI) ) ) % n_detectors,
-      static_cast<int>( floor( angle_2 * n_detectors / (2.0 * M_PI) ) ) % n_detectors
+      static_cast<int>( round( angle_1  * n_detectors / (2.0 * M_PI) ) ) % n_detectors,
+      static_cast<int>( round( angle_2 * n_detectors / (2.0 * M_PI) ) ) % n_detectors
     );
   }
 
