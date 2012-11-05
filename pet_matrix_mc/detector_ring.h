@@ -1,7 +1,7 @@
 /// Sparse triangle part system matrix binary file format
 /// -----------------------------------------------------
 /// uint32_t magic = 'PETt'
-/// uint32_t n_ pixels_2 
+/// uint32_t n_ pixels_2
 /// while (!eof)
 ///   uint16_t lor_a, lor_b // pair
 ///   uint32_t pixel_pair_count
@@ -26,7 +26,7 @@
 /// Provides model for 2D ring of detectors
 template <typename F = double, typename HitType = int>
 class detector_ring : public std::vector<detector<F>> {
- public:
+public:
   typedef uint8_t bitmap_pixel_type;
   typedef HitType hit_type;
   typedef uint32_t file_int;
@@ -34,10 +34,10 @@ class detector_ring : public std::vector<detector<F>> {
   typedef hit_type *pixels_type;
   typedef pixels_type *matrix_type;
   typedef std::pair<size_t, size_t> lor_type;
-  typedef circle<F> circle_type;
-  typedef point<F> point_type;
+  typedef circle<F>   circle_type;
+  typedef point<F>    point_type;
   typedef detector<F> detector_type;
- typedef event<F>  event_type;
+  typedef event<F>    event_type;
 
   /// @param a_n_detectors number of detectors on ring
   /// @param a_n_pixels    number of pixels in each directions
@@ -92,22 +92,22 @@ class detector_ring : public std::vector<detector<F>> {
   }
 
   /**
-   * @param model acceptance model 
+   * @param model acceptance model
    *        (returns bool for call operator with given length)
    * @param rx, ry coordinates of the emission point
    * @param output parameter contains the lor of the event
    */
   template <class AcceptanceModel>
-    short emit_event(AcceptanceModel &model, 
-		     F rx, F ry, F angle,
-			  lor_type &lor) {
+  short emit_event(AcceptanceModel &model,
+                   F rx, F ry, F angle,
+                   lor_type &lor) {
 
     typename decltype(c_inner)::event_type e(rx, ry, angle);
 
     // secant for p and phi
     auto i_inner = c_inner.secant_sections(e, n_detectors);
     auto i_outer = c_outer.secant_sections(e, n_detectors);
-         
+
     auto inner = i_inner.first;
     auto outer = i_outer.first;
 
@@ -124,54 +124,49 @@ class detector_ring : public std::vector<detector<F>> {
       auto prev_i = i;
 
       // tells in which direction we got shorter modulo distance
-      auto step = ( 
-		   (n_detectors+inner-outer) % n_detectors 
-		   > 
-		   (n_detectors+outer-inner) % n_detectors
-		    ) ? 1 : -1;
+      auto step = ((n_detectors+inner-outer) % n_detectors
+                   >
+                   (n_detectors+outer-inner) % n_detectors
+                    ) ? 1 : -1;
 
 #if SKIP_INTERSECTION
       (!(hits++) ? lor.first : lor.second) = i;
-#else      
-      //      std::cerr<<inner<<" "<<outer<<std::endl;
+#else
       do {
-	auto points = (*this)[i].intersections(e);
-	// check if we got 2 point intersection
-	// then test the model against these points distance
-           
-	if ( points.size() == 2 &&
-	     model( (points[1]-points[0]).length() ) 
-	     ) {
-		
-	  hits++;
-	  (!side ? lor.first : lor.second) = i;
+        auto points = (*this)[i].intersections(e);
+        // check if we got 2 point intersection
+        // then test the model against these points distance
+
+        if ( points.size() == 2 &&
+             model( (points[1]-points[0]).length() ) ) {
+
+          hits++;
+          (!side ? lor.first : lor.second) = i;
 #if COLLECT_INTERSECTIONS
-	  for(auto &p: points) ipoints.push_back(p);
+          for(auto &p: points) ipoints.push_back(p);
 #endif
-	  break;
-	} 
-	// step towards outer detector
-	prev_i = i, i = (i + step) % n_detectors;
+          break;
+        }
+        // step towards outer detector
+        prev_i = i, i = (i + step) % n_detectors;
 
       } while (prev_i != outer); //loop over intersected  detectors
 #endif
-      // switch side
+      if (hits == 0) break;
 
-      if(hits==0) break;
+      // switch side
       inner = i_inner.second;
       outer = i_outer.second;
     }
 
-
 #if COLLECT_INTERSECTIONS
-    if(hits>=2)
+    if (hits >= 2)
       for(auto &p: ipoints) intersection_points.push_back(p);
 #endif
 
-
     return hits;
   }
-  
+
   void add_to_t_matrix(lor_type &lor, size_t i_pixel) {
     auto i_lor  = lor_index(lor);
     auto pixels = t_matrix[i_lor];
@@ -182,9 +177,9 @@ class detector_ring : public std::vector<detector<F>> {
 #if _OPENMP
       // entering critical section, and check again
       // because it may have changed in meantime
-#pragma omp critical
+      #pragma omp critical
       if ( !(pixels = t_matrix[i_lor]) ) {
-	pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels];
+        pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels];
       }
 #else
       t_matrix[i_lor] = pixels = new hit_type[n_t_matrix_pixels];
@@ -193,60 +188,48 @@ class detector_ring : public std::vector<detector<F>> {
     ++pixels[i_pixel];
   }
 
-
   /// Executes Monte-Carlo system matrix generation for given detector ring
   /// @param gen   random number generator
   /// @param model acceptance model (returns bool for call operator with given length)
   template <class RandomGenerator, class AcceptanceModel>
-    void matrix_mc(RandomGenerator gen, AcceptanceModel model, size_t n_emissions
+  void matrix_mc(RandomGenerator gen, AcceptanceModel model, size_t n_emissions
 
-		   , bool o_collect_mc_matrix = true
-		   , bool o_collect_pixel_stats = true) {
+  , bool o_collect_mc_matrix = true
+  , bool o_collect_pixel_stats = true) {
 
     std::uniform_real_distribution<> one_dis(0., 1.);
     std::uniform_real_distribution<> phi_dis(0., M_PI);
     // iterating only triangular matrix,
     // being upper right part or whole system matrix
 #if _OPENMP
-#pragma omp parallel for schedule(dynamic)
+    #pragma omp parallel for schedule(dynamic)
 #endif
     // descending, since biggest chunks start first, but may end last
     for (ssize_t y = n_pixels_2 - 1; y >= 0; --y) {
       for (auto x = 0; x <= y; ++x) {
 
-	if(  (x*x+y*y)*s_pixel*s_pixel >  fov_radius*fov_radius) continue;
+        if ((x*x + y*y) * s_pixel*s_pixel > fov_radius*fov_radius) continue;
 
-	//	std::cerr<<x<<" "<<y<<std::endl;
+        for (auto n = 0; n < n_emissions; ++n) {
 
-	for (auto n = 0; n < n_emissions; ++n) {
-          
-	  auto rx = ( x + one_dis(gen) ) * s_pixel;
+          auto rx = ( x + one_dis(gen) ) * s_pixel;
           auto ry = ( y + one_dis(gen) ) * s_pixel;
 
-	  //std::cerr<<rx<<" "<<ry<<std::endl;
-
           // ensure we are within a triangle
-	  if (  rx > ry) continue;
-          // random point within a pixel
+          if (rx > ry) continue;
 
-	  auto angle= phi_dis(gen);
-
-	  lor_type lor;
-
-	
-	  auto hits = emit_event(model,rx,ry,angle,lor);
-
-	  //std::cerr<<"emmited "<<hits<<std::endl;
-
+          auto angle= phi_dis(gen);
+          lor_type lor;
+          auto hits = emit_event(model, rx, ry, angle, lor);
 
           // do we have hit on both sides?
           if (hits >= 2) {
             auto i_pixel = t_pixel_index(x, y);
 
             if (o_collect_mc_matrix) {
-	      add_to_t_matrix(lor,i_pixel);
+              add_to_t_matrix(lor,i_pixel);
             }
-	    
+
             if (o_collect_pixel_stats) {
               ++t_hits[i_pixel];
             }
@@ -288,7 +271,7 @@ class detector_ring : public std::vector<detector<F>> {
   }
 
   template<class FileWriter>
-    void output_bitmap(FileWriter &fw, hit_type pixel_max, ssize_t lor) {
+  void output_bitmap(FileWriter &fw, hit_type pixel_max, ssize_t lor) {
     fw.template write_header<bitmap_pixel_type>(n_pixels, n_pixels);
     auto gain = static_cast<double>(std::numeric_limits<bitmap_pixel_type>::max()) / pixel_max;
     for (auto y = 0; y < n_pixels; ++y) {
@@ -304,7 +287,6 @@ class detector_ring : public std::vector<detector<F>> {
   friend svg_ostream<F> & operator << (svg_ostream<F> &svg, detector_ring &dr) {
     svg << dr.c_outer;
     svg << dr.c_inner;
-
 
     for (auto detector: dr) {
       svg << detector;
@@ -391,7 +373,7 @@ class detector_ring : public std::vector<detector<F>> {
     return in;
   }
 
- private:
+private:
   static size_t lor_index(lor_type &lor) {
     if (lor.first < lor.second) {
       std::swap(lor.first, lor.second);
@@ -415,7 +397,7 @@ class detector_ring : public std::vector<detector<F>> {
     return t_pixel_index(x, y);
   }
 
- private:
+private:
 #if COLLECT_INTERSECTIONS
   std::vector<point_type> intersection_points;
 #endif

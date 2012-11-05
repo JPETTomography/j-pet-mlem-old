@@ -41,16 +41,14 @@ TEST_CASE("polygon/intersection", "polygon intersection") {
   }
 }
 
-
 TEST_CASE("polygon/intersection/math","rectangle intersections from mathematica") {
   std::ifstream in("polygon.test");
   if(in) {
   int n_events;
   in>>n_events;
   std::cerr<<n_events<<std::endl;
-  
-  polygon<> poly;
 
+  polygon<> poly;
 
   for(int i=0;i<4;++i) {
     double x,y;
@@ -58,12 +56,10 @@ TEST_CASE("polygon/intersection/math","rectangle intersections from mathematica"
     decltype(poly)::point_type p(x,y);
     poly.push_back(p);
   }
-  
+
   for(int i=0;i<n_events;i++) {
     double x,y,phi;
     in>>x>>y>>phi;
-
-
 
     double a,b,c;
     in>>a>>b>>c;
@@ -71,38 +67,36 @@ TEST_CASE("polygon/intersection/math","rectangle intersections from mathematica"
     int n_itersections;
     in >> n_itersections;
 
-    // std::cerr<<x<<" "<<y<<" "<<phi<<" "<<n_itersections<<std::endl;
-   
     decltype(poly)::event_type event(x,y,phi);
     bool intersects=n_itersections>0;
     const double tol=1e-14;
     CHECKED_IF(poly.intersects(event)==intersects) {
       auto intersections=poly.intersections(event);
       CHECKED_IF(intersections.size()==n_itersections) {
- 
-	if(n_itersections>0) {
-	  double ix,iy;
-	  decltype(poly)::intersections_type m_intersections;
-	  for(int j=0;j<n_itersections;++j) {
-	    in>>ix>>iy;
-	    decltype(poly)::point_type p(ix,iy);
-	    m_intersections.push_back(p);	  
-	  }
-	
-	  if(n_itersections==1) {	  
-	    CHECK(compare(intersections[0],m_intersections[0],tol)==true); 
-	  } else {
-	    bool first_to_first =
-	      compare(intersections[0],m_intersections[0],tol) &&
-	      compare(intersections[1],m_intersections[1],tol);
 
-	    bool first_to_second =
-	      compare(intersections[0],m_intersections[1],tol) &&
-	      compare(intersections[1],m_intersections[0],tol);
+        if(n_itersections>0) {
+          double ix,iy;
+          decltype(poly)::intersections_type m_intersections;
+          for(int j=0;j<n_itersections;++j) {
+            in>>ix>>iy;
+            decltype(poly)::point_type p(ix,iy);
+            m_intersections.push_back(p);
+          }
 
-	    CHECK( (first_to_first || first_to_second)==true);
-	  }	
-	}
+          if(n_itersections==1) {
+            CHECK(compare(intersections[0],m_intersections[0],tol)==true);
+          } else {
+            bool first_to_first =
+              compare(intersections[0],m_intersections[0],tol) &&
+              compare(intersections[1],m_intersections[1],tol);
+
+            bool first_to_second =
+              compare(intersections[0],m_intersections[1],tol) &&
+              compare(intersections[1],m_intersections[0],tol);
+
+            CHECK( (first_to_first || first_to_second)==true);
+          }
+        }
       }
     }
   }

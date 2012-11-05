@@ -134,7 +134,7 @@ try {
       gen,
       scintilator_accept<std::mt19937>(gen, cl.get<double>("acceptance")),
       n_emissions);
-  
+
   auto pixel_max = 0;
   auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
   auto lor       = cl.get<ssize_t>("lor");

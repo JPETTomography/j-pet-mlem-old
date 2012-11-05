@@ -38,12 +38,11 @@ public:
   std::pair<size_t, size_t>
   secant_sections(event_type &e, size_t n_detectors) {
     auto sa = secant_angles(e);
-    
+
     // converting angles to [0,2 Pi) interval
     auto angle_1=sa.first>0?sa.first:2*M_PI+sa.first;
     auto angle_2=sa.second>0?sa.second:2*M_PI+sa.second;
 
-    
     return std::make_pair(
       static_cast<int>( round( angle_1  * n_detectors / (2.0 * M_PI) ) ) % n_detectors,
       static_cast<int>( round( angle_2 * n_detectors / (2.0 * M_PI) ) ) % n_detectors
