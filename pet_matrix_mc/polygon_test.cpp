@@ -41,7 +41,7 @@ TEST_CASE("polygon/intersection", "polygon intersection") {
   }
 }
 
-TEST_CASE("polygon/intersection/math","rectangle intersections from mathematica") {
+TEST_CASE("polygon/intersection/math","rectangle inters from mathematica") {
   std::ifstream in("polygon.test");
 
   if(!in) {
@@ -55,51 +55,50 @@ TEST_CASE("polygon/intersection/math","rectangle intersections from mathematica"
 
   polygon<> poly;
 
-  for(int i=0;i<4;++i) {
+  for (int i = 0; i < 4; ++i) {
     double x,y;
-    in>>x>>y;
+    in >> x >> y;
     decltype(poly)::point_type p(x,y);
     poly.push_back(p);
   }
 
-  for(int i=0;i<n_events;i++) {
-    double x,y,phi;
-    in>>x>>y>>phi;
+  for (int i = 0; i < n_events; i++) {
+    double x, y, phi;
+    in >> x >> y >> phi;
 
-    double a,b,c;
-    in>>a>>b>>c;
+    double a, b, c;
+    in >> a >> b >> c;
 
-    int n_itersections;
-    in >> n_itersections;
+    int n_iters;
+    in >> n_iters;
 
     decltype(poly)::event_type event(x,y,phi);
-    bool intersects=n_itersections>0;
-    const double tol=1e-14;
-    CHECKED_IF(poly.intersects(event)==intersects) {
-      auto intersections=poly.intersections(event);
-      CHECKED_IF(intersections.size()==n_itersections) {
+    bool intersects = n_iters > 0;
 
-        if(n_itersections>0) {
-          double ix,iy;
-          decltype(poly)::intersections_type m_intersections;
-          for(int j=0;j<n_itersections;++j) {
-            in>>ix>>iy;
+    CHECKED_IF( poly.intersects(event) == intersects ) {
+      auto inters = poly.intersections(event);
+
+      CHECKED_IF( inters.size() == n_iters ) {
+
+        if (n_iters>0) {
+          double ix, iy;
+          decltype(poly)::intersections_type m_inters;
+
+          for(int j = 0; j < n_iters; ++j) {
+            in >> ix >> iy;
             decltype(poly)::point_type p(ix,iy);
-            m_intersections.push_back(p);
+            m_inters.push_back(p);
           }
 
-          if(n_itersections==1) {
-            CHECK(compare(intersections[0],m_intersections[0],tol)==true);
+          if (n_iters == 1) {
+            CHECK( inters[0].x == Approx(m_inters[0].x) );
+            CHECK( inters[0].y == Approx(m_inters[0].y) );
           } else {
-            bool first_to_first =
-              compare(intersections[0],m_intersections[0],tol) &&
-              compare(intersections[1],m_intersections[1],tol);
+            CHECK( std::min(inters[0].x, inters[1].x) == Approx(std::min(m_inters[0].x, m_inters[1].x)) );
+            CHECK( std::min(inters[0].y, inters[1].y) == Approx(std::min(m_inters[0].y, m_inters[1].y)) );
 
-            bool first_to_second =
-              compare(intersections[0],m_intersections[1],tol) &&
-              compare(intersections[1],m_intersections[0],tol);
-
-            CHECK( (first_to_first || first_to_second)==true);
+            CHECK( std::max(inters[0].x, inters[1].x) == Approx(std::max(m_inters[0].x, m_inters[1].x)) );
+            CHECK( std::max(inters[0].y, inters[1].y) == Approx(std::max(m_inters[0].y, m_inters[1].y)) );
           }
         }
       }
