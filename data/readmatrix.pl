@@ -24,7 +24,8 @@ my $width =0.006;
 my $height=0.020;
 
 
-my $win=pgwin(Device=>'/xs',Aspect=>1,WindowWidth=>10);
+my $win=pgwin(Device=>'/cps',Aspect=>1,WindowWidth=>10,Recording=>1);
+
 
 my $n_detectors=shift @ARGV;
 
@@ -59,29 +60,26 @@ while(my $file=shift @ARGV) {
 
     my $pw=$width/$pixel_size;
     my $ph=$height/$pixel_size;
-    
-    
+
+
     $win->rectangle($r_out/2,$r_out/2,$r_out,$r_out,{FILLTYPE=>'OUTLINE'});
     $win->hold();
+    $win->circle(0,0,$r_out,{FILLTYPE=>'SOLID',COLOR=>'Black'});
 
-
-
-    #$win->rectangle($L_in/2,$L_in/2,$L_in,$L_in,{FILLTYPE=>'OUTLINE'});
-
-    
     $win->ctab(lut_data('idl5'));
-    $win->imag($mat,{DrawWedge=>1});
+    $win->imag($mat);
+    $win->draw_wedge();
     my $pi=3.1415926;
     for(my $angle=0;$angle<=$pi/2.0+0.0001; $angle+=2*$pi/$n_detectors) {
 	$win->rectangle($r_mid*cos($angle),$r_mid*sin($angle),
 			$ph,$pw,$angle,{FILLTYPE=>'SOLID',COLOR=>'RED'});
     }
 
-    
-
     $win->circle(0,0,$r_out,{FILLTYPE=>'OUTLINE'});
     $win->circle(0,0,$r_in,{FILLTYPE=>'OUTLINE'});
     $win->circle(0,0,$r_fov,{FILLTYPE=>'OUTLINE'});
 
+
+    $win->release();
 
 }

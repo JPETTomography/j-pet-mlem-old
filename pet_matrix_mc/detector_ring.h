@@ -44,8 +44,10 @@ public:
   /// @param a_s_pixel     size of single pixel (pixels are squares)
   /// @param radious       radious of ring
   /// @param w_detector    width of single detector (along ring)
-  /// @param h_detector    height/depth of single detector (perpendicular to ring)
-  detector_ring(size_t a_n_detectors, size_t a_n_pixels, F a_s_pixel, F radious, F w_detector, F h_detector)
+  /// @param h_detector    height/depth of single detector
+  ////                     (perpendicular to ring)
+  detector_ring(size_t a_n_detectors, size_t a_n_pixels, F a_s_pixel,
+                F radious, F w_detector, F h_detector)
     : c_inner(radious)
     , c_outer(radious+h_detector)
     , n_detectors(a_n_detectors)
