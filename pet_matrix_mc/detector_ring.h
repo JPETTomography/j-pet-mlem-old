@@ -148,9 +148,9 @@ public:
           break;
         }
         // step towards outer detector
-        prev_i = i, i = (i + step) % n_detectors;
+        prev_i = i, i = (i + step + n_detectors) % n_detectors;
 
-      } while (prev_i != outer); //loop over intersected  detectors
+      } while (prev_i != outer); // loop over intersected detectors
 #endif
       if (hits == 0) break;
 
