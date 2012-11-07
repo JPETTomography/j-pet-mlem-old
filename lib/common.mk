@@ -1,23 +1,23 @@
 TARGET := $(shell uname -s)
 
-CXXFLAGS+=$(CXXUFLAGS)
-LDFLAGS+=$(LDUFLAGS)
+# just in case
+ifdef OPENMP
+OMP := 1
+endif
+
+CXXFLAGS += $(CXXUFLAGS)
+LDFLAGS  += $(LDUFLAGS)
 
 ifeq ($(CC),icc)
 CXX := icpc
-OPT := fast
+OPT := $(or $(O),fast)
 CXXFLAGS += -std=gnu++0x
 else
-OPT := 3
+OPT := $(or $(O),3)
 ifeq ($(findstring gcc,$(CC)),gcc)
 CXX := $(subst gcc,g++,$(CC))
 endif
 CXXFLAGS += -std=c++11
-endif
-
-# just in case
-ifdef OPENMP
-OMP := 1
 endif
 
 CPPFLAGS += -g

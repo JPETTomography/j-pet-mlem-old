@@ -99,8 +99,8 @@ public:
    * @param rx, ry coordinates of the emission point
    * @param output parameter contains the lor of the event
    */
-  template <class AcceptanceModel>
-  short emit_event(AcceptanceModel &model,
+  template <class RandomGenerator, class AcceptanceModel>
+  short emit_event(RandomGenerator &gen, AcceptanceModel &model,
                    F rx, F ry, F angle,
                    lor_type &lor) {
 
@@ -140,7 +140,7 @@ public:
         // then test the model against these points distance
 
         if ( points.size() == 2 &&
-             model( (points[1]-points[0]).length() ) ) {
+             model( gen, (points[1]-points[0]).length() ) ) {
 
           hits++;
           (!side ? lor.first : lor.second) = i;
@@ -150,9 +150,10 @@ public:
           break;
         }
         // step towards outer detector
-        prev_i = i, i = (i + step) % n_detectors;
 
-      } while (prev_i != outer); //loop over intersected  detectors
+        prev_i = i, i = (i + step + n_detectors) % n_detectors;
+
+      } while (prev_i != outer); // loop over intersected detectors
 #endif
       if (hits == 0) break;
 
@@ -201,11 +202,19 @@ public:
 
     std::uniform_real_distribution<> one_dis(0., 1.);
     std::uniform_real_distribution<> phi_dis(0., M_PI);
-    // iterating only triangular matrix,
-    // being upper right part or whole system matrix
+
 #if _OPENMP
+    // OpenMP uses passed random generator as seed source for
+    // thread local random generators
+    RandomGenerator mp_gens[omp_get_max_threads()];
+    for (auto t = 0; t < omp_get_max_threads(); ++t) {
+      mp_gens[t].seed(gen());
+    }
+
     #pragma omp parallel for schedule(dynamic)
 #endif
+    // iterating only triangular matrix,
+    // being upper right part or whole system matrix
     // descending, since biggest chunks start first, but may end last
     for (ssize_t y = n_pixels_2 - 1; y >= 0; --y) {
       for (auto x = 0; x <= y; ++x) {
@@ -213,23 +222,27 @@ public:
         if ((x*x + y*y) * s_pixel*s_pixel > fov_radius*fov_radius) continue;
 
         for (auto n = 0; n < n_emissions; ++n) {
-
-          auto rx = ( x + one_dis(gen) ) * s_pixel;
-          auto ry = ( y + one_dis(gen) ) * s_pixel;
+#if _OPENMP
+          auto &l_gen = mp_gens[omp_get_thread_num()];
+#else
+          auto &l_gen = gen;
+#endif
+          auto rx = ( x + one_dis(l_gen) ) * s_pixel;
+          auto ry = ( y + one_dis(l_gen) ) * s_pixel;
 
           // ensure we are within a triangle
           if (rx > ry) continue;
 
-          auto angle= phi_dis(gen);
+          auto angle = phi_dis(l_gen);
           lor_type lor;
-          auto hits = emit_event(model, rx, ry, angle, lor);
+          auto hits = emit_event(l_gen, model, rx, ry, angle, lor);
 
           // do we have hit on both sides?
           if (hits >= 2) {
             auto i_pixel = t_pixel_index(x, y);
 
             if (o_collect_mc_matrix) {
-              add_to_t_matrix(lor,i_pixel);
+              add_to_t_matrix(lor, i_pixel);
             }
 
             if (o_collect_pixel_stats) {
