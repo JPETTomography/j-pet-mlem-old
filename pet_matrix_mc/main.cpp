@@ -116,7 +116,10 @@ try {
   }
 
   std::random_device rd;
-  std::mt19937 gen(cl.exist("seed") ? cl.get<std::mt19937::result_type>("seed") : rd());
+  std::mt19937 gen(rd());
+  if (cl.exist("seed")) {
+    gen.seed(cl.get<std::mt19937::result_type>("seed"));
+  }
 
   detector_ring<> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
 
