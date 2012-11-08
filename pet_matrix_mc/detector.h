@@ -17,14 +17,14 @@ public:
 
   detector rotated(angle_type phi) {
     detector r;
-    for(auto p: *this) {
+    for(auto it = this->begin(), p = *it; it != this->end(); ++it, p = *it) {
       r.push_back( p.rotated(phi) );
     }
     return r;
   }
 
   detector & operator += (point_type t) {
-    for(auto &p: *this) p += t;
+    for(auto p = this->begin(); p != this->end(); ++p) *p += t;
     return *this;
   }
 

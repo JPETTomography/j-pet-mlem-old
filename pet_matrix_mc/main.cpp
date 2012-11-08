@@ -123,8 +123,8 @@ try {
 
   detector_ring<> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
 
-  for (auto fn: cl.rest()) {
-    ibstream in(fn, std::ios::binary);
+  for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
+    ibstream in(*fn, std::ios::binary);
     in >> dr;
   }
 

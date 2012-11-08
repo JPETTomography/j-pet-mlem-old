@@ -23,6 +23,8 @@
 #include <omp.h>
 #endif
 
+#define fourcc(a, b, c, d) (((d)<<24) | ((c)<<16) | ((b)<<8) | (a))
+
 /// Provides model for 2D ring of detectors
 template <typename F = double, typename HitType = int>
 class detector_ring : public std::vector<detector<F>> {
@@ -104,7 +106,7 @@ public:
                    F rx, F ry, F angle,
                    lor_type &lor) {
 
-    typename decltype(c_inner)::event_type e(rx, ry, angle);
+    typename circle_type::event_type e(rx, ry, angle);
 
     // secant for p and phi
     auto i_inner = c_inner.secant_sections(e, n_detectors);
@@ -303,20 +305,16 @@ public:
     svg << dr.c_outer;
     svg << dr.c_inner;
 
-    for (auto detector: dr) {
-      svg << detector;
+    for (auto detector = dr.begin(); detector != dr.end(); ++detector) {
+      svg << *detector;
     }
 #if COLLECT_INTERSECTIONS
-    for (auto &p: dr.intersection_points) {
+    for (auto it = dr.intersection_points.begin(), p = *it; it != dr.intersection_points.end(); ++p, p = *it) {
       svg << "<circle cx=\"" << p.x << "\" cy=\"" << p.y << "\" r=\"0.002\"/>" << std::endl;
     }
 #endif
     return svg;
   }
-
-  constexpr static file_int fourcc(int a, int b, int c, int d) {
-    return ( (file_int) (((d)<<24) | ((c)<<16) | ((b)<<8) | (a)) );
-  };
 
   // serialization
   static const file_int magic = fourcc('P','E','T','t');

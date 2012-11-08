@@ -11,15 +11,16 @@ LDFLAGS  += $(LDUFLAGS)
 ifeq ($(CC),icc)
 CXX := icpc
 OPT := $(or $(O),fast)
-CXXFLAGS += -std=gnu++0x
+STD := gnu++0x
 else
 OPT := $(or $(O),3)
 ifeq ($(findstring gcc,$(CC)),gcc)
 CXX := $(subst gcc,g++,$(CC))
 endif
-CXXFLAGS += -std=c++11
+STD := c++11
 endif
 
+CXXFLAGS += -std=$(STD)
 CPPFLAGS += -g
 ifeq ($(OPT),fast)
 CPPFLAGS += -fast
