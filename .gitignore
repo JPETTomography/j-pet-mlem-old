@@ -4,6 +4,7 @@
 */*.aux
 */*.log
 */*.pdf
+*/*.dvi
 */*.synctex.gz
 */*.toc
 */*.nav
