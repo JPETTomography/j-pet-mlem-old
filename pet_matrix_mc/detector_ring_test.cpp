@@ -68,7 +68,7 @@ TEST_CASE("detector_ring/math", "detector ring test") {
     // this is not yet a complete tests....
     decltype(ring)::lor_type lor;
     always_accept<> model;
-    auto hits = ring.emit_event(model,x,y,phi,lor);
+    auto hits = ring.emit_event(model,model,x,y,phi,lor);
 
     if (hits >= 2) {
       CHECK( is_in(lor.first,  detector, n_detectors) == true );
