@@ -15,9 +15,9 @@ struct png_writer_private {
 png_writer::png_writer(std::string fn) {
 #ifdef HAVE_LIBPNG
   priv = new png_writer_private;
-  priv->fp       = nullptr;
-  priv->png_ptr  = nullptr;
-  priv->info_ptr = nullptr;
+  priv->fp       = NULL;
+  priv->png_ptr  = NULL;
+  priv->info_ptr = NULL;
 
   if (!( priv->png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL) )) {
     throw(std::string("cannot create png version"));
