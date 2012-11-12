@@ -1,6 +1,6 @@
 /// Sparse triangle part system matrix binary file format
 /// -----------------------------------------------------
-/// uint32_t magic = 'PETt'
+/// uint32_t magic = 'PETs'
 /// uint32_t n_pixels_2  // half size
 /// uint32_t n_emissions // per pixel
 /// while (!eof)
