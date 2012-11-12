@@ -1,13 +1,13 @@
 /// Sparse triangle part system matrix binary file format
 /// -----------------------------------------------------
 /// uint32_t magic = 'PETt'
-/// uint32_t n_pixels_2
+/// uint32_t n_pixels_2  // half size
 /// uint32_t n_emissions // per pixel
 /// while (!eof)
 ///   uint16_t lor_a, lor_b // pair
 ///   uint32_t pixel_pair_count
 ///   for(.. count ..)
-///     uint16_t t_pixel_x, t_pixel_y
+///     uint16_t t_pixel_x, t_pixel_y // half pixels
 ///     uint32_t pixel_hits
 
 #pragma once
