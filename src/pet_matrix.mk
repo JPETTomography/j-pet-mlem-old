@@ -1,5 +1,3 @@
--include ../lib/common.mk
-
 # libpng support & detection
 LIBPNG := $(strip $(firstword \
 		$(wildcard /usr/include/libpng) \

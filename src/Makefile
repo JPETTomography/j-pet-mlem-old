@@ -5,9 +5,6 @@ ifdef OPENMP
 OMP := 1
 endif
 
-CXXFLAGS += $(CXXUFLAGS)
-LDFLAGS  += $(LDUFLAGS)
-
 ifeq ($(CC),icc)
 CXX := icpc
 OPT := $(or $(O),fast)
@@ -35,7 +32,7 @@ ifdef OMP
 CC  := gcc
 CXX := g++
 endif
-ifneq ($(CXX),g++)
+ifneq ($(findstring g++,$(CXX)),g++)
 CXXFLAGS += -stdlib=libc++
 LDFLAGS  += -stdlib=libc++
 endif
@@ -53,14 +50,18 @@ CPPFLAGS += -I../lib/catch/include
 CPPFLAGS += -I../lib/cmdline
 
 # binary is folder name
-BIN  := $(notdir $(realpath .))
-SRC  := $(filter-out %_test.cpp, $(wildcard *.cpp))
-OBJ  += $(SRC:.cpp=.o)
+SRC  := $(filter-out %_test.cpp, $(filter-out %_main.cpp, $(wildcard *.cpp)))
+OBJ  := $(SRC:.cpp=.o)
 DEP  += $(SRC:.cpp=.d)
 
 TSRC := $(wildcard *_test.cpp)
-TOBJ += t.o $(TSRC:.cpp=.o)
-TDEP += t.d $(TSRC:.cpp=.d)
+TOBJ := t.o $(TSRC:.cpp=.o)
+DEP  += t.d $(TSRC:.cpp=.d)
+
+MAIN := $(wildcard *_main.cpp)
+MOBJ := $(MAIN:.cpp=.o)
+BIN  := $(patsubst %_main.cpp,%,$(MAIN))
+DEP  += $(MAIN:.cpp=.d)
 
 all: $(BIN)
 
@@ -72,22 +73,46 @@ $(TOBJ): ../lib/catch/include/catch.hpp
 ../lib/catch/include/catch.hpp:
 	cd .. && git submodule update --init lib/catch
 
--include $(DEP) $(TDEP)
+-include $(DEP)
+-include $(wildcard *.mk)
 
-# main executable
-$(BIN): $(OBJ)
-	$(CXX) $(LDFLAGS) -o $@ $^
+# colorful reports
+bold   := \033[1m
+yellow := \033[33m
+cyan   := \033[36m
+none   := \033[0m
+define CXX_info
+	@if [ -t 1 ]; then echo "$(cyan)$(CXX)$(none)\t$<"; else echo "$(CXX) $<"; fi
+endef
+define LD_info
+	@if [ -t 1 ]; then echo "$(yellow)link$(none)\t$(bold)$@$(none)"; else echo "link $@"; fi
+endef
+
+%.o: %.cpp
+	$(call CXX_info)
+	@$(CXX) $(CXXFLAGS) $(CXXUFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+# main executables
+define BIN_template
+$(1): $(1)_main.o $$(OBJ) $$($(1)_OBJ)
+	$$(call LD_info)
+	@$$(CXX) $$(LDFLAGS) $$(LDUFLAGS) $$($(1)_LDFLAGS) -o $$@ $$^
+LOBJ += $$($(1)_OBJ)
+endef
+$(foreach bin,$(BIN),$(eval $(call BIN_template,$(bin))))
 
 # unit testing
 test: t ; @./t
 t: $(TOBJ)
-	 $(CXX) $(LDFLAGS) -o $@ $^
+	$(call LD_info)
+	@$(CXX) $(LDFLAGS) -o $@ $^
 t.o:
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ \
+	@if [ -t 1 ]; then echo "$(green)$(CXX)$(none)\t$<"; else echo "$(CXX) $<"; fi
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ \
 	-D CATCH_CONFIG_MAIN \
 	-D CATCH_CONFIG_USE_ANSI_COLOUR_CODES \
 	-x c++ ../lib/catch/include/catch.hpp
 
 # cleaning
 clean:
-	rm -f $(OBJ) $(DEP) $(TOBJ) $(TDEP)
+	rm -f $(OBJ) $(TOBJ) $(MOBJ) $(LOBJ) $(DEP)
