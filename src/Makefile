@@ -25,6 +25,8 @@ else
 CPPFLAGS += -O$(OPT)
 endif
 
+# verbosity (use make Q= to disable)
+Q := @
 
 ifeq ($(TARGET),Darwin)
 # force GCC, as clang has not OpenMP on OSX
@@ -90,13 +92,13 @@ endef
 
 %.o: %.cpp
 	$(call CXX_info)
-	@$(CXX) $(CXXFLAGS) $(CXXUFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(Q)$(CXX) $(CXXFLAGS) $(CXXUFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 # main executables
 define BIN_template
 $(1): $(1)_main.o $$(OBJ) $$($(1)_OBJ)
 	$$(call LD_info)
-	@$$(CXX) $$(LDFLAGS) $$(LDUFLAGS) $$($(1)_LDFLAGS) -o $$@ $$^
+	$(Q)$$(CXX) $$(LDFLAGS) $$(LDUFLAGS) $$($(1)_LDFLAGS) -o $$@ $$^
 LOBJ += $$($(1)_OBJ)
 endef
 $(foreach bin,$(BIN),$(eval $(call BIN_template,$(bin))))
@@ -108,7 +110,7 @@ t: $(TOBJ)
 	@$(CXX) $(LDFLAGS) -o $@ $^
 t.o:
 	@if [ -t 1 ]; then echo "$(green)$(CXX)$(none)\t$<"; else echo "$(CXX) $<"; fi
-	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ \
+	$(Q)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ \
 	-D CATCH_CONFIG_MAIN \
 	-D CATCH_CONFIG_USE_ANSI_COLOUR_CODES \
 	-x c++ ../lib/catch/include/catch.hpp
