@@ -9,10 +9,10 @@ public:
   typedef typename polygon<F>::point_type point_type;
   detector(F w, F h)
   {
-    this->push_back( {  w/2., h/2.} );
-    this->push_back( {  w/2.,-h/2.} );
-    this->push_back( { -w/2.,-h/2.} );
-    this->push_back( { -w/2., h/2.} );
+    this->push_back( point_type(  w/2., h/2. ) );
+    this->push_back( point_type(  w/2.,-h/2. ) );
+    this->push_back( point_type( -w/2.,-h/2. ) );
+    this->push_back( point_type( -w/2., h/2. ) );
   }
 
   detector rotated(angle_type phi) {

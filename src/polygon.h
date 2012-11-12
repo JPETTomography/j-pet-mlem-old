@@ -39,10 +39,10 @@ public:
       } else if (v1 * v2 < 0.) {
         // calculate intersection
         auto m = e.a*(p1.x - p2.x) + e.b*(p1.y - p2.y);
-        r.push_back({
+        r.push_back( point_type(
           ( e.c*(p1.x - p2.x) + e.b*(p2.x*p1.y - p1.x*p2.y) ) / m,
           ( e.c*(p1.y - p2.y) + e.a*(p1.x*p2.y - p2.x*p1.y) ) / m
-        });
+        ) );
         if (r.size() == 2) return r;
       }
       v1 = v2;

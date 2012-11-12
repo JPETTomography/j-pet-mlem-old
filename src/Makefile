@@ -31,12 +31,19 @@ Q := @
 ifeq ($(TARGET),Darwin)
 # force GCC, as clang has not OpenMP on OSX
 ifdef OMP
+ifeq ($(findstring g++,$(CXX))$(findstring icpc,$(CXX)),)
 CC  := gcc
 CXX := g++
 endif
-ifneq ($(findstring g++,$(CXX)),g++)
+endif
+# link to libc++ if not using GCC or ICC
+ifeq ($(findstring g++,$(CXX))$(findstring icpc,$(CXX)),)
 CXXFLAGS += -stdlib=libc++
 LDFLAGS  += -stdlib=libc++
+endif
+# use static OpenMP
+ifneq ($(findstring icpc,$(CXX)),)
+LDFLAGS  += -openmp-link=static
 endif
 endif
 
