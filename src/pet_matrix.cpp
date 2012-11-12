@@ -1,9 +1,9 @@
 // PET System Matrix Calculator
 // Authors:
 //   Adam Strzelecki <adam.strzlecki@uj.edu.pl>
-//   Piotr Bialas <piotr.bialas@uj.edu.pl>
+//   Piotr Bialas    <piotr.bialas@uj.edu.pl>
 //
-// Using Monte Carlo method and square detector scintilators
+// Using Monte Carlo method and square detector scintilators.
 
 #include <random>
 #include <iostream>

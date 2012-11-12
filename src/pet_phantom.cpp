@@ -1,12 +1,10 @@
-// PET Reconstruction
+// PET Phantom
 // Authors:
 //   Piotr Bialas    <piotr.bialas@uj.edu.pl>
 //   Jakub Kowal     <jakub.kowal@uj.edu.pl>
 //   Adam Strzelecki <adam.strzlecki@uj.edu.pl>
 //
-// Based on:
-//   "Implementing and Accelerating the EM Algorithm for Positron Emission Tomography"
-//   by Linda Kaufman
+// Generates phantom measurements using Monte Carlo.
 
 #include <cmdline.h>
 #include "cmdline_types.h"
