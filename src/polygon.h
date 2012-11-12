@@ -15,7 +15,8 @@ public:
   bool intersects(event_type &e) {
     auto p1 = this->back();
     auto v1 = e(p1);
-    for(auto p2 = this->begin(); p2 != this->end(); ++p2) {
+    for(auto it = this->begin(); it != this->end(); ++it) {
+      auto p2 = *it;
       auto v2 = e(p2);
       if (v1 * v2 <= 0.) return true;
       v1 = v2;
@@ -28,7 +29,8 @@ public:
     auto p1 = this->back();
     auto v1 = e(p1);
     intersections_type r;
-    for(auto it = this->begin(), p2 = *it; it != this->end(); ++it, p2 = *it) {
+    for(auto it = this->begin(); it != this->end(); ++it) {
+      auto p2 = *it;
       auto v2 = e(p2);
       if (v2 == 0.) {
         // v2 is crossing point
@@ -51,7 +53,8 @@ public:
 
   friend svg_ostream<F> & operator << (svg_ostream<F> &svg, polygon &pg) {
     svg << "<polygon points=\"";
-    for(auto it = pg.begin(), p = *it; it != pg.end(); ++it, p = *it) {
+    for(auto it = pg.begin(); it != pg.end(); ++it) {
+      auto p = *it;
       svg << p.x << ' ' << p.y << ' ';
     }
     svg << "\"/>" << std::endl;
