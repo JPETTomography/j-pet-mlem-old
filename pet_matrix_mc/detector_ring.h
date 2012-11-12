@@ -1,7 +1,8 @@
 /// Sparse triangle part system matrix binary file format
 /// -----------------------------------------------------
 /// uint32_t magic = 'PETt'
-/// uint32_t n_ pixels_2
+/// uint32_t n_pixels_2
+/// uint32_t n_emissions // per pixel
 /// while (!eof)
 ///   uint16_t lor_a, lor_b // pair
 ///   uint32_t pixel_pair_count
@@ -58,6 +59,7 @@ public:
     , n_t_matrix_pixels( a_n_pixels/2 * (a_n_pixels/2+1) / 2 )
     , n_lors( a_n_detectors * (a_n_detectors+1) / 2 )
     , s_pixel(a_s_pixel)
+    , n_emissions(0)
   {
     if(radious    <= 0.)   throw("invalid radious");
     if(w_detector <= 0. ||
@@ -197,7 +199,7 @@ public:
   /// @param gen   random number generator
   /// @param model acceptance model (returns bool for call operator with given length)
   template <class RandomGenerator, class AcceptanceModel>
-  void matrix_mc(RandomGenerator &gen, AcceptanceModel model, size_t n_emissions
+  void matrix_mc(RandomGenerator &gen, AcceptanceModel model, size_t n_mc_emissions
 
   , bool o_collect_mc_matrix = true
   , bool o_collect_pixel_stats = true) {
@@ -205,6 +207,7 @@ public:
     std::uniform_real_distribution<> one_dis(0., 1.);
     std::uniform_real_distribution<> phi_dis(0., M_PI);
 
+    n_emissions += n_mc_emissions;
 #if _OPENMP
     // OpenMP uses passed random generator as seed source for
     // thread local random generators
@@ -223,7 +226,7 @@ public:
 
         if ((x*x + y*y) * s_pixel*s_pixel > fov_radius*fov_radius) continue;
 
-        for (auto n = 0; n < n_emissions; ++n) {
+        for (auto n = 0; n < n_mc_emissions; ++n) {
 #if _OPENMP
           auto &l_gen = mp_gens[omp_get_thread_num()];
 #else
@@ -317,11 +320,12 @@ public:
   }
 
   // serialization
-  static const file_int magic = fourcc('P','E','T','t');
+  static const file_int magic = fourcc('P','E','T','s');
 
   friend obstream & operator << (obstream &out, detector_ring &dr) {
     out << magic;
     out << static_cast<file_int>(dr.n_pixels_2);
+    out << static_cast<file_int>(dr.n_emissions);
 
     for (file_half a = 0; a < dr.n_detectors; ++a) {
       for (file_half b = 0; b <= a; ++b) {
@@ -357,11 +361,17 @@ public:
     if (in_magic != magic) {
       throw("invalid file type format");
     }
+    // load matrix size
     file_int in_n_pixel_2;
     in >> in_n_pixel_2;
     if (in_n_pixel_2 != dr.n_pixels_2) {
       throw("incompatible input matrix dimensions");
     }
+    // load number of emissions
+    hit_type n_emissions;
+    in >> n_emissions;
+    dr.n_emissions += n_emissions;
+    // load hits
     while (!in.eof()) {
       file_half a, b;
       in >> a >> b;
@@ -423,6 +433,7 @@ private:
   size_t n_pixels_2;
   size_t n_detectors;
   size_t n_lors;
+  hit_type n_emissions;
   F s_pixel;
   F fov_radius;
 };
