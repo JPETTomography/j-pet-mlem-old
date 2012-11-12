@@ -52,7 +52,7 @@ CPPFLAGS += -I../lib/catch/include
 CPPFLAGS += -I../lib/cmdline
 
 # binary is folder name
-SRC  := $(filter-out %_test.cpp, $(filter-out %_main.cpp, $(wildcard *.cpp)))
+SRC  := $(filter-out %_test.cpp, $(filter-out pet_%.cpp, $(wildcard *.cpp)))
 OBJ  := $(SRC:.cpp=.o)
 DEP  += $(SRC:.cpp=.d)
 
@@ -60,9 +60,9 @@ TSRC := $(wildcard *_test.cpp)
 TOBJ := t.o $(TSRC:.cpp=.o)
 DEP  += t.d $(TSRC:.cpp=.d)
 
-MAIN := $(wildcard *_main.cpp)
+MAIN := $(wildcard pet_*.cpp)
 MOBJ := $(MAIN:.cpp=.o)
-BIN  := $(patsubst %_main.cpp,%,$(MAIN))
+BIN  := $(patsubst %.cpp,%,$(MAIN))
 DEP  += $(MAIN:.cpp=.d)
 
 all: $(BIN)
@@ -96,7 +96,7 @@ endef
 
 # main executables
 define BIN_template
-$(1): $(1)_main.o $$(OBJ) $$($(1)_OBJ)
+$(1): $(1).o $$(OBJ) $$($(1)_OBJ)
 	$$(call LD_info)
 	$(Q)$$(CXX) $$(LDFLAGS) $$(LDUFLAGS) $$($(1)_LDFLAGS) -o $$@ $$^
 LOBJ += $$($(1)_OBJ)

@@ -9,8 +9,8 @@
 */*.toc
 */*.nav
 */*.snm
-src/pet_matrix_mc
-src/tof
+src/pet_*
+!src/pet_*.cpp
 src/t
 data/*.test
 doc/html/
