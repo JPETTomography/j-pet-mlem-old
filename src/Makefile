@@ -75,7 +75,7 @@ DEP  += $(MAIN:.cpp=.d)
 all: $(BIN)
 
 # update submodules
-$(OBJ):  ../lib/cmdline/cmdline.h
+$(MOBJ) $(OBJ): ../lib/cmdline/cmdline.h
 ../lib/cmdline/cmdline.h:
 	cd .. && git submodule update --init lib/cmdline
 $(TOBJ): ../lib/catch/include/catch.hpp
