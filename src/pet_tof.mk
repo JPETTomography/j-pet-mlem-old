@@ -1,5 +1,9 @@
-VPATH    += ../lib/OpenGL2.0/src/SSG
-VPATH    += ../lib/OpenGL2.0/src/OGLUtils
+%.o: ../lib/OpenGL2.0/src/OGLUtils/%.cpp
+	$(call CXX_info)
+	$(Q)$(CXX) $(CXXFLAGS) $(CXXUFLAGS) $(CPPFLAGS) -c -o $@ $<
+%.o: ../lib/OpenGL2.0/src/SSG/%.cpp
+	$(call CXX_info)
+	$(Q)$(CXX) $(CXXFLAGS) $(CXXUFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 pet_tof_OBJ += Uniform.o Light.o Shader.o glutils.o glmutils.o logger.o
 pet_tof_DEP += $(tof_OBJ:.o=.d)
@@ -18,9 +22,9 @@ pet_tof_LDFLAGS  += -framework GLUT
 endif
 
 # update submodules
+pet_tof.o: ../lib/glm/glm/glm.hpp
 ../lib/glm/glm/glm.hpp:
 	cd .. && git submodule update --init lib/glm
+pet_tof.o: ../lib/OpenGL2.0/src/OGLUtils/glmutils.h
 ../lib/OpenGL2.0/src/OGLUtils/glmutils.h:
 	cd .. && git submodule update --init lib/OpenGL2.0
-pet_tof.o: ../lib/glm/glm/glm.hpp
-pet_tof.o: ../lib/OpenGL2.0/src/OGLUtils/glmutils.h
