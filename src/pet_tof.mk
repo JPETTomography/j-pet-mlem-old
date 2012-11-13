@@ -18,9 +18,9 @@ pet_tof_LDFLAGS  += -framework GLUT
 endif
 
 # update submodules
-pet_tof.o: ../lib/glm/glm/glm.hpp
 ../lib/glm/glm/glm.hpp:
 	cd .. && git submodule update --init lib/glm
-pet_tof.o: ../lib/OpenGL2.0/src/OGLUtils/glmutils.h
 ../lib/OpenGL2.0/src/OGLUtils/glmutils.h:
 	cd .. && git submodule update --init lib/OpenGL2.0
+pet_tof.o: ../lib/glm/glm/glm.hpp
+pet_tof.o: ../lib/OpenGL2.0/src/OGLUtils/glmutils.h
