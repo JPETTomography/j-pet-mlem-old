@@ -60,7 +60,8 @@ class Phantom {
  public:
 
  typedef container::const_iterator const_iterator;
-#if 0
+  Phantom(){};
+#if 1
  Phantom(double ll_x, double ll_y, double ur_x, double ur_y):
  ll_x_(ll_x), ll_y_(ll_y), ur_x_(ur_x), ur_y_(ur_y) {}
 #endif

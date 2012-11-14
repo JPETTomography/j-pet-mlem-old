@@ -68,7 +68,7 @@ public:
     if(n_pixels  % 2)      throw("number of pixels must be multiple of 2");
     if(s_pixel    <= 0.)   throw("invalid pixel size");
 
-    fov_radius=radious/::sqrt(2.0);
+    fov_radius_=radious/::sqrt(2.0);
 
     // reserve for all lors
     t_matrix = new pixels_type[n_lors]();
@@ -96,6 +96,10 @@ public:
     delete [] t_matrix;
     delete [] t_hits;
   }
+
+
+  F fov_radius() const {return fov_radius_;}
+
 
   /**
    * @param model acceptance model
@@ -224,7 +228,7 @@ public:
     for (ssize_t y = n_pixels_2 - 1; y >= 0; --y) {
       for (auto x = 0; x <= y; ++x) {
 
-        if ((x*x + y*y) * s_pixel*s_pixel > fov_radius*fov_radius) continue;
+        if ((x*x + y*y) * s_pixel*s_pixel > fov_radius_*fov_radius_) continue;
 
         for (auto n = 0; n < n_mc_emissions; ++n) {
 #if _OPENMP
@@ -435,5 +439,5 @@ private:
   size_t n_lors;
   hit_type n_emissions;
   F s_pixel;
-  F fov_radius;
+  F fov_radius_;
 };
