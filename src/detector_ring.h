@@ -74,7 +74,7 @@ public:
     t_matrix = new pixels_type[n_lors]();
 
     // reserve for pixel stats
-    t_hits = new hit_type[n_t_matrix_pixels];
+    t_hits = new hit_type[n_t_matrix_pixels]();
 
     detector_type detector_base(h_detector, w_detector);
 
@@ -190,12 +190,10 @@ public:
       // because it may have changed in meantime
       #pragma omp critical
       if ( !(pixels = t_matrix[i_lor]) ) {
-        pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels];
-        for(int i=0;i<n_t_matrix_pixels;++i)
-          pixels[i]=0;
+        pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels]();
       }
 #else
-      t_matrix[i_lor] = pixels = new hit_type[n_t_matrix_pixels];
+      pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels]();
 #endif
     }
     ++pixels[i_pixel];
@@ -385,7 +383,7 @@ public:
       auto i_lor = lor_index(lor);
       auto pixels = dr.t_matrix[i_lor];
       if (!pixels) {
-        dr.t_matrix[i_lor] = pixels = new hit_type[dr.n_t_matrix_pixels];
+        dr.t_matrix[i_lor] = pixels = new hit_type[dr.n_t_matrix_pixels]();
       }
       file_int count;
       in >> count;
