@@ -45,7 +45,7 @@ try {
   cl.add<std::string>("output",      'o', "output binary triangular sparse system matrix", false);
   cl.add<std::mt19937::result_type>
     ("seed",        's', "random number generator seed",      false);
-
+  cl.add<std::string>("phantom",'f',"phantom description file",false,"");
   cl.parse_check(argc, argv);
 
 #if _OPENMP
@@ -108,8 +108,21 @@ try {
 
   Phantom  phantom;
 
+  if(cl.exist("phantom")) {
+    std::string name=cl.get<std::string>("phantom");
+    FILE *fin=fopen(name.c_str(),"r");
+    if(fin==NULL) {
+      fprintf(stderr,"cannot open file `%s' for reading\n",name.c_str());
+      exit(-1);
+    }
+    phantom.load_from_file(fin);
+  }
+    ;
+
+#if 0
   phantom.addRegion(0,0,0.2,0.25,0.0,0.1);
   phantom.addRegion(0,.1,0.025,0.1,0.0,0.7);
+#endif
 
   scintilator_accept<> model(acceptance);
 
@@ -121,7 +134,7 @@ try {
 
       if(phantom.emit(x,y,one_dis(gen))) {
         detector_ring<double>::lor_type lor; 
-        //        std::cerr<<n_emitted<<" "<<x<<" "<<y;
+        std::cerr<<n_emitted<<" "<<x<<" "<<y<<"\n";
         double angle=phi_dis(gen);
         auto hits=dr.emit_event(gen,model,x,y,angle,lor);
         if(hits==2) {
@@ -135,14 +148,14 @@ try {
     }
   }
 
+#if 0
   for(int i=0;i<n_detectors;i++)
     for(int j=i+1;j<n_detectors;j++) {
             if(tubes[i][j]>0) 
         std::cout<<i<<" "<<j<<"  "<<tubes[i][j]<<"\n";
     }
+#endif
 
-
-  // FIXME: IMPLEMENT ME!
 
   return 0;
 

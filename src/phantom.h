@@ -67,6 +67,8 @@ class Phantom {
 #endif
 
   void addRegion(double x, double y, double a, double b, double phi, double act) {
+
+
     regions_.push_back(new EllipticalRegion(x, y, a, b, phi, act));
   }
   double activity(double x, double y) const {
@@ -90,6 +92,18 @@ class Phantom {
     container::iterator rit = regions_.begin();
     for(;rit != regions_.end();++rit) {
       delete (*rit);
+    }
+  }
+
+  void load_from_file(FILE *fin) {
+    char line[128];
+    while(NULL!=fgets(line,128,fin)) {
+      if(line[0]!='#') {
+        double x,y,a,b,angle,acceptance;
+        sscanf(line,"ellipse %lf %lf %lf %lf %lf %lf",
+               &x,&y,&a,&b,&angle,&acceptance);
+        addRegion(x,y,a,b,angle,acceptance);
+      }
     }
   }
 
