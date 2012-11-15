@@ -191,6 +191,8 @@ public:
       #pragma omp critical
       if ( !(pixels = t_matrix[i_lor]) ) {
         pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels];
+        for(int i=0;i<n_t_matrix_pixels;++i)
+          pixels[i]=0;
       }
 #else
       t_matrix[i_lor] = pixels = new hit_type[n_t_matrix_pixels];
