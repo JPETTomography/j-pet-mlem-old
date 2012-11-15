@@ -3,6 +3,7 @@
 =pod
 /// uint32_t magic = 'PETt'
 /// uint32_t n_pixels_2 
+/// uint32_t n_emissions // per pixel
 /// while (!eof)
 ///   uint16_t lor_a, lor_b // pair
 ///   uint32_t pixel_pair_count
@@ -33,11 +34,11 @@ while(my $file=shift @ARGV) {
     print STDERR $file,"\n";
     open(FILE,"<$file") or warn "cannot open file `$file'  for reading.";
     my $buffer;
-    read FILE,$buffer,8;
-    my ($magic,$pixels_2)=unpack "a4I", $buffer;
+    read FILE,$buffer,12;
+    my ($magic,$pixels_2,$n_emissions)=unpack "a4II", $buffer;
 
     my $mat=zeroes($pixels_2,$pixels_2);
-    print "#$magic $pixels_2\n";
+    print "#$magic $pixels_2 $n_emissions\n";
     while(!(eof FILE)) {
 	read FILE,$buffer,8;
 	my ($lor_i,$lor_j,$count)=unpack "SSI",$buffer;
