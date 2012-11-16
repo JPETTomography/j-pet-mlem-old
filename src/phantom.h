@@ -66,6 +66,8 @@ class Phantom {
  ll_x_(ll_x), ll_y_(ll_y), ur_x_(ur_x), ur_y_(ur_y) {}
 #endif
 
+  size_t n_regions() const {return regions_.size();}
+
   void addRegion(double x, double y, double a, double b, double phi, double act) {
 
 
@@ -112,4 +114,72 @@ private:
   double ur_x_, ur_y_;
 
   container regions_;
+};
+
+
+template<typename F>
+struct point_source_t {
+  point_source_t(F x, F y, F intensity_a): p(x,y),intensity(intensity_a) {}
+  point<F> p;
+  F intensity;
+};
+
+
+template<typename F>
+class  point_sources_t {
+public:
+
+
+  size_t n_sources() const {return sources_.size();}
+
+  void add(F x , F y, F intensity) {
+    sources_.push_back(point_source_t<F>(x,y,intensity)); 
+  }
+
+
+  void normalize() {
+    total_=0.0;
+    for(auto it=sources_.begin();
+        it!=sources_.end();
+        ++it) {
+      total_+=(*it).intensity;
+    }
+
+    F cumulant=0.0;
+    cumulant_.clear();
+    for(auto it=sources_.begin();
+        it!=sources_.end();
+        ++it) {
+      cumulant+=(*it).intensity/=total_;
+      cumulant_.push_back(cumulant);
+    }
+  }
+
+
+  point<F> draw(F rng) {
+    
+    int i=0;
+
+    while(rng>cumulant_[i]) {
+      ++i;
+    }
+    return sources_[i].p;
+  }
+
+  int load_from_file(FILE *fin) {
+    char line[128];
+    while(NULL!=fgets(line,128,fin)) {
+      if(line[0]!='#') {
+        double x,y,intensity;
+        sscanf(line,"point %lf %lf %lf",&x,&y,&intensity);
+        std::cerr<<x<<" "<<y<<std::endl;
+        add(x,y,intensity);
+      }
+    }
+  }
+
+private:
+  std::vector<point_source_t<F> > sources_;
+  std::vector<F> cumulant_;
+  F total_;
 };

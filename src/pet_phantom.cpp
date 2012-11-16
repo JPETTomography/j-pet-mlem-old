@@ -13,6 +13,7 @@
 #include <cmdline.h>
 #include "cmdline_types.h"
 
+#include"point.h"
 #include"phantom.h"
 #include "detector_ring.h"
 #include "model.h"
@@ -21,6 +22,17 @@
 #if _OPENMP
 #include <omp.h>
 #endif
+
+FILE  *open_file_for_reading(const std::string &name) {
+    FILE *fin=fopen(name.c_str(),"r");
+    if(fin==NULL) {
+      fprintf(stderr,"cannot open file `%s' for reading\n",name.c_str());
+      exit(-1);
+    }
+    return fin;
+}
+
+
 
 int main(int argc, char *argv[]) {
 
@@ -46,6 +58,7 @@ try {
   cl.add<std::mt19937::result_type>
     ("seed",        's', "random number generator seed",      false);
   cl.add<std::string>("phantom",'f',"phantom description file",false,"");
+  cl.add<std::string>("points",'\0',"points sources description file",false,"");
   cl.parse_check(argc, argv);
 
 #if _OPENMP
@@ -63,6 +76,8 @@ try {
   auto w_detector  = cl.get<double>("w-detector");
   auto h_detector  = cl.get<double>("h-detector");
   auto acceptance  = cl.get<double>("acceptance");
+
+  point_sources_t<double>  point_sources;
 
   // automatic radious
   if (!cl.exist("s-pixel")) {
@@ -109,49 +124,73 @@ try {
   Phantom  phantom;
 
   if(cl.exist("phantom")) {
-    std::string name=cl.get<std::string>("phantom");
-    FILE *fin=fopen(name.c_str(),"r");
-    if(fin==NULL) {
-      fprintf(stderr,"cannot open file `%s' for reading\n",name.c_str());
-      exit(-1);
-    }
+    FILE *fin=open_file_for_reading(cl.get<std::string>("phantom"));
     phantom.load_from_file(fin);
+    fclose(fin);
   }
-    ;
 
-#if 0
-  phantom.addRegion(0,0,0.2,0.25,0.0,0.1);
-  phantom.addRegion(0,.1,0.025,0.1,0.0,0.7);
-#endif
+  if(cl.exist("points")) {
+    FILE *fin=open_file_for_reading(cl.get<std::string>("points"));
+    point_sources.load_from_file(fin);
+    fclose(fin);
+    std::cerr<<"loaded points from file\n";
+    point_sources.normalize();
+  }
+
+  
 
   scintilator_accept<> model(acceptance);
 
-  while(n_emitted<n_emissions) {
+  if(phantom.n_regions()>0) {
+    while(n_emitted<n_emissions) {
 
-    double x=fov_dis(gen);
-    double y=fov_dis(gen);
-    if(x*x+y*y < fov_r2) {
+      double x=fov_dis(gen);
+      double y=fov_dis(gen);
+      if(x*x+y*y < fov_r2) {
 
-      if(phantom.emit(x,y,one_dis(gen))) {
-        detector_ring<double>::lor_type lor; 
-        std::cerr<<n_emitted<<" "<<x<<" "<<y<<"\n";
-        double angle=phi_dis(gen);
-        auto hits=dr.emit_event(gen,model,x,y,angle,lor);
-        if(hits==2) {
-          if(lor.first>lor.second)
-            std::swap(lor.first,lor.second);
-          tubes[lor.first][lor.second]++;
-          // std::cerr<<"hits\n";
+        if(phantom.emit(x,y,one_dis(gen))) {
+          detector_ring<double>::lor_type lor; 
+          std::cerr<<n_emitted<<" "<<x<<" "<<y<<"\n";
+          double angle=phi_dis(gen);
+          auto hits=dr.emit_event(gen,model,x,y,angle,lor);
+          if(hits==2) {
+            if(lor.first>lor.second)
+              std::swap(lor.first,lor.second);
+            tubes[lor.first][lor.second]++;
+            // std::cerr<<"hits\n";
+          }
+          n_emitted++;
         }
-        n_emitted++;
       }
     }
   }
 
+  if(point_sources.n_sources()>0) {
+    n_emitted=0;
+    while(n_emitted<n_emissions) {
+
+      double rng=one_dis(gen);
+      point<double>  p=point_sources.draw(rng);
+      std::cerr<<n_emitted<<" "<<p.x<<" "<<p.y<<"\n";
+              
+      double angle=phi_dis(gen);
+      detector_ring<double>::lor_type lor; 
+      auto hits=dr.emit_event(gen,model,p.x,p.y,angle,lor);
+      if(hits==2) {
+        if(lor.first>lor.second)
+          std::swap(lor.first,lor.second);
+        tubes[lor.first][lor.second]++;
+        // std::cerr<<"hits\n";
+      }
+      n_emitted++;
+    }
+  }
+
+
 #if 0
   for(int i=0;i<n_detectors;i++)
     for(int j=i+1;j<n_detectors;j++) {
-            if(tubes[i][j]>0) 
+      if(tubes[i][j]>0) 
         std::cout<<i<<" "<<j<<"  "<<tubes[i][j]<<"\n";
     }
 #endif
@@ -161,8 +200,8 @@ try {
 
  } catch(std::string &ex) {
   std::cerr << "error: " << ex << std::endl;
-} catch(const char *ex) {
+ } catch(const char *ex) {
   std::cerr << "error: " << ex << std::endl;
-}
+ }
 
 }
