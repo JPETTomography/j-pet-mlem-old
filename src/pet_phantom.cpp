@@ -8,6 +8,7 @@
 
 #include <random>
 #include <iostream>
+#include <fstream>
 
 
 #include <cmdline.h>
@@ -59,6 +60,7 @@ try {
     ("seed",        's', "random number generator seed",      false);
   cl.add<std::string>("phantom",'f',"phantom description file",false,"");
   cl.add<std::string>("points",'\0',"points sources description file",false,"");
+  cl.add<std::string>("tag",'\0',"tag used in naming output files",false,"test");
   cl.parse_check(argc, argv);
 
 #if _OPENMP
@@ -111,6 +113,16 @@ try {
     for(int j=0;j<n_detectors;j++)
       tubes[i][j]=0;
 
+  size_t pixels[n_pixels][n_pixels];
+  size_t pixels_detected[n_pixels][n_pixels];
+
+  for(auto i=0;i<n_pixels;++i)
+    for(auto j=0;j<n_pixels;++j) {
+      pixels[i][j]=0;
+      pixels_detected[i][j]=0;
+    }
+    
+
   detector_ring<double> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
 
   int n_emitted=0;
@@ -147,17 +159,20 @@ try {
       double x=fov_dis(gen);
       double y=fov_dis(gen);
       if(x*x+y*y < fov_r2) {
-
+        
         if(phantom.emit(x,y,one_dis(gen))) {
-          detector_ring<double>::lor_type lor; 
-          std::cerr<<n_emitted<<" "<<x<<" "<<y<<"\n";
+           auto pix=dr.pixel(x,y);
+          detector_ring<double>::lor_type lor;
+          pixels[pix.second][pix.first]++; 
+          //std::cerr<<n_emitted<<" "<<x<<" "<<y<<"\n";
           double angle=phi_dis(gen);
           auto hits=dr.emit_event(gen,model,x,y,angle,lor);
           if(hits==2) {
             if(lor.first>lor.second)
               std::swap(lor.first,lor.second);
             tubes[lor.first][lor.second]++;
-            // std::cerr<<"hits\n";
+            // std::cerr<<"hits\n"; 
+            pixels_detected[pix.second][pix.first]++;
           }
           n_emitted++;
         }
@@ -171,8 +186,10 @@ try {
 
       double rng=one_dis(gen);
       point<double>  p=point_sources.draw(rng);
-      std::cerr<<n_emitted<<" "<<p.x<<" "<<p.y<<"\n";
-              
+      
+      auto pix=dr.pixel(p.x,p.y);
+      //std::cerr<<n_emitted<<"emitted  "<<p.x<<" "<<p.y<<" "<<pix.first<<" "<<pix.second<<"\n";        
+       pixels[pix.second][pix.first]++;
       double angle=phi_dis(gen);
       detector_ring<double>::lor_type lor; 
       auto hits=dr.emit_event(gen,model,p.x,p.y,angle,lor);
@@ -180,21 +197,34 @@ try {
         if(lor.first>lor.second)
           std::swap(lor.first,lor.second);
         tubes[lor.first][lor.second]++;
-        // std::cerr<<"hits\n";
+        pixels_detected[pix.second][pix.first]++;
       }
       n_emitted++;
     }
   }
 
+  std::string tag=cl.get<std::string>("tag");
 
-#if 0
+
+  std::ofstream n_stream( ("n_"+tag+".txt").c_str() );
+#if 1
   for(int i=0;i<n_detectors;i++)
     for(int j=i+1;j<n_detectors;j++) {
       if(tubes[i][j]>0) 
-        std::cout<<i<<" "<<j<<"  "<<tubes[i][j]<<"\n";
+        n_stream<<i<<" "<<j<<"  "<<tubes[i][j]<<"\n";
     }
 #endif
 
+  std::ofstream pix_stream( ("pix_"+tag+".txt").c_str() );
+  std::ofstream pix_detected_stream( ("pix_detected_"+tag+".txt").c_str() );
+  for(auto i=0;i<n_pixels;++i) {
+    for(auto j=0;j<n_pixels;++j) {
+      pix_stream<<pixels[i][j]<<" ";
+      pix_detected_stream<<pixels_detected[i][j]<<" ";
+    }
+    pix_stream<<"\n";
+    pix_detected_stream<<"\n";
+  }
 
   return 0;
 
