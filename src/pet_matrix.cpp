@@ -5,12 +5,13 @@
 //
 // Using Monte Carlo method and square detector scintilators.
 
-#include <random>
 #include <iostream>
+#include <random>
 
 #include <cmdline.h>
 #include "cmdline_types.h"
 
+#include "random.h"
 #include "detector_ring.h"
 #include "model.h"
 #include "png_writer.h"
@@ -45,7 +46,7 @@ try {
   cl.add<std::string>("output",      'o', "output binary triangular sparse system matrix", false);
   cl.add<std::string>("png",           0, "output PNG with hit/system matrix", false);
   cl.add<std::string>("svg",           0, "output SVG detector ring geometry", false);
-  cl.add<std::mt19937::result_type>
+  cl.add<tausworthe::seed_type>
                      ("seed",        's', "random number generator seed",      false);
 
   cl.parse_check(argc, argv);
@@ -95,9 +96,9 @@ try {
   }
 
   std::random_device rd;
-  std::mt19937 gen(rd());
+  tausworthe gen(rd());
   if (cl.exist("seed")) {
-    gen.seed(cl.get<std::mt19937::result_type>("seed"));
+    gen.seed(cl.get<tausworthe::seed_type>("seed"));
   }
 
   detector_ring<> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);

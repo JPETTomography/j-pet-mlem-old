@@ -1,6 +1,6 @@
 #pragma once
 
-#include <random>
+#include "random.h"
 
 template <typename F = double>
 class always_accept {
@@ -24,6 +24,6 @@ public:
   }
 
 private:
-  std::uniform_real_distribution<F> one_dis;
+  uniform_real_distribution<F> one_dis;
   F unit_prob;
 };

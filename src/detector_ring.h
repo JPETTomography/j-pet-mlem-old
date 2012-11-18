@@ -13,8 +13,8 @@
 #pragma once
 
 #include <map>
-#include <random>
 
+#include "random.h"
 #include "detector.h"
 #include "circle.h"
 #include "bstream.h"
@@ -208,8 +208,8 @@ public:
   , bool o_collect_mc_matrix = true
   , bool o_collect_pixel_stats = true) {
 
-    std::uniform_real_distribution<> one_dis(0., 1.);
-    std::uniform_real_distribution<> phi_dis(0., M_PI);
+    uniform_real_distribution<> one_dis(0., 1.);
+    uniform_real_distribution<> phi_dis(0., M_PI);
 
     n_emissions += n_mc_emissions;
 #if _OPENMP
