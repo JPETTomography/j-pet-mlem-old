@@ -98,7 +98,19 @@ public:
   }
 
 
+  F pixel_size() const {return s_pixel;}
   F fov_radius() const {return fov_radius_;}
+
+  std::pair<size_t,size_t> pixel(F x, F y) {
+    F rx=x+fov_radius();
+    F ry=y+fov_radius();
+
+    return std::make_pair(
+                     static_cast<size_t>( floor(rx/pixel_size()) ),
+                     static_cast<size_t>( floor(ry/pixel_size()) )
+                     );
+
+  }
 
 
   /**
