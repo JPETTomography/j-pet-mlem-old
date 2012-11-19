@@ -84,7 +84,7 @@ public:
   template<typename Out> int
   fill_with_events_from_single_point(Out out, F x, F y, int n) {
     for(int i = 0;i<n;++i, ++out) {
-      *out = emit_from_point(x, y, gen);
+      *out = emit_from_point(x, y);
     }
     return n;
 
@@ -94,12 +94,12 @@ public:
   fill_with_detected_events_from_single_point(Out out, F x, F y, int n) {
     int count = 0;
     for(int i = 0;i<n;++i) {
-      ToF_Event_2D<F> event = emit_from_point(x, y, gen);
+      ToF_Event_2D<F> event = emit_from_point(x, y);
       if(detector_.detected(event)) {
-    *out = event;
-    out++;
-    count++;
-  }
+        *out = event;
+        out++;
+        count++;
+      }
     }
     return count;
   }
@@ -113,9 +113,9 @@ public:
       F y = ll_y+dy*one(gen);
       F rnd = one(gen);
       if(phantom->emit(x, y, rnd)) {
-  *out = emit_from_point(x, y, gen);
-    ++count;
-    ++out;
+        *out = emit_from_point(x, y);
+        ++count;
+        ++out;
       }
     }
     return count;

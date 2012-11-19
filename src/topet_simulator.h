@@ -25,7 +25,7 @@ public:
     detector_->set_sigma(11, 32);
 
     mc_ = new ToF_Monte_Carlo<F, detector_t>(*detector_);
-    mc_->gen_seeds(5565665);
+    mc_->seed(5565665);
     phantom_ = new Phantom;
     phantom_->addRegion(0.0, 0.0, 200.0, 100.0, 0.0, 0.25);
     phantom_->addRegion(-100.0, 0.0, 50, 70.0, M_PI/3.0, 0.50);
