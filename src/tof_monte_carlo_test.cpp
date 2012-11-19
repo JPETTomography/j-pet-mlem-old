@@ -16,7 +16,7 @@ TEST_CASE("monte_carlo", "Monte-Carlo") {
   detector.set_sigma(11, 32);
 
   ToF_Monte_Carlo<double, detector_t> mc(detector);
-  mc.gen_seeds(544445);
+  mc.seed(544445);
 
   SECTION("add_noise_to_track", "") {
 

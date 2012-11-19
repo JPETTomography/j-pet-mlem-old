@@ -127,9 +127,9 @@ try {
 
   int n_emitted=0;
 
-  std::uniform_real_distribution<> one_dis(0., 1.);
-  std::uniform_real_distribution<> fov_dis(-dr.fov_radius(), dr.fov_radius());
-  std::uniform_real_distribution<> phi_dis(0., M_PI);
+  uniform_real_distribution<> one_dis(0., 1.);
+  uniform_real_distribution<> fov_dis(-dr.fov_radius(), dr.fov_radius());
+  uniform_real_distribution<> phi_dis(0., M_PI);
  
   double fov_r2=dr.fov_radius()*dr.fov_radius();
 

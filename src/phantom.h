@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <vector>
+#include "point.h"
 
 #ifdef __APPLE__
 static inline void sincos(double a, double *s, double *c) { *s = sin(a);  *c = cos(a);  };
