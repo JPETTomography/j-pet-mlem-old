@@ -450,10 +450,20 @@ private:
     x -= n_pixels_2; y -= n_pixels_2;
     // mirror
     symmetry = 0;
-    if (x < 0) { x = -x-1;        symmetry |= 1; };
-    if (y < 0) { y = -y-1;        symmetry |= 2; };
+    if (x < 0) {
+      x = -x-1;
+      symmetry |= 2;
+    };
+    if (y < 0) {
+      y = -y-1;
+    } else {
+      symmetry |= 1;
+    }
     // triangulate
-    if (x > y) { std::swap(x, y); symmetry |= 4; };
+    if (x > y) {
+      std::swap(x, y);
+      symmetry |= 4;
+    };
     diag = (x == y);
     return t_pixel_index(x, y);
   }
