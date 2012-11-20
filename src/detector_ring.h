@@ -54,6 +54,9 @@ public:
     : c_inner(radious)
     , c_outer(radious+h_detector)
     , n_detectors(a_n_detectors)
+    , n_2_detectors(2 * a_n_detectors)
+    , n_1_detectors_2(a_n_detectors + a_n_detectors / 2)
+    , n_1_detectors_4(a_n_detectors + a_n_detectors / 4)
     , n_pixels(a_n_pixels)
     , n_pixels_2(a_n_pixels/2)
     , n_t_matrix_pixels( a_n_pixels/2 * (a_n_pixels/2+1) / 2 )
@@ -113,12 +116,10 @@ public:
   }
 
 
-  /**
-   * @param model acceptance model
-   *        (returns bool for call operator with given length)
-   * @param rx, ry coordinates of the emission point
-   * @param output parameter contains the lor of the event
-   */
+  /// @param model acceptance model
+  ///        (returns bool for call operator with given length)
+  /// @param rx, ry coordinates of the emission point
+  /// @param output parameter contains the lor of the event
   template <class RandomGenerator, class AcceptanceModel>
   short emit_event(RandomGenerator &gen, AcceptanceModel &model,
                    F rx, F ry, F angle,
@@ -191,7 +192,7 @@ public:
   }
 
   void add_to_t_matrix(lor_type &lor, size_t i_pixel) {
-    auto i_lor  = lor_index(lor);
+    auto i_lor  = t_lor_index(lor);
     auto pixels = t_matrix[i_lor];
 
     // prealocate pixels for specific lor
@@ -290,30 +291,26 @@ public:
   }
 
   hit_type matrix(lor_type lor, size_t x, size_t y) const {
-    auto pixels = t_matrix[lor_index(lor)];
-    bool diag;
-    return pixels ? pixels[pixel_index(x, y, diag)] * (diag ? 2 : 1) : 0;
-  }
-
-  hit_type matrix(size_t lor, size_t x, size_t y) const {
-    auto pixels = t_matrix[lor];
-    bool diag;
-    return pixels ? pixels[pixel_index(x, y, diag)] * (diag ? 2 : 1) : 0;
+    bool diag; int symmetry;
+    auto i_pixel = pixel_index(x, y, diag, symmetry);
+    auto pixels = t_matrix[lor_index(lor, symmetry)];
+    return pixels ? pixels[i_pixel] * (diag ? 2 : 1) : 0;
   }
 
   hit_type hits(size_t x, size_t y) const {
-    bool diag;
-    return t_hits[pixel_index(x, y, diag)] * (diag ? 2 : 1);
+    bool diag; int symmetry;
+    auto i_pixel = pixel_index(x, y, diag, symmetry);
+    return t_hits[i_pixel] * (diag ? 2 : 1);
   }
 
   template<class FileWriter>
-  void output_bitmap(FileWriter &fw, hit_type pixel_max, ssize_t lor) {
+  void output_bitmap(FileWriter &fw, hit_type pixel_max, lor_type &lor) {
     fw.template write_header<bitmap_pixel_type>(n_pixels, n_pixels);
     auto gain = static_cast<double>(std::numeric_limits<bitmap_pixel_type>::max()) / pixel_max;
     for (auto y = 0; y < n_pixels; ++y) {
       bitmap_pixel_type row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
-        auto v = (lor > 0 ? matrix(lor, x, y) : hits(x, y));
+        auto v = (lor.first != lor.second ? matrix(lor, x, y) : hits(x, y));
         row[x] = std::numeric_limits<bitmap_pixel_type>::max() - gain * v;
       }
       fw.write_row(row);
@@ -346,7 +343,7 @@ public:
     for (file_half a = 0; a < dr.n_detectors; ++a) {
       for (file_half b = 0; b <= a; ++b) {
         lor_type lor(a, b);
-        auto pixels = dr.t_matrix[lor_index(lor)];
+        auto pixels = dr.t_matrix[t_lor_index(lor)];
         if (pixels) {
           out << a << b;
           // find out count of non-zero pixels
@@ -392,7 +389,7 @@ public:
       file_half a, b;
       in >> a >> b;
       lor_type lor(a, b);
-      auto i_lor = lor_index(lor);
+      auto i_lor = t_lor_index(lor);
       auto pixels = dr.t_matrix[i_lor];
       if (!pixels) {
         dr.t_matrix[i_lor] = pixels = new hit_type[dr.n_t_matrix_pixels]();
@@ -413,25 +410,50 @@ public:
   }
 
 private:
-  static size_t lor_index(lor_type &lor) {
+  static size_t t_lor_index(lor_type &lor) {
     if (lor.first < lor.second) {
       std::swap(lor.first, lor.second);
     }
     return lor.first*(lor.first+1)/2 + lor.second;
   }
 
+  /// Computes LOR index based on given symetry (1 out 8)
+  /// @param lor      detector number pair
+  /// @param symmetry number (0..7)
+  size_t lor_index(lor_type lor, int symmetry) const {
+    if (symmetry & 1) {
+      lor.first  = ( n_2_detectors - lor.first  ) % n_detectors;
+      lor.second = ( n_2_detectors - lor.second ) % n_detectors;
+    }
+    if (symmetry & 2) {
+      lor.first  = ( n_1_detectors_2 - lor.first  ) % n_detectors;
+      lor.second = ( n_1_detectors_2 - lor.second ) % n_detectors;
+    }
+    if (symmetry & 4) {
+      lor.first  = ( n_1_detectors_4 - lor.first  ) % n_detectors;
+      lor.second = ( n_1_detectors_4 - lor.second ) % n_detectors;
+    }
+    return t_lor_index(lor);
+  }
+
   static constexpr size_t t_pixel_index(size_t x, size_t y) {
     return y*(y+1)/2 + x;
   }
 
-  size_t pixel_index(ssize_t x, ssize_t y, bool &diag) const {
+  /// Computes pixel index and determines symmetry number based on pixel position
+  /// @param x        pixel x coordinate (0..n_pixels)
+  /// @param x        pixel y coordinate (0..n_pixels)
+  /// @param diag     outputs true if abs(x)==abs(y)
+  /// @param symmetry outputs symmetry number (0..7)
+  size_t pixel_index(ssize_t x, ssize_t y, bool &diag, int &symmetry) const {
     // shift so 0,0 is now center
     x -= n_pixels_2; y -= n_pixels_2;
     // mirror
-    if (x < 0) x = -x-1;
-    if (y < 0) y = -y-1;
+    symmetry = 0;
+    if (x < 0) { x = -x-1;        symmetry |= 1; };
+    if (y < 0) { y = -y-1;        symmetry |= 2; };
     // triangulate
-    if (x > y) std::swap(x, y);
+    if (x > y) { std::swap(x, y); symmetry |= 4; };
     diag = (x == y);
     return t_pixel_index(x, y);
   }
@@ -448,6 +470,9 @@ private:
   size_t n_pixels;
   size_t n_pixels_2;
   size_t n_detectors;
+  size_t n_2_detectors;
+  size_t n_1_detectors_2;
+  size_t n_1_detectors_4;
   size_t n_lors;
   hit_type n_emissions;
   F s_pixel;

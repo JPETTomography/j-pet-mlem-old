@@ -42,7 +42,8 @@ try {
   cl.add<double>     ("acceptance",  'a', "acceptance probability factor",     false, 10.);
   cl.add             ("stats",         0, "show stats");
   cl.add             ("wait",          0, "wait before exit");
-  cl.add<ssize_t>    ("lor",         'l', "select lor to output to a file",    false, -1);
+  cl.add<ssize_t>    ("lor",         'l', "select lor start detector to output", false, -1);
+  cl.add<ssize_t>    ("e-lor",       'L', "select lor end detector to output",   false, -1);
   cl.add<std::string>("output",      'o', "output binary triangular sparse system matrix", false);
   cl.add<std::string>("png",           0, "output PNG with hit/system matrix", false);
   cl.add<std::string>("svg",           0, "output SVG detector ring geometry", false);
@@ -118,12 +119,20 @@ try {
 
   auto pixel_max = 0;
   auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
-  auto lor       = cl.get<ssize_t>("lor");
+  decltype(dr)::lor_type lor(0, 0);
+  if (cl.exist("lor")) {
+    lor.first  = cl.get<ssize_t>("lor");
+    if (cl.exist("e-lor")) {
+      lor.second = cl.get<ssize_t>("e-lor");
+    } else {
+      lor.second = (lor.first + n_detectors / 2) % n_detectors;
+    }
+  }
 
   if (cl.exist("stats") || cl.exist("png"))
     for (auto y = 0; y < n_pixels; ++y) {
       for (auto x = 0; x < n_pixels; ++x) {
-        auto hits = lor > 0 ? dr.matrix(lor, x, y) : dr.hits(x, y);
+        auto hits = (lor.first != lor.second) ? dr.matrix(lor, x, y) : dr.hits(x, y);
         pixel_max = std::max(pixel_max, hits);
         pixel_min = std::min(pixel_min, hits);
       }
