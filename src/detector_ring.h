@@ -448,16 +448,19 @@ public:
     dr.n_emissions += in_n_emissions;
 
     // load hits
-    while (!in.eof()) {
+    for (;;) {
       file_half a, b;
       in >> a >> b;
       lor_type lor(a, b);
+
+      if (in.eof()) break;
 
       file_int count;
       in >> count;
 
       if (in_is_triangular) {
         auto i_lor = t_lor_index(lor);
+        if (i_lor >= dr.n_lors) throw("invalid LOR address");
         auto pixels = dr.t_matrix[i_lor];
         if (!pixels) {
           dr.t_matrix[i_lor] = pixels = new hit_type[dr.n_t_matrix_pixels]();
@@ -479,6 +482,7 @@ public:
           in >> x >> y >> hits;
           bool diag; int symmetry;
           auto i_pixel = dr.pixel_index(x, y, diag, symmetry);
+          if (i_pixel >= dr.n_t_matrix_pixels) throw("invalid pixel address");
           auto i_lor   = dr.lor_index(lor, symmetry);
           auto pixels  = dr.t_matrix[i_lor];
           if (!pixels) {
