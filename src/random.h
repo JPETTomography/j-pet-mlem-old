@@ -62,7 +62,7 @@ public:
   result_type offset() const { return o; }
 
   template<class Generator>
-  constexpr result_type scale(Generator& g) const {
+  static result_type scale(Generator& g) {
     return static_cast<F>(1.) / static_cast<F>(std::numeric_limits<typename Generator::result_type>::max());
   }
 

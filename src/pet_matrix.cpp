@@ -122,7 +122,7 @@ try {
 
   auto pixel_max = 0;
   auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
-  decltype(dr)::lor_type lor(0, 0);
+  detector_ring<>::lor_type lor(0, 0);
   if (cl.exist("lor")) {
     lor.first  = cl.get<ssize_t>("lor");
     if (cl.exist("e-lor")) {
