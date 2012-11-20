@@ -91,10 +91,10 @@ yellow := \033[33m
 cyan   := \033[36m
 none   := \033[0m
 define CXX_info
-	@if [ -t 1 ]; then echo "$(cyan)$(CXX)$(none)\t$<"; else echo "$(CXX) $<"; fi
+	@[ -t 1 ] && printf "$(cyan)%s$(none)\t%s\n" "$(CXX)" "$<" || echo "$(CXX) $<"
 endef
 define LD_info
-	@if [ -t 1 ]; then echo "$(yellow)link$(none)\t$(bold)$@$(none)"; else echo "link $@"; fi
+	@[ -t 1 ] && printf "$(yellow)link$(none)\t$(bold)%s$(none)\n" "$@" || echo "link $@"
 endef
 
 %.o: %.cpp

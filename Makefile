@@ -8,9 +8,6 @@ none := \033[0m
 all:
 %::
 	@for dir in $(subdirs); do \
-		if [ -t 1 ]; \
-			then echo "$(bold)## $$dir$(none)"; \
-			else echo "## $$dir"; \
-		fi; \
+		[ -t 1 ] && printf "$(bold)## %s$(none)\n" "$$dir" || echo "## $$dir"; \
 		make -C $$dir $*; \
 	done
