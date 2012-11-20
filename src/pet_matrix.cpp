@@ -108,7 +108,7 @@ try {
 
   for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
     ibstream in(*fn, std::ios::binary);
-    if (!in.is_open()) throw(std::string("cannot open input file: ") + *fn);
+    if (!in.is_open()) throw("cannot open input file: " + *fn);
     in >> dr;
   }
 
