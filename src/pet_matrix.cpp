@@ -32,7 +32,7 @@ try {
 #endif
   cl.add<size_t>     ("n-pixels",    'n', "number of pixels in one dimension", false, 256);
   cl.add<size_t>     ("n-detectors", 'd', "number of ring detectors",          false, 64);
-  cl.add<size_t>     ("n-emissions", 'e', "emissions per pixel",               false, 1);
+  cl.add<size_t>     ("n-emissions", 'e', "emissions per pixel",               false, 0);
   cl.add<double>     ("radious",     'r', "inner detector ring radious",       false);
   cl.add<double>     ("s-pixel",     'p', "pixel size",                        false);
   cl.add<double>     ("w-detector",  'w', "detector width",                    false);
