@@ -167,7 +167,7 @@ public:
     return sources_[i].p;
   }
 
-  int load_from_file(FILE *fin) {
+  void load_from_file(FILE *fin) {
     char line[128];
     while(NULL!=fgets(line,128,fin)) {
       if(line[0]!='#') {
