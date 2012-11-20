@@ -413,16 +413,19 @@ public:
           // find out count of non-zero pixels
           file_int count = 0;
           for (file_half x = 0; x < dr.n_pixels; ++x) {
-            for (file_half y = 0; x < dr.n_pixels; ++x) {
+            for (file_half y = 0; y < dr.n_pixels; ++y) {
               if (dr.matrix(lor, x, y)) count++;
             }
           }
-          // write out non-zero hits
-          for (file_half x = 0; x < dr.n_pixels; ++x) {
-            for (file_half y = 0; x < dr.n_pixels; ++x) {
-              file_int hits = dr.matrix(lor, x, y);
-              if (hits) {
-                out << x << y << hits;
+          if (count) {
+            out << a << b << count;
+            // write out non-zero hits
+            for (file_half x = 0; x < dr.n_pixels; ++x) {
+              for (file_half y = 0; y < dr.n_pixels; ++y) {
+                file_int hits = dr.matrix(lor, x, y);
+                if (hits) {
+                  out << x << y << hits;
+                }
               }
             }
           }
@@ -460,7 +463,8 @@ public:
 
       if (in_is_triangular) {
         auto i_lor = t_lor_index(lor);
-        if (i_lor >= dr.n_lors) throw("invalid LOR address");
+        if (i_lor >= dr.n_t_matrix_pixels) throw("invalid LOR address");
+
         auto pixels = dr.t_matrix[i_lor];
         if (!pixels) {
           dr.t_matrix[i_lor] = pixels = new hit_type[dr.n_t_matrix_pixels]();
@@ -480,10 +484,14 @@ public:
           file_half x, y;
           file_int hits;
           in >> x >> y >> hits;
+
           bool diag; int symmetry;
           auto i_pixel = dr.pixel_index(x, y, diag, symmetry);
           if (i_pixel >= dr.n_t_matrix_pixels) throw("invalid pixel address");
+
           auto i_lor   = dr.lor_index(lor, symmetry);
+          if (i_lor >= dr.n_t_matrix_pixels) throw("invalid LOR address");
+
           auto pixels  = dr.t_matrix[i_lor];
           if (!pixels) {
             dr.t_matrix[i_lor] = pixels = new hit_type[dr.n_t_matrix_pixels]();
