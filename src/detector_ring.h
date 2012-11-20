@@ -440,6 +440,10 @@ public:
     file_int in_is_triangular, in_n_pixels, in_n_emissions, in_n_detectors;
     dr.read_header(in, in_is_triangular, in_n_pixels, in_n_emissions, in_n_detectors);
 
+    if (dr.n_emissions && !in_is_triangular) {
+      throw("full matrix cannot be loaded to non-empty matrix");
+    }
+
     // validate incoming parameters
     if (in_n_pixels && in_n_pixels != (in_is_triangular ? dr.n_pixels_2 : dr.n_pixels)) {
       throw("incompatible input matrix dimensions");
@@ -501,6 +505,18 @@ public:
         }
       }
     }
+
+    // we need to divide all values by 8 when loading full matrix
+    if (!in_is_triangular) {
+      for (auto i_lor = 0; i_lor < dr.n_lors; ++i_lor) {
+        auto pixels  = dr.t_matrix[i_lor];
+        if (!pixels) continue;
+        for (auto i_pixel = 0; i_pixel < dr.n_t_matrix_pixels; ++i_pixel) {
+          pixels[i_pixel] /= 8;
+        }
+      }
+    }
+
     return in;
   }
 
