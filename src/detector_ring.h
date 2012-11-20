@@ -334,7 +334,41 @@ public:
     return svg;
   }
 
-  // serialization                                         // n_pixels  n_detectors  triagular
+  // text output (for validation)
+  friend std::ostream & operator << (std::ostream &out, detector_ring &dr) {
+    out << "n_pixels="    << dr.n_pixels    << std::endl;
+    out << "n_emissions=" << dr.n_emissions << std::endl;
+    out << "n_detectors=" << dr.n_detectors << std::endl;
+
+    for (file_half a = 0; a < dr.n_detectors; ++a) {
+      for (file_half b = 0; b <= a; ++b) {
+        lor_type lor(a, b);
+        auto pixels = dr.t_matrix[t_lor_index(lor)];
+        if (pixels) {
+          out << "  lor=(" << a << "," << b << ")" << std::endl;
+          // find out count of non-zero pixels
+          file_int count = 0;
+          for (auto i = 0; i < dr.n_t_matrix_pixels; ++i) {
+            if (pixels[i]) count++;
+          }
+          out << "  count=" << count << std::endl;
+
+          // write non-zero pixel pairs
+          for (file_half y = 0; y < dr.n_pixels_2; ++y) {
+            for (file_half x = 0; x <= y; ++x) {
+              file_int hits = pixels[t_pixel_index(x, y)];
+              if (hits) {
+                out << "    (" << x << "," << y << ")=" << hits << std::endl;
+              }
+            }
+          }
+        }
+      }
+    }
+    return out;
+  }
+
+  // binary serialization                                  // n_pixels  n_detectors  triagular
   static const file_int magic_1 = fourcc('P','E','T','t'); //                           X
   static const file_int magic_2 = fourcc('P','E','T','s'); //     X                     X
   static const file_int magic_t = fourcc('P','E','T','p'); //     X          X          X
