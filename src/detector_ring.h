@@ -1,8 +1,9 @@
 /// Sparse triangle part system matrix binary file format
 /// -----------------------------------------------------
-/// uint32_t magic = 'PETs'
-/// uint32_t n_pixels_2  // half size
+/// uint32_t magic = 'PETp' (triangular) || 'PETP' (full)
+/// uint32_t n_pixels    // half size (triangular) || full
 /// uint32_t n_emissions // per pixel
+/// uint32_t n_detectors
 /// while (!eof)
 ///   uint16_t lor_a, lor_b // pair
 ///   uint32_t pixel_pair_count
@@ -63,6 +64,7 @@ public:
     , n_lors( a_n_detectors * (a_n_detectors+1) / 2 )
     , s_pixel(a_s_pixel)
     , n_emissions(0)
+    , output_triangular(true)
   {
     if(radious    <= 0.)   throw("invalid radious");
     if(w_detector <= 0. ||
@@ -332,31 +334,59 @@ public:
     return svg;
   }
 
-  // serialization
-  static const file_int magic = fourcc('P','E','T','s');
+  // serialization                                         // n_pixels  n_detectors  triagular
+  static const file_int magic_1 = fourcc('P','E','T','t'); //                           X
+  static const file_int magic_2 = fourcc('P','E','T','s'); //     X                     X
+  static const file_int magic_t = fourcc('P','E','T','p'); //     X          X          X
+  static const file_int magic_f = fourcc('P','E','T','P'); //     X          X
 
   friend obstream & operator << (obstream &out, detector_ring &dr) {
-    out << magic;
-    out << static_cast<file_int>(dr.n_pixels_2);
+    if (dr.output_triangular) {
+      out << magic_t;
+      out << static_cast<file_int>(dr.n_pixels_2);
+    } else {
+      out << magic_f;
+      out << static_cast<file_int>(dr.n_pixels);
+    }
     out << static_cast<file_int>(dr.n_emissions);
+    out << static_cast<file_int>(dr.n_detectors);
 
     for (file_half a = 0; a < dr.n_detectors; ++a) {
       for (file_half b = 0; b <= a; ++b) {
         lor_type lor(a, b);
-        auto pixels = dr.t_matrix[t_lor_index(lor)];
-        if (pixels) {
-          out << a << b;
+        if (dr.output_triangular) {
+          auto pixels = dr.t_matrix[t_lor_index(lor)];
+          if (pixels) {
+            out << a << b;
+            // find out count of non-zero pixels
+            file_int count = 0;
+            for (auto i = 0; i < dr.n_t_matrix_pixels; ++i) {
+              if (pixels[i]) count++;
+            }
+            out << count;
+
+            // write non-zero pixel pairs
+            for (file_half y = 0; y < dr.n_pixels_2; ++y) {
+              for (file_half x = 0; x <= y; ++x) {
+                file_int hits = pixels[t_pixel_index(x, y)];
+                if (hits) {
+                  out << x << y << hits;
+                }
+              }
+            }
+          }
+        } else { // output full (may be slow)
           // find out count of non-zero pixels
           file_int count = 0;
-          for (auto i = 0; i < dr.n_t_matrix_pixels; ++i) {
-            if (pixels[i]) count++;
+          for (file_half x = 0; x < dr.n_pixels; ++x) {
+            for (file_half y = 0; x < dr.n_pixels; ++x) {
+              if (dr.matrix(lor, x, y)) count++;
+            }
           }
-          out << count;
-
-          // write non-zero pixel pairs
-          for (file_half y = 0; y < dr.n_pixels_2; ++y) {
-            for (file_half x = 0; x <= y; ++x) {
-              file_int hits = pixels[t_pixel_index(x, y)];
+          // write out non-zero hits
+          for (file_half x = 0; x < dr.n_pixels; ++x) {
+            for (file_half y = 0; x < dr.n_pixels; ++x) {
+              file_int hits = dr.matrix(lor, x, y);
               if (hits) {
                 out << x << y << hits;
               }
@@ -369,44 +399,91 @@ public:
   }
 
   friend ibstream & operator >> (ibstream &in, detector_ring &dr) {
-    file_int in_magic;
-    in >> in_magic;
-    if (in_magic != magic) {
-      throw("invalid file type format");
-    }
-    // load matrix size
-    file_int in_n_pixel_2;
-    in >> in_n_pixel_2;
-    if (in_n_pixel_2 != dr.n_pixels_2) {
+    // read header
+    file_int in_is_triangular, in_n_pixels, in_n_emissions, in_n_detectors;
+    dr.read_header(in, in_is_triangular, in_n_pixels, in_n_emissions, in_n_detectors);
+
+    // validate incoming parameters
+    if (in_n_pixels && in_n_pixels != (in_is_triangular ? dr.n_pixels_2 : dr.n_pixels)) {
       throw("incompatible input matrix dimensions");
     }
-    // load number of emissions
-    hit_type n_emissions;
-    in >> n_emissions;
-    dr.n_emissions += n_emissions;
+    if (in_n_detectors && in_n_detectors != dr.n_detectors) {
+      throw("incompatible input number of detectors");
+    }
+
+    dr.n_emissions += in_n_emissions;
+
     // load hits
     while (!in.eof()) {
       file_half a, b;
       in >> a >> b;
       lor_type lor(a, b);
-      auto i_lor = t_lor_index(lor);
-      auto pixels = dr.t_matrix[i_lor];
-      if (!pixels) {
-        dr.t_matrix[i_lor] = pixels = new hit_type[dr.n_t_matrix_pixels]();
-      }
+
       file_int count;
       in >> count;
-      // increment hits
-      for (auto i = 0; i < count; ++i) {
-        file_half x, y;
-        file_int hits;
-        in >> x >> y >> hits;
-        auto i_p = t_pixel_index(x, y);
-        pixels[i_p] += hits;
-        dr.t_hits[i_p] += hits;
+
+      if (in_is_triangular) {
+        auto i_lor = t_lor_index(lor);
+        auto pixels = dr.t_matrix[i_lor];
+        if (!pixels) {
+          dr.t_matrix[i_lor] = pixels = new hit_type[dr.n_t_matrix_pixels]();
+        }
+        // increment hits
+        for (auto i = 0; i < count; ++i) {
+          file_half x, y;
+          file_int hits;
+          in >> x >> y >> hits;
+          auto i_pixel = t_pixel_index(x, y);
+          pixels[i_pixel]    += hits;
+          dr.t_hits[i_pixel] += hits;
+        }
+      } else { // full matrix
+        // increment hits
+        for (auto i = 0; i < count; ++i) {
+          file_half x, y;
+          file_int hits;
+          in >> x >> y >> hits;
+          bool diag; int symmetry;
+          auto i_pixel = dr.pixel_index(x, y, diag, symmetry);
+          auto i_lor   = dr.lor_index(lor, symmetry);
+          auto pixels  = dr.t_matrix[i_lor];
+          if (!pixels) {
+            dr.t_matrix[i_lor] = pixels = new hit_type[dr.n_t_matrix_pixels]();
+          }
+          pixels[i_pixel]    += hits;
+          dr.t_hits[i_pixel] += hits;
+        }
       }
     }
     return in;
+  }
+
+  static void read_header(ibstream &in
+  , file_int &in_is_triangular
+  , file_int &in_n_pixels
+  , file_int &in_n_emissions
+  , file_int &in_n_detectors
+  ) {
+    file_int in_magic;
+    in >> in_magic;
+    if (in_magic != magic_t && in_magic != magic_f && in_magic != magic_1 && in_magic != magic_2) {
+      throw("invalid file type format");
+    }
+    in_is_triangular = (in_magic == magic_t);
+
+    // load matrix size
+    in >> in_n_pixels;
+
+    // load number of emissions
+    if (in_magic == magic_t || in_magic == magic_f || in_magic == magic_2) {
+      in >> in_n_emissions;
+    }
+
+    // load number of detectors
+    in_n_detectors = 0;
+    if (in_magic == magic_t || in_magic == magic_f) {
+      in >> in_n_detectors;
+    }
   }
 
 private:
@@ -417,7 +494,7 @@ private:
     return lor.first*(lor.first+1)/2 + lor.second;
   }
 
-  /// Computes LOR index based on given symetry (1 out 8)
+  /// Computes LOR index based on given symmetry (1 out 8)
   /// @param lor      detector number pair
   /// @param symmetry number (0..7)
   size_t lor_index(lor_type lor, int symmetry) const {
@@ -467,6 +544,9 @@ private:
     diag = (x == y);
     return t_pixel_index(x, y);
   }
+
+public:
+  bool output_triangular;
 
 private:
 #if COLLECT_INTERSECTIONS

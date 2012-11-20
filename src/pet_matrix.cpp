@@ -45,6 +45,7 @@ try {
   cl.add<ssize_t>    ("lor",         'l', "select lor start detector to output", false, -1);
   cl.add<ssize_t>    ("e-lor",       'L', "select lor end detector to output",   false, -1);
   cl.add<std::string>("output",      'o', "output binary triangular sparse system matrix", false);
+  cl.add<std::string>("output-full", 'O', "output binary full sparse system matrix", false);
   cl.add<std::string>("png",           0, "output PNG with hit/system matrix", false);
   cl.add<std::string>("svg",           0, "output SVG detector ring geometry", false);
   cl.add<tausworthe::seed_type>
@@ -158,6 +159,13 @@ try {
 
   if (cl.exist("output")) {
     obstream out(cl.get<std::string>("output"), std::ios::binary | std::ios::trunc);
+    dr.output_triangular = true;
+    out << dr;
+  }
+
+  if (cl.exist("output-full")) {
+    obstream out(cl.get<std::string>("output-full"), std::ios::binary | std::ios::trunc);
+    dr.output_triangular = false;
     out << dr;
   }
 
