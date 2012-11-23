@@ -443,10 +443,15 @@ public:
     if (dr.n_emissions && !in_is_triangular) {
       throw("full matrix cannot be loaded to non-empty matrix");
     }
-
+ 
     // validate incoming parameters
     if (in_n_pixels && in_n_pixels != (in_is_triangular ? dr.n_pixels_2 : dr.n_pixels)) {
-      throw("incompatible input matrix dimensions");
+      std::ostringstream msg;
+      msg << "incompatible input matrix dimensions "
+          << in_n_pixels
+          << " != "
+          << dr.n_pixels_2;
+      throw(msg.str());
     }
     if (in_n_detectors && in_n_detectors != dr.n_detectors) {
       throw("incompatible input number of detectors");
@@ -467,7 +472,12 @@ public:
 
       if (in_is_triangular) {
         auto i_lor = t_lor_index(lor);
-        if (i_lor >= dr.n_t_matrix_pixels) throw("invalid LOR address");
+        if (i_lor >= dr.n_lors) {
+          std::ostringstream msg;
+          msg << "invalid LOR address ("
+              << a << "," << b << ")";
+          throw(msg.str());
+        }
 
         auto pixels = dr.t_matrix[i_lor];
         if (!pixels) {
@@ -494,7 +504,12 @@ public:
           if (i_pixel >= dr.n_t_matrix_pixels) throw("invalid pixel address");
 
           auto i_lor   = dr.lor_index(lor, symmetry);
-          if (i_lor >= dr.n_t_matrix_pixels) throw("invalid LOR address");
+          if (i_lor >= dr.n_lors) {
+            std::ostringstream msg;
+            msg << "invalid LOR address ("
+                << a << "," << b;
+            throw(msg.str());
+          }
 
           auto pixels  = dr.t_matrix[i_lor];
           if (!pixels) {
@@ -531,7 +546,7 @@ public:
     if (in_magic != magic_t && in_magic != magic_f && in_magic != magic_1 && in_magic != magic_2) {
       throw("invalid file type format");
     }
-    in_is_triangular = (in_magic == magic_t);
+    in_is_triangular = (in_magic != magic_f);
 
     // load matrix size
     in >> in_n_pixels;
