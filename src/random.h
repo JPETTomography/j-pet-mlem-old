@@ -4,8 +4,6 @@
 
 class tausworthe {
 public:
-
-
   typedef unsigned int result_type;
   typedef long     int seed_type;
 
@@ -52,37 +50,34 @@ private:
 
 template<typename F = double>
 class uniform_real_distribution {
-
-
 public:
   typedef F result_type;
 
   uniform_real_distribution(F a = 0., F b = 1.)
-  : s(b - a)
-  , o(a)
+  : size_(b - a)
+  , offset_(a)
   {}
 
   template<class Generator>
   result_type operator()(Generator& g) {
-    return g() * size() * scale<Generator>() + offset()-
-      static_cast<F>(Generator::min())/range<Generator>();
+    return g() * size() * scale<Generator>() + offset()
+      - static_cast<F>(Generator::min()) / range<Generator>();
   }
 
 private:
-  result_type size()   const { return s; }
-  result_type offset() const { return o; }
-
-
+  result_type size()   const { return size_; }
+  result_type offset() const { return offset_; }
 
   template<class Generator>
   static result_type range() {
-   return static_cast<F>(Generator::max())-static_cast<F>(Generator::min());
+   return static_cast<F>(Generator::max())
+        - static_cast<F>(Generator::min());
   }
 
   template<class Generator>
   static result_type scale() {
-    return static_cast<F>(1.0)/range<Generator>();
+    return static_cast<F>(1.0) / range<Generator>();
   }
 
-  F s, o;
+  F size_, offset_;
 };
