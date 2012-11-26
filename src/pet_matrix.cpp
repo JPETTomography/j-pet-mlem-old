@@ -27,6 +27,7 @@ try {
   cmdline::parser cl;
   cl.footer("matrix_file ...");
 
+  cl.add<std::string>("config",      'c', "load config file", false, "", false);
 #if _OPENMP
   cl.add<size_t>     ("n-threads",   't', "number of OpenMP threads",          false, 0, false);
 #endif
@@ -73,7 +74,18 @@ try {
     throw("need to specify --from lor when output --png option is specified");
   }
 
-  // load config files
+  // load config file
+  if (cl.exist("config")) {
+    std::ifstream in(cl.get<std::string>("config"));
+    if (!in.is_open()) {
+      throw("cannot open input config file: "+cl.get<std::string>("config"));
+    }
+    // load except n-emissions
+    auto n_prev_emissions = n_emissions;
+    in >> cl;
+    n_emissions = n_prev_emissions;
+  } else
+  // load config files accompanying matrix files
   for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
     auto fn_sep     = fn->find_last_of("\\/");
     auto fn_ext     = fn->find_last_of(".");
