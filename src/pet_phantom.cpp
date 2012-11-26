@@ -45,7 +45,7 @@ try {
   cl.add<double>     ("acceptance",  'a', "acceptance probability factor",     false, 10.);
   cl.add<std::mt19937::result_type>
                      ("seed",        's', "random number generator seed",      false, 0, false);
-  cl.add<std::string>("output",      'o', "output phanthom to files",          false, "", false);
+  cl.add<std::string>("output",      'o', "output lor hits for supplied phantom", false, "", false);
 
   cl.parse_check(argc, argv);
 
