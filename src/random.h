@@ -52,6 +52,8 @@ private:
 
 template<typename F = double>
 class uniform_real_distribution {
+
+
 public:
   typedef F result_type;
 
@@ -62,17 +64,25 @@ public:
 
   template<class Generator>
   result_type operator()(Generator& g) {
-    return g() * size() * scale(g) + offset();
-  }
-
-  result_type size()   const { return s; }
-  result_type offset() const { return o; }
-
-  template<class Generator>
-  static result_type scale(Generator& g) {
-    return static_cast<F>(1.0) / static_cast<F>(Generator::max());
+    return g() * size() * scale<Generator>() + offset()-
+      static_cast<F>(Generator::min())/range<Generator>();
   }
 
 private:
+  result_type size()   const { return s; }
+  result_type offset() const { return o; }
+
+
+
+  template<class Generator>
+  static result_type range() {
+   return static_cast<F>(Generator::max())-static_cast<F>(Generator::min());
+  }
+
+  template<class Generator>
+  static result_type scale() {
+    return static_cast<F>(1.0)/range<Generator>();
+  }
+
   F s, o;
 };
