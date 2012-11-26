@@ -98,18 +98,6 @@ class Phantom {
     }
   }
 
-  void load_from_file(FILE *fin) {
-    char line[128];
-    while(NULL!=fgets(line,128,fin)) {
-      if(line[0]!='#') {
-        double x,y,a,b,angle,acceptance;
-        sscanf(line,"ellipse %lf %lf %lf %lf %lf %lf",
-               &x,&y,&a,&b,&angle,&acceptance);
-        addRegion(x,y,a,b,angle,acceptance);
-      }
-    }
-  }
-
 private:
   double ll_x_, ll_y_;
   double ur_x_, ur_y_;
@@ -165,18 +153,6 @@ public:
       ++i;
     }
     return sources_[i].p;
-  }
-
-  void load_from_file(FILE *fin) {
-    char line[128];
-    while(NULL!=fgets(line,128,fin)) {
-      if(line[0]!='#') {
-        double x,y,intensity;
-        sscanf(line,"point %lf %lf %lf",&x,&y,&intensity);
-        std::cerr<<x<<" "<<y<<std::endl;
-        add(x,y,intensity);
-      }
-    }
   }
 
 private:
