@@ -4,8 +4,15 @@
 
 class tausworthe {
 public:
+
+
   typedef unsigned int result_type;
   typedef long     int seed_type;
+
+  static result_type min()  {return 0;}
+  static result_type max()  {
+    return std::numeric_limits<result_type>::max();
+  }
 
   tausworthe(seed_type a_seed = 121245) {
     seed(a_seed);
@@ -63,7 +70,7 @@ public:
 
   template<class Generator>
   static result_type scale(Generator& g) {
-    return static_cast<F>(1.) / static_cast<F>(std::numeric_limits<typename Generator::result_type>::max());
+    return static_cast<F>(1.0) / static_cast<F>(Generator::max());
   }
 
 private:
