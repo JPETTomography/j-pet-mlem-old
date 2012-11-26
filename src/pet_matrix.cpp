@@ -41,7 +41,7 @@ try {
                       "scintilator", cmdline::oneof<std::string>("always", "scintilator"));
   cl.add<double>     ("acceptance",  'a', "acceptance probability factor",     false, 10.);
   cl.add<tausworthe::seed_type>
-                     ("seed",        's', "random number generator seed",      false);
+                     ("seed",        's', "random number generator seed",      false, 0, false);
   cl.add<std::string>("output",      'o', "output binary triangular/full sparse system matrix", false, "", false);
   cl.add             ("full",        'f', "output full non-triangular sparse system matrix");
 
