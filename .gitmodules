@@ -9,4 +9,4 @@
 	url = git://github.com/philsquared/Catch.git
 [submodule "lib/cmdline"]
 	path = lib/cmdline
-	url = git://github.com/tanakh/cmdline.git
+	url = git://github.com/nanoant/cmdline.git

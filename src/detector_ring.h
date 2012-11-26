@@ -306,14 +306,38 @@ public:
   }
 
   template<class FileWriter>
-  void output_bitmap(FileWriter &fw, hit_type pixel_max, lor_type &lor) {
+  void output_bitmap(FileWriter &fw) {
     fw.template write_header<bitmap_pixel_type>(n_pixels, n_pixels);
+    hit_type pixel_max = 0;
+    for (auto y = 0; y < n_pixels; ++y) {
+      for (auto x = 0; x < n_pixels; ++x) {
+        pixel_max = std::max(pixel_max, hits(x, y));
+      }
+    }
     auto gain = static_cast<double>(std::numeric_limits<bitmap_pixel_type>::max()) / pixel_max;
     for (auto y = 0; y < n_pixels; ++y) {
       bitmap_pixel_type row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
-        auto v = (lor.first != lor.second ? matrix(lor, x, y) : hits(x, y));
-        row[x] = std::numeric_limits<bitmap_pixel_type>::max() - gain * v;
+        row[x] = std::numeric_limits<bitmap_pixel_type>::max() - gain * hits(x, y);
+      }
+      fw.write_row(row);
+    }
+  }
+
+  template<class FileWriter>
+  void output_bitmap(FileWriter &fw, lor_type &lor) {
+    fw.template write_header<bitmap_pixel_type>(n_pixels, n_pixels);
+    hit_type pixel_max = 0;
+    for (auto y = 0; y < n_pixels; ++y) {
+      for (auto x = 0; x < n_pixels; ++x) {
+        pixel_max = std::max(pixel_max, matrix(lor, x, y));
+      }
+    }
+    auto gain = static_cast<double>(std::numeric_limits<bitmap_pixel_type>::max()) / pixel_max;
+    for (auto y = 0; y < n_pixels; ++y) {
+      bitmap_pixel_type row[n_pixels];
+      for (auto x = 0; x < n_pixels; ++x) {
+        row[x] = std::numeric_limits<bitmap_pixel_type>::max() - gain * matrix(lor, x, y);
       }
       fw.write_row(row);
     }
