@@ -1,9 +1,12 @@
 #pragma once
+#pragma once
 
 #include <vector>
 #include <list>
 
 #define LOCATION(x,y,size) (x*size) + y
+#define CRICLE_REGION(x,y,r) ((x-(r/2))*(x-(r/2))) + ((y-(r/2))*(y-(r/2))) < (((r+1)/2)*((r+1)/2)) ? true : false
+#define FALSE_CRICLE_REGION(x,y,r) ((x*x) + (y*y)) > (r*r) ? true : false
 
 typedef std::pair<size_t, size_t> pixel_location;
 typedef uint32_t file_int;
@@ -26,7 +29,6 @@ struct hits_per_pixel{
 	pixel_location location;
 	float probability;
 
-
 };
 
 
@@ -38,7 +40,7 @@ private:
 	int n_iter;
 	int emissions;
 	int n_lors;
-	static vector< std::list<hits_per_pixel> > system_matrix;
+	static vector< vector<hits_per_pixel> > system_matrix;
 	static vector<float> n;
 	float *scale;
 
@@ -50,7 +52,7 @@ public:
 		
 		ibstream in(file);
 		
-				typedef uint32_t file_int;
+		typedef uint32_t file_int;
 		typedef uint16_t file_half;
 		
 	  
@@ -71,7 +73,7 @@ public:
 		
 		printf("%f %f %f\n",scale[0],scale[1],scale[2]);
 
-		std::list<hits_per_pixel> pixels;
+		std::vector<hits_per_pixel> pixels;
 		
 		
 		
@@ -129,8 +131,8 @@ public:
 		float u[n_lors];
 		std::vector<float> rho(n_pixels * n_pixels,0.5);
 		
-		std::vector< std::list<hits_per_pixel> >::iterator it;
-		std::list<hits_per_pixel>::iterator lt;
+		std::vector< vector<hits_per_pixel> >::iterator it;
+		vector<hits_per_pixel>::iterator lt;
 		
 		for(int i = 0; i < n_iter;++i){
 		
@@ -165,17 +167,31 @@ public:
 					
 					for(lt = (*it).begin(); lt != (*it).end();++lt){
 					
-						y[LOCATION((*lt).location.first,(*lt).location.second,n_pixels)] += phi * (*lt).probability;
+						if(CRICLE_REGION((*lt).location.first,(*lt).location.second,n_pixels)){
 						
+							y[LOCATION((*lt).location.first,(*lt).location.second,n_pixels)] += phi * (*lt).probability;
+						
+						}
 					}
 					t++;
 									
 				}
-	
-			for(int p = 0; p < n_pixels * n_pixels; ++p){
-									
-					rho[p]=(rho[p])*(y[p]);
+			int valCond = 0;
+			for(int width = 0; width < n_pixels; ++width)
+			{
+				for(int height = 0; height < n_pixels; ++height)
+				{
+			
+					if(CRICLE_REGION(height,width,n_pixels))
+					{
+						rho[LOCATION(width,height,n_pixels)] = (rho[LOCATION(width,height,n_pixels)]/scale[LOCATION(width,height,n_pixels)]) * y[LOCATION(width,height,n_pixels)];
+						 //scale[LOCATION(width,height,n_pixels)]
+						//printf("%d %d %d rho: %f\n",width,height,width * n_pixels + height,rho[LOCATION(width,height,n_pixels)]);
+						valCond++;
+					}
+				}
 			}
+			printf("Non Zero: %d\n",valCond);
 		}
 		
 		return rho;
