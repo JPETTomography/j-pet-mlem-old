@@ -75,7 +75,12 @@ try {
 
   // load config files
   for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
-    std::ifstream in(*fn+".cfg");
+    auto fn_sep     = fn->find_last_of("\\/");
+    auto fn_ext     = fn->find_last_of(".");
+    auto fn_wo_ext  = fn->substr(0, fn_ext != std::string::npos
+                                && (fn_sep == std::string::npos || fn_sep < fn_ext)
+                                  ? fn_ext : std::string::npos);
+    std::ifstream in(fn_wo_ext+".cfg");
     if (!in.is_open()) continue;
     // load except n-emissions
     auto n_prev_emissions = n_emissions;
@@ -144,24 +149,29 @@ try {
 
   // generate output
   if (cl.exist("output")) {
-    auto fn = cl.get<std::string>("output");
+    auto fn         = cl.get<std::string>("output");
+    auto fn_sep     = fn.find_last_of("\\/");
+    auto fn_ext     = fn.find_last_of(".");
+    auto fn_wo_ext  = fn.substr(0, fn_ext != std::string::npos
+                               && (fn_sep == std::string::npos || fn_sep < fn_ext)
+                                 ? fn_ext : std::string::npos);
+    auto fn_wo_path = fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep+1 : 0);
+
     obstream out(fn, std::ios::binary | std::ios::trunc);
     dr.output_triangular = !cl.exist("full");
     out << dr;
 
-    std::ofstream os(fn+".cfg", std::ios::trunc);
+    std::ofstream os(fn_wo_ext+".cfg", std::ios::trunc);
     os << cl;
 
-    png_writer png(fn+".png");
+    png_writer png(fn_wo_ext+".png");
     dr.output_bitmap(png);
 
-    svg_ostream<> svg(fn+".svg",
+    svg_ostream<> svg(fn_wo_ext+".svg",
       radious+h_detector, radious+h_detector,
       1024., 1024.);
     svg << dr;
 
-    auto fn_sep     = fn.find_last_of("\\/");
-    auto fn_wo_path = fn.substr(fn_sep != std::string::npos ? fn_sep+1 : 0);
     svg.link_image(fn_wo_path+".png",
       -(s_pixel*n_pixels)/2., -(s_pixel*n_pixels)/2.,
         s_pixel*n_pixels, s_pixel*n_pixels);
