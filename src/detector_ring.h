@@ -102,7 +102,6 @@ public:
     delete [] t_hits;
   }
 
-
   F pixel_size() const {return s_pixel;}
   F fov_radius() const {return fov_radius_;}
 
@@ -116,7 +115,6 @@ public:
                      );
 
   }
-
 
   /// @param model acceptance model
   ///        (returns bool for call operator with given length)

@@ -70,27 +70,25 @@ class Phantom {
   size_t n_regions() const {return regions_.size();}
 
   void addRegion(double x, double y, double a, double b, double phi, double act) {
-
-
     regions_.push_back(new EllipticalRegion(x, y, a, b, phi, act));
   }
-  double activity(double x, double y) const {
-    container::const_reverse_iterator rit = regions_.rbegin();
-    for(;rit != regions_.rend();++rit) {
 
+  double activity(double x, double y) const {
+    for(auto rit = regions_.rbegin(); rit != regions_.rend(); ++rit) {
       if((*rit)->in(x, y)) {
-  return (*rit)->activity();
+        return (*rit)->activity();
       }
     }
-
     return 0.0;
-
   }
+
   bool emit(double x, double y, double rnd) const {
     return activity(x, y)> rnd;
   }
+
   const_iterator begin() const {return regions_.begin();}
   const_iterator end() const {return regions_.end();}
+
   ~Phantom() {
     container::iterator rit = regions_.begin();
     for(;rit != regions_.end();++rit) {
@@ -105,7 +103,6 @@ private:
   container regions_;
 };
 
-
 template<typename F>
 struct point_source_t {
   point_source_t(F x, F y, F intensity_a): p(x,y),intensity(intensity_a) {}
@@ -113,18 +110,15 @@ struct point_source_t {
   F intensity;
 };
 
-
 template<typename F>
 class  point_sources_t {
+
 public:
-
-
   size_t n_sources() const {return sources_.size();}
 
   void add(F x , F y, F intensity) {
     sources_.push_back(point_source_t<F>(x,y,intensity)); 
   }
-
 
   void normalize() {
     total_=0.0;
@@ -143,7 +137,6 @@ public:
       cumulant_.push_back(cumulant);
     }
   }
-
 
   point<F> draw(F rng) {
     
