@@ -27,7 +27,8 @@ try {
   cmdline::parser cl;
   cl.footer("matrix_file ...");
 
-  cl.add<std::string>("config",      'c', "load config file", false, "", false);
+  cl.add<cmdline::string>
+                     ("config",      'c', "load config file",                  false, cmdline::string(), false);
 #if _OPENMP
   cl.add<size_t>     ("n-threads",   't', "number of OpenMP threads",          false, 0, false);
 #endif
@@ -43,11 +44,13 @@ try {
   cl.add<double>     ("acceptance",  'a', "acceptance probability factor",     false, 10.);
   cl.add<tausworthe::seed_type>
                      ("seed",        's', "random number generator seed",      false, 0, false);
-  cl.add<std::string>("output",      'o', "output binary triangular/full sparse system matrix", false, "", false);
+  cl.add<cmdline::string>
+                     ("output",      'o', "output binary triangular/full sparse system matrix", false, cmdline::string(), false);
   cl.add             ("full",        'f', "output full non-triangular sparse system matrix");
 
   // visual debugging params
-  cl.add<std::string>("png",           0, "output lor to png",            false, "", false);
+  cl.add<cmdline::string>
+                     ("png",           0, "output lor to png",            false, cmdline::string(), false);
   cl.add<ssize_t>    ("from",          0, "lor start detector to output", false, -1, false);
   cl.add<ssize_t>    ("to",            0, "lor end detector to output",   false, -1, false);
 
@@ -76,9 +79,9 @@ try {
 
   // load config file
   if (cl.exist("config")) {
-    std::ifstream in(cl.get<std::string>("config"));
+    std::ifstream in(cl.get<cmdline::string>("config"));
     if (!in.is_open()) {
-      throw("cannot open input config file: "+cl.get<std::string>("config"));
+      throw("cannot open input config file: "+cl.get<cmdline::string>("config"));
     }
     // load except n-emissions
     auto n_prev_emissions = n_emissions;
@@ -161,7 +164,7 @@ try {
 
   // generate output
   if (cl.exist("output")) {
-    auto fn         = cl.get<std::string>("output");
+    auto fn         = cl.get<cmdline::string>("output");
     auto fn_sep     = fn.find_last_of("\\/");
     auto fn_ext     = fn.find_last_of(".");
     auto fn_wo_ext  = fn.substr(0, fn_ext != std::string::npos
@@ -198,7 +201,7 @@ try {
     } else {
       lor.second = (lor.first + n_detectors / 2) % n_detectors;
     }
-    png_writer png(cl.get<std::string>("png"));
+    png_writer png(cl.get<cmdline::string>("png"));
     dr.output_bitmap(png, lor);
   }
 
