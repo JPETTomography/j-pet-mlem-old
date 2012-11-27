@@ -9,18 +9,16 @@
 //   by Linda Kaufman
 
 #include <cmdline.h>
+#include "cmdline_types.h"
 #include "bstream.h"
 #include "svg_ostream.h"
 #include "cmdline_types.h"
 #include "pet_rec.h"
+#include "png_writer.h"
 
 #if _OPENMP
 #include <omp.h>
 #endif
-
-std::vector< std::vector<hits_per_pixel> > Pet_reconstruction::system_matrix;
-std::vector<int> Pet_reconstruction::list_of_lors;
-std::vector<int> Pet_reconstruction::n;
 
 int main(int argc, char *argv[]) {
 
@@ -28,11 +26,12 @@ try {
   cmdline::parser cl;
 
 #if _OPENMP
-  cl.add<size_t>     ("n-threads",'t', "number of OpenMP threads",          false);
+  cl.add<size_t>         ("n-threads", 't', "number of OpenMP threads", false);
 #endif
-  cl.add<std::string>("bin",'f', "system matrix binary file", false,"pet10k_full.bin");//"M_p128_d468_x100.bin");
-  cl.add<std::string>("mean",'m', "mean file", false,"n_kuba.txt");
-  cl.add("iterations",'n', "number of iterations", false,10);
+  cl.add<cmdline::string>("system",    's', "system matrix file",       true);
+  cl.add<cmdline::string>("mean",      'm', "mean file",                true);
+  cl.add<size_t>         ("iterations",'n', "number of iterations",     false, 0);
+  cl.add<cmdline::string>("output",    'o', "output reconstruction",    false);
 
   cl.parse_check(argc, argv);
 
@@ -42,31 +41,49 @@ try {
   }
 #endif
 
-  Pet_reconstruction *pet_r = new Pet_reconstruction(cl.get<int>("iterations"),cl.get<std::string>("bin"),cl.get<std::string>("mean"));
+  reconstruction<> r(
+    cl.get<size_t>("iterations"),
+    cl.get<cmdline::string>("system"),
+    cl.get<cmdline::string>("mean"));
 
-  std::vector<float> output(pet_r->get_n_pixels() * pet_r->get_n_pixels(),0.0);
+  auto n_pixels = r.get_n_pixels();
+  reconstruction<>::output_type output(n_pixels * n_pixels, 0.0);
+  output = r.emt();
 
-  output = pet_r->emt();
+  if (!cl.exist("output")) return 0;
 
-  ofstream data("out.txt");
+  auto fn         = cl.get<cmdline::string>("output");
+  auto fn_sep     = fn.find_last_of("\\/");
+  auto fn_ext     = fn.find_last_of(".");
+  auto fn_wo_ext  = fn.substr(0, fn_ext != std::string::npos
+                             && (fn_sep == std::string::npos || fn_sep < fn_ext)
+                               ? fn_ext : std::string::npos);
+  std::ofstream out(fn);
 
-  int x = 0;
-  int y = 0;
+  png_writer png(fn_wo_ext+".png");
+  png.write_header<>(n_pixels, n_pixels);
 
-  for(std::vector<float>::iterator it = output.begin(); it != output.end();++it)
-  {
-
-    if(y%128 == 0 && y != 0){x++; y = 0;}
-
-    //printf("%d   %d   %f\n",x,y,*it);
-    data << x << " " << y << " " << *it << endl;
-    y++;
-
+  double output_max = 0.0;
+  for(auto it = output.begin(); it != output.end(); ++it) {
+    output_max = std::max(output_max, *it);
   }
+  auto output_gain = static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-  delete pet_r;
+  size_t x = 0, y = 0;
+  uint8_t row[n_pixels];
+  for(auto it = output.begin(); it != output.end(); ++it) {
 
-  // FIXME: IMPLEMENT ME!
+    if(y % n_pixels == 0 && y != 0) {
+      x++; y = 0;
+      png.write_row(row);
+    }
+
+    out << x << " " << y << " " << *it << std::endl;
+
+    row[y] = std::numeric_limits<uint8_t>::max() - output_gain * *it;
+    ++y;
+  }
+  png.write_row(row);
 
   return 0;
 
