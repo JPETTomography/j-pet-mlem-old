@@ -13,7 +13,7 @@
 #include "bstream.h"
 #include "svg_ostream.h"
 #include "cmdline_types.h"
-#include "pet_rec.h"
+#include "reconstruction.h"
 #include "png_writer.h"
 
 #if _OPENMP
