@@ -151,7 +151,13 @@ try {
   for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
     ibstream in(*fn, std::ios::binary);
     if (!in.is_open()) throw("cannot open input file: " + *fn);
-    in >> dr;
+    try {
+      in >> dr;
+    } catch(std::string &ex) {
+      throw(ex + ": " + *fn);
+    } catch(const char *ex) {
+      throw(std::string(ex) + ": " + *fn);
+    }
   }
 
   if (cl.get<std::string>("model") == "always")
