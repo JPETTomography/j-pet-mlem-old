@@ -85,7 +85,9 @@ public:
 
       n.push_back(get_mean_per_lor(a,b,lor_mean));
 
-      //if (get_mean_per_lor(a,b,lor_mean) != 0) {printf("get_mean: %d\n",get_mean_per_lor(a,b,lor_mean));}
+#if DEBUG
+      if (get_mean_per_lor(a,b,lor_mean) != 0) { printf("get_mean: %d\n", get_mean_per_lor(a,b,lor_mean)); }
+#endif
 
       file_int count;
 
@@ -131,7 +133,8 @@ public:
     std::vector<F> rho(n_pixels * n_pixels,1.0f);
 
     for (int i = 0; i < n_iter; ++i) {
-      if (i%10) printf("%d\n",i);
+      std::cout << ".";
+      std::cout.flush();
 
       for (int p = 0; p < n_pixels * n_pixels;++p) {
         y[p] = 0.f;
@@ -163,11 +166,12 @@ public:
         if (scale[p] > 0) {
           rho[p] *= (y[p]/scale[p]) ;
         }
-        // rho[LOCATION(x,p,n_pixels)] = rho[LOCATION(x,p,n_pixels)] *y[LOCATION(x,p,n_pixels)];
+        // rho[LOCATION(x,p,n_pixels)] = rho[LOCATION(x,p,n_pixels)] * y[LOCATION(x,p,n_pixels)];
       }
     }
-    return rho;
+    std::cout << std::endl;
 
+    return rho;
   }
 
   int get_n_pixels() { return n_pixels; }
@@ -187,7 +191,9 @@ private:
   int get_mean_per_lor(file_half &a,file_half &b,std::vector<mean_per_lor> &mean) {
     for (auto it = mean.begin(); it != mean.end(); ++it) {
       if (a == it->lor.first && b == it->lor.second) {
-        // std::cout << "Equal: lor(" << it->lor.first << "," << it->lor.second << ")" << std::endl;
+#if DEBUG
+        std::cout << "Equal: lor(" << it->lor.first << "," << it->lor.second << ")" << std::endl;
+#endif
         return it->n;
       }
     }
