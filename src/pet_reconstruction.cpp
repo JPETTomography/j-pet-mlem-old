@@ -18,8 +18,9 @@
 #include <omp.h>
 #endif
 
-std::vector< std::list<hits_per_pixel> > Pet_reconstruction::system_matrix;
-std::vector<float> Pet_reconstruction::n;
+std::vector< std::vector<hits_per_pixel> > Pet_reconstruction::system_matrix;
+std::vector<int> Pet_reconstruction::list_of_lors;
+std::vector<int> Pet_reconstruction::n;
 
 int main(int argc, char *argv[]) {
 	
@@ -29,7 +30,8 @@ int main(int argc, char *argv[]) {
 	#if _OPENMP
 	  cl.add<size_t>     ("n-threads",'t', "number of OpenMP threads",          false);
 	#endif
-	  cl.add<std::string>("bin",'f', "system matrix binary file", false,"pet10k_full.bin");
+	  cl.add<std::string>("bin",'f', "system matrix binary file", false,"pet10k_full.bin");//"M_p128_d468_x100.bin");
+	  cl.add<std::string>("mean",'m', "mean file", false,"n_kuba.txt");
 	  cl.add("iterations",'n', "number of iterations", false,10);
 	  
 	  cl.parse_check(argc, argv);
@@ -40,18 +42,26 @@ int main(int argc, char *argv[]) {
 	  }
 	#endif
 	
-	Pet_reconstruction *pet_r = new Pet_reconstruction(cl.get<int>("iterations"),cl.get<std::string>("bin"));
+	Pet_reconstruction *pet_r = new Pet_reconstruction(cl.get<int>("iterations"),cl.get<std::string>("bin"),cl.get<std::string>("mean"));
 	
 	std::vector<float> output(pet_r->get_n_pixels() * pet_r->get_n_pixels(),0.0);
 	
 	output = pet_r->emt();
 	
-	for(std::vector<float>::iterator it = output.begin(); it != output.end();++it){
+	ofstream data("out.txt");
 	
+	int x = 0;
+	int y = 0;
 	
-	printf("%f\n",*it);
-	
-	
+	for(std::vector<float>::iterator it = output.begin(); it != output.end();++it)
+	{	
+		
+		if(y%128 == 0 && y != 0){x++; y = 0;}
+		
+		//printf("%d   %d   %f\n",x,y,*it);
+		data << x << " " << y << " " << *it << endl;
+		y++;
+		
 	}
 	
 	delete pet_r;
