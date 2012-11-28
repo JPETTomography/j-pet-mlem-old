@@ -6,7 +6,9 @@
 
 #include "detector_ring.h"
 
-#define LOCATION(x,y,size)  (y*size + x)
+//#define LOCATION(x,y,size)  (y*size + x)
+inline int  LOCATION(int x,int y,int size)  {return y*size + x;}
+
 
 template <typename F = double>
 class reconstruction {
@@ -47,6 +49,10 @@ public:
     in >> n_pixels;
     in >> emissions;
     in >> n_tubes;
+
+    total_n_pixels=n_pixels*n_pixels;
+    rho_.resize(total_n_pixels,(F)0.0);
+    rho_detected_.resize(total_n_pixels,(F)1.0);
 
     scale = new F[n_pixels*n_pixels]();
 
@@ -140,12 +146,10 @@ public:
     delete [] scale;
   }
 
-  output_type emt() {
+  void emt(int n_iter) {
 
     F y[n_pixels * n_pixels];
     std::vector<F> u(system_matrix.size(),0.f);
-    std::vector<F> rho(n_pixels * n_pixels,1.0f);
-    std::vector<F> rho_detected(n_pixels * n_pixels,1.0f);
 
     for (int i = 0; i < n_iter; ++i) {
       std::cout << ".";
@@ -161,7 +165,7 @@ public:
            it_vector++) {
         u[t] = 0.0f;
         for (auto it_list = it_vector->begin(); it_list != it_vector->end(); it_list++) {
-          u[t] += rho_detected[LOCATION(it_list->location.first,
+          u[t] += rho_detected_[LOCATION(it_list->location.first,
                                it_list->location.second,
                                n_pixels)] * it_list->probability;
         }
@@ -174,7 +178,7 @@ public:
            ++it_vector) {
 
         if (n[t]> 0) {
-          F phi = n[t]/u[t];// n[t]/u[t];
+          F phi = n[t]/u[t];
 
           for (auto it_list = it_vector->begin();
                it_list != it_vector->end();
@@ -189,7 +193,7 @@ public:
 
       for (int p = 0; p < n_pixels * n_pixels; ++p) {
         if (scale[p] > 0) {
-          rho_detected[p] *= (y[p]) ;
+          rho_detected_[p] *= (y[p]) ;
         }
       }
     }
@@ -197,19 +201,24 @@ public:
 
     for (int p = 0; p < n_pixels * n_pixels; ++p) {
       if (scale[p] > 0) {
-        rho[p] = (rho[p]/scale[p]) ;
+        rho_[p] = (rho_detected_[p]/scale[p]) ;
       }
     }
 
-    return rho_detected;
   }
 
   int get_n_pixels() { return n_pixels; }
+
+  F rho(int p) const {return rho_[p];}
+  F rho_detected(int p) const {return rho_detected_[p];}
+  std::vector<F> rho() const {return rho_;}
+  std::vector<F> rho_detected() const {return rho_detected_;}
 
 private:
 
   int n_tubes;
   int n_pixels;
+  int total_n_pixels;
   int n_iter;
   int emissions;
   int n_lors;
@@ -218,6 +227,9 @@ private:
   std::vector<int> list_of_lors;
   std::vector<int> n;
   F *scale;
+
+  std::vector<F> rho_;
+  std::vector<F> rho_detected_;
 
   int get_mean_per_lor(file_half &a,file_half &b,std::vector<mean_per_lor> &mean) {
     for (auto it = mean.begin(); it != mean.end(); ++it) {

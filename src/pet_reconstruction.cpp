@@ -48,7 +48,8 @@ try {
 
   auto n_pixels = r.get_n_pixels();
   reconstruction<>::output_type output(n_pixels * n_pixels, 0.0);
-  output = r.emt();
+  r.emt(cl.get<size_t>("iterations"));
+  output = r.rho();
 
   if (!cl.exist("output")) return 0;
 
