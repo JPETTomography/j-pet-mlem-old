@@ -4,6 +4,8 @@
 #include <vector>
 #include <list>
 
+#include<ctime>
+
 #include "detector_ring.h"
 
 //#define LOCATION(x,y,size)  (y*size + x)
@@ -152,6 +154,8 @@ public:
     F y[n_pixels * n_pixels];
     std::vector<F> u(system_matrix.size(),0.f);
 
+    clock_t start=clock();
+
     for (int i = 0; i < n_iter; ++i) {
       std::cout << ".";
       std::cout.flush();
@@ -198,6 +202,8 @@ public:
         }
       }
     }
+    clock_t stop=clock();
+
     std::cout << std::endl;
 
     for (int p = 0; p < n_pixels * n_pixels; ++p) {
@@ -206,6 +212,9 @@ public:
       }
     }
 
+    double time=static_cast<double>(stop-start)/CLOCKS_PER_SEC;
+    std::cout<<"time = "<<time<<"s time/iter = "<<time/n_iter<<"s\n";
+    std::cout<<"op/sec = "<<n_non_zero_elements_*(n_iter/time)<<"\n";
   }
 
   int get_n_pixels() { return n_pixels; }
