@@ -78,7 +78,7 @@ try {
 
   auto output_gain = static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-  for (int y = n_pixels-1; y >= 0; ++y) {
+  for (int y = n_pixels-1; y >= 0; --y) {
     uint8_t row[n_pixels];
     for (auto x = 0; x < n_pixels; ++x) {
       row[x] = std::numeric_limits<uint8_t>::max() - output_gain * output[LOCATION(x,y,n_pixels)];
