@@ -58,8 +58,16 @@ try {
   auto fn_wo_ext  = fn.substr(0, fn_ext != std::string::npos
                              && (fn_sep == std::string::npos || fn_sep < fn_ext)
                                ? fn_ext : std::string::npos);
-  std::ofstream out(fn);
 
+  // output reconstruction
+  std::ofstream out(fn);
+  for (auto y = 0; y < n_pixels; ++y) {
+    for (auto x = 0; x < n_pixels; ++x) {
+      out << x << " " << y << " " << output[LOCATION(x,y,n_pixels)] << std::endl;
+    }
+  }
+
+  // output reconstruction PNG
   png_writer png(fn_wo_ext+".png");
   png.write_header<>(n_pixels, n_pixels);
 
@@ -67,23 +75,16 @@ try {
   for(auto it = output.begin(); it != output.end(); ++it) {
     output_max = std::max(output_max, *it);
   }
+
   auto output_gain = static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-  size_t x = 0, y = 0;
-  uint8_t row[n_pixels];
-  for(auto it = output.begin(); it != output.end(); ++it) {
-
-    if(y % n_pixels == 0 && y != 0) {
-      x++; y = 0;
-      png.write_row(row);
+  for (int y = n_pixels-1; y >= 0; ++y) {
+    uint8_t row[n_pixels];
+    for (auto x = 0; x < n_pixels; ++x) {
+      row[x] = std::numeric_limits<uint8_t>::max() - output_gain * output[LOCATION(x,y,n_pixels)];
     }
-
-    out << x << " " << y << " " << *it << std::endl;
-
-    row[y] = std::numeric_limits<uint8_t>::max() - output_gain * *it;
-    ++y;
+    png.write_row(row);
   }
-  png.write_row(row);
 
   return 0;
 

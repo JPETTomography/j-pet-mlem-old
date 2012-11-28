@@ -6,7 +6,7 @@
 
 #include "detector_ring.h"
 
-#define LOCATION(x,y,size)  (x*size) +y
+#define LOCATION(x,y,size)  (y*size + x)
 
 template <typename F = double>
 class reconstruction {

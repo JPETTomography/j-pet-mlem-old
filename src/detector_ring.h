@@ -332,7 +332,7 @@ public:
       }
     }
     auto gain = static_cast<double>(std::numeric_limits<bitmap_pixel_type>::max()) / pixel_max;
-    for (auto y = 0; y < n_pixels; ++y) {
+    for (int y = n_pixels-1; y >= 0; ++y) {
       bitmap_pixel_type row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
         row[x] = std::numeric_limits<bitmap_pixel_type>::max() - gain * matrix(lor, x, y);
@@ -632,7 +632,6 @@ private:
     };
     if (y < 0) {
       y = -y-1;
-    } else {
       symmetry |= 1;
     }
     // triangulate
