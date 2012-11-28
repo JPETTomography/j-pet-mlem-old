@@ -63,9 +63,8 @@ public:
 
       int x,y,value;
 
-      if (mean_file.eof()) break;
-
       mean_file >> y >> x >> value;
+      if (mean_file.eof()) break;
 
       mean_per_lor temp_obj;
 
@@ -84,10 +83,12 @@ public:
 
     for (;;) {
 
-      if (in.eof()) break;
+
 
       file_half a, b;
       in >> a >> b;
+      if (in.eof()) break;
+
       lor_type lor(a,b);
 
       n.push_back(get_mean_per_lor(a,b,lor_mean));
@@ -137,9 +138,9 @@ public:
     std::cout
       << "   Pixels: " << n_pixels  << std::endl
       << "Emissions: " << emissions << std::endl
-      << "    Tubes: " << n_tubes   << std::endl
+      << "Detectors: " << n_tubes   << std::endl
       << "     LORs: " << system_matrix.size() << std::endl;
-    std::cout<< "non zero elements "<<n_non_zero_elements_<<std::endl;
+    std::cout<< "Non zero elements: "<<n_non_zero_elements_<<std::endl;
   }
 
   ~reconstruction() {
