@@ -20,10 +20,25 @@ while(my $file=shift @ARGV) {
     print STDERR $file,"\n";
     open(FILE,"<$file") or warn "cannot open file `$file'  for reading.";
     my $buffer;
-    read FILE,$buffer,12;
-    my ($magic,$pixels_2,$n_emissions)=unpack "a4II", $buffer;
+    read FILE,$buffer,4;
+    my $magic=unpack "a4", $buffer;
 
-    print "#$magic $pixels_2 $n_emissions\n";
+    print "magic=$magic\n";
+
+    my ($pixels_2,$n_emissions,$n_detectors);
+    if($magic eq "PETP"  ) {
+	print "PETP\n";
+	read FILE,$buffer,12;
+	($pixels_2,$n_emissions,$n_detectors)=unpack "III", $buffer;
+    } elsif($magic eq "PETs" ) {
+	print "PETs\n";
+	read FILE,$buffer,8;
+	($pixels_2,$n_emissions)=unpack "II", $buffer;	
+	$n_detectors="unknown";
+    } 
+
+
+    print "#$magic $pixels_2 $n_emissions $n_detectors\n";
     while(!(eof FILE)) {
 	read FILE,$buffer,8;
 	my ($lor_i,$lor_j,$count)=unpack "SSI",$buffer;

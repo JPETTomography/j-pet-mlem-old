@@ -74,6 +74,7 @@ public:
     std::vector<hits_per_pixel> pixels;
 
     int index = 0;
+    n_non_zero_elements_=0;
 
     for (;;) {
 
@@ -105,7 +106,7 @@ public:
         data.probability = static_cast<F>(hits/static_cast<F>(emissions));
 
         scale[LOCATION(x,y,n_pixels)] += data.probability;
-
+        n_non_zero_elements_++;
         pixels.push_back(data);
 
       }
@@ -115,11 +116,24 @@ public:
       index++;
     }
 
+
+    for (auto it_vector = system_matrix.begin();
+           it_vector != system_matrix.end();
+           it_vector++) {
+      for (auto it_list = it_vector->begin(); it_list != it_vector->end(); it_list++) {
+        int pixel=LOCATION(it_list->location.first,
+                           it_list->location.second,
+                           n_pixels);
+        it_list->probability/=scale[pixel];
+      }
+    }
+
     std::cout
       << "   Pixels: " << n_pixels  << std::endl
       << "Emissions: " << emissions << std::endl
       << "    Tubes: " << n_tubes   << std::endl
       << "     LORs: " << system_matrix.size() << std::endl;
+    std::cout<< "non zero elements "<<n_non_zero_elements_<<std::endl;
   }
 
   ~reconstruction() {
@@ -131,6 +145,7 @@ public:
     F y[n_pixels * n_pixels];
     std::vector<F> u(system_matrix.size(),0.f);
     std::vector<F> rho(n_pixels * n_pixels,1.0f);
+    std::vector<F> rho_detected(n_pixels * n_pixels,1.0f);
 
     for (int i = 0; i < n_iter; ++i) {
       std::cout << ".";
@@ -141,22 +156,32 @@ public:
       }
 
       int t = 0;
-      for (auto it_vector = system_matrix.begin(); it_vector != system_matrix.end(); it_vector++) {
+      for (auto it_vector = system_matrix.begin();
+           it_vector != system_matrix.end();
+           it_vector++) {
         u[t] = 0.0f;
         for (auto it_list = it_vector->begin(); it_list != it_vector->end(); it_list++) {
-          u[t] += rho[LOCATION(it_list->location.first, it_list->location.second, n_pixels)] * it_list->probability;
+          u[t] += rho_detected[LOCATION(it_list->location.first,
+                               it_list->location.second,
+                               n_pixels)] * it_list->probability;
         }
         t++;
       }
 
       t = 0;
-      for (auto it_vector=system_matrix.begin(); it_vector != system_matrix.end(); ++it_vector) {
+      for (auto it_vector=system_matrix.begin();
+           it_vector != system_matrix.end();
+           ++it_vector) {
 
         if (n[t]> 0) {
           F phi = n[t]/u[t];// n[t]/u[t];
 
-          for (auto it_list = it_vector->begin(); it_list != it_vector->end(); ++it_list) {
-            y[LOCATION(it_list->location.first, it_list->location.second, n_pixels)] += phi * it_list->probability;
+          for (auto it_list = it_vector->begin();
+               it_list != it_vector->end();
+               ++it_list) {
+            y[LOCATION(it_list->location.first,
+                       it_list->location.second,
+                       n_pixels)] += phi * it_list->probability;
           }
         }
         t++;
@@ -164,14 +189,19 @@ public:
 
       for (int p = 0; p < n_pixels * n_pixels; ++p) {
         if (scale[p] > 0) {
-          rho[p] *= (y[p]/scale[p]) ;
+          rho_detected[p] *= (y[p]) ;
         }
-        // rho[LOCATION(x,p,n_pixels)] = rho[LOCATION(x,p,n_pixels)] * y[LOCATION(x,p,n_pixels)];
       }
     }
     std::cout << std::endl;
 
-    return rho;
+    for (int p = 0; p < n_pixels * n_pixels; ++p) {
+      if (scale[p] > 0) {
+        rho[p] = (rho[p]/scale[p]) ;
+      }
+    }
+
+    return rho_detected;
   }
 
   int get_n_pixels() { return n_pixels; }
@@ -183,6 +213,7 @@ private:
   int n_iter;
   int emissions;
   int n_lors;
+  int n_non_zero_elements_;
   std::vector< std::vector<hits_per_pixel> > system_matrix;
   std::vector<int> list_of_lors;
   std::vector<int> n;
