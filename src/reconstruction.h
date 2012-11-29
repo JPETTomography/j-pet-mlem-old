@@ -21,6 +21,7 @@ public:
 
   struct hits_per_pixel {
     pixel_location location;
+	int index;
     F probability;
   };
 
@@ -113,6 +114,7 @@ public:
         hits_per_pixel data;
         data.location = pixel;
         data.probability = static_cast<F>(hits/static_cast<F>(emissions));
+		data.index = LOCATION(x,y,n_pixels);
 
         scale[LOCATION(x,y,n_pixels)] += data.probability;
         n_non_zero_elements_++;
@@ -170,9 +172,7 @@ public:
            it_vector++) {
         u[t] = 0.0f;
         for (auto it_list = it_vector->begin(); it_list != it_vector->end(); it_list++) {
-          u[t] += rho_detected_[LOCATION(it_list->location.first,
-                               it_list->location.second,
-                               n_pixels)] * it_list->probability;
+          u[t] += rho_detected_[it_list->index] * it_list->probability;
         }
         t++;
       }
@@ -188,9 +188,7 @@ public:
           for (auto it_list = it_vector->begin();
                it_list != it_vector->end();
                ++it_list) {
-            y[LOCATION(it_list->location.first,
-                       it_list->location.second,
-                       n_pixels)] += phi * it_list->probability;
+            y[it_list->index] += phi * it_list->probability;
           }
         }
         t++;
