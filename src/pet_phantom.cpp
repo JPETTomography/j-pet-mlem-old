@@ -29,8 +29,8 @@ try {
   cmdline::parser cl;
   cl.footer("phantom_description");
 
-  cl.add<cmdline::string>
-                     ("config",      'c', "load config file", false, cmdline::string(), false);
+  cl.add<cmdline::string> 
+    ("config",      'c', "load config file", false, cmdline::string(), false);
 #if _OPENMP
   cl.add<size_t>     ("n-threads",   't', "number of OpenMP threads", false, 0, false);
 #endif
@@ -173,19 +173,16 @@ try {
       double x=fov_dis(gen);
       double y=fov_dis(gen);
       if(x*x+y*y < fov_r2) {
-
         if(phantom.emit(x,y,one_dis(gen))) {
-           auto pix=dr.pixel(x,y);
+          auto pix=dr.pixel(x,y);
           detector_ring<double>::lor_type lor;
           pixels[pix.second][pix.first]++;
-          //std::cerr<<n_emitted<<" "<<x<<" "<<y<<std::endl;
           double angle=phi_dis(gen);
           auto hits=dr.emit_event(gen,model,x,y,angle,lor);
           if(hits==2) {
             if(lor.first>lor.second)
               std::swap(lor.first,lor.second);
             tubes[lor.first][lor.second]++;
-            // std::cerr<<"hits\n";
             pixels_detected[pix.second][pix.first]++;
           }
           n_emitted++;
@@ -240,6 +237,10 @@ try {
   png_writer pix(fn_wo_ext+".png");
   png_writer pix_detected(fn_wo_ext+"_detected.png");
 
+  std::ofstream pixels_text_out(fn_wo_ext+"_pixels.txt");
+  std::ofstream pixels_detected_text_out(fn_wo_ext+"_detected_pixels.txt");
+
+
   size_t pix_max = 0;
   size_t pix_detected_max = 0;
 
@@ -270,8 +271,15 @@ try {
     }
     pix_detected.write_row(row);
   }
-
-  return 0;
+  for (auto i = 0; i < n_pixels; ++i) {
+    for (auto j = 0; j < n_pixels; ++j) {
+      pixels_text_out<<pixels[i][j]<<" ";
+      pixels_detected_text_out<<pixels_detected[i][j]<<" ";
+    }
+    pixels_text_out<<"\n";
+    pixels_detected_text_out<<"\n";
+  }
+      return 0;
 
 } catch(std::string &ex) {
   std::cerr << "error: " << ex << std::endl;
