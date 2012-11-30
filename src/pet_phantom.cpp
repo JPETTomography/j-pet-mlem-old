@@ -48,6 +48,7 @@ try {
                      ("seed",        's', "random number generator seed",      false, 0, false);
   cl.add<cmdline::string>
                      ("output",      'o', "output lor hits for supplied phantom", false, cmdline::string(), false);
+  cl.add ("detected",'\0', "collects detected emissions");
 
   cl.parse_check(argc, argv);
 
@@ -123,7 +124,11 @@ try {
   detector_ring<double> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
 
   int n_emitted=0;
-
+  int n_emitted_detected=0;
+  bool only_detected=false;
+  if(cl.exist("detected"))
+    only_detected=true;
+  
   uniform_real_distribution<> one_dis(0., 1.);
   uniform_real_distribution<> fov_dis(-dr.fov_radius(), dr.fov_radius());
   uniform_real_distribution<> phi_dis(0., M_PI);
@@ -184,8 +189,11 @@ try {
               std::swap(lor.first,lor.second);
             tubes[lor.first][lor.second]++;
             pixels_detected[pix.second][pix.first]++;
+            if(only_detected)
+              n_emitted++;  
           }
-          n_emitted++;
+          if(!only_detected)
+            n_emitted++;
         }
       }
     }
@@ -210,8 +218,11 @@ try {
           std::swap(lor.first,lor.second);
         tubes[lor.first][lor.second]++;
         pixels_detected[pix.second][pix.first]++;
+        if(only_detected)
+          n_emitted++; 
       }
-      n_emitted++;
+      if(!only_detected)
+        n_emitted++;
     }
   }
 

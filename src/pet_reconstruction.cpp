@@ -64,8 +64,9 @@ try {
   std::ofstream out(fn);
   for (auto y = 0; y < n_pixels; ++y) {
     for (auto x = 0; x < n_pixels; ++x) {
-      out << x << " " << y << " " << output[LOCATION(x,y,n_pixels)] << std::endl;
+      out<<output[LOCATION(x,y,n_pixels)] <<" ";
     }
+    out<<"\n";
   }
 
   // output reconstruction PNG
