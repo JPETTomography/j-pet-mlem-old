@@ -33,10 +33,14 @@ public:
   typedef uint32_t file_int;
   typedef uint16_t file_half;
 
-  reconstruction(int n_iter, std::string matrix, std::string mean)
-  : n_iter(n_iter)
-  {
+  reconstruction(int n_iter, std::string matrix, std::string mean):
+    n_iter(n_iter) {
     ibstream in(matrix);
+
+    if(!in) {
+      std::cerr<<"error opening matrix file '"<<matrix<<"'"<<std::endl;
+      exit(-1);
+    }
 
     typedef uint32_t file_int;
     typedef uint16_t file_half;
@@ -60,6 +64,10 @@ public:
     scale = new F[n_pixels*n_pixels]();
 
     std::ifstream mean_file(mean);
+    if(!mean_file) {
+      std::cerr<<"error opening mean file '"<<mean<<"'"<<std::endl;
+      exit(-1);
+    }
     std::vector<mean_per_lor> lor_mean;
 
     for (;;) {
