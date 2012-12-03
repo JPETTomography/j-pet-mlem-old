@@ -20,7 +20,6 @@ public:
   typedef std::vector<F> output_type;
 
   struct hits_per_pixel {
-    pixel_location location;
     int index;
     F probability;
   };
@@ -94,8 +93,6 @@ public:
 
     for (;;) {
 
-
-
       file_half a, b;
       in >> a >> b;
       if (in.eof()) break;
@@ -103,10 +100,6 @@ public:
       lor_type lor(a,b);
 
       n.push_back(get_mean_per_lor(a,b,lor_mean));
-
-#if DEBUG
-      if (get_mean_per_lor(a,b,lor_mean) != 0) { printf("get_mean: %d\n", get_mean_per_lor(a,b,lor_mean)); }
-#endif
 
       file_int count;
 
@@ -118,16 +111,12 @@ public:
         file_int hits;
 
         in >> x >> y >> hits;
-        pixel_location pixel(x,y);
         hits_per_pixel data;
-        data.location = pixel;
         data.probability = static_cast<F>(hits/static_cast<F>(emissions));
-		data.index = LOCATION(x,y,n_pixels);
-
-        scale[LOCATION(x,y,n_pixels)] += data.probability;
+        data.index = LOCATION(x,y,n_pixels);
+        scale[data.index] += data.probability;
         n_non_zero_elements_++;
         pixels.push_back(data);
-
       }
 
       system_matrix.push_back(pixels);
@@ -135,14 +124,13 @@ public:
       index++;
     }
 
-
     for (auto it_vector = system_matrix.begin();
-           it_vector != system_matrix.end();
-           it_vector++) {
-      for (auto it_list = it_vector->begin(); it_list != it_vector->end(); it_list++) {
-        int pixel=LOCATION(it_list->location.first,
-                           it_list->location.second,
-                           n_pixels);
+         it_vector != system_matrix.end();
+         it_vector++) {
+      for (auto it_list = it_vector->begin();
+           it_list != it_vector->end();
+           it_list++) {
+        int pixel=it_list->index;
         it_list->probability/=scale[pixel];
       }
     }
