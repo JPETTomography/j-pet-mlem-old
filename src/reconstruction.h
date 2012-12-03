@@ -60,7 +60,7 @@ public:
     rho_.resize(total_n_pixels,(F)0.0);
     rho_detected_.resize(total_n_pixels,(F)1.0);
 
-    scale = new F[n_pixels*n_pixels]();
+    scale.resize(total_n_pixels,(F)0.0);
 
     std::ifstream mean_file(mean);
     if(!mean_file) {
@@ -144,14 +144,13 @@ public:
   }
 
   ~reconstruction() {
-    delete [] scale;
   }
 
 
   void emt(int n_iter) {
 
     F y[n_pixels * n_pixels];
-    std::vector<F> u(system_matrix.size(),0.f);
+    F u;
 
     clock_t start=clock();
 
@@ -167,14 +166,14 @@ public:
       for (auto it_vector = system_matrix.begin();
            it_vector != system_matrix.end();
            it_vector++) {
-        u[t] = (F)0.0;
+        u = (F)0.0;
         if (n[t]> 0) {
           for (auto it_list = it_vector->begin();
                it_list != it_vector->end();
                it_list++) {
-            u[t] += rho_detected_[it_list->index] * it_list->probability;
+            u += rho_detected_[it_list->index] * it_list->probability;
           }
-          F phi = n[t]/u[t];
+          F phi = n[t]/u;
           for (auto it_list = it_vector->begin();
                it_list != it_vector->end();
                ++it_list) {
@@ -186,7 +185,7 @@ public:
 
       for (int p = 0; p < n_pixels * n_pixels; ++p) {
         if (scale[p] > 0) {
-          rho_detected_[p] *= (y[p]) ;
+          rho_detected_[p] *= y[p] ;
         }
       }
     }
@@ -224,7 +223,7 @@ private:
   std::vector< std::vector<hits_per_pixel> > system_matrix;
   std::vector<int> list_of_lors;
   std::vector<int> n;
-  F *scale;
+  std::vector<F>  scale;
 
   std::vector<F> rho_;
   std::vector<F> rho_detected_;
