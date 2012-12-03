@@ -21,7 +21,7 @@ public:
 
   struct hits_per_pixel {
     pixel_location location;
-	int index;
+    int index;
     F probability;
   };
 
@@ -151,6 +151,22 @@ public:
     delete [] scale;
   }
 
+  template<typename RandomIterator>
+  void project(RandomIterator u,RandomIterator rho) {
+    int t = 0;
+    for (auto it_vector = system_matrix.begin();
+         it_vector != system_matrix.end();
+         it_vector++) {
+      u[t] = (F)0.0;
+      for (auto it_list = it_vector->begin();
+           it_list != it_vector->end();
+           it_list++) {
+        u[t] += rho[it_list->index] * it_list->probability;
+      }
+      t++;
+    }
+  }
+
   void emt(int n_iter) {
 
     F y[n_pixels * n_pixels];
@@ -170,8 +186,10 @@ public:
       for (auto it_vector = system_matrix.begin();
            it_vector != system_matrix.end();
            it_vector++) {
-        u[t] = 0.0f;
-        for (auto it_list = it_vector->begin(); it_list != it_vector->end(); it_list++) {
+        u[t] = (F)0.0;
+        for (auto it_list = it_vector->begin();
+             it_list != it_vector->end();
+             it_list++) {
           u[t] += rho_detected_[it_list->index] * it_list->probability;
         }
         t++;

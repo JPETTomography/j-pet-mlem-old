@@ -21,11 +21,23 @@
 #include "bstream.h"
 #include "svg_ostream.h"
 
+//#include "detector_ring_geometry_descriptor.h"
+
 #if _OPENMP
 #include <omp.h>
 #endif
 
 #define fourcc(a, b, c, d) (((d)<<24) | ((c)<<16) | ((b)<<8) | (a))
+/*
+  TO DO
+  this class has to many responsabilities
+  should be responsible only for description of the detector and  for
+  calculating the  intersection points with the detectors
+
+  The results should be stored in a different class
+
+*/ 
+
 
 /// Provides model for 2D ring of detectors
 template <typename F = double, typename HitType = int>
@@ -64,8 +76,7 @@ public:
     , n_lors( a_n_detectors * (a_n_detectors+1) / 2 )
     , s_pixel(a_s_pixel)
     , n_emissions(0)
-    , output_triangular(true)
-  {
+    , output_triangular(true) {
     if(radious    <= 0.)   throw("invalid radious");
     if(w_detector <= 0. ||
        h_detector <= 0.)   throw("invalid detector size");
@@ -105,13 +116,13 @@ public:
   F pixel_size() const {return s_pixel;}
   F fov_radius() const {return fov_radius_;}
 
-  std::pair<size_t,size_t> pixel(F x, F y) {
+  std::pair<int,int> pixel(F x, F y) {
     F rx=x+fov_radius();
     F ry=y+fov_radius();
 
     return std::make_pair(
-                     static_cast<size_t>( floor(rx/pixel_size()) ),
-                     static_cast<size_t>( floor(ry/pixel_size()) )
+                     static_cast<int>( floor(rx/pixel_size()) ),
+                     static_cast<int>( floor(ry/pixel_size()) )
                      );
 
   }
@@ -121,8 +132,11 @@ public:
   /// @param rx, ry coordinates of the emission point
   /// @param output parameter contains the lor of the event
   template <class RandomGenerator, class AcceptanceModel>
-  short emit_event(RandomGenerator &gen, AcceptanceModel &model,
-                   F rx, F ry, F angle,
+  short emit_event(RandomGenerator &gen,
+                   AcceptanceModel &model,
+                   F rx,
+                   F ry,
+                   F angle,
                    lor_type &lor) {
 
     typename circle_type::event_type e(rx, ry, angle);
@@ -139,6 +153,7 @@ public:
 #if COLLECT_INTERSECTIONS
     std::vector<point_type> ipoints;
 #endif
+
     // process possible hit detectors on both sides
     for (auto side = 0; side < 2; ++side) {
       // starting from inner index
@@ -150,7 +165,7 @@ public:
       auto step = ((n_detectors+inner-outer) % n_detectors
                    >
                    (n_detectors+outer-inner) % n_detectors
-                    ) ? 1 : -1;
+                   ) ? 1 : -1;
 
 #if SKIP_INTERSECTION
       (!(hits++) ? lor.first : lor.second) = i;
