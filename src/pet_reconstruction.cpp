@@ -20,6 +20,17 @@
 #include <omp.h>
 #endif
 
+template<typename Iterator> 
+void write_text_from_vector(std::ostream &out,Iterator start, Iterator stop, int line_length) {
+  int index=0;
+  for(;start!=stop;++start,++index) {
+    out<<*start<<" ";
+    if(index%line_length==0)
+      out<<"\n";
+  }
+}
+
+
 int main(int argc, char *argv[]) {
 
 try {
@@ -41,40 +52,45 @@ try {
   }
 #endif
 
-  reconstruction<> r(
+  reconstruction<> reconstructor(
     cl.get<size_t>("iterations"),
     cl.get<cmdline::string>("system"),
     cl.get<cmdline::string>("mean"));
 
-  auto n_pixels = r.get_n_pixels();
-  reconstruction<>::output_type output(n_pixels * n_pixels, 0.0);
-  r.emt(cl.get<size_t>("iterations"));
-  output = r.rho();
+  auto n_pixels = reconstructor.get_n_pixels();
+  auto total_n_pixels=n_pixels*n_pixels;
+  reconstruction<>::output_type rho(total_n_pixels, 0.0);
+  reconstruction<>::output_type rho_detected(total_n_pixels, 0.0);
+  reconstructor.emt(cl.get<size_t>("iterations"));
+  rho = reconstructor.rho();
+  rho_detected = reconstructor.rho_detected();
 
   if (!cl.exist("output")) return 0;
 
   auto fn         = cl.get<cmdline::string>("output");
-  auto fn_sep     = fn.find_last_of("\\/");
-  auto fn_ext     = fn.find_last_of(".");
-  auto fn_wo_ext  = fn.substr(0, fn_ext != std::string::npos
-                             && (fn_sep == std::string::npos || fn_sep < fn_ext)
-                               ? fn_ext : std::string::npos);
+  auto it_fn_sep     = fn.find_last_of("\\/");
+  auto it_fn_ext     = fn.find_last_of(".");
+  auto fn_wo_ext  = fn.substr(0, it_fn_ext != std::string::npos
+                             && (it_fn_sep == std::string::npos || it_fn_sep < it_fn_ext)
+                               ? it_fn_ext : std::string::npos);
+  auto fn_ext     = fn.substr(it_fn_ext != std::string::npos?it_fn_ext:fn.size(),fn.size());
 
-  // output reconstruction
   std::ofstream out(fn);
-  for (auto y = 0; y < n_pixels; ++y) {
-    for (auto x = 0; x < n_pixels; ++x) {
-      out<<output[LOCATION(x,y,n_pixels)] <<" ";
-    }
-    out<<"\n";
-  }
+  write_text_from_vector(out,rho.begin(),rho.end(),n_pixels);
+  out.close();
+
+  std::ofstream out_detected(fn_wo_ext+"_detected"+fn_ext);
+  write_text_from_vector(out_detected,rho_detected.begin(),rho_detected.end(),n_pixels);
+  out_detected.close();
+
 
   // output reconstruction PNG
   png_writer png(fn_wo_ext+".png");
   png.write_header<>(n_pixels, n_pixels);
 
+
   double output_max = 0.0;
-  for(auto it = output.begin(); it != output.end(); ++it) {
+  for(auto it = rho.begin(); it != rho.end(); ++it) {
     output_max = std::max(output_max, *it);
   }
 
@@ -83,7 +99,7 @@ try {
   for (int y = n_pixels-1; y >= 0; --y) {
     uint8_t row[n_pixels];
     for (auto x = 0; x < n_pixels; ++x) {
-      row[x] = std::numeric_limits<uint8_t>::max() - output_gain * output[LOCATION(x,y,n_pixels)];
+      row[x] = std::numeric_limits<uint8_t>::max() - output_gain * rho[LOCATION(x,y,n_pixels)];
     }
     png.write_row(row);
   }
