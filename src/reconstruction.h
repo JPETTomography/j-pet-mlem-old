@@ -8,9 +8,7 @@
 
 #include "detector_ring.h"
 
-//#define LOCATION(x,y,size)  (y*size + x)
 inline int  LOCATION(int x,int y,int size)  {return y*size + x;}
-
 
 template <typename F = double>
 class reconstruction {
@@ -69,6 +67,7 @@ public:
     }
     std::vector<mean_per_lor> lor_mean;
 
+    clock_t start=clock();
     for (;;) {
 
       int x,y,value;
@@ -85,12 +84,17 @@ public:
 
       lor_mean.push_back(temp_obj);
     }
+    clock_t stop=clock();
+
+    double time=static_cast<double>(stop-start)/CLOCKS_PER_SEC;
+    std::cout<<"means read time = "<<time<<"s\n";
 
     std::vector<hits_per_pixel> pixels;
 
     int index = 0;
     n_non_zero_elements_=0;
 
+    start=clock();
     for (;;) {
 
       file_half a, b;
@@ -123,6 +127,11 @@ public:
       pixels.clear();
       index++;
     }
+    stop=clock();
+
+    time=static_cast<double>(stop-start)/CLOCKS_PER_SEC;
+    std::cout<<"matrix read time = "<<time<<"s\n";
+
 
     for (auto it_vector = system_matrix.begin();
          it_vector != system_matrix.end();
