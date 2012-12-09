@@ -64,7 +64,6 @@ public:
       - static_cast<F>(Generator::min()) / range<Generator>();
   }
 
-private:
   result_type size()   const { return size_; }
   result_type offset() const { return offset_; }
 
@@ -79,5 +78,6 @@ private:
     return static_cast<F>(1.0) / range<Generator>();
   }
 
+private:
   F size_, offset_;
 };
