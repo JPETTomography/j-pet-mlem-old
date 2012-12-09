@@ -209,7 +209,7 @@ public:
       }
     }
     auto gain = static_cast<double>(std::numeric_limits<bitmap_pixel_type>::max()) / pixel_max;
-    for (int y = n_pixels-1; y >= 0; ++y) {
+    for (int y = n_pixels-1; y >= 0; --y) {
       bitmap_pixel_type row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
         row[x] = std::numeric_limits<bitmap_pixel_type>::max() - gain * (*this)(lor, x, y);
