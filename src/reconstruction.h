@@ -146,11 +146,10 @@ public:
       }
     }
 
-    
-      for (int p = 0; p < n_pixels * n_pixels;++p) {
-        if(scale[p]>0)
-          rho_detected_[p]=(F)1.0;
-      }
+    for (int p = 0; p < n_pixels * n_pixels;++p) {
+      if(scale[p]>0)
+        rho_detected_[p]=(F)1.0;
+    }
     std::cout
       << "   Pixels: " << n_pixels  << std::endl
       << "Emissions: " << emissions << std::endl
@@ -203,7 +202,6 @@ public:
       for (int p = 0; p < n_pixels * n_pixels; ++p) {
         if (scale[p] > 0) {
           rho_detected_[p] *= y[p] ;
-         
         }
       }
     }
