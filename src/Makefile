@@ -52,7 +52,7 @@ CPPFLAGS += -fopenmp
 LDFLAGS  += -fopenmp
 endif
 
-CPPFLAGS += -MMD
+CPPFLAGS += -MMD -msse4 -mfpmath=sse
 
 # dependencies
 CPPFLAGS += -I../lib/catch/include

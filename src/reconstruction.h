@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include <iostream>
 #include <vector>
 #include <list>
@@ -56,7 +57,7 @@ public:
 
     total_n_pixels=n_pixels*n_pixels;
     rho_.resize(total_n_pixels,(F)0.0);
-    rho_detected_.resize(total_n_pixels,(F)1.0);
+    rho_detected_.resize(total_n_pixels,(F)0.0);
 
     scale.resize(total_n_pixels,(F)0.0);
 
@@ -144,6 +145,11 @@ public:
       }
     }
 
+    
+      for (int p = 0; p < n_pixels * n_pixels;++p) {
+        if(scale[p]>0)
+          rho_detected_[p]=(F)1.0;
+      }
     std::cout
       << "   Pixels: " << n_pixels  << std::endl
       << "Emissions: " << emissions << std::endl
@@ -158,6 +164,7 @@ public:
 
   void emt(int n_iter) {
 
+
     F y[n_pixels * n_pixels];
     F u;
 
@@ -168,7 +175,7 @@ public:
       std::cout.flush();
 
       for (int p = 0; p < n_pixels * n_pixels;++p) {
-        y[p] = 0.f;
+        y[p] = (F)0.0;
       }
 
       int t = 0;
@@ -195,11 +202,11 @@ public:
       for (int p = 0; p < n_pixels * n_pixels; ++p) {
         if (scale[p] > 0) {
           rho_detected_[p] *= y[p] ;
+         
         }
       }
     }
     clock_t stop=clock();
-
     std::cout << std::endl;
 
     for (int p = 0; p < n_pixels * n_pixels; ++p) {

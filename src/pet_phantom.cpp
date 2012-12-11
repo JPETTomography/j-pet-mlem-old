@@ -174,7 +174,6 @@ try {
 
   if(phantom.n_regions()>0) {
     while(n_emitted<n_emissions) {
-
       double x=fov_dis(gen);
       double y=fov_dis(gen);
       if(x*x+y*y < fov_r2) {
@@ -203,7 +202,6 @@ try {
     point_sources.normalize();
     n_emitted=0;
     while(n_emitted<n_emissions) {
-
       double rng=one_dis(gen);
       point<double>  p=point_sources.draw(rng);
 

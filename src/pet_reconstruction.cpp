@@ -8,6 +8,10 @@
 //   "Implementing and Accelerating the EM Algorithm for Positron Emission Tomography"
 //   by Linda Kaufman
 
+#include<xmmintrin.h>
+#include<pmmintrin.h>
+
+
 #include <cmdline.h>
 #include "cmdline_types.h"
 #include "bstream.h"
@@ -32,6 +36,10 @@ void write_text_from_vector(std::ostream &out,Iterator start, Iterator stop, int
 
 
 int main(int argc, char *argv[]) {
+
+  _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+  _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+
 
 try {
   cmdline::parser cl;
