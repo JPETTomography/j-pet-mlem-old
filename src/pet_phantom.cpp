@@ -121,7 +121,7 @@ try {
       pixels_detected[i][j]=0;
     }
 
-  detector_ring<double> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
+  detector_ring<double> dr(n_detectors, radious, w_detector, h_detector);
 
   int n_emitted=0;
   int n_emitted_detected=0;
@@ -178,7 +178,7 @@ try {
       double y=fov_dis(gen);
       if(x*x+y*y < fov_r2) {
         if(phantom.emit(x,y,one_dis(gen))) {
-          auto pix=dr.pixel(x,y);
+          auto pix=dr.pixel(x,y,s_pixel);
           detector_ring<double>::lor_type lor;
           pixels[pix.second][pix.first]++;
           double angle=phi_dis(gen);
@@ -205,7 +205,7 @@ try {
       double rng=one_dis(gen);
       point<double>  p=point_sources.draw(rng);
 
-      auto pix=dr.pixel(p.x,p.y);
+      auto pix=dr.pixel(p.x,p.y,s_pixel);
 
       pixels[pix.second][pix.first]++;
       double angle=phi_dis(gen);

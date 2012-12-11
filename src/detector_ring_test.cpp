@@ -33,7 +33,7 @@ TEST_CASE("detector_ring/math", "detector ring test") {
 
   double s_pixel = r / (n_pixels*sqrt(2.0));
 
-  detector_ring<> ring(n_detectors,n_pixels,s_pixel,r,w,h);
+  detector_ring<> ring(n_detectors,r,w,h);
 
   for(int i_event=0;i_event<n_events;++i_event) {
     double x, y, phi;

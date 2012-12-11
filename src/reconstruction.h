@@ -5,9 +5,10 @@
 #include <vector>
 #include <list>
 
-#include<ctime>
+#include <ctime>
 
 #include "detector_ring.h"
+#include "matrix_mc.h"
 
 inline int  LOCATION(int x,int y,int size)  {return y*size + x;}
 
@@ -47,7 +48,7 @@ public:
 
     in >> in_magic;
 
-    if (in_magic != detector_ring<F>::magic_f) {
+    if (in_magic != matrix_mc<F>::magic_f) {
       throw("invalid input system matrix file");
     }
 

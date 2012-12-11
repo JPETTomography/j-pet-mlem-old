@@ -13,6 +13,7 @@
 
 #include "random.h"
 #include "detector_ring.h"
+#include "matrix_mc.h"
 #include "model.h"
 #include "png_writer.h"
 #include "svg_ostream.h"
@@ -146,13 +147,14 @@ try {
     gen.seed(cl.get<tausworthe::seed_type>("seed"));
   }
 
-  detector_ring<> dr(n_detectors, n_pixels, s_pixel, radious, w_detector, h_detector);
+  detector_ring<> dr(n_detectors, radious, w_detector, h_detector);
+  matrix_mc<> mmc(dr, n_pixels, s_pixel);
 
   for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
     ibstream in(*fn, std::ios::binary);
     if (!in.is_open()) throw("cannot open input file: " + *fn);
     try {
-      in >> dr;
+      in >> mmc;
     } catch(std::string &ex) {
       throw(ex + ": " + *fn);
     } catch(const char *ex) {
@@ -161,9 +163,9 @@ try {
   }
 
   if (cl.get<std::string>("model") == "always")
-    dr.matrix_mc(gen, always_accept<>(), n_emissions);
+    mmc.mc(gen, always_accept<>(), n_emissions);
   if (cl.get<std::string>("model") == "scintilator")
-    dr.matrix_mc(
+    mmc.mc(
       gen,
       scintilator_accept<>(cl.get<double>("acceptance")),
       n_emissions);
@@ -179,14 +181,14 @@ try {
     auto fn_wo_path = fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep+1 : 0);
 
     obstream out(fn, std::ios::binary | std::ios::trunc);
-    dr.output_triangular = !cl.exist("full");
-    out << dr;
+    mmc.output_triangular = !cl.exist("full");
+    out << mmc;
 
     std::ofstream os(fn_wo_ext+".cfg", std::ios::trunc);
     os << cl;
 
     png_writer png(fn_wo_ext+".png");
-    dr.output_bitmap(png);
+    mmc.output_bitmap(png);
 
     svg_ostream<> svg(fn_wo_ext+".svg",
       radious+h_detector, radious+h_detector,
@@ -200,7 +202,7 @@ try {
 
   // visual debugging output
   if (cl.exist("png")) {
-    detector_ring<>::lor_type lor(0, 0);
+    matrix_mc<>::lor_type lor(0, 0);
     lor.first  = cl.get<ssize_t>("from");
     if (cl.exist("to")) {
       lor.second = cl.get<ssize_t>("to");
@@ -208,7 +210,7 @@ try {
       lor.second = (lor.first + n_detectors / 2) % n_detectors;
     }
     png_writer png(cl.get<cmdline::string>("png"));
-    dr.output_bitmap(png, lor);
+    mmc.output_bitmap(png, lor);
   }
 
   // show stats if requested
@@ -217,14 +219,14 @@ try {
     auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
     for (auto y = 0; y < n_pixels; ++y) {
       for (auto x = 0; x < n_pixels; ++x) {
-        auto hits = dr.hits(x, y);
+        auto hits = mmc.hits(x, y);
         pixel_min = std::min(pixel_min, hits);
         pixel_max = std::max(pixel_max, hits);
       }
     }
     std::cerr
       << "Non zero LORs: "
-      << dr.non_zero_lors()
+      << mmc.non_zero_lors()
       << '/'
       << dr.lors()
       << std::endl;
@@ -239,7 +241,7 @@ try {
   }
 
   if (cl.exist("print")) {
-    std::cout << dr;
+    std::cout << mmc;
   }
 
   if (cl.exist("wait")) {

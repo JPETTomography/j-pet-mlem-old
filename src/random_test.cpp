@@ -7,7 +7,7 @@ TEST_CASE("random", "random") {
   uniform_real_distribution<> one;
   uniform_real_distribution<> d99to100(99., 100.);
 
-  CHECK( one.scale(gen) == Approx(2.328306436538696e-10) );
+  CHECK( one.scale<tausworthe>() == Approx(2.328306436538696e-10) );
 
   for(auto i = 0; i < 100; ++i) {
     auto r = one(gen);
