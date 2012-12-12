@@ -52,6 +52,7 @@ try {
   cl.add<size_t>         ("iterations",'n', "number of iterations",     false, 0);
   cl.add<int>            ("i-blocks",'i',"number of iteration blocks", false,1);
   cl.add<cmdline::string>("output",    'o', "output reconstruction",    false);
+  cl.add<double>         ("threshold", '\0', "discretisation treshold", false,0.0);
 
   cl.parse_check(argc, argv);
   std::string fn;
@@ -80,9 +81,12 @@ try {
   reconstruction<> reconstructor(
     cl.get<size_t>("iterations"),
     cl.get<cmdline::string>("system"),
-    cl.get<cmdline::string>("mean"));
+    cl.get<cmdline::string>("mean"),
+    cl.get<double>("threshold"));
 
   auto n_pixels = reconstructor.get_n_pixels();
+  
+
   auto total_n_pixels=n_pixels*n_pixels;
   reconstruction<>::output_type rho(total_n_pixels, 0.0);
   reconstruction<>::output_type rho_detected(total_n_pixels, 0.0);

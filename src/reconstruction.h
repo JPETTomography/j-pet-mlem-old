@@ -32,8 +32,8 @@ public:
   typedef uint32_t file_int;
   typedef uint16_t file_half;
 
-  reconstruction(int n_iter, std::string matrix, std::string mean):
-    n_iter(n_iter) {
+  reconstruction(int n_iter, std::string matrix, std::string mean,F threshold = (F)0.0):
+    n_iter(n_iter), threshold_(threshold) {
     ibstream in(matrix);
 
     if(!in) {
@@ -120,6 +120,12 @@ public:
         hits_per_pixel data;
         data.probability = static_cast<F>(hits/static_cast<F>(emissions));
         data.index = LOCATION(x,y,n_pixels);
+        if(threshold_>(F)0.0) {
+          if(data.probability<threshold_)
+            data.probability=(F)0.0;
+          else
+            data.probability=(F)1.0;
+        }
         scale[data.index] += data.probability;
         n_non_zero_elements_++;
         pixels.push_back(data);
@@ -226,7 +232,21 @@ public:
   std::vector<F> rho() const {return rho_;}
   std::vector<F> rho_detected() const {return rho_detected_;}
 
+  void set_threshold(F t) {threshold_=t;}
+
 private:
+
+
+  int get_mean_per_lor(file_half &a,file_half &b,std::vector<mean_per_lor> &mean) {
+    for (auto it = mean.begin(); it != mean.end(); ++it) {
+      if (a == it->lor.first && b == it->lor.second) {
+        return it->n;
+      }
+    }
+
+    return 0;
+  }
+  
 
   int n_tubes;
   int n_pixels;
@@ -243,17 +263,7 @@ private:
   std::vector<F> rho_;
   std::vector<F> rho_detected_;
 
-  int get_mean_per_lor(file_half &a,file_half &b,std::vector<mean_per_lor> &mean) {
-    for (auto it = mean.begin(); it != mean.end(); ++it) {
-      if (a == it->lor.first && b == it->lor.second) {
-#if DEBUG
-        std::cout << "Equal: lor(" << it->lor.first << "," << it->lor.second << ")" << std::endl;
-#endif
-        return it->n;
-      }
-    }
+  F threshold_;
 
-    return 0;
-  }
 
 };
