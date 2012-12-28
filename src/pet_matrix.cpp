@@ -36,7 +36,7 @@ try {
   cl.add<size_t>     ("n-pixels",    'n', "number of pixels in one dimension", false, 256);
   cl.add<size_t>     ("n-detectors", 'd', "number of ring detectors",          false, 64);
   cl.add<size_t>     ("n-emissions", 'e', "emissions per pixel",               false, 0);
-  cl.add<double>     ("radious",     'r', "inner detector ring radious",       false, 0);
+  cl.add<double>     ("radius",     'r', "inner detector ring radius",       false, 0);
   cl.add<double>     ("s-pixel",     'p', "pixel size",                        false);
   cl.add<double>     ("w-detector",  'w', "detector width",                    false);
   cl.add<double>     ("h-detector",  'h', "detector height",                   false);
@@ -65,7 +65,7 @@ try {
   auto &n_pixels    = cl.get<size_t>("n-pixels");
   auto &n_detectors = cl.get<size_t>("n-detectors");
   auto &n_emissions = cl.get<size_t>("n-emissions");
-  auto &radious     = cl.get<double>("radious");
+  auto &radius     = cl.get<double>("radius");
   auto &s_pixel     = cl.get<double>("s-pixel");
   auto &w_detector  = cl.get<double>("w-detector");
   auto &h_detector  = cl.get<double>("h-detector");
@@ -112,28 +112,28 @@ try {
 #endif
 
   // automatic pixel size
-  if (!cl.exist("radious")) {
+  if (!cl.exist("radius")) {
     if (!cl.exist("s-pixel")) {
-      radious = M_SQRT2; // exact result
+      radius = M_SQRT2; // exact result
     } else {
-      radious = s_pixel * n_pixels / M_SQRT2;
+      radius = s_pixel * n_pixels / M_SQRT2;
     }
-    std::cerr << "--radious=" << radious << std::endl;
+    std::cerr << "--radius=" << radius << std::endl;
   }
 
-  // automatic radious
+  // automatic radius
   if (!cl.exist("s-pixel")) {
-    if (!cl.exist("radious")) {
+    if (!cl.exist("radius")) {
       s_pixel = 2. / n_pixels; // exact result
     } else {
-      s_pixel = M_SQRT2 * radious / n_pixels;
+      s_pixel = M_SQRT2 * radius / n_pixels;
     }
     std::cerr << "--s-pixel=" << s_pixel << std::endl;
   }
 
   // automatic detector size
   if (!cl.exist("w-detector")) {
-    w_detector = 2 * M_PI * .9 * radious / n_detectors;
+    w_detector = 2 * M_PI * .9 * radius / n_detectors;
     std::cerr << "--w-detector=" << w_detector << std::endl;
   }
   if (!cl.exist("h-detector")) {
@@ -147,7 +147,7 @@ try {
     gen.seed(cl.get<tausworthe::seed_type>("seed"));
   }
 
-  detector_ring<> dr(n_detectors, radious, w_detector, h_detector);
+  detector_ring<> dr(n_detectors, radius, w_detector, h_detector);
   matrix_mc<> mmc(dr, n_pixels, s_pixel);
 
   for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
@@ -191,7 +191,7 @@ try {
     mmc.output_bitmap(png);
 
     svg_ostream<> svg(fn_wo_ext+".svg",
-      radious+h_detector, radious+h_detector,
+      radius+h_detector, radius+h_detector,
       1024., 1024.);
     svg << dr;
 

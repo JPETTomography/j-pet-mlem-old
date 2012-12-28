@@ -18,28 +18,28 @@ public:
   typedef event<F>    event_type;
 
   /// @param a_n_detectors number of detectors on ring
-  /// @param radious       radious of ring
+  /// @param radius       radius of ring
   /// @param w_detector    width of single detector (along ring)
   /// @param h_detector    height/depth of single detector
   ////                     (perpendicular to ring)
-  detector_ring(size_t a_n_detectors, F radious, F w_detector, F h_detector)
-  : c_inner(radious)
-  , c_outer(radious+h_detector)
+  detector_ring(size_t a_n_detectors, F radius, F w_detector, F h_detector)
+  : c_inner(radius)
+  , c_outer(radius+h_detector)
   , n_detectors(a_n_detectors)
   , n_lors( a_n_detectors * (a_n_detectors+1) / 2 )
   {
-    if(radious    <= 0.)   throw("invalid radious");
+    if(radius    <= 0.)   throw("invalid radius");
     if(w_detector <= 0. ||
        h_detector <= 0.)   throw("invalid detector size");
     if(n_detectors % 4)    throw("number of detectors must be multiple of 4");
 
-    fov_radius_ = radious / M_SQRT2;
+    fov_radius_ = radius / M_SQRT2;
 
     detector_type detector_base(h_detector, w_detector);
 
     // move detector to the right edge of inner ring
     // along zero angle polar coordinate
-    detector_base += point<>(radious + h_detector/2, 0.);
+    detector_base += point<>(radius + h_detector/2, 0.);
 
     // produce detector ring rotating base detector n times
     std::vector<detector<>> detector_ring;
@@ -48,7 +48,7 @@ public:
     }
   }
 
-  F radious()        const { return c_inner.radious(); }
+  F radius()        const { return c_inner.radius(); }
   size_t lors()      const { return n_lors;            }
   size_t detectors() const { return n_detectors;       }
   F fov_radius()     const { return fov_radius_;       }

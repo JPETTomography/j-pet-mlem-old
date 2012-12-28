@@ -9,9 +9,9 @@
 template <typename F = double>
 class circle {
 public:
-  circle(F radious)
-  : r(radious)
-  , r2(radious*radious) {}
+  circle(F radius)
+  : r(radius)
+  , r2(radius*radius) {}
 
   typedef F angle_type;
   typedef point<F> point_type;
@@ -49,8 +49,8 @@ public:
     );
   }
 
-  F radious()  const { return r;  }
-  F radious2() const { return r2; }
+  F radius()  const { return r;  }
+  F radius2() const { return r2; }
 
   friend svg_ostream<F> & operator << (svg_ostream<F> &svg, circle &c) {
     svg << "<circle cx=\"0\" cy=\"0\" r=\"" << c.r << "\"/>" << std::endl;

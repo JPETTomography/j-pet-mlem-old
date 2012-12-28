@@ -37,7 +37,7 @@ try {
   cl.add<size_t>     ("n-pixels",    'n', "number of pixels in one dimension", false, 256);
   cl.add<size_t>     ("n-detectors", 'd', "number of ring detectors",          false, 64);
   cl.add<size_t>     ("n-emissions", 'e', "emissions",                         false, 0);
-  cl.add<double>     ("radious",     'r', "inner detector ring radious",       false);
+  cl.add<double>     ("radius",     'r', "inner detector ring radius",       false);
   cl.add<double>     ("s-pixel",     'p', "pixel size",                        false);
   cl.add<double>     ("w-detector",  'w', "detector width",                    false);
   cl.add<double>     ("h-detector",  'h', "detector height",                   false);
@@ -61,7 +61,7 @@ try {
   auto &n_pixels    = cl.get<size_t>("n-pixels");
   auto &n_detectors = cl.get<size_t>("n-detectors");
   auto &n_emissions = cl.get<size_t>("n-emissions");
-  auto &radious     = cl.get<double>("radious");
+  auto &radius     = cl.get<double>("radius");
   auto &s_pixel     = cl.get<double>("s-pixel");
   auto &w_detector  = cl.get<double>("w-detector");
   auto &h_detector  = cl.get<double>("h-detector");
@@ -81,19 +81,19 @@ try {
 
   point_sources_t<double> point_sources;
 
-  // automatic radious
+  // automatic radius
   if (!cl.exist("s-pixel")) {
-    if (!cl.exist("radious")) {
+    if (!cl.exist("radius")) {
       s_pixel = 2. / n_pixels; // exact result
     } else {
-      s_pixel = M_SQRT2 * radious / n_pixels;
+      s_pixel = M_SQRT2 * radius / n_pixels;
     }
     std::cerr << "--s-pixel=" << s_pixel << std::endl;
   }
 
   // automatic detector size
   if (!cl.exist("w-detector")) {
-    w_detector = 2 * M_PI * .9 * radious / n_detectors;
+    w_detector = 2 * M_PI * .9 * radius / n_detectors;
     std::cerr << "--w-detector=" << w_detector << std::endl;
   }
   if (!cl.exist("h-detector")) {
@@ -121,7 +121,7 @@ try {
       pixels_detected[i][j]=0;
     }
 
-  detector_ring<double> dr(n_detectors, radious, w_detector, h_detector);
+  detector_ring<double> dr(n_detectors, radius, w_detector, h_detector);
 
   int n_emitted=0;
   int n_emitted_detected=0;

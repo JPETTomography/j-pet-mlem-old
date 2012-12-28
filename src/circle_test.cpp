@@ -8,13 +8,13 @@
 TEST_CASE("circle/init", "circle initialization") {
   circle<> c1(1.);
 
-  CHECK( c1.radious()  == 1. );
-  CHECK( c1.radious2() == 1. );
+  CHECK( c1.radius()  == 1. );
+  CHECK( c1.radius2() == 1. );
 
   circle<> c2(std::sqrt(2.));
 
-  CHECK( c2.radious()  == std::sqrt(2.) ); // exact!
-  CHECK( c2.radious2() == Approx(2.)    );
+  CHECK( c2.radius()  == std::sqrt(2.) ); // exact!
+  CHECK( c2.radius2() == Approx(2.)    );
 }
 
 TEST_CASE("circle/secant", "circle secant") {
