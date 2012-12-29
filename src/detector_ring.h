@@ -26,8 +26,7 @@ public:
   : c_inner(radius)
   , c_outer(radius+h_detector)
   , n_detectors(a_n_detectors)
-  , n_lors( a_n_detectors * (a_n_detectors+1) / 2 )
-  {
+  , n_lors( a_n_detectors * (a_n_detectors+1) / 2 ) {
     if(radius    <= 0.)   throw("invalid radius");
     if(w_detector <= 0. ||
        h_detector <= 0.)   throw("invalid detector size");
@@ -60,6 +59,37 @@ public:
                           static_cast<int>( floor(ry / pixel_size) ));
   }
 
+  template <class RandomGenerator, class AcceptanceModel>
+  int check_for_hits(RandomGenerator &gen,
+                 AcceptanceModel &model,
+                 int inner,
+                 int outer,
+                 event_type e, 
+                 int &detector) {
+
+    // tells in which direction we got shorter modulo distance
+    int step = ((n_detectors+inner-outer) % n_detectors
+                 >
+                 (n_detectors+outer-inner) % n_detectors
+                 ) ? 1 : n_detectors-1;
+    int end=(outer+step)%n_detectors;
+    int hits=0;
+    int prev_i;
+    int i=inner;
+    for(int i=inner;i!=end;i=(i+step)%n_detectors) {
+      auto points = (*this)[i].intersections(e);
+      // check if we got 2 point intersection
+      // then test the model against these points distance
+      if ( points.size() == 2 &&
+           model( gen, (points[1]-points[0]).length() ) ) {
+        detector=i;
+        return 1;
+      }
+    }
+    return 0;
+  }
+
+
   /// @param model acceptance model
   ///        (returns bool for call operator with given length)
   /// @param rx, ry coordinates of the emission point
@@ -78,55 +108,15 @@ public:
     auto i_inner = c_inner.secant_sections(e, n_detectors);
     auto i_outer = c_outer.secant_sections(e, n_detectors);
 
-    auto inner = i_inner.first;
-    auto outer = i_outer.first;
-
-    auto hits = 0;
-
-
-    // process possible hit detectors on both sides
-    for (auto side = 0; side < 2; ++side) {
-      // starting from inner index
-      // iterating to outer index
-      auto i = inner;
-      auto prev_i = i;
-
-      // tells in which direction we got shorter modulo distance
-      auto step = ((n_detectors+inner-outer) % n_detectors
-                   >
-                   (n_detectors+outer-inner) % n_detectors
-                   ) ? 1 : -1;
-
-
-      do {
-        auto points = (*this)[i].intersections(e);
-        // check if we got 2 point intersection
-        // then test the model against these points distance
-
-        if ( points.size() == 2 &&
-             model( gen, (points[1]-points[0]).length() ) ) {
-
-          hits++;
-          (!side ? lor.first : lor.second) = i;
-
-          break;
-        }
-        // step towards outer detector
-
-        prev_i = i;
-        i = (i + step + n_detectors) % n_detectors;
-
-      } while (prev_i != outer); // loop over intersected detectors
-
-      if (hits == 0) break;
-
-      // switch side
-      inner = i_inner.second;
-      outer = i_outer.second;
-    }
-
-
-    return hits;
+    int detector1,detector2;
+    int hit;
+    hit=check_for_hits(gen,model,i_inner.first,i_outer.first,e,detector1);
+    if (hit == 0)  return 0;
+    hit=check_for_hits(gen,model,i_inner.second,i_outer.second,e,detector2);
+    if (hit == 0)  return 0;
+    lor.first=detector1;
+    lor.second=detector2;
+    return 2;
   }
 
   friend svg_ostream<F> & operator << (svg_ostream<F> &svg, detector_ring &dr) {
