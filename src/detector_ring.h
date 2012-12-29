@@ -104,16 +104,20 @@ public:
 
     typename circle_type::event_type e(rx, ry, angle);
 
-    // secant for p and phi
-    auto i_inner = c_inner.secant_sections(e, n_detectors);
-    auto i_outer = c_outer.secant_sections(e, n_detectors);
+    auto inner_secant = c_inner.secant(e);
+    auto outer_secant = c_outer.secant(e);
 
-    int detector1,detector2;
-    int hit;
-    hit=check_for_hits(gen,model,i_inner.first,i_outer.first,e,detector1);
-    if (hit == 0)  return 0;
-    hit=check_for_hits(gen,model,i_inner.second,i_outer.second,e,detector2);
-    if (hit == 0)  return 0;
+
+    auto i_inner = c_inner.section(c_inner.angle(inner_secant.first), n_detectors);
+    auto i_outer = c_outer.section(c_inner.angle(outer_secant.first), n_detectors);
+    int detector1;
+    if(check_for_hits(gen,model,i_inner,i_outer,e,detector1)==0) return 0;
+
+    i_inner = c_inner.section(c_inner.angle(inner_secant.second), n_detectors);
+    i_outer = c_outer.section(c_inner.angle(outer_secant.second), n_detectors);
+    int detector2;
+    if(check_for_hits(gen,model,i_inner,i_outer,e,detector2)==0) return 0;
+
     lor.first=detector1;
     lor.second=detector2;
     return 2;
