@@ -28,25 +28,32 @@ public:
     );
   }
 
+
+  F angle(point_type p) {
+    return std::atan2(p.y, p.x);
+  }
+
   std::pair<angle_type, angle_type>
   secant_angles(event_type &e) {
     auto s = secant(e);
-    return std::make_pair( std::atan2(s.first.y,  s.first.x),
-                           std::atan2(s.second.y, s.second.x) );
+    return std::make_pair( angle(s.first), angle(s.second));
   }
 
-  std::pair<size_t, size_t>
+
+  int section(F angle,int n_detectors) {
+    // converting angles to [0,2 Pi) interval
+    F  normalised_angle=angle>0?angle:(F)2.0*M_PI+angle;
+    return
+      static_cast<int>(round( normalised_angle *n_detectors*INV_TWO_PI ))
+                       % n_detectors;
+  }
+
+  std::pair<int, int>
   secant_sections(event_type &e, size_t n_detectors) {
     auto sa = secant_angles(e);
 
-    // converting angles to [0,2 Pi) interval
-    auto angle_1=sa.first>0?sa.first:2*M_PI+sa.first;
-    auto angle_2=sa.second>0?sa.second:2*M_PI+sa.second;
-
-    return std::make_pair(
-      static_cast<int>( round( angle_1  * n_detectors / (2.0 * M_PI) ) ) % n_detectors,
-      static_cast<int>( round( angle_2 * n_detectors / (2.0 * M_PI) ) ) % n_detectors
-    );
+    return std::make_pair(section(sa.first,n_detectors),
+                          section(sa.second,n_detectors));
   }
 
   F radius()  const { return r;  }
@@ -60,4 +67,9 @@ public:
 private:
   const F r;
   const F r2;
+  static const F TWO_PI;
+  static const F INV_TWO_PI;
 };
+
+template<typename F> const F circle<F>::TWO_PI=(F)2.0*M_PI;
+template<typename F> const F circle<F>::INV_TWO_PI=(F)1.0/TWO_PI;
