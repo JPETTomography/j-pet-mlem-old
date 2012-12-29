@@ -83,9 +83,6 @@ public:
 
     auto hits = 0;
 
-#if COLLECT_INTERSECTIONS
-    std::vector<point_type> ipoints;
-#endif
 
     // process possible hit detectors on both sides
     for (auto side = 0; side < 2; ++side) {
@@ -100,9 +97,7 @@ public:
                    (n_detectors+outer-inner) % n_detectors
                    ) ? 1 : -1;
 
-#if SKIP_INTERSECTION
-      (!(hits++) ? lor.first : lor.second) = i;
-#else
+
       do {
         auto points = (*this)[i].intersections(e);
         // check if we got 2 point intersection
@@ -113,17 +108,16 @@ public:
 
           hits++;
           (!side ? lor.first : lor.second) = i;
-#if COLLECT_INTERSECTIONS
-          for(auto &p: points) ipoints.push_back(p);
-#endif
+
           break;
         }
         // step towards outer detector
 
-        prev_i = i, i = (i + step + n_detectors) % n_detectors;
+        prev_i = i;
+        i = (i + step + n_detectors) % n_detectors;
 
       } while (prev_i != outer); // loop over intersected detectors
-#endif
+
       if (hits == 0) break;
 
       // switch side
@@ -131,10 +125,6 @@ public:
       outer = i_outer.second;
     }
 
-#if COLLECT_INTERSECTIONS
-    if (hits >= 2)
-      for(auto &p: ipoints) intersection_points.push_back(p);
-#endif
 
     return hits;
   }
@@ -146,11 +136,7 @@ public:
     for (auto detector = dr.begin(); detector != dr.end(); ++detector) {
       svg << *detector;
     }
-#if COLLECT_INTERSECTIONS
-    for (auto it = dr.intersection_points.begin(), p = *it; it != dr.intersection_points.end(); ++p, p = *it) {
-      svg << "<circle cx=\"" << p.x << "\" cy=\"" << p.y << "\" r=\"0.002\"/>" << std::endl;
-    }
-#endif
+
     return svg;
   }
 
