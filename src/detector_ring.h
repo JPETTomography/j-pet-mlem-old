@@ -80,10 +80,11 @@ public:
       auto points = (*this)[i].intersections(e);
       // check if we got 2 point intersection
       // then test the model against these points distance
-      if ( points.size() == 2 &&
-           model( gen, (points[1]-points[0]).length() ) ) {
-        detector=i;
-        return 1;
+      if ( points.size() == 2 ) {
+        if(model.deposition_depth( gen) < (points[1]-points[0]).length() ) {
+          detector=i;
+          return 1;
+        }
       }
     }
     return 0;
@@ -91,7 +92,6 @@ public:
 
 
   /// @param model acceptance model
-  ///        (returns bool for call operator with given length)
   /// @param rx, ry coordinates of the emission point
   /// @param output parameter contains the lor of the event
   template <class RandomGenerator, class AcceptanceModel>
