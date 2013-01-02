@@ -18,6 +18,8 @@
 #include "png_writer.h"
 #include "svg_ostream.h"
 
+#include"simulator.h"
+
 #if _OPENMP
 #include <omp.h>
 #endif
@@ -65,7 +67,7 @@ try {
   auto &n_pixels    = cl.get<size_t>("n-pixels");
   auto &n_detectors = cl.get<size_t>("n-detectors");
   auto &n_emissions = cl.get<size_t>("n-emissions");
-  auto &radius     = cl.get<double>("radius");
+  auto &radius      = cl.get<double>("radius");
   auto &s_pixel     = cl.get<double>("s-pixel");
   auto &w_detector  = cl.get<double>("w-detector");
   auto &h_detector  = cl.get<double>("h-detector");
@@ -150,6 +152,9 @@ try {
   detector_ring<> dr(n_detectors, radius, w_detector, h_detector);
   matrix_mc<> mmc(dr, n_pixels, s_pixel);
 
+  Simulator<detector_ring<>,matrix_mc<> > simulator(dr,mmc);
+
+
   for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
     ibstream in(*fn, std::ios::binary);
     if (!in.is_open()) throw("cannot open input file: " + *fn);
@@ -163,12 +168,11 @@ try {
   }
 
   if (cl.get<std::string>("model") == "always")
-    mmc.mc(gen, always_accept<>(), n_emissions);
+    simulator.mc(gen, always_accept<>(), n_emissions);
   if (cl.get<std::string>("model") == "scintilator")
-    mmc.mc(
-      gen,
-      scintilator_accept<>(cl.get<double>("acceptance")),
-      n_emissions);
+    simulator.mc(gen,
+                 scintilator_accept<>(cl.get<double>("acceptance")),
+                 n_emissions);
 
   // generate output
   if (cl.exist("output")) {

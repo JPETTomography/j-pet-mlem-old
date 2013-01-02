@@ -22,7 +22,7 @@
 #include <omp.h>
 #endif
 
-/// Provides Monte-Cartlo generation and storage for 1/8 PET system matrix
+/// Provides storage for 1/8 PET system matrix
 template <typename F = double, typename HitType = int>
 class matrix_mc {
 public:
@@ -38,18 +38,17 @@ public:
   /// @param a_n_pixels  number of pixels in each directions
   /// @param a_s_pixel   size of single pixel (pixels are squares)
   matrix_mc(detector_ring<F> &a_dr, size_t a_n_pixels, F a_s_pixel)
-  : dr(a_dr)
-  , n_pixels(a_n_pixels)
-  , n_pixels_2(a_n_pixels/2)
-  , n_t_matrix_pixels( a_n_pixels/2 * (a_n_pixels/2+1) / 2 )
-  , s_pixel(a_s_pixel)
-  , n_emissions(0)
-  , n_2_detectors(2 * dr.detectors())
-  , n_1_detectors_2(dr.detectors() + dr.detectors() / 2)
-  , n_1_detectors_4(dr.detectors() + dr.detectors() / 4)
-  , n_lors( dr.lors() )
-  , output_triangular(true)
-  {
+    : dr(a_dr)
+    , n_pixels(a_n_pixels)
+    , n_pixels_2(a_n_pixels/2)
+    , n_t_matrix_pixels( a_n_pixels/2 * (a_n_pixels/2+1) / 2 )
+    , s_pixel(a_s_pixel)
+    , n_emissions(0)
+    , n_2_detectors(2 * dr.detectors())
+    , n_1_detectors_2(dr.detectors() + dr.detectors() / 2)
+    , n_1_detectors_4(dr.detectors() + dr.detectors() / 4)
+    , n_lors( dr.lors() )
+    , output_triangular(true) {
     if(n_pixels % 2 ) throw("number of pixels must be multiple of 2");
     if(s_pixel <= 0.) throw("invalid pixel size");
 
@@ -59,6 +58,17 @@ public:
     // reserve for pixel stats
     t_hits = new hit_type[n_t_matrix_pixels]();
   }
+
+  ~matrix_mc() {
+    for (auto i = 0; i < n_lors; ++i) {
+      if (t_matrix[i]) delete [] t_matrix[i];
+    }
+    delete [] t_matrix;
+    delete [] t_hits;
+  }
+
+  F     pixel_size()    const {return s_pixel;}
+  int   get_n_pixels()  const {return n_pixels;}
 
   void add_to_t_matrix(lor_type &lor, size_t i_pixel) {
     auto i_lor  = t_lor_index(lor);
@@ -70,7 +80,7 @@ public:
 #if _OPENMP
       // entering critical section, and check again
       // because it may have changed in meantime
-      #pragma omp critical
+#pragma omp critical
       if ( !(pixels = t_matrix[i_lor]) ) {
         pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels]();
       }
@@ -81,82 +91,15 @@ public:
     ++pixels[i_pixel];
   }
 
-  ~matrix_mc() {
-    for (auto i = 0; i < n_lors; ++i) {
-      if (t_matrix[i]) delete [] t_matrix[i];
-    }
-    delete [] t_matrix;
-    delete [] t_hits;
+  hit_type operator () (lor_type lor, size_t x, size_t y) const {
+    bool diag; int symmetry;
+    auto i_pixel = pixel_index(x, y, diag, symmetry);
+    auto pixels = t_matrix[lor_index(lor, symmetry)];
+    return pixels ? pixels[i_pixel] * (diag ? 2 : 1) : 0;
   }
 
-  F pixel_size() const { return s_pixel;     }
-
-  /// Executes Monte-Carlo system matrix generation for given detector ring
-  /// @param gen   random number generator
-  /// @param model acceptance model (returns bool for call operator with given length)
-  template <class RandomGenerator, class AcceptanceModel>
-  void mc(RandomGenerator &gen, AcceptanceModel model, size_t n_mc_emissions
-
-  , bool o_collect_mc_matrix = true
-  , bool o_collect_pixel_stats = true) {
-
-    uniform_real_distribution<> one_dis(0., 1.);
-    uniform_real_distribution<> phi_dis(0., M_PI);
-
-    n_emissions += n_mc_emissions;
-#if _OPENMP
-    // OpenMP uses passed random generator as seed source for
-    // thread local random generators
-    RandomGenerator mp_gens[omp_get_max_threads()];
-    for (auto t = 0; t < omp_get_max_threads(); ++t) {
-      mp_gens[t].seed(gen());
-    }
-
-    #pragma omp parallel for schedule(dynamic)
-#endif
-    // iterating only triangular matrix,
-    // being upper right part or whole system matrix
-    // descending, since biggest chunks start first, but may end last
-    for (ssize_t y = n_pixels_2 - 1; y >= 0; --y) {
-      for (auto x = 0; x <= y; ++x) {
-
-        if ((x*x + y*y) * s_pixel*s_pixel > dr.fov_radius()*dr.fov_radius()) continue;
-
-        for (auto n = 0; n < n_mc_emissions; ++n) {
-#if _OPENMP
-          auto &l_gen = mp_gens[omp_get_thread_num()];
-#else
-          auto &l_gen = gen;
-#endif
-          auto rx = ( x + one_dis(l_gen) ) * s_pixel;
-          auto ry = ( y + one_dis(l_gen) ) * s_pixel;
-
-          // ensure we are within a triangle
-          if (rx > ry) continue;
-
-          auto angle = phi_dis(l_gen);
-          lor_type lor;
-          auto hits = dr.emit_event(l_gen, model, rx, ry, angle, lor);
-
-          // do we have hit on both sides?
-          if (hits >= 2) {
-            auto i_pixel = t_pixel_index(x, y);
-
-            if (o_collect_mc_matrix) {
-              add_to_t_matrix(lor, i_pixel);
-            }
-
-            if (o_collect_pixel_stats) {
-              ++t_hits[i_pixel];
-            }
-
-#if COLLECT_INTERSECTIONS
-            for(auto &p: ipoints) intersection_points.push_back(p);
-#endif
-          } //if (hits>=2)
-        } // loop over emmisions from pixel
-      }
-    }
+  void add_hit(int i_pixel) {
+    ++t_hits[i_pixel];
   }
 
   F non_zero_lors() {
@@ -167,18 +110,47 @@ public:
     return non_zero_lors;
   }
 
-  hit_type operator () (lor_type lor, size_t x, size_t y) const {
-    bool diag; int symmetry;
-    auto i_pixel = pixel_index(x, y, diag, symmetry);
-    auto pixels = t_matrix[lor_index(lor, symmetry)];
-    return pixels ? pixels[i_pixel] * (diag ? 2 : 1) : 0;
-  }
-
   hit_type hits(size_t x, size_t y) const {
     bool diag; int symmetry;
     auto i_pixel = pixel_index(x, y, diag, symmetry);
     return t_hits[i_pixel] * (diag ? 2 : 1);
   }
+
+  void increase_n_emissions(int  count) {n_emissions+=count;}
+
+  static constexpr size_t t_pixel_index(size_t x, size_t y) {
+    return y*(y+1)/2 + x;
+  }
+
+  /**Computes pixel index and determines symmetry number based on pixel
+     position
+     @param x        pixel x coordinate (0..n_pixels)
+     @param x        pixel y coordinate (0..n_pixels)
+     @param diag     outputs true if abs(x)==abs(y)
+     @param symmetry outputs symmetry number (0..7)
+  */
+  size_t pixel_index(ssize_t x, ssize_t y, bool &diag, int &symmetry) const {
+    // shift so 0,0 is now center
+    x -= n_pixels_2; y -= n_pixels_2;
+    // mirror
+    symmetry = 0;
+    if (x < 0) {
+      x = -x-1;
+      symmetry |= 2;
+    };
+    if (y < 0) {
+      y = -y-1;
+      symmetry |= 1;
+    }
+    // triangulate
+    if (x > y) {
+      std::swap(x, y);
+      symmetry |= 4;
+    };
+    diag = (x == y);
+    return t_pixel_index(x, y);
+  }
+
 
   template<class FileWriter>
   void output_bitmap(FileWriter &fw) {
@@ -420,11 +392,11 @@ public:
   }
 
   static void read_header(ibstream &in
-  , file_int &in_is_triangular
-  , file_int &in_n_pixels
-  , file_int &in_n_emissions
-  , file_int &in_n_detectors
-  ) {
+                          , file_int &in_is_triangular
+                          , file_int &in_n_pixels
+                          , file_int &in_n_emissions
+                          , file_int &in_n_detectors
+                          ) {
     file_int in_magic;
     in >> in_magic;
     if (in_magic != magic_t && in_magic != magic_f && in_magic != magic_1 && in_magic != magic_2) {
@@ -446,6 +418,8 @@ public:
       in >> in_n_detectors;
     }
   }
+
+  bool output_triangular;
 
 private:
   static size_t t_lor_index(lor_type &lor) {
@@ -474,44 +448,7 @@ private:
     return t_lor_index(lor);
   }
 
-  static constexpr size_t t_pixel_index(size_t x, size_t y) {
-    return y*(y+1)/2 + x;
-  }
 
-  /// Computes pixel index and determines symmetry number based on pixel position
-  /// @param x        pixel x coordinate (0..n_pixels)
-  /// @param x        pixel y coordinate (0..n_pixels)
-  /// @param diag     outputs true if abs(x)==abs(y)
-  /// @param symmetry outputs symmetry number (0..7)
-  size_t pixel_index(ssize_t x, ssize_t y, bool &diag, int &symmetry) const {
-    // shift so 0,0 is now center
-    x -= n_pixels_2; y -= n_pixels_2;
-    // mirror
-    symmetry = 0;
-    if (x < 0) {
-      x = -x-1;
-      symmetry |= 2;
-    };
-    if (y < 0) {
-      y = -y-1;
-      symmetry |= 1;
-    }
-    // triangulate
-    if (x > y) {
-      std::swap(x, y);
-      symmetry |= 4;
-    };
-    diag = (x == y);
-    return t_pixel_index(x, y);
-  }
-
-public:
-  bool output_triangular;
-
-private:
-#if COLLECT_INTERSECTIONS
-  std::vector<point_type> intersection_points;
-#endif
   detector_ring<F> &dr;
   matrix_type t_matrix;
   pixels_type t_hits;
