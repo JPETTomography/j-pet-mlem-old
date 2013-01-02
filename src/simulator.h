@@ -26,7 +26,7 @@ public:
 
     int n_pixels_2=system_matrix_.get_n_pixels()/2;
     F s_pixel=system_matrix_.pixel_size();
-    n_emissions_ += n_mc_emissions;
+    system_matrix_.n_emissions += n_mc_emissions;
 
 #if _OPENMP
     // OpenMP uses passed random generator as seed source for
