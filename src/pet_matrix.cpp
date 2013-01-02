@@ -168,20 +168,11 @@ try {
   }
 
   if (cl.get<std::string>("model") == "always")
-    mmc.mc(gen, always_accept<>(), n_emissions);
+    simulator.mc(gen, always_accept<>(), n_emissions);
   if (cl.get<std::string>("model") == "scintilator")
-#if 0
-    mmc.mc(
-      gen,
-      scintilator_accept<>(cl.get<double>("acceptance")),
-      n_emissions);
-#else
-    simulator.mc(
-      gen,
-      scintilator_accept<>(cl.get<double>("acceptance")),
-      n_emissions);
-#endif
-
+    simulator.mc(gen,
+                 scintilator_accept<>(cl.get<double>("acceptance")),
+                 n_emissions);
 
   // generate output
   if (cl.exist("output")) {

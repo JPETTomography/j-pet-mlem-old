@@ -16,6 +16,9 @@ public:
   system_matrix_(system_matrix) {};
 
 
+ /// Executes Monte-Carlo system matrix generation for given detector ring
+  /// @param gen   random number generator
+  /// @param model acceptance model (returns bool for call operator with given length)
   template <typename RandomGenerator, typename AcceptanceModel>
   void mc(RandomGenerator &gen, AcceptanceModel model, size_t n_mc_emissions
           , bool o_collect_mc_matrix = true
