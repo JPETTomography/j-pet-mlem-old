@@ -48,8 +48,7 @@ public:
   , n_1_detectors_2(dr.detectors() + dr.detectors() / 2)
   , n_1_detectors_4(dr.detectors() + dr.detectors() / 4)
   , n_lors( dr.lors() )
-  , output_triangular(true)
-  {
+  , output_triangular(true) {
     if(n_pixels % 2 ) throw("number of pixels must be multiple of 2");
     if(s_pixel <= 0.) throw("invalid pixel size");
 
@@ -90,6 +89,7 @@ public:
   }
 
   F pixel_size() const { return s_pixel;     }
+  int get_n_pixels() const {return n_pixels;}
 
   /// Executes Monte-Carlo system matrix generation for given detector ring
   /// @param gen   random number generator
@@ -157,6 +157,10 @@ public:
         } // loop over emmisions from pixel
       }
     }
+  }
+
+  void add_hit(int i_pixel) {
+    ++t_hits[i_pixel];
   }
 
   F non_zero_lors() {
