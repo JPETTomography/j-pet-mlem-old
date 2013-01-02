@@ -445,7 +445,8 @@ public:
 
 
   bool output_triangular;
-  hit_type n_emissions;
+
+  void increase_n_emissions(int  count) {n_emissions+=count;}
 
 private:
 #if COLLECT_INTERSECTIONS
@@ -455,7 +456,7 @@ private:
   matrix_type t_matrix;
   pixels_type t_hits;
   size_t n_t_matrix_pixels;
-
+  hit_type n_emissions;
   size_t n_pixels;
   size_t n_pixels_2;
   size_t n_2_detectors;
