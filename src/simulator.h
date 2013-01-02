@@ -11,7 +11,7 @@ class Simulator {
 
 public:
 
-  Simulator(DetectorRing detector_ring, SystemMatrix system_matrix)
+  Simulator(DetectorRing &detector_ring, SystemMatrix &system_matrix)
  :detector_ring_(detector_ring),
   system_matrix_(system_matrix) {};
 

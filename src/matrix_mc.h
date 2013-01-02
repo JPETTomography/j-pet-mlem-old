@@ -478,6 +478,7 @@ private:
     return t_lor_index(lor);
   }
 
+public:
   static constexpr size_t t_pixel_index(size_t x, size_t y) {
     return y*(y+1)/2 + x;
   }
@@ -509,7 +510,7 @@ private:
     return t_pixel_index(x, y);
   }
 
-public:
+
   bool output_triangular;
 
 private:
