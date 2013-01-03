@@ -58,6 +58,7 @@ CPPFLAGS += -MMD -msse4 -mfpmath=sse
 CPPFLAGS += -I../lib/catch/include
 CPPFLAGS += -I../lib/cmdline
 
+
 # binary is folder name
 SRC  := $(filter-out %_test.cpp, $(filter-out pet_%.cpp, $(wildcard *.cpp)))
 OBJ  := $(SRC:.cpp=.o)
@@ -105,7 +106,7 @@ endef
 define BIN_template
 $(1): $(1).o $$(OBJ) $$($(1)_OBJ)
 	$$(call LD_info)
-	$(Q)$$(CXX) $$(LDFLAGS) $$(LDUFLAGS) $$($(1)_LDFLAGS) -o $$@ $$^
+	$(Q)$$(CXX)  -o $$@ $$^ $$(LDFLAGS) $$(LDUFLAGS) $$($(1)_LDFLAGS)
 LOBJ += $$($(1)_OBJ)
 endef
 $(foreach bin,$(BIN),$(eval $(call BIN_template,$(bin))))
