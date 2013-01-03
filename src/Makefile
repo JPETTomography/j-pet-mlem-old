@@ -52,7 +52,7 @@ CPPFLAGS += -fopenmp
 LDFLAGS  += -fopenmp
 endif
 
-CPPFLAGS += -MMD -msse4 -mfpmath=sse
+CPPFLAGS += -MMD -mssse3 -mfpmath=sse
 
 # dependencies
 CPPFLAGS += -I../lib/catch/include
@@ -113,9 +113,9 @@ $(foreach bin,$(BIN),$(eval $(call BIN_template,$(bin))))
 
 # unit testing
 test: t ; @./t
-t: $(TOBJ)
+t: $(TOBJ) $(OBJ)
 	$(call LD_info)
-	@$(CXX) $(LDFLAGS) -o $@ $^
+	@$(CXX) -o $@ $^  $(LDFLAGS)
 t.o:
 	@if [ -t 1 ]; then echo "$(green)$(CXX)$(none)\t$<"; else echo "$(CXX) $<"; fi
 	$(Q)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ \
