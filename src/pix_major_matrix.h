@@ -9,7 +9,15 @@
    That means that in the same time only few pixels are processed in parallel.
    On shiva for example the biggest machine has 24 cores.
    We can afford to alloc memory for lors in an uneficient way providing for
-   quick acces and reduce them after the simulations for this pixel is finished.
+   quick acces and reduce them after the simulations of  this pixel is finished.
+
+   It alos means that as different threads are processing different pixels,
+   there is no need for synchronisation in add_pixels.
+
+   The reconstruction is however done using the lor_major matrix.
+   So this class has the possibility to write the matrix down in the
+   triangular lor_major and full lor_major format.
+
 */
 
 
@@ -59,7 +67,7 @@ public:
   ~PixelMajorSystemMatrix() {
     for(int p=0;p<total_n_pixels_;++p) {
       if(pixel_tmp_[p]) {
-       delete [] pixel_tmp_[p];
+        delete [] pixel_tmp_[p];
       }
     }
   }
@@ -98,11 +106,47 @@ public:
     return LorType::t_index(lor);
   }
 
+  typedef std::pair< std::pair<LorType,int>,int> PairType;
+
+  void to_pairs() {
+    pair_.reserve(n_entries());
+    for(int p=0;p<total_n_pixels();++p) {
+      for(auto it=pixel_[p].begin();it!=pixel_[p].end();++it) {
+        pair_.push_back(
+                        std::make_pair(std::make_pair( (*it).first,p ),
+                                       (*it).second)
+                        );
+      }
+    }
+  }
+
+  PairType pair(int p) const {return pair_[p];} 
+
+  void sort_pairs_by_lors() {
+    std::sort(pair_.begin(),pair_.end(),LorSorter());
+  };
+  void sort_pairs_by_pixels() {
+    std::sort(pair_.begin(),pair_.end(),PixelSorter());
+  };
+
+
 private:
 
   struct HitTypeComparator {
     bool operator()(const HitType &a,const HitType &b) const {
       return LorType::less(a.first,b.first);
+    }
+  };
+
+  struct LorSorter {
+    bool operator()(const PairType &a,const PairType &b) const {
+      return LorType::less(a.first.first,b.first.first);
+    }
+  };
+
+  struct PixelSorter {
+    bool operator()(const PairType &a,const PairType &b) const {
+      return a.first.second<b.first.second;
     }
   };
 
@@ -115,4 +159,6 @@ private:
   std::vector< std::vector<HitType> > pixel_;
   std::vector<int> pixel_count_;
   std::vector<LorType> index_to_lor_;
+  std::vector< PairType > pair_;
+
 };

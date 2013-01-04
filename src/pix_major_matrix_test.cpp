@@ -99,3 +99,31 @@ TEST_CASE("pix_major_system_matrix/add_to_all", "add one element to all pixels")
   }
 
 }
+
+
+TEST_CASE("pix_major_system_matrix/to_pairs", "flatten") {
+  SimpleLor::init(140);
+  detector_ring<> dr(140,0.450,0.006,0.020);
+  PixelMajorSystemMatrix<SimpleLor> matrix(dr,128,0.005);
+
+  SimpleLor lor(9,7);
+  for(int p=0;p<matrix.total_n_pixels();++p) {
+    matrix.add_to_t_matrix(lor,p);
+    matrix.finalize_pixel(p);
+  }
+
+  for(int p=0;p<matrix.total_n_pixels();++p) {
+    auto hit=matrix.t_get_element(lor,p);
+    CHECK( hit == 1);
+    CHECK( matrix.n_entries() == matrix.total_n_pixels());
+    CHECK( matrix.n_lors(p) == 1);
+  }
+
+  matrix.to_pairs();
+  matrix.sort_pairs_by_lors();
+
+for(int p=0;p<matrix.total_n_pixels();++p) {
+  CHECK( matrix.pair(p).first.first==lor);
+ }
+  
+}

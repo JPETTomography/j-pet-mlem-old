@@ -1,5 +1,5 @@
 #pragma once
-
+#include<iostream>
 #include<algorithm>
 
 class SimpleLor {
@@ -25,10 +25,13 @@ public:
 
   static int n_lors() {return n_lors_;}
 
-  bool operator!=(const SimpleLor &rhs) {
-    return first!= rhs.first || second!=rhs.second;
+  bool operator==(const SimpleLor &rhs) {
+    return first== rhs.first && second==rhs.second;
   }
 
+  bool operator!=(const SimpleLor &rhs) {
+    return    !((*this)==rhs);
+  }
   struct Comparator { 
      int operator()(const SimpleLor &a, const SimpleLor &b) const {
       if(a.first<b.first) return 1;
@@ -76,3 +79,6 @@ class SimpleLor::Iterator {
 
 inline SimpleLor::Iterator SimpleLor::begin() {return SimpleLor::Iterator(1,0);}
 inline SimpleLor::Iterator SimpleLor::end() {return SimpleLor::Iterator(n_detectors_,0);}
+
+
+std::ostream &operator<<(std::ostream &out,const SimpleLor &lor);
