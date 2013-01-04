@@ -30,6 +30,7 @@ public:
      pixel_tmp_(total_n_pixels_,(int *)0),
      pixel_(total_n_pixels_),
      pixel_count_(total_n_pixels_),
+     n_entries_(0),
      index_to_lor_(SimpleLor::n_lors()) {
     for(auto l_it=SimpleLor::begin();l_it!=SimpleLor::end();++l_it) {
       auto lor=*l_it;
@@ -38,23 +39,29 @@ public:
 
   };
 
+
+  int n_entries() const {return n_entries_;}
+  int n_lors(int p) const {return pixel_count_[p];}
+
   void add_to_t_matrix(const LorType &lor, int i_pixel) {
 
-    std::cerr<<"adding to  pixel"<<std::endl;
+    std::cerr<<"adding to  pixel "<<i_pixel<<std::endl;
 
     if(!pixel_tmp_[i_pixel]) {
-      std::cerr<<"alcating memory for "<<i_pixel<<" "<<n_lors_<<std::endl;
       pixel_tmp_[i_pixel]=new int[n_lors_]();
     }
 
+    if(pixel_tmp_[i_pixel][t_lor_index(lor)]==0){
+      pixel_count_[i_pixel]++;
+      n_entries_++;
+    }
     pixel_tmp_[i_pixel][t_lor_index(lor)]++;
-    pixel_count_[i_pixel]++;
+
   };
 
   ~PixelMajorSystemMatrix() {
     for(int p=0;p<total_n_pixels_;++p) {
       if(pixel_tmp_[p]) {
-        std::cerr<<"dealocating memory for "<<p<<std::endl;
        delete [] pixel_tmp_[p];
       }
     }
@@ -77,19 +84,17 @@ public:
     int it=0;
     for(int lor=0;lor<n_lors_;++lor) {
       int hits;
-      if(hits=pixel_tmp_[i_pixel][lor]>0) {
+      if((hits=pixel_tmp_[i_pixel][lor])>0) {
         pixel_[i_pixel][it]=std::make_pair(index_to_lor_[lor],hits);
         it++;
       }
     }
     delete [] pixel_tmp_[i_pixel];
     pixel_tmp_[i_pixel]=(int *)0;
-#if 1
     std::sort(pixel_[i_pixel].begin(),
               pixel_[i_pixel].end(),
               HitTypeComparator()
               );
-#endif
   }
 
   static size_t t_lor_index(const LorType &lor) {
@@ -108,6 +113,7 @@ private:
   int n_pixels_half_;
   int total_n_pixels_;
   int n_lors_;
+  int n_entries_;
   std::vector<int*> pixel_tmp_;
   std::vector< std::vector<HitType> > pixel_;
   std::vector<int> pixel_count_;
