@@ -30,7 +30,13 @@ public:
      pixel_tmp_(total_n_pixels_,(int *)0),
      pixel_(total_n_pixels_),
      pixel_count_(total_n_pixels_),
-     index_to_lor_(SimpleLor::n_lors()) {};
+     index_to_lor_(SimpleLor::n_lors()) {
+    for(auto l_it=SimpleLor::begin();l_it!=SimpleLor::end();++l_it) {
+      auto lor=*l_it;
+      index_to_lor_[t_lor_index(lor)]=lor;
+    }
+
+  };
 
   void add_to_t_matrix(const LorType &lor, int i_pixel) {
 
@@ -47,20 +53,22 @@ public:
 
   ~PixelMajorSystemMatrix() {
     for(int p=0;p<total_n_pixels_;++p) {
-      if(pixel_tmp_[p])
-        delete [] pixel_tmp_[p];
+      if(pixel_tmp_[p]) {
+        std::cerr<<"dealocating memory for "<<p<<std::endl;
+       delete [] pixel_tmp_[p];
+      }
     }
   }
 
   int t_get_element(LorType lor, int i_pixel) {
     auto hit=std::lower_bound(pixel_[i_pixel].begin(),
                               pixel_[i_pixel].end(),
-                              make_pair(lor,0),
+                              std::make_pair(lor,0),
                               HitTypeComparator());
 
     if(hit== pixel_[i_pixel].end())
       return 0;
-    return hit.second;
+    return (*hit).second;
   }
 
   void finalize_pixel(int i_pixel) {
@@ -75,11 +83,13 @@ public:
       }
     }
     delete [] pixel_tmp_[i_pixel];
-
+    pixel_tmp_[i_pixel]=(int *)0;
+#if 1
     std::sort(pixel_[i_pixel].begin(),
               pixel_[i_pixel].end(),
-              LorType::less
+              HitTypeComparator()
               );
+#endif
   }
 
   static size_t t_lor_index(const LorType &lor) {
@@ -89,7 +99,7 @@ public:
 private:
 
   struct HitTypeComparator {
-    bool operator()(const HitType &a,const HitType &b) {
+    bool operator()(const HitType &a,const HitType &b) const {
       return LorType::less(a.first,b.first);
     }
   };

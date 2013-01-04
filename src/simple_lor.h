@@ -20,7 +20,7 @@ public:
 
   static void init(int n_detectors_a) {
     n_detectors_=n_detectors_a;
-    n_lors_     =(n_detectors_*(n_detectors_-1))/2;
+    n_lors_     =(n_detectors_*(n_detectors_+1))/2;
   }
 
   static int n_lors() {return n_lors_;}
@@ -30,9 +30,10 @@ public:
   }
 
   struct Comparator { 
-     int operator()(const SimpleLor &a, const SimpleLor &b) {
+     int operator()(const SimpleLor &a, const SimpleLor &b) const {
       if(a.first<b.first) return 1;
-      if(a.first>b.first) return 0;      return a.second<b.second;
+      if(a.first>b.first) return 0;      
+      return a.second<b.second;
     }
   };
 
