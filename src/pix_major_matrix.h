@@ -42,21 +42,18 @@ public:
 
   int n_entries() const {return n_entries_;}
   int n_lors(int p) const {return pixel_count_[p];}
+  int total_n_pixels() const {return total_n_pixels_;}
 
   void add_to_t_matrix(const LorType &lor, int i_pixel) {
-
-    std::cerr<<"adding to  pixel "<<i_pixel<<std::endl;
 
     if(!pixel_tmp_[i_pixel]) {
       pixel_tmp_[i_pixel]=new int[n_lors_]();
     }
-
     if(pixel_tmp_[i_pixel][t_lor_index(lor)]==0){
       pixel_count_[i_pixel]++;
       n_entries_++;
     }
     pixel_tmp_[i_pixel][t_lor_index(lor)]++;
-
   };
 
   ~PixelMajorSystemMatrix() {
