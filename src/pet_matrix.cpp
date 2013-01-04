@@ -214,7 +214,7 @@ try {
       lor.second = (lor.first + n_detectors / 2) % n_detectors;
     }
     png_writer png(cl.get<cmdline::string>("png"));
-    mmc.output_bitmap(png, lor);
+    mmc.output_lor_bitmap(png, lor);
   }
 
   // show stats if requested

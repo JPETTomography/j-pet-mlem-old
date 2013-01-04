@@ -13,18 +13,20 @@
 
 #pragma once
 
-#include "detector_ring.h"
-#include "bstream.h"
-
-#define fourcc(a, b, c, d) (((d)<<24) | ((c)<<16) | ((b)<<8) | (a))
-
 #if _OPENMP
 #include <omp.h>
 #endif
 
+#include "detector_ring.h"
+#include "bstream.h"
+#include "triangular_pix_map.h"
+
+#define fourcc(a, b, c, d) (((d)<<24) | ((c)<<16) | ((b)<<8) | (a))
+
+
 /// Provides storage for 1/8 PET system matrix
 template <typename F = double, typename HitType = int>
-class matrix_mc {
+class matrix_mc : public TriangularPixelMap<F,HitType> {
 public:
   typedef uint8_t bitmap_pixel_type;
   typedef HitType hit_type;
@@ -33,15 +35,14 @@ public:
   typedef hit_type *pixels_type;
   typedef pixels_type *matrix_type;
   typedef typename detector_ring<F>::lor_type lor_type;
+  typedef TriangularPixelMap<F,HitType> SuperType;
 
   /// @param a_dr        detector ring (model)
   /// @param a_n_pixels  number of pixels in each directions
   /// @param a_s_pixel   size of single pixel (pixels are squares)
   matrix_mc(detector_ring<F> &a_dr, size_t a_n_pixels, F a_s_pixel)
-    : dr(a_dr)
-    , n_pixels(a_n_pixels)
-    , n_pixels_2(a_n_pixels/2)
-    , n_t_matrix_pixels( a_n_pixels/2 * (a_n_pixels/2+1) / 2 )
+    :TriangularPixelMap<F,HitType>(a_n_pixels)
+    , dr(a_dr)
     , s_pixel(a_s_pixel)
     , n_emissions(0)
     , n_2_detectors(2 * dr.detectors())
@@ -49,14 +50,13 @@ public:
     , n_1_detectors_4(dr.detectors() + dr.detectors() / 4)
     , n_lors( dr.lors() )
     , output_triangular(true) {
-    if(n_pixels % 2 ) throw("number of pixels must be multiple of 2");
+    if(this->n_pixels % 2 ) throw("number of pixels must be multiple of 2");
     if(s_pixel <= 0.) throw("invalid pixel size");
 
     // reserve for all lors
     t_matrix = new pixels_type[n_lors]();
 
-    // reserve for pixel stats
-    t_hits = new hit_type[n_t_matrix_pixels]();
+
   }
 
   ~matrix_mc() {
@@ -64,11 +64,10 @@ public:
       if (t_matrix[i]) delete [] t_matrix[i];
     }
     delete [] t_matrix;
-    delete [] t_hits;
   }
 
   F     pixel_size()    const {return s_pixel;}
-  int   get_n_pixels()  const {return n_pixels;}
+  int   get_n_pixels()  const {return this->n_pixels;}
 
   void add_to_t_matrix(lor_type &lor, size_t i_pixel) {
     auto i_lor  = t_lor_index(lor);
@@ -85,7 +84,7 @@ public:
         pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels]();
       }
 #else
-      pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels]();
+      pixels = t_matrix[i_lor] = new hit_type[this->n_t_matrix_pixels]();
 #endif
     }
     ++pixels[i_pixel];
@@ -93,13 +92,13 @@ public:
 
   hit_type operator () (lor_type lor, size_t x, size_t y) const {
     bool diag; int symmetry;
-    auto i_pixel = pixel_index(x, y, diag, symmetry);
+    auto i_pixel = this->pixel_index(x, y, diag, symmetry);
     auto pixels = t_matrix[lor_index(lor, symmetry)];
     return pixels ? pixels[i_pixel] * (diag ? 2 : 1) : 0;
   }
 
   void add_hit(int i_pixel) {
-    ++t_hits[i_pixel];
+    ++(this->t_hits[i_pixel]);
   }
 
   F non_zero_lors() {
@@ -110,85 +109,9 @@ public:
     return non_zero_lors;
   }
 
-  hit_type hits(size_t x, size_t y) const {
-    bool diag; int symmetry;
-    auto i_pixel = pixel_index(x, y, diag, symmetry);
-    return t_hits[i_pixel] * (diag ? 2 : 1);
-  }
 
   void increase_n_emissions(int  count) {n_emissions+=count;}
 
-  static constexpr size_t t_pixel_index(size_t x, size_t y) {
-    return y*(y+1)/2 + x;
-  }
-
-  /**Computes pixel index and determines symmetry number based on pixel
-     position
-     @param x        pixel x coordinate (0..n_pixels)
-     @param x        pixel y coordinate (0..n_pixels)
-     @param diag     outputs true if abs(x)==abs(y)
-     @param symmetry outputs symmetry number (0..7)
-  */
-  size_t pixel_index(ssize_t x, ssize_t y, bool &diag, int &symmetry) const {
-    // shift so 0,0 is now center
-    x -= n_pixels_2; y -= n_pixels_2;
-    // mirror
-    symmetry = 0;
-    if (x < 0) {
-      x = -x-1;
-      symmetry |= 2;
-    };
-    if (y < 0) {
-      y = -y-1;
-      symmetry |= 1;
-    }
-    // triangulate
-    if (x > y) {
-      std::swap(x, y);
-      symmetry |= 4;
-    };
-    diag = (x == y);
-    return t_pixel_index(x, y);
-  }
-
-
-  template<class FileWriter>
-  void output_bitmap(FileWriter &fw) {
-    fw.template write_header<bitmap_pixel_type>(n_pixels, n_pixels);
-    hit_type pixel_max = 0;
-    for (auto y = 0; y < n_pixels; ++y) {
-      for (auto x = 0; x < n_pixels; ++x) {
-        pixel_max = std::max(pixel_max, hits(x, y));
-      }
-    }
-    auto gain = static_cast<double>(std::numeric_limits<bitmap_pixel_type>::max()) / pixel_max;
-    for (auto y = 0; y < n_pixels; ++y) {
-      bitmap_pixel_type row[n_pixels];
-      for (auto x = 0; x < n_pixels; ++x) {
-        row[x] = std::numeric_limits<bitmap_pixel_type>::max() - gain * hits(x, y);
-      }
-      fw.write_row(row);
-    }
-  }
-
-  template<class FileWriter>
-  void output_bitmap(FileWriter &fw, lor_type &lor) {
-    fw.template write_header<bitmap_pixel_type>(n_pixels, n_pixels);
-    hit_type pixel_max = 0;
-    for (auto y = 0; y < n_pixels; ++y) {
-      for (auto x = 0; x < n_pixels; ++x) {
-        pixel_max = std::max(pixel_max, (*this)(lor, x, y));
-      }
-    }
-    auto gain = static_cast<double>(std::numeric_limits<bitmap_pixel_type>::max()) / pixel_max;
-    for (int y = n_pixels-1; y >= 0; --y) {
-      bitmap_pixel_type row[n_pixels];
-      for (auto x = 0; x < n_pixels; ++x) {
-        row[x] = std::numeric_limits<bitmap_pixel_type>::max() - gain * (*this)(lor, x, y);
-      }
-      fw.write_row(row);
-    }
-  }
 
   // binary serialization                                  // n_pixels  n_detectors  triagular
   static const file_int magic_1 = fourcc('P','E','T','t'); //                           X
@@ -224,7 +147,7 @@ public:
             // write non-zero pixel pairs
             for (file_half y = 0; y < mmc.n_pixels_2; ++y) {
               for (file_half x = 0; x <= y; ++x) {
-                file_int hits = pixels[t_pixel_index(x, y)];
+                file_int hits = pixels[SuperType::t_pixel_index(x, y)];
                 if (hits) {
                   out << x << y << hits;
                 }
@@ -310,7 +233,7 @@ public:
           file_half x, y;
           file_int hits;
           in >> x >> y >> hits;
-          auto i_pixel = t_pixel_index(x, y);
+          auto i_pixel = SuperType::t_pixel_index(x, y);
           pixels[i_pixel]    += hits;
           mmc.t_hits[i_pixel] += hits;
         }
@@ -379,7 +302,7 @@ public:
           // write non-zero pixel pairs
           for (file_half y = 0; y < mmc.n_pixels_2; ++y) {
             for (file_half x = 0; x <= y; ++x) {
-              file_int hits = pixels[t_pixel_index(x, y)];
+              file_int hits = pixels[SuperType::t_pixel_index(x, y)];
               if (hits) {
                 out << "    (" << x << "," << y << ")=" << hits << std::endl;
               }
@@ -419,6 +342,26 @@ public:
     }
   }
 
+  template<class FileWriter>
+  void output_lor_bitmap(FileWriter &fw, lor_type &lor) {
+    fw.template write_header<bitmap_pixel_type>(this->n_pixels, this->n_pixels);
+    hit_type pixel_max = 0;
+    for (auto y = 0; y < this->n_pixels; ++y) {
+      for (auto x = 0; x < this->n_pixels; ++x) {
+        pixel_max = std::max(pixel_max, (*this)(lor, x, y));
+      }
+    }
+    auto gain = static_cast<double>(std::numeric_limits<bitmap_pixel_type>::max()) / pixel_max;
+    for (int y = this->n_pixels-1; y >= 0; --y) {
+      bitmap_pixel_type row[this->n_pixels];
+      for (auto x = 0; x < this->n_pixels; ++x) {
+        row[x] = std::numeric_limits<bitmap_pixel_type>::max() - gain * (*this)(lor, x, y);
+      }
+      fw.write_row(row);
+    }
+  }
+
+
   bool output_triangular;
 
 private:
@@ -451,10 +394,7 @@ private:
 
   detector_ring<F> &dr;
   matrix_type t_matrix;
-  pixels_type t_hits;
-  size_t n_t_matrix_pixels;
   hit_type n_emissions;
-  size_t n_pixels;
   size_t n_pixels_2;
   size_t n_2_detectors;
   size_t n_1_detectors_2;

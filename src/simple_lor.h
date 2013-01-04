@@ -32,10 +32,10 @@ public:
   bool operator!=(const SimpleLor &rhs) {
     return    !((*this)==rhs);
   }
-  struct Comparator { 
+  struct Comparator {
      int operator()(const SimpleLor &a, const SimpleLor &b) const {
       if(a.first<b.first) return 1;
-      if(a.first>b.first) return 0;      
+      if(a.first>b.first) return 0;
       return a.second<b.second;
     }
   };
