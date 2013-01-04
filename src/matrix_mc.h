@@ -50,7 +50,7 @@ public:
     , n_1_detectors_4(dr.detectors() + dr.detectors() / 4)
     , n_lors( dr.lors() )
     , output_triangular(true) {
-    if(this->n_pixels % 2 ) throw("number of pixels must be multiple of 2");
+    if(a_n_pixels % 2 ) throw("number of pixels must be multiple of 2");
     if(s_pixel <= 0.) throw("invalid pixel size");
 
     // reserve for all lors
@@ -67,7 +67,7 @@ public:
   }
 
   F     pixel_size()    const {return s_pixel;}
-  int   get_n_pixels()  const {return this->n_pixels;}
+  int   get_n_pixels()  const {return SuperType::n_pixels_in_row();}
 
   void add_to_t_matrix(lor_type &lor, size_t i_pixel) {
     auto i_lor  = t_lor_index(lor);
@@ -81,10 +81,12 @@ public:
       // because it may have changed in meantime
 #pragma omp critical
       if ( !(pixels = t_matrix[i_lor]) ) {
-        pixels = t_matrix[i_lor] = new hit_type[n_t_matrix_pixels]();
+        pixels = t_matrix[i_lor] =
+          new hit_type[SuperType::total_n_pixels_in_triangle()]();
       }
 #else
-      pixels = t_matrix[i_lor] = new hit_type[this->n_t_matrix_pixels]();
+      pixels = t_matrix[i_lor] =
+        new hit_type[SuperType::total_n_pixels_in_triangle()]();
 #endif
     }
     ++pixels[i_pixel];
@@ -97,9 +99,7 @@ public:
     return pixels ? pixels[i_pixel] * (diag ? 2 : 1) : 0;
   }
 
-  void add_hit(int i_pixel) {
-    ++(this->t_hits[i_pixel]);
-  }
+
 
   F non_zero_lors() {
     size_t non_zero_lors = 0;
@@ -122,10 +122,10 @@ public:
   friend obstream & operator << (obstream &out, matrix_mc &mmc) {
     if (mmc.output_triangular) {
       out << magic_t;
-      out << static_cast<file_int>(mmc.n_pixels_2);
+      out << static_cast<file_int>(mmc.n_pixels_in_row_half());
     } else {
       out << magic_f;
-      out << static_cast<file_int>(mmc.n_pixels);
+      out << static_cast<file_int>(mmc.n_pixels_in_row());
     }
     out << static_cast<file_int>(mmc.n_emissions);
     out << static_cast<file_int>(mmc.dr.detectors());
@@ -139,13 +139,13 @@ public:
             out << a << b;
             // find out count of non-zero pixels
             file_int count = 0;
-            for (auto i = 0; i < mmc.n_t_matrix_pixels; ++i) {
+            for (auto i = 0; i < mmc.total_n_pixels_in_triangle(); ++i) {
               if (pixels[i]) count++;
             }
             out << count;
 
             // write non-zero pixel pairs
-            for (file_half y = 0; y < mmc.n_pixels_2; ++y) {
+            for (file_half y = 0; y < mmc.n_pixels_in_row_half(); ++y) {
               for (file_half x = 0; x <= y; ++x) {
                 file_int hits = pixels[SuperType::t_pixel_index(x, y)];
                 if (hits) {
@@ -157,16 +157,16 @@ public:
         } else { // output full (may be slow)
           // find out count of non-zero pixels
           file_int count = 0;
-          for (file_half x = 0; x < mmc.n_pixels; ++x) {
-            for (file_half y = 0; y < mmc.n_pixels; ++y) {
+          for (file_half x = 0; x < mmc.n_pixels_in_row(); ++x) {
+            for (file_half y = 0; y < mmc.n_pixels_in_row(); ++y) {
               if (mmc(lor, x, y)) count++;
             }
           }
           if (count) {
             out << a << b << count;
             // write out non-zero hits
-            for (file_half x = 0; x < mmc.n_pixels; ++x) {
-              for (file_half y = 0; y < mmc.n_pixels; ++y) {
+            for (file_half x = 0; x < mmc.n_pixels_in_row(); ++x) {
+              for (file_half y = 0; y < mmc.n_pixels_in_row(); ++y) {
                 file_int hits = mmc(lor, x, y);
                 if (hits) {
                   out << x << y << hits;
@@ -190,12 +190,14 @@ public:
     }
  
     // validate incoming parameters
-    if (in_n_pixels && in_n_pixels != (in_is_triangular ? mmc.n_pixels_2 : mmc.n_pixels)) {
+    if (in_n_pixels && in_n_pixels != (in_is_triangular ? 
+                                       mmc.n_pixels_in_row_half() 
+                                       : mmc.n_pixels_in_row())) {
       std::ostringstream msg;
       msg << "incompatible input matrix dimensions "
           << in_n_pixels
           << " != "
-          << mmc.n_pixels_2;
+          << mmc.n_pixels_in_row_half();
       throw(msg.str());
     }
     if (in_n_detectors && in_n_detectors != mmc.dr.detectors()) {
@@ -226,7 +228,8 @@ public:
 
         auto pixels = mmc.t_matrix[i_lor];
         if (!pixels) {
-          mmc.t_matrix[i_lor] = pixels = new hit_type[mmc.n_t_matrix_pixels]();
+          mmc.t_matrix[i_lor] = pixels = 
+            new hit_type[mmc.total_n_pixels_in_triangle()]();
         }
         // increment hits
         for (auto i = 0; i < count; ++i) {
@@ -235,7 +238,7 @@ public:
           in >> x >> y >> hits;
           auto i_pixel = SuperType::t_pixel_index(x, y);
           pixels[i_pixel]    += hits;
-          mmc.t_hits[i_pixel] += hits;
+          mmc.add_hit(i_pixel, hits);
         }
       } else { // full matrix
         // increment hits
@@ -246,7 +249,7 @@ public:
 
           bool diag; int symmetry;
           auto i_pixel = mmc.pixel_index(x, y, diag, symmetry);
-          if (i_pixel >= mmc.n_t_matrix_pixels) throw("invalid pixel address");
+          if (i_pixel >= mmc.total_n_pixels_in_triangle()) throw("invalid pixel address");
 
           auto i_lor   = mmc.lor_index(lor, symmetry);
           if (i_lor >= mmc.n_lors) {
@@ -258,10 +261,10 @@ public:
 
           auto pixels  = mmc.t_matrix[i_lor];
           if (!pixels) {
-            mmc.t_matrix[i_lor] = pixels = new hit_type[mmc.n_t_matrix_pixels]();
+            mmc.t_matrix[i_lor] = pixels = new hit_type[mmc.total_n_pixels_in_triangle()]();
           }
           pixels[i_pixel]    += hits;
-          mmc.t_hits[i_pixel] += hits;
+          mmc.add_hit(i_pixel,hits);
         }
       }
     }
@@ -271,7 +274,7 @@ public:
       for (auto i_lor = 0; i_lor < mmc.n_lors; ++i_lor) {
         auto pixels  = mmc.t_matrix[i_lor];
         if (!pixels) continue;
-        for (auto i_pixel = 0; i_pixel < mmc.n_t_matrix_pixels; ++i_pixel) {
+        for (auto i_pixel = 0; i_pixel < mmc.total_n_pixels_in_triangle(); ++i_pixel) {
           pixels[i_pixel] /= 8;
         }
       }
@@ -282,7 +285,7 @@ public:
 
   // text output (for validation)
   friend std::ostream & operator << (std::ostream &out, matrix_mc &mmc) {
-    out << "n_pixels="    << mmc.n_pixels    << std::endl;
+    out << "n_pixels="    << mmc.n_pixels_in_row()    << std::endl;
     out << "n_emissions=" << mmc.n_emissions << std::endl;
     out << "n_detectors=" << mmc.dr.detectors() << std::endl;
 
@@ -294,13 +297,13 @@ public:
           out << "  lor=(" << a << "," << b << ")" << std::endl;
           // find out count of non-zero pixels
           file_int count = 0;
-          for (auto i = 0; i < mmc.n_t_matrix_pixels; ++i) {
+          for (auto i = 0; i < mmc.total_n_pixels_in_triangle(); ++i) {
             if (pixels[i]) count++;
           }
           out << "  count=" << count << std::endl;
 
           // write non-zero pixel pairs
-          for (file_half y = 0; y < mmc.n_pixels_2; ++y) {
+          for (file_half y = 0; y < mmc.n_pixels_in_row_half(); ++y) {
             for (file_half x = 0; x <= y; ++x) {
               file_int hits = pixels[SuperType::t_pixel_index(x, y)];
               if (hits) {
@@ -344,17 +347,18 @@ public:
 
   template<class FileWriter>
   void output_lor_bitmap(FileWriter &fw, lor_type &lor) {
-    fw.template write_header<bitmap_pixel_type>(this->n_pixels, this->n_pixels);
+    fw.template write_header<bitmap_pixel_type>(SuperType::n_pixels_in_row(),
+                                                SuperType::n_pixels_in_row());
     hit_type pixel_max = 0;
-    for (auto y = 0; y < this->n_pixels; ++y) {
-      for (auto x = 0; x < this->n_pixels; ++x) {
+    for (auto y = 0; y < SuperType::n_pixels_in_row(); ++y) {
+      for (auto x = 0; x < SuperType::n_pixels_in_row(); ++x) {
         pixel_max = std::max(pixel_max, (*this)(lor, x, y));
       }
     }
     auto gain = static_cast<double>(std::numeric_limits<bitmap_pixel_type>::max()) / pixel_max;
-    for (int y = this->n_pixels-1; y >= 0; --y) {
-      bitmap_pixel_type row[this->n_pixels];
-      for (auto x = 0; x < this->n_pixels; ++x) {
+    for (int y = this->n_pixels_in_row()-1; y >= 0; --y) {
+      bitmap_pixel_type row[SuperType::n_pixels_in_row()];
+      for (auto x = 0; x < SuperType::n_pixels_in_row(); ++x) {
         row[x] = std::numeric_limits<bitmap_pixel_type>::max() - gain * (*this)(lor, x, y);
       }
       fw.write_row(row);

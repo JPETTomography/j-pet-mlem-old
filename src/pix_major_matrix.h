@@ -1,5 +1,7 @@
 #pragma once
 
+#include"triangular_pix_map.h"
+
 
 /**
    This class represents a system matrix that stores the content in
@@ -20,18 +22,19 @@
 
 */
 
-
 template<typename LorType, typename F = double>
-class PixelMajorSystemMatrix {
+class PixelMajorSystemMatrix: public TriangularPixelMap<F,int> {
 
 public:
+  typedef TriangularPixelMap<F,int> SuperType;
   typedef std::pair<LorType,int> HitType;
 
 
   PixelMajorSystemMatrix(detector_ring<F> dr_a,
                          int n_pixels_a,
                          F pixel_size_a)
-    :n_lors_(SimpleLor::n_lors()),
+    :TriangularPixelMap<F,int>(n_pixels_a),
+    n_lors_(SimpleLor::n_lors()),
      n_pixels_(n_pixels_a),
      n_pixels_half_(n_pixels_/2),
      total_n_pixels_(n_pixels_half_*(n_pixels_half_+1)/2),
