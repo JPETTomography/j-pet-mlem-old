@@ -33,6 +33,7 @@ class SimpleLOR {
   }
 
   bool operator!=(const SimpleLOR& rhs) { return !((*this) == rhs); }
+
   struct Comparator {
     int operator()(const SimpleLOR& a, const SimpleLOR& b) const {
       if (a.first < b.first)
@@ -49,6 +50,7 @@ class SimpleLOR {
   static Iterator end();
 
   static const Comparator less;
+
  private:
   static int n_lors_;
   static int n_detectors_;
@@ -70,6 +72,7 @@ class SimpleLOR::Iterator {
   SimpleLOR& operator*() { return lor; }
 
   bool operator!=(const SimpleLOR::Iterator rhs) { return lor != rhs.lor; }
+
  private:
   SimpleLOR lor;
 };

@@ -5,8 +5,8 @@
 
 template <typename F> class TOPETSimulator {
  public:
-  typedef ToF_Event_2D<F> event_t;
-  typedef ToF_Track_2D<F> track_t;
+  typedef ToF_Event2D<F> event_t;
+  typedef ToF_Track2D<F> track_t;
   typedef Point<F> point_t;
   typedef ToF_Detector_2D<F> detector_t;
   typedef typename std::vector<event_t>::const_iterator const_iterator;

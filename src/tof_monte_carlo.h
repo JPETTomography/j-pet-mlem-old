@@ -14,7 +14,7 @@ template <typename F, typename D> class ToF_Monte_Carlo {
   void sc(double x, double* s, double* c) { sincos(x, s, c); }
   void sc(float x, float* s, float* c) { sincosf(x, s, c); }
 
-  ToF_Track_2D<F> add_noise(const ToF_Track_2D<F>& track) {
+  ToF_Track2D<F> add_noise(const ToF_Track2D<F>& track) {
     F r1 = one(gen);
     F r2 = one(gen);
     F angle = 2.0 * M_PI * r1;
@@ -34,9 +34,9 @@ template <typename F, typename D> class ToF_Monte_Carlo {
 
     F dl = track.dl() + detector_.sigma_l() * g1;
 
-    return ToF_Track_2D<F>(z_up, z_dn, dl);
+    return ToF_Track2D<F>(z_up, z_dn, dl);
   }
-  ToF_Event_2D<F> add_noise(const ToF_Event_2D<F>& event) {
+  ToF_Event2D<F> add_noise(const ToF_Event2D<F>& event) {
     return detector_.fromPS(add_noise(detector_.toPS(event)));
   }
 
@@ -56,7 +56,7 @@ template <typename F, typename D> class ToF_Monte_Carlo {
   int add_noise_to_detected(In first, In last, Out out) {
     int count = 0;
     while (first != last) {
-      ToF_Track_2D<F> track = detector_.toPS(*first);
+      ToF_Track2D<F> track = detector_.toPS(*first);
       if (detector_.detected(track)) {
         *out = add_noise(*first);
         ++out;
@@ -67,13 +67,13 @@ template <typename F, typename D> class ToF_Monte_Carlo {
     return count;
   }
 
-  ToF_Event_2D<F> emit_from_point(F x, F y) {
+  ToF_Event2D<F> emit_from_point(F x, F y) {
     F phi = 2.0 * M_PI * one(gen);
-    return ToF_Event_2D<F>(x, y, tan(phi));
+    return ToF_Event2D<F>(x, y, tan(phi));
   }
 
   int fill_with_events_from_single_point(
-      std::vector<ToF_Event_2D<F>>& events, F x, F y, int n) {
+      std::vector<ToF_Event2D<F>>& events, F x, F y, int n) {
     for (int i = 0; i < n; ++i) {
       events[i] = emit_from_point(x, y);
     }
@@ -93,7 +93,7 @@ template <typename F, typename D> class ToF_Monte_Carlo {
   int fill_with_detected_events_from_single_point(Out out, F x, F y, int n) {
     int count = 0;
     for (int i = 0; i < n; ++i) {
-      ToF_Event_2D<F> event = emit_from_point(x, y);
+      ToF_Event2D<F> event = emit_from_point(x, y);
       if (detector_.detected(event)) {
         *out = event;
         out++;

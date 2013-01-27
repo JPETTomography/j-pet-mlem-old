@@ -61,13 +61,12 @@ template <typename F = double, typename I = int> class PixelGrid {
 
   template <typename In> void insert(In first, int n, F w = (F) 1.0) {
     for (int i = 0; i < n; ++i, ++first) {
-      //    std::cerr << "inserting " << i << " " << first->z() << " " << first->y() << std::endl;
-
+      //std::cerr << "inserting " << i << " " << first->z() << " " << first->y() << std::endl;
       add(in(first->z(), first->y()), w);
       //std::cerr << "inserted " << i << " " << first->z() << " " << first->y() << std::endl;
-
     }
   }
+
   I index(I ix, I iy) const { return iy * nx_ + ix; }
   I index(Index<F> ind) const { return index(ind.x, ind.y); }
   F operator()(I i) const { return pixels_[i]; }

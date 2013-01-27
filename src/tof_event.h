@@ -1,12 +1,12 @@
 #pragma once
 
-template <typename F> class ToF_Track_2D {
+template <typename F> class ToF_Track2D {
  public:
   typedef F float_t;
 
-  ToF_Track_2D() {}
+  ToF_Track2D() {}
 
-  ToF_Track_2D(F z_up, F z_dn, F dl) : z_up_(z_up), z_dn_(z_dn), dl_(dl) {}
+  ToF_Track2D(F z_up, F z_dn, F dl) : z_up_(z_up), z_dn_(z_dn), dl_(dl) {}
 
   F z_up() const { return z_up_; }
   F z_dn() const { return z_dn_; }
@@ -18,11 +18,11 @@ template <typename F> class ToF_Track_2D {
   F dl_;
 };
 
-template <typename F> class ToF_Event_2D {
+template <typename F> class ToF_Event2D {
  public:
   typedef F float_t;
-  ToF_Event_2D() {}
-  ToF_Event_2D(F z, F y, F tan) : z_(z), y_(y), tan_(tan) {}
+  ToF_Event2D() {}
+  ToF_Event2D(F z, F y, F tan) : z_(z), y_(y), tan_(tan) {}
   F z() const { return z_; }
   F y() const { return y_; }
   F tan() const { return tan_; }
@@ -32,20 +32,22 @@ template <typename F> class ToF_Event_2D {
   F y_;
   F tan_;
 };
-struct row {
+
+struct Row {
   int r;
   int begin;
   int end;
 };
 
-template <typename F> class Event_Pixels {
+template <typename F> class ToF_EventPixels {
 
  private:
   int pixel_;
-  std::vector<row> rows_;
+  std::vector<Row> rows_;
   std::vector<int> pixels_;
 };
-template <typename F> class pixel_grid {
+
+template <typename F> class ToF_PixelGrid {
  public:
   typedef F float_t;
 
