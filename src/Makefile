@@ -126,3 +126,6 @@ t.o:
 # cleaning
 clean:
 	rm -f $(OBJ) $(TOBJ) $(MOBJ) $(LOBJ) $(DEP)
+
+style:
+	find . \( -iname '*.c' -or -iname '*.cpp' -or -iname '*.h' \) -exec clang-format -style=Google -i {} \;
