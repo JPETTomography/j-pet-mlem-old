@@ -3,7 +3,6 @@
 #include "tof_detector.h"
 
 template <typename F> class DetectorView {
-
  public:
   typedef F float_t;
   typedef ToF_Detector_2D<F> detector_t;

@@ -13,7 +13,7 @@
 
 #include "random.h"
 #include "detector_ring.h"
-#include "matrix_mc.h"
+#include "matrix_monte_carlo.h"
 #include "model.h"
 #include "png_writer.h"
 #include "svg_ostream.h"
@@ -165,10 +165,10 @@ int main(int argc, char* argv[]) {
       gen.seed(cl.get<tausworthe::seed_type>("seed"));
     }
 
-    detector_ring<> dr(n_detectors, radius, w_detector, h_detector);
-    matrix_mc<> mmc(dr, n_pixels, s_pixel);
+    DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
+    MatrixMonteCarlo<> mmc(dr, n_pixels, s_pixel);
 
-    Simulator<detector_ring<>, matrix_mc<>> simulator(dr, mmc);
+    Simulator<DetectorRing<>, MatrixMonteCarlo<>> simulator(dr, mmc);
 
     for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
       ibstream in(*fn, std::ios::binary);
@@ -186,10 +186,10 @@ int main(int argc, char* argv[]) {
     }
 
     if (cl.get<std::string>("model") == "always")
-      simulator.mc(gen, always_accept<>(), n_emissions);
+      simulator.mc(gen, AlwaysAccept<>(), n_emissions);
     if (cl.get<std::string>("model") == "scintilator")
       simulator.mc(
-          gen, scintilator_accept<>(cl.get<double>("acceptance")), n_emissions);
+          gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
 
     // generate output
     if (cl.exist("output")) {
@@ -229,7 +229,7 @@ int main(int argc, char* argv[]) {
 
     // visual debugging output
     if (cl.exist("png")) {
-      matrix_mc<>::lor_type lor(0, 0);
+      MatrixMonteCarlo<>::LOR lor(0, 0);
       lor.first = cl.get<ssize_t>("from");
       if (cl.exist("to")) {
         lor.second = cl.get<ssize_t>("to");

@@ -23,7 +23,7 @@ template <typename F = double> class svg_ostream : public std::ofstream {
 #if BLACK_BACKGROUND
     *this << "    svg     { background: black; }" << std::endl;
 #endif
-    *this << "    polygon { fill: #ff9090;     stroke: red;   stroke-width: "
+    *this << "    polygon { fill: #ff9090; stroke: red; stroke-width: "
           << stroke << "; }" << std::endl;
     *this << "    circle  { fill: white; stroke: green; stroke-width: "
           << stroke << "; }" << std::endl;

@@ -68,10 +68,10 @@ class EllipticalRegion {
 };
 
 class Phantom {
-  typedef std::vector<EllipticalRegion*> container;
+  typedef std::vector<EllipticalRegion*> Container;
 
  public:
-  typedef container::const_iterator const_iterator;
+  typedef Container::const_iterator const_iterator;
   Phantom() {}
 
 #if 1
@@ -107,7 +107,7 @@ class Phantom {
   const_iterator end() const { return regions_.end(); }
 
   ~Phantom() {
-    container::iterator rit = regions_.begin();
+    Container::iterator rit = regions_.begin();
     for (; rit != regions_.end(); ++rit) {
       delete (*rit);
     }
@@ -117,22 +117,21 @@ class Phantom {
   double ll_x_, ll_y_;
   double ur_x_, ur_y_;
 
-  container regions_;
+  Container regions_;
 };
 
-template <typename F> struct point_source_t {
-  point_source_t(F x, F y, F intensity_a) : p(x, y), intensity(intensity_a) {}
-  point<F> p;
+template <typename F = double> struct PointSource {
+  PointSource(F x, F y, F intensity_a) : p(x, y), intensity(intensity_a) {}
+  Point<F> p;
   F intensity;
 };
 
-template <typename F> class point_sources_t {
-
+template <typename F = double> class PointSources {
  public:
   size_t n_sources() const { return sources_.size(); }
 
   void add(F x, F y, F intensity) {
-    sources_.push_back(point_source_t<F>(x, y, intensity));
+    sources_.push_back(PointSource<F>(x, y, intensity));
   }
 
   void normalize() {
@@ -149,10 +148,8 @@ template <typename F> class point_sources_t {
     }
   }
 
-  point<F> draw(F rng) {
-
+  Point<F> draw(F rng) {
     int i = 0;
-
     while (rng > cumulant_[i]) {
       ++i;
     }
@@ -160,7 +157,7 @@ template <typename F> class point_sources_t {
   }
 
  private:
-  std::vector<point_source_t<F>> sources_;
+  std::vector<PointSource<F>> sources_;
   std::vector<F> cumulant_;
   F total_;
 };

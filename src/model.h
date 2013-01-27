@@ -2,9 +2,9 @@
 
 #include "random.h"
 
-template <typename F = double> class always_accept {
+template <typename F = double> class AlwaysAccept {
  public:
-  always_accept() {}
+  AlwaysAccept() {}
   template <class RandomGenerator> bool operator()(RandomGenerator&, F) {
     return true;
   }
@@ -14,25 +14,25 @@ template <typename F = double> class always_accept {
   }
 };
 
-template <typename F = double> class scintilator_accept {
+template <typename F = double> class ScintilatorAccept {
  public:
-  scintilator_accept(F a_unit_prob)
-      : one_dis(0., 1.),
-        unit_prob(a_unit_prob),
-        inv_unit_prob(1.0 / unit_prob) {
+  ScintilatorAccept(F unit_prob)
+      : one_dis_(0., 1.),
+        unit_prob_(unit_prob),
+        inv_unit_prob_(1.0 / unit_prob) {
   }
 
   template <class RandomGenerator>
   bool operator()(RandomGenerator& gen, F length) {
-    return one_dis(gen) >= exp(-length * unit_prob);
+    return one_dis_(gen) >= exp(-length * unit_prob_);
   }
 
   template <typename RandomGenerator> F deposition_depth(RandomGenerator& gen) {
-    return -log(one_dis(gen)) * inv_unit_prob;
+    return -log(one_dis_(gen)) * inv_unit_prob_;
   }
 
  private:
-  uniform_real_distribution<F> one_dis;
-  F unit_prob;
-  F inv_unit_prob;
+  uniform_real_distribution<F> one_dis_;
+  F unit_prob_;
+  F inv_unit_prob_;
 };

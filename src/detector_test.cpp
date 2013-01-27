@@ -3,7 +3,7 @@
 #include "detector.h"
 
 TEST_CASE("detector/intersection", "polygon intersection") {
-  detector<> d(2., 1.);
+  Detector<> d(2., 1.);
 
   CHECK(d[0].x == 1.);
   CHECK(d[0].y == .5);
@@ -14,8 +14,8 @@ TEST_CASE("detector/intersection", "polygon intersection") {
   CHECK(d[3].x == -1.);
   CHECK(d[3].y == .5);
 
-  decltype(d) ::event_type e1(1., 0., M_PI_4);
-  decltype(d) ::event_type e2(1., -3., -M_PI_4);
+  decltype(d) ::Event e1(1., 0., M_PI_4);
+  decltype(d) ::Event e2(1., -3., -M_PI_4);
 
   CHECK(true == d.intersects(e1));
   CHECK(false == d.intersects(e2));
@@ -41,7 +41,7 @@ TEST_CASE("detector/intersection", "polygon intersection") {
   }
 #if 0
   SECTION("detector/translated+rotated", "translated and rotated") {
-    decltype(d) ::point_type p(2., 3.);
+    decltype(d) ::Point p(2., 3.);
     auto dtr = (d + p).rotated(M_PI_4);
     auto s = std::sin(M_PI_4);
     auto c = std::sin(M_PI_4);

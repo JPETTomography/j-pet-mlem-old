@@ -2,31 +2,32 @@
 
 #include "polygon.h"
 
-template <typename F = double> class detector : public polygon<F> {
+template <typename F = double> class Detector : public Polygon<F> {
  public:
-  typedef F angle_type;
-  typedef typename polygon<F>::point_type point_type;
-  detector(F w, F h) {
-    this->push_back(point_type(w / 2., h / 2.));
-    this->push_back(point_type(w / 2., -h / 2.));
-    this->push_back(point_type(-w / 2., -h / 2.));
-    this->push_back(point_type(-w / 2., h / 2.));
+  typedef F Angle;
+  typedef typename Polygon<F>::Point Point;
+
+  Detector(F w, F h) {
+    this->push_back(Point(w / 2., h / 2.));
+    this->push_back(Point(w / 2., -h / 2.));
+    this->push_back(Point(-w / 2., -h / 2.));
+    this->push_back(Point(-w / 2., h / 2.));
   }
 
-  detector rotated(angle_type phi) {
-    detector r;
+  Detector rotated(Angle phi) {
+    Detector r;
     for (auto it = this->begin(); it != this->end(); ++it) {
       r.push_back((*it).rotated(phi));
     }
     return r;
   }
 
-  detector& operator+=(point_type t) {
+  Detector& operator+=(Point t) {
     for (auto it = this->begin(); it != this->end(); ++it)
       *it += t;
     return *this;
   }
 
  private:
-  detector() {}
+  Detector() {}
 };

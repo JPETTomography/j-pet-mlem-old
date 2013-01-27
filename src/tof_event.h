@@ -1,7 +1,6 @@
 #pragma once
 
 template <typename F> class ToF_Track_2D {
-
  public:
   typedef F float_t;
 

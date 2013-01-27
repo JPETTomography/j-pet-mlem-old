@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
       n_emissions = n_prev_emissions;
     }
 
-    point_sources_t<double> point_sources;
+    PointSources<> point_sources;
 
     // automatic radius
     if (!cl.exist("s-pixel")) {
@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
         pixels_detected[i][j] = 0;
       }
 
-    detector_ring<double> dr(n_detectors, radius, w_detector, h_detector);
+    DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
 
     int n_emitted = 0;
     int n_emitted_detected = 0;
@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
       } while (!in.eof());
     }
 
-    scintilator_accept<> model(acceptance);
+    ScintilatorAccept<> model(acceptance);
 
     if (phantom.n_regions() > 0) {
       while (n_emitted < n_emissions) {
@@ -192,7 +192,7 @@ int main(int argc, char* argv[]) {
         if (x * x + y * y < fov_r2) {
           if (phantom.emit(x, y, one_dis(gen))) {
             auto pix = dr.pixel(x, y, s_pixel);
-            detector_ring<double>::lor_type lor;
+            DetectorRing<>::LOR lor;
             pixels[pix.second][pix.first]++;
             double angle = phi_dis(gen);
             auto hits = dr.emit_event(gen, model, x, y, angle, lor);
@@ -216,13 +216,13 @@ int main(int argc, char* argv[]) {
       n_emitted = 0;
       while (n_emitted < n_emissions) {
         double rng = one_dis(gen);
-        point<double> p = point_sources.draw(rng);
+        Point<> p = point_sources.draw(rng);
 
         auto pix = dr.pixel(p.x, p.y, s_pixel);
 
         pixels[pix.second][pix.first]++;
         double angle = phi_dis(gen);
-        detector_ring<double>::lor_type lor;
+        DetectorRing<>::LOR lor;
         auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor);
         if (hits == 2) {
           if (lor.first > lor.second)

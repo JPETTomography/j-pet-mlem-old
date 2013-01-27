@@ -1,31 +1,32 @@
 #pragma once
+
 #include <cmath>
 
-template <typename F = double> struct point {
-  point(F _x, F _y) : x(_x), y(_y) {}
+template <typename F = double> struct Point {
 
-  point(std::pair<F, F> p) : x(p.first), y(p.second) {}
+  Point(F x_a, F y_a) : x(x_a), y(y_a) {}
+  Point(std::pair<F, F> p) : x(p.first), y(p.second) {}
 
   F x, y;
 
   // I know it is bad idea to count all over again
   // sin/cos for given point, but this will be used
   // only for initialization.
-  point rotated(F phi) {
+  Point rotated(F phi) {
     auto sin_phi = std::sin(phi);
     auto cos_phi = std::cos(phi);
     return { x * cos_phi - y * sin_phi, x * sin_phi + y * cos_phi };
   }
 
-  point operator+(point& p) {
+  Point operator+(Point& p) {
     return { x + p.x, y + p.y };
   }
 
-  point operator-(point& p) {
+  Point operator-(Point& p) {
     return { x - p.x, y - p.y };
   }
 
-  point& operator+=(point & p) {
+  Point& operator+=(Point & p) {
     x += p.x;
     y += p.y;
     return *this;

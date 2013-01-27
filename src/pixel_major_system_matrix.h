@@ -21,12 +21,12 @@
 template <typename LorType, typename F = double>
 class PixelMajorSystemMatrix : public TriangularPixelMap<F, int> {
  public:
-  typedef TriangularPixelMap<F, int> SuperType;
-  typedef std::pair<LorType, int> HitType;
+  typedef TriangularPixelMap<F, int> Super;
+  typedef std::pair<LorType, int> Hit;
 
-  PixelMajorSystemMatrix(detector_ring<F> dr_a, int n_pixels_a, F pixel_size_a)
+  PixelMajorSystemMatrix(DetectorRing<F> dr_a, int n_pixels_a, F pixel_size_a)
       : TriangularPixelMap<F, int>(n_pixels_a),
-        n_lors_(SimpleLor::n_lors()),
+        n_lors_(SimpleLOR::n_lors()),
         n_pixels_(n_pixels_a),
         n_pixels_half_(n_pixels_ / 2),
         total_n_pixels_(n_pixels_half_ * (n_pixels_half_ + 1) / 2),
@@ -34,8 +34,8 @@ class PixelMajorSystemMatrix : public TriangularPixelMap<F, int> {
         pixel_(total_n_pixels_),
         pixel_count_(total_n_pixels_),
         n_entries_(0),
-        index_to_lor_(SimpleLor::n_lors()) {
-    for (auto l_it = SimpleLor::begin(); l_it != SimpleLor::end(); ++l_it) {
+        index_to_lor_(SimpleLOR::n_lors()) {
+    for (auto l_it = SimpleLOR::begin(); l_it != SimpleLOR::end(); ++l_it) {
       auto lor = *l_it;
       index_to_lor_[t_lor_index(lor)] = lor;
     }
@@ -69,7 +69,7 @@ class PixelMajorSystemMatrix : public TriangularPixelMap<F, int> {
     auto hit = std::lower_bound(pixel_[i_pixel].begin(),
                                 pixel_[i_pixel].end(),
                                 std::make_pair(lor, 0),
-                                HitTypeComparator());
+                                HitComparator());
 
     if (hit == pixel_[i_pixel].end())
       return 0;
@@ -89,8 +89,7 @@ class PixelMajorSystemMatrix : public TriangularPixelMap<F, int> {
     }
     delete[] pixel_tmp_[i_pixel];
     pixel_tmp_[i_pixel] = (int*)0;
-    std::sort(
-        pixel_[i_pixel].begin(), pixel_[i_pixel].end(), HitTypeComparator());
+    std::sort(pixel_[i_pixel].begin(), pixel_[i_pixel].end(), HitComparator());
   }
 
   static size_t t_lor_index(const LorType& lor) {
@@ -120,8 +119,8 @@ class PixelMajorSystemMatrix : public TriangularPixelMap<F, int> {
   }
 
  private:
-  struct HitTypeComparator {
-    bool operator()(const HitType& a, const HitType& b) const {
+  struct HitComparator {
+    bool operator()(const Hit& a, const Hit& b) const {
       return LorType::less(a.first, b.first);
     }
   };
@@ -144,7 +143,7 @@ class PixelMajorSystemMatrix : public TriangularPixelMap<F, int> {
   int n_lors_;
   int n_entries_;
   std::vector<int*> pixel_tmp_;
-  std::vector<std::vector<HitType>> pixel_;
+  std::vector<std::vector<Hit>> pixel_;
   std::vector<int> pixel_count_;
   std::vector<LorType> index_to_lor_;
   std::vector<PairType> pair_;

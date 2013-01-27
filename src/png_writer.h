@@ -13,6 +13,7 @@ class png_writer {
   }
 
   ~png_writer();
+
  private:
   void priv_write_header(size_t width, size_t height, size_t bpp);
   void priv_write_row(unsigned char* row);

@@ -1,13 +1,7 @@
 #pragma once
 
+#include "point.h"
 #include <vector>
-
-template <typename F = double> class Point {
- public:
-  Point(F xa, F ya) : x(xa), y(ya) {}
-  F x;
-  F y;
-};
 
 template <typename I = int> class Index {
  public:

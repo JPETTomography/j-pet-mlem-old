@@ -33,13 +33,13 @@ TEST_CASE("detector_ring/math", "detector ring test") {
 
   double s_pixel = r / (n_pixels * sqrt(2.0));
 
-  detector_ring<> ring(n_detectors, r, w, h);
+  DetectorRing<> ring(n_detectors, r, w, h);
 
   for (int i_event = 0; i_event < n_events; ++i_event) {
     double x, y, phi;
     in >> x >> y >> phi;
 
-    decltype(ring) ::event_type event(x, y, phi);
+    decltype(ring) ::Event event(x, y, phi);
 
     in >> n_detectors;
 
@@ -53,10 +53,10 @@ TEST_CASE("detector_ring/math", "detector ring test") {
       double x, y;
 
       in >> x >> y;
-      decltype(ring) ::point_type p1(x, y);
+      decltype(ring) ::Point p1(x, y);
 
       in >> x >> y;
-      decltype(ring) ::point_type p2(x, y);
+      decltype(ring) ::Point p2(x, y);
 
       auto inters = ring[detector[i]].intersections(event);
       CHECK(inters.size() == 2);
@@ -66,8 +66,8 @@ TEST_CASE("detector_ring/math", "detector ring test") {
     }
 
     // this is not yet a complete tests....
-    decltype(ring) ::lor_type lor;
-    always_accept<> model;
+    decltype(ring) ::LOR lor;
+    AlwaysAccept<> model;
     auto hits = ring.emit_event(model, model, x, y, phi, lor);
 
     if (hits >= 2) {

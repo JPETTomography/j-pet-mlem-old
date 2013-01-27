@@ -6,23 +6,15 @@
 #include "polygon.h"
 
 TEST_CASE("polygon/intersection", "polygon intersection") {
-  polygon<> p;
-  p.push_back({
-    1., 1.
-  });
-  p.push_back({
-    2., 1.
-  });
-  p.push_back({
-    2., 2.
-  });
-  p.push_back({
-    1., 2.
-  });
+  Polygon<> p;
+  p.push_back(Point<>(1., 1.));
+  p.push_back(Point<>(2., 1.));
+  p.push_back(Point<>(2., 2.));
+  p.push_back(Point<>(1., 2.));
 
-  decltype(p) ::event_type e1(0., .5, M_PI_4);
-  decltype(p) ::event_type e2(0., 1.5, M_PI_4);
-  decltype(p) ::event_type e3(0., 1.5, 0.);
+  Polygon<>::Event e1(0., .5, M_PI_4);
+  Polygon<>::Event e2(0., 1.5, M_PI_4);
+  Polygon<>::Event e3(0., 1.5, 0.);
 
   CHECK(true == p.intersects(e1));
   CHECK(false == p.intersects(e2));
@@ -61,12 +53,12 @@ TEST_CASE("polygon/intersection/math", "rectangle inters from mathematica") {
   in >> n_events;
   std::cerr << n_events << std::endl;
 
-  polygon<> poly;
+  Polygon<> poly;
 
   for (int i = 0; i < 4; ++i) {
     double x, y;
     in >> x >> y;
-    decltype(poly) ::point_type p(x, y);
+    Polygon<>::Point p(x, y);
     poly.push_back(p);
   }
 
@@ -80,7 +72,7 @@ TEST_CASE("polygon/intersection/math", "rectangle inters from mathematica") {
     int n_iters;
     in >> n_iters;
 
-    decltype(poly) ::event_type event(x, y, phi);
+    Polygon<>::Event event(x, y, phi);
     bool intersects = n_iters > 0;
 
     CHECKED_IF(poly.intersects(event) == intersects) {
@@ -90,11 +82,11 @@ TEST_CASE("polygon/intersection/math", "rectangle inters from mathematica") {
 
         if (n_iters > 0) {
           double ix, iy;
-          decltype(poly) ::intersections_type m_inters;
+          Polygon<>::Intersections m_inters;
 
           for (int j = 0; j < n_iters; ++j) {
             in >> ix >> iy;
-            decltype(poly) ::point_type p(ix, iy);
+            Polygon<>::Point p(ix, iy);
             m_inters.push_back(p);
           }
 

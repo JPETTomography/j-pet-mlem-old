@@ -1,14 +1,15 @@
 #pragma once
 
-#include "matrix_mc.h"
+#include "matrix_monte_carlo.h"
 #include "detector_ring.h"
 
-template <typename DetectorRing, typename SystemMatrix, typename F = double>
+template <typename DetectorRingType, typename SystemMatrixType, typename F =
+              double>
 class Simulator {
-  typedef typename detector_ring<F>::lor_type lor_type;
+  typedef typename DetectorRingType::LOR LOR;
 
  public:
-  Simulator(DetectorRing& detector_ring, SystemMatrix& system_matrix)
+  Simulator(DetectorRingType& detector_ring, SystemMatrixType& system_matrix)
       : detector_ring_(detector_ring),
         system_matrix_(system_matrix) {
   }
@@ -64,7 +65,7 @@ class Simulator {
             continue;
 
           auto angle = phi_dis(l_gen);
-          lor_type lor;
+          LOR lor;
           auto hits =
               detector_ring_.emit_event(l_gen, model, rx, ry, angle, lor);
 
@@ -86,8 +87,8 @@ class Simulator {
   }
 
  private:
-  DetectorRing& detector_ring_;
-  SystemMatrix& system_matrix_;
+  DetectorRingType& detector_ring_;
+  SystemMatrixType& system_matrix_;
 
   int n_emissions_;
 

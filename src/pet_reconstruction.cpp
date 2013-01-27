@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 #endif
 
     int n_i_blocks = cl.get<int>("i-blocks");
-    reconstruction<> reconstructor(cl.get<size_t>("iterations"),
+    Reconstruction<> reconstructor(cl.get<size_t>("iterations"),
                                    cl.get<cmdline::string>("system"),
                                    cl.get<cmdline::string>("mean"),
                                    cl.get<double>("threshold"));
@@ -86,8 +86,8 @@ int main(int argc, char* argv[]) {
     auto n_pixels = reconstructor.get_n_pixels();
 
     auto total_n_pixels = n_pixels * n_pixels;
-    reconstruction<>::output_type rho(total_n_pixels, 0.0);
-    reconstruction<>::output_type rho_detected(total_n_pixels, 0.0);
+    Reconstruction<>::Output rho(total_n_pixels, 0.0);
+    Reconstruction<>::Output rho_detected(total_n_pixels, 0.0);
 
     std::ofstream out;
     std::ofstream out_detected;
