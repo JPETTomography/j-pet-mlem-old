@@ -3,7 +3,7 @@
 #include "point.h"
 
 template <typename F = double> struct Event {
-  typedef Point<F> Point;
+  typedef ::Point<F> Point;
 
   Event(F x_a, F y_a, F phi_a) : x(x_a), y(y_a), phi(phi_a) {
     // get line equation coefficients

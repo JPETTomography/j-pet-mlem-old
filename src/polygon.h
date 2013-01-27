@@ -6,8 +6,8 @@
 
 template <typename F = double> class Polygon : public std::vector<Point<F>> {
  public:
-  typedef Point<F> Point;
-  typedef Event<F> Event;
+  typedef ::Point<F> Point;
+  typedef ::Event<F> Event;
   typedef std::vector<Point> Intersections;
 
   // tests for intersection with generic form line equation

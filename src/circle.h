@@ -15,8 +15,8 @@ template <typename F = double> class Circle {
   }
 
   typedef F Angle;
-  typedef Point<F> Point;
-  typedef Event<F> Event;
+  typedef ::Point<F> Point;
+  typedef ::Event<F> Event;
   typedef std::pair<Point, Point> Secant;
 
   Secant secant(Event& e) {

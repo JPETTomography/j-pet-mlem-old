@@ -54,6 +54,11 @@ endif
 
 CPPFLAGS += -MMD
 CPPFLAGS += -Wall
+ifneq ($(findstring g++,$(CXX))$(findstring icpc,$(CXX)),)
+# but don't warn about compare sign and comments on GCC
+CPPFLAGS += -Wno-sign-compare -Wno-comment
+endif
+
 
 ifeq ($(TARGET),Linux)
 CPPFLAGS += -mssse3 -mfpmath=sse

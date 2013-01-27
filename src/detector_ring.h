@@ -12,10 +12,10 @@ template <typename F = double>
 class DetectorRing : public std::vector<Detector<F>> {
  public:
   typedef std::pair<size_t, size_t> LOR;
-  typedef Circle<F> Circle;
-  typedef Point<F> Point;
-  typedef Detector<F> Detector;
-  typedef Event<F> Event;
+  typedef ::Circle<F> Circle;
+  typedef ::Point<F> Point;
+  typedef ::Detector<F> Detector;
+  typedef ::Event<F> Event;
 
   /// @param n_detectors number of detectors on ring
   /// @param radius      radius of ring
