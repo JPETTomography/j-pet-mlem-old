@@ -73,9 +73,6 @@ class DetectorRing : public std::vector<Detector<F>> {
                 (n_detectors_ + outer - inner) % n_detectors_) ? 1 :
         n_detectors_ - 1;
     int end = (outer + step) % n_detectors_;
-    int hits = 0;
-    int prev_i;
-    int i = inner;
     for (int i = inner; i != end; i = (i + step) % n_detectors_) {
       auto points = (*this)[i].intersections(e);
       // check if we got 2 point intersection

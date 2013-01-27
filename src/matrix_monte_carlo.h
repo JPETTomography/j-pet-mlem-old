@@ -1,7 +1,7 @@
 /// Sparse system matrix binary file format
 /// -----------------------------------------------------
 /// uint32_t magic       // 'PETp' (triangular) / 'PETP' (full)
-/// uint32_t n_pixels    // half size [PETp] / full size [PETP]
+/// uint32_t n_pixels_    // half size [PETp] / full size [PETP]
 /// uint32_t n_emissions // per pixel
 /// uint32_t n_detectors // regardless of magic
 /// while (!eof)
@@ -36,43 +36,42 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
   typedef typename DetectorRing<F>::LOR LOR;
   typedef TriangularPixelMap<F, Hit> Super;
 
-  /// @param a_dr        detector ring (model)
-  /// @param a_n_pixels  number of pixels in each directions
-  /// @param a_s_pixel   size of single pixel (pixels are squares)
-  MatrixMonteCarlo(DetectorRing<F>& a_dr, size_t a_n_pixels, F a_s_pixel)
-      : TriangularPixelMap<F, Hit>(a_n_pixels),
-        dr(a_dr),
-        s_pixel(a_s_pixel),
-        n_emissions(0),
-        n_2_detectors(2 * dr.detectors()),
-        n_1_detectors_2(dr.detectors() + dr.detectors() / 2),
-        n_1_detectors_4(dr.detectors() + dr.detectors() / 4),
-        n_lors(dr.lors()),
-        output_triangular(true) {
-    if (a_n_pixels % 2)
+  /// @param dr       detector ring (model)
+  /// @param n_pixels number of pixels in each directions
+  /// @param s_pixel  size of single pixel (pixels are squares)
+  MatrixMonteCarlo(DetectorRing<F>& dr, size_t n_pixels, F s_pixel)
+      : TriangularPixelMap<F, Hit>(n_pixels),
+        output_triangular(true),
+        dr_(dr),
+        n_emissions_(0),
+        n_2_detectors_(2 * dr.detectors()),
+        n_1_detectors_2_(dr.detectors() + dr.detectors() / 2),
+        n_1_detectors_4_(dr.detectors() + dr.detectors() / 4),
+        n_lors_(dr.lors()),
+        s_pixel_(s_pixel) {
+    if (n_pixels % 2)
       throw("number of pixels must be multiple of 2");
     if (s_pixel <= 0.)
       throw("invalid pixel size");
 
     // reserve for all lors
-    t_matrix = new Pixels[n_lors]();
-
+    t_matrix_ = new Pixels[n_lors_]();
   }
 
   ~MatrixMonteCarlo() {
-    for (auto i = 0; i < n_lors; ++i) {
-      if (t_matrix[i])
-        delete[] t_matrix[i];
+    for (auto i = 0; i < n_lors_; ++i) {
+      if (t_matrix_[i])
+        delete[] t_matrix_[i];
     }
-    delete[] t_matrix;
+    delete[] t_matrix_;
   }
 
-  F pixel_size() const { return s_pixel; }
+  F pixel_size() const { return s_pixel_; }
   int get_n_pixels() const { return Super::n_pixels_in_row(); }
 
   void add_to_t_matrix(LOR& lor, size_t i_pixel) {
     auto i_lor = t_lor_index(lor);
-    auto pixels = t_matrix[i_lor];
+    auto pixels = t_matrix_[i_lor];
 
     // prealocate pixels for specific lor
     // all are nulls upon startup
@@ -81,12 +80,13 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
 // entering critical section, and check again
 // because it may have changed in meantime
 #pragma omp critical
-      if (!(pixels = t_matrix[i_lor])) {
-        pixels = t_matrix[i_lor] =
+      if (!(pixels = t_matrix_[i_lor])) {
+        pixels = t_matrix_[i_lor] =
                  new Hit[Super::total_n_pixels_in_triangle()]();
       }
 #else
-      pixels = t_matrix[i_lor] = new Hit[Super::total_n_pixels_in_triangle()]();
+      pixels = t_matrix_[i_lor] =
+               new Hit[Super::total_n_pixels_in_triangle()]();
 #endif
     }
     ++pixels[i_pixel];
@@ -96,22 +96,22 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
     bool diag;
     int symmetry;
     auto i_pixel = this->pixel_index(x, y, diag, symmetry);
-    auto pixels = t_matrix[lor_index(lor, symmetry)];
+    auto pixels = t_matrix_[lor_index(lor, symmetry)];
     return pixels ? pixels[i_pixel] * (diag ? 2 : 1) : 0;
   }
 
   F non_zero_lors() {
     size_t non_zero_lors = 0;
-    for (auto i = 0; i < n_lors; ++i) {
-      if (t_matrix[i])
+    for (auto i = 0; i < n_lors_; ++i) {
+      if (t_matrix_[i])
         ++non_zero_lors;
     }
     return non_zero_lors;
   }
 
-  void increase_n_emissions(int count) { n_emissions += count; }
+  void increase_n_emissions(int n_emissions) { n_emissions_ += n_emissions; }
 
-  // binary serialization                 // n_pixels  n_detectors  triagular
+  // binary serialization                 // n_pixels_  n_detectors  triagular
   static const FileInt MAGIC_VERSION_1 =
       fourcc('P', 'E', 'T', 't');  //                           X
   static const FileInt MAGIC_VERSION_2 =
@@ -129,14 +129,14 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
       out << MAGIC_VERSION_FULL;
       out << static_cast<FileInt>(mmc.n_pixels_in_row());
     }
-    out << static_cast<FileInt>(mmc.n_emissions);
-    out << static_cast<FileInt>(mmc.dr.detectors());
+    out << static_cast<FileInt>(mmc.n_emissions_);
+    out << static_cast<FileInt>(mmc.dr_.detectors());
 
-    for (FileHalf a = 0; a < mmc.dr.detectors(); ++a) {
+    for (FileHalf a = 0; a < mmc.dr_.detectors(); ++a) {
       for (FileHalf b = 0; b <= a; ++b) {
         LOR lor(a, b);
         if (mmc.output_triangular) {
-          auto pixels = mmc.t_matrix[t_lor_index(lor)];
+          auto pixels = mmc.t_matrix_[t_lor_index(lor)];
           if (pixels) {
             out << a << b;
             // find out count of non-zero pixels
@@ -190,7 +190,7 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
     mmc.read_header(
         in, in_is_triangular, in_n_pixels, in_n_emissions, in_n_detectors);
 
-    if (mmc.n_emissions && !in_is_triangular) {
+    if (mmc.n_emissions_ && !in_is_triangular) {
       throw("full matrix cannot be loaded to non-empty matrix");
     }
 
@@ -203,11 +203,11 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
           << mmc.n_pixels_in_row_half();
       throw(msg.str());
     }
-    if (in_n_detectors && in_n_detectors != mmc.dr.detectors()) {
+    if (in_n_detectors && in_n_detectors != mmc.dr_.detectors()) {
       throw("incompatible input number of detectors");
     }
 
-    mmc.n_emissions += in_n_emissions;
+    mmc.n_emissions_ += in_n_emissions;
 
     // load hits
     for (;;) {
@@ -223,16 +223,16 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
 
       if (in_is_triangular) {
         auto i_lor = t_lor_index(lor);
-        if (i_lor >= mmc.n_lors) {
+        if (i_lor >= mmc.n_lors_) {
           std::ostringstream msg;
           msg << "invalid LOR address (" << a << "," << b << ")";
           throw(msg.str());
         }
 
-        auto pixels = mmc.t_matrix[i_lor];
+        auto pixels = mmc.t_matrix_[i_lor];
         if (!pixels) {
-          mmc.t_matrix[i_lor] = pixels =
-                                new Hit[mmc.total_n_pixels_in_triangle()]();
+          mmc.t_matrix_[i_lor] = pixels =
+                                 new Hit[mmc.total_n_pixels_in_triangle()]();
         }
         // increment hits
         for (auto i = 0; i < count; ++i) {
@@ -257,16 +257,16 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
             throw("invalid pixel address");
 
           auto i_lor = mmc.lor_index(lor, symmetry);
-          if (i_lor >= mmc.n_lors) {
+          if (i_lor >= mmc.n_lors_) {
             std::ostringstream msg;
             msg << "invalid LOR address (" << a << "," << b;
             throw(msg.str());
           }
 
-          auto pixels = mmc.t_matrix[i_lor];
+          auto pixels = mmc.t_matrix_[i_lor];
           if (!pixels) {
-            mmc.t_matrix[i_lor] = pixels =
-                                  new Hit[mmc.total_n_pixels_in_triangle()]();
+            mmc.t_matrix_[i_lor] = pixels =
+                                   new Hit[mmc.total_n_pixels_in_triangle()]();
           }
           pixels[i_pixel] += hits;
           mmc.add_hit(i_pixel, hits);
@@ -276,8 +276,8 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
 
     // we need to divide all values by 8 when loading full matrix
     if (!in_is_triangular) {
-      for (auto i_lor = 0; i_lor < mmc.n_lors; ++i_lor) {
-        auto pixels = mmc.t_matrix[i_lor];
+      for (auto i_lor = 0; i_lor < mmc.n_lors_; ++i_lor) {
+        auto pixels = mmc.t_matrix_[i_lor];
         if (!pixels)
           continue;
         for (auto i_pixel = 0; i_pixel < mmc.total_n_pixels_in_triangle();
@@ -292,14 +292,14 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
 
   // text output (for validation)
   friend std::ostream& operator<<(std::ostream& out, MatrixMonteCarlo& mmc) {
-    out << "n_pixels=" << mmc.n_pixels_in_row() << std::endl;
-    out << "n_emissions=" << mmc.n_emissions << std::endl;
-    out << "n_detectors=" << mmc.dr.detectors() << std::endl;
+    out << "n_pixels_=" << mmc.n_pixels_in_row() << std::endl;
+    out << "n_emissions=" << mmc.n_emissions_ << std::endl;
+    out << "n_detectors=" << mmc.dr_.detectors() << std::endl;
 
-    for (FileHalf a = 0; a < mmc.dr.detectors(); ++a) {
+    for (FileHalf a = 0; a < mmc.dr_.detectors(); ++a) {
       for (FileHalf b = 0; b <= a; ++b) {
         LOR lor(a, b);
-        auto pixels = mmc.t_matrix[t_lor_index(lor)];
+        auto pixels = mmc.t_matrix_[t_lor_index(lor)];
         if (pixels) {
           out << "  lor=(" << a << "," << b << ")" << std::endl;
           // find out count of non-zero pixels
@@ -392,27 +392,26 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
   /// @param symmetry number (0..7)
   size_t lor_index(LOR lor, int symmetry) const {
     if (symmetry & 1) {
-      lor.first = (n_2_detectors - lor.first) % dr.detectors();
-      lor.second = (n_2_detectors - lor.second) % dr.detectors();
+      lor.first = (n_2_detectors_ - lor.first) % dr_.detectors();
+      lor.second = (n_2_detectors_ - lor.second) % dr_.detectors();
     }
     if (symmetry & 2) {
-      lor.first = (n_1_detectors_2 - lor.first) % dr.detectors();
-      lor.second = (n_1_detectors_2 - lor.second) % dr.detectors();
+      lor.first = (n_1_detectors_2_ - lor.first) % dr_.detectors();
+      lor.second = (n_1_detectors_2_ - lor.second) % dr_.detectors();
     }
     if (symmetry & 4) {
-      lor.first = (n_1_detectors_4 - lor.first) % dr.detectors();
-      lor.second = (n_1_detectors_4 - lor.second) % dr.detectors();
+      lor.first = (n_1_detectors_4_ - lor.first) % dr_.detectors();
+      lor.second = (n_1_detectors_4_ - lor.second) % dr_.detectors();
     }
     return t_lor_index(lor);
   }
 
-  DetectorRing<F>& dr;
-  Matrix t_matrix;
-  Hit n_emissions;
-  size_t n_pixels_2;
-  size_t n_2_detectors;
-  size_t n_1_detectors_2;
-  size_t n_1_detectors_4;
-  size_t n_lors;
-  F s_pixel;
+  DetectorRing<F>& dr_;
+  Matrix t_matrix_;
+  Hit n_emissions_;
+  size_t n_2_detectors_;
+  size_t n_1_detectors_2_;
+  size_t n_1_detectors_4_;
+  size_t n_lors_;
+  F s_pixel_;
 };

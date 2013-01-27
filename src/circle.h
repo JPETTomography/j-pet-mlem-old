@@ -9,11 +9,12 @@
 template <typename F = double> class Circle {
  public:
   Circle(F radius)
-      : radius2_(radius* radius),  // store precomputed square
-        radius_(radius) {
+      : radius_(radius),          // store radius
+        radius2_(radius* radius)  // store precomputed square
+        {
   }
 
-  typedef F angle_type;
+  typedef F Angle;
   typedef Point<F> Point;
   typedef Event<F> Event;
   typedef std::pair<Point, Point> Secant;
@@ -29,7 +30,7 @@ template <typename F = double> class Circle {
 
   F angle(Point p) { return std::atan2(p.y, p.x); }
 
-  std::pair<angle_type, angle_type> secant_angles(Event& e) {
+  std::pair<Angle, Angle> secant_angles(Event& e) {
     auto s = secant(e);
     return std::make_pair(angle(s.first), angle(s.second));
   }

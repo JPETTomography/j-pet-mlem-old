@@ -34,13 +34,13 @@ TEST_CASE("simple_lor/iterator", "simple_lor iterator") {
 TEST_CASE("pix_major_system_matrix/init", "simple pix matrix test") {
   SimpleLOR::init(140);
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
-  PixelMajorSystemMatrix<SimpleLOR> matrix(dr, 128, 0.005);
+  PixelMajorSystemMatrix<SimpleLOR> matrix(128);
 }
 
 TEST_CASE("pix_major_system_matrix/add", "add one element") {
   SimpleLOR::init(140);
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
-  PixelMajorSystemMatrix<SimpleLOR> matrix(dr, 128, 0.005);
+  PixelMajorSystemMatrix<SimpleLOR> matrix(128);
 
   SimpleLOR lor(9, 7);
   matrix.add_to_t_matrix(lor, 13);
@@ -60,7 +60,7 @@ TEST_CASE("pix_major_system_matrix/add", "add one element") {
 TEST_CASE("pix_major_system_matrix/add_twice", "add one element twice") {
   SimpleLOR::init(140);
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
-  PixelMajorSystemMatrix<SimpleLOR> matrix(dr, 128, 0.005);
+  PixelMajorSystemMatrix<SimpleLOR> matrix(128);
 
   SimpleLOR lor(9, 7);
   matrix.add_to_t_matrix(lor, 13);
@@ -78,7 +78,7 @@ TEST_CASE("pix_major_system_matrix/add_to_all",
           "add one element to all pixels") {
   SimpleLOR::init(140);
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
-  PixelMajorSystemMatrix<SimpleLOR> matrix(dr, 128, 0.005);
+  PixelMajorSystemMatrix<SimpleLOR> matrix(128);
 
   SimpleLOR lor(9, 7);
   for (int p = 0; p < matrix.total_n_pixels(); ++p) {
@@ -98,7 +98,7 @@ TEST_CASE("pix_major_system_matrix/add_to_all",
 TEST_CASE("pix_major_system_matrix/to_pairs", "flatten") {
   SimpleLOR::init(140);
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
-  PixelMajorSystemMatrix<SimpleLOR> matrix(dr, 128, 0.005);
+  PixelMajorSystemMatrix<SimpleLOR> matrix(128);
 
   SimpleLOR lor(9, 7);
   for (int p = 0; p < matrix.total_n_pixels(); ++p) {

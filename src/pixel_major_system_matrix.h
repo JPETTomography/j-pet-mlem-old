@@ -24,16 +24,16 @@ class PixelMajorSystemMatrix : public TriangularPixelMap<F, int> {
   typedef TriangularPixelMap<F, int> Super;
   typedef std::pair<LorType, int> Hit;
 
-  PixelMajorSystemMatrix(DetectorRing<F> dr_a, int n_pixels_a, F pixel_size_a)
-      : TriangularPixelMap<F, int>(n_pixels_a),
-        n_lors_(SimpleLOR::n_lors()),
-        n_pixels_(n_pixels_a),
+  PixelMajorSystemMatrix(int n_pixels)
+      : TriangularPixelMap<F, int>(n_pixels),
+        n_pixels_(n_pixels),
         n_pixels_half_(n_pixels_ / 2),
         total_n_pixels_(n_pixels_half_ * (n_pixels_half_ + 1) / 2),
+        n_lors_(SimpleLOR::n_lors()),
+        n_entries_(0),
         pixel_tmp_(total_n_pixels_, (int*)0),
         pixel_(total_n_pixels_),
         pixel_count_(total_n_pixels_),
-        n_entries_(0),
         index_to_lor_(SimpleLOR::n_lors()) {
     for (auto l_it = SimpleLOR::begin(); l_it != SimpleLOR::end(); ++l_it) {
       auto lor = *l_it;
@@ -77,7 +77,6 @@ class PixelMajorSystemMatrix : public TriangularPixelMap<F, int> {
   }
 
   void finalize_pixel(int i_pixel) {
-    int count = 0;
     pixel_[i_pixel].resize(pixel_count_[i_pixel]);
     int it = 0;
     for (int lor = 0; lor < n_lors_; ++lor) {

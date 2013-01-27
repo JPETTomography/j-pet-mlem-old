@@ -27,11 +27,8 @@ TEST_CASE("detector_ring/math", "detector ring test") {
   double r, w, h;
   int n_detectors;
   int n_events;
-  int n_pixels = 128;
 
   in >> r >> n_detectors >> w >> h >> n_events;
-
-  double s_pixel = r / (n_pixels * sqrt(2.0));
 
   DetectorRing<> ring(n_detectors, r, w, h);
 

@@ -136,7 +136,6 @@ int main(int argc, char* argv[]) {
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
 
     int n_emitted = 0;
-    int n_emitted_detected = 0;
     bool only_detected = false;
     if (cl.exist("detected"))
       only_detected = true;

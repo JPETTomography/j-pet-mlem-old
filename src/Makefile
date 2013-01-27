@@ -53,6 +53,7 @@ LDFLAGS  += -fopenmp
 endif
 
 CPPFLAGS += -MMD
+CPPFLAGS += -Wall
 
 ifeq ($(TARGET),Linux)
 CPPFLAGS += -mssse3 -mfpmath=sse

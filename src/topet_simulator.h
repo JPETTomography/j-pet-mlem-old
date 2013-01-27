@@ -89,7 +89,6 @@ template <typename F> class TOPETSimulator {
       }
     }
     detected_density_->insert(detected_events_.begin(), n_detected_events);
-    F detected_max = detected_density_->max();
     detected_density_->divide_by(max);
 
     tof_events_.clear();
