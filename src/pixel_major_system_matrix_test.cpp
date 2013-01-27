@@ -6,7 +6,7 @@
 #include "simple_lor.h"
 #include "detector_ring.h"
 
-#include "pix_major_matrix.h"
+#include "pixel_major_system_matrix.h"
 
 TEST_CASE("simple_lor/init", "simple_lor initalisation") {
 

@@ -19,7 +19,7 @@
 
 #include "detector_ring.h"
 #include "bstream.h"
-#include "triangular_pix_map.h"
+#include "triangular_pixel_map.h"
 
 #define fourcc(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
 

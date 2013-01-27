@@ -1,6 +1,6 @@
 #pragma once
 
-#include "triangular_pix_map.h"
+#include "triangular_pixel_map.h"
 
 /// This class represents a system matrix that stores the content in
 /// "pixel major" mode. That is for each pixel a list w lors is kept.
