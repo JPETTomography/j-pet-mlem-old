@@ -5,46 +5,45 @@
 #include "tof_detector.h"
 #include "phantom.h"
 
-template<typename F, typename D> class ToF_Monte_Carlo  {
-public:
-  ToF_Monte_Carlo(const D &detector, int n_gen = 1):
-    detector_(detector) {};
+template <typename F, typename D> class ToF_Monte_Carlo {
+ public:
+  ToF_Monte_Carlo(const D& detector, int n_gen = 1) : detector_(detector) {}
 
   void seed(unsigned long seed) { gen.seed(seed); }
 
-  void sc(double x, double *s, double *c) { sincos(x, s, c); }
-  void sc(float x, float *s, float *c)    { sincosf(x, s, c); }
+  void sc(double x, double* s, double* c) { sincos(x, s, c); }
+  void sc(float x, float* s, float* c) { sincosf(x, s, c); }
 
-  ToF_Track_2D<F> add_noise(const  ToF_Track_2D<F> &track) {
+  ToF_Track_2D<F> add_noise(const ToF_Track_2D<F>& track) {
     F r1 = one(gen);
     F r2 = one(gen);
-    F angle = 2.0*M_PI*r1;
-    F l = sqrt(-2.0*log(r2));
+    F angle = 2.0 * M_PI * r1;
+    F l = sqrt(-2.0 * log(r2));
     F s, c;
     sc(angle, &s, &c);
-    F g1 = l*s;
-    F g2 = l*c;
-    F z_up = track.z_up()+detector_.sigma_x()*g1;
-    F z_dn = track.z_dn()+detector_.sigma_x()*g2;
+    F g1 = l * s;
+    F g2 = l * c;
+    F z_up = track.z_up() + detector_.sigma_x() * g1;
+    F z_dn = track.z_dn() + detector_.sigma_x() * g2;
     r1 = one(gen);
     r2 = one(gen);
-    angle = 2.0*M_PI*r1;
-    l = sqrt(-2.0*log(r2));
+    angle = 2.0 * M_PI * r1;
+    l = sqrt(-2.0 * log(r2));
     sc(angle, &s, &c);
-    g1 = l*s;
+    g1 = l * s;
 
-    F dl = track.dl()+detector_.sigma_l()*g1;
+    F dl = track.dl() + detector_.sigma_l() * g1;
 
     return ToF_Track_2D<F>(z_up, z_dn, dl);
   }
-  ToF_Event_2D<F> add_noise(const  ToF_Event_2D<F> &event) {
+  ToF_Event_2D<F> add_noise(const ToF_Event_2D<F>& event) {
     return detector_.fromPS(add_noise(detector_.toPS(event)));
   }
 
-  template<typename In, typename Out>
-  int  add_noise(In first, In last, Out out) {
+  template <typename In, typename Out>
+  int add_noise(In first, In last, Out out) {
     int count = 0;
-    while(first != last) {
+    while (first != last) {
       *out = add_noise(*first);
       ++out;
       ++first;
@@ -53,49 +52,49 @@ public:
     return count;
   }
 
-  template<typename In, typename Out>
-  int  add_noise_to_detected(In first, In last, Out out) {
+  template <typename In, typename Out>
+  int add_noise_to_detected(In first, In last, Out out) {
     int count = 0;
-    while(first != last) {
+    while (first != last) {
       ToF_Track_2D<F> track = detector_.toPS(*first);
-      if(detector_.detected(track)) {
-      *out = add_noise(*first);
-      ++out;
-      ++count;
+      if (detector_.detected(track)) {
+        *out = add_noise(*first);
+        ++out;
+        ++count;
       }
       ++first;
     }
     return count;
   }
 
-  ToF_Event_2D<F> emit_from_point(F x, F y)  {
-    F phi = 2.0*M_PI*one(gen);
-    return  ToF_Event_2D<F>(x, y, tan(phi));
+  ToF_Event_2D<F> emit_from_point(F x, F y) {
+    F phi = 2.0 * M_PI * one(gen);
+    return ToF_Event_2D<F>(x, y, tan(phi));
   }
 
-  int
-  fill_with_events_from_single_point(std::vector< ToF_Event_2D<F> > &events, F x, F y, int n) {
-    for(int i = 0;i<n;++i) {
+  int fill_with_events_from_single_point(
+      std::vector<ToF_Event_2D<F>>& events, F x, F y, int n) {
+    for (int i = 0; i < n; ++i) {
       events[i] = emit_from_point(x, y);
     }
     return n;
   }
 
-  template<typename Out> int
-  fill_with_events_from_single_point(Out out, F x, F y, int n) {
-    for(int i = 0;i<n;++i, ++out) {
+  template <typename Out>
+  int fill_with_events_from_single_point(Out out, F x, F y, int n) {
+    for (int i = 0; i < n; ++i, ++out) {
       *out = emit_from_point(x, y);
     }
     return n;
 
   }
 
-  template<typename Out> int
-  fill_with_detected_events_from_single_point(Out out, F x, F y, int n) {
+  template <typename Out>
+  int fill_with_detected_events_from_single_point(Out out, F x, F y, int n) {
     int count = 0;
-    for(int i = 0;i<n;++i) {
+    for (int i = 0; i < n; ++i) {
       ToF_Event_2D<F> event = emit_from_point(x, y);
-      if(detector_.detected(event)) {
+      if (detector_.detected(event)) {
         *out = event;
         out++;
         count++;
@@ -103,16 +102,17 @@ public:
     }
     return count;
   }
-  template<typename Out> int
-  fill_with_events_from_phantom(Out out, Phantom *phantom, F ll_x, F ll_y, F ur_x, F ur_y, int n ) {
-    F dx = ur_x-ll_x;
-    F dy = ur_y-ll_y;
+  template <typename Out>
+  int fill_with_events_from_phantom(
+      Out out, Phantom* phantom, F ll_x, F ll_y, F ur_x, F ur_y, int n) {
+    F dx = ur_x - ll_x;
+    F dy = ur_y - ll_y;
     int count = 0;
-    for(int i = 0;i<n;++i) {
-      F x = ll_x+dx*one(gen);
-      F y = ll_y+dy*one(gen);
+    for (int i = 0; i < n; ++i) {
+      F x = ll_x + dx * one(gen);
+      F y = ll_y + dy * one(gen);
       F rnd = one(gen);
-      if(phantom->emit(x, y, rnd)) {
+      if (phantom->emit(x, y, rnd)) {
         *out = emit_from_point(x, y);
         ++count;
         ++out;
@@ -120,9 +120,9 @@ public:
     }
     return count;
   }
-  private:
-    tausworthe gen;
-    uniform_real_distribution<F> one;
-    D detector_;
+ private:
+  tausworthe gen;
+  uniform_real_distribution<F> one;
+  D detector_;
 
-  };
+};

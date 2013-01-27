@@ -23,9 +23,9 @@ TEST_CASE("monte_carlo", "Monte-Carlo") {
     ToF_Track_2D<double> track_in(-200, 23, 117);
     ToF_Track_2D<double> track_out = mc.add_noise(track_in);
 
-    REQUIRE( track_in.z_up() != track_out.z_up() );
-    REQUIRE( track_in.z_dn() != track_out.z_dn() );
-    REQUIRE( track_in.dl()   != track_out.dl()   );
+    REQUIRE(track_in.z_up() != track_out.z_up());
+    REQUIRE(track_in.z_dn() != track_out.z_dn());
+    REQUIRE(track_in.dl() != track_out.dl());
   }
 
   SECTION("add_noise_to_event", "") {
@@ -33,8 +33,8 @@ TEST_CASE("monte_carlo", "Monte-Carlo") {
     ToF_Event_2D<double> event_in(-10, 23, -.75);
     ToF_Event_2D<double> event_out = mc.add_noise(event_in);
 
-    REQUIRE( event_in.z()   != event_out.z()   );
-    REQUIRE( event_in.y()   != event_out.y()   );
-    REQUIRE( event_in.tan() != event_out.tan() );
+    REQUIRE(event_in.z() != event_out.z());
+    REQUIRE(event_in.y() != event_out.y());
+    REQUIRE(event_in.tan() != event_out.tan());
   }
 }
