@@ -18,11 +18,11 @@ class Simulator {
   /// @param gen   random number generator
   /// @param model acceptance model (returns bool for call operator with given length)
   template <typename RandomGenerator, typename AcceptanceModel>
-  void mc(RandomGenerator& gen,
-          AcceptanceModel model,
-          size_t n_mc_emissions,
-          bool o_collect_mc_matrix = true,
-          bool o_collect_pixel_stats = true) {
+  void operator()(RandomGenerator& gen,
+                  AcceptanceModel model,
+                  size_t n_mc_emissions,
+                  bool o_collect_mc_matrix = true,
+                  bool o_collect_pixel_stats = true) {
 
     uniform_real_distribution<> one_dis(0., 1.);
     uniform_real_distribution<> phi_dis(0., M_PI);

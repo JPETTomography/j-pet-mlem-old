@@ -186,9 +186,9 @@ int main(int argc, char* argv[]) {
     }
 
     if (cl.get<std::string>("model") == "always")
-      simulator.mc(gen, AlwaysAccept<>(), n_emissions);
+      simulator(gen, AlwaysAccept<>(), n_emissions);
     if (cl.get<std::string>("model") == "scintilator")
-      simulator.mc(
+      simulator(
           gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
 
     // generate output
