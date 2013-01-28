@@ -25,7 +25,7 @@
 
 /// Provides storage for 1/8 PET system matrix
 template <typename F = double, typename HitType = int>
-class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
+class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
  public:
   typedef HitType Hit;
   typedef uint8_t BitmapPixel;
@@ -39,7 +39,7 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
   /// @param dr       detector ring (model)
   /// @param n_pixels number of pixels in each directions
   /// @param s_pixel  size of single pixel (pixels are squares)
-  MatrixMonteCarlo(DetectorRing<F>& dr, size_t n_pixels, F s_pixel)
+  MatrixLORMajor(DetectorRing<F>& dr, size_t n_pixels, F s_pixel)
       : TriangularPixelMap<F, Hit>(n_pixels),
         output_triangular(true),
         dr_(dr),
@@ -58,7 +58,7 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
     t_matrix_ = new Pixels[n_lors_]();
   }
 
-  ~MatrixMonteCarlo() {
+  ~MatrixLORMajor() {
     for (auto i = 0; i < n_lors_; ++i) {
       if (t_matrix_[i])
         delete[] t_matrix_[i];
@@ -121,7 +121,7 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
   static const FileInt MAGIC_VERSION_FULL =
       fourcc('P', 'E', 'T', 'P');  //     X          X
 
-  friend obstream& operator<<(obstream& out, MatrixMonteCarlo& mmc) {
+  friend obstream& operator<<(obstream& out, MatrixLORMajor& mmc) {
     if (mmc.output_triangular) {
       out << MAGIC_VERSION_TRIANGULAR;
       out << static_cast<FileInt>(mmc.n_pixels_in_row_half());
@@ -184,7 +184,7 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
     return out;
   }
 
-  friend ibstream& operator>>(ibstream& in, MatrixMonteCarlo& mmc) {
+  friend ibstream& operator>>(ibstream& in, MatrixLORMajor& mmc) {
     // read header
     FileInt in_is_triangular, in_n_pixels, in_n_emissions, in_n_detectors;
     mmc.read_header(
@@ -291,7 +291,7 @@ class MatrixMonteCarlo : public TriangularPixelMap<F, HitType> {
   }
 
   // text output (for validation)
-  friend std::ostream& operator<<(std::ostream& out, MatrixMonteCarlo& mmc) {
+  friend std::ostream& operator<<(std::ostream& out, MatrixLORMajor& mmc) {
     out << "n_pixels_=" << mmc.n_pixels_in_row() << std::endl;
     out << "n_emissions=" << mmc.n_emissions_ << std::endl;
     out << "n_detectors=" << mmc.dr_.detectors() << std::endl;

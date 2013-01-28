@@ -1,15 +1,15 @@
 #pragma once
 
-#include "matrix_monte_carlo.h"
+#include "matrix_lor_major.h"
 #include "detector_ring.h"
 
 template <typename DetectorRingType, typename SystemMatrixType, typename F =
               double>
-class Simulator {
+class MonteCarlo {
   typedef typename DetectorRingType::LOR LOR;
 
  public:
-  Simulator(DetectorRingType& detector_ring, SystemMatrixType& system_matrix)
+  MonteCarlo(DetectorRingType& detector_ring, SystemMatrixType& system_matrix)
       : detector_ring_(detector_ring),
         system_matrix_(system_matrix) {
   }
