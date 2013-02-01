@@ -13,12 +13,12 @@
 
 #include "random.h"
 #include "detector_ring.h"
-#include "matrix_monte_carlo.h"
+#include "matrix_lor_major.h"
 #include "model.h"
 #include "png_writer.h"
 #include "svg_ostream.h"
 
-#include "simulator.h"
+#include "monte_carlo.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -166,16 +166,16 @@ int main(int argc, char* argv[]) {
     }
 
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
-    MatrixMonteCarlo<> mmc(dr, n_pixels, s_pixel);
+    MatrixLORMajor<> matrix(dr, n_pixels, s_pixel);
 
-    Simulator<DetectorRing<>, MatrixMonteCarlo<>> simulator(dr, mmc);
+    MonteCarlo<DetectorRing<>, MatrixLORMajor<>> monte_carlo(dr, matrix);
 
     for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
       ibstream in(*fn, std::ios::binary);
       if (!in.is_open())
         throw("cannot open input file: " + *fn);
       try {
-        in >> mmc;
+        in >> matrix;
       }
       catch (std::string & ex) {
         throw(ex + ": " + *fn);
@@ -186,9 +186,9 @@ int main(int argc, char* argv[]) {
     }
 
     if (cl.get<std::string>("model") == "always")
-      simulator(gen, AlwaysAccept<>(), n_emissions);
+      monte_carlo(gen, AlwaysAccept<>(), n_emissions);
     if (cl.get<std::string>("model") == "scintilator")
-      simulator(
+      monte_carlo(
           gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
 
     // generate output
@@ -204,14 +204,14 @@ int main(int argc, char* argv[]) {
           fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
 
       obstream out(fn, std::ios::binary | std::ios::trunc);
-      mmc.output_triangular = !cl.exist("full");
-      out << mmc;
+      matrix.output_triangular = !cl.exist("full");
+      out << matrix;
 
       std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
       os << cl;
 
       png_writer png(fn_wo_ext + ".png");
-      mmc.output_bitmap(png);
+      matrix.output_bitmap(png);
 
       svg_ostream<> svg(fn_wo_ext + ".svg",
                         radius + h_detector,
@@ -229,7 +229,7 @@ int main(int argc, char* argv[]) {
 
     // visual debugging output
     if (cl.exist("png")) {
-      MatrixMonteCarlo<>::LOR lor(0, 0);
+      MatrixLORMajor<>::LOR lor(0, 0);
       lor.first = cl.get<ssize_t>("from");
       if (cl.exist("to")) {
         lor.second = cl.get<ssize_t>("to");
@@ -237,7 +237,7 @@ int main(int argc, char* argv[]) {
         lor.second = (lor.first + n_detectors / 2) % n_detectors;
       }
       png_writer png(cl.get<cmdline::string>("png"));
-      mmc.output_lor_bitmap(png, lor);
+      matrix.output_lor_bitmap(png, lor);
     }
 
     // show stats if requested
@@ -246,19 +246,19 @@ int main(int argc, char* argv[]) {
       auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
       for (auto y = 0; y < n_pixels; ++y) {
         for (auto x = 0; x < n_pixels; ++x) {
-          auto hits = mmc.hits(x, y);
+          auto hits = matrix.hits(x, y);
           pixel_min = std::min(pixel_min, hits);
           pixel_max = std::max(pixel_max, hits);
         }
       }
-      std::cerr << "Non zero LORs: " << mmc.non_zero_lors() << '/' << dr.lors()
-                << std::endl;
+      std::cerr << "Non zero LORs: " << matrix.non_zero_lors() << '/'
+                << dr.lors() << std::endl;
       std::cerr << "Min hits: " << pixel_min << std::endl;
       std::cerr << "Max hits: " << pixel_max << std::endl;
     }
 
     if (cl.exist("print")) {
-      std::cout << mmc;
+      std::cout << matrix;
     }
 
     if (cl.exist("wait")) {

@@ -7,7 +7,7 @@
 #include <ctime>
 
 #include "detector_ring.h"
-#include "matrix_monte_carlo.h"
+#include "matrix_lor_major.h"
 
 inline int LOCATION(int x, int y, int size) { return y * size + x; }
 
@@ -49,7 +49,7 @@ template <typename F = double> class Reconstruction {
 
     in >> in_magic;
 
-    if (in_magic != MatrixMonteCarlo<F>::MAGIC_VERSION_FULL) {
+    if (in_magic != MatrixLORMajor<F>::MAGIC_VERSION_FULL) {
       throw("invalid input system matrix file");
     }
 

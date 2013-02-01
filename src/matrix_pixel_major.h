@@ -19,12 +19,12 @@
 /// triangular lor_major and full lor_major format.
 
 template <typename LorType, typename F = double>
-class PixelMajorSystemMatrix : public TriangularPixelMap<F, int> {
+class MatrixPixelMajor : public TriangularPixelMap<F, int> {
  public:
   typedef TriangularPixelMap<F, int> Super;
   typedef std::pair<LorType, int> Hit;
 
-  PixelMajorSystemMatrix(int n_pixels)
+  MatrixPixelMajor(int n_pixels)
       : TriangularPixelMap<F, int>(n_pixels),
         n_pixels_(n_pixels),
         n_pixels_half_(n_pixels_ / 2),
@@ -57,7 +57,7 @@ class PixelMajorSystemMatrix : public TriangularPixelMap<F, int> {
     pixel_tmp_[i_pixel][t_lor_index(lor)]++;
   }
 
-  ~PixelMajorSystemMatrix() {
+  ~MatrixPixelMajor() {
     for (int p = 0; p < total_n_pixels_; ++p) {
       if (pixel_tmp_[p]) {
         delete[] pixel_tmp_[p];
