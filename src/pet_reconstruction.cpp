@@ -11,7 +11,7 @@
 #include <xmmintrin.h>
 #include <pmmintrin.h>
 
-#include <cmdline.h>
+#include "cmdline.h"
 #include "cmdline_types.h"
 #include "bstream.h"
 #include "svg_ostream.h"

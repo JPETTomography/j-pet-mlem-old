@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <catch.hpp>
+#include "catch.hpp"
 
 #include "simple_lor.h"
 #include "detector_ring.h"

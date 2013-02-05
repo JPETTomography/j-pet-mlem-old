@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <catch.hpp>
+#include "catch.hpp"
 
 #include "polygon.h"
 
