@@ -52,7 +52,17 @@ CPPFLAGS += -fopenmp
 LDFLAGS  += -fopenmp
 endif
 
-CPPFLAGS += -MMD -mssse3 -mfpmath=sse
+CPPFLAGS += -MMD
+CPPFLAGS += -Wall
+ifneq ($(findstring g++,$(CXX))$(findstring icpc,$(CXX)),)
+# but don't warn about compare sign and comments on GCC
+CPPFLAGS += -Wno-sign-compare -Wno-comment
+endif
+
+
+ifeq ($(TARGET),Linux)
+CPPFLAGS += -mssse3 -mfpmath=sse
+endif
 
 # dependencies
 CPPFLAGS += -I../lib/catch/include
@@ -126,3 +136,6 @@ t.o:
 # cleaning
 clean:
 	rm -f $(OBJ) $(TOBJ) $(MOBJ) $(LOBJ) $(DEP)
+
+style:
+	find . \( -iname '*.c' -or -iname '*.cpp' -or -iname '*.h' \) -exec clang-format -style=Google -i {} \;
