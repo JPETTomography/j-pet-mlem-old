@@ -2,8 +2,10 @@
 
 #include <fstream>
 
-template <typename F = double> class svg_ostream : public std::ofstream {
+template <typename FType = double> class svg_ostream : public std::ofstream {
  public:
+  typedef FType F;
+
   svg_ostream(
       const std::string fn, F x_max, F y_max, F image_width, F image_height)
       : std::ofstream(fn) {

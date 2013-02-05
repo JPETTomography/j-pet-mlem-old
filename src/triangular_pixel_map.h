@@ -1,15 +1,18 @@
 #pragma once
 
-template <typename F = double, typename HitType = int>
+template <typename FType = double, typename SType = int, typename HitType = int>
 class TriangularPixelMap {
  public:
+  typedef FType F;
+  typedef SType S;
+  typedef typename std::make_signed<S>::type SS;
   typedef HitType Hit;
   typedef Hit* Pixels;
   typedef uint8_t BitmapPixel;
   typedef typename DetectorRing<F>::LOR LOR;
 
   // reserve for pixel stats
-  TriangularPixelMap(int n_pixels_a)
+  TriangularPixelMap(S n_pixels_a)
       : n_pixels_in_row_(n_pixels_a),
         n_pixels_in_row_half_(n_pixels_a / 2),
         total_n_pixels_in_triangle_(n_pixels_a / 2 * (n_pixels_a / 2 + 1) / 2) {
@@ -18,13 +21,11 @@ class TriangularPixelMap {
 
   ~TriangularPixelMap() { delete[] t_hits_; }
 
-  int n_pixels_in_row() const { return n_pixels_in_row_; }
-  int n_pixels_in_row_half() const { return n_pixels_in_row_half_; }
-  int total_n_pixels_in_triangle() const { return total_n_pixels_in_triangle_; }
+  S n_pixels_in_row() const { return n_pixels_in_row_; }
+  S n_pixels_in_row_half() const { return n_pixels_in_row_half_; }
+  S total_n_pixels_in_triangle() const { return total_n_pixels_in_triangle_; }
 
-  static constexpr size_t t_pixel_index(size_t x, size_t y) {
-    return y * (y + 1) / 2 + x;
-  }
+  static constexpr S t_pixel_index(S x, S y) { return y * (y + 1) / 2 + x; }
 
   /// Computes pixel index and determines symmetry number based on pixel
   /// position
@@ -32,7 +33,7 @@ class TriangularPixelMap {
   /// @param x        pixel y coordinate (0..n_pixels)
   /// @param diag     outputs true if abs(x)==abs(y)
   /// @param symmetry outputs symmetry number (0..7)
-  size_t pixel_index(ssize_t x, ssize_t y, bool& diag, int& symmetry) const {
+  S pixel_index(SS x, SS y, bool& diag, S& symmetry) const {
     // shift so 0,0 is now center
     x -= n_pixels_in_row_half();
     y -= n_pixels_in_row_half();
@@ -55,16 +56,16 @@ class TriangularPixelMap {
     return t_pixel_index(x, y);
   }
 
-  Hit hits(size_t x, size_t y) const {
+  Hit hits(S x, S y) const {
     bool diag;
-    int symmetry;
+    S symmetry;
     auto i_pixel = pixel_index(x, y, diag, symmetry);
     return t_hits_[i_pixel] * (diag ? 2 : 1);
   }
 
-  void add_hit(int i_pixel) { ++(t_hits_[i_pixel]); }
+  void add_hit(S i_pixel) { ++(t_hits_[i_pixel]); }
 
-  void add_hit(int i_pixel, int h) { t_hits_[i_pixel] += h; }
+  void add_hit(S i_pixel, S h) { t_hits_[i_pixel] += h; }
 
   template <class FileWriter> void output_bitmap(FileWriter& fw) {
     fw.template write_header<BitmapPixel>(n_pixels_in_row(), n_pixels_in_row());
@@ -87,7 +88,7 @@ class TriangularPixelMap {
 
  private:
   Pixels t_hits_;
-  int n_pixels_in_row_;
-  int n_pixels_in_row_half_;
-  int total_n_pixels_in_triangle_;
+  S n_pixels_in_row_;
+  S n_pixels_in_row_half_;
+  S total_n_pixels_in_triangle_;
 };

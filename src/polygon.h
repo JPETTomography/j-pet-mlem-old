@@ -4,11 +4,14 @@
 #include "event.h"
 #include "svg_ostream.h"
 
-template <typename F = double> class Polygon : public std::vector<Point<F>> {
+template <typename FType = double>
+class Polygon : public std::vector<Point<FType>> {
  public:
+  typedef FType F;
   typedef ::Point<F> Point;
   typedef ::Event<F> Event;
   typedef std::vector<Point> Intersections;
+  typedef ::svg_ostream<F> svg_ostream;
 
   // tests for intersection with generic form line equation
   bool intersects(Event& e) {
@@ -51,7 +54,7 @@ template <typename F = double> class Polygon : public std::vector<Point<F>> {
     return r;
   }
 
-  friend svg_ostream<F>& operator<<(svg_ostream<F>& svg, Polygon& pg) {
+  friend svg_ostream& operator<<(svg_ostream& svg, Polygon& pg) {
     svg << "<polygon points=\"";
     for (auto it = pg.begin(); it != pg.end(); ++it) {
       auto p = *it;

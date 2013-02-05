@@ -18,16 +18,19 @@
 /// So this class has the possibility to write the matrix down in the
 /// triangular lor_major and full lor_major format.
 
-template <typename LorType, typename F = double>
-class MatrixPixelMajor : public TriangularPixelMap<F, int> {
+template <typename LorType, typename FType = double, typename SType = int>
+class MatrixPixelMajor : public TriangularPixelMap<FType, SType> {
  public:
+  typedef FType F;
+  typedef SType S;
+  typedef typename std::make_signed<S>::type SS;
   typedef LorType Lor;
-  typedef TriangularPixelMap<F, int> Super;
-  typedef std::pair<LorType, int> Hit;
-  typedef std::pair<std::pair<LorType, int>, int> Pair;
+  typedef TriangularPixelMap<F, S> Super;
+  typedef std::pair<LorType, S> Hit;
+  typedef std::pair<std::pair<LorType, S>, S> Pair;
 
-  MatrixPixelMajor(int n_pixels)
-      : TriangularPixelMap<F, int>(n_pixels),
+  MatrixPixelMajor(S n_pixels)
+      : TriangularPixelMap<F, S>(n_pixels),
         n_pixels_(n_pixels),
         n_pixels_half_(n_pixels_ / 2),
         total_n_pixels_(n_pixels_half_ * (n_pixels_half_ + 1) / 2),
@@ -43,14 +46,14 @@ class MatrixPixelMajor : public TriangularPixelMap<F, int> {
     }
   }
 
-  int n_entries() const { return n_entries_; }
-  int n_lors(int p) const { return pixel_count_[p]; }
-  int total_n_pixels() const { return total_n_pixels_; }
+  S n_entries() const { return n_entries_; }
+  S n_lors(S p) const { return pixel_count_[p]; }
+  S total_n_pixels() const { return total_n_pixels_; }
 
-  void add_to_t_matrix(const LorType& lor, int i_pixel) {
+  void add_to_t_matrix(const LorType& lor, S i_pixel) {
 
     if (!pixel_tmp_[i_pixel]) {
-      pixel_tmp_[i_pixel] = new int[n_lors_]();
+      pixel_tmp_[i_pixel] = new S[n_lors_]();
     }
     if (pixel_tmp_[i_pixel][t_lor_index(lor)] == 0) {
       pixel_count_[i_pixel]++;
@@ -60,14 +63,14 @@ class MatrixPixelMajor : public TriangularPixelMap<F, int> {
   }
 
   ~MatrixPixelMajor() {
-    for (int p = 0; p < total_n_pixels_; ++p) {
+    for (S p = 0; p < total_n_pixels_; ++p) {
       if (pixel_tmp_[p]) {
         delete[] pixel_tmp_[p];
       }
     }
   }
 
-  int t_get_element(LorType lor, int i_pixel) {
+  S t_get_element(LorType lor, S i_pixel) {
     auto hit = std::lower_bound(pixel_[i_pixel].begin(),
                                 pixel_[i_pixel].end(),
                                 std::make_pair(lor, 0),
@@ -78,28 +81,26 @@ class MatrixPixelMajor : public TriangularPixelMap<F, int> {
     return (*hit).second;
   }
 
-  void finalize_pixel(int i_pixel) {
+  void finalize_pixel(S i_pixel) {
     pixel_[i_pixel].resize(pixel_count_[i_pixel]);
-    int it = 0;
-    for (int lor = 0; lor < n_lors_; ++lor) {
-      int hits;
+    S it = 0;
+    for (S lor = 0; lor < n_lors_; ++lor) {
+      S hits;
       if ((hits = pixel_tmp_[i_pixel][lor]) > 0) {
         pixel_[i_pixel][it] = std::make_pair(index_to_lor_[lor], hits);
         it++;
       }
     }
     delete[] pixel_tmp_[i_pixel];
-    pixel_tmp_[i_pixel] = (int*)0;
+    pixel_tmp_[i_pixel] = NULL;
     std::sort(pixel_[i_pixel].begin(), pixel_[i_pixel].end(), HitComparator());
   }
 
-  static size_t t_lor_index(const LorType& lor) {
-    return LorType::t_index(lor);
-  }
+  static S t_lor_index(const LorType& lor) { return LorType::t_index(lor); }
 
   void to_pairs() {
     pair_.reserve(n_entries());
-    for (int p = 0; p < total_n_pixels(); ++p) {
+    for (S p = 0; p < total_n_pixels(); ++p) {
       for (auto it = pixel_[p].begin(); it != pixel_[p].end(); ++it) {
         pair_.push_back(
             std::make_pair(std::make_pair((*it).first, p), (*it).second));
@@ -107,7 +108,7 @@ class MatrixPixelMajor : public TriangularPixelMap<F, int> {
     }
   }
 
-  Pair pair(int p) const { return pair_[p]; }
+  Pair pair(S p) const { return pair_[p]; }
 
   void sort_pairs_by_lors() {
     std::sort(pair_.begin(), pair_.end(), LorSorter());
@@ -136,14 +137,14 @@ class MatrixPixelMajor : public TriangularPixelMap<F, int> {
     }
   };
 
-  int n_pixels_;
-  int n_pixels_half_;
-  int total_n_pixels_;
-  int n_lors_;
-  int n_entries_;
-  std::vector<int*> pixel_tmp_;
+  S n_pixels_;
+  S n_pixels_half_;
+  S total_n_pixels_;
+  S n_lors_;
+  S n_entries_;
+  std::vector<S*> pixel_tmp_;
   std::vector<std::vector<Hit>> pixel_;
-  std::vector<int> pixel_count_;
+  std::vector<S> pixel_count_;
   std::vector<LorType> index_to_lor_;
   std::vector<Pair> pair_;
 };

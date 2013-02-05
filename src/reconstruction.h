@@ -9,28 +9,28 @@
 #include "detector_ring.h"
 #include "matrix_lor_major.h"
 
-inline int LOCATION(int x, int y, int size) { return y * size + x; }
-
-template <typename F = double> class Reconstruction {
+template <typename FType = double, typename SType = int> class Reconstruction {
  public:
-  typedef std::pair<size_t, size_t> PixelLocation;
-  typedef std::pair<size_t, size_t> LOR;
+  typedef FType F;
+  typedef SType S;
+  typedef std::pair<S, S> PixelLocation;
+  typedef std::pair<S, S> LOR;
   typedef std::vector<F> Output;
 
   struct HitsPerPixel {
-    int index;
+    S index;
     F probability;
   };
 
   struct MeanPerLOR {
     LOR lor;
-    int n;
+    S n;
   };
 
   typedef uint32_t FileInt;
   typedef uint16_t FileHalf;
 
-  Reconstruction(int n_iterations,
+  Reconstruction(S n_iterations,
                  std::string matrix,
                  std::string mean,
                  F threshold = (F) 0.0)
@@ -74,7 +74,7 @@ template <typename F = double> class Reconstruction {
     clock_t start = clock();
     for (;;) {
 
-      int x, y, value;
+      S x, y, value;
 
       mean_file >> y >> x >> value;
       if (mean_file.eof())
@@ -97,7 +97,7 @@ template <typename F = double> class Reconstruction {
 
     std::vector<HitsPerPixel> pixels;
 
-    int index = 0;
+    S index = 0;
     n_non_zero_elements_ = 0;
 
     start = clock();
@@ -116,7 +116,7 @@ template <typename F = double> class Reconstruction {
 
       in >> count;
 
-      for (int i = 0; i < count; ++i) {
+      for (S i = 0; i < count; ++i) {
 
         FileHalf x, y;
         FileInt hits;
@@ -124,7 +124,7 @@ template <typename F = double> class Reconstruction {
         in >> x >> y >> hits;
         HitsPerPixel data;
         data.probability = static_cast<F>(hits / static_cast<F>(emissions_));
-        data.index = LOCATION(x, y, n_pixels_);
+        data.index = location(x, y, n_pixels_);
         if (threshold_ > (F) 0.0) {
           if (data.probability < threshold_)
             data.probability = (F) 0.0;
@@ -149,12 +149,12 @@ template <typename F = double> class Reconstruction {
          it_vector != system_matrix.end(); it_vector++) {
       for (auto it_list = it_vector->begin(); it_list != it_vector->end();
            it_list++) {
-        int pixel = it_list->index;
+        S pixel = it_list->index;
         it_list->probability /= scale[pixel];
       }
     }
 
-    for (int p = 0; p < n_pixels_ * n_pixels_; ++p) {
+    for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
       if (scale[p] > 0)
         rho_detected_[p] = (F) 1.0;
     }
@@ -167,22 +167,22 @@ template <typename F = double> class Reconstruction {
 
   ~Reconstruction() {}
 
-  void emt(int n_iterations) {
+  void emt(S n_iterations) {
 
     F y[n_pixels_* n_pixels_];
     F u;
 
     clock_t start = clock();
 
-    for (int i = 0; i < n_iterations; ++i) {
+    for (S i = 0; i < n_iterations; ++i) {
       std::cout << ".";
       std::cout.flush();
 
-      for (int p = 0; p < n_pixels_ * n_pixels_; ++p) {
+      for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
         y[p] = (F) 0.0;
       }
 
-      int t = 0;
+      S t = 0;
       for (auto it_vector = system_matrix.begin();
            it_vector != system_matrix.end(); it_vector++) {
         u = (F) 0.0;
@@ -200,7 +200,7 @@ template <typename F = double> class Reconstruction {
         t++;
       }
 
-      for (int p = 0; p < n_pixels_ * n_pixels_; ++p) {
+      for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
         if (scale[p] > 0) {
           rho_detected_[p] *= y[p];
         }
@@ -209,7 +209,7 @@ template <typename F = double> class Reconstruction {
     clock_t stop = clock();
     std::cout << std::endl;
 
-    for (int p = 0; p < n_pixels_ * n_pixels_; ++p) {
+    for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
       if (scale[p] > 0) {
         rho_[p] = (rho_detected_[p] / scale[p]);
       }
@@ -222,18 +222,19 @@ template <typename F = double> class Reconstruction {
               << std::endl;
   }
 
-  int get_n_pixels() { return n_pixels_; }
+  S get_n_pixels() { return n_pixels_; }
 
-  F rho(int p) const { return rho_[p]; }
-  F rho_detected(int p) const { return rho_detected_[p]; }
+  F rho(S p) const { return rho_[p]; }
+  F rho_detected(S p) const { return rho_detected_[p]; }
   std::vector<F> rho() const { return rho_; }
   std::vector<F> rho_detected() const { return rho_detected_; }
 
   void set_threshold(F t) { threshold_ = t; }
 
+  static S location(S x, S y, S size) { return y * size + x; }
+
  private:
-  int get_mean_per_lor(
-      FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
+  S get_mean_per_lor(FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
     for (auto it = mean.begin(); it != mean.end(); ++it) {
       if (a == it->lor.first && b == it->lor.second) {
         return it->n;
@@ -243,15 +244,15 @@ template <typename F = double> class Reconstruction {
     return 0;
   }
 
-  int n_tubes_;
-  int n_pixels_;
-  int total_n_pixels_;
-  int n_iterations_;
-  int emissions_;
-  int n_non_zero_elements_;
+  S n_tubes_;
+  S n_pixels_;
+  S total_n_pixels_;
+  S n_iterations_;
+  S emissions_;
+  S n_non_zero_elements_;
   std::vector<std::vector<HitsPerPixel>> system_matrix;
-  std::vector<int> list_of_lors;
-  std::vector<int> n;
+  std::vector<S> list_of_lors;
+  std::vector<S> n;
   std::vector<F> scale;
 
   std::vector<F> rho_;

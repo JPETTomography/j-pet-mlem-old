@@ -24,9 +24,12 @@
 #define fourcc(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
 
 /// Provides storage for 1/8 PET system matrix
-template <typename F = double, typename HitType = int>
-class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
+template <typename FType = double, typename SType = int, typename HitType = int>
+class MatrixLORMajor : public TriangularPixelMap<FType, HitType> {
  public:
+  typedef FType F;
+  typedef SType S;
+  typedef typename std::make_signed<S>::type SS;
   typedef HitType Hit;
   typedef uint8_t BitmapPixel;
   typedef uint32_t FileInt;
@@ -39,7 +42,7 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
   /// @param dr       detector ring (model)
   /// @param n_pixels number of pixels in each directions
   /// @param s_pixel  size of single pixel (pixels are squares)
-  MatrixLORMajor(DetectorRing<F>& dr, size_t n_pixels, F s_pixel)
+  MatrixLORMajor(DetectorRing<F>& dr, S n_pixels, F s_pixel)
       : TriangularPixelMap<F, Hit>(n_pixels),
         output_triangular(true),
         dr_(dr),
@@ -67,9 +70,9 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
   }
 
   F pixel_size() const { return s_pixel_; }
-  int get_n_pixels() const { return Super::n_pixels_in_row(); }
+  S get_n_pixels() const { return Super::n_pixels_in_row(); }
 
-  void add_to_t_matrix(LOR& lor, size_t i_pixel) {
+  void add_to_t_matrix(LOR& lor, S i_pixel) {
     auto i_lor = t_lor_index(lor);
     auto pixels = t_matrix_[i_lor];
 
@@ -92,16 +95,16 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
     ++pixels[i_pixel];
   }
 
-  Hit operator()(LOR lor, size_t x, size_t y) const {
+  Hit operator()(LOR lor, S x, S y) const {
     bool diag;
-    int symmetry;
+    S symmetry;
     auto i_pixel = this->pixel_index(x, y, diag, symmetry);
     auto pixels = t_matrix_[lor_index(lor, symmetry)];
     return pixels ? pixels[i_pixel] * (diag ? 2 : 1) : 0;
   }
 
   F non_zero_lors() {
-    size_t non_zero_lors = 0;
+    S non_zero_lors = 0;
     for (auto i = 0; i < n_lors_; ++i) {
       if (t_matrix_[i])
         ++non_zero_lors;
@@ -109,17 +112,7 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
     return non_zero_lors;
   }
 
-  void increase_n_emissions(int n_emissions) { n_emissions_ += n_emissions; }
-
-  // binary serialization                 // n_pixels_  n_detectors  triagular
-  static const FileInt MAGIC_VERSION_1 =
-      fourcc('P', 'E', 'T', 't');  //                           X
-  static const FileInt MAGIC_VERSION_2 =
-      fourcc('P', 'E', 'T', 's');  //     X                     X
-  static const FileInt MAGIC_VERSION_TRIANGULAR =
-      fourcc('P', 'E', 'T', 'p');  //     X          X          X
-  static const FileInt MAGIC_VERSION_FULL =
-      fourcc('P', 'E', 'T', 'P');  //     X          X
+  void increase_n_emissions(Hit n_emissions) { n_emissions_ += n_emissions; }
 
   friend obstream& operator<<(obstream& out, MatrixLORMajor& mmc) {
     if (mmc.output_triangular) {
@@ -251,7 +244,7 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
           in >> x >> y >> hits;
 
           bool diag;
-          int symmetry;
+          S symmetry;
           auto i_pixel = mmc.pixel_index(x, y, diag, symmetry);
           if (i_pixel >= mmc.total_n_pixels_in_triangle())
             throw("invalid pixel address");
@@ -367,7 +360,7 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
     }
     auto gain = static_cast<double>(std::numeric_limits<BitmapPixel>::max()) /
                 pixel_max;
-    for (int y = this->n_pixels_in_row() - 1; y >= 0; --y) {
+    for (SS y = this->n_pixels_in_row() - 1; y >= 0; --y) {
       BitmapPixel row[Super::n_pixels_in_row()];
       for (auto x = 0; x < Super::n_pixels_in_row(); ++x) {
         row[x] =
@@ -380,7 +373,7 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
   bool output_triangular;
 
  private:
-  static size_t t_lor_index(LOR& lor) {
+  static S t_lor_index(LOR& lor) {
     if (lor.first < lor.second) {
       std::swap(lor.first, lor.second);
     }
@@ -390,7 +383,7 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
   /// Computes LOR index based on given symmetry (1 out 8)
   /// @param lor      detector number pair
   /// @param symmetry number (0..7)
-  size_t lor_index(LOR lor, int symmetry) const {
+  S lor_index(LOR lor, S symmetry) const {
     if (symmetry & 1) {
       lor.first = (n_2_detectors_ - lor.first) % dr_.detectors();
       lor.second = (n_2_detectors_ - lor.second) % dr_.detectors();
@@ -409,9 +402,20 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
   DetectorRing<F>& dr_;
   Matrix t_matrix_;
   Hit n_emissions_;
-  size_t n_2_detectors_;
-  size_t n_1_detectors_2_;
-  size_t n_1_detectors_4_;
-  size_t n_lors_;
+  S n_2_detectors_;
+  S n_1_detectors_2_;
+  S n_1_detectors_4_;
+  S n_lors_;
   F s_pixel_;
+
+ public:
+  // binary serialization                 // n_pixels_  n_detectors  triagular
+  static const FileInt MAGIC_VERSION_1 =
+      fourcc('P', 'E', 'T', 't');  //                           X
+  static const FileInt MAGIC_VERSION_2 =
+      fourcc('P', 'E', 'T', 's');  //     X                     X
+  static const FileInt MAGIC_VERSION_TRIANGULAR =
+      fourcc('P', 'E', 'T', 'p');  //     X          X          X
+  static const FileInt MAGIC_VERSION_FULL =
+      fourcc('P', 'E', 'T', 'P');  //     X          X
 };

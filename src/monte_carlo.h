@@ -3,13 +3,20 @@
 #include "matrix_lor_major.h"
 #include "detector_ring.h"
 
-template <
-    typename DetectorRingType, typename SystemMatrixType, typename F = double>
+template <typename DetectorRingType,
+          typename SystemMatrixType,
+          typename FType = double,
+          typename SType = int>
 class MonteCarlo {
-  typedef typename DetectorRingType::LOR LOR;
+  typedef DetectorRingType DetectorRing;
+  typedef SystemMatrixType SystemMatrix;
+  typedef FType F;
+  typedef SType S;
+  typedef typename std::make_signed<S>::type SS;
+  typedef typename DetectorRing::LOR LOR;
 
  public:
-  MonteCarlo(DetectorRingType& detector_ring, SystemMatrixType& system_matrix)
+  MonteCarlo(DetectorRing& detector_ring, SystemMatrix& system_matrix)
       : detector_ring_(detector_ring),
         system_matrix_(system_matrix) {
   }
@@ -20,14 +27,14 @@ class MonteCarlo {
   template <typename RandomGenerator, typename AcceptanceModel>
   void operator()(RandomGenerator& gen,
                   AcceptanceModel model,
-                  size_t n_mc_emissions,
+                  S n_mc_emissions,
                   bool o_collect_mc_matrix = true,
                   bool o_collect_pixel_stats = true) {
 
     uniform_real_distribution<> one_dis(0., 1.);
     uniform_real_distribution<> phi_dis(0., M_PI);
 
-    int n_pixels_2 = system_matrix_.get_n_pixels() / 2;
+    auto n_pixels_2 = system_matrix_.get_n_pixels() / 2;
     F s_pixel = system_matrix_.pixel_size();
     system_matrix_.increase_n_emissions(n_mc_emissions);
 
@@ -44,7 +51,7 @@ class MonteCarlo {
     // iterating only triangular matrix,
     // being upper right part or whole system matrix
     // descending, since biggest chunks start first, but may end last
-    for (ssize_t y = n_pixels_2 - 1; y >= 0; --y) {
+    for (SS y = n_pixels_2 - 1; y >= 0; --y) {
       for (auto x = 0; x <= y; ++x) {
 
         if ((x * x + y * y) * s_pixel * s_pixel >
@@ -87,9 +94,8 @@ class MonteCarlo {
   }
 
  private:
-  DetectorRingType& detector_ring_;
-  SystemMatrixType& system_matrix_;
+  DetectorRing& detector_ring_;
+  SystemMatrix& system_matrix_;
 
-  int n_emissions_;
-
+  S n_emissions_;
 };

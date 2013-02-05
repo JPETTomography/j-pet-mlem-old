@@ -41,28 +41,32 @@ class tausworthe {
   template <typename T> void LCG_step(T& z, T A, T C) { z = (A * z + C); }
 };
 
-template <typename F = double> class uniform_real_distribution {
+template <typename FType = double> class uniform_real_distribution {
  public:
-  typedef F result_type;
+  typedef FType result_type;
 
-  uniform_real_distribution(F a = 0., F b = 1.) : size_(b - a), offset_(a) {}
+  uniform_real_distribution(result_type a = 0., result_type b = 1.)
+      : size_(b - a),
+        offset_(a) {
+  }
 
   template <class Generator> result_type operator()(Generator& g) {
     return g() * size() * scale<Generator>() + offset() -
-           static_cast<F>(Generator::min()) / range<Generator>();
+           static_cast<result_type>(Generator::min()) / range<Generator>();
   }
 
   result_type size() const { return size_; }
   result_type offset() const { return offset_; }
 
   template <class Generator> static result_type range() {
-    return static_cast<F>(Generator::max()) - static_cast<F>(Generator::min());
+    return static_cast<result_type>(Generator::max()) -
+           static_cast<result_type>(Generator::min());
   }
 
   template <class Generator> static result_type scale() {
-    return static_cast<F>(1.0) / range<Generator>();
+    return static_cast<result_type>(1.0) / range<Generator>();
   }
 
  private:
-  F size_, offset_;
+  result_type size_, offset_;
 };
