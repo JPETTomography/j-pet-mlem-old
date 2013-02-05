@@ -35,6 +35,7 @@ class SimpleLOR {
   bool operator!=(const SimpleLOR& rhs) { return !((*this) == rhs); }
 
   struct Comparator {
+    Comparator() {}
     int operator()(const SimpleLOR& a, const SimpleLOR& b) const {
       if (a.first < b.first)
         return 1;
