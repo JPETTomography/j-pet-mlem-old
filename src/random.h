@@ -24,7 +24,7 @@ class tausworthe {
     srand48(a_seed);
     for (int i = 0; i < 4; ++i) {
       result_type r;
-      while ((r = lrand48()) < 128)
+      while ((r = static_cast<result_type>(lrand48())) < 128)
         ;
       seeds[i] = r;
     }
