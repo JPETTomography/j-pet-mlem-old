@@ -70,7 +70,7 @@ CPPFLAGS += -I../lib/cmdline
 
 
 # binary is folder name
-SRC  := $(filter-out %_test.cpp, $(filter-out pet_%.cpp, $(wildcard *.cpp)))
+SRC  := $(filter-out t.cpp, $(filter-out %_test.cpp, $(filter-out pet_%.cpp, $(wildcard *.cpp))))
 OBJ  := $(SRC:.cpp=.o)
 DEP  += $(SRC:.cpp=.d)
 
