@@ -126,12 +126,6 @@ test: t ; @./t
 t: $(TOBJ) $(OBJ)
 	$(call LD_info)
 	@$(CXX) -o $@ $^  $(LDFLAGS)
-t.o:
-	@if [ -t 1 ]; then echo "$(green)$(CXX)$(none)\t$<"; else echo "$(CXX) $<"; fi
-	$(Q)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ \
-	-D CATCH_CONFIG_MAIN \
-	-D CATCH_CONFIG_USE_ANSI_COLOUR_CODES \
-	-x c++ ../lib/catch/include/catch.hpp
 
 # cleaning
 clean:
