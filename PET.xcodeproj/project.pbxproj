@@ -123,8 +123,6 @@
 		97F5CB0116C1864000ADD35A /* pet_matrix */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = pet_matrix; sourceTree = BUILT_PRODUCTS_DIR; };
 		97F5CB0516C186C500ADD35A /* cmdline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cmdline.h; sourceTree = "<group>"; };
 		97F5CB0616C186C500ADD35A /* README.rst */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.rst; sourceTree = "<group>"; };
-		97F5CB0716C186C500ADD35A /* test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test.cpp; sourceTree = "<group>"; };
-		97F5CB0816C186C500ADD35A /* test2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test2.cpp; sourceTree = "<group>"; };
 		97F5CB1916C19A0E00ADD35A /* t */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = t; sourceTree = BUILT_PRODUCTS_DIR; };
 		97F5CB2816C19AC200ADD35A /* catch.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = catch.hpp; sourceTree = "<group>"; };
 		97F5CB2916C19AC200ADD35A /* catch_runner.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = catch_runner.hpp; sourceTree = "<group>"; };
@@ -303,7 +301,7 @@
 		97F5CB0316C186AA00ADD35A /* lib */ = {
 			isa = PBXGroup;
 			children = (
-				97F5CB2716C19AC200ADD35A /* include */,
+				97F5CB2716C19AC200ADD35A /* catch */,
 				97F5CB0416C186C500ADD35A /* cmdline */,
 			);
 			name = lib;
@@ -314,14 +312,12 @@
 			children = (
 				97F5CB0516C186C500ADD35A /* cmdline.h */,
 				97F5CB0616C186C500ADD35A /* README.rst */,
-				97F5CB0716C186C500ADD35A /* test.cpp */,
-				97F5CB0816C186C500ADD35A /* test2.cpp */,
 			);
 			name = cmdline;
 			path = lib/cmdline;
 			sourceTree = "<group>";
 		};
-		97F5CB2716C19AC200ADD35A /* include */ = {
+		97F5CB2716C19AC200ADD35A /* catch */ = {
 			isa = PBXGroup;
 			children = (
 				97F5CB2816C19AC200ADD35A /* catch.hpp */,
@@ -330,7 +326,7 @@
 				97F5CB2B16C19AC200ADD35A /* internal */,
 				97F5CB6416C19AC200ADD35A /* reporters */,
 			);
-			name = include;
+			name = catch;
 			path = lib/catch/include;
 			sourceTree = "<group>";
 		};
