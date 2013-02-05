@@ -21,8 +21,10 @@
 template <typename LorType, typename F = double>
 class MatrixPixelMajor : public TriangularPixelMap<F, int> {
  public:
+  typedef LorType Lor;
   typedef TriangularPixelMap<F, int> Super;
   typedef std::pair<LorType, int> Hit;
+  typedef std::pair<std::pair<LorType, int>, int> Pair;
 
   MatrixPixelMajor(int n_pixels)
       : TriangularPixelMap<F, int>(n_pixels),
@@ -31,7 +33,7 @@ class MatrixPixelMajor : public TriangularPixelMap<F, int> {
         total_n_pixels_(n_pixels_half_ * (n_pixels_half_ + 1) / 2),
         n_lors_(SimpleLOR::n_lors()),
         n_entries_(0),
-        pixel_tmp_(total_n_pixels_, (int*)0),
+        pixel_tmp_(total_n_pixels_, NULL),
         pixel_(total_n_pixels_),
         pixel_count_(total_n_pixels_),
         index_to_lor_(SimpleLOR::n_lors()) {
@@ -95,8 +97,6 @@ class MatrixPixelMajor : public TriangularPixelMap<F, int> {
     return LorType::t_index(lor);
   }
 
-  typedef std::pair<std::pair<LorType, int>, int> PairType;
-
   void to_pairs() {
     pair_.reserve(n_entries());
     for (int p = 0; p < total_n_pixels(); ++p) {
@@ -107,7 +107,7 @@ class MatrixPixelMajor : public TriangularPixelMap<F, int> {
     }
   }
 
-  PairType pair(int p) const { return pair_[p]; }
+  Pair pair(int p) const { return pair_[p]; }
 
   void sort_pairs_by_lors() {
     std::sort(pair_.begin(), pair_.end(), LorSorter());
@@ -125,13 +125,13 @@ class MatrixPixelMajor : public TriangularPixelMap<F, int> {
   };
 
   struct LorSorter {
-    bool operator()(const PairType& a, const PairType& b) const {
+    bool operator()(const Pair& a, const Pair& b) const {
       return LorType::less(a.first.first, b.first.first);
     }
   };
 
   struct PixelSorter {
-    bool operator()(const PairType& a, const PairType& b) const {
+    bool operator()(const Pair& a, const Pair& b) const {
       return a.first.second < b.first.second;
     }
   };
@@ -145,6 +145,5 @@ class MatrixPixelMajor : public TriangularPixelMap<F, int> {
   std::vector<std::vector<Hit>> pixel_;
   std::vector<int> pixel_count_;
   std::vector<LorType> index_to_lor_;
-  std::vector<PairType> pair_;
-
+  std::vector<Pair> pair_;
 };
