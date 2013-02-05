@@ -74,7 +74,7 @@ class Phantom {
   typedef Container::const_iterator const_iterator;
   Phantom() {}
 
-#if 1
+#if 0
   Phantom(double ll_x, double ll_y, double ur_x, double ur_y)
       : ll_x_(ll_x),
         ll_y_(ll_y),
@@ -114,8 +114,10 @@ class Phantom {
   }
 
  private:
+#if 0
   double ll_x_, ll_y_;
   double ur_x_, ur_y_;
+#endif
 
   Container regions_;
 };
