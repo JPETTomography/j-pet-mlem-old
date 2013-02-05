@@ -64,9 +64,10 @@ int main(int argc, char* argv[]) {
       auto it_fn_sep = fn.find_last_of("\\/");
       auto it_fn_ext = fn.find_last_of(".");
       fn_wo_ext =
-          fn.substr(0, it_fn_ext != std::string::npos &&
-                    (it_fn_sep == std::string::npos || it_fn_sep < it_fn_ext) ?
-                        it_fn_ext : std::string::npos);
+          fn.substr(0,
+                    it_fn_ext != std::string::npos &&
+                    (it_fn_sep == std::string::npos || it_fn_sep < it_fn_ext)
+                        ? it_fn_ext : std::string::npos);
       fn_ext = fn.substr(it_fn_ext != std::string::npos ? it_fn_ext : fn.size(),
                          fn.size());
     }

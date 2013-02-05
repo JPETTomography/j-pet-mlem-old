@@ -101,8 +101,8 @@ class MatrixPixelMajor : public TriangularPixelMap<F, int> {
     pair_.reserve(n_entries());
     for (int p = 0; p < total_n_pixels(); ++p) {
       for (auto it = pixel_[p].begin(); it != pixel_[p].end(); ++it) {
-        pair_.push_back(std::make_pair(std::make_pair((*it).first, p),
-                                       (*it).second));
+        pair_.push_back(
+            std::make_pair(std::make_pair((*it).first, p), (*it).second));
       }
     }
   }

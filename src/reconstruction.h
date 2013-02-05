@@ -30,9 +30,10 @@ template <typename F = double> class Reconstruction {
   typedef uint32_t FileInt;
   typedef uint16_t FileHalf;
 
-  Reconstruction(
-      int n_iterations, std::string matrix, std::string mean, F threshold =
-          (F) 0.0)
+  Reconstruction(int n_iterations,
+                 std::string matrix,
+                 std::string mean,
+                 F threshold = (F) 0.0)
       : n_iterations_(n_iterations),
         threshold_(threshold) {
     ibstream in(matrix);
@@ -92,7 +93,7 @@ template <typename F = double> class Reconstruction {
     clock_t stop = clock();
 
     double time = static_cast<double>(stop - start) / CLOCKS_PER_SEC;
-    std::cout << "means read time = " << time << "s\n";
+    std::cout << "means read time = " << time << "s" << std::endl;
 
     std::vector<HitsPerPixel> pixels;
 
@@ -157,10 +158,10 @@ template <typename F = double> class Reconstruction {
       if (scale[p] > 0)
         rho_detected_[p] = (F) 1.0;
     }
-    std::cout << "   Pixels: " << n_pixels_ << std::endl << "Emissions: "
-              << emissions_ << std::endl << "Detectors: " << n_tubes_
-              << std::endl << "     LORs: " << system_matrix.size()
-              << std::endl;
+    std::cout << "   Pixels: " << n_pixels_ << std::endl;
+    std::cout << "Emissions: " << emissions_ << std::endl;
+    std::cout << "Detectors: " << n_tubes_ << std::endl;
+    std::cout << "     LORs: " << system_matrix.size() << std::endl;
     std::cout << "Non zero elements: " << n_non_zero_elements_ << std::endl;
   }
 
@@ -215,10 +216,10 @@ template <typename F = double> class Reconstruction {
     }
 
     double time = static_cast<double>(stop - start) / CLOCKS_PER_SEC;
-    std::cout << "time = " << time << "s time/iter = " << time / n_iterations
-              << "s\n";
+    std::cout << "time = " << time << "s "
+              << "time/iter = " << time / n_iterations << "s" << std::endl;
     std::cout << "op/sec = " << n_non_zero_elements_ * (n_iterations / time)
-              << "\n";
+              << std::endl;
   }
 
   int get_n_pixels() { return n_pixels_; }

@@ -196,8 +196,8 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
 
     // validate incoming parameters
     if (in_n_pixels &&
-        in_n_pixels != (in_is_triangular ? mmc.n_pixels_in_row_half() :
-                            mmc.n_pixels_in_row())) {
+        in_n_pixels != (in_is_triangular ? mmc.n_pixels_in_row_half()
+                                         : mmc.n_pixels_in_row())) {
       std::ostringstream msg;
       msg << "incompatible input matrix dimensions " << in_n_pixels << " != "
           << mmc.n_pixels_in_row_half();

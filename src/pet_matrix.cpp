@@ -110,9 +110,10 @@ int main(int argc, char* argv[]) {
         auto fn_sep = fn->find_last_of("\\/");
         auto fn_ext = fn->find_last_of(".");
         auto fn_wo_ext =
-            fn->substr(0, fn_ext != std::string::npos &&
-                       (fn_sep == std::string::npos || fn_sep < fn_ext) ?
-                           fn_ext : std::string::npos);
+            fn->substr(0,
+                       fn_ext != std::string::npos &&
+                       (fn_sep == std::string::npos || fn_sep < fn_ext)
+                           ? fn_ext : std::string::npos);
         std::ifstream in(fn_wo_ext + ".cfg");
         if (!in.is_open())
           continue;
@@ -197,9 +198,10 @@ int main(int argc, char* argv[]) {
       auto fn_sep = fn.find_last_of("\\/");
       auto fn_ext = fn.find_last_of(".");
       auto fn_wo_ext =
-          fn.substr(0, fn_ext != std::string::npos &&
-                    (fn_sep == std::string::npos || fn_sep < fn_ext) ? fn_ext :
-                        std::string::npos);
+          fn.substr(0,
+                    fn_ext != std::string::npos &&
+                    (fn_sep == std::string::npos || fn_sep < fn_ext)
+                        ? fn_ext : std::string::npos);
       auto fn_wo_path =
           fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
 

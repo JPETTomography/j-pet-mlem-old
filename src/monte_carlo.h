@@ -3,8 +3,8 @@
 #include "matrix_lor_major.h"
 #include "detector_ring.h"
 
-template <typename DetectorRingType, typename SystemMatrixType, typename F =
-              double>
+template <
+    typename DetectorRingType, typename SystemMatrixType, typename F = double>
 class MonteCarlo {
   typedef typename DetectorRingType::LOR LOR;
 
