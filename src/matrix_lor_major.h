@@ -17,16 +17,14 @@
 #include <omp.h>
 #endif
 
-#include "detector_ring.h"
-#include "bstream.h"
-#include "triangular_pixel_map.h"
+#include "matrix.h"
 
 #define fourcc(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
 
 /// Provides storage for 1/8 PET system matrix
 template <typename LORType, typename SType = int, typename HitType = int>
-class MatrixLORMajor : public TriangularPixelMap<SType, HitType> {
-  typedef TriangularPixelMap<SType, HitType> Super;
+class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
+  typedef Matrix<LORType, SType, HitType> Super;
 
  public:
   typedef LORType LOR;
@@ -39,12 +37,10 @@ class MatrixLORMajor : public TriangularPixelMap<SType, HitType> {
   typedef Hit* Pixels;
   typedef Pixels* Matrix;
 
-  /// @param dr       detector ring (model)
-  /// @param n_pixels number of pixels in each directions
-  /// @param s_pixel  size of single pixel (pixels are squares)
+  /// @param n_pixels    number of pixels in each directions
+  /// @param n_detectors number of detectors stored in the matrix
   MatrixLORMajor(S n_pixels, S n_detectors)
-      : Super(n_pixels),
-        end_(LOR::end_for_detectors(n_detectors)),
+      : Super(n_pixels, n_detectors),
         output_triangular(true),
         n_emissions_(0),
         n_detectors_(n_detectors),
@@ -52,10 +48,6 @@ class MatrixLORMajor : public TriangularPixelMap<SType, HitType> {
         n_1_detectors_2_(n_detectors + n_detectors / 2),
         n_1_detectors_4_(n_detectors + n_detectors / 4),
         n_lors_(LOR::end_for_detectors(n_detectors).t_index()) {
-    if (n_pixels % 2)
-      throw("number of pixels must be multiple of 2");
-    if (n_detectors % 8)
-      throw("number of pixels must be multiple of 8");
 
     // reserve for all lors
     t_matrix_ = new Pixels[n_lors_]();
@@ -68,9 +60,6 @@ class MatrixLORMajor : public TriangularPixelMap<SType, HitType> {
     }
     delete[] t_matrix_;
   }
-
-  static LOR begin() { return LOR(); }
-  const LOR end() { return end_; }
 
   void add_to_t_matrix(LOR& lor, S i_pixel) {
     auto i_lor = t_lor_index(lor);

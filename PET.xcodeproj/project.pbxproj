@@ -73,6 +73,7 @@
 
 /* Begin PBXFileReference section */
 		977C2EB816C2F627003705C4 /* libpng15.15.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng15.15.dylib; path = /opt/X11/lib/libpng15.15.dylib; sourceTree = "<absolute>"; };
+		977C2EBF16C308D3003705C4 /* matrix.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matrix.h; sourceTree = "<group>"; };
 		97F5CA8016C1857500ADD35A /* bstream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bstream.h; sourceTree = "<group>"; };
 		97F5CA8116C1857500ADD35A /* circle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = circle.h; sourceTree = "<group>"; };
 		97F5CA8216C1857500ADD35A /* circle_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = circle_test.cpp; sourceTree = "<group>"; };
@@ -199,6 +200,7 @@
 				97F5CA8D16C1857500ADD35A /* event_view.h */,
 				97F5CA8E16C1857500ADD35A /* geometry_plot.h */,
 				97F5CAB116C1857500ADD35A /* lor.h */,
+				977C2EBF16C308D3003705C4 /* matrix.h */,
 				97F5CA9116C1857500ADD35A /* matrix_lor_major.h */,
 				97F5CA9216C1857500ADD35A /* matrix_pixel_major.h */,
 				97F5CA9316C1857500ADD35A /* matrix_pixel_major_test.cpp */,

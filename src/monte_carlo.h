@@ -13,7 +13,7 @@ class MonteCarlo {
   typedef FType F;
   typedef SType S;
   typedef typename std::make_signed<S>::type SS;
-  typedef typename DetectorRing::LOR LOR;
+  typedef typename SystemMatrix::LOR LOR;
 
  public:
   MonteCarlo(
