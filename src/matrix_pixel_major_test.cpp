@@ -38,11 +38,11 @@ TEST_CASE("pix_major_system_matrix/add", "add one element") {
 
   LOR<> lor(9, 7);
   matrix.add_to_t_matrix(lor, 13);
-  matrix.finalize_pixel(13);
+  matrix.compact_pixel_index(13);
 
   auto hit = matrix.t_get_element(lor, 13);
   CHECK(hit == 1);
-  CHECK(matrix.n_entries() == 1);
+  CHECK(matrix.size() == 1);
   CHECK(matrix.n_lors(13) == 1);
 
   hit = matrix.t_get_element(lor, 12);
@@ -58,11 +58,11 @@ TEST_CASE("pix_major_system_matrix/add_twice", "add one element twice") {
   LOR<> lor(9, 7);
   matrix.add_to_t_matrix(lor, 13);
   matrix.add_to_t_matrix(lor, 13);
-  matrix.finalize_pixel(13);
+  matrix.compact_pixel_index(13);
 
   auto hit = matrix.t_get_element(lor, 13);
   CHECK(hit == 2);
-  CHECK(matrix.n_entries() == 1);
+  CHECK(matrix.size() == 1);
   CHECK(matrix.n_lors(13) == 1);
 
 }
@@ -75,13 +75,13 @@ TEST_CASE("pix_major_system_matrix/add_to_all",
   LOR<> lor(9, 7);
   for (int p = 0; p < matrix.total_n_pixels(); ++p) {
     matrix.add_to_t_matrix(lor, p);
-    matrix.finalize_pixel(p);
+    matrix.compact_pixel_index(p);
   }
 
   for (int p = 0; p < matrix.total_n_pixels(); ++p) {
     auto hit = matrix.t_get_element(lor, p);
     CHECK(hit == 1);
-    CHECK(matrix.n_entries() == matrix.total_n_pixels());
+    CHECK(matrix.size() == matrix.total_n_pixels());
     CHECK(matrix.n_lors(p) == 1);
   }
 
@@ -94,21 +94,21 @@ TEST_CASE("pix_major_system_matrix/to_pairs", "flatten") {
   LOR<> lor(9, 7);
   for (int p = 0; p < matrix.total_n_pixels(); ++p) {
     matrix.add_to_t_matrix(lor, p);
-    matrix.finalize_pixel(p);
+    matrix.compact_pixel_index(p);
   }
 
   for (int p = 0; p < matrix.total_n_pixels(); ++p) {
     auto hit = matrix.t_get_element(lor, p);
     CHECK(hit == 1);
-    CHECK(matrix.n_entries() == matrix.total_n_pixels());
+    CHECK(matrix.size() == matrix.total_n_pixels());
     CHECK(matrix.n_lors(p) == 1);
   }
 
-  matrix.to_pairs();
+  matrix.make_list();
   matrix.sort_pairs_by_lors();
 
   for (int p = 0; p < matrix.total_n_pixels(); ++p) {
-    CHECK(matrix.pair(p).first.first == lor);
+    CHECK(std::get<0>(matrix[p]) == lor);
   }
 
 }
