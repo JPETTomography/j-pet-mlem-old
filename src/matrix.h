@@ -1,6 +1,7 @@
 #pragma once
 
 #include "triangular_pixel_map.h"
+#include "sparse_matrix.h"
 #include "bstream.h"
 
 template <typename LORType, typename SType = int, typename HitType = int>
@@ -15,6 +16,7 @@ class Matrix : public TriangularPixelMap<SType, HitType> {
   typedef uint8_t BitmapPixel;
   typedef uint32_t FileInt;
   typedef uint16_t FileHalf;
+  typedef SparseMatrix<LORType, SType, HitType> Sparse;
 
   /// @param n_pixels    number of pixels in each directions
   /// @param n_detectors number of detectors stored in the matrix
@@ -72,6 +74,8 @@ class Matrix : public TriangularPixelMap<SType, HitType> {
   }
 
   bool output_triangular;
+
+  Sparse to_sparse() const { throw("not supported, use specific subclass"); }
 
  private:
   S n_pixels_;

@@ -31,6 +31,7 @@ class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
   typedef std::tuple<LOR, S, Hit> LORPixelHit;
   typedef std::vector<LOR> LORList;
   typedef std::vector<LORPixelHit> LORPixelHitList;
+  typedef typename Super::Sparse Sparse;
 
   MatrixPixelMajor(S n_pixels, S n_detectors)
       : Super(n_pixels, n_detectors),
@@ -107,47 +108,22 @@ class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
 
   static S t_lor_index(const LOR& lor) { return lor.t_index(); }
 
-  void make_list() {
-    lor_pixel_hit_list_.reserve(size_);
+  Sparse to_sparse() {
+    Sparse sparse;
+    sparse.reserve(size_);
     for (S p = 0; p < total_n_pixels_; ++p) {
       for (auto it = pixel_lor_hits_[p].begin(); it != pixel_lor_hits_[p].end();
            ++it) {
-        lor_pixel_hit_list_.push_back(LORPixelHit(it->first, p, it->second));
+        sparse.push_back(LORPixelHit(it->first, p, it->second));
       }
     }
-  }
-
-  LORPixelHit operator[](typename LORPixelHitList::size_type i) const {
-    return lor_pixel_hit_list_[i];
-  }
-
-  void sort_pairs_by_lors() {
-    std::sort(
-        lor_pixel_hit_list_.begin(), lor_pixel_hit_list_.end(), SorterByLOR());
-  }
-
-  void sort_pairs_by_pixels() {
-    std::sort(lor_pixel_hit_list_.begin(),
-              lor_pixel_hit_list_.end(),
-              SorterByPixel());
+    return sparse;
   }
 
  private:
   struct LORHitComparator {
     bool operator()(const LORHit& a, const LORHit& b) const {
       return a.first < b.first;
-    }
-  };
-
-  struct SorterByPixel {
-    bool operator()(const LORPixelHit& a, const LORPixelHit& b) const {
-      return std::get<1>(a) < std::get<1>(b);
-    }
-  };
-
-  struct SorterByLOR {
-    bool operator()(const LORPixelHit& a, const LORPixelHit& b) const {
-      return std::get<0>(a) < std::get<0>(b);
     }
   };
 
@@ -160,5 +136,4 @@ class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
   std::vector<std::vector<LORHit>> pixel_lor_hits_;
   std::vector<S> pixel_lor_count_;
   LORList index_to_lor_;
-  LORPixelHitList lor_pixel_hit_list_;
 };

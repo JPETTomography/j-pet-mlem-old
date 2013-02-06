@@ -87,7 +87,7 @@ TEST_CASE("pix_major_system_matrix/add_to_all",
 
 }
 
-TEST_CASE("pix_major_system_matrix/to_pairs", "flatten") {
+TEST_CASE("pix_major_system_matrix/to_sparse", "flatten") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
   MatrixPixelMajor<LOR<>> matrix(128, 140);
 
@@ -104,11 +104,11 @@ TEST_CASE("pix_major_system_matrix/to_pairs", "flatten") {
     CHECK(matrix.n_lors(p) == 1);
   }
 
-  matrix.make_list();
-  matrix.sort_pairs_by_lors();
+  auto sparse = matrix.to_sparse();
+  sparse.sort_by_lor();
 
   for (int p = 0; p < matrix.total_n_pixels(); ++p) {
-    CHECK(std::get<0>(matrix[p]) == lor);
+    CHECK(std::get<0>(sparse[p]) == lor);
   }
 
 }
