@@ -1,15 +1,13 @@
 #pragma once
 
-template <typename FType = double, typename SType = int, typename HitType = int>
+template <typename SType = int, typename HitType = int>
 class TriangularPixelMap {
  public:
-  typedef FType F;
   typedef SType S;
   typedef typename std::make_signed<S>::type SS;
   typedef HitType Hit;
   typedef Hit* Pixels;
   typedef uint8_t BitmapPixel;
-  typedef typename DetectorRing<F>::LOR LOR;
 
   // reserve for pixel stats
   TriangularPixelMap(S n_pixels_a)

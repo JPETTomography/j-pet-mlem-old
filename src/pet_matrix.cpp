@@ -14,6 +14,7 @@
 #include "random.h"
 #include "detector_ring.h"
 #include "matrix_lor_major.h"
+#include "lor.h"
 #include "model.h"
 #include "png_writer.h"
 #include "svg_ostream.h"
@@ -165,9 +166,10 @@ int main(int argc, char* argv[]) {
     }
 
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
-    MatrixLORMajor<> matrix(dr, n_pixels, s_pixel);
+    MatrixLORMajor<LOR<>> matrix(n_pixels, n_detectors);
 
-    MonteCarlo<DetectorRing<>, MatrixLORMajor<>> monte_carlo(dr, matrix);
+    MonteCarlo<DetectorRing<>, MatrixLORMajor<LOR<>>> monte_carlo(
+        dr, matrix, s_pixel);
 
     for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
       ibstream in(*fn, std::ios::binary);
@@ -229,7 +231,7 @@ int main(int argc, char* argv[]) {
 
     // visual debugging output
     if (cl.exist("png")) {
-      MatrixLORMajor<>::LOR lor(0, 0);
+      LOR<> lor(0, 0);
       lor.first = cl.get<int>("from");
       if (cl.exist("to")) {
         lor.second = cl.get<int>("to");

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "triangular_pixel_map.h"
+#include "hit_list.h"
 
 /// This class represents a system matrix that stores the content in
 /// "pixel major" mode. That is for each pixel a list w lors is kept.
@@ -18,25 +19,22 @@
 /// So this class has the possibility to write the matrix down in the
 /// triangular lor_major and full lor_major format.
 
-template <typename LORType,
-          typename FType = double,
-          typename SType = int,
-          typename HitType = int>
-class MatrixPixelMajor : public TriangularPixelMap<FType, SType> {
+template <typename LORType, typename SType = int, typename HitType = int>
+class MatrixPixelMajor : public TriangularPixelMap<SType, HitType> {
+  typedef TriangularPixelMap<SType, HitType> Super;
+
  public:
   typedef LORType LOR;
-  typedef FType F;
   typedef SType S;
   typedef HitType Hit;
   typedef typename std::make_signed<S>::type SS;
-  typedef TriangularPixelMap<F, S> Super;
   typedef std::pair<LOR, Hit> LORHit;
   typedef std::tuple<LOR, S, Hit> LORPixelHit;
   typedef std::vector<LOR> LORList;
   typedef std::vector<LORPixelHit> LORPixelHitList;
 
   MatrixPixelMajor(S n_pixels, S n_detectors)
-      : TriangularPixelMap<F, S>(n_pixels),
+      : Super(n_pixels),
         end_(LOR::end_for_detectors(n_detectors)),
         n_pixels_(n_pixels),
         n_pixels_half_(n_pixels_ / 2),
@@ -47,6 +45,12 @@ class MatrixPixelMajor : public TriangularPixelMap<FType, SType> {
         pixel_lor_hits_(total_n_pixels_),
         pixel_lor_count_(total_n_pixels_),
         index_to_lor_(LOR::end_for_detectors(n_detectors).t_index()) {
+    if (n_pixels % 2)
+      throw("number of pixels must be multiple of 2");
+    if (n_detectors % 8)
+      throw("number of pixels must be multiple of 8");
+
+    // store index to LOR mapping
     for (auto lor = begin(); lor != end(); ++lor) {
       index_to_lor_[lor.t_index()] = lor;
     }

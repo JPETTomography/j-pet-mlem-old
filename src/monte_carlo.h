@@ -16,9 +16,11 @@ class MonteCarlo {
   typedef typename DetectorRing::LOR LOR;
 
  public:
-  MonteCarlo(DetectorRing& detector_ring, SystemMatrix& system_matrix)
+  MonteCarlo(
+      DetectorRing& detector_ring, SystemMatrix& system_matrix, F pixel_size)
       : detector_ring_(detector_ring),
-        system_matrix_(system_matrix) {
+        system_matrix_(system_matrix),
+        pixel_size_(pixel_size) {
   }
 
   /// Executes Monte-Carlo system matrix generation for given detector ring
@@ -34,8 +36,7 @@ class MonteCarlo {
     uniform_real_distribution<> one_dis(0., 1.);
     uniform_real_distribution<> phi_dis(0., M_PI);
 
-    auto n_pixels_2 = system_matrix_.get_n_pixels() / 2;
-    F s_pixel = system_matrix_.pixel_size();
+    auto n_pixels_2 = system_matrix_.n_pixels_in_row() / 2;
     system_matrix_.increase_n_emissions(n_mc_emissions);
 
 #if _OPENMP
@@ -54,7 +55,7 @@ class MonteCarlo {
     for (SS y = n_pixels_2 - 1; y >= 0; --y) {
       for (auto x = 0; x <= y; ++x) {
 
-        if ((x * x + y * y) * s_pixel * s_pixel >
+        if ((x * x + y * y) * pixel_size_ * pixel_size_ >
             detector_ring_.fov_radius() * detector_ring_.fov_radius())
           continue;
 
@@ -64,8 +65,8 @@ class MonteCarlo {
 #else
           auto& l_gen = gen;
 #endif
-          auto rx = (x + one_dis(l_gen)) * s_pixel;
-          auto ry = (y + one_dis(l_gen)) * s_pixel;
+          auto rx = (x + one_dis(l_gen)) * pixel_size_;
+          auto ry = (y + one_dis(l_gen)) * pixel_size_;
 
           // ensure we are within a triangle
           if (rx > ry)
@@ -96,6 +97,7 @@ class MonteCarlo {
  private:
   DetectorRing& detector_ring_;
   SystemMatrix& system_matrix_;
+  F pixel_size_;
 
   S n_emissions_;
 };
