@@ -35,7 +35,7 @@ class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
   typedef uint32_t FileInt;
   typedef uint16_t FileHalf;
   typedef Hit* Pixels;
-  typedef Pixels* Matrix;
+  typedef Pixels* TMatrix;
 
   /// @param n_pixels    number of pixels in each directions
   /// @param n_detectors number of detectors stored in the matrix
@@ -389,7 +389,7 @@ class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
   }
 
   LOR end_;
-  Matrix t_matrix_;
+  TMatrix t_matrix_;
   Hit n_emissions_;
   S n_detectors_;
   S n_2_detectors_;
