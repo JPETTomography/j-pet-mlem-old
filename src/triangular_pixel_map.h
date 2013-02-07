@@ -1,11 +1,9 @@
 #pragma once
 
-#include "pixel.h"
-
-template <typename SType = int, typename HitType = int>
+template <typename PixelType, typename SType = int, typename HitType = int>
 class TriangularPixelMap {
  public:
-  typedef ::Pixel<SType> Pixel;
+  typedef PixelType Pixel;
   typedef SType S;
   typedef typename std::make_signed<S>::type SS;
   typedef HitType Hit;

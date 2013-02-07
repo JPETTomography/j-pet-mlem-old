@@ -4,17 +4,20 @@
 #include "sparse_matrix.h"
 #include "bstream.h"
 
-template <typename LORType, typename SType = int, typename HitType = int>
-class Matrix : public TriangularPixelMap<SType, HitType> {
-  typedef TriangularPixelMap<SType, HitType> Super;
+template <typename PixelType,
+          typename LORType,
+          typename SType = int,
+          typename HitType = int>
+class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
+  typedef TriangularPixelMap<PixelType, SType, HitType> Super;
 
  public:
-  typedef typename Super::Pixel Pixel;
+  typedef PixelType Pixel;
   typedef LORType LOR;
   typedef SType S;
   typedef typename std::make_signed<S>::type SS;
   typedef HitType Hit;
-  typedef ::SparseMatrix<LORType, SType, HitType> SparseMatrix;
+  typedef ::SparseMatrix<PixelType, LORType, SType, HitType> SparseMatrix;
 
   /// @param n_pixels_in_row number of pixels in each directions
   /// @param n_detectors     number of detectors stored in the matrix

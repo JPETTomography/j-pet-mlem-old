@@ -1,15 +1,17 @@
 #pragma once
 
 #include "bstream.h"
-#include "pixel.h"
 
-template <typename LORType, typename SType = int, typename HitType = int>
+template <typename PixelType,
+          typename LORType,
+          typename SType = int,
+          typename HitType = int>
 class SparseMatrix
-    : public std::vector<std::tuple<LORType, Pixel<SType>, HitType>> {
-  typedef std::vector<std::tuple<LORType, Pixel<SType>, HitType>> Super;
+    : public std::vector<std::tuple<LORType, PixelType, HitType>> {
+  typedef std::vector<std::tuple<LORType, PixelType, HitType>> Super;
 
  public:
-  typedef ::Pixel<SType> Pixel;
+  typedef PixelType Pixel;
   typedef LORType LOR;
   typedef SType S;
   typedef typename std::make_signed<S>::type SS;
@@ -186,8 +188,8 @@ class SparseMatrix
 
  private:
   S n_pixels_in_row_;
-  S n_emissions_;
   S n_detectors_;
+  S n_emissions_;
   S n_lors_;
   bool triangular_;
 

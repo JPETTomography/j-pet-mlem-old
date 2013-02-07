@@ -20,6 +20,7 @@
 #else
 #include "matrix_pixel_major.h"
 #endif
+#include "pixel.h"
 #include "lor.h"
 #include "model.h"
 #include "png_writer.h"
@@ -173,9 +174,9 @@ int main(int argc, char* argv[]) {
 
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
 #if LOR_MAJOR
-    MatrixLORMajor<LOR<>> matrix(n_pixels, n_detectors);
+    MatrixLORMajor<Pixel<>, LOR<>> matrix(n_pixels, n_detectors);
 #else
-    MatrixPixelMajor<LOR<>> matrix(n_pixels, n_detectors);
+    MatrixPixelMajor<Pixel<>, LOR<>> matrix(n_pixels, n_detectors);
 #endif
 
     MonteCarlo<decltype(dr), decltype(matrix)> monte_carlo(dr, matrix, s_pixel);

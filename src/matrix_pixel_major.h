@@ -18,12 +18,15 @@
 /// So this class has the possibility to write the matrix down in the
 /// triangular lor_major and full lor_major format.
 
-template <typename LORType, typename SType = int, typename HitType = int>
-class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
-  typedef Matrix<LORType, SType, HitType> Super;
+template <typename PixelType,
+          typename LORType,
+          typename SType = int,
+          typename HitType = int>
+class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
+  typedef Matrix<PixelType, LORType, SType, HitType> Super;
 
  public:
-  typedef typename Super::Pixel Pixel;
+  typedef PixelType Pixel;
   typedef LORType LOR;
   typedef SType S;
   typedef HitType Hit;
@@ -156,9 +159,9 @@ class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
     }
   };
 
-  S n_lors_;
-  S n_pixels_;
   S n_pixels_in_row_half_;
+  S n_pixels_;
+  S n_lors_;
   S size_;
   Hit** pixel_lor_hits_ptr_;
   std::vector<std::vector<LORHit>> pixel_lor_hits_;

@@ -20,12 +20,15 @@
 #include "matrix.h"
 
 /// Provides storage for 1/8 PET system matrix
-template <typename LORType, typename SType = int, typename HitType = int>
-class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
-  typedef Matrix<LORType, SType, HitType> Super;
+template <typename PixelType,
+          typename LORType,
+          typename SType = int,
+          typename HitType = int>
+class MatrixLORMajor : public Matrix<PixelType, LORType, SType, HitType> {
+  typedef Matrix<PixelType, LORType, SType, HitType> Super;
 
  public:
-  typedef typename Super::Pixel Pixel;
+  typedef PixelType Pixel;
   typedef LORType LOR;
   typedef SType S;
   typedef HitType Hit;
