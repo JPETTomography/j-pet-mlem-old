@@ -2,7 +2,8 @@
 
 #include <cmath>
 
-template <typename F = double> struct Point {
+template <typename FType = double> struct Point {
+  typedef FType F;
 
   Point(F x_a, F y_a) : x(x_a), y(y_a) {}
   Point(std::pair<F, F> p) : x(p.first), y(p.second) {}

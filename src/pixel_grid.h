@@ -3,15 +3,20 @@
 #include "point.h"
 #include <vector>
 
-template <typename I = int> class Index {
+template <typename IType = int> class Index {
  public:
+  typedef IType I;
+
   Index(I xa, I ya) : x(xa), y(ya) {}
   I x;
   I y;
 };
 
-template <typename F = double, typename I = int> class PixelGrid {
+template <typename FType = double, typename IType = int> class PixelGrid {
  public:
+  typedef FType F;
+  typedef IType I;
+
   PixelGrid(const Point<F>& ll, const Point<F>& ur, I nx, I ny)
       : nx_(nx),
         ny_(ny),

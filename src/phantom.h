@@ -74,7 +74,7 @@ class Phantom {
   typedef Container::const_iterator const_iterator;
   Phantom() {}
 
-#if 1
+#if 0
   Phantom(double ll_x, double ll_y, double ur_x, double ur_y)
       : ll_x_(ll_x),
         ll_y_(ll_y),
@@ -114,20 +114,26 @@ class Phantom {
   }
 
  private:
+#if 0
   double ll_x_, ll_y_;
   double ur_x_, ur_y_;
+#endif
 
   Container regions_;
 };
 
-template <typename F = double> struct PointSource {
+template <typename FType = double> struct PointSource {
+  typedef FType F;
+
   PointSource(F x, F y, F intensity_a) : p(x, y), intensity(intensity_a) {}
   Point<F> p;
   F intensity;
 };
 
-template <typename F = double> class PointSources {
+template <typename FType = double> class PointSources {
  public:
+  typedef FType F;
+
   size_t n_sources() const { return sources_.size(); }
 
   void add(F x, F y, F intensity) {

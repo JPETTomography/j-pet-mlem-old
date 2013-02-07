@@ -2,8 +2,9 @@
 
 #include "polygon.h"
 
-template <typename F = double> class Detector : public Polygon<F> {
+template <typename FType = double> class Detector : public Polygon<FType> {
  public:
+  typedef FType F;
   typedef F Angle;
   typedef typename Polygon<F>::Point Point;
 

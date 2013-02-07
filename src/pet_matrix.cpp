@@ -5,15 +5,22 @@
 //
 // Using Monte Carlo method and square detector scintilators.
 
+#define LOR_MAJOR 1
+
 #include <iostream>
 #include <random>
 
-#include <cmdline.h>
+#include "cmdline.h"
 #include "cmdline_types.h"
 
 #include "random.h"
 #include "detector_ring.h"
+#if LOR_MAJOR
 #include "matrix_lor_major.h"
+#else
+#include "matrix_pixel_major.h"
+#endif
+#include "lor.h"
 #include "model.h"
 #include "png_writer.h"
 #include "svg_ostream.h"
@@ -33,13 +40,12 @@ int main(int argc, char* argv[]) {
     cl.add<cmdline::string>(
         "config", 'c', "load config file", false, cmdline::string(), false);
 #if _OPENMP
-    cl.add<size_t>(
-        "n-threads", 't', "number of OpenMP threads", false, 0, false);
+    cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 0, false);
 #endif
-    cl.add<size_t>(
+    cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
-    cl.add<size_t>("n-detectors", 'd', "number of ring detectors", false, 64);
-    cl.add<size_t>("n-emissions", 'e', "emissions per pixel", false, 0);
+    cl.add<int>("n-detectors", 'd', "number of ring detectors", false, 64);
+    cl.add<int>("n-emissions", 'e', "emissions per pixel", false, 0);
     cl.add<double>("radius", 'r', "inner detector ring radius", false, 0);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
     cl.add<double>("w-detector", 'w', "detector width", false);
@@ -66,9 +72,8 @@ int main(int argc, char* argv[]) {
     // visual debugging params
     cl.add<cmdline::string>(
         "png", 0, "output lor to png", false, cmdline::string(), false);
-    cl.add<ssize_t>(
-        "from", 0, "lor start detector to output", false, -1, false);
-    cl.add<ssize_t>("to", 0, "lor end detector to output", false, -1, false);
+    cl.add<int>("from", 0, "lor start detector to output", false, -1, false);
+    cl.add<int>("to", 0, "lor end detector to output", false, -1, false);
 
     // printing & stats params
     cl.add("print", 0, "print triangular sparse system matrix");
@@ -77,9 +82,9 @@ int main(int argc, char* argv[]) {
 
     cl.parse_check(argc, argv);
 
-    auto& n_pixels = cl.get<size_t>("n-pixels");
-    auto& n_detectors = cl.get<size_t>("n-detectors");
-    auto& n_emissions = cl.get<size_t>("n-emissions");
+    auto& n_pixels = cl.get<int>("n-pixels");
+    auto& n_detectors = cl.get<int>("n-detectors");
+    auto& n_emissions = cl.get<int>("n-emissions");
     auto& radius = cl.get<double>("radius");
     auto& s_pixel = cl.get<double>("s-pixel");
     auto& w_detector = cl.get<double>("w-detector");
@@ -110,9 +115,10 @@ int main(int argc, char* argv[]) {
         auto fn_sep = fn->find_last_of("\\/");
         auto fn_ext = fn->find_last_of(".");
         auto fn_wo_ext =
-            fn->substr(0, fn_ext != std::string::npos &&
-                       (fn_sep == std::string::npos || fn_sep < fn_ext) ?
-                           fn_ext : std::string::npos);
+            fn->substr(0,
+                       fn_ext != std::string::npos &&
+                       (fn_sep == std::string::npos || fn_sep < fn_ext)
+                           ? fn_ext : std::string::npos);
         std::ifstream in(fn_wo_ext + ".cfg");
         if (!in.is_open())
           continue;
@@ -125,7 +131,7 @@ int main(int argc, char* argv[]) {
 
 #if _OPENMP
     if (cl.exist("n-threads")) {
-      omp_set_num_threads(cl.get<size_t>("n-threads"));
+      omp_set_num_threads(cl.get<int>("n-threads"));
     }
 #endif
 
@@ -166,9 +172,13 @@ int main(int argc, char* argv[]) {
     }
 
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
-    MatrixLORMajor<> matrix(dr, n_pixels, s_pixel);
+#if LOR_MAJOR
+    MatrixLORMajor<LOR<>> matrix(n_pixels, n_detectors);
+#else
+    MatrixPixelMajor<LOR<>> matrix(n_pixels, n_detectors);
+#endif
 
-    MonteCarlo<DetectorRing<>, MatrixLORMajor<>> monte_carlo(dr, matrix);
+    MonteCarlo<decltype(dr), decltype(matrix)> monte_carlo(dr, matrix, s_pixel);
 
     for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
       ibstream in(*fn, std::ios::binary);
@@ -197,9 +207,10 @@ int main(int argc, char* argv[]) {
       auto fn_sep = fn.find_last_of("\\/");
       auto fn_ext = fn.find_last_of(".");
       auto fn_wo_ext =
-          fn.substr(0, fn_ext != std::string::npos &&
-                    (fn_sep == std::string::npos || fn_sep < fn_ext) ? fn_ext :
-                        std::string::npos);
+          fn.substr(0,
+                    fn_ext != std::string::npos &&
+                    (fn_sep == std::string::npos || fn_sep < fn_ext)
+                        ? fn_ext : std::string::npos);
       auto fn_wo_path =
           fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
 
@@ -229,10 +240,10 @@ int main(int argc, char* argv[]) {
 
     // visual debugging output
     if (cl.exist("png")) {
-      MatrixLORMajor<>::LOR lor(0, 0);
-      lor.first = cl.get<ssize_t>("from");
+      LOR<> lor(0, 0);
+      lor.first = cl.get<int>("from");
       if (cl.exist("to")) {
-        lor.second = cl.get<ssize_t>("to");
+        lor.second = cl.get<int>("to");
       } else {
         lor.second = (lor.first + n_detectors / 2) % n_detectors;
       }

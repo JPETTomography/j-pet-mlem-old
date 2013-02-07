@@ -2,8 +2,10 @@
 
 #include <fstream>
 
-template <typename F = double> class svg_ostream : public std::ofstream {
+template <typename FType = double> class svg_ostream : public std::ofstream {
  public:
+  typedef FType F;
+
   svg_ostream(
       const std::string fn, F x_max, F y_max, F image_width, F image_height)
       : std::ofstream(fn) {
@@ -14,20 +16,29 @@ template <typename F = double> class svg_ostream : public std::ofstream {
     auto stroke = 1. / scale;
 
     *this << "<?xml version=\"1.0\" standalone=\"no\"?>" << std::endl;
-    *this
-        << "<svg width=\"" << image_width << "\" height=\"" << image_height
-        << "\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">"
-        << std::endl;
+    *this << "<svg"
+          << " width=\"" << image_width << "\""
+          << " height=\"" << image_height << "\""
+          << " version=\"1.1\""
+          << " xmlns=\"http://www.w3.org/2000/svg\""
+          << " xmlns:xlink=\"http://www.w3.org/1999/xlink\">" << std::endl;
     *this << "<defs>" << std::endl;
-    *this << "  <style type=\"text/css\"><![CDATA[" << std::endl;
+    *this << "  <style type=\"text/css\">"
+          << "<![CDATA[" << std::endl;
 #if BLACK_BACKGROUND
     *this << "    svg     { background: black; }" << std::endl;
 #endif
-    *this << "    polygon { fill: #ff9090; stroke: red; stroke-width: "
-          << stroke << "; }" << std::endl;
-    *this << "    circle  { fill: white; stroke: green; stroke-width: "
-          << stroke << "; }" << std::endl;
-    *this << "  ]]></style>" << std::endl;
+    *this << "    polygon {"
+          << " fill: #ff9090;"
+          << " stroke: red;"
+          << " stroke-width: " << stroke << ";"
+          << " }" << std::endl;
+    *this << "    circle  { fill: white;"
+          << " stroke: green;"
+          << " stroke-width: " << stroke << ";"
+          << " }" << std::endl;
+    *this << "  ]]>"
+          << "</style>" << std::endl;
     *this << "</defs>" << std::endl;
     *this << "<g transform=\"translate(2, 2)\">" << std::endl;
     *this << "<g transform=\"scale(" << scale << ',' << scale << ")\">"
@@ -44,9 +55,12 @@ template <typename F = double> class svg_ostream : public std::ofstream {
   }
 
   svg_ostream& link_image(std::string fn, F x, F y, F width, F height) {
-    *this << "<image xlink:href=\"" << fn << "\" x=\"" << x << "\" y=\"" << y
-          << "\" height=\"" << width << "\" width=\"" << height << "\"/>"
-          << std::endl;
+    *this << "<image"
+          << " xlink:href=\"" << fn << "\""
+          << " x=\"" << x << "\""
+          << " y=\"" << y << "\""
+          << " height=\"" << width << "\""
+          << " width=\"" << height << "\"/>" << std::endl;
     return *this;
   }
 };

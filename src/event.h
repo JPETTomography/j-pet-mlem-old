@@ -2,7 +2,8 @@
 
 #include "point.h"
 
-template <typename F = double> struct Event {
+template <typename FType = double> struct Event {
+  typedef FType F;
   typedef ::Point<F> Point;
 
   Event(F x_a, F y_a, F phi_a) : x(x_a), y(y_a), phi(phi_a) {

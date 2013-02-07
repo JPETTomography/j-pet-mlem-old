@@ -1,6 +1,6 @@
 #pragma once
 
-#include "triangular_pixel_map.h"
+#include "matrix.h"
 
 /// This class represents a system matrix that stores the content in
 /// "pixel major" mode. That is for each pixel a list w lors is kept.
@@ -18,133 +18,139 @@
 /// So this class has the possibility to write the matrix down in the
 /// triangular lor_major and full lor_major format.
 
-template <typename LorType, typename F = double>
-class MatrixPixelMajor : public TriangularPixelMap<F, int> {
- public:
-  typedef TriangularPixelMap<F, int> Super;
-  typedef std::pair<LorType, int> Hit;
+template <typename LORType, typename SType = int, typename HitType = int>
+class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
+  typedef Matrix<LORType, SType, HitType> Super;
 
-  MatrixPixelMajor(int n_pixels)
-      : TriangularPixelMap<F, int>(n_pixels),
+ public:
+  typedef LORType LOR;
+  typedef SType S;
+  typedef HitType Hit;
+  typedef typename std::make_signed<S>::type SS;
+  typedef std::pair<LOR, Hit> LORHit;
+  typedef std::tuple<LOR, S, Hit> LORPixelHit;
+  typedef std::vector<LOR> LORList;
+  typedef std::vector<LORPixelHit> LORPixelHitList;
+  typedef typename Super::Sparse Sparse;
+
+  MatrixPixelMajor(S n_pixels, S n_detectors)
+      : Super(n_pixels, n_detectors),
         n_pixels_(n_pixels),
         n_pixels_half_(n_pixels_ / 2),
         total_n_pixels_(n_pixels_half_ * (n_pixels_half_ + 1) / 2),
-        n_lors_(SimpleLOR::n_lors()),
-        n_entries_(0),
-        pixel_tmp_(total_n_pixels_, (int*)0),
-        pixel_(total_n_pixels_),
-        pixel_count_(total_n_pixels_),
-        index_to_lor_(SimpleLOR::n_lors()) {
-    for (auto l_it = SimpleLOR::begin(); l_it != SimpleLOR::end(); ++l_it) {
-      auto lor = *l_it;
-      index_to_lor_[t_lor_index(lor)] = lor;
+        n_lors_(LOR::end_for_detectors(n_detectors).t_index()),
+        size_(0),
+        pixel_lor_hits_ptr_(new S* [total_n_pixels_]()),
+        pixel_lor_hits_(total_n_pixels_),
+        pixel_lor_count_(total_n_pixels_),
+        index_to_lor_(LOR::end_for_detectors(n_detectors).t_index()) {
+
+    // store index to LOR mapping
+    for (auto lor = Super::begin(); lor != Super::end(); ++lor) {
+      index_to_lor_[lor.t_index()] = lor;
     }
   }
 
-  int n_entries() const { return n_entries_; }
-  int n_lors(int p) const { return pixel_count_[p]; }
-  int total_n_pixels() const { return total_n_pixels_; }
+  S size() const { return size_; }
 
-  void add_to_t_matrix(const LorType& lor, int i_pixel) {
+  S n_lors(S p) const { return pixel_lor_count_[p]; }
+  S total_n_pixels() const { return total_n_pixels_; }
 
-    if (!pixel_tmp_[i_pixel]) {
-      pixel_tmp_[i_pixel] = new int[n_lors_]();
+  void add_to_t_matrix(const LOR& lor, S i_pixel) {
+
+    if (!pixel_lor_hits_ptr_[i_pixel]) {
+      pixel_lor_hits_ptr_[i_pixel] = new S[n_lors_]();
     }
-    if (pixel_tmp_[i_pixel][t_lor_index(lor)] == 0) {
-      pixel_count_[i_pixel]++;
-      n_entries_++;
+    if (pixel_lor_hits_ptr_[i_pixel][t_lor_index(lor)] == 0) {
+      pixel_lor_count_[i_pixel]++;
+      size_++;
     }
-    pixel_tmp_[i_pixel][t_lor_index(lor)]++;
+    pixel_lor_hits_ptr_[i_pixel][t_lor_index(lor)]++;
   }
 
   ~MatrixPixelMajor() {
-    for (int p = 0; p < total_n_pixels_; ++p) {
-      if (pixel_tmp_[p]) {
-        delete[] pixel_tmp_[p];
+    for (S p = 0; p < total_n_pixels_; ++p) {
+      if (pixel_lor_hits_ptr_[p]) {
+        delete[] pixel_lor_hits_ptr_[p];
       }
     }
+    delete[] pixel_lor_hits_ptr_;
   }
 
-  int t_get_element(LorType lor, int i_pixel) {
-    auto hit = std::lower_bound(pixel_[i_pixel].begin(),
-                                pixel_[i_pixel].end(),
-                                std::make_pair(lor, 0),
-                                HitComparator());
+  S t_get_element(LOR lor, S i_pixel) {
+    auto it = std::lower_bound(pixel_lor_hits_[i_pixel].begin(),
+                               pixel_lor_hits_[i_pixel].end(),
+                               LORHit(lor, 0),
+                               LORHitComparator());
 
-    if (hit == pixel_[i_pixel].end())
+    if (it == pixel_lor_hits_[i_pixel].end())
       return 0;
-    return (*hit).second;
+    return it->second;
   }
 
-  void finalize_pixel(int i_pixel) {
-    pixel_[i_pixel].resize(pixel_count_[i_pixel]);
-    int it = 0;
-    for (int lor = 0; lor < n_lors_; ++lor) {
-      int hits;
-      if ((hits = pixel_tmp_[i_pixel][lor]) > 0) {
-        pixel_[i_pixel][it] = std::make_pair(index_to_lor_[lor], hits);
-        it++;
+  void compact_pixel_index(S i_pixel) {
+    // ensure we have enough space for the all LORs for that pixel
+    pixel_lor_hits_[i_pixel].resize(pixel_lor_count_[i_pixel]);
+
+    for (S i_lor = 0, lor_count = 0; i_lor < n_lors_; ++i_lor) {
+      S hits;
+      if ((hits = pixel_lor_hits_ptr_[i_pixel][i_lor]) > 0) {
+        pixel_lor_hits_[i_pixel][lor_count++] =
+            LORHit(index_to_lor_[i_lor], hits);
       }
     }
-    delete[] pixel_tmp_[i_pixel];
-    pixel_tmp_[i_pixel] = (int*)0;
-    std::sort(pixel_[i_pixel].begin(), pixel_[i_pixel].end(), HitComparator());
+
+    delete[] pixel_lor_hits_ptr_[i_pixel], pixel_lor_hits_ptr_[i_pixel] = NULL;
+
+    std::sort(pixel_lor_hits_[i_pixel].begin(),
+              pixel_lor_hits_[i_pixel].end(),
+              LORHitComparator());
   }
 
-  static size_t t_lor_index(const LorType& lor) {
-    return LorType::t_index(lor);
-  }
+  static S t_lor_index(const LOR& lor) { return lor.t_index(); }
 
-  typedef std::pair<std::pair<LorType, int>, int> PairType;
-
-  void to_pairs() {
-    pair_.reserve(n_entries());
-    for (int p = 0; p < total_n_pixels(); ++p) {
-      for (auto it = pixel_[p].begin(); it != pixel_[p].end(); ++it) {
-        pair_.push_back(std::make_pair(std::make_pair((*it).first, p),
-                                       (*it).second));
+  Sparse to_sparse() {
+    Sparse sparse;
+    sparse.reserve(size_);
+    for (S p = 0; p < total_n_pixels_; ++p) {
+      for (auto it = pixel_lor_hits_[p].begin(); it != pixel_lor_hits_[p].end();
+           ++it) {
+        sparse.push_back(LORPixelHit(it->first, p, it->second));
       }
     }
+    return sparse;
   }
 
-  PairType pair(int p) const { return pair_[p]; }
-
-  void sort_pairs_by_lors() {
-    std::sort(pair_.begin(), pair_.end(), LorSorter());
+  friend obstream& operator<<(obstream& out, MatrixPixelMajor& mmc) {
+    return out;
   }
 
-  void sort_pairs_by_pixels() {
-    std::sort(pair_.begin(), pair_.end(), PixelSorter());
+  friend ibstream& operator>>(ibstream& in, MatrixPixelMajor& mmc) {
+    return in;
+  }
+
+  // text output (for validation)
+  friend std::ostream& operator<<(std::ostream& out, MatrixPixelMajor& mmc) {
+    return out;
   }
 
  private:
-  struct HitComparator {
-    bool operator()(const Hit& a, const Hit& b) const {
-      return LorType::less(a.first, b.first);
+  // disable copy contructor
+  MatrixPixelMajor(const MatrixPixelMajor& rhs) {}
+
+  struct LORHitComparator {
+    bool operator()(const LORHit& a, const LORHit& b) const {
+      return a.first < b.first;
     }
   };
 
-  struct LorSorter {
-    bool operator()(const PairType& a, const PairType& b) const {
-      return LorType::less(a.first.first, b.first.first);
-    }
-  };
-
-  struct PixelSorter {
-    bool operator()(const PairType& a, const PairType& b) const {
-      return a.first.second < b.first.second;
-    }
-  };
-
-  int n_pixels_;
-  int n_pixels_half_;
-  int total_n_pixels_;
-  int n_lors_;
-  int n_entries_;
-  std::vector<int*> pixel_tmp_;
-  std::vector<std::vector<Hit>> pixel_;
-  std::vector<int> pixel_count_;
-  std::vector<LorType> index_to_lor_;
-  std::vector<PairType> pair_;
-
+  S n_pixels_;
+  S n_pixels_half_;
+  S total_n_pixels_;
+  S n_lors_;
+  S size_;
+  Hit** pixel_lor_hits_ptr_;
+  std::vector<std::vector<LORHit>> pixel_lor_hits_;
+  std::vector<S> pixel_lor_count_;
+  LORList index_to_lor_;
 };

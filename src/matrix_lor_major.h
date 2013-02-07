@@ -17,42 +17,36 @@
 #include <omp.h>
 #endif
 
-#include "detector_ring.h"
-#include "bstream.h"
-#include "triangular_pixel_map.h"
+#include "matrix.h"
 
 #define fourcc(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
 
 /// Provides storage for 1/8 PET system matrix
-template <typename F = double, typename HitType = int>
-class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
+template <typename LORType, typename SType = int, typename HitType = int>
+class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
+  typedef Matrix<LORType, SType, HitType> Super;
+
  public:
+  typedef LORType LOR;
+  typedef SType S;
+  typedef typename std::make_signed<S>::type SS;
   typedef HitType Hit;
   typedef uint8_t BitmapPixel;
   typedef uint32_t FileInt;
   typedef uint16_t FileHalf;
   typedef Hit* Pixels;
-  typedef Pixels* Matrix;
-  typedef typename DetectorRing<F>::LOR LOR;
-  typedef TriangularPixelMap<F, Hit> Super;
+  typedef Pixels* TMatrix;
 
-  /// @param dr       detector ring (model)
-  /// @param n_pixels number of pixels in each directions
-  /// @param s_pixel  size of single pixel (pixels are squares)
-  MatrixLORMajor(DetectorRing<F>& dr, size_t n_pixels, F s_pixel)
-      : TriangularPixelMap<F, Hit>(n_pixels),
+  /// @param n_pixels    number of pixels in each directions
+  /// @param n_detectors number of detectors stored in the matrix
+  MatrixLORMajor(S n_pixels, S n_detectors)
+      : Super(n_pixels, n_detectors),
         output_triangular(true),
-        dr_(dr),
-        n_emissions_(0),
-        n_2_detectors_(2 * dr.detectors()),
-        n_1_detectors_2_(dr.detectors() + dr.detectors() / 2),
-        n_1_detectors_4_(dr.detectors() + dr.detectors() / 4),
-        n_lors_(dr.lors()),
-        s_pixel_(s_pixel) {
-    if (n_pixels % 2)
-      throw("number of pixels must be multiple of 2");
-    if (s_pixel <= 0.)
-      throw("invalid pixel size");
+        n_detectors_(n_detectors),
+        n_2_detectors_(2 * n_detectors),
+        n_1_detectors_2_(n_detectors + n_detectors / 2),
+        n_1_detectors_4_(n_detectors + n_detectors / 4),
+        n_lors_(LOR::end_for_detectors(n_detectors).t_index()) {
 
     // reserve for all lors
     t_matrix_ = new Pixels[n_lors_]();
@@ -66,10 +60,7 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
     delete[] t_matrix_;
   }
 
-  F pixel_size() const { return s_pixel_; }
-  int get_n_pixels() const { return Super::n_pixels_in_row(); }
-
-  void add_to_t_matrix(LOR& lor, size_t i_pixel) {
+  void add_to_t_matrix(LOR& lor, S i_pixel) {
     auto i_lor = t_lor_index(lor);
     auto pixels = t_matrix_[i_lor];
 
@@ -92,34 +83,22 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
     ++pixels[i_pixel];
   }
 
-  Hit operator()(LOR lor, size_t x, size_t y) const {
+  Hit operator()(LOR lor, S x, S y) const {
     bool diag;
-    int symmetry;
+    S symmetry;
     auto i_pixel = this->pixel_index(x, y, diag, symmetry);
     auto pixels = t_matrix_[lor_index(lor, symmetry)];
     return pixels ? pixels[i_pixel] * (diag ? 2 : 1) : 0;
   }
 
-  F non_zero_lors() {
-    size_t non_zero_lors = 0;
+  S non_zero_lors() {
+    S non_zero_lors = 0;
     for (auto i = 0; i < n_lors_; ++i) {
       if (t_matrix_[i])
         ++non_zero_lors;
     }
     return non_zero_lors;
   }
-
-  void increase_n_emissions(int n_emissions) { n_emissions_ += n_emissions; }
-
-  // binary serialization                 // n_pixels_  n_detectors  triagular
-  static const FileInt MAGIC_VERSION_1 =
-      fourcc('P', 'E', 'T', 't');  //                           X
-  static const FileInt MAGIC_VERSION_2 =
-      fourcc('P', 'E', 'T', 's');  //     X                     X
-  static const FileInt MAGIC_VERSION_TRIANGULAR =
-      fourcc('P', 'E', 'T', 'p');  //     X          X          X
-  static const FileInt MAGIC_VERSION_FULL =
-      fourcc('P', 'E', 'T', 'P');  //     X          X
 
   friend obstream& operator<<(obstream& out, MatrixLORMajor& mmc) {
     if (mmc.output_triangular) {
@@ -129,10 +108,10 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
       out << MAGIC_VERSION_FULL;
       out << static_cast<FileInt>(mmc.n_pixels_in_row());
     }
-    out << static_cast<FileInt>(mmc.n_emissions_);
-    out << static_cast<FileInt>(mmc.dr_.detectors());
+    out << static_cast<FileInt>(mmc.n_emissions());
+    out << static_cast<FileInt>(mmc.n_detectors_);
 
-    for (FileHalf a = 0; a < mmc.dr_.detectors(); ++a) {
+    for (FileHalf a = 0; a < mmc.n_detectors_; ++a) {
       for (FileHalf b = 0; b <= a; ++b) {
         LOR lor(a, b);
         if (mmc.output_triangular) {
@@ -190,24 +169,24 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
     mmc.read_header(
         in, in_is_triangular, in_n_pixels, in_n_emissions, in_n_detectors);
 
-    if (mmc.n_emissions_ && !in_is_triangular) {
+    if (mmc.n_emissions() && !in_is_triangular) {
       throw("full matrix cannot be loaded to non-empty matrix");
     }
 
     // validate incoming parameters
     if (in_n_pixels &&
-        in_n_pixels != (in_is_triangular ? mmc.n_pixels_in_row_half() :
-                            mmc.n_pixels_in_row())) {
+        in_n_pixels != (in_is_triangular ? mmc.n_pixels_in_row_half()
+                                         : mmc.n_pixels_in_row())) {
       std::ostringstream msg;
       msg << "incompatible input matrix dimensions " << in_n_pixels << " != "
           << mmc.n_pixels_in_row_half();
       throw(msg.str());
     }
-    if (in_n_detectors && in_n_detectors != mmc.dr_.detectors()) {
+    if (in_n_detectors && in_n_detectors != mmc.n_detectors_) {
       throw("incompatible input number of detectors");
     }
 
-    mmc.n_emissions_ += in_n_emissions;
+    mmc.increase_n_emissions(in_n_emissions);
 
     // load hits
     for (;;) {
@@ -251,7 +230,7 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
           in >> x >> y >> hits;
 
           bool diag;
-          int symmetry;
+          S symmetry;
           auto i_pixel = mmc.pixel_index(x, y, diag, symmetry);
           if (i_pixel >= mmc.total_n_pixels_in_triangle())
             throw("invalid pixel address");
@@ -293,10 +272,10 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
   // text output (for validation)
   friend std::ostream& operator<<(std::ostream& out, MatrixLORMajor& mmc) {
     out << "n_pixels_=" << mmc.n_pixels_in_row() << std::endl;
-    out << "n_emissions=" << mmc.n_emissions_ << std::endl;
-    out << "n_detectors=" << mmc.dr_.detectors() << std::endl;
+    out << "n_emissions=" << mmc.n_emissions() << std::endl;
+    out << "n_detectors=" << mmc.n_detectors_ << std::endl;
 
-    for (FileHalf a = 0; a < mmc.dr_.detectors(); ++a) {
+    for (FileHalf a = 0; a < mmc.n_detectors_; ++a) {
       for (FileHalf b = 0; b <= a; ++b) {
         LOR lor(a, b);
         auto pixels = mmc.t_matrix_[t_lor_index(lor)];
@@ -367,7 +346,7 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
     }
     auto gain = static_cast<double>(std::numeric_limits<BitmapPixel>::max()) /
                 pixel_max;
-    for (int y = this->n_pixels_in_row() - 1; y >= 0; --y) {
+    for (SS y = this->n_pixels_in_row() - 1; y >= 0; --y) {
       BitmapPixel row[Super::n_pixels_in_row()];
       for (auto x = 0; x < Super::n_pixels_in_row(); ++x) {
         row[x] =
@@ -380,7 +359,10 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
   bool output_triangular;
 
  private:
-  static size_t t_lor_index(LOR& lor) {
+  // disable copy contructor
+  MatrixLORMajor(const MatrixLORMajor& rhs) {}
+
+  static S t_lor_index(LOR& lor) {
     if (lor.first < lor.second) {
       std::swap(lor.first, lor.second);
     }
@@ -390,28 +372,38 @@ class MatrixLORMajor : public TriangularPixelMap<F, HitType> {
   /// Computes LOR index based on given symmetry (1 out 8)
   /// @param lor      detector number pair
   /// @param symmetry number (0..7)
-  size_t lor_index(LOR lor, int symmetry) const {
+  S lor_index(LOR lor, S symmetry) const {
     if (symmetry & 1) {
-      lor.first = (n_2_detectors_ - lor.first) % dr_.detectors();
-      lor.second = (n_2_detectors_ - lor.second) % dr_.detectors();
+      lor.first = (n_2_detectors_ - lor.first) % n_detectors_;
+      lor.second = (n_2_detectors_ - lor.second) % n_detectors_;
     }
     if (symmetry & 2) {
-      lor.first = (n_1_detectors_2_ - lor.first) % dr_.detectors();
-      lor.second = (n_1_detectors_2_ - lor.second) % dr_.detectors();
+      lor.first = (n_1_detectors_2_ - lor.first) % n_detectors_;
+      lor.second = (n_1_detectors_2_ - lor.second) % n_detectors_;
     }
     if (symmetry & 4) {
-      lor.first = (n_1_detectors_4_ - lor.first) % dr_.detectors();
-      lor.second = (n_1_detectors_4_ - lor.second) % dr_.detectors();
+      lor.first = (n_1_detectors_4_ - lor.first) % n_detectors_;
+      lor.second = (n_1_detectors_4_ - lor.second) % n_detectors_;
     }
     return t_lor_index(lor);
   }
 
-  DetectorRing<F>& dr_;
-  Matrix t_matrix_;
-  Hit n_emissions_;
-  size_t n_2_detectors_;
-  size_t n_1_detectors_2_;
-  size_t n_1_detectors_4_;
-  size_t n_lors_;
-  F s_pixel_;
+  LOR end_;
+  TMatrix t_matrix_;
+  S n_detectors_;
+  S n_2_detectors_;
+  S n_1_detectors_2_;
+  S n_1_detectors_4_;
+  S n_lors_;
+
+ public:
+  // binary serialization                 // n_pixels_  n_detectors  triagular
+  static const FileInt MAGIC_VERSION_1 =
+      fourcc('P', 'E', 'T', 't');  //                           X
+  static const FileInt MAGIC_VERSION_2 =
+      fourcc('P', 'E', 'T', 's');  //     X                     X
+  static const FileInt MAGIC_VERSION_TRIANGULAR =
+      fourcc('P', 'E', 'T', 'p');  //     X          X          X
+  static const FileInt MAGIC_VERSION_FULL =
+      fourcc('P', 'E', 'T', 'P');  //     X          X
 };
