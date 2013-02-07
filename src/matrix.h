@@ -47,6 +47,8 @@ class Matrix : public TriangularPixelMap<SType, HitType> {
 
   S n_emissions() { return n_emissions_; }
 
+  void compact_pixel_index(S i_pixel) {}
+
   static void read_header(ibstream& in,
                           FileInt& in_is_triangular,
                           FileInt& in_n_pixels,

@@ -59,6 +59,8 @@ class MonteCarlo {
             detector_ring_.fov_radius() * detector_ring_.fov_radius())
           continue;
 
+        auto i_pixel = system_matrix_.t_pixel_index(x, y);
+
         for (auto n = 0; n < n_mc_emissions; ++n) {
 #if _OPENMP
           auto& l_gen = mp_gens[omp_get_thread_num()];
@@ -79,8 +81,6 @@ class MonteCarlo {
 
           // do we have hit on both sides?
           if (hits >= 2) {
-            auto i_pixel = system_matrix_.t_pixel_index(x, y);
-
             if (o_collect_mc_matrix) {
               system_matrix_.add_to_t_matrix(lor, i_pixel);
             }
@@ -88,8 +88,10 @@ class MonteCarlo {
             if (o_collect_pixel_stats) {
               system_matrix_.add_hit(i_pixel);
             }
-          }  //if (hits>=2)
+          }  // if (hits>=2)
         }    // loop over emmisions from pixel
+
+        system_matrix_.compact_pixel_index(i_pixel);
       }
     }
   }
