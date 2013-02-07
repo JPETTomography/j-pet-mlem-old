@@ -285,14 +285,10 @@ int main(int argc, char* argv[]) {
     return 0;
 
   }
-  catch (Point<> & ex) {
-  }
-#if 0
   catch (std::string & ex) {
     std::cerr << "error: " << ex << std::endl;
   }
   catch (const char * ex) {
     std::cerr << "error: " << ex << std::endl;
   }
-#endif
 }
