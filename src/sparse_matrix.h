@@ -220,6 +220,7 @@ class SparseMatrix
 
 #define fourcc(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
 
+ public:
   // binary serialization                 // n_pixels_  n_detectors  triagular
   static const FileInt MAGIC_VERSION_1 =
       fourcc('P', 'E', 'T', 't');  //                           X

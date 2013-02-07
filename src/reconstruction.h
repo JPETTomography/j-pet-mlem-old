@@ -7,7 +7,8 @@
 #include <ctime>
 
 #include "detector_ring.h"
-#include "matrix_lor_major.h"
+#include "sparse_matrix.h"
+#include "pixel.h"
 
 template <typename FType = double, typename SType = int> class Reconstruction {
  public:
@@ -50,7 +51,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
     in >> in_magic;
 
-    if (in_magic != MatrixLORMajor<F>::MAGIC_VERSION_FULL) {
+    if (in_magic != SparseMatrix<Pixel<>, LOR>::MAGIC_VERSION_FULL) {
       throw("invalid input system matrix file");
     }
 
