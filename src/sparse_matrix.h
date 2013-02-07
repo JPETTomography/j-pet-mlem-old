@@ -1,3 +1,16 @@
+/// Sparse system matrix binary file format
+/// -----------------------------------------------------
+/// uint32_t magic       // 'PETp' (triangular) / 'PETP' (full)
+/// uint32_t n_pixels_    // half size [PETp] / full size [PETP]
+/// uint32_t n_emissions // per pixel
+/// uint32_t n_detectors // regardless of magic
+/// while (!eof)
+///   uint16_t lor_a, lor_b // pair
+///   uint32_t pixel_pair_count
+///   for(.. count ..)
+///     uint16_t pixel_x, pixel_y // half pixels [PETp] / pixels [PETP]
+///     uint32_t pixel_hits
+
 #pragma once
 
 #include "bstream.h"
