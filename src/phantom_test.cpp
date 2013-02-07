@@ -2,8 +2,6 @@
 
 #include <cmath>
 
-#include "tof_event.h"
-#include "tof_detector.h"
 #include "phantom.h"
 
 TEST_CASE("elliptical_region", "elliptical region") {

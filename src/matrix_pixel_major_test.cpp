@@ -3,6 +3,7 @@
 
 #include "catch.hpp"
 
+#include "pixel.h"
 #include "lor.h"
 #include "detector_ring.h"
 
@@ -15,7 +16,7 @@ TEST_CASE("lor/init", "LOR initalisation") {
   CHECK(lor.first == 9);
   CHECK(lor.second == 7);
 
-  CHECK(lor.t_index() == 9 * (9 + 1) / 2 + 7);
+  CHECK(lor.index() == 9 * (9 + 1) / 2 + 7);
 }
 
 TEST_CASE("lor/iterator", "LOR iterator") {
@@ -29,86 +30,86 @@ TEST_CASE("lor/iterator", "LOR iterator") {
 
 TEST_CASE("pix_major_system_matrix/init", "simple pix matrix test") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
-  MatrixPixelMajor<LOR<>> matrix(128, 140);
+  MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 }
 
 TEST_CASE("pix_major_system_matrix/add", "add one element") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
-  MatrixPixelMajor<LOR<>> matrix(128, 140);
+  MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);
-  matrix.add_to_t_matrix(lor, 13);
+  matrix.hit_lor(lor, 13);
   matrix.compact_pixel_index(13);
 
-  auto hit = matrix.t_get_element(lor, 13);
-  CHECK(hit == 1);
+  auto hits = matrix.lor_hits_at_pixel_index(lor, 13);
+  CHECK(hits == 1);
   CHECK(matrix.size() == 1);
-  CHECK(matrix.n_lors(13) == 1);
+  CHECK(matrix.n_lors_at_pixel_index(13) == 1);
 
-  hit = matrix.t_get_element(lor, 12);
-  CHECK(hit == 0);
-  hit = matrix.t_get_element(LOR<>(9, 8), 13);
-  CHECK(hit == 0);
+  hits = matrix.lor_hits_at_pixel_index(lor, 12);
+  CHECK(hits == 0);
+  hits = matrix.lor_hits_at_pixel_index(LOR<>(9, 8), 13);
+  CHECK(hits == 0);
 }
 
 TEST_CASE("pix_major_system_matrix/add_twice", "add one element twice") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
-  MatrixPixelMajor<LOR<>> matrix(128, 140);
+  MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);
-  matrix.add_to_t_matrix(lor, 13);
-  matrix.add_to_t_matrix(lor, 13);
+  matrix.hit_lor(lor, 13);
+  matrix.hit_lor(lor, 13);
   matrix.compact_pixel_index(13);
 
-  auto hit = matrix.t_get_element(lor, 13);
-  CHECK(hit == 2);
+  auto hits = matrix.lor_hits_at_pixel_index(lor, 13);
+  CHECK(hits == 2);
   CHECK(matrix.size() == 1);
-  CHECK(matrix.n_lors(13) == 1);
+  CHECK(matrix.n_lors_at_pixel_index(13) == 1);
 
 }
 
 TEST_CASE("pix_major_system_matrix/add_to_all",
           "add one element to all pixels") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
-  MatrixPixelMajor<LOR<>> matrix(128, 140);
+  MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);
-  for (int p = 0; p < matrix.total_n_pixels(); ++p) {
-    matrix.add_to_t_matrix(lor, p);
-    matrix.compact_pixel_index(p);
+  for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
+    matrix.hit_lor(lor, i_pixel);
+    matrix.compact_pixel_index(i_pixel);
   }
 
-  for (int p = 0; p < matrix.total_n_pixels(); ++p) {
-    auto hit = matrix.t_get_element(lor, p);
-    CHECK(hit == 1);
-    CHECK(matrix.size() == matrix.total_n_pixels());
-    CHECK(matrix.n_lors(p) == 1);
+  for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
+    auto hits = matrix.lor_hits_at_pixel_index(lor, i_pixel);
+    CHECK(hits == 1);
+    CHECK(matrix.size() == matrix.n_pixels());
+    CHECK(matrix.n_lors_at_pixel_index(i_pixel) == 1);
   }
 
 }
 
 TEST_CASE("pix_major_system_matrix/to_sparse", "flatten") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
-  MatrixPixelMajor<LOR<>> matrix(128, 140);
+  MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);
-  for (int p = 0; p < matrix.total_n_pixels(); ++p) {
-    matrix.add_to_t_matrix(lor, p);
-    matrix.compact_pixel_index(p);
+  for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
+    matrix.hit_lor(lor, i_pixel);
+    matrix.compact_pixel_index(i_pixel);
   }
 
-  for (int p = 0; p < matrix.total_n_pixels(); ++p) {
-    auto hit = matrix.t_get_element(lor, p);
-    CHECK(hit == 1);
-    CHECK(matrix.size() == matrix.total_n_pixels());
-    CHECK(matrix.n_lors(p) == 1);
+  for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
+    auto hits = matrix.lor_hits_at_pixel_index(lor, i_pixel);
+    CHECK(hits == 1);
+    CHECK(matrix.size() == matrix.n_pixels());
+    CHECK(matrix.n_lors_at_pixel_index(i_pixel) == 1);
   }
 
   auto sparse = matrix.to_sparse();
   sparse.sort_by_lor();
 
-  for (int p = 0; p < matrix.total_n_pixels(); ++p) {
-    CHECK(std::get<0>(sparse[p]) == lor);
+  for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
+    CHECK(std::get<0>(sparse[i_pixel]) == lor);
   }
 
 }

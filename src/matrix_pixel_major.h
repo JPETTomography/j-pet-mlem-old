@@ -147,6 +147,21 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     return *this;
   }
 
+  // for testing purposes
+  S lor_hits_at_pixel_index(LOR lor, S i_pixel) {
+    auto it = std::lower_bound(pixel_lor_hits_[i_pixel].begin(),
+                               pixel_lor_hits_[i_pixel].end(),
+                               LORHit(lor, 0),
+                               LORHitComparator());
+
+    if (it == pixel_lor_hits_[i_pixel].end())
+      return 0;
+    return it->second;
+  }
+  S size() const { return size_; }
+  S n_lors_at_pixel_index(S i_pixel) const { return pixel_lor_count_[i_pixel]; }
+  S n_pixels() const { return n_pixels_; }
+
  private:
   // disable copy contructor
   MatrixPixelMajor(const MatrixPixelMajor& rhs) : Super(0, 0) {
