@@ -1,9 +1,5 @@
 #pragma once
 
-#include "matrix_lor_major.h"
-#include "detector_ring.h"
-#include "pixel.h"
-
 template <typename DetectorRingType,
           typename MatrixType,
           typename FType = double,

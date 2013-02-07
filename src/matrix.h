@@ -2,7 +2,6 @@
 
 #include "triangular_pixel_map.h"
 #include "sparse_matrix.h"
-#include "bstream.h"
 
 template <typename PixelType,
           typename LORType,
