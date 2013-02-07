@@ -24,7 +24,8 @@ class Matrix : public TriangularPixelMap<SType, HitType> {
       : Super(n_pixels),
         n_pixels_(n_pixels),
         n_detectors_(n_detectors),
-        end_(LOR::end_for_detectors(n_detectors)) {
+        end_(LOR::end_for_detectors(n_detectors)),
+        n_emissions_(0) {
     if (n_pixels % 2)
       throw("number of pixels must be multiple of 2");
     if (n_detectors % 4)
@@ -35,50 +36,36 @@ class Matrix : public TriangularPixelMap<SType, HitType> {
   const LOR end() { return end_; }
 
   void add_to_t_matrix(const LOR& lor, S i_pixel) {
-    throw("not supported, use specific subclass");
+    throw(__PRETTY_FUNCTION__);
   }
 
-  Hit operator()(LOR lor, S x, S y) const {
-    throw("not supported, use specific subclass");
-  }
+  Hit operator()(LOR lor, S x, S y) const { throw(__PRETTY_FUNCTION__); }
 
-  S non_zero_lors() { throw("not supported, use specific subclass"); }
+  S non_zero_lors() { throw(__PRETTY_FUNCTION__); }
 
-  void increase_n_emissions(Hit n_emissions) {
-    throw("not supported, use specific subclass");
-  }
+  void increase_n_emissions(Hit n_emissions) { n_emissions_ += n_emissions; }
 
-  friend obstream& operator<<(obstream& out, Matrix& mmc) {
-    throw("not supported, use specific subclass");
-  }
-
-  friend ibstream& operator>>(ibstream& in, Matrix& mmc) {
-    throw("not supported, use specific subclass");
-  }
-
-  // text output (for validation)
-  friend std::ostream& operator<<(std::ostream& out, Matrix& mmc) {
-    throw("not supported, use specific subclass");
-  }
+  S n_emissions() { return n_emissions_; }
 
   static void read_header(ibstream& in,
                           FileInt& in_is_triangular,
                           FileInt& in_n_pixels,
                           FileInt& in_n_emissions,
                           FileInt& in_n_detectors) {
-    throw("not supported, use specific subclass");
+    throw(__PRETTY_FUNCTION__);
   }
 
   template <class FileWriter> void output_lor_bitmap(FileWriter& fw, LOR& lor) {
-    throw("not supported, use specific subclass");
+    throw(__PRETTY_FUNCTION__);
   }
 
   bool output_triangular;
 
-  Sparse to_sparse() const { throw("not supported, use specific subclass"); }
+  Sparse to_sparse() const { throw(__PRETTY_FUNCTION__); }
 
  private:
   S n_pixels_;
   S n_detectors_;
   LOR end_;
+  Hit n_emissions_;
 };

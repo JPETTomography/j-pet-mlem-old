@@ -74,6 +74,7 @@ class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
         delete[] pixel_lor_hits_ptr_[p];
       }
     }
+    delete[] pixel_lor_hits_ptr_;
   }
 
   S t_get_element(LOR lor, S i_pixel) {
@@ -120,7 +121,23 @@ class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
     return sparse;
   }
 
+  friend obstream& operator<<(obstream& out, MatrixPixelMajor& mmc) {
+    return out;
+  }
+
+  friend ibstream& operator>>(ibstream& in, MatrixPixelMajor& mmc) {
+    return in;
+  }
+
+  // text output (for validation)
+  friend std::ostream& operator<<(std::ostream& out, MatrixPixelMajor& mmc) {
+    return out;
+  }
+
  private:
+  // disable copy contructor
+  MatrixPixelMajor(const MatrixPixelMajor& rhs) {}
+
   struct LORHitComparator {
     bool operator()(const LORHit& a, const LORHit& b) const {
       return a.first < b.first;

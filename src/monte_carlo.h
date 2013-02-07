@@ -98,6 +98,4 @@ class MonteCarlo {
   DetectorRing& detector_ring_;
   SystemMatrix& system_matrix_;
   F pixel_size_;
-
-  S n_emissions_;
 };

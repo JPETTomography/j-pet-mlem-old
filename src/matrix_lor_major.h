@@ -42,7 +42,6 @@ class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
   MatrixLORMajor(S n_pixels, S n_detectors)
       : Super(n_pixels, n_detectors),
         output_triangular(true),
-        n_emissions_(0),
         n_detectors_(n_detectors),
         n_2_detectors_(2 * n_detectors),
         n_1_detectors_2_(n_detectors + n_detectors / 2),
@@ -101,8 +100,6 @@ class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
     return non_zero_lors;
   }
 
-  void increase_n_emissions(Hit n_emissions) { n_emissions_ += n_emissions; }
-
   friend obstream& operator<<(obstream& out, MatrixLORMajor& mmc) {
     if (mmc.output_triangular) {
       out << MAGIC_VERSION_TRIANGULAR;
@@ -111,7 +108,7 @@ class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
       out << MAGIC_VERSION_FULL;
       out << static_cast<FileInt>(mmc.n_pixels_in_row());
     }
-    out << static_cast<FileInt>(mmc.n_emissions_);
+    out << static_cast<FileInt>(mmc.n_emissions());
     out << static_cast<FileInt>(mmc.n_detectors_);
 
     for (FileHalf a = 0; a < mmc.n_detectors_; ++a) {
@@ -172,7 +169,7 @@ class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
     mmc.read_header(
         in, in_is_triangular, in_n_pixels, in_n_emissions, in_n_detectors);
 
-    if (mmc.n_emissions_ && !in_is_triangular) {
+    if (mmc.n_emissions() && !in_is_triangular) {
       throw("full matrix cannot be loaded to non-empty matrix");
     }
 
@@ -189,7 +186,7 @@ class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
       throw("incompatible input number of detectors");
     }
 
-    mmc.n_emissions_ += in_n_emissions;
+    mmc.increase_n_emissions(in_n_emissions);
 
     // load hits
     for (;;) {
@@ -275,7 +272,7 @@ class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
   // text output (for validation)
   friend std::ostream& operator<<(std::ostream& out, MatrixLORMajor& mmc) {
     out << "n_pixels_=" << mmc.n_pixels_in_row() << std::endl;
-    out << "n_emissions=" << mmc.n_emissions_ << std::endl;
+    out << "n_emissions=" << mmc.n_emissions() << std::endl;
     out << "n_detectors=" << mmc.n_detectors_ << std::endl;
 
     for (FileHalf a = 0; a < mmc.n_detectors_; ++a) {
@@ -362,6 +359,9 @@ class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
   bool output_triangular;
 
  private:
+  // disable copy contructor
+  MatrixLORMajor(const MatrixLORMajor& rhs) {}
+
   static S t_lor_index(LOR& lor) {
     if (lor.first < lor.second) {
       std::swap(lor.first, lor.second);
@@ -390,7 +390,6 @@ class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
 
   LOR end_;
   TMatrix t_matrix_;
-  Hit n_emissions_;
   S n_detectors_;
   S n_2_detectors_;
   S n_1_detectors_2_;

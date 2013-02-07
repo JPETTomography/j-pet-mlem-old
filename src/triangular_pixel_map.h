@@ -10,10 +10,11 @@ class TriangularPixelMap {
   typedef uint8_t BitmapPixel;
 
   // reserve for pixel stats
-  TriangularPixelMap(S n_pixels_a)
-      : n_pixels_in_row_(n_pixels_a),
-        n_pixels_in_row_half_(n_pixels_a / 2),
-        total_n_pixels_in_triangle_(n_pixels_a / 2 * (n_pixels_a / 2 + 1) / 2) {
+  TriangularPixelMap(S n_pixels_in_row)
+      : n_pixels_in_row_(n_pixels_in_row),
+        n_pixels_in_row_half_(n_pixels_in_row / 2),
+        total_n_pixels_in_triangle_(n_pixels_in_row / 2 *
+                                    (n_pixels_in_row / 2 + 1) / 2) {
     t_hits_ = new Hit[total_n_pixels_in_triangle_]();
   }
 

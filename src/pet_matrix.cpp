@@ -5,6 +5,8 @@
 //
 // Using Monte Carlo method and square detector scintilators.
 
+#define LOR_MAJOR 1
+
 #include <iostream>
 #include <random>
 
@@ -13,7 +15,11 @@
 
 #include "random.h"
 #include "detector_ring.h"
+#if LOR_MAJOR
 #include "matrix_lor_major.h"
+#else
+#include "matrix_pixel_major.h"
+#endif
 #include "lor.h"
 #include "model.h"
 #include "png_writer.h"
@@ -166,10 +172,13 @@ int main(int argc, char* argv[]) {
     }
 
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
+#if LOR_MAJOR
     MatrixLORMajor<LOR<>> matrix(n_pixels, n_detectors);
+#else
+    MatrixPixelMajor<LOR<>> matrix(n_pixels, n_detectors);
+#endif
 
-    MonteCarlo<DetectorRing<>, MatrixLORMajor<LOR<>>> monte_carlo(
-        dr, matrix, s_pixel);
+    MonteCarlo<decltype(dr), decltype(matrix)> monte_carlo(dr, matrix, s_pixel);
 
     for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
       ibstream in(*fn, std::ios::binary);
