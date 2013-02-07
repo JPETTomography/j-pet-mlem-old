@@ -84,7 +84,6 @@
 		97F5CA8A16C1857500ADD35A /* detector_view.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = detector_view.h; sourceTree = "<group>"; };
 		97F5CA8B16C1857500ADD35A /* event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = event.h; sourceTree = "<group>"; };
 		97F5CA8C16C1857500ADD35A /* event_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = event_test.cpp; sourceTree = "<group>"; };
-		97F5CA9116C1857500ADD35A /* matrix_lor_major.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = matrix_lor_major.h; sourceTree = "<group>"; };
 		97F5CA9216C1857500ADD35A /* matrix_pixel_major.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = matrix_pixel_major.h; sourceTree = "<group>"; };
 		97F5CA9316C1857500ADD35A /* matrix_pixel_major_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = matrix_pixel_major_test.cpp; sourceTree = "<group>"; };
 		97F5CA9416C1857500ADD35A /* model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = model.h; sourceTree = "<group>"; };
@@ -185,7 +184,6 @@
 				97F5CA8C16C1857500ADD35A /* event_test.cpp */,
 				97F5CAB116C1857500ADD35A /* lor.h */,
 				977C2EBF16C308D3003705C4 /* matrix.h */,
-				97F5CA9116C1857500ADD35A /* matrix_lor_major.h */,
 				97F5CA9216C1857500ADD35A /* matrix_pixel_major.h */,
 				97F5CA9316C1857500ADD35A /* matrix_pixel_major_test.cpp */,
 				97F5CA9416C1857500ADD35A /* model.h */,
