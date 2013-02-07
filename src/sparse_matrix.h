@@ -21,16 +21,55 @@ class SparseMatrix
   typedef uint32_t FileInt;
   typedef uint16_t FileHalf;
 
-  SparseMatrix(S n_pixels_in_row, S n_detectors, bool triangular = false)
+  SparseMatrix(
+      S n_pixels_in_row, S n_detectors, S n_emissions, bool triangular = false)
       : n_pixels_in_row_(n_pixels_in_row),
         n_detectors_(n_detectors),
+        n_emissions_(n_emissions),
         n_lors_(LOR::end_for_detectors(n_detectors).index()),
         triangular_(triangular) {
   }
 
+  S n_pixels_in_row() const { return n_pixels_in_row_; }
+  S n_detectors() const { return n_detectors_; }
+  S n_emissions() const { return n_emissions_; }
+
   SparseMatrix(ibstream& in) {
-    read_header(in, triangular_, n_pixels_in_row_, n_emissions_, n_detectors_);
-    n_lors_ = LOR::end_for_detectors(n_detectors_).t_index();
+    FileInt in_magic;
+    in >> in_magic;
+    if (in_magic != MAGIC_VERSION_TRIANGULAR &&
+        in_magic != MAGIC_VERSION_FULL && in_magic != MAGIC_VERSION_1 &&
+        in_magic != MAGIC_VERSION_2) {
+      throw("invalid file type format");
+    }
+
+    FileInt in_is_triangular = (in_magic != MAGIC_VERSION_FULL);
+
+    // load matrix size
+    FileInt in_n_pixels_in_row;
+    in >> in_n_pixels_in_row;
+    if (in_magic != MAGIC_VERSION_FULL)
+      in_n_pixels_in_row *= 2;
+
+    // load number of emissions
+    FileInt in_n_emissions = 0;
+    if (in_magic == MAGIC_VERSION_TRIANGULAR ||
+        in_magic == MAGIC_VERSION_FULL || in_magic == MAGIC_VERSION_2) {
+      in >> in_n_emissions;
+    }
+
+    // load number of detectors
+    FileInt in_n_detectors = 0;
+    if (in_magic == MAGIC_VERSION_TRIANGULAR ||
+        in_magic == MAGIC_VERSION_FULL) {
+      in >> in_n_detectors;
+    }
+
+    triangular_ = in_is_triangular;
+    n_pixels_in_row_ = in_n_pixels_in_row;
+    n_emissions_ = in_n_emissions;
+    n_detectors_ = in_n_detectors;
+    n_lors_ = LOR::end_for_detectors(n_detectors_).index();
 
     // load hits
     for (;;) {
@@ -49,7 +88,8 @@ class SparseMatrix
         FileHalf x, y;
         FileInt hits;
         in >> x >> y >> hits;
-        this->push_back(Element(lor, x, y, hits));
+
+        this->push_back(Element(lor, Pixel(x, y), hits));
       }
     }
   }
@@ -98,11 +138,9 @@ class SparseMatrix
 
   // text output (for validation)
   friend std::ostream& operator<<(std::ostream& out, SparseMatrix& sm) {
-    out << "n_pixels_=" << sm.n_pixels_in_row_ << std::endl;
-    out << "n_emissions=" << sm.n_emissions_ << std::endl;
-    out << "n_detectors=" << sm.n_detectors_ << std::endl;
-
-    LOR current_lor = LOR::end_for_detectors(sm.n_detectors_);
+    out << "pixels in row: " << sm.n_pixels_in_row_ << std::endl;
+    out << "    emissions: " << sm.n_emissions_ << std::endl;
+    out << "    detectors: " << sm.n_detectors_ << std::endl;
 
     for (auto it = sm.begin(); it != sm.end(); ++it) {
       Element element = *it;
@@ -110,23 +148,9 @@ class SparseMatrix
       Pixel& p = std::get<1>(element);
       Hit hits = std::get<2>(element);
 
-      if (lor != current_lor) {
-        current_lor = lor;
-        // write down LOR
-        out << "  lor="
-            << "(" << current_lor.first << "," << current_lor.second << ")"
-            << std::endl;
-        // find out count of current LOR elements
-        S count = 0;
-        for (auto cit = it; cit != sm.end(); ++cit, ++count) {
-          Element element = *cit;
-          LOR& lor = std::get<0>(element);
-          if (lor != current_lor)
-            break;
-        }
-        out << "  count=" << count << std::endl;
-      }
-      out << "    (" << p.x << "," << p.y << ")=" << hits << std::endl;
+      out << " lor: (" << lor.first << ", " << lor.second << ")"
+          << " pixel: (" << p.x << "," << p.y << ")"
+          << " hits: " << hits << std::endl;
     }
 
     return out;
@@ -167,15 +191,9 @@ class SparseMatrix
   S n_lors_;
   bool triangular_;
 
-  Hit operator()(LOR& lor, S x, S y) { throw(__PRETTY_FUNCTION__); }
-
   struct SortByPixel {
     bool operator()(const Element& a, const Element& b) const {
-      auto ax = std::get<1>(a);
-      auto bx = std::get<1>(b);
-      auto ay = std::get<2>(a);
-      auto by = std::get<2>(b);
-      return ay < by ? true : ay > by ? false : ax < bx;
+      return std::get<1>(a) < std::get<1>(b);
     }
   };
 
@@ -196,36 +214,4 @@ class SparseMatrix
       fourcc('P', 'E', 'T', 'p');  //     X          X          X
   static const FileInt MAGIC_VERSION_FULL =
       fourcc('P', 'E', 'T', 'P');  //     X          X
-
-  static void read_header(ibstream& in,
-                          FileInt& in_is_triangular,
-                          FileInt& in_n_pixels,
-                          FileInt& in_n_emissions,
-                          FileInt& in_n_detectors) {
-    FileInt in_magic;
-    in >> in_magic;
-    if (in_magic != MAGIC_VERSION_TRIANGULAR &&
-        in_magic != MAGIC_VERSION_FULL && in_magic != MAGIC_VERSION_1 &&
-        in_magic != MAGIC_VERSION_2) {
-      throw("invalid file type format");
-    }
-    in_is_triangular = (in_magic != MAGIC_VERSION_FULL);
-
-    // load matrix size
-    in >> in_n_pixels;
-
-    // load number of emissions
-    if (in_magic == MAGIC_VERSION_TRIANGULAR ||
-        in_magic == MAGIC_VERSION_FULL || in_magic == MAGIC_VERSION_2) {
-      in >> in_n_emissions;
-    }
-
-    // load number of detectors
-    in_n_detectors = 0;
-    if (in_magic == MAGIC_VERSION_TRIANGULAR ||
-        in_magic == MAGIC_VERSION_FULL) {
-      in >> in_n_detectors;
-    }
-  }
-
 };

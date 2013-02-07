@@ -57,7 +57,7 @@ class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
     delete[] t_matrix_;
   }
 
-  void add_to_t_matrix(LOR& lor, S i_pixel) {
+  void hit_lor(LOR& lor, S i_pixel, S hits = 1) {
     auto i_lor = t_lor_index(lor);
     auto pixels = t_matrix_[i_lor];
 
@@ -77,7 +77,7 @@ class MatrixLORMajor : public Matrix<LORType, SType, HitType> {
                new Hit[Super::total_n_pixels_in_triangle()]();
 #endif
     }
-    ++pixels[i_pixel];
+    pixels[i_pixel] += hits;
   }
 
   Hit operator()(LOR lor, S x, S y) const {

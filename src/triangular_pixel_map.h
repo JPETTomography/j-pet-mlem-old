@@ -17,11 +17,17 @@ class TriangularPixelMap {
       : n_pixels_in_row_(n_pixels_in_row),
         n_pixels_in_row_half_(n_pixels_in_row / 2),
         total_n_pixels_in_triangle_(n_pixels_in_row / 2 *
-                                    (n_pixels_in_row / 2 + 1) / 2) {
+                                    (n_pixels_in_row / 2 + 1) / 2),
+        end_pixel_(Pixel::end_for_n_pixels_in_row(n_pixels_in_row)) {
+    if (n_pixels_in_row % 2)
+      throw("number of pixels must be multiple of 2");
     t_hits_ = new Hit[total_n_pixels_in_triangle_]();
   }
 
   ~TriangularPixelMap() { delete[] t_hits_; }
+
+  static Pixel begin_pixel() { return Pixel(); }
+  const Pixel& end_pixel() { return end_pixel_; }
 
   S n_pixels_in_row() const { return n_pixels_in_row_; }
   S n_pixels_in_row_half() const { return n_pixels_in_row_half_; }
@@ -70,9 +76,7 @@ class TriangularPixelMap {
     return t_hits_[i_pixel] * (diag ? 2 : 1);
   }
 
-  void add_hit(S i_pixel) { ++(t_hits_[i_pixel]); }
-
-  void add_hit(S i_pixel, S h) { t_hits_[i_pixel] += h; }
+  void hit(S i_pixel, S hits = 1) { t_hits_[i_pixel] += hits; }
 
   template <class FileWriter> void output_bitmap(FileWriter& fw) {
     fw.template write_header<BitmapPixel>(n_pixels_in_row_, n_pixels_in_row_);
@@ -99,4 +103,5 @@ class TriangularPixelMap {
   S n_pixels_in_row_;
   S n_pixels_in_row_half_;
   S total_n_pixels_in_triangle_;
+  Pixel end_pixel_;
 };

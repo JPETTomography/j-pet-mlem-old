@@ -27,4 +27,12 @@ template <typename SType = int> class Pixel {
   static constexpr Pixel end_for_n_pixels_in_row(S pixels_in_row) {
     return Pixel(0, pixels_in_row);
   }
+
+  bool operator!=(const Pixel& p) const { return x != p.x || y != p.y; }
+
+  bool operator==(const Pixel& p) const { return x == p.x && y == p.y; }
+
+  bool operator<(const Pixel& p) const {
+    return y < p.y || (y == p.y && x < p.x);
+  }
 };

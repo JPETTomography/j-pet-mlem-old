@@ -185,7 +185,9 @@ int main(int argc, char* argv[]) {
       if (!in.is_open())
         throw("cannot open input file: " + *fn);
       try {
-        in >> matrix;
+        decltype(matrix) ::SparseMatrix sparse_matrix(in);
+        sparse_matrix.sort_by_pixel();
+        matrix << sparse_matrix;
       }
       catch (std::string & ex) {
         throw(ex + ": " + *fn);
@@ -201,6 +203,8 @@ int main(int argc, char* argv[]) {
       monte_carlo(
           gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
 
+    auto sparse_matrix = matrix.to_sparse();
+
     // generate output
     if (cl.exist("output")) {
       auto fn = cl.get<cmdline::string>("output");
@@ -215,7 +219,6 @@ int main(int argc, char* argv[]) {
           fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
 
       obstream out(fn, std::ios::binary | std::ios::trunc);
-      auto sparse_matrix = matrix.to_sparse();
       out << sparse_matrix;
 
       std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
@@ -269,7 +272,6 @@ int main(int argc, char* argv[]) {
     }
 
     if (cl.exist("print")) {
-      auto sparse_matrix = matrix.to_sparse();
       std::cout << sparse_matrix;
     }
 
@@ -282,11 +284,14 @@ int main(int argc, char* argv[]) {
     return 0;
 
   }
+  catch (Point<> & ex) {
+  }
+#if 0
   catch (std::string & ex) {
     std::cerr << "error: " << ex << std::endl;
   }
   catch (const char * ex) {
     std::cerr << "error: " << ex << std::endl;
   }
-
+#endif
 }
