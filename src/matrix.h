@@ -9,13 +9,11 @@ class Matrix : public TriangularPixelMap<SType, HitType> {
   typedef TriangularPixelMap<SType, HitType> Super;
 
  public:
+  typedef typename Super::Pixel Pixel;
   typedef LORType LOR;
   typedef SType S;
   typedef typename std::make_signed<S>::type SS;
   typedef HitType Hit;
-  typedef uint8_t BitmapPixel;
-  typedef uint32_t FileInt;
-  typedef uint16_t FileHalf;
   typedef SparseMatrix<LORType, SType, HitType> Sparse;
 
   /// @param n_pixels    number of pixels in each directions
@@ -39,7 +37,7 @@ class Matrix : public TriangularPixelMap<SType, HitType> {
     throw(__PRETTY_FUNCTION__);
   }
 
-  Hit operator()(LOR lor, S x, S y) const { throw(__PRETTY_FUNCTION__); }
+  S n_detectors() { return n_detectors_; }
 
   S non_zero_lors() { throw(__PRETTY_FUNCTION__); }
 
@@ -48,20 +46,6 @@ class Matrix : public TriangularPixelMap<SType, HitType> {
   S n_emissions() { return n_emissions_; }
 
   void compact_pixel_index(S i_pixel) {}
-
-  static void read_header(ibstream& in,
-                          FileInt& in_is_triangular,
-                          FileInt& in_n_pixels,
-                          FileInt& in_n_emissions,
-                          FileInt& in_n_detectors) {
-    throw(__PRETTY_FUNCTION__);
-  }
-
-  template <class FileWriter> void output_lor_bitmap(FileWriter& fw, LOR& lor) {
-    throw(__PRETTY_FUNCTION__);
-  }
-
-  bool output_triangular;
 
   Sparse to_sparse() const { throw(__PRETTY_FUNCTION__); }
 

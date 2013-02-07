@@ -23,38 +23,37 @@ class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
   typedef Matrix<LORType, SType, HitType> Super;
 
  public:
+  typedef typename Super::Pixel Pixel;
   typedef LORType LOR;
   typedef SType S;
   typedef HitType Hit;
   typedef typename std::make_signed<S>::type SS;
   typedef std::pair<LOR, Hit> LORHit;
-  typedef std::tuple<LOR, S, Hit> LORPixelHit;
-  typedef std::vector<LOR> LORList;
-  typedef std::vector<LORPixelHit> LORPixelHitList;
   typedef typename Super::Sparse Sparse;
+  typedef typename Sparse::Element SparseElement;
 
-  MatrixPixelMajor(S n_pixels, S n_detectors)
-      : Super(n_pixels, n_detectors),
-        n_pixels_(n_pixels),
-        n_pixels_half_(n_pixels_ / 2),
-        total_n_pixels_(n_pixels_half_ * (n_pixels_half_ + 1) / 2),
-        n_lors_(LOR::end_for_detectors(n_detectors).t_index()),
+  MatrixPixelMajor(S n_pixels_in_row, S n_detectors)
+      : Super(n_pixels_in_row, n_detectors),
+        n_pixels_in_row_half_(n_pixels_in_row / 2),
+        n_pixels_(Pixel::end_for_n_pixels_in_row(n_pixels_in_row).index()),
+        n_lors_(LOR::end_for_detectors(n_detectors).index()),
         size_(0),
-        pixel_lor_hits_ptr_(new S* [total_n_pixels_]()),
-        pixel_lor_hits_(total_n_pixels_),
-        pixel_lor_count_(total_n_pixels_),
-        index_to_lor_(LOR::end_for_detectors(n_detectors).t_index()) {
+        pixel_lor_hits_ptr_(new S* [n_pixels_]()),
+        pixel_lor_hits_(n_pixels_),
+        pixel_lor_count_(n_pixels_),
+        index_to_lor_(n_lors_),
+        index_to_pixel_(n_pixels_) {
 
     // store index to LOR mapping
     for (auto lor = Super::begin(); lor != Super::end(); ++lor) {
-      index_to_lor_[lor.t_index()] = lor;
+      index_to_lor_[lor.index()] = lor;
     }
   }
 
   S size() const { return size_; }
 
-  S n_lors(S p) const { return pixel_lor_count_[p]; }
-  S total_n_pixels() const { return total_n_pixels_; }
+  S n_lors(S i_pixel) const { return pixel_lor_count_[i_pixel]; }
+  S total_n_pixels() const { return n_pixels_; }
 
   void add_to_t_matrix(const LOR& lor, S i_pixel) {
 
@@ -69,9 +68,9 @@ class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
   }
 
   ~MatrixPixelMajor() {
-    for (S p = 0; p < total_n_pixels_; ++p) {
-      if (pixel_lor_hits_ptr_[p]) {
-        delete[] pixel_lor_hits_ptr_[p];
+    for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
+      if (pixel_lor_hits_ptr_[i_pixel]) {
+        delete[] pixel_lor_hits_ptr_[i_pixel];
       }
     }
     delete[] pixel_lor_hits_ptr_;
@@ -89,12 +88,14 @@ class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
   }
 
   void compact_pixel_index(S i_pixel) {
+    if (!pixel_lor_hits_ptr_[i_pixel]) return;
+
     // ensure we have enough space for the all LORs for that pixel
     pixel_lor_hits_[i_pixel].resize(pixel_lor_count_[i_pixel]);
 
     for (S i_lor = 0, lor_count = 0; i_lor < n_lors_; ++i_lor) {
-      S hits;
-      if ((hits = pixel_lor_hits_ptr_[i_pixel][i_lor]) > 0) {
+      auto hits = pixel_lor_hits_ptr_[i_pixel][i_lor];
+      if (hits > 0) {
         pixel_lor_hits_[i_pixel][lor_count++] =
             LORHit(index_to_lor_[i_lor], hits);
       }
@@ -107,31 +108,19 @@ class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
               LORHitComparator());
   }
 
-  static S t_lor_index(const LOR& lor) { return lor.t_index(); }
+  static S t_lor_index(const LOR& lor) { return lor.index(); }
 
   Sparse to_sparse() {
-    Sparse sparse;
+    Sparse sparse(this->n_pixels_in_row(), Super::n_detectors(), true);
     sparse.reserve(size_);
-    for (S p = 0; p < total_n_pixels_; ++p) {
-      for (auto it = pixel_lor_hits_[p].begin(); it != pixel_lor_hits_[p].end();
-           ++it) {
-        sparse.push_back(LORPixelHit(it->first, p, it->second));
+    for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
+      for (auto it = pixel_lor_hits_[i_pixel].begin();
+           it != pixel_lor_hits_[i_pixel].end(); ++it) {
+        sparse.push_back(
+            SparseElement(it->first, index_to_pixel_[i_pixel], it->second));
       }
     }
     return sparse;
-  }
-
-  friend obstream& operator<<(obstream& out, MatrixPixelMajor& mmc) {
-    return out;
-  }
-
-  friend ibstream& operator>>(ibstream& in, MatrixPixelMajor& mmc) {
-    return in;
-  }
-
-  // text output (for validation)
-  friend std::ostream& operator<<(std::ostream& out, MatrixPixelMajor& mmc) {
-    return out;
   }
 
  private:
@@ -144,13 +133,13 @@ class MatrixPixelMajor : public Matrix<LORType, SType, HitType> {
     }
   };
 
-  S n_pixels_;
-  S n_pixels_half_;
-  S total_n_pixels_;
   S n_lors_;
+  S n_pixels_;
+  S n_pixels_in_row_half_;
   S size_;
   Hit** pixel_lor_hits_ptr_;
   std::vector<std::vector<LORHit>> pixel_lor_hits_;
   std::vector<S> pixel_lor_count_;
-  LORList index_to_lor_;
+  std::vector<LOR> index_to_lor_;
+  std::vector<Pixel> index_to_pixel_;
 };

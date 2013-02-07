@@ -2,6 +2,7 @@
 
 #include "matrix_lor_major.h"
 #include "detector_ring.h"
+#include "pixel.h"
 
 template <typename DetectorRingType,
           typename SystemMatrixType,
@@ -59,7 +60,7 @@ class MonteCarlo {
             detector_ring_.fov_radius() * detector_ring_.fov_radius())
           continue;
 
-        auto i_pixel = system_matrix_.t_pixel_index(x, y);
+        auto i_pixel = Pixel<S>(x, y).index();
 
         for (auto n = 0; n < n_mc_emissions; ++n) {
 #if _OPENMP
