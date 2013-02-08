@@ -29,8 +29,8 @@ TEST_CASE("phantom", "phantom") {
 
   // Phantom phantom(-3, -3, 3, 3);
   Phantom phantom;
-  phantom.addRegion(1.0, 1.0, 2.0, 2.0, 0.0, 0.5);
-  phantom.addRegion(0, 1, 1, 0.5, M_PI / 3.0, 0.75);
+  phantom.add_region(1.0, 1.0, 2.0, 2.0, 0.0, 0.5);
+  phantom.add_region(0, 1, 1, 0.5, M_PI / 3.0, 0.75);
 
   SECTION("activity", "") {
     REQUIRE(0.5 == phantom.activity(1, 1));

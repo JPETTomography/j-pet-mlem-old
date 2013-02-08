@@ -85,7 +85,7 @@ class Phantom {
 
   size_t n_regions() const { return regions_.size(); }
 
-  void addRegion(
+  void add_region(
       double x, double y, double a, double b, double phi, double act) {
     regions_.push_back(new EllipticalRegion(x, y, a, b, phi, act));
   }
