@@ -42,17 +42,17 @@ TEST_CASE("phantom", "phantom") {
   }
 
   SECTION("emit", "") {
-    REQUIRE(false == phantom.emit(1, 1, .75));
-    REQUIRE(true == phantom.emit(1, 1, .45));
-    REQUIRE(false == phantom.emit(1.563, -0.8545, .51));
-    REQUIRE(true == phantom.emit(1.563, -0.8545, .10));
-    REQUIRE(false == phantom.emit(-0.677, -2.5, .1));
-    REQUIRE(false == phantom.emit(-0.677, -2.5, .25));
-    REQUIRE(false == phantom.emit(-0.677, -2.5, 0.001));
+    REQUIRE(false == phantom.test_emit(1, 1, .75));
+    REQUIRE(true == phantom.test_emit(1, 1, .45));
+    REQUIRE(false == phantom.test_emit(1.563, -0.8545, .51));
+    REQUIRE(true == phantom.test_emit(1.563, -0.8545, .10));
+    REQUIRE(false == phantom.test_emit(-0.677, -2.5, .1));
+    REQUIRE(false == phantom.test_emit(-0.677, -2.5, .25));
+    REQUIRE(false == phantom.test_emit(-0.677, -2.5, 0.001));
 
-    REQUIRE(false == phantom.emit(-0.328, 0.26, .76));
-    REQUIRE(true == phantom.emit(-0.328, 0.26, .74));
-    REQUIRE(false == phantom.emit(0.4371, 1.792, .77));
-    REQUIRE(true == phantom.emit(0.4371, 1.792, .73));
+    REQUIRE(false == phantom.test_emit(-0.328, 0.26, .76));
+    REQUIRE(true == phantom.test_emit(-0.328, 0.26, .74));
+    REQUIRE(false == phantom.test_emit(0.4371, 1.792, .77));
+    REQUIRE(true == phantom.test_emit(0.4371, 1.792, .73));
   }
 }

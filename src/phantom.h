@@ -99,7 +99,7 @@ class Phantom {
     return 0.0;
   }
 
-  bool emit(double x, double y, double rnd) const {
+  bool test_emit(double x, double y, double rnd) const {
     return activity(x, y) > rnd;
   }
 

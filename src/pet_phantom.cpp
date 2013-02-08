@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
         double x = fov_dis(gen);
         double y = fov_dis(gen);
         if (x * x + y * y < fov_r2) {
-          if (phantom.emit(x, y, one_dis(gen))) {
+          if (phantom.test_emit(x, y, one_dis(gen))) {
             auto pix = dr.pixel(x, y, s_pixel);
             DetectorRing<>::LOR lor;
             pixels[pix.second][pix.first]++;
