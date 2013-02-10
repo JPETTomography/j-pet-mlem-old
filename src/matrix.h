@@ -32,7 +32,9 @@ class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
   static LOR begin_lor() { return LOR(); }
   const LOR& end_lor() { return end_lor_; }
 
-  void hit_lor(const LOR& lor, S i_pixel, S hits = 1) {
+  void hit_lor(const LOR& lor __attribute__((unused)),
+               S i_pixel __attribute__((unused)),
+               S hits __attribute__((unused)) = 1) {
     throw(__PRETTY_FUNCTION__);
   }
 
@@ -44,7 +46,7 @@ class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
 
   S n_emissions() { return n_emissions_; }
 
-  void compact_pixel_index(S i_pixel) {}
+  void compact_pixel_index(S i_pixel __attribute__((unused))) {}
 
   SparseMatrix to_sparse() const { throw(__PRETTY_FUNCTION__); }
 

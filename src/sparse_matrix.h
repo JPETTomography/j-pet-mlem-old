@@ -99,7 +99,7 @@ class SparseMatrix
       in >> count;
 
       // increment hits
-      for (auto i = 0; i < count; ++i) {
+      for (FileInt i = 0; i < count; ++i) {
         FileHalf x, y;
         FileInt hits;
         in >> x >> y >> hits;

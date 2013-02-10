@@ -31,7 +31,9 @@ template <typename SType = int> class LOR : public std::pair<SType, SType> {
     return LOR(n_detectors, 0);
   }
 
-  friend std::ostream& operator<<(std::ostream& out, const LOR& lor) {
-    return out;
+  friend std::ostream& operator<<(std::ostream& out __attribute__((unused)),
+                                  const LOR& lor __attribute__((unused))) {
+    // FIXME: implement me!
+    throw(__PRETTY_FUNCTION__);
   }
 };

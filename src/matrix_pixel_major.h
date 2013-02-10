@@ -164,7 +164,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
  private:
   // disable copy contructor
-  MatrixPixelMajor(const MatrixPixelMajor& rhs) : Super(0, 0) {
+  MatrixPixelMajor(const MatrixPixelMajor& rhs __attribute__((unused)))
+      : Super(0, 0) {
     throw(__PRETTY_FUNCTION__);
   }
 
