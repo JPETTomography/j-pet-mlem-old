@@ -4,18 +4,6 @@
 #include <vector>
 #include "point.h"
 
-#ifdef __APPLE__
-static inline void sincos(double a, double* s, double* c) {
-  *s = sin(a);
-  *c = cos(a);
-}
-
-static inline void sincosf(float a, float* s, float* c) {
-  *s = sinf(a);
-  *c = cosf(a);
-}
-#endif
-
 class EllipticalRegion {
  public:
   EllipticalRegion(
@@ -65,6 +53,18 @@ class EllipticalRegion {
 
   double sin_;
   double cos_;
+
+#ifdef __APPLE__
+  static inline void sincos(double a, double* s, double* c) {
+    *s = sin(a);
+    *c = cos(a);
+  }
+
+  static inline void sincosf(float a, float* s, float* c) {
+    *s = sinf(a);
+    *c = cosf(a);
+  }
+#endif
 };
 
 class Phantom {
