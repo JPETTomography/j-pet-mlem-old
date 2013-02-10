@@ -167,20 +167,16 @@ int main(int argc, char* argv[]) {
     }
 
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
-#if LOR_MAJOR
-    MatrixLORMajor<Pixel<>, LOR<>> matrix(n_pixels, n_detectors);
-#else
-    MatrixPixelMajor<Pixel<>, LOR<>> matrix(n_pixels, n_detectors);
-#endif
-
-    MonteCarlo<decltype(dr), decltype(matrix)> monte_carlo(dr, matrix, s_pixel);
+    typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
+    MatrixImpl matrix(n_pixels, n_detectors);
+    MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(dr, matrix, s_pixel);
 
     for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
       ibstream in(*fn, std::ios::binary);
       if (!in.is_open())
         throw("cannot open input file: " + *fn);
       try {
-        decltype(matrix) ::SparseMatrix sparse_matrix(in);
+        MatrixImpl::SparseMatrix sparse_matrix(in);
         sparse_matrix.sort_by_pixel();
         matrix << sparse_matrix;
       }
@@ -255,7 +251,7 @@ int main(int argc, char* argv[]) {
       auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
       for (auto y = 0; y < n_pixels; ++y) {
         for (auto x = 0; x < n_pixels; ++x) {
-          auto hits = matrix[decltype(matrix) ::Pixel(x, y)];
+          auto hits = matrix[MatrixImpl::Pixel(x, y)];
           pixel_min = std::min(pixel_min, hits);
           pixel_max = std::max(pixel_max, hits);
         }
