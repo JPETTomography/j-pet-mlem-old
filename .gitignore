@@ -19,6 +19,6 @@ doc/html/
 *.png
 *.svg
 *.txt
-/build/
+/build*/
 *.xcodeproj/xcuserdata/
 *.xcodeproj/*.xcworkspace/
