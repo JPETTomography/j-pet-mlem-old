@@ -5,8 +5,6 @@
 //
 // Using Monte Carlo method and square detector scintilators.
 
-#define LOR_MAJOR 0
-
 #include <iostream>
 #include <random>
 
@@ -15,11 +13,7 @@
 
 #include "random.h"
 #include "detector_ring.h"
-#if LOR_MAJOR
-#include "matrix_lor_major.h"
-#else
 #include "matrix_pixel_major.h"
-#endif
 #include "pixel.h"
 #include "lor.h"
 #include "model.h"
