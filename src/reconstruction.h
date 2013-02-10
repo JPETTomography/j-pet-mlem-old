@@ -117,7 +117,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
       in >> count;
 
-      for (S i = 0; i < count; ++i) {
+      for (FileInt i = 0; i < count; ++i) {
 
         FileHalf x, y;
         FileInt hits;

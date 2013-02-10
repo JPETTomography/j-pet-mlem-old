@@ -69,7 +69,7 @@ TEST_CASE("polygon/intersection/math", "rectangle inters from mathematica") {
     double a, b, c;
     in >> a >> b >> c;
 
-    int n_iters;
+    size_t n_iters;
     in >> n_iters;
 
     Polygon<>::Event event(x, y, phi);
@@ -84,7 +84,7 @@ TEST_CASE("polygon/intersection/math", "rectangle inters from mathematica") {
           double ix, iy;
           Polygon<>::Intersections m_inters;
 
-          for (int j = 0; j < n_iters; ++j) {
+          for (size_t j = 0; j < n_iters; ++j) {
             in >> ix >> iy;
             Polygon<>::Point p(ix, iy);
             m_inters.push_back(p);

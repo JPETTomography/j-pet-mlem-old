@@ -171,7 +171,9 @@ class SparseMatrix
     return out;
   }
 
-  template <class FileWriter> void output_lor_bitmap(FileWriter& fw, LOR& lor) {
+  template <class FileWriter>
+  void output_lor_bitmap(FileWriter& fw __attribute__((unused)),
+                         LOR& lor __attribute__((unused))) {
 #if 0
     // FIXME: implement me!
     fw.template write_header<BitmapPixel>(n_pixels_in_row_, n_pixels_in_row_);
