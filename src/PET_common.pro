@@ -5,6 +5,18 @@ CONFIG -= qt
 
 INCLUDEPATH += ../lib/cmdline ../lib/catch/include
 
+LIBPNGPATHS += /usr/include/libpng
+LIBPNGPATHS += /usr/local/include/libpng
+LIBPNGPATHS += /opt/X11/include/libpng15
+for(path, LIBPNGPATHS):exists($$path) {
+  DEFINES     += HAVE_LIBPNG
+  INCLUDEPATH += $$path
+  path         = $$dirname(path)
+  path         = $$dirname(path)
+  LIBS        += -L$$path/lib -lpng
+  break()
+}
+
 mac:QMAKE_CXXFLAGS += -stdlib=libc++ -std=c++0x
 mac:QMAKE_LFLAGS   += -stdlib=libc++
 mac:QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
