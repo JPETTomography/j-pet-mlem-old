@@ -109,7 +109,7 @@ TEST_CASE("pix_major_system_matrix/to_sparse", "flatten") {
   sparse.sort_by_lor();
 
   for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
-    CHECK(sparse[i_pixel].lor() == lor);
+    CHECK(sparse[i_pixel].lor == lor);
   }
 
 }

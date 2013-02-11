@@ -19,29 +19,31 @@ template <typename LORType,
           typename PositionType,
           typename PixelType,
           typename HitType = int>
-class SparseElement
-    : public std::tuple<LORType, PositionType, PixelType, HitType> {
- public:
-  typedef std::tuple<LORType, PositionType, PixelType, HitType> Super;
-
-  SparseElement(LORType && lor,
-                PositionType && position,
-                PixelType && pixel,
-                HitType && hit)
-      : Super(lor, position, pixel, hit) {
+struct SparseElement {
+  SparseElement(LORType && lor_a,
+                PositionType && position_a,
+                PixelType && pixel_a,
+                HitType && hits_a)
+      : lor(lor_a),
+        position(position_a),
+        pixel(pixel_a),
+        hits(hits_a) {
   }
-  SparseElement(const LORType& lor,
-                const PositionType& position,
-                const PixelType& pixel,
-                const HitType& hit)
-      : Super(lor, position, pixel, hit) {
+  SparseElement(const LORType& lor_a,
+                const PositionType& position_a,
+                const PixelType& pixel_a,
+                const HitType& hits_a)
+      : lor(lor_a),
+        position(position_a),
+        pixel(pixel_a),
+        hits(hits_a) {
   }
   SparseElement() = default;
 
-  LORType const& lor() const { return std::get<0>(*this); }
-  PositionType const& position() const { return std::get<1>(*this); }
-  PixelType const& pixel() const { return std::get<2>(*this); }
-  HitType const& hits() const { return std::get<3>(*this); }
+  LORType lor;
+  PositionType position;
+  PixelType pixel;
+  HitType hits;
 };
 
 template <typename PixelType,
@@ -169,9 +171,9 @@ class SparseMatrix
     LOR current_lor = LOR::end_for_detectors(sm.n_detectors_);
 
     for (auto it = sm.begin(); it != sm.end(); ++it) {
-      auto lor = it->lor();
-      auto pixel = it->pixel();
-      auto hits = it->hits();
+      auto lor = it->lor;
+      auto pixel = it->pixel;
+      auto hits = it->hits;
 
       if (lor != current_lor) {
         current_lor = lor;
@@ -181,9 +183,7 @@ class SparseMatrix
         // find out count of current LOR elements
         FileInt count = 0;
         for (auto cit = it; cit != sm.end(); ++cit, ++count) {
-          Element element = *cit;
-          LOR& lor = std::get<0>(element);
-          if (lor != current_lor)
+          if (cit->lor != current_lor)
             break;
         }
         out << count;
@@ -202,9 +202,9 @@ class SparseMatrix
     out << "    detectors: " << sm.n_detectors_ << std::endl;
 
     for (auto it = sm.begin(); it != sm.end(); ++it) {
-      out << " lor: (" << it->lor().first << ", " << it->lor().second << ")"
-          << " pixel: (" << it->pixel().x << "," << it->pixel().y << ")"
-          << " hits: " << it->hits() << std::endl;
+      out << " lor: (" << it->lor.first << ", " << it->lor.second << ")"
+          << " pixel: (" << it->pixel.x << "," << it->pixel.y << ")"
+          << " hits: " << it->hits << std::endl;
     }
 
     return out;
@@ -248,14 +248,14 @@ class SparseMatrix
     full.reserve(this->size() * 8);
     for (auto it = this->begin(); it != this->end(); ++it) {
       for (auto symmetry = 0; symmetry < 8; ++symmetry) {
-        auto pixel = it->pixel();
+        auto pixel = it->pixel;
         // avoid writing diagonals twice
         if (symmetry & 4 && pixel.x == pixel.y)
           continue;
-        full.push_back(Element(symmetric_lor(it->lor(), symmetry),
+        full.push_back(Element(symmetric_lor(it->lor, symmetry),
                                0,
                                symmetric_pixel(pixel, symmetry),
-                               it->hits()));
+                               it->hits));
       }
     }
     return full;
@@ -274,13 +274,13 @@ class SparseMatrix
 
   struct SortByPixel {
     bool operator()(const Element& a, const Element& b) const {
-      return std::get<1>(a) < std::get<1>(b);
+      return a.pixel < b.pixel;
     }
   };
 
   struct SortByLOR {
     bool operator()(const Element& a, const Element& b) const {
-      return std::get<0>(a) < std::get<0>(b);
+      return a.lor < b.lor;
     }
   };
 

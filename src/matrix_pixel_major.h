@@ -63,7 +63,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       // unpack previous values (if any)
       for (auto it = pixel_lor_hits_[i_pixel].begin();
            it != pixel_lor_hits_[i_pixel].end(); ++it) {
-        hit_lor(it->lor(), i_pixel, it->hits());
+        hit_lor(it->lor, i_pixel, it->hits);
       }
     }
     if (pixel_lor_hits_ptr_[i_pixel][lor.index()] == 0) {
@@ -126,16 +126,15 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     S i_current_pixel = n_pixels_;
 
     for (auto it = sparse.begin(); it != sparse.end(); ++it) {
-      auto element = *it;
-      auto pixel = element.pixel();
+      auto pixel = it->pixel;
       if (!sparse.triangular()) {
         pixel.x -= n_pixels_in_row_half_;
         pixel.y -= n_pixels_in_row_half_;
         if (pixel.x < 0 || pixel.y < 0 || pixel.y < pixel.x)
           continue;
       }
-      auto lor = element.lor();
-      auto hits = element.hits();
+      auto lor = it->lor;
+      auto hits = it->hits;
       auto i_pixel = pixel.index();
 
       if (i_current_pixel != i_pixel) {
@@ -159,7 +158,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
     if (it == pixel_lor_hits_[i_pixel].end())
       return 0;
-    return it->hits();
+    return it->hits;
   }
   S size() const { return size_; }
   S n_lors_at_pixel_index(S i_pixel) const { return pixel_lor_count_[i_pixel]; }
@@ -174,7 +173,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
   struct SparseElementLORComparator {
     bool operator()(const SparseElement& a, const SparseElement& b) const {
-      return a.lor() < b.lor();
+      return a.lor < b.lor;
     }
   };
 
