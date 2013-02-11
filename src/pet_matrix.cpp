@@ -210,7 +210,12 @@ int main(int argc, char* argv[]) {
           fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
 
       obstream out(fn, std::ios::binary | std::ios::trunc);
-      out << sparse_matrix;
+      if (cl.exist("full")) {
+        auto full_matrix = sparse_matrix.to_full();
+        out << full_matrix;
+      } else {
+        out << sparse_matrix;
+      }
 
       std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
       os << cl;

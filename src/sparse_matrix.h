@@ -26,9 +26,7 @@ class SparseElement : public std::tuple<LORType, PixelType, HitType> {
   SparseElement(const LORType& lor, const PixelType& pixel, const HitType& hit)
       : Super(lor, pixel, hit) {
   }
-  SparseElement()
-    : Super(LORType(), PixelType(), HitType()) {
-  }
+  SparseElement() = default;
 
   LORType const& lor() const { return std::get<0>(*this); }
   PixelType const& pixel() const { return std::get<1>(*this); }
@@ -59,6 +57,7 @@ class SparseMatrix
   SparseMatrix(
       S n_pixels_in_row, S n_detectors, S n_emissions, bool triangular = false)
       : n_pixels_in_row_(n_pixels_in_row),
+        n_pixels_in_row_half_(n_pixels_in_row / 2),
         n_detectors_(n_detectors),
         n_2_detectors_(2 * n_detectors),
         n_emissions_(n_emissions),
@@ -71,8 +70,10 @@ class SparseMatrix
   }
 
   S n_pixels_in_row() const { return n_pixels_in_row_; }
+  S n_pixels_in_row_half() const { return n_pixels_in_row_half_; }
   S n_detectors() const { return n_detectors_; }
   S n_emissions() const { return n_emissions_; }
+  bool triangular() const { return triangular_; }
 
   SparseMatrix(ibstream& in) {
     FileInt in_magic;
@@ -107,8 +108,14 @@ class SparseMatrix
 
     triangular_ = in_is_triangular;
     n_pixels_in_row_ = in_n_pixels_in_row;
+    n_pixels_in_row_half_ = in_n_pixels_in_row / 2;
     n_emissions_ = in_n_emissions;
     n_detectors_ = in_n_detectors;
+    n_2_detectors_ = in_n_detectors * 2;
+    S n_detectors_2 = in_n_detectors / 2;
+    S n_detectors_4 = in_n_detectors / 4;
+    n_1_detectors_2_ = in_n_detectors + n_detectors_2;
+    n_1_detectors_4_ = in_n_detectors + n_detectors_4;
     n_lors_ = LOR::end_for_detectors(n_detectors_).index();
 
     // load hits
@@ -226,8 +233,28 @@ class SparseMatrix
     std::sort(Super::begin(), Super::end(), SortByPixel());
   }
 
+  SparseMatrix to_full() {
+    if (!triangular_) {
+      return *this;
+    }
+    SparseMatrix full(n_pixels_in_row_, n_detectors_, n_emissions_);
+    full.reserve(this->size() * 8);
+    for (auto it = this->begin(); it != this->end(); ++it) {
+      for (auto symmetry = 0; symmetry < 8; ++symmetry) {
+        auto pixel = it->pixel();
+        // avoid writing diagonals twice
+        if (symmetry & 4 && pixel.x == pixel.y) continue;
+        full.push_back(Element(symmetric_lor(it->lor(), symmetry),
+                               symmetric_pixel(pixel, symmetry),
+                               it->hits()));
+      }
+    }
+    return full;
+  }
+
  private:
   S n_pixels_in_row_;
+  S n_pixels_in_row_half_;
   S n_detectors_;
   S n_2_detectors_;
   S n_1_detectors_2_;
@@ -251,7 +278,7 @@ class SparseMatrix
   /// Computes LOR based on given symmetry (1 out 8)
   /// @param lor      base lor for symmetry
   /// @param symmetry number (0..7)
-  LOR symmetric(LOR lor, S symmetry) const {
+  LOR symmetric_lor(LOR lor, S symmetry) const {
     if (symmetry & 1) {
       lor.first = (n_2_detectors_ - lor.first) % n_detectors_;
       lor.second = (n_2_detectors_ - lor.second) % n_detectors_;
@@ -265,6 +292,22 @@ class SparseMatrix
       lor.second = (n_1_detectors_4_ - lor.second) % n_detectors_;
     }
     return lor;
+  }
+
+  Pixel symmetric_pixel(Pixel p, S symmetry) const {
+    if (symmetry & 2) {
+      p.x = -p.x - 1;
+    }
+    if (symmetry & 1) {
+      p.y = -p.y - 1;
+    }
+    // triangulate
+    if (symmetry & 4) {
+      std::swap(p.x, p.y);
+    }
+    p.x += n_pixels_in_row_half();
+    p.y += n_pixels_in_row_half();
+    return p;
   }
 
 #define fourcc(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))

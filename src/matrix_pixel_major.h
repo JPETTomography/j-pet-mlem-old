@@ -127,8 +127,14 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
     for (auto it = sparse.begin(); it != sparse.end(); ++it) {
       auto element = *it;
-      auto lor = element.lor();
       auto pixel = element.pixel();
+      if (!sparse.triangular()) {
+        pixel.x -= n_pixels_in_row_half_;
+        pixel.y -= n_pixels_in_row_half_;
+        if (pixel.x < 0 || pixel.y < 0 || pixel.y < pixel.x)
+          continue;
+      }
+      auto lor = element.lor();
       auto hits = element.hits();
       auto i_pixel = pixel.index();
 
