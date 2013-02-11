@@ -92,8 +92,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     for (S i_lor = 0, lor_count = 0; i_lor < n_lors_; ++i_lor) {
       auto hits = pixel_lor_hits_ptr_[i_pixel][i_lor];
       if (hits > 0) {
-        pixel_lor_hits_[i_pixel][lor_count++] =
-            SparseElement(index_to_lor_[i_lor], index_to_pixel_[i_pixel], hits);
+        pixel_lor_hits_[i_pixel][lor_count++] = SparseElement(
+            index_to_lor_[i_lor], 0, index_to_pixel_[i_pixel], hits);
       }
     }
 
@@ -151,10 +151,11 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
   // for testing purposes
   S lor_hits_at_pixel_index(LOR lor, S i_pixel) {
-    auto it = std::lower_bound(pixel_lor_hits_[i_pixel].begin(),
-                               pixel_lor_hits_[i_pixel].end(),
-                               SparseElement(lor, index_to_pixel_[i_pixel], 0),
-                               SparseElementLORComparator());
+    auto it =
+        std::lower_bound(pixel_lor_hits_[i_pixel].begin(),
+                         pixel_lor_hits_[i_pixel].end(),
+                         SparseElement(lor, 0, index_to_pixel_[i_pixel], 0),
+                         SparseElementLORComparator());
 
     if (it == pixel_lor_hits_[i_pixel].end())
       return 0;

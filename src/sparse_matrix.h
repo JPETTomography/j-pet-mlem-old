@@ -15,22 +15,33 @@
 
 #include "bstream.h"
 
-template <typename LORType, typename PixelType, typename HitType = int>
-class SparseElement : public std::tuple<LORType, PixelType, HitType> {
+template <typename LORType,
+          typename PositionType,
+          typename PixelType,
+          typename HitType = int>
+class SparseElement
+    : public std::tuple<LORType, PositionType, PixelType, HitType> {
  public:
-  typedef std::tuple<LORType, PixelType, HitType> Super;
+  typedef std::tuple<LORType, PositionType, PixelType, HitType> Super;
 
-  SparseElement(LORType && lor, PixelType && pixel, HitType && hit)
-      : Super(lor, pixel, hit) {
+  SparseElement(LORType && lor,
+                PositionType && position,
+                PixelType && pixel,
+                HitType && hit)
+      : Super(lor, position, pixel, hit) {
   }
-  SparseElement(const LORType& lor, const PixelType& pixel, const HitType& hit)
-      : Super(lor, pixel, hit) {
+  SparseElement(const LORType& lor,
+                const PositionType& position,
+                const PixelType& pixel,
+                const HitType& hit)
+      : Super(lor, position, pixel, hit) {
   }
   SparseElement() = default;
 
   LORType const& lor() const { return std::get<0>(*this); }
-  PixelType const& pixel() const { return std::get<1>(*this); }
-  HitType const& hits() const { return std::get<2>(*this); }
+  PositionType const& position() const { return std::get<1>(*this); }
+  PixelType const& pixel() const { return std::get<2>(*this); }
+  HitType const& hits() const { return std::get<3>(*this); }
 };
 
 template <typename PixelType,
@@ -38,8 +49,9 @@ template <typename PixelType,
           typename SType = int,
           typename HitType = int>
 class SparseMatrix
-    : public std::vector<SparseElement<LORType, PixelType, HitType>> {
-  typedef std::vector<SparseElement<LORType, PixelType, HitType>> Super;
+    : public std::vector<SparseElement<LORType, SType, PixelType, HitType>> {
+  typedef std::vector<
+      SparseElement<LORType, SType, PixelType, HitType>> Super;
 
  public:
   typedef PixelType Pixel;
@@ -47,7 +59,7 @@ class SparseMatrix
   typedef SType S;
   typedef typename std::make_signed<S>::type SS;
   typedef HitType Hit;
-  typedef SparseElement<LOR, Pixel, Hit> Element;
+  typedef SparseElement<LOR, SType, Pixel, Hit> Element;
 
   // file representation types, size independent
   typedef uint8_t BitmapPixel;
@@ -136,7 +148,7 @@ class SparseMatrix
         FileInt hits;
         in >> x >> y >> hits;
 
-        this->push_back(Element(lor, Pixel(x, y), hits));
+        this->push_back(Element(lor, 0, Pixel(x, y), hits));
       }
     }
   }
@@ -157,10 +169,9 @@ class SparseMatrix
     LOR current_lor = LOR::end_for_detectors(sm.n_detectors_);
 
     for (auto it = sm.begin(); it != sm.end(); ++it) {
-      Element element = *it;
-      LOR& lor = std::get<0>(element);
-      Pixel& p = std::get<1>(element);
-      FileInt hits = std::get<2>(element);
+      auto lor = it->lor();
+      auto pixel = it->pixel();
+      auto hits = it->hits();
 
       if (lor != current_lor) {
         current_lor = lor;
@@ -177,7 +188,8 @@ class SparseMatrix
         }
         out << count;
       }
-      out << static_cast<FileHalf>(p.x) << static_cast<FileHalf>(p.y) << hits;
+      out << static_cast<FileHalf>(pixel.x) << static_cast<FileHalf>(pixel.y)
+          << hits;
     }
 
     return out;
@@ -190,14 +202,9 @@ class SparseMatrix
     out << "    detectors: " << sm.n_detectors_ << std::endl;
 
     for (auto it = sm.begin(); it != sm.end(); ++it) {
-      Element element = *it;
-      LOR& lor = std::get<0>(element);
-      Pixel& p = std::get<1>(element);
-      Hit hits = std::get<2>(element);
-
-      out << " lor: (" << lor.first << ", " << lor.second << ")"
-          << " pixel: (" << p.x << "," << p.y << ")"
-          << " hits: " << hits << std::endl;
+      out << " lor: (" << it->lor().first << ", " << it->lor().second << ")"
+          << " pixel: (" << it->pixel().x << "," << it->pixel().y << ")"
+          << " hits: " << it->hits() << std::endl;
     }
 
     return out;
@@ -243,8 +250,10 @@ class SparseMatrix
       for (auto symmetry = 0; symmetry < 8; ++symmetry) {
         auto pixel = it->pixel();
         // avoid writing diagonals twice
-        if (symmetry & 4 && pixel.x == pixel.y) continue;
+        if (symmetry & 4 && pixel.x == pixel.y)
+          continue;
         full.push_back(Element(symmetric_lor(it->lor(), symmetry),
+                               0,
                                symmetric_pixel(pixel, symmetry),
                                it->hits()));
       }
