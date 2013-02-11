@@ -60,9 +60,14 @@ class SparseMatrix
       S n_pixels_in_row, S n_detectors, S n_emissions, bool triangular = false)
       : n_pixels_in_row_(n_pixels_in_row),
         n_detectors_(n_detectors),
+        n_2_detectors_(2 * n_detectors),
         n_emissions_(n_emissions),
         n_lors_(LOR::end_for_detectors(n_detectors).index()),
         triangular_(triangular) {
+    S n_detectors_2 = n_detectors / 2;
+    S n_detectors_4 = n_detectors / 4;
+    n_1_detectors_2_ = n_detectors + n_detectors_2;
+    n_1_detectors_4_ = n_detectors + n_detectors_4;
   }
 
   S n_pixels_in_row() const { return n_pixels_in_row_; }
@@ -224,6 +229,9 @@ class SparseMatrix
  private:
   S n_pixels_in_row_;
   S n_detectors_;
+  S n_2_detectors_;
+  S n_1_detectors_2_;
+  S n_1_detectors_4_;
   S n_emissions_;
   S n_lors_;
   bool triangular_;
@@ -239,6 +247,25 @@ class SparseMatrix
       return std::get<0>(a) < std::get<0>(b);
     }
   };
+
+  /// Computes LOR based on given symmetry (1 out 8)
+  /// @param lor      base lor for symmetry
+  /// @param symmetry number (0..7)
+  LOR symmetric(LOR lor, S symmetry) const {
+    if (symmetry & 1) {
+      lor.first = (n_2_detectors_ - lor.first) % n_detectors_;
+      lor.second = (n_2_detectors_ - lor.second) % n_detectors_;
+    }
+    if (symmetry & 2) {
+      lor.first = (n_1_detectors_2_ - lor.first) % n_detectors_;
+      lor.second = (n_1_detectors_2_ - lor.second) % n_detectors_;
+    }
+    if (symmetry & 4) {
+      lor.first = (n_1_detectors_4_ - lor.first) % n_detectors_;
+      lor.second = (n_1_detectors_4_ - lor.second) % n_detectors_;
+    }
+    return lor;
+  }
 
 #define fourcc(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
 
