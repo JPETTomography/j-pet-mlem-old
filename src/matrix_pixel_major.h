@@ -131,9 +131,9 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
     for (auto it = sparse.begin(); it != sparse.end(); ++it) {
       auto element = *it;
-      auto lor = std::get<0>(element);
-      auto pixel = std::get<1>(element);
-      auto hits = std::get<2>(element);
+      auto lor = element.lor();
+      auto pixel = element.pixel();
+      auto hits = element.hits();
       auto i_pixel = pixel.index();
 
       if (i_current_pixel != i_pixel) {

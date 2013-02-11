@@ -15,13 +15,30 @@
 
 #include "bstream.h"
 
+template <typename LORType, typename PixelType, typename HitType = int>
+class SparseElement : public std::tuple<LORType, PixelType, HitType> {
+ public:
+  typedef std::tuple<LORType, PixelType, HitType> Super;
+
+  SparseElement(LORType && lor, PixelType && pixel, HitType && hit)
+      : Super(lor, pixel, hit) {
+  }
+  SparseElement(const LORType& lor, const PixelType& pixel, const HitType& hit)
+      : Super(lor, pixel, hit) {
+  }
+
+  LORType const& lor() { return std::get<0>(*this); }
+  PixelType const& pixel() { return std::get<1>(*this); }
+  HitType const& hits() { return std::get<2>(*this); }
+};
+
 template <typename PixelType,
           typename LORType,
           typename SType = int,
           typename HitType = int>
 class SparseMatrix
-    : public std::vector<std::tuple<LORType, PixelType, HitType>> {
-  typedef std::vector<std::tuple<LORType, PixelType, HitType>> Super;
+    : public std::vector<SparseElement<LORType, PixelType, HitType>> {
+  typedef std::vector<SparseElement<LORType, PixelType, HitType>> Super;
 
  public:
   typedef PixelType Pixel;
@@ -29,7 +46,7 @@ class SparseMatrix
   typedef SType S;
   typedef typename std::make_signed<S>::type SS;
   typedef HitType Hit;
-  typedef std::tuple<LOR, Pixel, Hit> Element;
+  typedef SparseElement<LOR, Pixel, Hit> Element;
 
   // file representation types, size independent
   typedef uint8_t BitmapPixel;
