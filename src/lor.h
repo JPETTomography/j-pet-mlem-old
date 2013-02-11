@@ -15,7 +15,7 @@ template <typename SType = int> class LOR : public std::pair<SType, SType> {
     }
   }
 
-  S t_index() const {
+  constexpr S index() const {
     return (this->first * (this->first + 1)) / 2 + this->second;
   }
 
@@ -27,7 +27,9 @@ template <typename SType = int> class LOR : public std::pair<SType, SType> {
     return *this;
   }
 
-  static LOR end_for_detectors(S n_detectors) { return LOR(n_detectors, 0); }
+  static constexpr LOR end_for_detectors(S n_detectors) {
+    return LOR(n_detectors, 0);
+  }
 
   friend std::ostream& operator<<(std::ostream& out, const LOR& lor) {
     return out;

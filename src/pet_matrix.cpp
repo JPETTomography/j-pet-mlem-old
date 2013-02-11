@@ -5,7 +5,7 @@
 //
 // Using Monte Carlo method and square detector scintilators.
 
-#define LOR_MAJOR 1
+#define LOR_MAJOR 0
 
 #include <iostream>
 #include <random>
@@ -20,6 +20,7 @@
 #else
 #include "matrix_pixel_major.h"
 #endif
+#include "pixel.h"
 #include "lor.h"
 #include "model.h"
 #include "png_writer.h"
@@ -173,9 +174,9 @@ int main(int argc, char* argv[]) {
 
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
 #if LOR_MAJOR
-    MatrixLORMajor<LOR<>> matrix(n_pixels, n_detectors);
+    MatrixLORMajor<Pixel<>, LOR<>> matrix(n_pixels, n_detectors);
 #else
-    MatrixPixelMajor<LOR<>> matrix(n_pixels, n_detectors);
+    MatrixPixelMajor<Pixel<>, LOR<>> matrix(n_pixels, n_detectors);
 #endif
 
     MonteCarlo<decltype(dr), decltype(matrix)> monte_carlo(dr, matrix, s_pixel);
@@ -185,7 +186,9 @@ int main(int argc, char* argv[]) {
       if (!in.is_open())
         throw("cannot open input file: " + *fn);
       try {
-        in >> matrix;
+        decltype(matrix) ::SparseMatrix sparse_matrix(in);
+        sparse_matrix.sort_by_pixel();
+        matrix << sparse_matrix;
       }
       catch (std::string & ex) {
         throw(ex + ": " + *fn);
@@ -201,6 +204,8 @@ int main(int argc, char* argv[]) {
       monte_carlo(
           gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
 
+    auto sparse_matrix = matrix.to_sparse();
+
     // generate output
     if (cl.exist("output")) {
       auto fn = cl.get<cmdline::string>("output");
@@ -215,8 +220,7 @@ int main(int argc, char* argv[]) {
           fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
 
       obstream out(fn, std::ios::binary | std::ios::trunc);
-      matrix.output_triangular = !cl.exist("full");
-      out << matrix;
+      out << sparse_matrix;
 
       std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
       os << cl;
@@ -248,7 +252,7 @@ int main(int argc, char* argv[]) {
         lor.second = (lor.first + n_detectors / 2) % n_detectors;
       }
       png_writer png(cl.get<cmdline::string>("png"));
-      matrix.output_lor_bitmap(png, lor);
+      matrix.to_sparse().output_lor_bitmap(png, lor);
     }
 
     // show stats if requested
@@ -257,7 +261,7 @@ int main(int argc, char* argv[]) {
       auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
       for (auto y = 0; y < n_pixels; ++y) {
         for (auto x = 0; x < n_pixels; ++x) {
-          auto hits = matrix.hits(x, y);
+          auto hits = matrix[decltype(matrix) ::Pixel(x, y)];
           pixel_min = std::min(pixel_min, hits);
           pixel_max = std::max(pixel_max, hits);
         }
@@ -269,7 +273,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (cl.exist("print")) {
-      std::cout << matrix;
+      std::cout << sparse_matrix;
     }
 
     if (cl.exist("wait")) {
@@ -287,5 +291,4 @@ int main(int argc, char* argv[]) {
   catch (const char * ex) {
     std::cerr << "error: " << ex << std::endl;
   }
-
 }

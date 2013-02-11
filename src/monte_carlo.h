@@ -1,25 +1,21 @@
 #pragma once
 
-#include "matrix_lor_major.h"
-#include "detector_ring.h"
-
 template <typename DetectorRingType,
-          typename SystemMatrixType,
+          typename MatrixType,
           typename FType = double,
           typename SType = int>
 class MonteCarlo {
   typedef DetectorRingType DetectorRing;
-  typedef SystemMatrixType SystemMatrix;
+  typedef MatrixType Matrix;
   typedef FType F;
   typedef SType S;
   typedef typename std::make_signed<S>::type SS;
-  typedef typename SystemMatrix::LOR LOR;
+  typedef typename Matrix::LOR LOR;
 
  public:
-  MonteCarlo(
-      DetectorRing& detector_ring, SystemMatrix& system_matrix, F pixel_size)
+  MonteCarlo(DetectorRing& detector_ring, Matrix& matrix, F pixel_size)
       : detector_ring_(detector_ring),
-        system_matrix_(system_matrix),
+        matrix_(matrix),
         pixel_size_(pixel_size) {
   }
 
@@ -29,15 +25,15 @@ class MonteCarlo {
   template <typename RandomGenerator, typename AcceptanceModel>
   void operator()(RandomGenerator& gen,
                   AcceptanceModel model,
-                  S n_mc_emissions,
+                  S n_emissions,
                   bool o_collect_mc_matrix = true,
                   bool o_collect_pixel_stats = true) {
 
     uniform_real_distribution<> one_dis(0., 1.);
     uniform_real_distribution<> phi_dis(0., M_PI);
 
-    auto n_pixels_2 = system_matrix_.n_pixels_in_row() / 2;
-    system_matrix_.increase_n_emissions(n_mc_emissions);
+    auto n_pixels_2 = matrix_.n_pixels_in_row() / 2;
+    matrix_.add_emissions(n_emissions);
 
 #if _OPENMP
     // OpenMP uses passed random generator as seed source for
@@ -59,9 +55,9 @@ class MonteCarlo {
             detector_ring_.fov_radius() * detector_ring_.fov_radius())
           continue;
 
-        auto i_pixel = system_matrix_.t_pixel_index(x, y);
+        auto i_pixel = Pixel<S>(x, y).index();
 
-        for (auto n = 0; n < n_mc_emissions; ++n) {
+        for (auto n = 0; n < n_emissions; ++n) {
 #if _OPENMP
           auto& l_gen = mp_gens[omp_get_thread_num()];
 #else
@@ -82,22 +78,22 @@ class MonteCarlo {
           // do we have hit on both sides?
           if (hits >= 2) {
             if (o_collect_mc_matrix) {
-              system_matrix_.add_to_t_matrix(lor, i_pixel);
+              matrix_.hit_lor(lor, i_pixel);
             }
 
             if (o_collect_pixel_stats) {
-              system_matrix_.add_hit(i_pixel);
+              matrix_.hit(i_pixel);
             }
           }  // if (hits>=2)
         }    // loop over emmisions from pixel
 
-        system_matrix_.compact_pixel_index(i_pixel);
+        matrix_.compact_pixel_index(i_pixel);
       }
     }
   }
 
  private:
   DetectorRing& detector_ring_;
-  SystemMatrix& system_matrix_;
+  Matrix& matrix_;
   F pixel_size_;
 };
