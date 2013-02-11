@@ -31,7 +31,6 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   typedef SType S;
   typedef HitType Hit;
   typedef typename std::make_signed<S>::type SS;
-  typedef std::pair<LOR, Hit> LORHit;
   typedef typename Super::SparseMatrix SparseMatrix;
   typedef typename SparseMatrix::Element SparseElement;
 
@@ -64,9 +63,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       // unpack previous values (if any)
       for (auto it = pixel_lor_hits_[i_pixel].begin();
            it != pixel_lor_hits_[i_pixel].end(); ++it) {
-        auto lor = it->first;
-        auto hits = it->second;
-        hit_lor(lor, i_pixel, hits);
+        hit_lor(it->lor(), i_pixel, it->hits());
       }
     }
     if (pixel_lor_hits_ptr_[i_pixel][lor.index()] == 0) {
@@ -96,7 +93,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       auto hits = pixel_lor_hits_ptr_[i_pixel][i_lor];
       if (hits > 0) {
         pixel_lor_hits_[i_pixel][lor_count++] =
-            LORHit(index_to_lor_[i_lor], hits);
+            SparseElement(index_to_lor_[i_lor], index_to_pixel_[i_pixel], hits);
       }
     }
 
@@ -104,7 +101,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
     std::sort(pixel_lor_hits_[i_pixel].begin(),
               pixel_lor_hits_[i_pixel].end(),
-              LORHitComparator());
+              SparseElementLORComparator());
   }
 
   SparseMatrix to_sparse() {
@@ -116,8 +113,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
       for (auto it = pixel_lor_hits_[i_pixel].begin();
            it != pixel_lor_hits_[i_pixel].end(); ++it) {
-        sparse.push_back(
-            SparseElement(it->first, index_to_pixel_[i_pixel], it->second));
+        sparse.push_back(*it);
       }
     }
     return sparse;
@@ -151,12 +147,12 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   S lor_hits_at_pixel_index(LOR lor, S i_pixel) {
     auto it = std::lower_bound(pixel_lor_hits_[i_pixel].begin(),
                                pixel_lor_hits_[i_pixel].end(),
-                               LORHit(lor, 0),
-                               LORHitComparator());
+                               SparseElement(lor, index_to_pixel_[i_pixel], 0),
+                               SparseElementLORComparator());
 
     if (it == pixel_lor_hits_[i_pixel].end())
       return 0;
-    return it->second;
+    return it->hits();
   }
   S size() const { return size_; }
   S n_lors_at_pixel_index(S i_pixel) const { return pixel_lor_count_[i_pixel]; }
@@ -169,9 +165,9 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     throw(__PRETTY_FUNCTION__);
   }
 
-  struct LORHitComparator {
-    bool operator()(const LORHit& a, const LORHit& b) const {
-      return a.first < b.first;
+  struct SparseElementLORComparator {
+    bool operator()(const SparseElement& a, const SparseElement& b) const {
+      return a.lor() < b.lor();
     }
   };
 
@@ -180,7 +176,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   S n_lors_;
   S size_;
   Hit** pixel_lor_hits_ptr_;
-  std::vector<std::vector<LORHit>> pixel_lor_hits_;
+  std::vector<std::vector<SparseElement>> pixel_lor_hits_;
   std::vector<S> pixel_lor_count_;
   std::vector<LOR> index_to_lor_;
   std::vector<Pixel> index_to_pixel_;

@@ -26,10 +26,13 @@ class SparseElement : public std::tuple<LORType, PixelType, HitType> {
   SparseElement(const LORType& lor, const PixelType& pixel, const HitType& hit)
       : Super(lor, pixel, hit) {
   }
+  SparseElement()
+    : Super(LORType(), PixelType(), HitType()) {
+  }
 
-  LORType const& lor() { return std::get<0>(*this); }
-  PixelType const& pixel() { return std::get<1>(*this); }
-  HitType const& hits() { return std::get<2>(*this); }
+  LORType const& lor() const { return std::get<0>(*this); }
+  PixelType const& pixel() const { return std::get<1>(*this); }
+  HitType const& hits() const { return std::get<2>(*this); }
 };
 
 template <typename PixelType,
