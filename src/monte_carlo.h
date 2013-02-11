@@ -1,5 +1,9 @@
 #pragma once
 
+#if _OPENMP
+#include <omp.h>
+#endif
+
 template <typename DetectorRingType,
           typename MatrixType,
           typename FType = double,
