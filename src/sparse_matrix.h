@@ -1,17 +1,24 @@
-/// Sparse system matrix binary file format
-/// -----------------------------------------------------
-/// uint32_t magic       // 'PETp' (triangular) / 'PETP' (full)
-/// // for time of flight:  'TOFp' (triangular) / 'TOFP' (full)
-/// uint32_t n_pixels_    // half size [PETp] / full size [PETP]
-/// uint32_t n_emissions // per pixel
-/// uint32_t n_detectors // regardless of magic
-/// while (!eof)
-///   uint16_t lor_a, lor_b // pair
-///   uint32_t pixel_pair_count
-///   for(.. count ..)
-///     uint32_t position         // (only for TOF type)
-///     uint16_t pixel_x, pixel_y // half pixels [PETp] / pixels [PETP]
-///     uint32_t pixel_hits
+/// \mainpage
+///
+/// \section Sparse system matrix binary file format
+///
+///   - \c uint32_t \b magic =
+///     -# \c PETp  triangular
+///     -# \c PETP  full
+///     -# \c TOFp  TOF triangular
+///     -# \c TOFP  TOF full
+///   - \c uint32_t \b n_pixels_    half size for \c PETp,
+///                                 full size for \c PETP
+///   - \c uint32_t \b n_emissions  per pixel
+///   - \c uint32_t \b n_detectors  regardless of magic
+///   - \c while (!eof)
+///     - \c uint16_t \b lor_a, \b lor_b  pair
+///     - \c uint32_t \b pixel_pair_count
+///     - \c for(.. count ..)
+///       - \c uint32_t \b position             only for TOF type
+///       - \c uint16_t \b pixel_x, \b pixel_y  half pixels for \c PETp,
+///                                             pixels for \c PETP
+///       - \c uint32_t \b pixel_hits
 
 #pragma once
 
