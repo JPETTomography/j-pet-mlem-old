@@ -2,8 +2,10 @@
 
 #include "random.h"
 
-template <typename F = double> class AlwaysAccept {
+template <typename FType = double> class AlwaysAccept {
  public:
+  typedef FType F;
+
   AlwaysAccept() {}
   template <class RandomGenerator> bool operator()(RandomGenerator&, F) {
     return true;
@@ -14,8 +16,10 @@ template <typename F = double> class AlwaysAccept {
   }
 };
 
-template <typename F = double> class ScintilatorAccept {
+template <typename FType = double> class ScintilatorAccept {
  public:
+  typedef FType F;
+
   ScintilatorAccept(F unit_prob)
       : one_dis_(0., 1.),
         unit_prob_(unit_prob),

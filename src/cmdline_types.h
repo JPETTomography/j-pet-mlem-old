@@ -6,8 +6,8 @@ namespace cmdline {
 class string : public std::string {
 };
 namespace detail {
-template <> inline std::string readable_typename<ssize_t>() { return "index"; }
-template <> inline std::string readable_typename<size_t>() { return "size"; }
+template <> inline std::string readable_typename<int>() { return "size"; }
+template <> inline std::string readable_typename<long>() { return "seed"; }
 template <> inline std::string readable_typename<double>() { return "float"; }
 template <> inline std::string readable_typename<string>() { return "file"; }
 

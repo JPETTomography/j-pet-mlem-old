@@ -10,7 +10,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <cmdline.h>
+#include "cmdline.h"
 #include "cmdline_types.h"
 
 #include "point.h"
@@ -32,13 +32,12 @@ int main(int argc, char* argv[]) {
     cl.add<cmdline::string>(
         "config", 'c', "load config file", false, cmdline::string(), false);
 #if _OPENMP
-    cl.add<size_t>(
-        "n-threads", 't', "number of OpenMP threads", false, 0, false);
+    cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 0, false);
 #endif
-    cl.add<size_t>(
+    cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
-    cl.add<size_t>("n-detectors", 'd', "number of ring detectors", false, 64);
-    cl.add<size_t>("n-emissions", 'e', "emissions", false, 0);
+    cl.add<int>("n-detectors", 'd', "number of ring detectors", false, 64);
+    cl.add<int>("n-emissions", 'e', "emissions", false, 0);
     cl.add<double>("radius", 'r', "inner detector ring radius", false);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
     cl.add<double>("w-detector", 'w', "detector width", false);
@@ -65,13 +64,13 @@ int main(int argc, char* argv[]) {
 
 #if _OPENMP
     if (cl.exist("n-threads")) {
-      omp_set_num_threads(cl.get<size_t>("n-threads"));
+      omp_set_num_threads(cl.get<int>("n-threads"));
     }
 #endif
 
-    auto& n_pixels = cl.get<size_t>("n-pixels");
-    auto& n_detectors = cl.get<size_t>("n-detectors");
-    auto& n_emissions = cl.get<size_t>("n-emissions");
+    auto& n_pixels = cl.get<int>("n-pixels");
+    auto& n_detectors = cl.get<int>("n-detectors");
+    auto& n_emissions = cl.get<int>("n-emissions");
     auto& radius = cl.get<double>("radius");
     auto& s_pixel = cl.get<double>("s-pixel");
     auto& w_detector = cl.get<double>("w-detector");
@@ -119,13 +118,13 @@ int main(int argc, char* argv[]) {
       gen.seed(cl.get<std::mt19937::result_type>("seed"));
     }
 
-    size_t tubes[n_detectors][n_detectors];
+    int tubes[n_detectors][n_detectors];
     for (int i = 0; i < n_detectors; i++)
       for (int j = 0; j < n_detectors; j++)
         tubes[i][j] = 0;
 
-    size_t pixels[n_pixels][n_pixels];
-    size_t pixels_detected[n_pixels][n_pixels];
+    int pixels[n_pixels][n_pixels];
+    int pixels_detected[n_pixels][n_pixels];
 
     for (auto i = 0; i < n_pixels; ++i)
       for (auto j = 0; j < n_pixels; ++j) {
@@ -154,7 +153,7 @@ int main(int argc, char* argv[]) {
         throw("cannot open input file: " + *fn);
       }
 
-      size_t n_line = 0;
+      int n_line = 0;
       do {
         std::string line;
         std::getline(in, line);
@@ -173,7 +172,7 @@ int main(int argc, char* argv[]) {
         } else if (type == "ellipse") {
           double x, y, a, b, angle, acceptance;
           is >> x >> y >> a >> b >> angle >> acceptance;
-          phantom.addRegion(x, y, a, b, angle, acceptance);
+          phantom.add_region(x, y, a, b, angle, acceptance);
         } else {
           std::ostringstream msg;
           msg << *fn << ":" << n_line << " unhandled type of shape: " << type;
@@ -189,7 +188,7 @@ int main(int argc, char* argv[]) {
         double x = fov_dis(gen);
         double y = fov_dis(gen);
         if (x * x + y * y < fov_r2) {
-          if (phantom.emit(x, y, one_dis(gen))) {
+          if (phantom.test_emit(x, y, one_dis(gen))) {
             auto pix = dr.pixel(x, y, s_pixel);
             DetectorRing<>::LOR lor;
             pixels[pix.second][pix.first]++;
@@ -239,10 +238,10 @@ int main(int argc, char* argv[]) {
     auto fn = cl.get<cmdline::string>("output");
     auto fn_sep = fn.find_last_of("\\/");
     auto fn_ext = fn.find_last_of(".");
-    auto fn_wo_ext =
-        fn.substr(0, fn_ext != std::string::npos &&
-                  (fn_sep == std::string::npos || fn_sep < fn_ext) ? fn_ext :
-                      std::string::npos);
+    auto fn_wo_ext = fn.substr(0,
+                               fn_ext != std::string::npos &&
+                               (fn_sep == std::string::npos || fn_sep < fn_ext)
+                                   ? fn_ext : std::string::npos);
 
     std::ofstream n_stream(fn);
     for (int i = 0; i < n_detectors; i++) {
@@ -262,8 +261,8 @@ int main(int argc, char* argv[]) {
     std::ofstream pixels_text_out(fn_wo_ext + "_pixels.txt");
     std::ofstream pixels_detected_text_out(fn_wo_ext + "_detected_pixels.txt");
 
-    size_t pix_max = 0;
-    size_t pix_detected_max = 0;
+    int pix_max = 0;
+    int pix_detected_max = 0;
 
     pix.write_header<>(n_pixels, n_pixels);
     pix_detected.write_header<>(n_pixels, n_pixels);

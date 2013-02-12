@@ -4,18 +4,6 @@
 #include <vector>
 #include "point.h"
 
-#ifdef __APPLE__
-static inline void sincos(double a, double* s, double* c) {
-  *s = sin(a);
-  *c = cos(a);
-}
-
-static inline void sincosf(float a, float* s, float* c) {
-  *s = sinf(a);
-  *c = cosf(a);
-}
-#endif
-
 class EllipticalRegion {
  public:
   EllipticalRegion(
@@ -65,6 +53,18 @@ class EllipticalRegion {
 
   double sin_;
   double cos_;
+
+#ifdef __APPLE__
+  static inline void sincos(double a, double* s, double* c) {
+    *s = sin(a);
+    *c = cos(a);
+  }
+
+  static inline void sincosf(float a, float* s, float* c) {
+    *s = sinf(a);
+    *c = cosf(a);
+  }
+#endif
 };
 
 class Phantom {
@@ -74,7 +74,7 @@ class Phantom {
   typedef Container::const_iterator const_iterator;
   Phantom() {}
 
-#if 1
+#if 0
   Phantom(double ll_x, double ll_y, double ur_x, double ur_y)
       : ll_x_(ll_x),
         ll_y_(ll_y),
@@ -85,7 +85,7 @@ class Phantom {
 
   size_t n_regions() const { return regions_.size(); }
 
-  void addRegion(
+  void add_region(
       double x, double y, double a, double b, double phi, double act) {
     regions_.push_back(new EllipticalRegion(x, y, a, b, phi, act));
   }
@@ -99,7 +99,7 @@ class Phantom {
     return 0.0;
   }
 
-  bool emit(double x, double y, double rnd) const {
+  bool test_emit(double x, double y, double rnd) const {
     return activity(x, y) > rnd;
   }
 
@@ -114,20 +114,26 @@ class Phantom {
   }
 
  private:
+#if 0
   double ll_x_, ll_y_;
   double ur_x_, ur_y_;
+#endif
 
   Container regions_;
 };
 
-template <typename F = double> struct PointSource {
+template <typename FType = double> struct PointSource {
+  typedef FType F;
+
   PointSource(F x, F y, F intensity_a) : p(x, y), intensity(intensity_a) {}
   Point<F> p;
   F intensity;
 };
 
-template <typename F = double> class PointSources {
+template <typename FType = double> class PointSources {
  public:
+  typedef FType F;
+
   size_t n_sources() const { return sources_.size(); }
 
   void add(F x, F y, F intensity) {
