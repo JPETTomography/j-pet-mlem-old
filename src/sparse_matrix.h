@@ -19,6 +19,9 @@
 ///       - \c uint16_t \b pixel_x, \b pixel_y  half pixels for \c PETp,
 ///                                             pixels for \c PETP
 ///       - \c uint32_t \b pixel_hits
+///
+/// \b Note: TOF position has no particular meaning without quantisation
+/// definition. However this is not needed for reconstruction.
 
 #pragma once
 
@@ -101,6 +104,7 @@ class SparseMatrix
   S n_detectors() const { return n_detectors_; }
   S n_emissions() const { return n_emissions_; }
   bool triangular() const { return triangular_; }
+  bool tof() const { return tof_; }
 
   SparseMatrix(ibstream& in) {
     FileInt in_magic;

@@ -193,7 +193,9 @@ int main(int argc, char* argv[]) {
             DetectorRing<>::LOR lor;
             pixels[pixel.y][pixel.x]++;
             double angle = phi_dis(gen);
-            auto hits = dr.emit_event(gen, model, x, y, angle, lor);
+            double position;
+            auto hits = dr.emit_event(gen, model, x, y, angle, lor, position);
+            // FIXME: implement position storage for TOF!
             if (hits == 2) {
               if (lor.first > lor.second)
                 std::swap(lor.first, lor.second);
@@ -221,7 +223,9 @@ int main(int argc, char* argv[]) {
         pixels[pixel.y][pixel.x]++;
         double angle = phi_dis(gen);
         DetectorRing<>::LOR lor;
-        auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor);
+        double position;
+        auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor, position);
+        // FIXME: implement position storage for TOF!
         if (hits == 2) {
           if (lor.first > lor.second)
             std::swap(lor.first, lor.second);
