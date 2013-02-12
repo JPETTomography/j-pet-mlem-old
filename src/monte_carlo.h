@@ -76,13 +76,14 @@ class MonteCarlo {
 
           auto angle = phi_dis(l_gen);
           LOR lor;
+          S position = 0;  // FIXME: IMPLEMENT ME!
           auto hits =
               detector_ring_.emit_event(l_gen, model, rx, ry, angle, lor);
 
           // do we have hit on both sides?
           if (hits >= 2) {
             if (o_collect_mc_matrix) {
-              matrix_.hit_lor(lor, i_pixel);
+              matrix_.hit_lor(lor, position, i_pixel);
             }
 
             if (o_collect_pixel_stats) {
