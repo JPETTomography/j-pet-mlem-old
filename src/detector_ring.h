@@ -6,6 +6,9 @@
 #include "detector.h"
 #include "circle.h"
 #include "svg_ostream.h"
+#include "point.h"
+#include "pixel.h"
+#include "lor.h"
 
 /// Provides model for 2D ring of detectors
 template <typename FType = double, typename SType = int>
@@ -13,8 +16,8 @@ class DetectorRing : public std::vector<Detector<FType>> {
  public:
   typedef FType F;
   typedef SType S;
-  typedef std::pair<S, S> LOR;
-  typedef std::pair<S, S> Pixel;
+  typedef ::LOR<S> LOR;
+  typedef ::Pixel<S> Pixel;
   typedef ::Circle<F> Circle;
   typedef ::Point<F> Point;
   typedef ::Detector<F> Detector;
