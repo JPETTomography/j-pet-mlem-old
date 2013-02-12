@@ -155,7 +155,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       }
     }
 
-    for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
+    for (S p = 0; p < n_pixels_* n_pixels_; ++p) {
       if (scale[p] > 0)
         rho_detected_[p] = (F) 1.0;
     }
@@ -179,7 +179,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       std::cout << ".";
       std::cout.flush();
 
-      for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
+      for (S p = 0; p < n_pixels_* n_pixels_; ++p) {
         y[p] = (F) 0.0;
       }
 
@@ -201,7 +201,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
         t++;
       }
 
-      for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
+      for (S p = 0; p < n_pixels_* n_pixels_; ++p) {
         if (scale[p] > 0) {
           rho_detected_[p] *= y[p];
         }
@@ -210,7 +210,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     clock_t stop = clock();
     std::cout << std::endl;
 
-    for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
+    for (S p = 0; p < n_pixels_* n_pixels_; ++p) {
       if (scale[p] > 0) {
         rho_[p] = (rho_detected_[p] / scale[p]);
       }
