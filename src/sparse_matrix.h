@@ -1,15 +1,27 @@
-/// Sparse system matrix binary file format
-/// -----------------------------------------------------
-/// uint32_t magic       // 'PETp' (triangular) / 'PETP' (full)
-/// uint32_t n_pixels_    // half size [PETp] / full size [PETP]
-/// uint32_t n_emissions // per pixel
-/// uint32_t n_detectors // regardless of magic
-/// while (!eof)
-///   uint16_t lor_a, lor_b // pair
-///   uint32_t pixel_pair_count
-///   for(.. count ..)
-///     uint16_t pixel_x, pixel_y // half pixels [PETp] / pixels [PETP]
-///     uint32_t pixel_hits
+/// \mainpage
+///
+/// \section Sparse system matrix binary file format
+///
+///   - \c uint32_t \b magic =
+///     -# \c PETp  triangular
+///     -# \c PETP  full
+///     -# \c TOFp  TOF triangular
+///     -# \c TOFP  TOF full
+///   - \c uint32_t \b n_pixels_    half size for \c PETp,
+///                                 full size for \c PETP
+///   - \c uint32_t \b n_emissions  per pixel
+///   - \c uint32_t \b n_detectors  regardless of magic
+///   - \c while (!eof)
+///     - \c uint16_t \b lor_a, \b lor_b  pair
+///     - \c uint32_t \b pixel_pair_count
+///     - \c for(.. count ..)
+///       - \c uint32_t \b position             only for TOF type
+///       - \c uint16_t \b pixel_x, \b pixel_y  half pixels for \c PETp,
+///                                             pixels for \c PETP
+///       - \c uint32_t \b pixel_hits
+///
+/// \b Note: TOF position has no particular meaning without quantisation
+/// definition. However this is not needed for reconstruction.
 
 #pragma once
 
@@ -68,15 +80,19 @@ class SparseMatrix
   typedef uint32_t FileInt;
   typedef uint16_t FileHalf;
 
-  SparseMatrix(
-      S n_pixels_in_row, S n_detectors, S n_emissions, bool triangular = false)
+  SparseMatrix(S n_pixels_in_row,
+               S n_detectors,
+               S n_emissions,
+               bool triangular = false,
+               bool tof = false)
       : n_pixels_in_row_(n_pixels_in_row),
         n_pixels_in_row_half_(n_pixels_in_row / 2),
         n_detectors_(n_detectors),
         n_2_detectors_(2 * n_detectors),
         n_emissions_(n_emissions),
         n_lors_(LOR::end_for_detectors(n_detectors).index()),
-        triangular_(triangular) {
+        triangular_(triangular),
+        tof_(tof) {
     S n_detectors_2 = n_detectors / 2;
     S n_detectors_4 = n_detectors / 4;
     n_1_detectors_2_ = n_detectors + n_detectors_2;
@@ -88,17 +104,23 @@ class SparseMatrix
   S n_detectors() const { return n_detectors_; }
   S n_emissions() const { return n_emissions_; }
   bool triangular() const { return triangular_; }
+  bool tof() const { return tof_; }
 
   SparseMatrix(ibstream& in) {
     FileInt in_magic;
     in >> in_magic;
     if (in_magic != MAGIC_VERSION_TRIANGULAR &&
-        in_magic != MAGIC_VERSION_FULL && in_magic != MAGIC_VERSION_1 &&
+        in_magic != MAGIC_VERSION_FULL &&
+        in_magic != MAGIC_VERSION_TOF_TRIANGULAR &&
+        in_magic != MAGIC_VERSION_TOF_FULL && in_magic != MAGIC_VERSION_1 &&
         in_magic != MAGIC_VERSION_2) {
       throw("invalid file type format");
     }
 
-    FileInt in_is_triangular = (in_magic != MAGIC_VERSION_FULL);
+    bool in_is_triangular =
+        (in_magic != MAGIC_VERSION_FULL && in_magic != MAGIC_VERSION_TOF_FULL);
+    bool in_is_tof = (in_magic == MAGIC_VERSION_TOF_TRIANGULAR ||
+                      in_magic == MAGIC_VERSION_TOF_FULL);
 
     // load matrix size
     FileInt in_n_pixels_in_row;
@@ -121,6 +143,7 @@ class SparseMatrix
     }
 
     triangular_ = in_is_triangular;
+    tof_ = in_is_tof;
     n_pixels_in_row_ = in_n_pixels_in_row;
     n_pixels_in_row_half_ = in_n_pixels_in_row / 2;
     n_emissions_ = in_n_emissions;
@@ -147,20 +170,27 @@ class SparseMatrix
       // increment hits
       for (FileInt i = 0; i < count; ++i) {
         FileHalf x, y;
+        FileInt position;
         FileInt hits;
-        in >> x >> y >> hits;
+        if (in_is_tof) {
+          in >> position >> x >> y >> hits;
+        } else {
+          in >> x >> y >> hits;
+          position = 0;
+        }
 
-        this->push_back(Element(lor, 0, Pixel(x, y), hits));
+        this->push_back(Element(lor, position, Pixel(x, y), hits));
       }
     }
   }
 
   friend obstream& operator<<(obstream& out, SparseMatrix& sm) {
+    auto tof = sm.tof_;
     if (sm.triangular_) {
-      out << MAGIC_VERSION_TRIANGULAR;
+      out << (tof ? MAGIC_VERSION_TOF_TRIANGULAR : MAGIC_VERSION_TRIANGULAR);
       out << static_cast<FileInt>(sm.n_pixels_in_row_ / 2);
     } else {
-      out << MAGIC_VERSION_FULL;
+      out << (tof ? MAGIC_VERSION_TOF_FULL : MAGIC_VERSION_FULL);
       out << static_cast<FileInt>(sm.n_pixels_in_row_);
     }
     out << static_cast<FileInt>(sm.n_emissions_);
@@ -188,8 +218,13 @@ class SparseMatrix
         }
         out << count;
       }
-      out << static_cast<FileHalf>(pixel.x) << static_cast<FileHalf>(pixel.y)
-          << hits;
+      if (tof) {
+        out << it->position << static_cast<FileHalf>(pixel.x)
+            << static_cast<FileHalf>(pixel.y) << hits;
+      } else {
+        out << static_cast<FileHalf>(pixel.x) << static_cast<FileHalf>(pixel.y)
+            << hits;
+      }
     }
 
     return out;
@@ -271,6 +306,7 @@ class SparseMatrix
   S n_emissions_;
   S n_lors_;
   bool triangular_;
+  bool tof_;
 
   struct SortByPixel {
     bool operator()(const Element& a, const Element& b) const {
@@ -322,7 +358,7 @@ class SparseMatrix
 #define fourcc(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
 
  public:
-  // binary serialization                 // n_pixels_  n_detectors  triagular
+  // binary serialization          // n_pixels_  n_detectors  triagular
   static const FileInt MAGIC_VERSION_1 =
       fourcc('P', 'E', 'T', 't');  //                           X
   static const FileInt MAGIC_VERSION_2 =
@@ -331,4 +367,8 @@ class SparseMatrix
       fourcc('P', 'E', 'T', 'p');  //     X          X          X
   static const FileInt MAGIC_VERSION_FULL =
       fourcc('P', 'E', 'T', 'P');  //     X          X
+  static const FileInt MAGIC_VERSION_TOF_TRIANGULAR =
+      fourcc('T', 'O', 'F', 'p');  //     X          X          X
+  static const FileInt MAGIC_VERSION_TOF_FULL =
+      fourcc('T', 'O', 'F', 'P');  //     X          X
 };

@@ -20,4 +20,5 @@ doc/html/
 *.svg
 *.txt
 /build*/
+/PET-build*/
 *.pro.user

@@ -38,7 +38,7 @@ TEST_CASE("pix_major_system_matrix/add", "add one element") {
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);
-  matrix.hit_lor(lor, 13);
+  matrix.hit_lor(lor, 0, 13);
   matrix.compact_pixel_index(13);
 
   auto hits = matrix.lor_hits_at_pixel_index(lor, 13);
@@ -57,8 +57,8 @@ TEST_CASE("pix_major_system_matrix/add_twice", "add one element twice") {
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);
-  matrix.hit_lor(lor, 13);
-  matrix.hit_lor(lor, 13);
+  matrix.hit_lor(lor, 0, 13);
+  matrix.hit_lor(lor, 0, 13);
   matrix.compact_pixel_index(13);
 
   auto hits = matrix.lor_hits_at_pixel_index(lor, 13);
@@ -75,7 +75,7 @@ TEST_CASE("pix_major_system_matrix/add_to_all",
 
   LOR<> lor(9, 7);
   for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
-    matrix.hit_lor(lor, i_pixel);
+    matrix.hit_lor(lor, 0, i_pixel);
     matrix.compact_pixel_index(i_pixel);
   }
 
@@ -94,7 +94,7 @@ TEST_CASE("pix_major_system_matrix/to_sparse", "flatten") {
 
   LOR<> lor(9, 7);
   for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
-    matrix.hit_lor(lor, i_pixel);
+    matrix.hit_lor(lor, 0, i_pixel);
     matrix.compact_pixel_index(i_pixel);
   }
 

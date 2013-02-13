@@ -12,8 +12,10 @@ template <typename FType = double> class AlwaysAccept {
   }
 
   template <typename RandomGenerator> F deposition_depth(RandomGenerator&) {
-    return 0.0;
+    return static_cast<F>(0);
   }
+
+  static F max_bias() { return static_cast<F>(0); }
 };
 
 template <typename FType = double> class ScintilatorAccept {
@@ -21,9 +23,9 @@ template <typename FType = double> class ScintilatorAccept {
   typedef FType F;
 
   ScintilatorAccept(F unit_prob)
-      : one_dis_(0., 1.),
+      : one_dis_(static_cast<F>(0), static_cast<F>(1)),
         unit_prob_(unit_prob),
-        inv_unit_prob_(1.0 / unit_prob) {
+        inv_unit_prob_(static_cast<F>(1) / unit_prob) {
   }
 
   template <class RandomGenerator>
@@ -34,6 +36,8 @@ template <typename FType = double> class ScintilatorAccept {
   template <typename RandomGenerator> F deposition_depth(RandomGenerator& gen) {
     return -log(one_dis_(gen)) * inv_unit_prob_;
   }
+
+  static F max_bias() { return static_cast<F>(0); }
 
  private:
   uniform_real_distribution<F> one_dis_;

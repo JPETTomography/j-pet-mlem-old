@@ -55,7 +55,8 @@ TEST_CASE("detector_ring/math", "detector ring test") {
     // this is not yet a complete tests....
     DetectorRing<>::LOR lor;
     AlwaysAccept<> model;
-    auto hits = ring.emit_event(model, model, x, y, phi, lor);
+    double position;
+    auto hits = ring.emit_event(model, model, x, y, phi, lor, position);
 
     if (hits >= 2) {
       CHECK(std::find(detector.begin(), detector.end(), lor.first) !=

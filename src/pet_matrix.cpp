@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
     cl.add<int>("n-emissions", 'e', "emissions per pixel", false, 0);
     cl.add<double>("radius", 'r', "inner detector ring radius", false, 0);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
+    cl.add<double>("tof-step", 'T', "TOF quantisation step", false);
     cl.add<double>("w-detector", 'w', "detector width", false);
     cl.add<double>("h-detector", 'h', "detector height", false);
     cl.add<std::string>("model",
@@ -84,6 +85,7 @@ int main(int argc, char* argv[]) {
     auto& s_pixel = cl.get<double>("s-pixel");
     auto& w_detector = cl.get<double>("w-detector");
     auto& h_detector = cl.get<double>("h-detector");
+    auto& tof_step = cl.get<double>("tof-step");
 
     // check options
     if (cl.exist("png") && !cl.exist("from")) {
@@ -167,9 +169,23 @@ int main(int argc, char* argv[]) {
     }
 
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
+
+    int n_tof_positions = 1;
+    double max_bias = 0;
+    if (cl.exist("tof-step")) {
+      if (cl.get<std::string>("model") == "always")
+        max_bias = AlwaysAccept<>::max_bias();
+      if (cl.get<std::string>("model") == "scintilator")
+        max_bias = ScintilatorAccept<>::max_bias();
+      n_tof_positions = dr.n_positions(tof_step, max_bias);
+    } else {
+      tof_step = 0;
+    }
+
     typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
-    MatrixImpl matrix(n_pixels, n_detectors);
-    MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(dr, matrix, s_pixel);
+    MatrixImpl matrix(n_pixels, n_detectors, n_tof_positions);
+    MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(
+        dr, matrix, s_pixel, tof_step);
 
     for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
       ibstream in(*fn, std::ios::binary);
@@ -177,6 +193,9 @@ int main(int argc, char* argv[]) {
         throw("cannot open input file: " + *fn);
       try {
         MatrixImpl::SparseMatrix sparse_matrix(in);
+        if (sparse_matrix.tof() && !cl.exist("tof-step")) {
+          throw("input has TOF positions but not quantisation specified");
+        }
         sparse_matrix.sort_by_pixel();
         matrix << sparse_matrix;
       }
