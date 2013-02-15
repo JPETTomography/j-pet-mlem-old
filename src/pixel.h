@@ -10,7 +10,7 @@ template <typename SType = int> class Pixel {
   Pixel(S x, S y) : x(x), y(y) {}
 
   // default constructor
-  Pixel() : Pixel(static_cast<S>(0), static_cast<S>(0)) {}
+  Pixel() : x(0), y(0) {}
 
   S x, y;
 

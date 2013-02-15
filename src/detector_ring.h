@@ -6,6 +6,9 @@
 #include "detector.h"
 #include "circle.h"
 #include "svg_ostream.h"
+#include "point.h"
+#include "pixel.h"
+#include "lor.h"
 
 /// Provides model for 2D ring of detectors
 template <typename FType = double, typename SType = int>
@@ -13,8 +16,8 @@ class DetectorRing : public std::vector<Detector<FType>> {
  public:
   typedef FType F;
   typedef SType S;
-  typedef std::pair<S, S> LOR;
-  typedef std::pair<S, S> Pixel;
+  typedef ::LOR<S> LOR;
+  typedef ::Pixel<S> Pixel;
   typedef ::Circle<F> Circle;
   typedef ::Point<F> Point;
   typedef ::Detector<F> Detector;
@@ -24,12 +27,13 @@ class DetectorRing : public std::vector<Detector<FType>> {
   /// @param radius      radius of ring
   /// @param w_detector  width of single detector (along ring)
   /// @param h_detector  height/depth of single detector
-  ////                   (perpendicular to ring)
+  ///                    (perpendicular to ring)
   DetectorRing(S n_detectors, F radius, F w_detector, F h_detector)
       : c_inner_(radius),
         c_outer_(radius + h_detector),
         n_detectors_(n_detectors),
-        n_lors_(n_detectors * (n_detectors + 1) / 2) {
+        n_lors_(n_detectors * (n_detectors + 1) / 2),
+        radius_diff_(c_outer_.radius() - c_inner_.radius()) {
     if (radius <= 0.)
       throw("invalid radius");
     if (w_detector <= 0. || h_detector <= 0.)
@@ -63,13 +67,31 @@ class DetectorRing : public std::vector<Detector<FType>> {
                  static_cast<S>(floor(ry / pixel_size)));
   }
 
+  /// Quantizes position with given:
+  /// @param step_size      step size
+  /// @param max_bias_size  possible bias (fuzz) maximum size
+  S quantize_position(F position, F step_size, F max_bias_size) {
+    // FIXME: rounding?
+    return static_cast<S>((position - radius_diff_ - max_bias_size) /
+                          step_size);
+  }
+
+  /// Returns number of position steps (indexes) for:
+  /// @param step_size      step size
+  /// @param max_bias_size  possible bias (fuzz) maximum size
+  S n_positions(F step_size, F max_bias_size) {
+    return static_cast<S>(
+        ceil(2.0 * (radius_diff_ + max_bias_size) / step_size)) + 1;
+  }
+
   template <class RandomGenerator, class AcceptanceModel>
   bool check_for_hits(RandomGenerator& gen,
                       AcceptanceModel& model,
                       S inner,
                       S outer,
                       Event e,
-                      S& detector) {
+                      S& detector,
+                      F& depth) {
 
     // tells in which direction we got shorter modulo distance
     S step =
@@ -81,8 +103,10 @@ class DetectorRing : public std::vector<Detector<FType>> {
       // check if we got 2 point intersection
       // then test the model against these points distance
       if (points.size() == 2) {
-        if (model.deposition_depth(gen) < (points[1] - points[0]).length()) {
+        auto deposition_depth = model.deposition_depth(gen);
+        if (deposition_depth < (points[1] - points[0]).length()) {
           detector = i;
+          depth = deposition_depth;
           return true;
         }
       }
@@ -99,7 +123,8 @@ class DetectorRing : public std::vector<Detector<FType>> {
                    F rx,
                    F ry,
                    F angle,
-                   LOR& lor) {
+                   LOR& lor,
+                   F& position) {
 
     typename Circle::Event e(rx, ry, angle);
 
@@ -111,7 +136,8 @@ class DetectorRing : public std::vector<Detector<FType>> {
     auto i_outer =
         c_outer_.section(c_inner_.angle(outer_secant.first), n_detectors_);
     S detector1;
-    if (!check_for_hits(gen, model, i_inner, i_outer, e, detector1))
+    F depth1;
+    if (!check_for_hits(gen, model, i_inner, i_outer, e, detector1, depth1))
       return 0;
 
     i_inner =
@@ -119,11 +145,13 @@ class DetectorRing : public std::vector<Detector<FType>> {
     i_outer =
         c_outer_.section(c_inner_.angle(outer_secant.second), n_detectors_);
     S detector2;
-    if (!check_for_hits(gen, model, i_inner, i_outer, e, detector2))
+    F depth2;
+    if (!check_for_hits(gen, model, i_inner, i_outer, e, detector2, depth2))
       return 0;
 
     lor.first = detector1;
     lor.second = detector2;
+    position = depth1 - depth2;
     return 2;
   }
 
@@ -144,4 +172,5 @@ class DetectorRing : public std::vector<Detector<FType>> {
   S n_detectors_;
   S n_lors_;
   F fov_radius_;
+  F radius_diff_;
 };

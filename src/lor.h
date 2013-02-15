@@ -32,6 +32,6 @@ template <typename SType = int> class LOR : public std::pair<SType, SType> {
   }
 
   friend std::ostream& operator<<(std::ostream& out, const LOR& lor) {
-    return out;
+    return out << '(' << lor.first << ", " << lor.second << ')';
   }
 };

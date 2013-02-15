@@ -19,6 +19,6 @@ doc/html/
 *.png
 *.svg
 *.txt
-/build/
-*.xcodeproj/xcuserdata/
-*.xcodeproj/*.xcworkspace/
+/build*/
+/PET-build*/
+*.pro.user
