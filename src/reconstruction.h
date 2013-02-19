@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <algorithm>
 
 #include <ctime>
 
@@ -83,7 +84,15 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
       MeanPerLOR temp_obj;
 
+      #ifdef TOF
+
+      LOR lor(x, y, k);
+
+      #else
+
       LOR lor(x, y);
+
+      #endif
 
       temp_obj.lor = lor;
       temp_obj.n = value;
@@ -109,37 +118,49 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       if (in.eof())
         break;
 
-      LOR lor(a, b);
+    #ifdef TOF
 
-      n.push_back(get_mean_per_lor(a, b, lor_mean));
+    LOR lor(a, b, k);
 
-      FileInt count;
+    #else
 
-      in >> count;
+    LOR lor(a, b);
 
-      for (FileInt i = 0; i < count; ++i) {
+    #endif
 
-        FileHalf x, y;
-        FileInt hits;
 
-        in >> x >> y >> hits;
-        HitsPerPixel data;
-        data.probability = static_cast<F>(hits / static_cast<F>(emissions_));
-        data.index = location(x, y, n_pixels_);
-        if (threshold_ > (F) 0.0) {
-          if (data.probability < threshold_)
-            data.probability = (F) 0.0;
-          else
-            data.probability = (F) 1.0;
-        }
-        scale[data.index] += data.probability;
-        n_non_zero_elements_++;
-        pixels.push_back(data);
+      if(lor_in_the_list(a,b,lor_mean)){
+
+          n.push_back(get_mean_per_lor(a, b, lor_mean));
+
+          FileInt count;
+
+          in >> count;
+
+          for (FileInt i = 0; i < count; ++i) {
+
+            FileHalf x, y;
+            FileInt hits;
+
+            in >> x >> y >> hits;
+            HitsPerPixel data;
+            data.probability = static_cast<F>(hits / static_cast<F>(emissions_));
+            data.index = location(x, y, n_pixels_);
+            if (threshold_ > (F) 0.0) {
+              if (data.probability < threshold_)
+                data.probability = (F) 0.0;
+              else
+                data.probability = (F) 1.0;
+            }
+            scale[data.index] += data.probability;
+            n_non_zero_elements_++;
+            pixels.push_back(data);
+          }
+
+          system_matrix.push_back(pixels);
+          pixels.clear();
+          index++;
       }
-
-      system_matrix.push_back(pixels);
-      pixels.clear();
-      index++;
     }
     stop = clock();
 
@@ -207,6 +228,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
         }
       }
     }
+
     clock_t stop = clock();
     std::cout << std::endl;
 
@@ -235,15 +257,54 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   static S location(S x, S y, S size) { return y * size + x; }
 
  private:
-  S get_mean_per_lor(FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
-    for (auto it = mean.begin(); it != mean.end(); ++it) {
-      if (a == it->lor.first && b == it->lor.second) {
-        return it->n;
-      }
-    }
 
-    return 0;
-  }
+  #ifdef TOF
+
+      S get_mean_per_lor(FileHalf& a, FileHalf& b,float & tof, std::vector<MeanPerLOR>& mean) {
+        for (auto it = mean.begin(); it != mean.end(); ++it) {
+          if (a == it->lor.first && b == it->lor.second, tof == it->lor.tof) {
+            return it->n;
+          }
+        }
+
+        return 0;
+      }
+
+
+      bool lor_in_the_list(FileHalf& a, FileHalf& b,float & tof, std::vector<MeanPerLOR>& mean) {
+        for (auto it = mean.begin(); it != mean.end(); ++it) {
+          if (a == it->lor.first && b == it->lor.second, tof == it->lor.tof) {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+  #else
+
+      S get_mean_per_lor(FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
+        for (auto it = mean.begin(); it != mean.end(); ++it) {
+          if (a == it->lor.first && b == it->lor.second) {
+            return it->n;
+          }
+        }
+
+        return 0;
+      }
+
+
+      bool lor_in_the_list(FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
+        for (auto it = mean.begin(); it != mean.end(); ++it) {
+          if (a == it->lor.first && b == it->lor.second) {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+  #endif
 
   S n_tubes_;
   S n_pixels_;
