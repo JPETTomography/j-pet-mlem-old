@@ -34,8 +34,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   typedef typename Super::SparseMatrix SparseMatrix;
   typedef typename SparseMatrix::Element SparseElement;
 
-  MatrixPixelMajor(S n_pixels_in_row, S n_detectors)
-      : Super(n_pixels_in_row, n_detectors),
+  MatrixPixelMajor(S n_pixels_in_row, S n_detectors, S n_tof_positions = 1)
+      : Super(n_pixels_in_row, n_detectors, n_tof_positions),
         n_pixels_in_row_half_(n_pixels_in_row / 2),
         n_pixels_(Pixel::end_for_n_pixels_in_row(n_pixels_in_row).index()),
         n_lors_(LOR::end_for_detectors(n_detectors).index()),
@@ -45,7 +45,6 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
         pixel_lor_count_(n_pixels_),
         index_to_lor_(n_lors_),
         index_to_pixel_(n_pixels_) {
-
     // store index to LOR mapping
     for (auto lor = this->begin_lor(); lor != this->end_lor(); ++lor) {
       index_to_lor_[lor.index()] = lor;
@@ -57,20 +56,24 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     }
   }
 
-  void hit_lor(const LOR& lor, S i_pixel, S hits = 1) {
+  void hit_lor(const LOR& lor, S position, S i_pixel, S hits = 1) {
+    if (position >= this->n_tof_positions())
+      throw("hit position greater than max TOF positions");
     if (!pixel_lor_hits_ptr_[i_pixel]) {
-      pixel_lor_hits_ptr_[i_pixel] = new S[n_lors_]();
+      pixel_lor_hits_ptr_[i_pixel] = new S[n_lors_ * this->n_tof_positions()]();
       // unpack previous values (if any)
       for (auto it = pixel_lor_hits_[i_pixel].begin();
            it != pixel_lor_hits_[i_pixel].end(); ++it) {
-        hit_lor(it->lor, i_pixel, it->hits);
+        hit_lor(it->lor, it->position, i_pixel, it->hits);
       }
     }
-    if (pixel_lor_hits_ptr_[i_pixel][lor.index()] == 0) {
+    auto& current_hits = pixel_lor_hits_ptr_[i_pixel][
+        lor.index() * this->n_tof_positions() + position];
+    if (current_hits == 0) {
       pixel_lor_count_[i_pixel]++;
       size_++;
     }
-    pixel_lor_hits_ptr_[i_pixel][lor.index()] += hits;
+    current_hits += hits;
   }
 
   ~MatrixPixelMajor() {
@@ -90,10 +93,13 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     pixel_lor_hits_[i_pixel].resize(pixel_lor_count_[i_pixel]);
 
     for (S i_lor = 0, lor_count = 0; i_lor < n_lors_; ++i_lor) {
-      auto hits = pixel_lor_hits_ptr_[i_pixel][i_lor];
-      if (hits > 0) {
-        pixel_lor_hits_[i_pixel][lor_count++] = SparseElement(
-            index_to_lor_[i_lor], 0, index_to_pixel_[i_pixel], hits);
+      for (S position = 0; position < this->n_tof_positions(); ++position) {
+        auto hits = pixel_lor_hits_ptr_[i_pixel][
+            i_lor * this->n_tof_positions() + position];
+        if (hits > 0) {
+          pixel_lor_hits_[i_pixel][lor_count++] = SparseElement(
+              index_to_lor_[i_lor], position, index_to_pixel_[i_pixel], hits);
+        }
       }
     }
 
@@ -108,7 +114,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     SparseMatrix sparse(this->n_pixels_in_row(),
                         this->n_detectors(),
                         this->n_emissions(),
-                        true);
+                        true,
+                        this->n_tof_positions() > 0);
     sparse.reserve(size_);
     for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
       for (auto it = pixel_lor_hits_[i_pixel].begin();

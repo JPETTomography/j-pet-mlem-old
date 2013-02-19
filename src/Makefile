@@ -10,8 +10,12 @@ CXX := icpc
 OPT := $(or $(O),fast)
 else
 OPT := $(or $(O),3)
-ifeq ($(findstring gcc,$(CC)),gcc)
+ifneq ($(findstring gcc,$(CC)),)
 CXX := $(subst gcc,g++,$(CC))
+else
+ifneq ($(findstring clang,$(CC)),)
+CXX := $(subst clang,clang++,$(CC))
+endif
 endif
 endif
 
@@ -61,7 +65,9 @@ endif
 
 
 ifeq ($(TARGET),Linux)
+ifeq ($(findstring clang,$(CXX)),)
 CPPFLAGS += -mssse3 -mfpmath=sse
+endif
 endif
 
 # dependencies

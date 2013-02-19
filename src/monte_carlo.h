@@ -17,10 +17,13 @@ class MonteCarlo {
   typedef typename Matrix::LOR LOR;
 
  public:
-  MonteCarlo(DetectorRing& detector_ring, Matrix& matrix, F pixel_size)
+  MonteCarlo(
+      DetectorRing& detector_ring, Matrix& matrix, F pixel_size, F tof_step)
       : detector_ring_(detector_ring),
         matrix_(matrix),
-        pixel_size_(pixel_size) {
+        pixel_size_(pixel_size),
+        tof_step_(tof_step),
+        tof_(tof_step > static_cast<F>(0)) {
   }
 
   /// Executes Monte-Carlo system matrix generation for given detector ring
@@ -76,13 +79,19 @@ class MonteCarlo {
 
           auto angle = phi_dis(l_gen);
           LOR lor;
-          auto hits =
-              detector_ring_.emit_event(l_gen, model, rx, ry, angle, lor);
+          F position;
+          auto hits = detector_ring_.emit_event(
+              l_gen, model, rx, ry, angle, lor, position);
+
+          S quantized_position = 0;
+          if (tof_)
+            quantized_position = detector_ring_.quantize_position(
+                position, tof_step_, model.max_bias());
 
           // do we have hit on both sides?
           if (hits >= 2) {
             if (o_collect_mc_matrix) {
-              matrix_.hit_lor(lor, i_pixel);
+              matrix_.hit_lor(lor, quantized_position, i_pixel);
             }
 
             if (o_collect_pixel_stats) {
@@ -100,4 +109,6 @@ class MonteCarlo {
   DetectorRing& detector_ring_;
   Matrix& matrix_;
   F pixel_size_;
+  F tof_step_;
+  bool tof_;
 };

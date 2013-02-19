@@ -189,16 +189,18 @@ int main(int argc, char* argv[]) {
         double y = fov_dis(gen);
         if (x * x + y * y < fov_r2) {
           if (phantom.test_emit(x, y, one_dis(gen))) {
-            auto pix = dr.pixel(x, y, s_pixel);
+            auto pixel = dr.pixel(x, y, s_pixel);
             DetectorRing<>::LOR lor;
-            pixels[pix.second][pix.first]++;
+            pixels[pixel.y][pixel.x]++;
             double angle = phi_dis(gen);
-            auto hits = dr.emit_event(gen, model, x, y, angle, lor);
+            double position;
+            auto hits = dr.emit_event(gen, model, x, y, angle, lor, position);
+            // FIXME: implement position storage for TOF!
             if (hits == 2) {
               if (lor.first > lor.second)
                 std::swap(lor.first, lor.second);
               tubes[lor.first][lor.second]++;
-              pixels_detected[pix.second][pix.first]++;
+              pixels_detected[pixel.y][pixel.x]++;
               if (only_detected)
                 n_emitted++;
             }
@@ -216,17 +218,19 @@ int main(int argc, char* argv[]) {
         double rng = one_dis(gen);
         Point<> p = point_sources.draw(rng);
 
-        auto pix = dr.pixel(p.x, p.y, s_pixel);
+        auto pixel = dr.pixel(p.x, p.y, s_pixel);
 
-        pixels[pix.second][pix.first]++;
+        pixels[pixel.y][pixel.x]++;
         double angle = phi_dis(gen);
         DetectorRing<>::LOR lor;
-        auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor);
+        double position;
+        auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor, position);
+        // FIXME: implement position storage for TOF!
         if (hits == 2) {
           if (lor.first > lor.second)
             std::swap(lor.first, lor.second);
           tubes[lor.first][lor.second]++;
-          pixels_detected[pix.second][pix.first]++;
+          pixels_detected[pixel.y][pixel.x]++;
           if (only_detected)
             n_emitted++;
         }
