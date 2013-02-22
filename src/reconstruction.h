@@ -1,8 +1,35 @@
+///
+///
+/// Sparse system matrix binary file format
+///
+///   - \c uint32_t \b magic =
+///     -# \c PETp  triangular
+///     -# \c PETP  full
+///     -# \c TOFp  TOF triangular
+///     -# \c TOFP  TOF full
+///   - \c uint32_t \b n_pixels_    half size for \c PETp,
+///                                 full size for \c PETP
+///   - \c uint32_t \b n_emissions  per pixel
+///   - \c uint32_t \b n_detectors  regardless of magic
+///   - \c while (!eof)
+///     - \c uint16_t \b lor_a, \b lor_b  pair
+///     - \c uint32_t \b pixel_pair_count
+///     - \c for(.. count ..)
+///       - \c uint32_t \b position             only for TOF type
+///       - \c uint16_t \b pixel_x, \b pixel_y  half pixels for \c PETp,
+///                                             pixels for \c PETP
+///       - \c uint32_t \b pixel_hits
+///
+/// Note: TOF position has no particular meaning without quantisation
+/// definition. However this is not needed for reconstruction.
+
+
 #pragma once
 
 #include <iostream>
 #include <vector>
 #include <list>
+#include <algorithm>
 
 #include <ctime>
 
@@ -21,6 +48,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   struct HitsPerPixel {
     S index;
     F probability;
+    S position;
   };
 
   struct MeanPerLOR {
@@ -51,7 +79,9 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
     in >> in_magic;
 
-    if (in_magic != SparseMatrix<Pixel<>, LOR>::MAGIC_VERSION_FULL) {
+    const bool TOF = (in_magic == SparseMatrix<Pixel<>,LOR>::MAGIC_VERSION_TOF_FULL) ? 1 : 0;
+
+    if (in_magic != SparseMatrix<Pixel<>, LOR>::MAGIC_VERSION_FULL || in_magic != SparseMatrix<Pixel<>,LOR>::MAGIC_VERSION_TOF_FULL) {
       throw("invalid input system matrix file");
     }
 
@@ -111,35 +141,57 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
       LOR lor(a, b);
 
-      n.push_back(get_mean_per_lor(a, b, lor_mean));
+          bool on_list = lor_in_the_list(a,b,lor_mean);
 
-      FileInt count;
+          if(on_list){
 
-      in >> count;
+              n.push_back(get_mean_per_lor(a, b, lor_mean));
 
-      for (FileInt i = 0; i < count; ++i) {
+          }
 
-        FileHalf x, y;
-        FileInt hits;
+          FileInt count;
 
-        in >> x >> y >> hits;
-        HitsPerPixel data;
-        data.probability = static_cast<F>(hits / static_cast<F>(emissions_));
-        data.index = location(x, y, n_pixels_);
-        if (threshold_ > (F) 0.0) {
-          if (data.probability < threshold_)
-            data.probability = (F) 0.0;
-          else
-            data.probability = (F) 1.0;
-        }
-        scale[data.index] += data.probability;
-        n_non_zero_elements_++;
-        pixels.push_back(data);
-      }
+          in >> count;
 
-      system_matrix.push_back(pixels);
-      pixels.clear();
-      index++;
+          for (FileInt i = 0; i < count; ++i) {
+
+            FileHalf x, y;
+            FileInt hits;
+            FileInt position;
+
+            if(TOF){
+
+                in >> position >> x >> y >> hits;
+
+            }
+            else{ in >> x >> y >> hits; }
+
+            if(on_list){
+
+                HitsPerPixel data;
+
+                data.probability = static_cast<F>(hits / static_cast<F>(emissions_));
+                data.index = location(x, y, n_pixels_);
+
+                if(TOF) {data.position = position;}
+
+                if (threshold_ > (F) 0.0) {
+                  if (data.probability < threshold_)
+                    data.probability = (F) 0.0;
+                  else
+                    data.probability = (F) 1.0;
+                }
+                scale[data.index] += data.probability;
+                n_non_zero_elements_++;
+                pixels.push_back(data);
+
+            }
+          }
+
+          system_matrix.push_back(pixels);
+          pixels.clear();
+          index++;
+
     }
     stop = clock();
 
@@ -207,6 +259,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
         }
       }
     }
+
     clock_t stop = clock();
     std::cout << std::endl;
 
@@ -235,15 +288,54 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   static S location(S x, S y, S size) { return y * size + x; }
 
  private:
-  S get_mean_per_lor(FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
-    for (auto it = mean.begin(); it != mean.end(); ++it) {
-      if (a == it->lor.first && b == it->lor.second) {
-        return it->n;
-      }
-    }
 
-    return 0;
-  }
+  #ifdef TOF
+
+      S get_mean_per_lor(FileHalf& a, FileHalf& b,float & tof, std::vector<MeanPerLOR>& mean) {
+        for (auto it = mean.begin(); it != mean.end(); ++it) {
+          if (a == it->lor.first && b == it->lor.second, tof == it->lor.tof) {
+            return it->n;
+          }
+        }
+
+        return 0;
+      }
+
+
+      bool lor_in_the_list(FileHalf& a, FileHalf& b,float & tof, std::vector<MeanPerLOR>& mean) {
+        for (auto it = mean.begin(); it != mean.end(); ++it) {
+          if (a == it->lor.first && b == it->lor.second, tof == it->lor.tof) {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+  #else
+
+      S get_mean_per_lor(FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
+        for (auto it = mean.begin(); it != mean.end(); ++it) {
+          if (a == it->lor.first && b == it->lor.second) {
+            return it->n;
+          }
+        }
+
+        return 0;
+      }
+
+
+      bool lor_in_the_list(FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
+        for (auto it = mean.begin(); it != mean.end(); ++it) {
+          if (a == it->lor.first && b == it->lor.second) {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+  #endif
 
   S n_tubes_;
   S n_pixels_;
