@@ -1,3 +1,29 @@
+///
+///
+/// Sparse system matrix binary file format
+///
+///   - \c uint32_t \b magic =
+///     -# \c PETp  triangular
+///     -# \c PETP  full
+///     -# \c TOFp  TOF triangular
+///     -# \c TOFP  TOF full
+///   - \c uint32_t \b n_pixels_    half size for \c PETp,
+///                                 full size for \c PETP
+///   - \c uint32_t \b n_emissions  per pixel
+///   - \c uint32_t \b n_detectors  regardless of magic
+///   - \c while (!eof)
+///     - \c uint16_t \b lor_a, \b lor_b  pair
+///     - \c uint32_t \b pixel_pair_count
+///     - \c for(.. count ..)
+///       - \c uint32_t \b position             only for TOF type
+///       - \c uint16_t \b pixel_x, \b pixel_y  half pixels for \c PETp,
+///                                             pixels for \c PETP
+///       - \c uint32_t \b pixel_hits
+///
+/// Note: TOF position has no particular meaning without quantisation
+/// definition. However this is not needed for reconstruction.
+
+
 #pragma once
 
 #include <iostream>
@@ -22,6 +48,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   struct HitsPerPixel {
     S index;
     F probability;
+    S position;
   };
 
   struct MeanPerLOR {
@@ -52,7 +79,9 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
     in >> in_magic;
 
-    if (in_magic != SparseMatrix<Pixel<>, LOR>::MAGIC_VERSION_FULL) {
+    const bool TOF = (in_magic == SparseMatrix<Pixel<>,LOR>::MAGIC_VERSION_TOF_FULL) ? 1 : 0;
+
+    if (in_magic != SparseMatrix<Pixel<>, LOR>::MAGIC_VERSION_FULL || in_magic != SparseMatrix<Pixel<>,LOR>::MAGIC_VERSION_TOF_FULL) {
       throw("invalid input system matrix file");
     }
 
@@ -84,15 +113,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
       MeanPerLOR temp_obj;
 
-      #ifdef TOF
-
-      LOR lor(x, y, k);
-
-      #else
-
       LOR lor(x, y);
-
-      #endif
 
       temp_obj.lor = lor;
       temp_obj.n = value;
@@ -118,20 +139,15 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       if (in.eof())
         break;
 
-    #ifdef TOF
+      LOR lor(a, b);
 
-    LOR lor(a, b, k);
+          bool on_list = lor_in_the_list(a,b,lor_mean);
 
-    #else
+          if(on_list){
 
-    LOR lor(a, b);
+              n.push_back(get_mean_per_lor(a, b, lor_mean));
 
-    #endif
-
-
-      if(lor_in_the_list(a,b,lor_mean)){
-
-          n.push_back(get_mean_per_lor(a, b, lor_mean));
+          }
 
           FileInt count;
 
@@ -141,26 +157,41 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
             FileHalf x, y;
             FileInt hits;
+            FileInt position;
 
-            in >> x >> y >> hits;
-            HitsPerPixel data;
-            data.probability = static_cast<F>(hits / static_cast<F>(emissions_));
-            data.index = location(x, y, n_pixels_);
-            if (threshold_ > (F) 0.0) {
-              if (data.probability < threshold_)
-                data.probability = (F) 0.0;
-              else
-                data.probability = (F) 1.0;
+            if(TOF){
+
+                in >> position >> x >> y >> hits;
+
             }
-            scale[data.index] += data.probability;
-            n_non_zero_elements_++;
-            pixels.push_back(data);
+            else{ in >> x >> y >> hits; }
+
+            if(on_list){
+
+                HitsPerPixel data;
+
+                data.probability = static_cast<F>(hits / static_cast<F>(emissions_));
+                data.index = location(x, y, n_pixels_);
+
+                if(TOF) {data.position = position;}
+
+                if (threshold_ > (F) 0.0) {
+                  if (data.probability < threshold_)
+                    data.probability = (F) 0.0;
+                  else
+                    data.probability = (F) 1.0;
+                }
+                scale[data.index] += data.probability;
+                n_non_zero_elements_++;
+                pixels.push_back(data);
+
+            }
           }
 
           system_matrix.push_back(pixels);
           pixels.clear();
           index++;
-      }
+
     }
     stop = clock();
 
