@@ -19,7 +19,7 @@ for(path, LIBPNGPATHS):exists($$path) {
 
 QMAKE_CXXFLAGS     += -std=c++0x
 mac:QMAKE_CXXFLAGS += -stdlib=libc++
-mac:QMAKE_LFLAGS   += -stdlib=libc++
+mac:QMAKE_CXXFLAGS += -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
+mac:QMAKE_LFLAGS += -stdlib=libc++
+mac:QMAKE_LFLAGS += -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
 mac:QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
-mac:INCLUDEPATH += /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/c++/v1
-mac:INCLUDEPATH += /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/usr/include
