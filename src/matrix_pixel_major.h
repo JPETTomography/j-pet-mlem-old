@@ -63,7 +63,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       pixel_lor_hits_ptr_[i_pixel] = new S[n_lors_ * this->n_tof_positions()]();
       // unpack previous values (if any)
       for (auto it = pixel_lor_hits_[i_pixel].begin();
-           it != pixel_lor_hits_[i_pixel].end(); ++it) {
+           it != pixel_lor_hits_[i_pixel].end();
+           ++it) {
         hit_lor(it->lor, it->position, i_pixel, it->hits);
       }
     }
@@ -119,7 +120,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     sparse.reserve(size_);
     for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
       for (auto it = pixel_lor_hits_[i_pixel].begin();
-           it != pixel_lor_hits_[i_pixel].end(); ++it) {
+           it != pixel_lor_hits_[i_pixel].end();
+           ++it) {
         sparse.push_back(*it);
       }
     }

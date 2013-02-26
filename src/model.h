@@ -25,8 +25,7 @@ template <typename FType = double> class ScintilatorAccept {
   ScintilatorAccept(F unit_prob)
       : one_dis_(static_cast<F>(0), static_cast<F>(1)),
         unit_prob_(unit_prob),
-        inv_unit_prob_(static_cast<F>(1) / unit_prob) {
-  }
+        inv_unit_prob_(static_cast<F>(1) / unit_prob) {}
 
   template <class RandomGenerator>
   bool operator()(RandomGenerator& gen, F length) {

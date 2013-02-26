@@ -23,8 +23,7 @@ class MonteCarlo {
         matrix_(matrix),
         pixel_size_(pixel_size),
         tof_step_(tof_step),
-        tof_(tof_step > static_cast<F>(0)) {
-  }
+        tof_(tof_step > static_cast<F>(0)) {}
 
   /// Executes Monte-Carlo system matrix generation for given detector ring
   /// @param gen   random number generator

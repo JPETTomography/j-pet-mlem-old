@@ -27,6 +27,8 @@
 
 #include "bstream.h"
 
+#include <vector>
+
 template <typename LORType,
           typename PositionType,
           typename PixelType,
@@ -36,20 +38,12 @@ struct SparseElement {
                 PositionType && position_a,
                 PixelType && pixel_a,
                 HitType && hits_a)
-      : lor(lor_a),
-        position(position_a),
-        pixel(pixel_a),
-        hits(hits_a) {
-  }
+      : lor(lor_a), position(position_a), pixel(pixel_a), hits(hits_a) {}
   SparseElement(const LORType& lor_a,
                 const PositionType& position_a,
                 const PixelType& pixel_a,
                 const HitType& hits_a)
-      : lor(lor_a),
-        position(position_a),
-        pixel(pixel_a),
-        hits(hits_a) {
-  }
+      : lor(lor_a), position(position_a), pixel(pixel_a), hits(hits_a) {}
   SparseElement() = default;
 
   LORType lor;
@@ -62,10 +56,10 @@ template <typename PixelType,
           typename LORType,
           typename SType = int,
           typename HitType = int>
-class SparseMatrix
-    : public std::vector<SparseElement<LORType, SType, PixelType, HitType>> {
-  typedef std::vector<
-      SparseElement<LORType, SType, PixelType, HitType>> Super;
+class SparseMatrix :
+    public std::vector<SparseElement<LORType, SType, PixelType, HitType>> {
+  typedef std::vector<SparseElement<LORType, SType, PixelType, HitType>>
+  Super;
 
  public:
   typedef PixelType Pixel;

@@ -71,7 +71,8 @@ int main(int argc, char* argv[]) {
           fn.substr(0,
                     it_fn_ext != std::string::npos &&
                     (it_fn_sep == std::string::npos || it_fn_sep < it_fn_ext)
-                        ? it_fn_ext : std::string::npos);
+                        ? it_fn_ext
+                        : std::string::npos);
       fn_ext = fn.substr(it_fn_ext != std::string::npos ? it_fn_ext : fn.size(),
                          fn.size());
     }

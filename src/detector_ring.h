@@ -94,9 +94,10 @@ class DetectorRing : public std::vector<Detector<FType>> {
                       F& depth) {
 
     // tells in which direction we got shorter modulo distance
-    S step =
-        ((n_detectors_ + inner - outer) % n_detectors_ >
-         (n_detectors_ + outer - inner) % n_detectors_) ? 1 : n_detectors_ - 1;
+    S step = ((n_detectors_ + inner - outer) % n_detectors_ >
+              (n_detectors_ + outer - inner) % n_detectors_)
+             ? 1
+             : n_detectors_ - 1;
     S end = (outer + step) % n_detectors_;
     for (auto i = inner; i != end; i = (i + step) % n_detectors_) {
       auto points = (*this)[i].intersections(e);

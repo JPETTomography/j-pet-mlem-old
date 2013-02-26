@@ -5,8 +5,8 @@
 
 class PhantomView {
  public:
-  PhantomView(GeometryPlot* gp, Phantom* phantom) : gp_(gp), phantom_(phantom) {
-  }
+  PhantomView(GeometryPlot* gp, Phantom* phantom)
+      : gp_(gp), phantom_(phantom) {}
 
   void render() {
     Phantom::const_iterator it = phantom_->begin();
