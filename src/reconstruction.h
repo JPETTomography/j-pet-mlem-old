@@ -227,7 +227,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
   void emt(S n_iterations) {
 
-    F y[n_pixels_* n_pixels_];
+    F y[n_pixels_ * n_pixels_];
     F u;
 
     clock_t start = clock();
@@ -297,8 +297,10 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
 #ifdef TOF
 
-  S get_mean_per_lor(
-      FileHalf& a, FileHalf& b, float& tof, std::vector<MeanPerLOR>& mean) {
+  S get_mean_per_lor(FileHalf& a,
+                     FileHalf& b,
+                     float& tof,
+                     std::vector<MeanPerLOR>& mean) {
     for (auto it = mean.begin(); it != mean.end(); ++it) {
       if (a == it->lor.first && b == it->lor.second, tof == it->lor.tof) {
         return it->n;
@@ -308,8 +310,10 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     return 0;
   }
 
-  bool lor_in_the_list(
-      FileHalf& a, FileHalf& b, float& tof, std::vector<MeanPerLOR>& mean) {
+  bool lor_in_the_list(FileHalf& a,
+                       FileHalf& b,
+                       float& tof,
+                       std::vector<MeanPerLOR>& mean) {
     for (auto it = mean.begin(); it != mean.end(); ++it) {
       if (a == it->lor.first && b == it->lor.second, tof == it->lor.tof) {
         return true;
@@ -331,8 +335,9 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     return 0;
   }
 
-  bool lor_in_the_list(
-      FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
+  bool lor_in_the_list(FileHalf& a,
+                       FileHalf& b,
+                       std::vector<MeanPerLOR>& mean) {
     for (auto it = mean.begin(); it != mean.end(); ++it) {
       if (a == it->lor.first && b == it->lor.second) {
         return true;

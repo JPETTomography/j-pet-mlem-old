@@ -58,8 +58,7 @@ template <typename PixelType,
           typename HitType = int>
 class SparseMatrix :
     public std::vector<SparseElement<LORType, SType, PixelType, HitType>> {
-  typedef std::vector<SparseElement<LORType, SType, PixelType, HitType>>
-  Super;
+  typedef std::vector<SparseElement<LORType, SType, PixelType, HitType>> Super;
 
  public:
   typedef PixelType Pixel;

@@ -17,8 +17,10 @@ class MonteCarlo {
   typedef typename Matrix::LOR LOR;
 
  public:
-  MonteCarlo(
-      DetectorRing& detector_ring, Matrix& matrix, F pixel_size, F tof_step)
+  MonteCarlo(DetectorRing& detector_ring,
+             Matrix& matrix,
+             F pixel_size,
+             F tof_step)
       : detector_ring_(detector_ring),
         matrix_(matrix),
         pixel_size_(pixel_size),

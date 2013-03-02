@@ -26,8 +26,10 @@
 #endif
 
 template <typename Iterator>
-void write_text_from_vector(
-    std::ostream& out, Iterator start, Iterator stop, int line_length) {
+void write_text_from_vector(std::ostream& out,
+                            Iterator start,
+                            Iterator stop,
+                            int line_length) {
   int index = 0;
   for (; start != stop; ++start, ++index) {
     out << *start << " ";

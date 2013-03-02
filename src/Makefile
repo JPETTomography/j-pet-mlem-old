@@ -138,4 +138,4 @@ clean:
 	rm -f $(OBJ) $(TOBJ) $(MOBJ) $(LOBJ) $(DEP)
 
 style:
-	find . \( -iname '*.c' -or -iname '*.cpp' -or -iname '*.h' \) -exec clang-format -style=Google -i {} \;
+	find . \( -iname '*.c' -or -iname '*.cpp' -or -iname '*.h' \) -exec clang-format -style=Chromium -std=c++11 -i {} \;
