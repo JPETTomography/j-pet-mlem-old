@@ -84,14 +84,17 @@ class DetectorRing : public std::vector<Detector<FType>> {
         ceil(2.0 * (radius_diff_ + max_bias_size) / step_size)) + 1;
   }
 
-  template <class RandomGenerator, class AcceptanceModel>
+ 
+
+
+    template <class RandomGenerator, class AcceptanceModel>
   bool check_for_hits(RandomGenerator& gen,
                       AcceptanceModel& model,
                       S inner,
                       S outer,
                       Event e,
                       S& detector,
-                      F& depth) {
+                      F& depth, Point& p1, Point& p2) {
 
     // tells in which direction we got shorter modulo distance
     S step = ((n_detectors_ + inner - outer) % n_detectors_ >
@@ -108,12 +111,28 @@ class DetectorRing : public std::vector<Detector<FType>> {
         if (deposition_depth < (points[1] - points[0]).length()) {
           detector = i;
           depth = deposition_depth;
+          p1=points[0];
+          p2=points[1];
           return true;
         }
       }
     }
     return false;
   }
+
+
+     template <class RandomGenerator, class AcceptanceModel>
+  bool check_for_hits(RandomGenerator& gen,
+                      AcceptanceModel& model,
+                      S inner,
+                      S outer,
+                      Event e,
+                      S& detector,
+                      F& depth) {
+       Point p1(0,0),p2(0,0);
+       return check_for_hits(gen, model,inner,outer,e,detector,depth,p1,p2);
+  }
+
 
   /// @param model acceptance model
   /// @param rx, ry coordinates of the emission point
