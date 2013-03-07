@@ -183,6 +183,11 @@ int main(int argc, char* argv[]) {
       tof_step = 0;
     }
 
+    std::cerr<<"max bias      = "<<max_bias<<"\n";
+    std::cerr<<"tof_step      = "<<tof_step<<"\n";
+    std::cerr<<"tof positions = "<<n_tof_positions<<"\n";
+    
+
     typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
     MatrixImpl matrix(n_pixels, n_detectors, n_tof_positions);
     MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(
@@ -194,11 +199,18 @@ int main(int argc, char* argv[]) {
         throw("cannot open input file: " + *fn);
       try {
         MatrixImpl::SparseMatrix sparse_matrix(in);
+        std::cerr<<"read in "<<*fn<<" "<<sparse_matrix.tof()<<std::endl;
         if (sparse_matrix.tof() && !cl.exist("tof-step")) {
           throw("input has TOF positions but not quantisation specified");
         }
+
+
         sparse_matrix.sort_by_pixel();
+        std::cerr<<"sorted\n";
+        //        std::cout<<sparse_matrix;
+
         matrix << sparse_matrix;
+        std::cerr<<"converted to pixel major\n";
       }
       catch (std::string & ex) {
         throw(ex + ": " + *fn);
@@ -207,7 +219,7 @@ int main(int argc, char* argv[]) {
         throw(std::string(ex) + ": " + *fn);
       }
     }
-
+    std::cerr<<"n_emissions "<<n_emissions<<std::endl;
     if (cl.get<std::string>("model") == "always")
       monte_carlo(gen, AlwaysAccept<>(), n_emissions);
     if (cl.get<std::string>("model") == "scintilator")
@@ -215,7 +227,7 @@ int main(int argc, char* argv[]) {
           gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
 
     auto sparse_matrix = matrix.to_sparse();
-
+   
     // generate output
     if (cl.exist("output")) {
       auto fn = cl.get<cmdline::string>("output");

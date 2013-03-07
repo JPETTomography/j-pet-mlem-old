@@ -114,26 +114,22 @@ class SparseMatrix :
         (in_magic != MAGIC_VERSION_FULL && in_magic != MAGIC_VERSION_TOF_FULL);
     bool in_is_tof = (in_magic == MAGIC_VERSION_TOF_TRIANGULAR ||
                       in_magic == MAGIC_VERSION_TOF_FULL);
-
+    std::cerr<<"in_is_tof "<<in_is_tof<<std::endl;
     // load matrix size
     FileInt in_n_pixels_in_row;
     in >> in_n_pixels_in_row;
     if (in_magic != MAGIC_VERSION_FULL)
       in_n_pixels_in_row *= 2;
-
+   std::cerr<<"in_n_pixels_in_row "<<in_n_pixels_in_row<<std::endl;
     // load number of emissions
-    FileInt in_n_emissions = 0;
-    if (in_magic == MAGIC_VERSION_TRIANGULAR ||
-        in_magic == MAGIC_VERSION_FULL || in_magic == MAGIC_VERSION_2) {
-      in >> in_n_emissions;
-    }
+   FileInt in_n_emissions = 0;
+   in >> in_n_emissions;
+   std::cerr<<"in_n_emissions "<<in_n_emissions<<std::endl;
 
     // load number of detectors
     FileInt in_n_detectors = 0;
-    if (in_magic == MAGIC_VERSION_TRIANGULAR ||
-        in_magic == MAGIC_VERSION_FULL) {
-      in >> in_n_detectors;
-    }
+    in >> in_n_detectors;
+    std::cerr<<"in_n_detectors "<<in_n_detectors<<std::endl;
 
     triangular_ = in_is_triangular;
     tof_ = in_is_tof;
@@ -231,6 +227,7 @@ class SparseMatrix :
 
     for (auto it = sm.begin(); it != sm.end(); ++it) {
       out << " lor: (" << it->lor.first << ", " << it->lor.second << ")"
+          << " position: "<<it->position
           << " pixel: (" << it->pixel.x << "," << it->pixel.y << ")"
           << " hits: " << it->hits << std::endl;
     }

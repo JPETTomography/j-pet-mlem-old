@@ -11,7 +11,7 @@
 /// We can afford to alloc memory for lors in an uneficient way providing for
 /// quick acces and reduce them after the simulations of  this pixel is finished.
 ///
-/// It alos means that as different threads are processing different pixels,
+/// It also means that as different threads are processing different pixels,
 /// there is no need for synchronisation in add_pixels.
 ///
 /// The reconstruction is however done using the lor_major matrix.
@@ -56,10 +56,14 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     }
   }
 
-  void hit_lor(const LOR& lor, S position, S i_pixel, S hits = 1) {
-    if (position >= this->n_tof_positions())
-      throw("hit position greater than max TOF positions");
-    if (!pixel_lor_hits_ptr_[i_pixel]) {
+  void hit_lor(const LOR& lor, S position, S i_pixel, S hits) {
+    if (position >= this->n_tof_positions()) {
+      char msg[64];
+      sprintf(msg,"hit position greater than max TOF positions %d > %d",position,this->n_tof_positions());
+      throw(std::string(msg));
+    }
+
+    if (pixel_lor_hits_ptr_[i_pixel]==0x0) {
       pixel_lor_hits_ptr_[i_pixel] = new S[n_lors_ * this->n_tof_positions()]();
       // unpack previous values (if any)
       for (auto it = pixel_lor_hits_[i_pixel].begin();
@@ -129,13 +133,14 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   }
 
   MatrixPixelMajor& operator<<(SparseMatrix& sparse) {
+   
     sparse.sort_by_pixel();
     this->add_emissions(sparse.n_emissions());
 
     S i_current_pixel = n_pixels_;
 
     for (auto it = sparse.begin(); it != sparse.end(); ++it) {
-      auto pixel = it->pixel;
+      Pixel pixel = it->pixel;
       if (!sparse.triangular()) {
         pixel.x -= n_pixels_in_row_half_;
         pixel.y -= n_pixels_in_row_half_;
@@ -144,13 +149,13 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       }
       auto lor = it->lor;
       auto hits = it->hits;
-      auto i_pixel = pixel.index();
-
+      S i_pixel = pixel.index();
+      
       if (i_current_pixel != i_pixel) {
         compact_pixel_index(i_current_pixel);
         i_current_pixel = i_pixel;
       }
-      hit_lor(lor, i_pixel, hits);
+      hit_lor(lor, it->position,i_pixel, hits);
       this->hit(i_pixel, hits);
     }
     compact_pixel_index(i_current_pixel);

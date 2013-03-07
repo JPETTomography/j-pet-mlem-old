@@ -68,7 +68,7 @@ class DetectorRing : public std::vector<Detector<FType>> {
   }
 
   F max_dl(F max_bias_size) const {
-    return c_outer_.radius()+max_bias_size;
+    return 2.0*c_outer_.radius()+max_bias_size;
   }
 
   /// Quantizes position with given:
@@ -76,7 +76,9 @@ class DetectorRing : public std::vector<Detector<FType>> {
   /// @param max_bias_size  possible bias (fuzz) maximum size
   S quantize_position(F position, F step_size, F max_bias_size) {
     // FIXME: rounding?
-    return static_cast<S>(floor((position+max_dl(max_bias_size))/step_size));
+    return static_cast<S>(
+                          floor( (position+max_dl(max_bias_size))/step_size )
+                          );
   }
 
   /// Returns number of position steps (indexes) for:
@@ -84,7 +86,7 @@ class DetectorRing : public std::vector<Detector<FType>> {
   /// @param max_bias_size  possible bias (fuzz) maximum size
   S n_positions(F step_size, F max_bias_size) {
     return static_cast<S>(
-                          ceil(2.0*max_dl(max_bias_size))
+                          ceil(2.0*max_dl(max_bias_size)/step_size)
                           );
   }
 
@@ -186,6 +188,7 @@ class DetectorRing : public std::vector<Detector<FType>> {
 
     position = length1-length2;
 
+    //std::cerr<<"position "<<position<<"\n";
     return 2;
   }
 
