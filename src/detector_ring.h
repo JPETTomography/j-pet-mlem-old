@@ -67,13 +67,16 @@ class DetectorRing : public std::vector<Detector<FType>> {
                  static_cast<S>(floor(ry / pixel_size)));
   }
 
+  F max_dl(F max_bias_size) const {
+    return c_outer_.radius()+max_bias_size;
+  }
+
   /// Quantizes position with given:
   /// @param step_size      step size
   /// @param max_bias_size  possible bias (fuzz) maximum size
   S quantize_position(F position, F step_size, F max_bias_size) {
     // FIXME: rounding?
-    return static_cast<S>((position - radius_diff_ - max_bias_size) /
-                          step_size);
+    return static_cast<S>(floor((position+max_dl(max_bias_size))/step_size));
   }
 
   /// Returns number of position steps (indexes) for:
@@ -81,14 +84,12 @@ class DetectorRing : public std::vector<Detector<FType>> {
   /// @param max_bias_size  possible bias (fuzz) maximum size
   S n_positions(F step_size, F max_bias_size) {
     return static_cast<S>(
-        ceil(2.0 * (radius_diff_ + max_bias_size) / step_size)) + 1;
+                          ceil(2.0*max_dl(max_bias_size))
+                          );
   }
 
- 
-
-
-    template <class RandomGenerator, class AcceptanceModel>
-  bool check_for_hits(RandomGenerator& gen,
+  template <class RandomGenerator, class AcceptanceModel>
+    bool check_for_hits(RandomGenerator& gen,
                       AcceptanceModel& model,
                       S inner,
                       S outer,
