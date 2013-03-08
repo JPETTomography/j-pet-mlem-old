@@ -62,7 +62,10 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       sprintf(msg,"hit position greater than max TOF positions %d > %d",position,this->n_tof_positions());
       throw(std::string(msg));
     }
-
+    if(::abs(lor.first-lor.second)<1) {
+      std::cerr<<"strange lor in hit_lor "<<lor.index()<<" "<<lor.first<<" "<<lor.second<<std::endl;
+      abort();
+    }
     if (pixel_lor_hits_ptr_[i_pixel]==0x0) {
       pixel_lor_hits_ptr_[i_pixel] = new S[n_lors_ * this->n_tof_positions()]();
       // unpack previous values (if any)
@@ -72,6 +75,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
         hit_lor(it->lor, it->position, i_pixel, it->hits);
       }
     }
+
     auto& current_hits = pixel_lor_hits_ptr_[i_pixel][
         lor.index() * this->n_tof_positions() + position];
     if (current_hits == 0) {
@@ -102,6 +106,11 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
         auto hits = pixel_lor_hits_ptr_[i_pixel][
             i_lor * this->n_tof_positions() + position];
         if (hits > 0) {
+          LOR lor=index_to_lor_[i_lor];
+          if(::abs(lor.first-lor.second)<1) {
+            std::cerr<<"strange lor in compact_pixel_index "<<i_pixel<<" "<<i_lor<<" "<<lor.first<<" "<<lor.second<<std::endl;
+                abort();
+          }
           pixel_lor_hits_[i_pixel][lor_count++] = SparseElement(
               index_to_lor_[i_lor], position, index_to_pixel_[i_pixel], hits);
         }

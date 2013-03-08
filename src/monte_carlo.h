@@ -92,7 +92,10 @@ class MonteCarlo {
             // do we have hit on both sides?
             if (hits >= 2) {
               if (o_collect_mc_matrix) {
-                matrix_.hit_lor(lor, quantized_position, i_pixel,1);
+                
+    if(::abs(lor.first-lor.second)<1)
+      std::cerr<<"strange lor in monte-carlo"<<lor.first<<" "<<lor.second<<std::endl;
+    matrix_.hit_lor(lor, quantized_position, i_pixel,1);
               }
 
               if (o_collect_pixel_stats) {

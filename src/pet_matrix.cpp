@@ -204,14 +204,13 @@ int main(int argc, char* argv[]) {
           throw("input has TOF positions but not quantisation specified");
         }
 
-
         sparse_matrix.sort_by_pixel();
         std::cerr<<"sorted\n";
-        //        std::cout<<sparse_matrix;
 
         matrix << sparse_matrix;
         std::cerr<<"converted to pixel major\n";
       }
+
       catch (std::string & ex) {
         throw(ex + ": " + *fn);
       }
@@ -227,7 +226,7 @@ int main(int argc, char* argv[]) {
           gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
 
     auto sparse_matrix = matrix.to_sparse();
-   
+
     // generate output
     if (cl.exist("output")) {
       auto fn = cl.get<cmdline::string>("output");
