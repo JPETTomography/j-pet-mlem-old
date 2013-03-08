@@ -1,5 +1,5 @@
 #pragma once
-
+#include<iomanip>
 #if _OPENMP
 #include <omp.h>
 #endif
@@ -111,7 +111,7 @@ class MonteCarlo {
             }  // if (hits>=2)
           }    // loop over emmisions from pixel
           if(verbose_)
-            std::cerr<<thread_id<<" "<<x<<" "<<y<<" "<<pixel_hit_count<<std::endl;
+            std::cout<<std::setw(2)<<thread_id<<std::setw(4)<<x<<std::setw(4)<<y<<std::setw(8)<<pixel_hit_count<<std::endl;
           matrix_.compact_pixel_index(i_pixel);
         }
       }
