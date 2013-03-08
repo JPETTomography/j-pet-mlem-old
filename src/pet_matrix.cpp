@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
         cmdline::string(),
         false);
     cl.add("full", 'f', "output full non-triangular sparse system matrix");
-
+    
     // visual debugging params
     cl.add<cmdline::string>(
         "png", 0, "output lor to png", false, cmdline::string(), false);
@@ -76,6 +76,7 @@ int main(int argc, char* argv[]) {
     cl.add("print", 0, "print triangular sparse system matrix");
     cl.add("stats", 0, "show stats");
     cl.add("wait", 0, "wait before exit");
+    cl.add("verbose",'v',"prints the iterations information on std::out");
 
     cl.parse_check(argc, argv);
 
@@ -187,12 +188,14 @@ int main(int argc, char* argv[]) {
     std::cerr<<"max bias      = "<<max_bias<<"\n";
     std::cerr<<"tof_step      = "<<tof_step<<"\n";
     std::cerr<<"tof positions = "<<n_tof_positions<<"\n";
-    
 
     typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
     MatrixImpl matrix(n_pixels, n_detectors, n_tof_positions);
     MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(
         dr, matrix, s_pixel, tof_step);
+
+    if(cl.exist("verbose"))
+      monte_carlo.set_verbose();
 
     for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
       ibstream in(*fn, std::ios::binary);
@@ -224,7 +227,8 @@ int main(int argc, char* argv[]) {
       monte_carlo(gen, AlwaysAccept<>(), n_emissions);
     if (cl.get<std::string>("model") == "scintilator")
       monte_carlo(
-          gen, ScintilatorAccept<>(1.0/cl.get<double>("decay-length")), n_emissions);
+          gen, ScintilatorAccept<>(1.0/cl.get<double>("decay-length")), 
+          n_emissions);
 
     auto sparse_matrix = matrix.to_sparse();
 

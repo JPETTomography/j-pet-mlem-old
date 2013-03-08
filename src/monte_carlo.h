@@ -25,7 +25,8 @@ class MonteCarlo {
         matrix_(matrix),
         pixel_size_(pixel_size),
         tof_step_(tof_step),
-        tof_(tof_step > static_cast<F>(0)) {}
+        tof_(tof_step > static_cast<F>(0)),
+        verbose_(false) {}
 
   /// Executes Monte-Carlo system matrix generation for given detector ring
   /// @param gen   random number generator
@@ -58,13 +59,17 @@ class MonteCarlo {
       // descending, since biggest chunks start first, but may end last
       for (SS y = n_pixels_2 - 1; y >= 0; --y) {
         for (auto x = 0; x <= y; ++x) {
-          std::cerr<<x<<" "<<y<<std::endl;
+          int thread_id=0;
+#if _OPENMP
+          thread_id=omp_get_thread_num();
+#endif
+
           if ((x * x + y * y) * pixel_size_ * pixel_size_ >
               detector_ring_.fov_radius() * detector_ring_.fov_radius())
             continue;
 
           auto i_pixel = Pixel<S>(x, y).index();
-
+          int pixel_hit_count=0;
           for (auto n = 0; n < n_emissions; ++n) {
 #if _OPENMP
             auto& l_gen = mp_gens[omp_get_thread_num()];
@@ -93,27 +98,33 @@ class MonteCarlo {
             if (hits >= 2) {
               if (o_collect_mc_matrix) {
                 
-    if(::abs(lor.first-lor.second)<1)
-      std::cerr<<"strange lor in monte-carlo"<<lor.first<<" "<<lor.second<<std::endl;
-    matrix_.hit_lor(lor, quantized_position, i_pixel,1);
+                if(::abs(lor.first-lor.second)<1)
+                  std::cerr<<"strange lor in monte-carlo"<<lor.first<<" "<<lor.second<<std::endl;
+                matrix_.hit_lor(lor, quantized_position, i_pixel,1);
               }
 
               if (o_collect_pixel_stats) {
                 matrix_.hit(i_pixel);
               }
+              pixel_hit_count++;
+
             }  // if (hits>=2)
           }    // loop over emmisions from pixel
-
+          if(verbose_)
+            std::cerr<<thread_id<<" "<<x<<" "<<y<<" "<<pixel_hit_count<<std::endl;
           matrix_.compact_pixel_index(i_pixel);
         }
       }
     }
   }
 
+  void set_verbose() {verbose_=true;}
+  
  private:
   DetectorRing& detector_ring_;
   Matrix& matrix_;
   F pixel_size_;
   F tof_step_;
   bool tof_;
+  bool verbose_;
 };
