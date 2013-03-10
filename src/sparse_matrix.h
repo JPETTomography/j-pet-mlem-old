@@ -283,10 +283,11 @@ class SparseMatrix :
     for (auto it = this->begin(); it != this->end(); ++it) {
       for (auto symmetry = 0; symmetry < 8; ++symmetry) {
         auto pixel = it->pixel;
-        // avoid writing diagonals twice
+#if 0 //unnecessary: pixels at diagonal get only half of entries
+        //avoid writing diagonals twice
         if (symmetry & 4 && pixel.x == pixel.y)
           continue;
-
+#endif
         full.push_back(Element(symmetric_lor(it->lor, symmetry),
                                it->position,
                                symmetric_pixel(pixel, symmetry),
