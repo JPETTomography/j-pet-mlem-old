@@ -23,7 +23,6 @@
 /// Note: TOF position has no particular meaning without quantisation
 /// definition. However this is not needed for reconstruction.
 
-
 #pragma once
 
 #include <iostream>
@@ -63,8 +62,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
                  std::string matrix,
                  std::string mean,
                  F threshold = (F) 0.0)
-      : n_iterations_(n_iterations),
-        threshold_(threshold) {
+      : n_iterations_(n_iterations), threshold_(threshold) {
     ibstream in(matrix);
 
     if (!in) {
@@ -79,9 +77,12 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
     in >> in_magic;
 
-    const bool TOF = (in_magic == SparseMatrix<Pixel<>,LOR>::MAGIC_VERSION_TOF_FULL) ? 1 : 0;
+    const bool TOF =
+        (in_magic == SparseMatrix<Pixel<>, LOR>::MAGIC_VERSION_TOF_FULL) ? 1
+                                                                         : 0;
 
-    if (in_magic != SparseMatrix<Pixel<>, LOR>::MAGIC_VERSION_FULL || in_magic != SparseMatrix<Pixel<>,LOR>::MAGIC_VERSION_TOF_FULL) {
+    if (in_magic != SparseMatrix<Pixel<>, LOR>::MAGIC_VERSION_FULL ||
+        in_magic != SparseMatrix<Pixel<>, LOR>::MAGIC_VERSION_TOF_FULL) {
       throw("invalid input system matrix file");
     }
 
@@ -141,56 +142,59 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
       LOR lor(a, b);
 
-          bool on_list = lor_in_the_list(a,b,lor_mean);
+      bool on_list = lor_in_the_list(a, b, lor_mean);
 
-          if(on_list){
+      if (on_list) {
 
-              n.push_back(get_mean_per_lor(a, b, lor_mean));
+        n.push_back(get_mean_per_lor(a, b, lor_mean));
 
+      }
+
+      FileInt count;
+
+      in >> count;
+
+      for (FileInt i = 0; i < count; ++i) {
+
+        FileHalf x, y;
+        FileInt hits;
+        FileInt position;
+
+        if (TOF) {
+
+          in >> position >> x >> y >> hits;
+
+        } else {
+          in >> x >> y >> hits;
+        }
+
+        if (on_list) {
+
+          HitsPerPixel data;
+
+          data.probability = static_cast<F>(hits / static_cast<F>(emissions_));
+          data.index = location(x, y, n_pixels_);
+
+          if (TOF) {
+            data.position = position;
           }
 
-          FileInt count;
-
-          in >> count;
-
-          for (FileInt i = 0; i < count; ++i) {
-
-            FileHalf x, y;
-            FileInt hits;
-            FileInt position;
-
-            if(TOF){
-
-                in >> position >> x >> y >> hits;
-
-            }
-            else{ in >> x >> y >> hits; }
-
-            if(on_list){
-
-                HitsPerPixel data;
-
-                data.probability = static_cast<F>(hits / static_cast<F>(emissions_));
-                data.index = location(x, y, n_pixels_);
-
-                if(TOF) {data.position = position;}
-
-                if (threshold_ > (F) 0.0) {
-                  if (data.probability < threshold_)
-                    data.probability = (F) 0.0;
-                  else
-                    data.probability = (F) 1.0;
-                }
-                scale[data.index] += data.probability;
-                n_non_zero_elements_++;
-                pixels.push_back(data);
-
-            }
+          if (threshold_ > (F) 0.0) {
+            if (data.probability < threshold_)
+              data.probability = (F) 0.0;
+            else
+              data.probability = (F) 1.0;
           }
+          scale[data.index] += data.probability;
+          n_non_zero_elements_++;
+          pixels.push_back(data);
 
-          system_matrix.push_back(pixels);
-          pixels.clear();
-          index++;
+        }
+      }
+
+      system_matrix.push_back(pixels);
+      pixels.clear();
+      index++;
 
     }
     stop = clock();
@@ -199,7 +203,8 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     std::cout << "matrix read time = " << time << "s\n";
 
     for (auto it_vector = system_matrix.begin();
-         it_vector != system_matrix.end(); it_vector++) {
+         it_vector != system_matrix.end();
+         it_vector++) {
       for (auto it_list = it_vector->begin(); it_list != it_vector->end();
            it_list++) {
         S pixel = it_list->index;
@@ -207,7 +212,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       }
     }
 
-    for (S p = 0; p < n_pixels_* n_pixels_; ++p) {
+    for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
       if (scale[p] > 0)
         rho_detected_[p] = (F) 1.0;
     }
@@ -222,7 +227,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
   void emt(S n_iterations) {
 
-    F y[n_pixels_* n_pixels_];
+    F y[n_pixels_ * n_pixels_];
     F u;
 
     clock_t start = clock();
@@ -231,13 +236,14 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       std::cout << ".";
       std::cout.flush();
 
-      for (S p = 0; p < n_pixels_* n_pixels_; ++p) {
+      for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
         y[p] = (F) 0.0;
       }
 
       S t = 0;
       for (auto it_vector = system_matrix.begin();
-           it_vector != system_matrix.end(); it_vector++) {
+           it_vector != system_matrix.end();
+           it_vector++) {
         u = (F) 0.0;
         if (n[t] > 0) {
           for (auto it_list = it_vector->begin(); it_list != it_vector->end();
@@ -253,7 +259,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
         t++;
       }
 
-      for (S p = 0; p < n_pixels_* n_pixels_; ++p) {
+      for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
         if (scale[p] > 0) {
           rho_detected_[p] *= y[p];
         }
@@ -263,7 +269,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     clock_t stop = clock();
     std::cout << std::endl;
 
-    for (S p = 0; p < n_pixels_* n_pixels_; ++p) {
+    for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
       if (scale[p] > 0) {
         rho_[p] = (rho_detected_[p] / scale[p]);
       }
@@ -289,53 +295,59 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
  private:
 
-  #ifdef TOF
+#ifdef TOF
 
-      S get_mean_per_lor(FileHalf& a, FileHalf& b,float & tof, std::vector<MeanPerLOR>& mean) {
-        for (auto it = mean.begin(); it != mean.end(); ++it) {
-          if (a == it->lor.first && b == it->lor.second, tof == it->lor.tof) {
-            return it->n;
-          }
-        }
-
-        return 0;
+  S get_mean_per_lor(FileHalf& a,
+                     FileHalf& b,
+                     float& tof,
+                     std::vector<MeanPerLOR>& mean) {
+    for (auto it = mean.begin(); it != mean.end(); ++it) {
+      if (a == it->lor.first && b == it->lor.second, tof == it->lor.tof) {
+        return it->n;
       }
+    }
 
+    return 0;
+  }
 
-      bool lor_in_the_list(FileHalf& a, FileHalf& b,float & tof, std::vector<MeanPerLOR>& mean) {
-        for (auto it = mean.begin(); it != mean.end(); ++it) {
-          if (a == it->lor.first && b == it->lor.second, tof == it->lor.tof) {
-            return true;
-          }
-        }
-
-        return false;
+  bool lor_in_the_list(FileHalf& a,
+                       FileHalf& b,
+                       float& tof,
+                       std::vector<MeanPerLOR>& mean) {
+    for (auto it = mean.begin(); it != mean.end(); ++it) {
+      if (a == it->lor.first && b == it->lor.second, tof == it->lor.tof) {
+        return true;
       }
+    }
 
-  #else
+    return false;
+  }
 
-      S get_mean_per_lor(FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
-        for (auto it = mean.begin(); it != mean.end(); ++it) {
-          if (a == it->lor.first && b == it->lor.second) {
-            return it->n;
-          }
-        }
+#else
 
-        return 0;
+  S get_mean_per_lor(FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
+    for (auto it = mean.begin(); it != mean.end(); ++it) {
+      if (a == it->lor.first && b == it->lor.second) {
+        return it->n;
       }
+    }
 
+    return 0;
+  }
 
-      bool lor_in_the_list(FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
-        for (auto it = mean.begin(); it != mean.end(); ++it) {
-          if (a == it->lor.first && b == it->lor.second) {
-            return true;
-          }
-        }
-
-        return false;
+  bool lor_in_the_list(FileHalf& a,
+                       FileHalf& b,
+                       std::vector<MeanPerLOR>& mean) {
+    for (auto it = mean.begin(); it != mean.end(); ++it) {
+      if (a == it->lor.first && b == it->lor.second) {
+        return true;
       }
+    }
 
-  #endif
+    return false;
+  }
+
+#endif
 
   S n_tubes_;
   S n_pixels_;

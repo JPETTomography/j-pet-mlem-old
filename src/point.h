@@ -5,7 +5,7 @@
 template <typename FType = double> struct Point {
   typedef FType F;
 
-  Point(F x_a, F y_a) : x(x_a), y(y_a) {}
+  Point(F x_a  , F y_a ) : x(x_a), y(y_a) {}
   Point(std::pair<F, F> p) : x(p.first), y(p.second) {}
 
   F x, y;
@@ -19,15 +19,15 @@ template <typename FType = double> struct Point {
     return { x * cos_phi - y * sin_phi, x * sin_phi + y * cos_phi };
   }
 
-  Point operator+(Point& p) {
+  Point operator+(const Point& p) const {
     return { x + p.x, y + p.y };
   }
 
-  Point operator-(Point& p) {
+  Point operator-(const Point& p) const{
     return { x - p.x, y - p.y };
   }
 
-  Point& operator+=(Point & p) {
+  Point& operator+=(const Point & p) {
     x += p.x;
     y += p.y;
     return *this;

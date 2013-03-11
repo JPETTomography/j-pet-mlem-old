@@ -26,8 +26,10 @@
 #endif
 
 template <typename Iterator>
-void write_text_from_vector(
-    std::ostream& out, Iterator start, Iterator stop, int line_length) {
+void write_text_from_vector(std::ostream& out,
+                            Iterator start,
+                            Iterator stop,
+                            int line_length) {
   int index = 0;
   for (; start != stop; ++start, ++index) {
     out << *start << " ";
@@ -71,7 +73,8 @@ int main(int argc, char* argv[]) {
           fn.substr(0,
                     it_fn_ext != std::string::npos &&
                     (it_fn_sep == std::string::npos || it_fn_sep < it_fn_ext)
-                        ? it_fn_ext : std::string::npos);
+                        ? it_fn_ext
+                        : std::string::npos);
       fn_ext = fn.substr(it_fn_ext != std::string::npos ? it_fn_ext : fn.size(),
                          fn.size());
     }

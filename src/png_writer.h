@@ -15,8 +15,9 @@ class png_writer {
   ~png_writer();
 
  private:
-  void priv_write_header(
-      unsigned int width, unsigned int height, unsigned int bpp);
+  void priv_write_header(unsigned int width,
+                         unsigned int height,
+                         unsigned int bpp);
   void priv_write_row(unsigned char* row);
   struct png_writer_private* priv;
 };

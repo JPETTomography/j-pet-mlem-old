@@ -8,9 +8,7 @@ template <typename F> class DetectorView {
   typedef ToF_Detector_2D<F> detector_t;
 
   DetectorView(GeometryPlot* gp, detector_t* detector)
-      : gp_(gp),
-        detector_(detector) {
-  }
+      : gp_(gp), detector_(detector) {}
 
   void render() {
     gp_->renderZYRectangle(-250, -360, 250, -340, 0, false);

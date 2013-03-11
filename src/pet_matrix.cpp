@@ -52,8 +52,9 @@ int main(int argc, char* argv[]) {
                         false,
                         "scintilator",
                         cmdline::oneof<std::string>("always", "scintilator"));
+
     cl.add<double>(
-        "acceptance", 'a', "acceptance probability factor", false, 10.);
+        "decay-length", 0, "1/e length of scintilator", false, 100.);
     cl.add<tausworthe::seed_type>(
         "seed", 's', "random number generator seed", false, 0, false);
     cl.add<cmdline::string>(
@@ -64,7 +65,7 @@ int main(int argc, char* argv[]) {
         cmdline::string(),
         false);
     cl.add("full", 'f', "output full non-triangular sparse system matrix");
-
+    
     // visual debugging params
     cl.add<cmdline::string>(
         "png", 0, "output lor to png", false, cmdline::string(), false);
@@ -75,6 +76,7 @@ int main(int argc, char* argv[]) {
     cl.add("print", 0, "print triangular sparse system matrix");
     cl.add("stats", 0, "show stats");
     cl.add("wait", 0, "wait before exit");
+    cl.add("verbose",'v',"prints the iterations information on std::out");
 
     cl.parse_check(argc, argv);
 
@@ -115,7 +117,8 @@ int main(int argc, char* argv[]) {
             fn->substr(0,
                        fn_ext != std::string::npos &&
                        (fn_sep == std::string::npos || fn_sep < fn_ext)
-                           ? fn_ext : std::string::npos);
+                           ? fn_ext
+                           : std::string::npos);
         std::ifstream in(fn_wo_ext + ".cfg");
         if (!in.is_open())
           continue;
@@ -182,10 +185,17 @@ int main(int argc, char* argv[]) {
       tof_step = 0;
     }
 
+    std::cerr<<"max bias      = "<<max_bias<<"\n";
+    std::cerr<<"tof_step      = "<<tof_step<<"\n";
+    std::cerr<<"tof positions = "<<n_tof_positions<<"\n";
+
     typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
     MatrixImpl matrix(n_pixels, n_detectors, n_tof_positions);
     MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(
         dr, matrix, s_pixel, tof_step);
+
+    if(cl.exist("verbose"))
+      monte_carlo.set_verbose();
 
     for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
       ibstream in(*fn, std::ios::binary);
@@ -193,12 +203,18 @@ int main(int argc, char* argv[]) {
         throw("cannot open input file: " + *fn);
       try {
         MatrixImpl::SparseMatrix sparse_matrix(in);
+        std::cerr<<"read in "<<*fn<<" "<<sparse_matrix.tof()<<std::endl;
         if (sparse_matrix.tof() && !cl.exist("tof-step")) {
           throw("input has TOF positions but not quantisation specified");
         }
+
         sparse_matrix.sort_by_pixel();
+        std::cerr<<"sorted\n";
+
         matrix << sparse_matrix;
+        std::cerr<<"converted to pixel major\n";
       }
+
       catch (std::string & ex) {
         throw(ex + ": " + *fn);
       }
@@ -206,12 +222,13 @@ int main(int argc, char* argv[]) {
         throw(std::string(ex) + ": " + *fn);
       }
     }
-
+    std::cerr<<"n_emissions "<<n_emissions<<std::endl;
     if (cl.get<std::string>("model") == "always")
       monte_carlo(gen, AlwaysAccept<>(), n_emissions);
     if (cl.get<std::string>("model") == "scintilator")
       monte_carlo(
-          gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
+          gen, ScintilatorAccept<>(1.0/cl.get<double>("decay-length")), 
+          n_emissions);
 
     auto sparse_matrix = matrix.to_sparse();
 
@@ -224,7 +241,8 @@ int main(int argc, char* argv[]) {
           fn.substr(0,
                     fn_ext != std::string::npos &&
                     (fn_sep == std::string::npos || fn_sep < fn_ext)
-                        ? fn_ext : std::string::npos);
+                        ? fn_ext
+                        : std::string::npos);
       auto fn_wo_path =
           fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
 

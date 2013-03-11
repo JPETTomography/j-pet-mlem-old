@@ -46,9 +46,7 @@ template <typename FType = double> class uniform_real_distribution {
   typedef FType result_type;
 
   uniform_real_distribution(result_type a = 0., result_type b = 1.)
-      : size_(b - a),
-        offset_(a) {
-  }
+      : size_(b - a), offset_(a) {}
 
   template <class Generator> result_type operator()(Generator& g) {
     return g() * size() * scale<Generator>() + offset() -

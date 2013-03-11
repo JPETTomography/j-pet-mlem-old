@@ -9,10 +9,9 @@
 template <typename F = double, typename S = int> class Circle {
  public:
   Circle(F radius)
-      : radius_(radius),          // store radius
-        radius2_(radius* radius)  // store precomputed square
-        {
-  }
+      : radius_(radius),           // store radius
+        radius2_(radius * radius)  // store precomputed square
+        {}
 
   typedef F Angle;
   typedef ::Point<F> Point;

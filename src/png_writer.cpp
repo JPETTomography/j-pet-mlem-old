@@ -40,8 +40,9 @@ png_writer::png_writer(std::string fn) {
 #endif
 }
 
-void png_writer::priv_write_header(
-    unsigned int width, unsigned int height, unsigned int bpp) {
+void png_writer::priv_write_header(unsigned int width,
+                                   unsigned int height,
+                                   unsigned int bpp) {
 #ifdef HAVE_LIBPNG
   png_set_IHDR(priv->png_ptr,
                priv->info_ptr,

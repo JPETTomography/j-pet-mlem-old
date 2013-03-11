@@ -34,7 +34,8 @@ template <typename FType = double> class ScintilatorAccept {
   }
 
   template <typename RandomGenerator> F deposition_depth(RandomGenerator& gen) {
-    return -log(one_dis_(gen)) * inv_unit_prob_;
+    auto r=one_dis_(gen);
+    return -log(r) * inv_unit_prob_;
   }
 
   static F max_bias() { return static_cast<F>(0); }

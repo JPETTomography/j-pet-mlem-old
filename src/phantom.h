@@ -6,14 +6,13 @@
 
 class EllipticalRegion {
  public:
-  EllipticalRegion(
-      double x, double y, double a, double b, double phi, double act)
-      : x_(x),
-        y_(y),
-        a_(a),
-        b_(b),
-        phi_(phi),
-        activity_(act) {
+  EllipticalRegion(double x,
+                   double y,
+                   double a,
+                   double b,
+                   double phi,
+                   double act)
+      : x_(x), y_(y), a_(a), b_(b), phi_(phi), activity_(act) {
     sincos(phi, &sin_, &cos_);
     inv_a2_ = 1.0 / (a_ * a_);
     inv_b2_ = 1.0 / (b_ * b_);
@@ -76,17 +75,17 @@ class Phantom {
 
 #if 0
   Phantom(double ll_x, double ll_y, double ur_x, double ur_y)
-      : ll_x_(ll_x),
-        ll_y_(ll_y),
-        ur_x_(ur_x),
-        ur_y_(ur_y) {
-  }
+      : ll_x_(ll_x), ll_y_(ll_y), ur_x_(ur_x), ur_y_(ur_y) {}
 #endif
 
   size_t n_regions() const { return regions_.size(); }
 
-  void add_region(
-      double x, double y, double a, double b, double phi, double act) {
+  void add_region(double x,
+                  double y,
+                  double a,
+                  double b,
+                  double phi,
+                  double act) {
     regions_.push_back(new EllipticalRegion(x, y, a, b, phi, act));
   }
 
