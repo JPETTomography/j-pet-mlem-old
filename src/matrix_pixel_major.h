@@ -110,7 +110,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
             i_lor * this->n_tof_positions() + position];
         if (hits > 0) {
           LOR lor = index_to_lor_[i_lor];
-          if (::abs(lor.first - lor.second) < 1) {
+          if (lor.first == lor.second) {
             std::ostringstream msg;
             msg << __PRETTY_FUNCTION__ << " invalid LOR " << i_lor << " ("
                 << lor.first << ", " << lor.second << ") for pixel index "
