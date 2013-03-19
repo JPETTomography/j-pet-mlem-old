@@ -177,9 +177,11 @@ class DetectorRing : public std::vector<Detector<FType>> {
 
     lor = LOR(detector1, detector2);
 
-    if (::abs(lor.first - lor.second) < 1)
-      std::cerr << "strange lor " << lor.first << " " << lor.second
-                << std::endl;
+    if (lor.first == lor.second) {
+      std::ostringstream msg;
+      msg << "invalid LOR (" << lor.first << ", " << lor.second << ")";
+      throw(msg.str());
+    }
 
     Point origin(rx, ry);
     F length1 = nearest_distance(origin, d1_p1, d1_p2);

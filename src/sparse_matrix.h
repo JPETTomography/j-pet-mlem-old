@@ -226,10 +226,11 @@ class SparseMatrix :
     out << "    detectors: " << sm.n_detectors_ << std::endl;
 
     for (auto it = sm.begin(); it != sm.end(); ++it) {
-      if (::abs(it->lor.first - it->lor.second) < 1) {
-        std::cerr << "output strange lor " << it->lor.first << " "
-                  << it->lor.second << std::endl;
-        abort();
+      if (it->lor.first == it->lor.second) {
+        std::ostringstream msg;
+        msg << "invalid LOR (" << it->lor.first << ", " << it->lor.second
+            << ")";
+        throw(msg.str());
       }
       out << " lor: (" << it->lor.first << ", " << it->lor.second << ")"
           << " position: " << it->position << " pixel: (" << it->pixel.x << ","
