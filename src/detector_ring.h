@@ -110,7 +110,10 @@ class DetectorRing : public std::vector<Detector<FType>> {
       // then test the model against these points distance
       if (points.size() == 2) {
         auto deposition_depth = model.deposition_depth(gen);
-        //std::cerr<<"dep "<<deposition_depth <<" "<< (points[1] - points[0]).length()<<std::endl;
+#if DEBUG
+        std::cerr << "dep " << deposition_depth << " "
+                  << (points[1] - points[0]).length() << std::endl;
+#endif
         if (deposition_depth < (points[1] - points[0]).length()) {
           detector = i;
           depth = deposition_depth;
@@ -191,7 +194,9 @@ class DetectorRing : public std::vector<Detector<FType>> {
 
     position = length1 - length2;
 
-    //std::cerr<<"position "<<position<<"\n";
+#if DEBUG
+    std::cerr << "position " << position << std::endl;
+#endif
     return 2;
   }
 

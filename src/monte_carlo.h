@@ -93,7 +93,10 @@ class MonteCarlo {
             if (tof_)
               quantized_position = detector_ring_.quantize_position(
                   position, tof_step_, model.max_bias());
-            // std::cerr<<"quant "<<quantized_position<<"\n";
+#ifdef DEBUG
+            std::cerr << "quantized_position " << quantized_position
+                      << std::endl;
+#endif
             // do we have hit on both sides?
             if (hits >= 2) {
               if (o_collect_mc_matrix) {

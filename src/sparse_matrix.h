@@ -114,21 +114,24 @@ class SparseMatrix :
         (in_magic != MAGIC_VERSION_FULL && in_magic != MAGIC_VERSION_TOF_FULL);
     bool in_is_tof = (in_magic == MAGIC_VERSION_TOF_TRIANGULAR ||
                       in_magic == MAGIC_VERSION_TOF_FULL);
-    std::cerr << "in_is_tof " << in_is_tof << std::endl;
 
     FileInt in_n_pixels_in_row;
     in >> in_n_pixels_in_row;
     if (in_magic != MAGIC_VERSION_FULL)
       in_n_pixels_in_row *= 2;
-    std::cerr << "in_n_pixels_in_row " << in_n_pixels_in_row << std::endl;
 
     FileInt in_n_emissions = 0;
     in >> in_n_emissions;
-    std::cerr << "in_n_emissions " << in_n_emissions << std::endl;
 
     FileInt in_n_detectors = 0;
     in >> in_n_detectors;
+
+#if DEBUG
+    std::cerr << "in_is_tof " << in_is_tof << std::endl;
+    std::cerr << "in_n_pixels_in_row " << in_n_pixels_in_row << std::endl;
+    std::cerr << "in_n_emissions " << in_n_emissions << std::endl;
     std::cerr << "in_n_detectors " << in_n_detectors << std::endl;
+#endif
 
     triangular_ = in_is_triangular;
     tof_ = in_is_tof;
@@ -166,7 +169,6 @@ class SparseMatrix :
           in >> x >> y >> hits;
           position = 0;
         }
-        //std::cerr<<a<<" "<<b<<std::endl;
 
         this->push_back(Element(lor, position, Pixel(x, y), hits));
       }
