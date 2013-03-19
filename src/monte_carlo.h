@@ -1,5 +1,5 @@
 #pragma once
-#include<iomanip>
+#include <iomanip>
 #if _OPENMP
 #include <omp.h>
 #endif
@@ -37,7 +37,7 @@ class MonteCarlo {
                   S n_emissions,
                   bool o_collect_mc_matrix = true,
                   bool o_collect_pixel_stats = true) {
-    if(n_emissions>0) {
+    if (n_emissions > 0) {
       uniform_real_distribution<> one_dis(0., 1.);
       uniform_real_distribution<> phi_dis(0., M_PI);
 
@@ -59,9 +59,9 @@ class MonteCarlo {
       // descending, since biggest chunks start first, but may end last
       for (SS y = n_pixels_2 - 1; y >= 0; --y) {
         for (auto x = 0; x <= y; ++x) {
-          int thread_id=0;
+          int thread_id = 0;
 #if _OPENMP
-          thread_id=omp_get_thread_num();
+          thread_id = omp_get_thread_num();
 #endif
 
           if ((x * x + y * y) * pixel_size_ * pixel_size_ >
@@ -69,7 +69,7 @@ class MonteCarlo {
             continue;
 
           auto i_pixel = Pixel<S>(x, y).index();
-          int pixel_hit_count=0;
+          int pixel_hit_count = 0;
           for (auto n = 0; n < n_emissions; ++n) {
 #if _OPENMP
             auto& l_gen = mp_gens[omp_get_thread_num()];
@@ -85,22 +85,23 @@ class MonteCarlo {
 
             auto angle = phi_dis(l_gen);
             LOR lor;
-            F position=(F)0.0;
+            F position = (F) 0.0;
             auto hits = detector_ring_.emit_event(
-                                                  l_gen, model, rx, ry, angle, lor, position);
+                l_gen, model, rx, ry, angle, lor, position);
 
             S quantized_position = 0;
             if (tof_)
               quantized_position = detector_ring_.quantize_position(
-                                                                    position, tof_step_, model.max_bias());
+                  position, tof_step_, model.max_bias());
             // std::cerr<<"quant "<<quantized_position<<"\n";
             // do we have hit on both sides?
             if (hits >= 2) {
               if (o_collect_mc_matrix) {
-                
-                if(::abs(lor.first-lor.second)<1)
-                  std::cerr<<"strange lor in monte-carlo"<<lor.first<<" "<<lor.second<<std::endl;
-                matrix_.hit_lor(lor, quantized_position, i_pixel,1);
+
+                if (::abs(lor.first - lor.second) < 1)
+                  std::cerr << "strange lor in monte-carlo" << lor.first << " "
+                            << lor.second << std::endl;
+                matrix_.hit_lor(lor, quantized_position, i_pixel, 1);
               }
 
               if (o_collect_pixel_stats) {
@@ -110,16 +111,18 @@ class MonteCarlo {
 
             }  // if (hits>=2)
           }    // loop over emmisions from pixel
-          if(verbose_)
-            std::cout<<std::setw(2)<<thread_id<<std::setw(4)<<x<<std::setw(4)<<y<<std::setw(8)<<pixel_hit_count<<std::endl;
+          if (verbose_)
+            std::cout << std::setw(2) << thread_id << std::setw(4) << x
+                      << std::setw(4) << y << std::setw(8) << pixel_hit_count
+                      << std::endl;
           matrix_.compact_pixel_index(i_pixel);
         }
       }
     }
   }
 
-  void set_verbose() {verbose_=true;}
-  
+  void set_verbose() { verbose_ = true; }
+
  private:
   DetectorRing& detector_ring_;
   Matrix& matrix_;

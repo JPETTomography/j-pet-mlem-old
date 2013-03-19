@@ -77,7 +77,7 @@ class SparseMatrix :
                S n_detectors,
                S n_emissions,
                bool triangular,
-               bool tof )
+               bool tof)
       : n_pixels_in_row_(n_pixels_in_row),
         n_pixels_in_row_half_(n_pixels_in_row / 2),
         n_detectors_(n_detectors),
@@ -114,22 +114,21 @@ class SparseMatrix :
         (in_magic != MAGIC_VERSION_FULL && in_magic != MAGIC_VERSION_TOF_FULL);
     bool in_is_tof = (in_magic == MAGIC_VERSION_TOF_TRIANGULAR ||
                       in_magic == MAGIC_VERSION_TOF_FULL);
-    std::cerr<<"in_is_tof "<<in_is_tof<<std::endl;
+    std::cerr << "in_is_tof " << in_is_tof << std::endl;
 
     FileInt in_n_pixels_in_row;
     in >> in_n_pixels_in_row;
     if (in_magic != MAGIC_VERSION_FULL)
       in_n_pixels_in_row *= 2;
-    std::cerr<<"in_n_pixels_in_row "<<in_n_pixels_in_row<<std::endl;
+    std::cerr << "in_n_pixels_in_row " << in_n_pixels_in_row << std::endl;
 
     FileInt in_n_emissions = 0;
     in >> in_n_emissions;
-    std::cerr<<"in_n_emissions "<<in_n_emissions<<std::endl;
+    std::cerr << "in_n_emissions " << in_n_emissions << std::endl;
 
-  
     FileInt in_n_detectors = 0;
     in >> in_n_detectors;
-    std::cerr<<"in_n_detectors "<<in_n_detectors<<std::endl;
+    std::cerr << "in_n_detectors " << in_n_detectors << std::endl;
 
     triangular_ = in_is_triangular;
     tof_ = in_is_tof;
@@ -227,13 +226,14 @@ class SparseMatrix :
     out << "    detectors: " << sm.n_detectors_ << std::endl;
 
     for (auto it = sm.begin(); it != sm.end(); ++it) {
-      if(::abs(it->lor.first-it->lor.second)<1) {        
-        std::cerr<<"output strange lor "<<it->lor.first<<" "<<it->lor.second<<std::endl;
+      if (::abs(it->lor.first - it->lor.second) < 1) {
+        std::cerr << "output strange lor " << it->lor.first << " "
+                  << it->lor.second << std::endl;
         abort();
       }
       out << " lor: (" << it->lor.first << ", " << it->lor.second << ")"
-          << " position: "<<it->position
-          << " pixel: (" << it->pixel.x << "," << it->pixel.y << ")"
+          << " position: " << it->position << " pixel: (" << it->pixel.x << ","
+          << it->pixel.y << ")"
           << " hits: " << it->hits << std::endl;
     }
 
@@ -265,9 +265,7 @@ class SparseMatrix :
 #endif
   }
 
-  void sort_by_lor() { 
-    std::sort(Super::begin(), Super::end(), SortByLOR()); 
-  }
+  void sort_by_lor() { std::sort(Super::begin(), Super::end(), SortByLOR()); }
   void sort_by_pixel() {
     std::sort(Super::begin(), Super::end(), SortByPixel());
   }
@@ -276,14 +274,13 @@ class SparseMatrix :
     if (!triangular_) {
       return *this;
     }
-    SparseMatrix full(n_pixels_in_row_, n_detectors_, n_emissions_,
-                      false,
-                      tof());
+    SparseMatrix full(
+        n_pixels_in_row_, n_detectors_, n_emissions_, false, tof());
     full.reserve(this->size() * 8);
     for (auto it = this->begin(); it != this->end(); ++it) {
       for (auto symmetry = 0; symmetry < 8; ++symmetry) {
         auto pixel = it->pixel;
-#if 0 //unnecessary: pixels at diagonal get only half of entries
+#if 0   //unnecessary: pixels at diagonal get only half of entries
         //avoid writing diagonals twice
         if (symmetry & 4 && pixel.x == pixel.y)
           continue;
@@ -291,8 +288,7 @@ class SparseMatrix :
         full.push_back(Element(symmetric_lor(it->lor, symmetry),
                                it->position,
                                symmetric_pixel(pixel, symmetry),
-                               it->hits)
-                       );
+                               it->hits));
 
       }
     }
@@ -332,7 +328,7 @@ class SparseMatrix :
       lor.second = (n_2_detectors_ - lor.second) % n_detectors_;
     }
     if (symmetry & 2) {
-      lor.first  = (n_1_detectors_2_ - lor.first) % n_detectors_;
+      lor.first = (n_1_detectors_2_ - lor.first) % n_detectors_;
       lor.second = (n_1_detectors_2_ - lor.second) % n_detectors_;
     }
     if (symmetry & 4) {
