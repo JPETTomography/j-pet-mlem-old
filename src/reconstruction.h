@@ -36,7 +36,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   Reconstruction(S n_iterations,
                  std::string matrix,
                  std::string mean,
-                 F threshold = (F) 0.0)
+                 F threshold = static_cast<F>(0))
       : n_iterations_(n_iterations), threshold_(threshold) {
     ibstream in(matrix);
 
@@ -66,10 +66,10 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     in >> n_detectors_;
 
     total_n_pixels_ = n_pixels_in_row_ * n_pixels_in_row_;
-    rho_.resize(total_n_pixels_, (F) 0.0);
-    rho_detected_.resize(total_n_pixels_, (F) 0.0);
+    rho_.resize(total_n_pixels_, static_cast<F>(0));
+    rho_detected_.resize(total_n_pixels_, static_cast<F>(0));
 
-    scale.resize(total_n_pixels_, (F) 0.0);
+    scale.resize(total_n_pixels_, static_cast<F>(0));
 
     std::ifstream mean_file(mean);
     if (!mean_file) {
@@ -155,11 +155,11 @@ template <typename FType = double, typename SType = int> class Reconstruction {
             data.position = position;
           }
 
-          if (threshold_ > (F) 0.0) {
+          if (threshold_ > static_cast<F>(0)) {
             if (data.probability < threshold_)
-              data.probability = (F) 0.0;
+              data.probability = static_cast<F>(0);
             else
-              data.probability = (F) 1.0;
+              data.probability = static_cast<F>(1);
           }
           scale[data.index] += data.probability;
           n_non_zero_elements_++;
@@ -190,7 +190,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
     for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
       if (scale[p] > 0)
-        rho_detected_[p] = (F) 1.0;
+        rho_detected_[p] = static_cast<F>(1);
     }
     std::cout << "   Pixels: " << n_pixels_in_row_ << std::endl;
     std::cout << "Emissions: " << n_emissions_ << std::endl;
@@ -213,14 +213,14 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       std::cout.flush();
 
       for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
-        y[p] = (F) 0.0;
+        y[p] = static_cast<F>(0);
       }
 
       S t = 0;
       for (auto it_vector = system_matrix.begin();
            it_vector != system_matrix.end();
            it_vector++) {
-        u = (F) 0.0;
+        u = static_cast<F>(0);
         if (n[t] > 0) {
           for (auto it_list = it_vector->begin(); it_list != it_vector->end();
                it_list++) {
