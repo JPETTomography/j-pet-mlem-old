@@ -76,6 +76,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       std::sort(means_.begin(), means_.end(), SortByLOR());
     }
 
+    std::cout << "      TOF: " << matrix_.tof() << std::endl;
     std::cout << "   Pixels: " << n_pixels_in_row_ << std::endl;
     std::cout << "Emissions: " << n_emissions_ << std::endl;
     std::cout << "Detectors: " << n_detectors_ << std::endl;
