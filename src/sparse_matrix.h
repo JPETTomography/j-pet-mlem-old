@@ -268,7 +268,13 @@ class SparseMatrix :
 #endif
   }
 
-  void sort_by_lor() { std::sort(Super::begin(), Super::end(), SortByLOR()); }
+  void sort_by_lor() {
+    if (tof()) {
+      std::sort(Super::begin(), Super::end(), SortByLORNPosition());
+    } else {
+      std::sort(Super::begin(), Super::end(), SortByLOR());
+    }
+  }
   void sort_by_pixel() {
     std::sort(Super::begin(), Super::end(), SortByPixel());
   }
@@ -323,6 +329,12 @@ class SparseMatrix :
   struct SortByLOR {
     bool operator()(const Element& a, const Element& b) const {
       return a.lor < b.lor;
+    }
+  };
+
+  struct SortByLORNPosition {
+    bool operator()(const Element& a, const Element& b) const {
+      return a.lor < b.lor || (a.lor == b.lor && a.position < b.position);
     }
   };
 
