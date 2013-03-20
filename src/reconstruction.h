@@ -34,14 +34,14 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   typedef uint16_t FileHalf;
 
   Reconstruction(S n_iterations,
-                 std::string matrix,
-                 std::string mean,
+                 std::string matrix_path,
+                 std::string mean_path,
                  F threshold = static_cast<F>(0))
       : n_iterations_(n_iterations), threshold_(threshold) {
-    ibstream in(matrix);
+    ibstream in(matrix_path);
 
     if (!in) {
-      std::cerr << "error opening matrix file '" << matrix << "'" << std::endl;
+      std::cerr << "error opening matrix file '" << matrix_path << "'" << std::endl;
       exit(-1);
     }
 
@@ -71,9 +71,9 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
     scale.resize(total_n_pixels_, static_cast<F>(0));
 
-    std::ifstream mean_file(mean);
+    std::ifstream mean_file(mean_path);
     if (!mean_file) {
-      std::cerr << "error opening mean file '" << mean << "'" << std::endl;
+      std::cerr << "error opening mean file '" << mean_path << "'" << std::endl;
       exit(-1);
     }
     std::vector<MeanPerLOR> lor_mean;
