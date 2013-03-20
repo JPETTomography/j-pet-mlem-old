@@ -61,11 +61,11 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       throw("invalid input system matrix file");
     }
 
-    in >> n_pixels_;
-    in >> emissions_;
-    in >> n_tubes_;
+    in >> n_pixels_in_row_;
+    in >> n_emissions_;
+    in >> n_detectors_;
 
-    total_n_pixels_ = n_pixels_ * n_pixels_;
+    total_n_pixels_ = n_pixels_in_row_ * n_pixels_in_row_;
     rho_.resize(total_n_pixels_, (F) 0.0);
     rho_detected_.resize(total_n_pixels_, (F) 0.0);
 
@@ -147,8 +147,9 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
           HitsPerPixel data;
 
-          data.probability = static_cast<F>(hits / static_cast<F>(emissions_));
-          data.index = location(x, y, n_pixels_);
+          data.probability =
+              static_cast<F>(hits / static_cast<F>(n_emissions_));
+          data.index = location(x, y, n_pixels_in_row_);
 
           if (TOF) {
             data.position = position;
@@ -187,13 +188,13 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       }
     }
 
-    for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
+    for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
       if (scale[p] > 0)
         rho_detected_[p] = (F) 1.0;
     }
-    std::cout << "   Pixels: " << n_pixels_ << std::endl;
-    std::cout << "Emissions: " << emissions_ << std::endl;
-    std::cout << "Detectors: " << n_tubes_ << std::endl;
+    std::cout << "   Pixels: " << n_pixels_in_row_ << std::endl;
+    std::cout << "Emissions: " << n_emissions_ << std::endl;
+    std::cout << "Detectors: " << n_detectors_ << std::endl;
     std::cout << "     LORs: " << system_matrix.size() << std::endl;
     std::cout << "Non zero elements: " << n_non_zero_elements_ << std::endl;
   }
@@ -202,7 +203,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
   void emt(S n_iterations) {
 
-    F y[n_pixels_ * n_pixels_];
+    F y[n_pixels_in_row_ * n_pixels_in_row_];
     F u;
 
     clock_t start = clock();
@@ -211,7 +212,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       std::cout << ".";
       std::cout.flush();
 
-      for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
+      for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
         y[p] = (F) 0.0;
       }
 
@@ -234,7 +235,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
         t++;
       }
 
-      for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
+      for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
         if (scale[p] > 0) {
           rho_detected_[p] *= y[p];
         }
@@ -244,7 +245,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     clock_t stop = clock();
     std::cout << std::endl;
 
-    for (S p = 0; p < n_pixels_ * n_pixels_; ++p) {
+    for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
       if (scale[p] > 0) {
         rho_[p] = (rho_detected_[p] / scale[p]);
       }
@@ -257,7 +258,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
               << std::endl;
   }
 
-  S get_n_pixels() { return n_pixels_; }
+  S get_n_pixels() { return n_pixels_in_row_; }
 
   F rho(S p) const { return rho_[p]; }
   F rho_detected(S p) const { return rho_detected_[p]; }
@@ -324,11 +325,11 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
 #endif
 
-  S n_tubes_;
-  S n_pixels_;
+  S n_detectors_;
+  S n_pixels_in_row_;
   S total_n_pixels_;
   S n_iterations_;
-  S emissions_;
+  S n_emissions_;
   S n_non_zero_elements_;
   std::vector<std::vector<HitsPerPixel>> system_matrix;
   std::vector<S> list_of_lors;
