@@ -117,7 +117,7 @@ class SparseMatrix :
 
     FileInt in_n_pixels_in_row;
     in >> in_n_pixels_in_row;
-    if (in_magic != MAGIC_VERSION_FULL)
+    if (in_is_triangular)
       in_n_pixels_in_row *= 2;
 
     FileInt in_n_emissions = 0;
