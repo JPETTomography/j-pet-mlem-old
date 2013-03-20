@@ -67,12 +67,12 @@ int main(int argc, char* argv[]) {
 #endif
 
     int n_i_blocks = cl.get<int>("i-blocks");
-    Reconstruction<> reconstructor(cl.get<int>("iterations"),
-                                   cl.get<cmdline::string>("system"),
-                                   cl.get<cmdline::string>("mean"),
-                                   cl.get<double>("threshold"));
+    Reconstruction<> reconstruction(cl.get<int>("iterations"),
+                                    cl.get<cmdline::string>("system"),
+                                    cl.get<cmdline::string>("mean"),
+                                    cl.get<double>("threshold"));
 
-    auto n_pixels = reconstructor.get_n_pixels();
+    auto n_pixels = reconstruction.get_n_pixels();
 
     auto total_n_pixels = n_pixels * n_pixels;
     Reconstruction<>::Output rho(total_n_pixels, 0.0);
@@ -81,9 +81,9 @@ int main(int argc, char* argv[]) {
     // no output, just make reconstruction in place and exit!
     if (!cl.exist("output")) {
       for (int i = 0; i < n_i_blocks; ++i) {
-        reconstructor.emt(cl.get<int>("iterations"));
-        rho = reconstructor.rho();
-        rho_detected = reconstructor.rho_detected();
+        reconstruction.emt(cl.get<int>("iterations"));
+        rho = reconstruction.rho();
+        rho_detected = reconstruction.rho_detected();
       }
       return 0;
     }
@@ -111,9 +111,9 @@ int main(int argc, char* argv[]) {
     out_detected.open(fn_wo_ext + "_detected" + fn_ext);
 
     for (int i = 0; i < n_i_blocks; ++i) {
-      reconstructor.emt(cl.get<int>("iterations"));
-      rho = reconstructor.rho();
-      rho_detected = reconstructor.rho_detected();
+      reconstruction.emt(cl.get<int>("iterations"));
+      rho = reconstruction.rho();
+      rho_detected = reconstruction.rho_detected();
       output_vector(out, rho.begin(), rho.end(), n_pixels);
       output_vector(
           out_detected, rho_detected.begin(), rho_detected.end(), n_pixels);
