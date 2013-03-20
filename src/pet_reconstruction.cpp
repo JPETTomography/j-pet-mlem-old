@@ -66,15 +66,22 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
+    ibstream in_matrix(cl.get<cmdline::string>("system"));
+    if (!in_matrix.is_open())
+      throw("cannot open input file: " + cl.get<cmdline::string>("system"));
+
+    std::ifstream in_means(cl.get<cmdline::string>("mean"));
+    if (!in_means.is_open())
+      throw("cannot open input file: " + cl.get<cmdline::string>("mean"));
+
     int n_i_blocks = cl.get<int>("i-blocks");
     Reconstruction<> reconstruction(cl.get<int>("iterations"),
-                                    cl.get<cmdline::string>("system"),
-                                    cl.get<cmdline::string>("mean"),
+                                    in_matrix,
+                                    in_means,
                                     cl.get<double>("threshold"));
 
-    auto n_pixels = reconstruction.get_n_pixels();
-
-    auto total_n_pixels = n_pixels * n_pixels;
+    auto n_pixels_in_row = reconstruction.n_pixels_in_row();
+    auto total_n_pixels = n_pixels_in_row * n_pixels_in_row;
     Reconstruction<>::Output rho(total_n_pixels, 0.0);
     Reconstruction<>::Output rho_detected(total_n_pixels, 0.0);
 
@@ -114,16 +121,19 @@ int main(int argc, char* argv[]) {
       reconstruction.emt(cl.get<int>("iterations"));
       rho = reconstruction.rho();
       rho_detected = reconstruction.rho_detected();
-      output_vector(out, rho.begin(), rho.end(), n_pixels);
-      output_vector(
-          out_detected, rho_detected.begin(), rho_detected.end(), n_pixels);
+      output_vector(out, rho.begin(), rho.end(), n_pixels_in_row);
+      output_vector(out_detected,
+                    rho_detected.begin(),
+                    rho_detected.end(),
+                    n_pixels_in_row);
     }
+
     out.close();
     out_detected.close();
 
     // output reconstruction PNG
     png_writer png(fn_wo_ext + ".png");
-    png.write_header<>(n_pixels, n_pixels);
+    png.write_header<>(n_pixels_in_row, n_pixels_in_row);
 
     double output_max = 0.0;
     for (auto it = rho.begin(); it != rho.end(); ++it) {
@@ -133,11 +143,11 @@ int main(int argc, char* argv[]) {
     auto output_gain =
         static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-    for (int y = n_pixels - 1; y >= 0; --y) {
-      uint8_t row[n_pixels];
-      for (auto x = 0; x < n_pixels; ++x) {
+    for (int y = n_pixels_in_row - 1; y >= 0; --y) {
+      uint8_t row[n_pixels_in_row];
+      for (auto x = 0; x < n_pixels_in_row; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -
-                 output_gain * rho[Reconstruction<>::location(x, y, n_pixels)];
+                 output_gain * rho[y * n_pixels_in_row + x];
       }
       png.write_row(row);
     }

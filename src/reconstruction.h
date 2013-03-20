@@ -10,233 +10,167 @@
 #include "detector_ring.h"
 #include "sparse_matrix.h"
 #include "pixel.h"
+#include "lor.h"
 
 template <typename FType = double, typename SType = int> class Reconstruction {
  public:
   typedef FType F;
   typedef SType S;
-  typedef std::pair<S, S> PixelLocation;
-  typedef std::pair<S, S> LOR;
+  typedef ::Pixel<S> Pixel;
+  typedef ::LOR<S> LOR;
+  typedef struct {
+    LOR lor;
+    S position;
+    S mean;
+  } Mean;
+  typedef std::vector<Mean> Means;
   typedef std::vector<F> Output;
 
-  struct HitsPerPixel {
-    S index;
-    F probability;
-    S position;
-  };
-
-  struct MeanPerLOR {
-    LOR lor;
-    S n;
-  };
-
-  typedef uint32_t FileInt;
-  typedef uint16_t FileHalf;
-
   Reconstruction(S n_iterations,
-                 std::string matrix_path,
-                 std::string mean_path,
+                 ibstream& in_matrix,
+                 std::istream& in_means,
                  F threshold = static_cast<F>(0))
-      : n_iterations_(n_iterations), threshold_(threshold) {
-    ibstream in(matrix_path);
+      : n_iterations_(n_iterations), threshold_(threshold), matrix_(in_matrix) {
 
-    if (!in) {
-      std::cerr << "error opening matrix file '" << matrix_path << "'" << std::endl;
-      exit(-1);
-    }
-
-    typedef uint32_t FileInt;
-    typedef uint16_t FileHalf;
-
-    FileInt in_magic;
-
-    in >> in_magic;
-
-    const bool TOF =
-        (in_magic == SparseMatrix<Pixel<>, LOR>::MAGIC_VERSION_TOF_FULL) ? 1
-                                                                         : 0;
-
-    if (in_magic != SparseMatrix<Pixel<>, LOR>::MAGIC_VERSION_FULL ||
-        in_magic != SparseMatrix<Pixel<>, LOR>::MAGIC_VERSION_TOF_FULL) {
-      throw("invalid input system matrix file");
-    }
-
-    in >> n_pixels_in_row_;
-    in >> n_emissions_;
-    in >> n_detectors_;
+    n_pixels_in_row_ = matrix_.n_pixels_in_row();
+    n_emissions_ = matrix_.n_emissions();
+    n_detectors_ = matrix_.n_detectors();
 
     total_n_pixels_ = n_pixels_in_row_ * n_pixels_in_row_;
+
     rho_.resize(total_n_pixels_, static_cast<F>(0));
     rho_detected_.resize(total_n_pixels_, static_cast<F>(0));
+    scale_.resize(total_n_pixels_, static_cast<F>(0));
 
-    scale.resize(total_n_pixels_, static_cast<F>(0));
-
-    std::ifstream mean_file(mean_path);
-    if (!mean_file) {
-      std::cerr << "error opening mean file '" << mean_path << "'" << std::endl;
-      exit(-1);
-    }
-    std::vector<MeanPerLOR> lor_mean;
-
-    clock_t start = clock();
-    for (;;) {
-
-      S x, y, value;
-
-      mean_file >> y >> x >> value;
-      if (mean_file.eof())
-        break;
-
-      MeanPerLOR temp_obj;
-
-      LOR lor(x, y);
-
-      temp_obj.lor = lor;
-      temp_obj.n = value;
-
-      lor_mean.push_back(temp_obj);
+    auto n_emissions = static_cast<F>(n_emissions_);
+    for (auto it = matrix_.begin(); it != matrix_.end(); ++it) {
+      scale_[pixel_index(it->pixel)] += static_cast<F>(it->hits) / n_emissions;
     }
 
-    clock_t stop = clock();
-
-    double time = static_cast<double>(stop - start) / CLOCKS_PER_SEC;
-    std::cout << "means read time = " << time << "s" << std::endl;
-
-    std::vector<HitsPerPixel> pixels;
-
-    S index = 0;
-    n_non_zero_elements_ = 0;
-
-    start = clock();
-    for (;;) {
-
-      FileHalf a, b;
-      in >> a >> b;
-      if (in.eof())
-        break;
-
-      LOR lor(a, b);
-
-      bool on_list = lor_in_the_list(a, b, lor_mean);
-
-      if (on_list) {
-
-        n.push_back(get_mean_per_lor(a, b, lor_mean));
-
-      }
-
-      FileInt count;
-
-      in >> count;
-
-      for (FileInt i = 0; i < count; ++i) {
-
-        FileHalf x, y;
-        FileInt hits;
-        FileInt position;
-
-        if (TOF) {
-
-          in >> position >> x >> y >> hits;
-
-        } else {
-          in >> x >> y >> hits;
-        }
-
-        if (on_list) {
-
-          HitsPerPixel data;
-
-          data.probability =
-              static_cast<F>(hits / static_cast<F>(n_emissions_));
-          data.index = location(x, y, n_pixels_in_row_);
-
-          if (TOF) {
-            data.position = position;
-          }
-
-          if (threshold_ > static_cast<F>(0)) {
-            if (data.probability < threshold_)
-              data.probability = static_cast<F>(0);
-            else
-              data.probability = static_cast<F>(1);
-          }
-          scale[data.index] += data.probability;
-          n_non_zero_elements_++;
-          pixels.push_back(data);
-
-        }
-      }
-
-      system_matrix.push_back(pixels);
-      pixels.clear();
-      index++;
-
-    }
-    stop = clock();
-
-    time = static_cast<double>(stop - start) / CLOCKS_PER_SEC;
-    std::cout << "matrix read time = " << time << "s\n";
-
-    for (auto it_vector = system_matrix.begin();
-         it_vector != system_matrix.end();
-         it_vector++) {
-      for (auto it_list = it_vector->begin(); it_list != it_vector->end();
-           it_list++) {
-        S pixel = it_list->index;
-        it_list->probability /= scale[pixel];
-      }
-    }
-
-    for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
-      if (scale[p] > 0)
+    for (S p = 0; p < total_n_pixels_; ++p) {
+      if (scale_[p] > 0)
         rho_detected_[p] = static_cast<F>(1);
     }
+
+    for (;;) {
+      Mean mean;
+      in_means >> mean.lor.first >> mean.lor.second;
+      if (mean.lor.first < mean.lor.second)
+        std::swap(mean.lor.first, mean.lor.second);
+      if (matrix_.tof()) {
+        in_means >> mean.position;
+      } else {
+        mean.position = 0;
+      }
+      in_means >> mean.mean;
+      if (in_means.eof())
+        break;
+      means_.push_back(mean);
+    }
+
+    matrix_.sort_by_lor();
+
+    if (matrix_.tof()) {
+      std::sort(means_.begin(), means_.end(), SortByLORNPosition());
+    } else {
+      std::sort(means_.begin(), means_.end(), SortByLOR());
+    }
+
     std::cout << "   Pixels: " << n_pixels_in_row_ << std::endl;
     std::cout << "Emissions: " << n_emissions_ << std::endl;
     std::cout << "Detectors: " << n_detectors_ << std::endl;
-    std::cout << "     LORs: " << system_matrix.size() << std::endl;
-    std::cout << "Non zero elements: " << n_non_zero_elements_ << std::endl;
   }
 
-  ~Reconstruction() {}
-
   void emt(S n_iterations) {
-
     F y[n_pixels_in_row_ * n_pixels_in_row_];
-    F u;
 
     clock_t start = clock();
 
     for (S i = 0; i < n_iterations; ++i) {
-      std::cout << ".";
-      std::cout.flush();
+      std::cout << ".", std::cout.flush();
 
-      for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
+      for (S p = 0; p < total_n_pixels_; ++p) {
         y[p] = static_cast<F>(0);
       }
 
-      S t = 0;
-      for (auto it_vector = system_matrix.begin();
-           it_vector != system_matrix.end();
-           it_vector++) {
-        u = static_cast<F>(0);
-        if (n[t] > 0) {
-          for (auto it_list = it_vector->begin(); it_list != it_vector->end();
-               it_list++) {
-            u += rho_detected_[it_list->index] * it_list->probability;
-          }
-          F phi = n[t] / u;
-          for (auto it_list = it_vector->begin(); it_list != it_vector->end();
-               ++it_list) {
-            y[it_list->index] += phi * it_list->probability;
-          }
+      auto matrix_it = matrix_.begin();
+      auto means_it = means_.begin();
+      for (;;) {
+        // skip LORs that does not exist in means
+        while (matrix_it != matrix_.end() &&
+               (matrix_it->lor < means_it->lor ||
+                (matrix_it->lor == means_it->lor &&
+                 matrix_it->position < means_it->position))) {
+#if DEBUG
+          std::cerr << "skip matrix LOR (" << matrix_it->lor.first << ", "
+                    << matrix_it->lor.second << ") position "
+                    << matrix_it->position << std::endl;
+#endif
+          ++matrix_it;
         }
-        t++;
+
+        // skip LORs that does not exist in system matrix
+        while (means_it != means_.end() &&
+               (matrix_it->lor > means_it->lor ||
+                (matrix_it->lor == means_it->lor &&
+                 matrix_it->position > means_it->position))) {
+#if DEBUG
+          std::cerr << "skip mean LOR (" << means_it->lor.first << ", "
+                    << means_it->lor.second << ") position "
+                    << means_it->position << std::endl;
+#endif
+          ++means_it;
+        }
+
+        // check if we are EOT
+        if (matrix_it == matrix_.end() || means_it == means_.end())
+          break;
+
+        if (matrix_it->lor != means_it->lor ||
+            matrix_it->position != means_it->position)
+          continue;
+
+        // store current lor & position
+        auto lor = matrix_it->lor;
+        auto position = matrix_it->position;
+
+#if DEBUG
+        std::cerr << "processing LOR (" << lor.first << ", " << lor.second
+                  << ") position " << position << std::endl;
+#endif
+
+        // if there any mean anyway here?
+        if (means_it->mean > 0) {
+          F u = static_cast<F>(0);
+          auto prev_it = matrix_it;
+
+          // count u for current LOR
+          while (matrix_it->lor == lor && matrix_it->position == position) {
+            auto i_pixel = pixel_index(matrix_it->pixel);
+            u += rho_detected_[i_pixel] * static_cast<F>(matrix_it->hits) *
+                 scale_[i_pixel];
+            ++matrix_it;
+          }
+          F phi = means_it->mean / u;
+
+          // count y for current lor
+          matrix_it = prev_it;
+          while (matrix_it->lor == lor && matrix_it->position == position) {
+            auto i_pixel = pixel_index(matrix_it->pixel);
+            y[pixel_index(matrix_it->pixel)] +=
+                phi * static_cast<F>(matrix_it->hits) * scale_[i_pixel];
+            ++matrix_it;
+          }
+        } else {
+          // skip this LOR
+          while (matrix_it->lor == lor && matrix_it->position == position)
+            ++matrix_it;
+        }
+        ++means_it;
       }
 
       for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
-        if (scale[p] > 0) {
+        if (scale_[p] > 0) {
           rho_detected_[p] *= y[p];
         }
       }
@@ -245,100 +179,52 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     clock_t stop = clock();
     std::cout << std::endl;
 
-    for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
-      if (scale[p] > 0) {
-        rho_[p] = (rho_detected_[p] / scale[p]);
+    for (S p = 0; p < total_n_pixels_; ++p) {
+      if (scale_[p] > 0) {
+        rho_[p] = rho_detected_[p] / scale_[p];
       }
     }
 
     double time = static_cast<double>(stop - start) / CLOCKS_PER_SEC;
     std::cout << "time = " << time << "s "
               << "time/iter = " << time / n_iterations << "s" << std::endl;
-    std::cout << "op/sec = " << n_non_zero_elements_ * (n_iterations / time)
-              << std::endl;
   }
 
-  S get_n_pixels() { return n_pixels_in_row_; }
-
-  F rho(S p) const { return rho_[p]; }
-  F rho_detected(S p) const { return rho_detected_[p]; }
-  std::vector<F> rho() const { return rho_; }
-  std::vector<F> rho_detected() const { return rho_detected_; }
-
-  void set_threshold(F t) { threshold_ = t; }
-
-  static S location(S x, S y, S size) { return y * size + x; }
+  S n_pixels_in_row() { return n_pixels_in_row_; }
+  F rho(const S p) const { return rho_[p]; }
+  F rho_detected(const S p) const { return rho_detected_[p]; }
+  F rho(const Pixel& pixel) const { return rho_[pixel_index(pixel)]; }
+  F rho_detected(const Pixel& pixel) const {
+    return rho_detected_[pixel_index(pixel)];
+  }
+  Output rho() const { return rho_; }
+  Output rho_detected() const { return rho_detected_; }
+  void set_threshold(const F t) { threshold_ = t; }
 
  private:
-
-#ifdef TOF
-
-  S get_mean_per_lor(FileHalf& a,
-                     FileHalf& b,
-                     float& tof,
-                     std::vector<MeanPerLOR>& mean) {
-    for (auto it = mean.begin(); it != mean.end(); ++it) {
-      if (a == it->lor.first && b == it->lor.second, tof == it->lor.tof) {
-        return it->n;
-      }
-    }
-
-    return 0;
-  }
-
-  bool lor_in_the_list(FileHalf& a,
-                       FileHalf& b,
-                       float& tof,
-                       std::vector<MeanPerLOR>& mean) {
-    for (auto it = mean.begin(); it != mean.end(); ++it) {
-      if (a == it->lor.first && b == it->lor.second, tof == it->lor.tof) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-#else
-
-  S get_mean_per_lor(FileHalf& a, FileHalf& b, std::vector<MeanPerLOR>& mean) {
-    for (auto it = mean.begin(); it != mean.end(); ++it) {
-      if (a == it->lor.first && b == it->lor.second) {
-        return it->n;
-      }
-    }
-
-    return 0;
-  }
-
-  bool lor_in_the_list(FileHalf& a,
-                       FileHalf& b,
-                       std::vector<MeanPerLOR>& mean) {
-    for (auto it = mean.begin(); it != mean.end(); ++it) {
-      if (a == it->lor.first && b == it->lor.second) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-#endif
+  S pixel_index(const Pixel& p) const { return p.y * n_pixels_in_row_ + p.x; }
 
   S n_detectors_;
   S n_pixels_in_row_;
   S total_n_pixels_;
   S n_iterations_;
   S n_emissions_;
-  S n_non_zero_elements_;
-  std::vector<std::vector<HitsPerPixel>> system_matrix;
-  std::vector<S> list_of_lors;
-  std::vector<S> n;
-  std::vector<F> scale;
-
-  std::vector<F> rho_;
-  std::vector<F> rho_detected_;
-
+  Output scale_;
+  Output rho_;
+  Output rho_detected_;
   F threshold_;
+  SparseMatrix<Pixel, LOR> matrix_;
+  Means means_;
 
+  struct SortByLOR {
+    bool operator()(const Mean& a, const Mean& b) const {
+      return a.lor < b.lor;
+    }
+  };
+
+  struct SortByLORNPosition {
+    bool operator()(const Mean& a, const Mean& b) const {
+      return a.lor < b.lor || (a.lor == b.lor && a.position < b.position);
+    }
+  };
 };
