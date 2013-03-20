@@ -182,7 +182,8 @@ class DetectorRing : public std::vector<Detector<FType>> {
 
     if (lor.first == lor.second) {
       std::ostringstream msg;
-      msg << "invalid LOR (" << lor.first << ", " << lor.second << ")";
+      msg << __PRETTY_FUNCTION__ << " invalid LOR (" << lor.first << ", "
+          << lor.second << ")";
       throw(msg.str());
     }
 

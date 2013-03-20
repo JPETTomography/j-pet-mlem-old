@@ -230,8 +230,8 @@ class SparseMatrix :
     for (auto it = sm.begin(); it != sm.end(); ++it) {
       if (it->lor.first == it->lor.second) {
         std::ostringstream msg;
-        msg << "invalid LOR (" << it->lor.first << ", " << it->lor.second
-            << ")";
+        msg << __PRETTY_FUNCTION__ << " invalid LOR (" << it->lor.first << ", "
+            << it->lor.second << ")";
         throw(msg.str());
       }
       out << " lor: (" << it->lor.first << ", " << it->lor.second << ")"

@@ -103,8 +103,8 @@ class MonteCarlo {
             if (o_collect_mc_matrix) {
               if (lor.first == lor.second) {
                 std::ostringstream msg;
-                msg << "invalid LOR in Monte-Carlo (" << lor.first << ", "
-                    << lor.second << ")";
+                msg << __PRETTY_FUNCTION__ << " invalid LOR in Monte-Carlo ("
+                    << lor.first << ", " << lor.second << ")";
                 throw(msg.str());
               }
               matrix_.hit_lor(lor, quantized_position, i_pixel, 1);
