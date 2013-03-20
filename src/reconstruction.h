@@ -1,28 +1,3 @@
-///
-///
-/// Sparse system matrix binary file format
-///
-///   - \c uint32_t \b magic =
-///     -# \c PETp  triangular
-///     -# \c PETP  full
-///     -# \c TOFp  TOF triangular
-///     -# \c TOFP  TOF full
-///   - \c uint32_t \b n_pixels_    half size for \c PETp,
-///                                 full size for \c PETP
-///   - \c uint32_t \b n_emissions  per pixel
-///   - \c uint32_t \b n_detectors  regardless of magic
-///   - \c while (!eof)
-///     - \c uint16_t \b lor_a, \b lor_b  pair
-///     - \c uint32_t \b pixel_pair_count
-///     - \c for(.. count ..)
-///       - \c uint32_t \b position             only for TOF type
-///       - \c uint16_t \b pixel_x, \b pixel_y  half pixels for \c PETp,
-///                                             pixels for \c PETP
-///       - \c uint32_t \b pixel_hits
-///
-/// Note: TOF position has no particular meaning without quantisation
-/// definition. However this is not needed for reconstruction.
-
 #pragma once
 
 #include <iostream>
