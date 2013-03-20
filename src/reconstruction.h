@@ -42,14 +42,16 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     rho_detected_.resize(total_n_pixels_, static_cast<F>(0));
     scale_.resize(total_n_pixels_, static_cast<F>(0));
 
-    auto n_emissions = static_cast<F>(n_emissions_);
     for (auto it = matrix_.begin(); it != matrix_.end(); ++it) {
-      scale_[pixel_index(it->pixel)] += static_cast<F>(it->hits) / n_emissions;
+      scale_[pixel_index(it->pixel)] += it->hits;
     }
 
+    auto n_emissions = static_cast<F>(n_emissions_);
     for (S p = 0; p < total_n_pixels_; ++p) {
-      if (scale_[p] > 0)
+      if (scale_[p] > 0) {
+        scale_[p] = n_emissions / scale_[p];
         rho_detected_[p] = static_cast<F>(1);
+      }
     }
 
     for (;;) {
