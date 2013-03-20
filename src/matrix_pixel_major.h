@@ -59,7 +59,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   void hit_lor(const LOR& lor, S position, S i_pixel, S hits) {
     if (position >= this->n_tof_positions()) {
       std::ostringstream msg;
-      msg << "hit position " << position << " greater than max TOF positions"
+      msg << "hit position " << position << " greater than max TOF positions "
           << this->n_tof_positions();
       throw(msg.str());
     }
