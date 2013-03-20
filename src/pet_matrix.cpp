@@ -53,7 +53,8 @@ int main(int argc, char* argv[]) {
                         "scintilator",
                         cmdline::oneof<std::string>("always", "scintilator"));
 
-    cl.add<double>("decay-length", 0, "1/e length of scintilator", false, 100.);
+    cl.add<double>(
+        "acceptance", 'a', "acceptance probability factor", false, 10.);
     cl.add<tausworthe::seed_type>(
         "seed", 's', "random number generator seed", false, 0, false);
     cl.add<cmdline::string>(
@@ -228,9 +229,8 @@ int main(int argc, char* argv[]) {
     if (cl.get<std::string>("model") == "always")
       monte_carlo(gen, AlwaysAccept<>(), n_emissions);
     if (cl.get<std::string>("model") == "scintilator")
-      monte_carlo(gen,
-                  ScintilatorAccept<>(1.0 / cl.get<double>("decay-length")),
-                  n_emissions);
+      monte_carlo(
+          gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
 
     auto sparse_matrix = matrix.to_sparse();
 
