@@ -156,7 +156,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
     for (auto it = sparse.begin(); it != sparse.end(); ++it) {
       Pixel pixel = it->pixel;
-      if (!sparse.triangular()) {
+      auto triangular = sparse.triangular();
+      if (!triangular) {
         pixel.x -= n_pixels_in_row_half_;
         pixel.y -= n_pixels_in_row_half_;
         if (pixel.x < 0 || pixel.y < 0 || pixel.y < pixel.x)
@@ -164,6 +165,12 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       }
       auto lor = it->lor;
       auto hits = it->hits;
+
+      // if we are at diagonal in full matrix, we should have there
+      // half of entries
+      if (!triangular && pixel.x == pixel.y)
+        hits /= 2;
+
       S i_pixel = pixel.index();
 
       if (i_current_pixel != i_pixel) {

@@ -283,15 +283,19 @@ class SparseMatrix :
     for (auto it = this->begin(); it != this->end(); ++it) {
       for (auto symmetry = 0; symmetry < 8; ++symmetry) {
         auto pixel = it->pixel;
-#if 0   //unnecessary: pixels at diagonal get only half of entries
-        //avoid writing diagonals twice
-        if (symmetry & 4 && pixel.x == pixel.y)
-          continue;
-#endif
+        auto hits = it->hits;
+        // check if we are at diagonal
+        if (pixel.x == pixel.y) {
+          // avoid writing diagonals twice
+          if (symmetry & 4)
+            continue;
+          // pixels at diagonal get only half of entries
+          hits *= 2;
+        }
         full.push_back(Element(symmetric_lor(it->lor, symmetry),
                                it->position,
                                symmetric_pixel(pixel, symmetry),
-                               it->hits));
+                               hits));
 
       }
     }
