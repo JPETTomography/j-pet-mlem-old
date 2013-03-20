@@ -69,7 +69,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
           << lor.first << ", " << lor.second << ")";
       throw(msg.str());
     }
-    if (pixel_lor_hits_ptr_[i_pixel] == 0x0) {
+    if (!pixel_lor_hits_ptr_[i_pixel]) {
       pixel_lor_hits_ptr_[i_pixel] = new S[n_lors_ * this->n_tof_positions()]();
       // unpack previous values (if any)
       for (auto it = pixel_lor_hits_[i_pixel].begin();
