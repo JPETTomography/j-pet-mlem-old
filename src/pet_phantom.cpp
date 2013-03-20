@@ -132,11 +132,7 @@ int main(int argc, char* argv[]) {
       n_tof_positions = dr.n_positions(tof_step, max_bias);
     }
 
-    int tubes[n_detectors][n_detectors][n_tof_positions];
-    for (int i = 0; i < n_detectors; i++)
-      for (int j = 0; j < n_detectors; j++)
-        for (int p = 0; p < n_tof_positions; p++)
-          tubes[i][j][p] = 0;
+    int* tubes = new int[n_detectors * n_detectors * n_tof_positions]();
 
     int pixels[n_pixels][n_pixels];
     int pixels_detected[n_pixels][n_pixels];
@@ -217,7 +213,8 @@ int main(int argc, char* argv[]) {
                 quantized_position =
                     dr.quantize_position(position, tof_step, max_bias);
               }
-              tubes[lor.first][lor.second][quantized_position]++;
+              tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
+                  quantized_position]++;
               pixels_detected[pixel.y][pixel.x]++;
               if (only_detected)
                 n_emitted++;
@@ -252,7 +249,8 @@ int main(int argc, char* argv[]) {
             quantized_position =
                 dr.quantize_position(position, tof_step, max_bias);
           }
-          tubes[lor.first][lor.second][quantized_position]++;
+          tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
+              quantized_position]++;
           pixels_detected[pixel.y][pixel.x]++;
           if (only_detected)
             n_emitted++;
@@ -275,7 +273,7 @@ int main(int argc, char* argv[]) {
     if (n_tof_positions <= 1) {
       for (int i = 0; i < n_detectors; i++) {
         for (int j = i + 1; j < n_detectors; j++) {
-          auto hits = tubes[i][j][0];
+          auto hits = tubes[i * n_detectors + j];
           if (hits > 0)
             n_stream << i << " " << j << "  " << hits << std::endl;
         }
@@ -284,7 +282,7 @@ int main(int argc, char* argv[]) {
       for (int i = 0; i < n_detectors; i++) {
         for (int j = i + 1; j < n_detectors; j++) {
           for (int p = 0; p < n_tof_positions; p++) {
-            auto hits = tubes[i][j][p];
+            auto hits = tubes[(i * n_detectors + j) * n_tof_positions + p];
             if (hits > 0)
               n_stream << i << " " << j << " " << p << "  " << hits
                        << std::endl;
@@ -292,6 +290,8 @@ int main(int argc, char* argv[]) {
         }
       }
     }
+
+    delete[] tubes;
 
     std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
     os << cl;
