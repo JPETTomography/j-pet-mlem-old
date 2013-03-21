@@ -250,7 +250,7 @@ int main(int argc, char* argv[]) {
 
       obstream out(fn, std::ios::binary | std::ios::trunc);
       if (cl.exist("full")) {
-        auto full_matrix = sparse_matrix.to_full();
+        auto full_matrix = sparse_matrix.to_full(n_tof_positions);
         out << full_matrix;
       } else {
         out << sparse_matrix;

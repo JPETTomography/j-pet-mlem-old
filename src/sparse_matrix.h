@@ -279,7 +279,7 @@ class SparseMatrix :
     std::sort(Super::begin(), Super::end(), SortByPixel());
   }
 
-  SparseMatrix to_full() {
+  SparseMatrix to_full(S n_tof_positions) {
     if (!triangular_) {
       return *this;
     }
@@ -298,8 +298,15 @@ class SparseMatrix :
           // pixels at diagonal get only half of entries
           hits *= 2;
         }
-        full.push_back(Element(symmetric_lor(it->lor, symmetry),
-                               it->position,
+        auto lor = symmetric_lor(it->lor, symmetry);
+        auto position = it->position;
+        // if LOR is swapped, then position should be too
+        if (lor.first < lor.second) {
+          std::swap(lor.first, lor.second);
+          position = n_tof_positions - 1 - position;
+        }
+        full.push_back(Element(lor,
+                               position,
                                symmetric_pixel(pixel, symmetry),
                                hits));
 
