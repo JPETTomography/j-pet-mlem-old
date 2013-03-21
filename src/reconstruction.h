@@ -30,7 +30,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
                  ibstream& in_matrix,
                  std::istream& in_means,
                  F threshold = static_cast<F>(0))
-      : n_iterations_(n_iterations), threshold_(threshold), matrix_(in_matrix) {
+      : threshold(threshold), n_iterations_(n_iterations), matrix_(in_matrix) {
 
     n_pixels_in_row_ = matrix_.n_pixels_in_row();
     n_emissions_ = matrix_.n_emissions();
@@ -202,7 +202,9 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   }
   Output rho() const { return rho_; }
   Output rho_detected() const { return rho_detected_; }
-  void set_threshold(const F t) { threshold_ = t; }
+
+ public:
+  F threshold;
 
  private:
   S pixel_index(const Pixel& p) const { return p.y * n_pixels_in_row_ + p.x; }
@@ -215,7 +217,6 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   Output scale_;
   Output rho_;
   Output rho_detected_;
-  F threshold_;
   SparseMatrix<Pixel, LOR> matrix_;
   Means means_;
 
