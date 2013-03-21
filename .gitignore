@@ -1,3 +1,4 @@
+/data/
 */t
 */*.o
 */*.d
@@ -12,7 +13,6 @@
 src/pet_*
 !src/pet_*.cpp
 src/t
-data/*.test
 doc/html/
 *~
 *.bin
