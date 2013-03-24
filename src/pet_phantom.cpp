@@ -40,6 +40,7 @@ int main(int argc, char* argv[]) {
     cl.add<int>("n-emissions", 'e', "emissions", false, 0);
     cl.add<double>("radius", 'r', "inner detector ring radius", false);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
+    cl.add<double>("tof-step", 'T', "TOF quantisation step", false);
     cl.add<double>("w-detector", 'w', "detector width", false);
     cl.add<double>("h-detector", 'h', "detector height", false);
     cl.add<std::string>("model",
@@ -75,6 +76,7 @@ int main(int argc, char* argv[]) {
     auto& s_pixel = cl.get<double>("s-pixel");
     auto& w_detector = cl.get<double>("w-detector");
     auto& h_detector = cl.get<double>("h-detector");
+    auto& tof_step = cl.get<double>("tof-step");
     auto& acceptance = cl.get<double>("acceptance");
 
     // load config file
@@ -118,10 +120,19 @@ int main(int argc, char* argv[]) {
       gen.seed(cl.get<std::mt19937::result_type>("seed"));
     }
 
-    int tubes[n_detectors][n_detectors];
-    for (int i = 0; i < n_detectors; i++)
-      for (int j = 0; j < n_detectors; j++)
-        tubes[i][j] = 0;
+    DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
+
+    int n_tof_positions = 1;
+    double max_bias = 0;
+    if (cl.exist("tof-step") && tof_step > 0) {
+      if (cl.get<std::string>("model") == "always")
+        max_bias = AlwaysAccept<>::max_bias();
+      if (cl.get<std::string>("model") == "scintilator")
+        max_bias = ScintilatorAccept<>::max_bias();
+      n_tof_positions = dr.n_positions(tof_step, max_bias);
+    }
+
+    int* tubes = new int[n_detectors * n_detectors * n_tof_positions]();
 
     int pixels[n_pixels][n_pixels];
     int pixels_detected[n_pixels][n_pixels];
@@ -131,8 +142,6 @@ int main(int argc, char* argv[]) {
         pixels[i][j] = 0;
         pixels_detected[i][j] = 0;
       }
-
-    DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
 
     int n_emitted = 0;
     bool only_detected = false;
@@ -195,11 +204,16 @@ int main(int argc, char* argv[]) {
             double angle = phi_dis(gen);
             double position;
             auto hits = dr.emit_event(gen, model, x, y, angle, lor, position);
-            // FIXME: implement position storage for TOF!
             if (hits == 2) {
               if (lor.first > lor.second)
                 std::swap(lor.first, lor.second);
-              tubes[lor.first][lor.second]++;
+              int quantized_position = 0;
+              if (n_tof_positions > 1) {
+                quantized_position =
+                    dr.quantize_position(position, tof_step, max_bias);
+              }
+              tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
+                  quantized_position]++;
               pixels_detected[pixel.y][pixel.x]++;
               if (only_detected)
                 n_emitted++;
@@ -225,11 +239,16 @@ int main(int argc, char* argv[]) {
         DetectorRing<>::LOR lor;
         double position;
         auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor, position);
-        // FIXME: implement position storage for TOF!
         if (hits == 2) {
           if (lor.first > lor.second)
             std::swap(lor.first, lor.second);
-          tubes[lor.first][lor.second]++;
+          int quantized_position = 0;
+          if (n_tof_positions > 1) {
+            quantized_position =
+                dr.quantize_position(position, tof_step, max_bias);
+          }
+          tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
+              quantized_position]++;
           pixels_detected[pixel.y][pixel.x]++;
           if (only_detected)
             n_emitted++;
@@ -249,13 +268,28 @@ int main(int argc, char* argv[]) {
                                    : std::string::npos);
 
     std::ofstream n_stream(fn);
-    for (int i = 0; i < n_detectors; i++) {
-      for (int j = i + 1; j < n_detectors; j++) {
-        if (tubes[i][j] > 0) {
-          n_stream << i << " " << j << "  " << tubes[i][j] << std::endl;
+    if (n_tof_positions <= 1) {
+      for (int i = 0; i < n_detectors; i++) {
+        for (int j = i + 1; j < n_detectors; j++) {
+          auto hits = tubes[i * n_detectors + j];
+          if (hits > 0)
+            n_stream << i << " " << j << "  " << hits << std::endl;
+        }
+      }
+    } else {  // TOF
+      for (int i = 0; i < n_detectors; i++) {
+        for (int j = i + 1; j < n_detectors; j++) {
+          for (int p = 0; p < n_tof_positions; p++) {
+            auto hits = tubes[(i * n_detectors + j) * n_tof_positions + p];
+            if (hits > 0)
+              n_stream << i << " " << j << " " << p << "  " << hits
+                       << std::endl;
+          }
         }
       }
     }
+
+    delete[] tubes;
 
     std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
     os << cl;

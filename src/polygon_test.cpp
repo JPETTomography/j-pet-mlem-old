@@ -51,7 +51,6 @@ TEST_CASE("polygon/intersection/math", "rectangle inters from mathematica") {
 
   int n_events;
   in >> n_events;
-  std::cerr << n_events << std::endl;
 
   Polygon<> poly;
 

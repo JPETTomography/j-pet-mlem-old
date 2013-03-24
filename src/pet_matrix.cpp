@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
                         cmdline::oneof<std::string>("always", "scintilator"));
 
     cl.add<double>(
-        "decay-length", 0, "1/e length of scintilator", false, 100.);
+        "acceptance", 'a', "acceptance probability factor", false, 10.);
     cl.add<tausworthe::seed_type>(
         "seed", 's', "random number generator seed", false, 0, false);
     cl.add<cmdline::string>(
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
         cmdline::string(),
         false);
     cl.add("full", 'f', "output full non-triangular sparse system matrix");
-    
+
     // visual debugging params
     cl.add<cmdline::string>(
         "png", 0, "output lor to png", false, cmdline::string(), false);
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
     cl.add("print", 0, "print triangular sparse system matrix");
     cl.add("stats", 0, "show stats");
     cl.add("wait", 0, "wait before exit");
-    cl.add("verbose",'v',"prints the iterations information on std::out");
+    cl.add("verbose", 'v', "prints the iterations information on std::out");
 
     cl.parse_check(argc, argv);
 
@@ -175,27 +175,18 @@ int main(int argc, char* argv[]) {
 
     int n_tof_positions = 1;
     double max_bias = 0;
-    if (cl.exist("tof-step")) {
+    if (cl.exist("tof-step") && tof_step > 0) {
       if (cl.get<std::string>("model") == "always")
         max_bias = AlwaysAccept<>::max_bias();
       if (cl.get<std::string>("model") == "scintilator")
         max_bias = ScintilatorAccept<>::max_bias();
       n_tof_positions = dr.n_positions(tof_step, max_bias);
-    } else {
-      tof_step = 0;
     }
-
-    std::cerr<<"max bias      = "<<max_bias<<"\n";
-    std::cerr<<"tof_step      = "<<tof_step<<"\n";
-    std::cerr<<"tof positions = "<<n_tof_positions<<"\n";
 
     typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
     MatrixImpl matrix(n_pixels, n_detectors, n_tof_positions);
     MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(
         dr, matrix, s_pixel, tof_step);
-
-    if(cl.exist("verbose"))
-      monte_carlo.set_verbose();
 
     for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
       ibstream in(*fn, std::ios::binary);
@@ -203,16 +194,20 @@ int main(int argc, char* argv[]) {
         throw("cannot open input file: " + *fn);
       try {
         MatrixImpl::SparseMatrix sparse_matrix(in);
-        std::cerr<<"read in "<<*fn<<" "<<sparse_matrix.tof()<<std::endl;
+        if (cl.exist("verbose"))
+          std::cerr << "read in " << *fn << " " << sparse_matrix.tof()
+                    << std::endl;
         if (sparse_matrix.tof() && !cl.exist("tof-step")) {
           throw("input has TOF positions but not quantisation specified");
         }
 
         sparse_matrix.sort_by_pixel();
-        std::cerr<<"sorted\n";
+        if (cl.exist("verbose"))
+          std::cerr << "sorted" << std::endl;
 
         matrix << sparse_matrix;
-        std::cerr<<"converted to pixel major\n";
+        if (cl.exist("verbose"))
+          std::cerr << "converted to pixel major" << std::endl;
       }
 
       catch (std::string & ex) {
@@ -222,13 +217,20 @@ int main(int argc, char* argv[]) {
         throw(std::string(ex) + ": " + *fn);
       }
     }
-    std::cerr<<"n_emissions "<<n_emissions<<std::endl;
+
+    if (cl.exist("verbose")) {
+      monte_carlo.verbose = true;
+      std::cerr << "max bias      = " << max_bias << std::endl;
+      std::cerr << "TOF step      = " << tof_step << std::endl;
+      std::cerr << "TOF positions = " << n_tof_positions << std::endl;
+      std::cerr << "emissions     = " << n_emissions << std::endl;
+    }
+
     if (cl.get<std::string>("model") == "always")
       monte_carlo(gen, AlwaysAccept<>(), n_emissions);
     if (cl.get<std::string>("model") == "scintilator")
       monte_carlo(
-          gen, ScintilatorAccept<>(1.0/cl.get<double>("decay-length")), 
-          n_emissions);
+          gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
 
     auto sparse_matrix = matrix.to_sparse();
 
@@ -248,7 +250,7 @@ int main(int argc, char* argv[]) {
 
       obstream out(fn, std::ios::binary | std::ios::trunc);
       if (cl.exist("full")) {
-        auto full_matrix = sparse_matrix.to_full();
+        auto full_matrix = sparse_matrix.to_full(n_tof_positions);
         out << full_matrix;
       } else {
         out << sparse_matrix;

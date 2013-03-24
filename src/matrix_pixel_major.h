@@ -58,15 +58,18 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
   void hit_lor(const LOR& lor, S position, S i_pixel, S hits) {
     if (position >= this->n_tof_positions()) {
-      char msg[64];
-      sprintf(msg,"hit position greater than max TOF positions %d > %d",position,this->n_tof_positions());
-      throw(std::string(msg));
+      std::ostringstream msg;
+      msg << "hit position " << position << " greater than max TOF positions "
+          << this->n_tof_positions();
+      throw(msg.str());
     }
-    if(::abs(lor.first-lor.second)<1) {
-      std::cerr<<"strange lor in hit_lor "<<lor.index()<<" "<<lor.first<<" "<<lor.second<<std::endl;
-      abort();
+    if (lor.first == lor.second) {
+      std::ostringstream msg;
+      msg << __PRETTY_FUNCTION__ << " invalid LOR " << lor.index() << " ("
+          << lor.first << ", " << lor.second << ")";
+      throw(msg.str());
     }
-    if (pixel_lor_hits_ptr_[i_pixel]==0x0) {
+    if (!pixel_lor_hits_ptr_[i_pixel]) {
       pixel_lor_hits_ptr_[i_pixel] = new S[n_lors_ * this->n_tof_positions()]();
       // unpack previous values (if any)
       for (auto it = pixel_lor_hits_[i_pixel].begin();
@@ -106,10 +109,13 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
         auto hits = pixel_lor_hits_ptr_[i_pixel][
             i_lor * this->n_tof_positions() + position];
         if (hits > 0) {
-          LOR lor=index_to_lor_[i_lor];
-          if(::abs(lor.first-lor.second)<1) {
-            std::cerr<<"strange lor in compact_pixel_index "<<i_pixel<<" "<<i_lor<<" "<<lor.first<<" "<<lor.second<<std::endl;
-                abort();
+          LOR lor = index_to_lor_[i_lor];
+          if (lor.first == lor.second) {
+            std::ostringstream msg;
+            msg << __PRETTY_FUNCTION__ << " invalid LOR " << i_lor << " ("
+                << lor.first << ", " << lor.second << ") for pixel index "
+                << i_pixel;
+            throw(msg.str());
           }
           pixel_lor_hits_[i_pixel][lor_count++] = SparseElement(
               index_to_lor_[i_lor], position, index_to_pixel_[i_pixel], hits);
@@ -129,7 +135,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
                         this->n_detectors(),
                         this->n_emissions(),
                         true,
-                        this->n_tof_positions() > 0);
+                        this->n_tof_positions() > 1);
     sparse.reserve(size_);
     for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
       for (auto it = pixel_lor_hits_[i_pixel].begin();
@@ -142,7 +148,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   }
 
   MatrixPixelMajor& operator<<(SparseMatrix& sparse) {
-   
+
     sparse.sort_by_pixel();
     this->add_emissions(sparse.n_emissions());
 
@@ -150,7 +156,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
     for (auto it = sparse.begin(); it != sparse.end(); ++it) {
       Pixel pixel = it->pixel;
-      if (!sparse.triangular()) {
+      auto triangular = sparse.triangular();
+      if (!triangular) {
         pixel.x -= n_pixels_in_row_half_;
         pixel.y -= n_pixels_in_row_half_;
         if (pixel.x < 0 || pixel.y < 0 || pixel.y < pixel.x)
@@ -158,13 +165,19 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       }
       auto lor = it->lor;
       auto hits = it->hits;
+
+      // if we are at diagonal in full matrix, we should have there
+      // half of entries
+      if (!triangular && pixel.x == pixel.y)
+        hits /= 2;
+
       S i_pixel = pixel.index();
-      
+
       if (i_current_pixel != i_pixel) {
         compact_pixel_index(i_current_pixel);
         i_current_pixel = i_pixel;
       }
-      hit_lor(lor, it->position,i_pixel, hits);
+      hit_lor(lor, it->position, i_pixel, hits);
       this->hit(i_pixel, hits);
     }
     compact_pixel_index(i_current_pixel);
