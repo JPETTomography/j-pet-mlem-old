@@ -69,6 +69,8 @@ int main(int argc, char* argv[]) {
     ibstream in_matrix(cl.get<cmdline::string>("system"));
     if (!in_matrix.is_open())
       throw("cannot open input file: " + cl.get<cmdline::string>("system"));
+    Reconstruction<>::Matrix matrix(in_matrix);
+    matrix = matrix.to_full();
 
     std::ifstream in_means(cl.get<cmdline::string>("mean"));
     if (!in_means.is_open())
@@ -76,7 +78,7 @@ int main(int argc, char* argv[]) {
 
     int n_i_blocks = cl.get<int>("i-blocks");
     Reconstruction<> reconstruction(cl.get<int>("iterations"),
-                                    in_matrix,
+                                    matrix,
                                     in_means,
                                     cl.get<double>("threshold"));
 

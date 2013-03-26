@@ -196,10 +196,14 @@ int main(int argc, char* argv[]) {
       try {
         MatrixImpl::SparseMatrix sparse_matrix(in);
         if (cl.exist("verbose"))
-          std::cerr << "read in " << *fn << " " << sparse_matrix.tof()
-                    << std::endl;
-        if (sparse_matrix.tof() && !cl.exist("tof-step")) {
-          throw("input has TOF positions but not quantisation specified");
+          std::cerr << "read in " << *fn << " "
+                    << sparse_matrix.n_tof_positions() << std::endl;
+        if (sparse_matrix.n_tof_positions() != n_tof_positions) {
+          std::ostringstream msg;
+          msg << "input has different TOF positions "
+              << sparse_matrix.n_tof_positions() << " than specified "
+              << n_tof_positions;
+          throw(msg.str());
         }
 
         sparse_matrix.sort_by_pixel();
@@ -251,7 +255,7 @@ int main(int argc, char* argv[]) {
 
       obstream out(fn, std::ios::binary | std::ios::trunc);
       if (cl.exist("full")) {
-        auto full_matrix = sparse_matrix.to_full(n_tof_positions);
+        auto full_matrix = sparse_matrix.to_full();
         out << full_matrix;
       } else {
         out << sparse_matrix;
@@ -304,8 +308,7 @@ int main(int argc, char* argv[]) {
       png_writer png(fn);
       auto position = cl.get<int>("pos");
       if (cl.exist("full")) {
-        sparse_matrix.to_full(n_tof_positions)
-            .output_bitmap(png, lor, position);
+        sparse_matrix.to_full().output_bitmap(png, lor, position);
       } else {
         sparse_matrix.output_bitmap(png, lor, position);
       }

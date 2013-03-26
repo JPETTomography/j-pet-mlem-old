@@ -76,8 +76,8 @@ class SparseMatrix :
   SparseMatrix(S n_pixels_in_row,
                S n_detectors,
                S n_emissions,
-               bool triangular,
-               bool tof)
+               S n_tof_positions = 1,
+               bool triangular = true)
       : n_pixels_in_row_(n_pixels_in_row),
         n_pixels_in_row_half_(n_pixels_in_row / 2),
         n_detectors_(n_detectors),
@@ -85,7 +85,7 @@ class SparseMatrix :
         n_emissions_(n_emissions),
         n_lors_(LOR::end_for_detectors(n_detectors).index()),
         triangular_(triangular),
-        tof_(tof) {
+        n_tof_positions_(n_tof_positions) {
     S n_detectors_2 = n_detectors / 2;
     S n_detectors_4 = n_detectors / 4;
     n_1_detectors_2_ = n_detectors + n_detectors_2;
@@ -96,8 +96,8 @@ class SparseMatrix :
   S n_pixels_in_row_half() const { return n_pixels_in_row_half_; }
   S n_detectors() const { return n_detectors_; }
   S n_emissions() const { return n_emissions_; }
+  S n_tof_positions() const { return n_tof_positions_; }
   bool triangular() const { return triangular_; }
-  bool tof() const { return tof_; }
 
   SparseMatrix(ibstream& in) {
     FileInt in_magic;
@@ -126,15 +126,19 @@ class SparseMatrix :
     FileInt in_n_detectors = 0;
     in >> in_n_detectors;
 
+    FileInt in_n_tof_positions = 1;
+    if (in_is_tof) {
+      in >> in_n_tof_positions;
+    }
 #if DEBUG
-    std::cerr << "in_is_tof " << in_is_tof << std::endl;
     std::cerr << "in_n_pixels_in_row " << in_n_pixels_in_row << std::endl;
     std::cerr << "in_n_emissions " << in_n_emissions << std::endl;
     std::cerr << "in_n_detectors " << in_n_detectors << std::endl;
+    std::cerr << "in_n_tof_positions " << in_n_tof_positions << std::endl;
 #endif
 
     triangular_ = in_is_triangular;
-    tof_ = in_is_tof;
+    n_tof_positions_ = in_n_tof_positions;
     n_pixels_in_row_ = in_n_pixels_in_row;
     n_pixels_in_row_half_ = in_n_pixels_in_row / 2;
     n_emissions_ = in_n_emissions;
@@ -176,7 +180,7 @@ class SparseMatrix :
   }
 
   friend obstream& operator<<(obstream& out, SparseMatrix& sm) {
-    auto tof = sm.tof();
+    auto tof = (sm.n_tof_positions_ > 1);
     if (sm.triangular_) {
       out << (tof ? MAGIC_VERSION_TOF_TRIANGULAR : MAGIC_VERSION_TRIANGULAR);
       out << static_cast<FileInt>(sm.n_pixels_in_row_ / 2);
@@ -186,6 +190,9 @@ class SparseMatrix :
     }
     out << static_cast<FileInt>(sm.n_emissions_);
     out << static_cast<FileInt>(sm.n_detectors_);
+    if (tof) {
+      out << static_cast<FileInt>(sm.n_tof_positions_);
+    }
 
     sm.sort_by_lor();
 
@@ -280,7 +287,7 @@ class SparseMatrix :
   }
 
   void sort_by_lor() {
-    if (tof()) {
+    if (n_tof_positions_ > 1) {
       std::sort(Super::begin(), Super::end(), SortByLORNPosition());
     } else {
       std::sort(Super::begin(), Super::end(), SortByLOR());
@@ -293,12 +300,12 @@ class SparseMatrix :
     std::sort(Super::begin(), Super::end(), SortByLORNPositionNPixel());
   }
 
-  SparseMatrix to_full(S n_tof_positions) {
+  SparseMatrix to_full() {
     if (!triangular_) {
       return *this;
     }
     SparseMatrix full(
-        n_pixels_in_row_, n_detectors_, n_emissions_, false, tof());
+        n_pixels_in_row_, n_detectors_, n_emissions_, n_tof_positions_, false);
     full.reserve(this->size() * 8);
     for (auto it = this->begin(); it != this->end(); ++it) {
       for (auto symmetry = 0; symmetry < 8; ++symmetry) {
@@ -319,7 +326,7 @@ class SparseMatrix :
           std::swap(lor.first, lor.second);
           // FIXME: position should be adjusted here so it always goes from
           // higher detector index to lower. But how !!???
-          position = n_tof_positions - 1 - position;
+          position = n_tof_positions_ - 1 - position;
         }
         full.push_back(
             Element(lor, position, symmetric_pixel(pixel, symmetry), hits));
@@ -339,7 +346,7 @@ class SparseMatrix :
   S n_emissions_;
   S n_lors_;
   bool triangular_;
-  bool tof_;
+  S n_tof_positions_;
 
   struct SortByPixel {
     bool operator()(const Element& a, const Element& b) const {

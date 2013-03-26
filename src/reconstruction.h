@@ -25,12 +25,13 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   } Mean;
   typedef std::vector<Mean> Means;
   typedef std::vector<F> Output;
+  typedef SparseMatrix<Pixel, LOR> Matrix;
 
   Reconstruction(S n_iterations,
-                 ibstream& in_matrix,
+                 Matrix& matrix,
                  std::istream& in_means,
                  F threshold = static_cast<F>(0))
-      : threshold(threshold), n_iterations_(n_iterations), matrix_(in_matrix) {
+      : threshold(threshold), n_iterations_(n_iterations), matrix_(matrix) {
 
     n_pixels_in_row_ = matrix_.n_pixels_in_row();
     n_emissions_ = matrix_.n_emissions();
@@ -59,7 +60,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       in_means >> mean.lor.first >> mean.lor.second;
       if (mean.lor.first < mean.lor.second)
         std::swap(mean.lor.first, mean.lor.second);
-      if (matrix_.tof()) {
+      if (matrix_.n_tof_positions() > 1) {
         in_means >> mean.position;
       } else {
         mean.position = 0;
@@ -72,13 +73,13 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
     matrix_.sort_by_lor();
 
-    if (matrix_.tof()) {
+    if (matrix_.n_tof_positions() > 1) {
       std::sort(means_.begin(), means_.end(), SortByLORNPosition());
     } else {
       std::sort(means_.begin(), means_.end(), SortByLOR());
     }
 
-    std::cout << "      TOF: " << matrix_.tof() << std::endl;
+    std::cout << " TOF pos.: " << matrix_.n_tof_positions() << std::endl;
     std::cout << "   Pixels: " << n_pixels_in_row_ << std::endl;
     std::cout << "Emissions: " << n_emissions_ << std::endl;
     std::cout << "Detectors: " << n_detectors_ << std::endl;
@@ -217,7 +218,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   Output scale_;
   Output rho_;
   Output rho_detected_;
-  SparseMatrix<Pixel, LOR> matrix_;
+  Matrix& matrix_;
   Means means_;
 
   struct SortByLOR {
