@@ -286,6 +286,8 @@ int main(int argc, char* argv[]) {
       } else {
         lor.second = (lor.first + n_detectors / 2) % n_detectors;
       }
+      if (lor.first < lor.second)
+        std::swap(lor.first, lor.second);
 
       auto fn = cl.get<cmdline::string>("png");
       auto fn_sep = fn.find_last_of("\\/");

@@ -311,7 +311,11 @@ class SparseMatrix :
         // if LOR is swapped, then position should be too
         if (lor.first < lor.second) {
           std::swap(lor.first, lor.second);
+          // FIXME: position should be adjusted here so it always goes from
+          // higher detector index to lower. But how !!???
+#if 0
           position = n_tof_positions - 1 - position;
+#endif
         }
         full.push_back(
             Element(lor, position, symmetric_pixel(pixel, symmetry), hits));
