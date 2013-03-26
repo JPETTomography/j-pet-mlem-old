@@ -71,6 +71,7 @@ int main(int argc, char* argv[]) {
         "png", 0, "output lor to png", false, cmdline::string(), false);
     cl.add<int>("from", 0, "lor start detector to output", false, -1, false);
     cl.add<int>("to", 0, "lor end detector to output", false, -1, false);
+    cl.add<int>("pos", 0, "position to output", false, -1, false);
 
     // printing & stats params
     cl.add("print", 0, "print triangular sparse system matrix");
@@ -285,8 +286,35 @@ int main(int argc, char* argv[]) {
       } else {
         lor.second = (lor.first + n_detectors / 2) % n_detectors;
       }
-      png_writer png(cl.get<cmdline::string>("png"));
-      matrix.to_sparse().output_lor_bitmap(png, lor);
+
+      auto fn = cl.get<cmdline::string>("png");
+      auto fn_sep = fn.find_last_of("\\/");
+      auto fn_ext = fn.find_last_of(".");
+      auto fn_wo_ext =
+          fn.substr(0,
+                    fn_ext != std::string::npos &&
+                    (fn_sep == std::string::npos || fn_sep < fn_ext)
+                        ? fn_ext
+                        : std::string::npos);
+      auto fn_wo_path =
+          fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
+
+      png_writer png(fn);
+      auto position = cl.get<int>("pos");
+      sparse_matrix.to_full(n_tof_positions).output_bitmap(png, lor, position);
+
+      svg_ostream<> svg(fn_wo_ext + ".svg",
+                        radius + h_detector,
+                        radius + h_detector,
+                        1024.,
+                        1024.);
+      svg << dr;
+
+      svg.link_image(fn_wo_path + ".png",
+                     -(s_pixel * n_pixels) / 2.,
+                     -(s_pixel * n_pixels) / 2.,
+                     s_pixel * n_pixels,
+                     s_pixel * n_pixels);
     }
 
     // show stats if requested
@@ -307,6 +335,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (cl.exist("print")) {
+      sparse_matrix.sort_by_lor_n_pixel();
       std::cout << sparse_matrix;
     }
 

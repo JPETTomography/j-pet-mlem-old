@@ -244,28 +244,33 @@ class SparseMatrix :
   }
 
   template <class FileWriter>
-  void output_lor_bitmap(FileWriter& fw __attribute__((unused)),
-                         LOR& lor __attribute__((unused))) {
-#if 0
-    // FIXME: implement me!
+  void output_bitmap(FileWriter& fw, LOR& lor, S position = -1) {
+    sort_by_lor();
+    S* pixels = new S[n_pixels_in_row_ * n_pixels_in_row_]();
+    for (auto it = std::lower_bound(Super::begin(),
+                                    Super::end(),
+                                    Element(lor, position, Pixel(), 0),
+                                    SortByLORNPosition());
+         it->lor == lor && (position < 0 || position == it->position);
+         ++it) {
+      pixels[n_pixels_in_row_ * it->pixel.y + it->pixel.x] += it->hits;
+    }
+
     fw.template write_header<BitmapPixel>(n_pixels_in_row_, n_pixels_in_row_);
     Hit pixel_max = 0;
-    for (auto y = 0; y < n_pixels_in_row_; ++y) {
-      for (auto x = 0; x < n_pixels_in_row_; ++x) {
-        pixel_max = std::max(pixel_max, (*this)(lor, x, y));
-      }
+    for (auto p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
+      pixel_max = std::max(pixel_max, pixels[p]);
     }
     auto gain = static_cast<double>(std::numeric_limits<BitmapPixel>::max()) /
                 pixel_max;
     for (SS y = n_pixels_in_row_ - 1; y >= 0; --y) {
       BitmapPixel row[n_pixels_in_row_];
       for (auto x = 0; x < n_pixels_in_row_; ++x) {
-        row[x] =
-            std::numeric_limits<BitmapPixel>::max() - gain * (*this)(lor, x, y);
+        row[x] = std::numeric_limits<BitmapPixel>::max() -
+                 gain * pixels[n_pixels_in_row_ * y + x];
       }
       fw.write_row(row);
     }
-#endif
   }
 
   void sort_by_lor() {
@@ -277,6 +282,9 @@ class SparseMatrix :
   }
   void sort_by_pixel() {
     std::sort(Super::begin(), Super::end(), SortByPixel());
+  }
+  void sort_by_lor_n_pixel() {
+    std::sort(Super::begin(), Super::end(), SortByLORNPositionNPixel());
   }
 
   SparseMatrix to_full(S n_tof_positions) {
@@ -305,10 +313,8 @@ class SparseMatrix :
           std::swap(lor.first, lor.second);
           position = n_tof_positions - 1 - position;
         }
-        full.push_back(Element(lor,
-                               position,
-                               symmetric_pixel(pixel, symmetry),
-                               hits));
+        full.push_back(
+            Element(lor, position, symmetric_pixel(pixel, symmetry), hits));
 
       }
     }
@@ -342,6 +348,16 @@ class SparseMatrix :
   struct SortByLORNPosition {
     bool operator()(const Element& a, const Element& b) const {
       return a.lor < b.lor || (a.lor == b.lor && a.position < b.position);
+    }
+  };
+
+  struct SortByLORNPositionNPixel {
+    bool operator()(const Element& a, const Element& b) const {
+      return a.lor < b.lor ||
+             (a.lor == b.lor &&
+              (a.position < b.position ||
+               (a.pixel.y < b.pixel.y ||
+                (a.pixel.y == b.pixel.y && a.pixel.x < b.pixel.x))));
     }
   };
 
