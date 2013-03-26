@@ -304,7 +304,8 @@ int main(int argc, char* argv[]) {
       png_writer png(fn);
       auto position = cl.get<int>("pos");
       if (cl.exist("full")) {
-        sparse_matrix.to_full(n_tof_positions).output_bitmap(png, lor, position);
+        sparse_matrix.to_full(n_tof_positions)
+            .output_bitmap(png, lor, position);
       } else {
         sparse_matrix.output_bitmap(png, lor, position);
       }

@@ -193,7 +193,11 @@ class DetectorRing : public std::vector<Detector<FType>> {
     F length2 = nearest_distance(origin, d2_p1, d2_p2);
     length2 += depth2;
 
-    position = length1 - length2;
+    if (detector1 > detector2) {
+      position = length1 - length2;
+    } else {
+      position = length2 - length1;
+    }
 
 #if DEBUG
     std::cerr << "position " << position << std::endl;
