@@ -253,7 +253,13 @@ class SparseMatrix :
                                     SortByLORNPosition());
          it->lor == lor && (position < 0 || position == it->position);
          ++it) {
-      pixels[n_pixels_in_row_ * it->pixel.y + it->pixel.x] += it->hits;
+      auto x = it->pixel.x;
+      auto y = it->pixel.y;
+      if (triangular_) {
+        x += n_pixels_in_row_half_;
+        y += n_pixels_in_row_half_;
+      }
+      pixels[n_pixels_in_row_ * y + x] += it->hits;
     }
 
     fw.template write_header<BitmapPixel>(n_pixels_in_row_, n_pixels_in_row_);

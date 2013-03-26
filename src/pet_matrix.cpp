@@ -303,7 +303,11 @@ int main(int argc, char* argv[]) {
 
       png_writer png(fn);
       auto position = cl.get<int>("pos");
-      sparse_matrix.to_full(n_tof_positions).output_bitmap(png, lor, position);
+      if (cl.exist("full")) {
+        sparse_matrix.to_full(n_tof_positions).output_bitmap(png, lor, position);
+      } else {
+        sparse_matrix.output_bitmap(png, lor, position);
+      }
 
       svg_ostream<> svg(fn_wo_ext + ".svg",
                         radius + h_detector,
