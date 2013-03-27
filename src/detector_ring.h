@@ -188,9 +188,9 @@ class DetectorRing : public std::vector<Detector<FType>> {
     }
 
     Point origin(rx, ry);
-    F length1 = nearest_distance(origin, d1_p1, d1_p2);
+    F length1 = origin.nearest_distance(d1_p1, d1_p2);
     length1 += depth1;
-    F length2 = nearest_distance(origin, d2_p1, d2_p2);
+    F length2 = origin.nearest_distance(d2_p1, d2_p2);
     length2 += depth2;
 
     if (detector1 > detector2) {
@@ -217,16 +217,6 @@ class DetectorRing : public std::vector<Detector<FType>> {
   }
 
  private:
-
-  F nearest_distance(const Point& origin, const Point& p1, const Point& p2) {
-    F d1 = (p1 - origin).length();
-    F d2 = (p2 - origin).length();
-    if (d1 <= d2)
-      return d1;
-    else
-      return d2;
-  }
-
   Circle c_inner_;
   Circle c_outer_;
   S n_detectors_;
