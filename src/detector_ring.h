@@ -134,7 +134,7 @@ class DetectorRing : public std::vector<Detector<FType>> {
                       Event e,
                       S& detector,
                       F& depth) {
-    Point p1(0, 0), p2(0, 0);
+    Point p1, p2;
     return check_for_hits(gen, model, inner, outer, e, detector, depth, p1, p2);
   }
 
