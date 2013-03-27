@@ -134,8 +134,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     SparseMatrix sparse(this->n_pixels_in_row(),
                         this->n_detectors(),
                         this->n_emissions(),
-                        true,
-                        this->n_tof_positions() > 1);
+                        this->n_tof_positions());
     sparse.reserve(size_);
     for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
       for (auto it = pixel_lor_hits_[i_pixel].begin();
