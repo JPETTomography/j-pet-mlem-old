@@ -311,6 +311,10 @@ class SparseMatrix :
       for (auto symmetry = 0; symmetry < 8; ++symmetry) {
         auto pixel = it->pixel;
         auto hits = it->hits;
+        // FIXME: this is not valid solution below, but converting to
+        // full matrix we likely get two entries for same pixel, but this does
+        // not hurt reconstruction though.
+#if 0
         // check if we are at diagonal
         if (pixel.x == pixel.y) {
           // avoid writing diagonals twice
