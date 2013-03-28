@@ -13,16 +13,18 @@ Members
 Prerequisites
 -------------
 
-### Build
+### Minimum build requirements
 
-* UNIX compatible environment (i.e. *Linux* or *Mac OS X*)
-* One of *GCC 4.5* (or higher), *Clang 3.2* (or higher)
+* UNIX compatible environment such as *Linux* or *Mac OS X*
+* *GCC* 4.6, *Clang* 3.2 or *ICC* 13
+* *GNU Make* 3.8
+* `libpng` headers and libraries for PNG output
 
-### Source code editing
+### Source code editing (one of these)
 
-* *QtCreator 4.6* (or higher) for convenient C++ editing source files via `stc/PET.pro` project file
-* *TextMate 2.x*, project contains `.tm_properties`
-* *Emacs 23* (or higher), project contains `.dir-locals`
+* *QtCreator 4.6* with C++ auto-completion via `stc/PET.pro`
+* *TextMate 2.x* using `.tm_properties`
+* *Emacs 23* using `.dir-locals`
 
 Coding style
 ------------
