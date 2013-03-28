@@ -74,17 +74,23 @@ class DetectorRing : public std::vector<Detector<FType>> {
   /// Quantizes position with given:
   /// @param step_size      step size
   /// @param max_bias_size  possible bias (fuzz) maximum size
-  S quantize_position(F position, F step_size, F max_bias_size) {
-    // FIXME: rounding?
-    return static_cast<S>(
-        floor((position + max_dl(max_bias_size)) / step_size));
+  S quantize_position(F position, F step_size, S n_positions) {
+    // number of positions if always even, lower half are negative positions
+    // where 0 means position closests to detector with higher index
+    // maximum means position closests to detector with lower index
+    if (position < 0)
+      return n_positions / 2 - 1 - static_cast<S>(floor(-position / step_size));
+    else
+      return static_cast<S>(floor(position / step_size)) + n_positions / 2;
   }
 
   /// Returns number of position steps (indexes) for:
   /// @param step_size      step size
   /// @param max_bias_size  possible bias (fuzz) maximum size
   S n_positions(F step_size, F max_bias_size) {
-    return static_cast<S>(ceil(2.0 * max_dl(max_bias_size) / step_size));
+    // since position needs to be symmetric against (0,0) number must be even
+    return (static_cast<S>(ceil(2.0 * max_dl(max_bias_size) / step_size)) + 1) /
+           2 * 2;
   }
 
   template <class RandomGenerator, class AcceptanceModel>

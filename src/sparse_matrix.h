@@ -319,13 +319,14 @@ class SparseMatrix :
           // pixels at diagonal get only half of entries
           hits *= 2;
         }
+#endif
         auto lor = symmetric_lor(it->lor, symmetry);
         auto position = it->position;
         // if LOR is swapped, then position should be too
         if (lor.first < lor.second) {
           std::swap(lor.first, lor.second);
-          // FIXME: position should be adjusted here so it always goes from
-          // higher detector index to lower. But how !!???
+          // position should be adjusted here so it always goes from
+          // higher detector index to lower
           position = n_tof_positions_ - 1 - position;
         }
         full.push_back(
