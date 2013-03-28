@@ -168,7 +168,7 @@ class DetectorRing : public std::vector<Detector<FType>> {
     S detector1;
     F depth1;
 
-    Point d1_p1(0, 0), d1_p2(0, 0);
+    Point d1_p1, d1_p2;
     if (!check_for_hits(
             gen, model, i_inner, i_outer, e, detector1, depth1, d1_p1, d1_p2))
       return 0;
@@ -179,7 +179,7 @@ class DetectorRing : public std::vector<Detector<FType>> {
         c_outer_.section(c_inner_.angle(outer_secant.second), n_detectors_);
     S detector2;
     F depth2;
-    Point d2_p1(0, 0), d2_p2(0, 0);
+    Point d2_p1, d2_p2;
     if (!check_for_hits(
             gen, model, i_inner, i_outer, e, detector2, depth2, d2_p1, d2_p2))
       return 0;
@@ -194,10 +194,8 @@ class DetectorRing : public std::vector<Detector<FType>> {
     }
 
     Point origin(rx, ry);
-    F length1 = origin.nearest_distance(d1_p1, d1_p2);
-    length1 += depth1;
-    F length2 = origin.nearest_distance(d2_p1, d2_p2);
-    length2 += depth2;
+    F length1 = origin.nearest_distance(d1_p1, d1_p2) + depth1;
+    F length2 = origin.nearest_distance(d2_p1, d2_p2) + depth2;
 
     if (detector1 > detector2) {
       position = length1 - length2;
