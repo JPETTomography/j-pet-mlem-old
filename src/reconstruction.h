@@ -118,10 +118,11 @@ template <typename FType = double, typename SType = int> class Reconstruction {
                (matrix_it->lor > means_it->lor ||
                 (matrix_it->lor == means_it->lor &&
                  matrix_it->position > means_it->position))) {
-#if DEBUG
-          std::cerr << "skip mean LOR (" << means_it->lor.first << ", "
+#if 1  // this warning should not appear if system matrix is complete
+          std::cerr << "warning: mean LOR (" << means_it->lor.first << ", "
                     << means_it->lor.second << ") position "
-                    << means_it->position << std::endl;
+                    << means_it->position << " not found in system matrix"
+                    << std::endl;
 #endif
           ++means_it;
         }
@@ -185,7 +186,8 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
     for (S p = 0; p < total_n_pixels_; ++p) {
       if (scale_[p] > 0) {
-        rho_[p] = rho_detected_[p] / scale_[p];
+        rho_[p] = rho_detected_[p];
+        // FIXME: adjusting with * scale_[p] does not bring anything good!!
       }
     }
 

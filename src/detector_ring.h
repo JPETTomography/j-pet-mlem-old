@@ -74,17 +74,23 @@ class DetectorRing : public std::vector<Detector<FType>> {
   /// Quantizes position with given:
   /// @param step_size      step size
   /// @param max_bias_size  possible bias (fuzz) maximum size
-  S quantize_position(F position, F step_size, F max_bias_size) {
-    // FIXME: rounding?
-    return static_cast<S>(
-        floor((position + max_dl(max_bias_size)) / step_size));
+  S quantize_position(F position, F step_size, S n_positions) {
+    // number of positions if always even, lower half are negative positions
+    // where 0 means position closests to detector with higher index
+    // maximum means position closests to detector with lower index
+    if (position < 0)
+      return n_positions / 2 - 1 - static_cast<S>(floor(-position / step_size));
+    else
+      return static_cast<S>(floor(position / step_size)) + n_positions / 2;
   }
 
   /// Returns number of position steps (indexes) for:
   /// @param step_size      step size
   /// @param max_bias_size  possible bias (fuzz) maximum size
   S n_positions(F step_size, F max_bias_size) {
-    return static_cast<S>(ceil(2.0 * max_dl(max_bias_size) / step_size));
+    // since position needs to be symmetric against (0,0) number must be even
+    return (static_cast<S>(ceil(2.0 * max_dl(max_bias_size) / step_size)) + 1) /
+           2 * 2;
   }
 
   template <class RandomGenerator, class AcceptanceModel>
@@ -134,7 +140,7 @@ class DetectorRing : public std::vector<Detector<FType>> {
                       Event e,
                       S& detector,
                       F& depth) {
-    Point p1(0, 0), p2(0, 0);
+    Point p1, p2;
     return check_for_hits(gen, model, inner, outer, e, detector, depth, p1, p2);
   }
 
@@ -162,7 +168,7 @@ class DetectorRing : public std::vector<Detector<FType>> {
     S detector1;
     F depth1;
 
-    Point d1_p1(0, 0), d1_p2(0, 0);
+    Point d1_p1, d1_p2;
     if (!check_for_hits(
             gen, model, i_inner, i_outer, e, detector1, depth1, d1_p1, d1_p2))
       return 0;
@@ -173,7 +179,7 @@ class DetectorRing : public std::vector<Detector<FType>> {
         c_outer_.section(c_inner_.angle(outer_secant.second), n_detectors_);
     S detector2;
     F depth2;
-    Point d2_p1(0, 0), d2_p2(0, 0);
+    Point d2_p1, d2_p2;
     if (!check_for_hits(
             gen, model, i_inner, i_outer, e, detector2, depth2, d2_p1, d2_p2))
       return 0;
@@ -188,10 +194,8 @@ class DetectorRing : public std::vector<Detector<FType>> {
     }
 
     Point origin(rx, ry);
-    F length1 = nearest_distance(origin, d1_p1, d1_p2);
-    length1 += depth1;
-    F length2 = nearest_distance(origin, d2_p1, d2_p2);
-    length2 += depth2;
+    F length1 = origin.nearest_distance(d1_p1, d1_p2) + depth1;
+    F length2 = origin.nearest_distance(d2_p1, d2_p2) + depth2;
 
     if (detector1 > detector2) {
       position = length1 - length2;
@@ -217,16 +221,6 @@ class DetectorRing : public std::vector<Detector<FType>> {
   }
 
  private:
-
-  F nearest_distance(const Point& origin, const Point& p1, const Point& p2) {
-    F d1 = (p1 - origin).length();
-    F d2 = (p2 - origin).length();
-    if (d1 <= d2)
-      return d1;
-    else
-      return d2;
-  }
-
   Circle c_inner_;
   Circle c_outer_;
   S n_detectors_;

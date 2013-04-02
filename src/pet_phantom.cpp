@@ -210,7 +210,7 @@ int main(int argc, char* argv[]) {
               int quantized_position = 0;
               if (n_tof_positions > 1) {
                 quantized_position =
-                    dr.quantize_position(position, tof_step, max_bias);
+                    dr.quantize_position(position, tof_step, n_tof_positions);
               }
               tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
                   quantized_position]++;
@@ -245,7 +245,7 @@ int main(int argc, char* argv[]) {
           int quantized_position = 0;
           if (n_tof_positions > 1) {
             quantized_position =
-                dr.quantize_position(position, tof_step, max_bias);
+                dr.quantize_position(position, tof_step, n_tof_positions);
           }
           tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
               quantized_position]++;

@@ -39,6 +39,7 @@ class MonteCarlo {
     if (n_emissions <= 0)
       return;
 
+    auto n_positions = detector_ring_.n_positions(tof_step_, model.max_bias());
     bool tof = (tof_step_ > static_cast<F>(0));
     uniform_real_distribution<> one_dis(0., 1.);
     uniform_real_distribution<> phi_dis(0., M_PI);
@@ -94,7 +95,7 @@ class MonteCarlo {
           S quantized_position = 0;
           if (tof)
             quantized_position = detector_ring_.quantize_position(
-                position, tof_step_, model.max_bias());
+                position, tof_step_, n_positions);
 #ifdef DEBUG
           std::cerr << "quantized_position " << quantized_position << std::endl;
 #endif
