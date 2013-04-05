@@ -56,6 +56,10 @@ CPPFLAGS += -fopenmp
 LDFLAGS  += -fopenmp
 endif
 
+ifdef STATIC
+LDFLAGS  += -static
+endif
+
 CPPFLAGS += -MMD
 CPPFLAGS += -Wall
 ifneq ($(findstring g++,$(CXX))$(findstring icpc,$(CXX)),)
