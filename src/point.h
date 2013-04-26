@@ -14,10 +14,20 @@ template <typename FType = double> struct Point {
   // I know it is bad idea to count all over again
   // sin/cos for given point, but this will be used
   // only for initialization.
-  Point rotated(F phi) const {
+
+   Point &rotate(F phi)  {
     auto sin_phi = std::sin(phi);
     auto cos_phi = std::cos(phi);
-    return { x * cos_phi - y * sin_phi, x * sin_phi + y * cos_phi };
+    F tx = x * cos_phi - y * sin_phi;
+    F ty = x * sin_phi + y * cos_phi;
+    x=tx;
+    y=ty;
+    return *this;
+   }
+
+  Point rotated(F phi) const {
+    Point tmp(*this);
+    return tmp.rotate(phi);
   }
 
   Point operator+(const Point& p) const {
