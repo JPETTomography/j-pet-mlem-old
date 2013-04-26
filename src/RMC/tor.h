@@ -13,19 +13,25 @@ template <typename F> class ToR {
         c_ {
     c1, c2
   }
+  , angle_ { angle1, angle2 }
   , w_ { w1, w2 }
   , h_ { h1, h2 }
   {
-    d_[0].rotated(angle1);
-    d_[0] += c1;
-    d_[1].rotated(angle2);
-    d_[1] += c2;
+    for (int i = 0; i < 2; i++) {
+      d_[i].rotated(angle_[i]);
+      d_[i] += c_[i];
+    }
   }
-  ;
 
+  Point<F> center(int i) const { return c_[i]; }
+  F width(int i) const { return w_[i]; }
+  F height(int i) const { return h_[i]; }
+  F angle(int i) const { return angle_[i]; }
+  Detector<F> detector(int i) const { return d_[i]; }
  private:
   Detector<F> d_[2];
   Point<F> c_[2];
+  F angle_[2];
   F w_[2], h_[2];
 
 };
