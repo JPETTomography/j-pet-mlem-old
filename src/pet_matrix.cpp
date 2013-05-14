@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
         auto fn_wo_ext =
             fn->substr(0,
                        fn_ext != std::string::npos &&
-                       (fn_sep == std::string::npos || fn_sep < fn_ext)
+                               (fn_sep == std::string::npos || fn_sep < fn_ext)
                            ? fn_ext
                            : std::string::npos);
         std::ifstream in(fn_wo_ext + ".cfg");
@@ -251,7 +251,7 @@ int main(int argc, char* argv[]) {
       auto fn_wo_ext =
           fn.substr(0,
                     fn_ext != std::string::npos &&
-                    (fn_sep == std::string::npos || fn_sep < fn_ext)
+                            (fn_sep == std::string::npos || fn_sep < fn_ext)
                         ? fn_ext
                         : std::string::npos);
       auto fn_wo_path =
@@ -303,7 +303,7 @@ int main(int argc, char* argv[]) {
       auto fn_wo_ext =
           fn.substr(0,
                     fn_ext != std::string::npos &&
-                    (fn_sep == std::string::npos || fn_sep < fn_ext)
+                            (fn_sep == std::string::npos || fn_sep < fn_ext)
                         ? fn_ext
                         : std::string::npos);
       auto fn_wo_path =

@@ -9,7 +9,7 @@
 /// That means that in the same time only few pixels are processed in parallel.
 /// On shiva for example the biggest machine has 24 cores.
 /// We can afford to alloc memory for lors in an uneficient way providing for
-/// quick acces and reduce them after the simulations of  this pixel is finished.
+/// quick acces and reduce them after the simulations of this pixel is finished.
 ///
 /// It also means that as different threads are processing different pixels,
 /// there is no need for synchronisation in add_pixels.
@@ -79,8 +79,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       }
     }
 
-    auto& current_hits = pixel_lor_hits_ptr_[i_pixel][
-        lor.index() * this->n_tof_positions() + position];
+    auto& current_hits = pixel_lor_hits_ptr_[
+        i_pixel][lor.index() * this->n_tof_positions() + position];
     if (current_hits == 0) {
       pixel_lor_count_[i_pixel]++;
       size_++;
@@ -106,8 +106,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
     for (S i_lor = 0, lor_count = 0; i_lor < n_lors_; ++i_lor) {
       for (S position = 0; position < this->n_tof_positions(); ++position) {
-        auto hits = pixel_lor_hits_ptr_[i_pixel][
-            i_lor * this->n_tof_positions() + position];
+        auto hits = pixel_lor_hits_ptr_[
+            i_pixel][i_lor * this->n_tof_positions() + position];
         if (hits > 0) {
           LOR lor = index_to_lor_[i_lor];
           if (lor.first == lor.second) {

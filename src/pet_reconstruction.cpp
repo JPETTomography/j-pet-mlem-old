@@ -5,7 +5,8 @@
 //   Adam Strzelecki <adam.strzlecki@uj.edu.pl>
 //
 // Based on:
-//   "Implementing and Accelerating the EM Algorithm for Positron Emission Tomography"
+//   "Implementing and Accelerating the EM Algorithm for Positron Emission
+// Tomography"
 //   by Linda Kaufman
 
 #ifdef __SSE3__
@@ -104,12 +105,12 @@ int main(int argc, char* argv[]) {
     fn = cl.get<cmdline::string>("output");
     auto it_fn_sep = fn.find_last_of("\\/");
     auto it_fn_ext = fn.find_last_of(".");
-    fn_wo_ext =
-        fn.substr(0,
-                  it_fn_ext != std::string::npos &&
-                  (it_fn_sep == std::string::npos || it_fn_sep < it_fn_ext)
-                      ? it_fn_ext
-                      : std::string::npos);
+    fn_wo_ext = fn.substr(
+        0,
+        it_fn_ext != std::string::npos &&
+                (it_fn_sep == std::string::npos || it_fn_sep < it_fn_ext)
+            ? it_fn_ext
+            : std::string::npos);
     fn_ext = fn.substr(it_fn_ext != std::string::npos ? it_fn_ext : fn.size(),
                        fn.size());
 

@@ -29,7 +29,8 @@ class MonteCarlo {
 
   /// Executes Monte-Carlo system matrix generation for given detector ring
   /// @param gen   random number generator
-  /// @param model acceptance model (returns bool for call operator with given length)
+  /// @param model acceptance model (returns bool for call operator with given
+  /// length)
   template <typename RandomGenerator, typename AcceptanceModel>
   void operator()(RandomGenerator& gen,
                   AcceptanceModel model,

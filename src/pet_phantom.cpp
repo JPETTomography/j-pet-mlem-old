@@ -213,7 +213,7 @@ int main(int argc, char* argv[]) {
                     dr.quantize_position(position, tof_step, n_tof_positions);
               }
               tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
-                  quantized_position]++;
+                    quantized_position]++;
               pixels_detected[pixel.y][pixel.x]++;
               if (only_detected)
                 n_emitted++;
@@ -248,7 +248,7 @@ int main(int argc, char* argv[]) {
                 dr.quantize_position(position, tof_step, n_tof_positions);
           }
           tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
-              quantized_position]++;
+                quantized_position]++;
           pixels_detected[pixel.y][pixel.x]++;
           if (only_detected)
             n_emitted++;
@@ -261,11 +261,12 @@ int main(int argc, char* argv[]) {
     auto fn = cl.get<cmdline::string>("output");
     auto fn_sep = fn.find_last_of("\\/");
     auto fn_ext = fn.find_last_of(".");
-    auto fn_wo_ext = fn.substr(0,
-                               fn_ext != std::string::npos &&
-                               (fn_sep == std::string::npos || fn_sep < fn_ext)
-                                   ? fn_ext
-                                   : std::string::npos);
+    auto fn_wo_ext =
+        fn.substr(0,
+                  fn_ext != std::string::npos &&
+                          (fn_sep == std::string::npos || fn_sep < fn_ext)
+                      ? fn_ext
+                      : std::string::npos);
 
     std::ofstream n_stream(fn);
     if (n_tof_positions <= 1) {

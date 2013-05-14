@@ -34,10 +34,10 @@ template <typename LORType,
           typename PixelType,
           typename HitType = int>
 struct SparseElement {
-  SparseElement(LORType && lor_a,
-                PositionType && position_a,
-                PixelType && pixel_a,
-                HitType && hits_a)
+  SparseElement(LORType&& lor_a,
+                PositionType&& position_a,
+                PixelType&& pixel_a,
+                HitType&& hits_a)
       : lor(lor_a), position(position_a), pixel(pixel_a), hits(hits_a) {}
   SparseElement(const LORType& lor_a,
                 const PositionType& position_a,
@@ -56,8 +56,8 @@ template <typename PixelType,
           typename LORType,
           typename SType = int,
           typename HitType = int>
-class SparseMatrix :
-    public std::vector<SparseElement<LORType, SType, PixelType, HitType>> {
+class SparseMatrix
+    : public std::vector<SparseElement<LORType, SType, PixelType, HitType>> {
   typedef std::vector<SparseElement<LORType, SType, PixelType, HitType>> Super;
 
  public:
@@ -105,7 +105,8 @@ class SparseMatrix :
     if (in_magic != MAGIC_VERSION_TRIANGULAR &&
         in_magic != MAGIC_VERSION_FULL &&
         in_magic != MAGIC_VERSION_TOF_TRIANGULAR &&
-        in_magic != MAGIC_VERSION_TOF_FULL && in_magic != MAGIC_VERSION_1 &&
+        in_magic != MAGIC_VERSION_TOF_FULL &&
+        in_magic != MAGIC_VERSION_1 &&
         in_magic != MAGIC_VERSION_2) {
       throw("invalid file type format");
     }
@@ -311,9 +312,9 @@ class SparseMatrix :
       for (auto symmetry = 0; symmetry < 8; ++symmetry) {
         auto pixel = it->pixel;
         auto hits = it->hits;
-        // FIXME: this is not valid solution below, but converting to
-        // full matrix we likely get two entries for same pixel, but this does
-        // not hurt reconstruction though.
+// FIXME: this is not valid solution below, but converting to
+// full matrix we likely get two entries for same pixel, but this does
+// not hurt reconstruction though.
 #if 0
         // check if we are at diagonal
         if (pixel.x == pixel.y) {

@@ -90,7 +90,8 @@ class DetectorRing : public std::vector<Detector<FType>> {
   S n_positions(F step_size, F max_bias_size) {
     // since position needs to be symmetric against (0,0) number must be even
     return (static_cast<S>(ceil(2.0 * max_dl(max_bias_size) / step_size)) + 1) /
-           2 * 2;
+           2 *
+           2;
   }
 
   template <class RandomGenerator, class AcceptanceModel>
@@ -107,8 +108,8 @@ class DetectorRing : public std::vector<Detector<FType>> {
     // tells in which direction we got shorter modulo distance
     S step = ((n_detectors_ + inner - outer) % n_detectors_ >
               (n_detectors_ + outer - inner) % n_detectors_)
-             ? 1
-             : n_detectors_ - 1;
+                 ? 1
+                 : n_detectors_ - 1;
     S end = (outer + step) % n_detectors_;
     for (auto i = inner; i != end; i = (i + step) % n_detectors_) {
       auto points = (*this)[i].intersections(e);
