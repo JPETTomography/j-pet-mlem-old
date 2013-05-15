@@ -81,7 +81,11 @@ namespace Geometry {
 
 
   template<int N, typename F=double> 
-  Point<N,F> operator+(const Vector<N,F> &v, const Point<N,F> &p);
+  Point<N,F> operator+(const Vector<N,F> &v, const Point<N,F> &p) {
+        
+  };
+
+
   template<int N, typename F=double> 
   Point<N,F> operator-(const Vector<N,F> &v, const Point<N,F> &p);
   template<int N, typename F=double> 
