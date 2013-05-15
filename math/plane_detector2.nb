@@ -1,0 +1,725 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     24470,        716]
+NotebookOptionsPosition[     23089,        674]
+NotebookOutlinePosition[     23419,        689]
+CellTagsIndexPosition[     23376,        686]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{"corellationMatrix", "=", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"sz", "^", "2"}], ",", "0", ",", "szl"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"0", ",", 
+      RowBox[{"sz", "^", "2"}], ",", "szl"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"szl", ",", "szl", ",", 
+      RowBox[{"sl", "^", "2"}]}], "}"}]}], "}"}]}]], "Input",
+ CellChangeTimes->{{3.57706820538863*^9, 3.577068287725892*^9}}],
+
+Cell[BoxData[
+ RowBox[{"%", "//", "MatrixForm"}]], "Input",
+ CellChangeTimes->{{3.577068290715767*^9, 3.577068293513702*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Inverse", "[", "corellationMatrix", "]"}], "//", 
+  "Simplify"}]], "Input",
+ CellChangeTimes->{{3.577068305648317*^9, 3.577068351966514*^9}, {
+  3.577068784154624*^9, 3.577068785537039*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"toProjectionSpaceTan", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"y_", ",", "z_", ",", "t_"}], "}"}], ",", "R_"}], "]"}], ":=", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"z", "+", " ", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"R", "-", "y"}], ")"}], "t"}]}], ",", " ", 
+    RowBox[{"z", "-", " ", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"R", "+", "y"}], ")"}], " ", "t"}]}], ",", 
+    RowBox[{
+     RowBox[{"-", "2"}], " ", "y", " ", 
+     RowBox[{"Sqrt", "[", 
+      RowBox[{
+       RowBox[{"t", "^", "2"}], "+", "1"}], "]"}]}]}], 
+   "}"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"toProjectionSpaceTheta", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"y_", ",", "z_", ",", "\[Theta]_"}], "}"}], ",", "R_"}], "]"}], ":=", 
+  RowBox[{"toProjectionSpaceTan", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"y", ",", "z", ",", 
+      RowBox[{"Tan", "[", "\[Theta]", "]"}]}], "}"}], ",", "R"}], 
+   "]"}]}]}], "Input",
+ CellChangeTimes->{{3.577068425291123*^9, 3.577068448103202*^9}, {
+  3.57706847873517*^9, 3.577068497851817*^9}, {3.577068598631857*^9, 
+  3.577068709085323*^9}, {3.577069333090607*^9, 3.577069372731426*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"icm", "[", 
+   RowBox[{"{", 
+    RowBox[{"sz_", ",", "sl_", ",", "szl_"}], " ", "}"}], "]"}], ":=", 
+  RowBox[{"Inverse", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       SuperscriptBox["sz", "2"], ",", "0", ",", "szl"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"0", ",", 
+       SuperscriptBox["sz", "2"], ",", "szl"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"szl", ",", "szl", ",", 
+       SuperscriptBox["sl", "2"]}], "}"}]}], "}"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.577068750038108*^9, 3.577068853319866*^9}, {
+  3.577068909619052*^9, 3.577068915771185*^9}, {3.577068987253826*^9, 
+  3.577068995267069*^9}}],
+
+Cell[BoxData[
+ RowBox[{"A", "=", 
+  RowBox[{"icm", "[", 
+   RowBox[{"{", 
+    RowBox[{"10", ",", "30", ",", "15"}], "}"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.577092461742573*^9, 3.577092468251995*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"errorFunction", "[", 
+   RowBox[{"meas_", ",", 
+    RowBox[{"{", 
+     RowBox[{"y_", ",", "z_"}], "}"}], ",", "ic_", ",", "R_", ",", "t_"}], 
+   "]"}], ":=", " ", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"f", ",", "err", ",", "true"}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"true", "=", 
+      RowBox[{"toProjectionSpaceTan", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"y", ",", "z", ",", "t"}], "}"}], ",", "R"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"err", "=", " ", 
+      RowBox[{"meas", "-", "true"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"f", "=", 
+      RowBox[{
+       RowBox[{"1", "/", "2"}], " ", 
+       RowBox[{"err", ".", "ic", ".", "err"}]}]}]}]}], "\[IndentingNewLine]", 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.577072075116158*^9, 3.577072118891448*^9}, {
+  3.57707217052119*^9, 3.577072185690752*^9}, {3.577077206314695*^9, 
+  3.577077213338923*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"truncatedErrorFunction", "[", 
+   RowBox[{"meas_", ",", 
+    RowBox[{"{", 
+     RowBox[{"y_", ",", "z_"}], "}"}], ",", "ic_", ",", "R_", ",", "t_"}], 
+   "]"}], ":=", " ", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"f", ",", "err", ",", "true"}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"true", "=", 
+      RowBox[{
+       RowBox[{"toProjectionSpaceTan", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"y", ",", "z", ",", "t"}], "}"}], ",", "R"}], "]"}], "[", 
+       RowBox[{"[", 
+        RowBox[{"1", ";;", "2"}], "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
+     
+     RowBox[{"err", "=", " ", 
+      RowBox[{
+       RowBox[{"meas", "[", 
+        RowBox[{"[", 
+         RowBox[{"1", ";;", "2"}], "]"}], "]"}], "-", "true"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"f", "=", 
+      RowBox[{
+       RowBox[{"1", "/", "2"}], " ", 
+       RowBox[{"err", ".", 
+        RowBox[{"ic", "[", 
+         RowBox[{"[", 
+          RowBox[{
+           RowBox[{"1", ";;", "2"}], ",", 
+           RowBox[{"1", ";;", "2"}]}], "]"}], "]"}], ".", "err"}]}]}]}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input",
+ CellChangeTimes->{{3.577072200557461*^9, 3.577072239259289*^9}, {
+  3.577074999388908*^9, 3.57707501094766*^9}, {3.577077219939472*^9, 
+  3.577077233193961*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"minT", "[", 
+   RowBox[{"meas_", ",", 
+    RowBox[{"{", 
+     RowBox[{"y_", ",", "z_"}], "}"}], ",", "s_", ",", "R_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"f", ",", "t"}], "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"f", "=", 
+      RowBox[{"errorFunction", "[", 
+       RowBox[{"meas", ",", 
+        RowBox[{"{", 
+         RowBox[{"y", ",", "z"}], "}"}], ",", "s", ",", "R", ",", "t"}], 
+       "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"t", "/.", 
+      RowBox[{
+       RowBox[{"FindMinimum", "[", 
+        RowBox[{"f", ",", "t"}], "]"}], "[", 
+       RowBox[{"[", "2", "]"}], "]"}]}]}]}], "\[IndentingNewLine]", 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.577068938359966*^9, 3.577069188978522*^9}, {
+  3.577069236632412*^9, 3.577069257864719*^9}, {3.577069313016755*^9, 
+  3.577069318474823*^9}, {3.577069354983106*^9, 3.577069377136157*^9}, {
+  3.577069416967267*^9, 3.577069432778325*^9}, {3.57707136079325*^9, 
+  3.577071363601882*^9}, {3.577072126522013*^9, 3.57707215875729*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"approxMinT", "[", 
+   RowBox[{"meas_", ",", 
+    RowBox[{"{", 
+     RowBox[{"y_", ",", "z_"}], "}"}], ",", "s_", ",", "R_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"f", ",", "t"}], "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"f", "=", 
+      RowBox[{"truncatedErrorFunction", "[", 
+       RowBox[{"meas", ",", 
+        RowBox[{"{", 
+         RowBox[{"y", ",", "z"}], "}"}], ",", "s", ",", "R", ",", "t"}], 
+       "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"t", "/.", 
+      RowBox[{
+       RowBox[{"FindMinimum", "[", 
+        RowBox[{"f", ",", "t"}], "]"}], "[", 
+       RowBox[{"[", "2", "]"}], "]"}]}]}]}], "\[IndentingNewLine]", 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.577069574499784*^9, 3.577069588356795*^9}, {
+  3.577069651305915*^9, 3.57706969168431*^9}, {3.577071353360111*^9, 
+  3.577071357366213*^9}, {3.577072247709883*^9, 3.577072260202644*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"approx2MinT", "[", 
+   RowBox[{"meas_", ",", 
+    RowBox[{"{", 
+     RowBox[{"y_", ",", "z_"}], "}"}], ",", "s_", ",", "R_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"f", ",", "t"}], "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"meas", "[", 
+        RowBox[{"[", "1", "]"}], "]"}], "-", 
+       RowBox[{"meas", "[", 
+        RowBox[{"[", "2", "]"}], "]"}]}], ")"}], "/", 
+     RowBox[{"(", 
+      RowBox[{"2", "R"}], ")"}]}]}], "\[IndentingNewLine]", "]"}]}]], "Input",\
+
+ CellChangeTimes->{{3.577075801013568*^9, 3.577075850377807*^9}, {
+  3.577075919881405*^9, 3.577075922420705*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"tm", "=", 
+   RowBox[{"minT", "[", 
+    RowBox[{
+     RowBox[{"toProjectionSpaceTheta", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"350", ",", "0", ",", 
+         RowBox[{"30", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"320", ",", "20"}], "}"}], ",", 
+     RowBox[{"icm", "[", 
+      RowBox[{"{", 
+       RowBox[{"10", ",", "30", ",", "15"}], "}"}], "]"}], ",", "450"}], 
+    "]"}]}], "\[IndentingNewLine]"}], "\n", 
+ RowBox[{"atm", "=", 
+  RowBox[{"approxMinT", "[", 
+   RowBox[{
+    RowBox[{"toProjectionSpaceTheta", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"350", ",", "0", ",", 
+        RowBox[{"30", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"320", ",", "20"}], "}"}], ",", 
+    RowBox[{"icm", "[", 
+     RowBox[{"{", 
+      RowBox[{"10", ",", "30", ",", "15"}], "}"}], "]"}], ",", "450"}], 
+   "]"}]}]}], "Input",
+ CellChangeTimes->{{3.577069739557546*^9, 3.577069745715195*^9}, {
+  3.577069794475119*^9, 3.577069795525567*^9}, {3.577069828170654*^9, 
+  3.577069829597982*^9}, {3.57707014015502*^9, 3.577070257607051*^9}, {
+  3.577070295861083*^9, 3.577070336426127*^9}, {3.577071339382636*^9, 
+  3.577071339840906*^9}, {3.577071376663445*^9, 3.577071408515428*^9}, {
+  3.577072549304361*^9, 3.577072628362141*^9}, {3.577072868927219*^9, 
+  3.577072872967864*^9}, {3.577077248788568*^9, 3.577077272258397*^9}, {
+  3.577077343717529*^9, 3.577077364306704*^9}, {3.577077551461266*^9, 
+  3.57707755433141*^9}}],
+
+Cell[BoxData[
+ RowBox[{"a2tm", "=", 
+  RowBox[{"approx2MinT", "[", 
+   RowBox[{
+    RowBox[{"toProjectionSpaceTheta", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"350", ",", "0", ",", 
+        RowBox[{"30", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"320", ",", "20"}], "}"}], ",", 
+    RowBox[{"icm", "[", 
+     RowBox[{"{", 
+      RowBox[{"10", ",", "30", ",", "15"}], "}"}], "]"}], ",", "450."}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.577075867068921*^9, 3.577075876253821*^9}, {
+  3.577077566861218*^9, 3.577077569780028*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"minTheta", "[", 
+   RowBox[{"meas_", ",", 
+    RowBox[{"{", 
+     RowBox[{"y_", ",", "z_"}], "}"}], ",", "s_", ",", "R_"}], "]"}], ":=", 
+  RowBox[{"ArcTan", "[", 
+   RowBox[{"minT", "[", 
+    RowBox[{"meas", ",", 
+     RowBox[{"{", 
+      RowBox[{"y", ",", "z"}], "}"}], ",", "s", ",", "R"}], "]"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.577071288288214*^9, 3.577071311478496*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"approxMinTheta", "[", 
+   RowBox[{"meas_", ",", 
+    RowBox[{"{", 
+     RowBox[{"y_", ",", "z_"}], "}"}], ",", "s_", ",", "R_"}], "]"}], ":=", 
+  RowBox[{"ArcTan", "[", 
+   RowBox[{"approxMinT", "[", 
+    RowBox[{"meas", ",", 
+     RowBox[{"{", 
+      RowBox[{"y", ",", "z"}], "}"}], ",", "s", ",", "R"}], "]"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.577071321456016*^9, 3.577071330223912*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"errorFunction", "[", 
+   RowBox[{
+    RowBox[{"toProjectionSpaceTheta", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"350", ",", "0", ",", 
+        RowBox[{"30", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"320", ",", "20"}], "}"}], ",", 
+    RowBox[{"icm", "[", 
+     RowBox[{"{", 
+      RowBox[{"10", ",", "30", ",", "15"}], "}"}], "]"}], ",", "450", ",", 
+    RowBox[{"Tan", "[", 
+     RowBox[{
+      RowBox[{"ArcTan", "[", "tm", "]"}], "+", "\[Epsilon]"}], "]"}]}], "]"}],
+   "+", 
+  RowBox[{
+   RowBox[{"O", "[", "\[Epsilon]", "]"}], "^", "3"}]}]], "Input",
+ CellChangeTimes->{{3.57707288366518*^9, 3.577072945277133*^9}, {
+  3.577073028492471*^9, 3.577073036041305*^9}, {3.577077587791408*^9, 
+  3.577077591227261*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"errorFunction", "[", 
+   RowBox[{
+    RowBox[{"toProjectionSpaceTheta", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"350", ",", "0", ",", 
+        RowBox[{"30", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"320", ",", "20"}], "}"}], ",", "A", ",", "450", ",", 
+    RowBox[{"Tan", "[", 
+     RowBox[{
+      RowBox[{"ArcTan", "[", "atm", "]"}], "+", "\[Epsilon]"}], "]"}]}], 
+   "]"}], "+", 
+  RowBox[{
+   RowBox[{"O", "[", "\[Epsilon]", "]"}], "^", "3"}]}]], "Input",
+ CellChangeTimes->{{3.57707288366518*^9, 3.57707296087826*^9}, {
+  3.57707304315289*^9, 3.577073048794065*^9}, {3.577092490334535*^9, 
+  3.577092492472663*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"errorFunction", "[", 
+   RowBox[{
+    RowBox[{"toProjectionSpaceTheta", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"350", ",", "0", ",", 
+        RowBox[{"30", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"320", ",", "20"}], "}"}], ",", "A", ",", "450", ",", 
+    RowBox[{"Tan", "[", 
+     RowBox[{
+      RowBox[{"ArcTan", "[", "a2tm", "]"}], "+", "\[Epsilon]"}], "]"}]}], 
+   "]"}], "+", 
+  RowBox[{
+   RowBox[{"O", "[", "\[Epsilon]", "]"}], "^", "3"}]}]], "Input",
+ CellChangeTimes->{{3.57707288366518*^9, 3.57707296087826*^9}, {
+   3.57707304315289*^9, 3.577073048794065*^9}, 3.577075942571425*^9, {
+   3.577092481720469*^9, 3.57709248404079*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"fx", "[", "t_", "]"}], "=", 
+  RowBox[{
+   RowBox[{"errorFunction", "[", 
+    RowBox[{
+     RowBox[{"toProjectionSpaceTheta", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"350", ",", "0", ",", 
+         RowBox[{"30", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"320", ",", "20"}], "}"}], ",", 
+     RowBox[{"icm", "[", 
+      RowBox[{"{", 
+       RowBox[{"10", ",", "30", ",", "15"}], "}"}], "]"}], ",", "450", ",", 
+     "t"}], "]"}], "//", "Simplify"}]}]], "Input",
+ CellChangeTimes->{{3.577092911342173*^9, 3.577092933335074*^9}, 
+   3.577093008633985*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"NIntegrate", "[", 
+   RowBox[{
+    RowBox[{"Exp", "[", 
+     RowBox[{"-", 
+      RowBox[{"fx", "[", 
+       RowBox[{"Tan", "[", "\[Phi]", "]"}], "]"}]}], "]"}], 
+    "\[IndentingNewLine]", ",", 
+    RowBox[{"{", 
+     RowBox[{"\[Phi]", ",", 
+      RowBox[{
+       RowBox[{"-", "Pi"}], "/", "2"}], ",", 
+      RowBox[{"Pi", "/", "2"}]}], "}"}]}], "]"}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.577092777009842*^9, 3.577092862084423*^9}, 
+   3.577092908750803*^9, {3.577092939003342*^9, 3.577092996593815*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Integrate", "[", 
+   RowBox[{
+    RowBox[{"Exp", "[", 
+     RowBox[{"-", 
+      RowBox[{"(", 
+       RowBox[{"10.57693487193518`", "-", 
+        RowBox[{"4.973799150320701`*^-13", " ", "\[Epsilon]"}], "+", 
+        RowBox[{"5871.041944741417`", " ", 
+         SuperscriptBox["\[Epsilon]", "2"]}]}], ")"}]}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"\[Epsilon]", ",", 
+      RowBox[{"-", "Infinity"}], ",", "Infinity"}], "}"}]}], "]"}], "//", 
+  "Chop"}]], "Input",
+ CellChangeTimes->{{3.577073081691763*^9, 3.577073142570766*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Integrate", "[", 
+   RowBox[{
+    RowBox[{"Exp", "[", 
+     RowBox[{"-", 
+      RowBox[{"(", 
+       RowBox[{"10.589300117605328`", "+", 
+        RowBox[{"5838.859372602336`", " ", 
+         SuperscriptBox["\[Epsilon]", "2"]}]}], ")"}]}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"\[Epsilon]", ",", 
+      RowBox[{"-", "Infinity"}], ",", "Infinity"}], "}"}]}], "]"}], "//", 
+  "Chop"}]], "Input",
+ CellChangeTimes->{{3.577073160479583*^9, 3.577073176997665*^9}, {
+  3.577074641892072*^9, 3.577074646904098*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Integrate", "[", 
+   RowBox[{
+    RowBox[{"Exp", "[", 
+     RowBox[{"-", 
+      RowBox[{"(", 
+       RowBox[{"15.812049931246758`", "-", 
+        RowBox[{"337.8411062371402`", " ", "\[Epsilon]"}], "+", 
+        RowBox[{"5251.2297739782325`", " ", 
+         SuperscriptBox["\[Epsilon]", "2"]}]}], ")"}]}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"\[Epsilon]", ",", 
+      RowBox[{"-", "Infinity"}], ",", "Infinity"}], "}"}]}], "]"}], "//", 
+  "Chop"}]], "Input",
+ CellChangeTimes->{{3.577075968925629*^9, 3.577075985751092*^9}}],
+
+Cell[BoxData[
+ RowBox[{"B", "=", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"a", ",", "b", ",", "c"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"b", ",", "a", ",", "c"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"c", ",", "c", ",", "d"}], "}"}]}], "}"}]}]], "Input",
+ CellChangeTimes->{{3.577092530031207*^9, 3.577092551316109*^9}}],
+
+Cell[BoxData[
+ RowBox[{"tef", "=", 
+  RowBox[{
+   RowBox[{"truncatedErrorFunction", "[", 
+    RowBox[{
+     RowBox[{"toProjectionSpaceTan", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"yt", ",", "zt", ",", "tt"}], "}"}], ",", "R"}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"y", ",", "z"}], "}"}], ",", "B", ",", "R", ",", "t"}], "]"}], "//",
+    "Simplify"}]}]], "Input",
+ CellChangeTimes->{{3.577073464765089*^9, 3.57707354596728*^9}, {
+  3.577073583261214*^9, 3.577073701749307*^9}, {3.57707414015222*^9, 
+  3.577074144808565*^9}, {3.577074184592676*^9, 3.577074205190569*^9}, {
+  3.577074355842881*^9, 3.577074361470449*^9}, {3.577074486151471*^9, 
+  3.577074489313614*^9}, {3.577077406932063*^9, 3.577077409637748*^9}, {
+  3.577077461747183*^9, 3.577077478010168*^9}, {3.57709255501316*^9, 
+  3.577092555401834*^9}, {3.577097966476012*^9, 3.577097988086451*^9}}],
+
+Cell[BoxData[
+ RowBox[{"tefMin", "=", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"Solve", "[", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"D", "[", 
+        RowBox[{"tef", ",", "t"}], "]"}], "\[Equal]", "0"}], ",", "t"}], 
+     "]"}], "[", 
+    RowBox[{"[", 
+     RowBox[{"1", ",", "1"}], "]"}], "]"}], " ", "//", 
+   "Simplify"}]}]], "Input",
+ CellChangeTimes->{{3.577074330625407*^9, 3.577074332295464*^9}, {
+  3.577074368724652*^9, 3.577074415417063*^9}, {3.577074510200483*^9, 
+  3.577074512906741*^9}, {3.577077681387763*^9, 3.577077683649327*^9}, {
+  3.577077950859012*^9, 3.577077951450667*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"errorFunction", "[", 
+    RowBox[{
+     RowBox[{"toProjectionSpaceTan", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"yt", ",", "zt", ",", "tt"}], "}"}], ",", "R"}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"y", ",", "z"}], "}"}], ",", "B", ",", "R", ",", 
+     RowBox[{"t", "+", "\[Epsilon]"}]}], "]"}], "+", 
+   RowBox[{
+    RowBox[{"O", "[", "\[Epsilon]", "]"}], "^", "3"}]}], " ", "//", 
+  "Simplify"}]], "Input",
+ CellChangeTimes->{{3.577077724616674*^9, 3.577077765224442*^9}, {
+  3.57709257373806*^9, 3.577092574229456*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Coefficient", "[", 
+   RowBox[{
+    RowBox[{"Normal", "[", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"errorFunction", "[", 
+        RowBox[{
+         RowBox[{"toProjectionSpaceTan", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{"yt", ",", "zt", ",", "tt"}], "}"}], ",", "R"}], "]"}], 
+         ",", 
+         RowBox[{"{", 
+          RowBox[{"y", ",", "z"}], "}"}], ",", "B", ",", "R", ",", 
+         RowBox[{"t", "+", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"1", "+", 
+             RowBox[{"t", "^", "2"}]}], ")"}], "\[Epsilon]"}], "+", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"t", "+", 
+             RowBox[{"t", "^", "3"}]}], ")"}], 
+           RowBox[{"\[Epsilon]", "^", "2"}]}]}]}], "]"}], ")"}], "+", 
+      RowBox[{
+       RowBox[{"O", "[", "\[Epsilon]", "]"}], "^", "3"}]}], "]"}], ",", 
+    "\[Epsilon]", ",", "0"}], "]"}], "//", "Simplify"}]], "Input",
+ CellChangeTimes->{{3.577074438891967*^9, 3.577074476962724*^9}, {
+  3.577074544366531*^9, 3.577074601354774*^9}, {3.577076054352147*^9, 
+  3.577076138489547*^9}, {3.577076248142361*^9, 3.577076251478572*^9}, {
+  3.577076514489091*^9, 3.577076537443001*^9}, {3.577076579184223*^9, 
+  3.577076587453459*^9}, {3.577077607614627*^9, 3.577077611097554*^9}, {
+  3.577077702011096*^9, 3.577077705368836*^9}, {3.577077786879267*^9, 
+  3.577077801700112*^9}, {3.577077841748964*^9, 3.577077856961598*^9}, {
+  3.577092590762411*^9, 3.577092591324534*^9}, {3.577098525357141*^9, 
+  3.577098543950789*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Coefficient", "[", 
+   RowBox[{
+    RowBox[{"Normal", "[", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"errorFunction", "[", 
+        RowBox[{
+         RowBox[{"toProjectionSpaceTan", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{"yt", ",", "zt", ",", "tt"}], "}"}], ",", "R"}], "]"}], 
+         ",", 
+         RowBox[{"{", 
+          RowBox[{"y", ",", "z"}], "}"}], ",", "B", ",", "R", ",", 
+         RowBox[{"t", "+", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"1", "+", 
+             RowBox[{"t", "^", "2"}]}], ")"}], "\[Epsilon]"}], "+", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"t", "+", 
+             RowBox[{"t", "^", "3"}]}], ")"}], 
+           RowBox[{"\[Epsilon]", "^", "2"}]}]}]}], "]"}], ")"}], "+", 
+      RowBox[{
+       RowBox[{"O", "[", "\[Epsilon]", "]"}], "^", "3"}]}], "]"}], ",", 
+    "\[Epsilon]", ",", "2"}], "]"}], "//", "Simplify"}]], "Input",
+ CellChangeTimes->{{3.577077886939871*^9, 3.577077887181568*^9}, {
+  3.577092597408613*^9, 3.577092597788212*^9}, {3.57709863529609*^9, 
+  3.577098635788286*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Coefficient", "[", 
+   RowBox[{
+    RowBox[{"Normal", "[", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"errorFunction", "[", 
+        RowBox[{
+         RowBox[{"toProjectionSpaceTan", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{"yt", ",", "zt", ",", "tt"}], "}"}], ",", "R"}], "]"}], 
+         ",", 
+         RowBox[{"{", 
+          RowBox[{"y", ",", "z"}], "}"}], ",", "B", ",", "R", ",", 
+         RowBox[{"t", "+", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"1", "-", 
+             RowBox[{"t", "^", "2"}]}], ")"}], "\[Epsilon]"}], "+", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"t", "+", 
+             RowBox[{"t", "^", "3"}]}], ")"}], 
+           RowBox[{"\[Epsilon]", "^", "2"}]}]}]}], "]"}], ")"}], "+", 
+      RowBox[{
+       RowBox[{"O", "[", "\[Epsilon]", "]"}], "^", "3"}]}], "]"}], ",", 
+    "\[Epsilon]", ",", "1"}], "]"}], "//", "Simplify"}]], "Input",
+ CellChangeTimes->{{3.577092702215682*^9, 3.577092702406445*^9}}]
+},
+WindowSize->{740, 1036},
+WindowMargins->{{Automatic, -6}, {-6, -8}},
+FrontEndVersion->"8.0 for Linux x86 (32-bit) (November 7, 2010)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 462, 13, 30, "Input"],
+Cell[1022, 35, 125, 2, 30, "Input"],
+Cell[1150, 39, 225, 5, 30, "Input"],
+Cell[1378, 46, 1198, 35, 88, "Input"],
+Cell[2579, 83, 695, 19, 54, "Input"],
+Cell[3277, 104, 207, 5, 30, "Input"],
+Cell[3487, 111, 1009, 28, 107, "Input"],
+Cell[4499, 141, 1372, 40, 126, "Input"],
+Cell[5874, 183, 1099, 27, 88, "Input"],
+Cell[6976, 212, 971, 25, 88, "Input"],
+Cell[7950, 239, 718, 21, 69, "Input"],
+Cell[8671, 262, 1564, 38, 107, "Input"],
+Cell[10238, 302, 589, 16, 50, "Input"],
+Cell[10830, 320, 424, 12, 30, "Input"],
+Cell[11257, 334, 436, 12, 50, "Input"],
+Cell[11696, 348, 810, 22, 50, "Input"],
+Cell[12509, 372, 712, 19, 50, "Input"],
+Cell[13224, 393, 736, 19, 50, "Input"],
+Cell[13963, 414, 649, 18, 69, "Input"],
+Cell[14615, 434, 563, 16, 69, "Input"],
+Cell[15181, 452, 569, 15, 103, "Input"],
+Cell[15753, 469, 549, 15, 57, "Input"],
+Cell[16305, 486, 566, 15, 80, "Input"],
+Cell[16874, 503, 355, 10, 30, "Input"],
+Cell[17232, 515, 886, 18, 50, "Input"],
+Cell[18121, 535, 597, 16, 30, "Input"],
+Cell[18721, 553, 596, 16, 50, "Input"],
+Cell[19320, 571, 1574, 37, 88, "Input"],
+Cell[20897, 610, 1141, 31, 88, "Input"],
+Cell[22041, 643, 1044, 29, 88, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)
