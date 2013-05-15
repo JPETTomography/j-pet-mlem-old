@@ -56,6 +56,10 @@ CPPFLAGS += -fopenmp
 LDFLAGS  += -fopenmp
 endif
 
+ifdef STATIC
+LDFLAGS  += -static
+endif
+
 CPPFLAGS += -MMD
 CPPFLAGS += -Wall
 ifneq ($(findstring g++,$(CXX))$(findstring icpc,$(CXX)),)
@@ -138,4 +142,4 @@ clean:
 	rm -f $(OBJ) $(TOBJ) $(MOBJ) $(LOBJ) $(DEP)
 
 style:
-	find . \( -iname '*.c' -or -iname '*.cpp' -or -iname '*.h' \) -exec clang-format -style=Chromium -std=c++11 -i {} \;
+	find . \( -iname '*.c' -or -iname '*.cpp' -or -iname '*.h' \) -exec clang-format -style=file -i {} +

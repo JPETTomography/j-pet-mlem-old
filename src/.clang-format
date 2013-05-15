@@ -1,0 +1,23 @@
+---
+# BasedOnStyle:  Chromium
+AccessModifierOffset: -1
+AlignEscapedNewlinesLeft: true
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortIfStatementsOnASingleLine: false
+BinPackParameters: false
+ColumnLimit:     80
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+DerivePointerBinding: false
+IndentCaseLabels: true
+MaxEmptyLinesToKeep: 1
+ObjCSpaceBeforeProtocolList: false
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 200
+PointerBindsToType: true
+SpacesBeforeTrailingComments: 2
+Standard:        C++11
+IndentWidth:     2
+UseTab:          false
+BreakBeforeBraces: Attach
+...
+

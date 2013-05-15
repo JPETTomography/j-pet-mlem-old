@@ -1,4 +1,5 @@
 #pragma once
+#include<iostream>
 
 #include "point.h"
 #include "event.h"
@@ -63,4 +64,14 @@ class Polygon : public std::vector<Point<FType>> {
     svg << "\"/>" << std::endl;
     return svg;
   }
+
+  friend std::ostream& operator<<(std::ostream& out, Polygon& pg) {
+    out << "polygon points \n";
+    for (auto it = pg.begin(); it != pg.end(); ++it) {
+      auto p = *it;
+      out << p.x << ' ' << p.y <<"\n";
+    }
+    out << std::flush;
+    return out;
+    }
 };

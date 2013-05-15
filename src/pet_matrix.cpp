@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
                         cmdline::oneof<std::string>("always", "scintilator"));
 
     cl.add<double>(
-        "decay-length", 0, "1/e length of scintilator", false, 100.);
+        "acceptance", 'a', "acceptance probability factor", false, 10.);
     cl.add<tausworthe::seed_type>(
         "seed", 's', "random number generator seed", false, 0, false);
     cl.add<cmdline::string>(
@@ -65,18 +65,19 @@ int main(int argc, char* argv[]) {
         cmdline::string(),
         false);
     cl.add("full", 'f', "output full non-triangular sparse system matrix");
-    
+
     // visual debugging params
     cl.add<cmdline::string>(
         "png", 0, "output lor to png", false, cmdline::string(), false);
     cl.add<int>("from", 0, "lor start detector to output", false, -1, false);
     cl.add<int>("to", 0, "lor end detector to output", false, -1, false);
+    cl.add<int>("pos", 0, "position to output", false, -1, false);
 
     // printing & stats params
     cl.add("print", 0, "print triangular sparse system matrix");
     cl.add("stats", 0, "show stats");
     cl.add("wait", 0, "wait before exit");
-    cl.add("verbose",'v',"prints the iterations information on std::out");
+    cl.add("verbose", 'v', "prints the iterations information on std::out");
 
     cl.parse_check(argc, argv);
 
@@ -116,7 +117,7 @@ int main(int argc, char* argv[]) {
         auto fn_wo_ext =
             fn->substr(0,
                        fn_ext != std::string::npos &&
-                       (fn_sep == std::string::npos || fn_sep < fn_ext)
+                               (fn_sep == std::string::npos || fn_sep < fn_ext)
                            ? fn_ext
                            : std::string::npos);
         std::ifstream in(fn_wo_ext + ".cfg");
@@ -175,27 +176,18 @@ int main(int argc, char* argv[]) {
 
     int n_tof_positions = 1;
     double max_bias = 0;
-    if (cl.exist("tof-step")) {
+    if (cl.exist("tof-step") && tof_step > 0) {
       if (cl.get<std::string>("model") == "always")
         max_bias = AlwaysAccept<>::max_bias();
       if (cl.get<std::string>("model") == "scintilator")
         max_bias = ScintilatorAccept<>::max_bias();
       n_tof_positions = dr.n_positions(tof_step, max_bias);
-    } else {
-      tof_step = 0;
     }
-
-    std::cerr<<"max bias      = "<<max_bias<<"\n";
-    std::cerr<<"tof_step      = "<<tof_step<<"\n";
-    std::cerr<<"tof positions = "<<n_tof_positions<<"\n";
 
     typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
     MatrixImpl matrix(n_pixels, n_detectors, n_tof_positions);
     MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(
         dr, matrix, s_pixel, tof_step);
-
-    if(cl.exist("verbose"))
-      monte_carlo.set_verbose();
 
     for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
       ibstream in(*fn, std::ios::binary);
@@ -203,16 +195,24 @@ int main(int argc, char* argv[]) {
         throw("cannot open input file: " + *fn);
       try {
         MatrixImpl::SparseMatrix sparse_matrix(in);
-        std::cerr<<"read in "<<*fn<<" "<<sparse_matrix.tof()<<std::endl;
-        if (sparse_matrix.tof() && !cl.exist("tof-step")) {
-          throw("input has TOF positions but not quantisation specified");
+        if (cl.exist("verbose"))
+          std::cerr << "read in " << *fn << " "
+                    << sparse_matrix.n_tof_positions() << std::endl;
+        if (sparse_matrix.n_tof_positions() != n_tof_positions) {
+          std::ostringstream msg;
+          msg << "input has different TOF positions "
+              << sparse_matrix.n_tof_positions() << " than specified "
+              << n_tof_positions;
+          throw(msg.str());
         }
 
         sparse_matrix.sort_by_pixel();
-        std::cerr<<"sorted\n";
+        if (cl.exist("verbose"))
+          std::cerr << "sorted" << std::endl;
 
         matrix << sparse_matrix;
-        std::cerr<<"converted to pixel major\n";
+        if (cl.exist("verbose"))
+          std::cerr << "converted to pixel major" << std::endl;
       }
 
       catch (std::string & ex) {
@@ -222,13 +222,24 @@ int main(int argc, char* argv[]) {
         throw(std::string(ex) + ": " + *fn);
       }
     }
-    std::cerr<<"n_emissions "<<n_emissions<<std::endl;
+
+    if (cl.exist("verbose")) {
+      monte_carlo.verbose = true;
+      std::cerr << "max bias      = " << max_bias << std::endl;
+      std::cerr << "TOF step      = " << tof_step << std::endl;
+      std::cerr << "TOF positions = " << n_tof_positions << std::endl;
+      std::cerr << "emissions     = " << n_emissions << std::endl;
+    }
+    struct timespec start, stop;
+    clock_gettime(CLOCK_REALTIME,&start);
     if (cl.get<std::string>("model") == "always")
       monte_carlo(gen, AlwaysAccept<>(), n_emissions);
     if (cl.get<std::string>("model") == "scintilator")
       monte_carlo(
-          gen, ScintilatorAccept<>(1.0/cl.get<double>("decay-length")), 
-          n_emissions);
+                  gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
+    clock_gettime(CLOCK_REALTIME,&stop);
+
+    std::cout<<"time : "<<((1.0e9*stop.tv_sec+stop.tv_nsec)-(1.0e9*start.tv_sec+start.tv_nsec))/1.0e9<<std::endl;
 
     auto sparse_matrix = matrix.to_sparse();
 
@@ -240,7 +251,7 @@ int main(int argc, char* argv[]) {
       auto fn_wo_ext =
           fn.substr(0,
                     fn_ext != std::string::npos &&
-                    (fn_sep == std::string::npos || fn_sep < fn_ext)
+                            (fn_sep == std::string::npos || fn_sep < fn_ext)
                         ? fn_ext
                         : std::string::npos);
       auto fn_wo_path =
@@ -283,8 +294,41 @@ int main(int argc, char* argv[]) {
       } else {
         lor.second = (lor.first + n_detectors / 2) % n_detectors;
       }
-      png_writer png(cl.get<cmdline::string>("png"));
-      matrix.to_sparse().output_lor_bitmap(png, lor);
+      if (lor.first < lor.second)
+        std::swap(lor.first, lor.second);
+
+      auto fn = cl.get<cmdline::string>("png");
+      auto fn_sep = fn.find_last_of("\\/");
+      auto fn_ext = fn.find_last_of(".");
+      auto fn_wo_ext =
+          fn.substr(0,
+                    fn_ext != std::string::npos &&
+                            (fn_sep == std::string::npos || fn_sep < fn_ext)
+                        ? fn_ext
+                        : std::string::npos);
+      auto fn_wo_path =
+          fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
+
+      png_writer png(fn);
+      auto position = cl.get<int>("pos");
+      if (cl.exist("full")) {
+        sparse_matrix.to_full().output_bitmap(png, lor, position);
+      } else {
+        sparse_matrix.output_bitmap(png, lor, position);
+      }
+
+      svg_ostream<> svg(fn_wo_ext + ".svg",
+                        radius + h_detector,
+                        radius + h_detector,
+                        1024.,
+                        1024.);
+      svg << dr;
+
+      svg.link_image(fn_wo_path + ".png",
+                     -(s_pixel * n_pixels) / 2.,
+                     -(s_pixel * n_pixels) / 2.,
+                     s_pixel * n_pixels,
+                     s_pixel * n_pixels);
     }
 
     // show stats if requested
@@ -305,6 +349,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (cl.exist("print")) {
+      sparse_matrix.sort_by_lor_n_pixel();
       std::cout << sparse_matrix;
     }
 
