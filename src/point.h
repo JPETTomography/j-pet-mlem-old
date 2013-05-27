@@ -15,15 +15,15 @@ template <typename FType = double> struct Point {
   // sin/cos for given point, but this will be used
   // only for initialization.
 
-   Point &rotate(F phi)  {
+  Point& rotate(F phi) {
     auto sin_phi = std::sin(phi);
     auto cos_phi = std::cos(phi);
     F tx = x * cos_phi - y * sin_phi;
     F ty = x * sin_phi + y * cos_phi;
-    x=tx;
-    y=ty;
+    x = tx;
+    y = ty;
     return *this;
-   }
+  }
 
   Point rotated(F phi) const {
     Point tmp(*this);

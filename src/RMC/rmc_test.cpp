@@ -2,7 +2,7 @@
 
 #include "../point.h"
 
-#include"tor.h"
+#include "tor.h"
 
 typedef double FLOAT;
 

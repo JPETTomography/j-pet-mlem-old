@@ -105,8 +105,7 @@ class SparseMatrix
     if (in_magic != MAGIC_VERSION_TRIANGULAR &&
         in_magic != MAGIC_VERSION_FULL &&
         in_magic != MAGIC_VERSION_TOF_TRIANGULAR &&
-        in_magic != MAGIC_VERSION_TOF_FULL &&
-        in_magic != MAGIC_VERSION_1 &&
+        in_magic != MAGIC_VERSION_TOF_FULL && in_magic != MAGIC_VERSION_1 &&
         in_magic != MAGIC_VERSION_2) {
       throw("invalid file type format");
     }

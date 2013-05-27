@@ -15,15 +15,14 @@ template <typename FType = double> class Detector : public Polygon<FType> {
     this->push_back(Point(-w / 2., h / 2.));
   }
 
-
-  Detector &rotate(Angle phi) {
+  Detector& rotate(Angle phi) {
     Detector r;
     for (auto it = this->begin(); it != this->end(); ++it) {
       it->rotate(phi);
     }
     return *this;
   }
-  
+
   Detector rotated(Angle phi) {
     Detector r;
     for (auto it = this->begin(); it != this->end(); ++it) {

@@ -90,8 +90,7 @@ class DetectorRing : public std::vector<Detector<FType>> {
   S n_positions(F step_size, F max_bias_size) {
     // since position needs to be symmetric against (0,0) number must be even
     return (static_cast<S>(ceil(2.0 * max_dl(max_bias_size) / step_size)) + 1) /
-           2 *
-           2;
+           2 * 2;
   }
 
   template <class RandomGenerator, class AcceptanceModel>

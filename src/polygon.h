@@ -1,5 +1,5 @@
 #pragma once
-#include<iostream>
+#include <iostream>
 
 #include "point.h"
 #include "event.h"
@@ -69,9 +69,9 @@ class Polygon : public std::vector<Point<FType>> {
     out << "polygon points \n";
     for (auto it = pg.begin(); it != pg.end(); ++it) {
       auto p = *it;
-      out << p.x << ' ' << p.y <<"\n";
+      out << p.x << ' ' << p.y << "\n";
     }
     out << std::flush;
     return out;
-    }
+  }
 };
