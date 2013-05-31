@@ -230,18 +230,24 @@ int main(int argc, char* argv[]) {
       std::cerr << "TOF positions = " << n_tof_positions << std::endl;
       std::cerr << "emissions     = " << n_emissions << std::endl;
     }
+
+#ifdef __linux__
     struct timespec start, stop;
     clock_gettime(CLOCK_REALTIME, &start);
+#endif
+
     if (cl.get<std::string>("model") == "always")
       monte_carlo(gen, AlwaysAccept<>(), n_emissions);
     if (cl.get<std::string>("model") == "scintilator")
       monte_carlo(
           gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
-    clock_gettime(CLOCK_REALTIME, &stop);
 
+#ifdef __linux__
+    clock_gettime(CLOCK_REALTIME, &stop);
     std::cout << "time : " << ((1.0e9 * stop.tv_sec + stop.tv_nsec) -
                                (1.0e9 * start.tv_sec + start.tv_nsec)) /
                                   1.0e9 << std::endl;
+#endif
 
     auto sparse_matrix = matrix.to_sparse();
 
