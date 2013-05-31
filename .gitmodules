@@ -1,6 +1,8 @@
 [submodule "lib/catch"]
 	path = lib/catch
 	url = git://github.com/nanoant/Catch.git
+	ignore = all
 [submodule "lib/cmdline"]
 	path = lib/cmdline
 	url = git://github.com/nanoant/cmdline.git
+	ignore = all
