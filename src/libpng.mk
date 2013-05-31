@@ -11,7 +11,7 @@ else
 		$(wildcard /usr/local/include/libpng) \
 		$(wildcard /opt/X11/include/libpng15) ) )
 	ifneq ($(LIBPNG_INCLUDE),)
-		LIBPNG_LIB := $(dir $(patsubst %/,%,$(dir $(LIBPNG))))lib
+		LIBPNG_LIB := $(dir $(patsubst %/,%,$(dir $(LIBPNG_INCLUDE))))lib
 	endif
 endif
 
