@@ -30,7 +30,6 @@ class EllipticalRegion {
     double r2 = r_x * r_x * inv_a2_ + r_y * r_y * inv_b2_;
 
     return r2 < 1.0;
-
   }
   double x() const { return x_; }
   double y() const { return y_; }

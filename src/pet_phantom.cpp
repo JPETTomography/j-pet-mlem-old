@@ -344,7 +344,6 @@ int main(int argc, char* argv[]) {
       pixels_detected_text_out << "\n";
     }
     return 0;
-
   }
   catch (std::string & ex) {
     std::cerr << "error: " << ex << std::endl;
@@ -352,5 +351,4 @@ int main(int argc, char* argv[]) {
   catch (const char * ex) {
     std::cerr << "error: " << ex << std::endl;
   }
-
 }

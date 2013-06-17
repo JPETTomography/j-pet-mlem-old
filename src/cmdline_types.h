@@ -3,8 +3,7 @@
 // @cond PRIVATE
 // redefine help formatting for greater readibility
 namespace cmdline {
-class string : public std::string {
-};
+class string : public std::string {};
 namespace detail {
 template <> inline std::string readable_typename<int>() { return "size"; }
 template <> inline std::string readable_typename<long>() { return "seed"; }

@@ -335,7 +335,6 @@ class SparseMatrix
         }
         full.push_back(
             Element(lor, position, symmetric_pixel(pixel, symmetry), hits));
-
       }
     }
     return full;

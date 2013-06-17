@@ -28,5 +28,4 @@ template <typename F> class ToR {
   Point<F> c_[2];
   F angle_[2];
   F w_[2], h_[2];
-
 };

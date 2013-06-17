@@ -38,7 +38,7 @@ template <typename F = double, typename S = int> class Circle {
 
   S section(F angle, S n_detectors) {
     // converting angles to [0,2 Pi) interval
-    F normalised_angle = angle > 0 ? angle : (F) 2.0 * M_PI + angle;
+    F normalised_angle = angle > 0 ? angle : (F)2.0 * M_PI + angle;
     return static_cast<S>(round(normalised_angle * n_detectors * INV_TWO_PI)) %
            n_detectors;
   }
@@ -65,6 +65,6 @@ template <typename F = double, typename S = int> class Circle {
   static const F INV_TWO_PI;
 };
 
-template <typename F, typename S> const F Circle<F, S>::TWO_PI = (F) 2.0 * M_PI;
+template <typename F, typename S> const F Circle<F, S>::TWO_PI = (F)2.0 * M_PI;
 template <typename F, typename S>
-const F Circle<F, S>::INV_TWO_PI = (F) 1.0 / TWO_PI;
+const F Circle<F, S>::INV_TWO_PI = (F)1.0 / TWO_PI;

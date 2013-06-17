@@ -65,7 +65,6 @@ TEST_CASE("pix_major_system_matrix/add_twice", "add one element twice") {
   CHECK(hits == 2);
   CHECK(matrix.size() == 1);
   CHECK(matrix.n_lors_at_pixel_index(13) == 1);
-
 }
 
 TEST_CASE("pix_major_system_matrix/add_to_all",
@@ -85,7 +84,6 @@ TEST_CASE("pix_major_system_matrix/add_to_all",
     CHECK(matrix.size() == matrix.n_pixels());
     CHECK(matrix.n_lors_at_pixel_index(i_pixel) == 1);
   }
-
 }
 
 TEST_CASE("pix_major_system_matrix/to_sparse", "flatten") {
@@ -111,5 +109,4 @@ TEST_CASE("pix_major_system_matrix/to_sparse", "flatten") {
   for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
     CHECK(sparse[i_pixel].lor == lor);
   }
-
 }

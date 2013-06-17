@@ -123,7 +123,6 @@ template <typename F> class Vector<2, F> : public Base::Vector<2, F> {
 
     (*this)[0] = x * c - y * s;
     (*this)[1] = y * c + x * s;
-
   }
 };
 
@@ -151,5 +150,4 @@ template <typename F> class Point<2, F> : public Base::Point<2, F> {
     return *this;
   }
 };
-
 }
