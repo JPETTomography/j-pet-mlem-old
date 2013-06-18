@@ -72,7 +72,7 @@ png_writer::~png_writer() {
   if (priv->info_ptr)
     png_free_data(priv->png_ptr, priv->info_ptr, PNG_FREE_ALL, -1);
   if (priv->png_ptr)
-    png_destroy_write_struct(&priv->png_ptr, (png_infopp) NULL);
+    png_destroy_write_struct(&priv->png_ptr, (png_infopp)NULL);
   if (priv)
     delete priv;
 #endif

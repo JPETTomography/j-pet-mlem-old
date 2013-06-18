@@ -89,7 +89,7 @@ class MonteCarlo {
 
           auto angle = phi_dis(l_gen);
           LOR lor;
-          F position = (F) 0.0;
+          F position = (F)0.0;
           auto hits = detector_ring_.emit_event(
               l_gen, model, rx, ry, angle, lor, position);
 

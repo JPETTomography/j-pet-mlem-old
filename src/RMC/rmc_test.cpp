@@ -21,5 +21,4 @@ TEST_CASE("tor/create", "TOR create") {
     REQUIRE(tor.width(i) == Approx(w[i]));
     REQUIRE(tor.height(i) == Approx(h[i]));
   }
-
 }
