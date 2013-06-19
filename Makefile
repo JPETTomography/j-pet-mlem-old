@@ -1,6 +1,6 @@
 # run make in all subdirectories
 # with Makefile inside
-subdirs := $(patsubst %/,%,$(dir $(wildcard **/Makefile)))
+subdirs := $(patsubst %/,%,$(filter-out build%,$(dir $(wildcard **/Makefile))))
 # use terminal colors if in terminal
 bold := \033[1m
 none := \033[0m
