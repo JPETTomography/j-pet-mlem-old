@@ -66,3 +66,14 @@ public:
 private:
   F rep_[N*M];
 };
+
+
+template<int N, int M, typename F> 
+F form(Vector<N,F> a, Matrix<N,M,F> mat, Vector<M,F> b) {
+  F sum=0.0;
+  for(int i=0; i<N;++i)
+    for(int j=0; j<M;++j) 
+      sum+=a[i]*mat[i][j]*b[j];
+
+  return sum;
+}; 

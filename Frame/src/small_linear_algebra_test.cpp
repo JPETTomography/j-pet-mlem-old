@@ -89,3 +89,18 @@ TEST_CASE("Vector/Init", "Init") {
   for(int i=0;i<9;i++)
     REQUIRE(vectorIt[i]==Approx(data[i]));
 }
+
+TEST_CASE("Form", "Form") {
+
+  FLOAT data[6]={0.1, 0.2, 0.4, 0.5, 0.7, 0.8};
+  Matrix<3,2,FLOAT> mat(data);
+  
+  FLOAT a[3]={0.7, 0.2, 0.4};
+  FLOAT b[2]={0.43, 0.7};
+
+  Vector<3,FLOAT> av(a);
+  Vector<2,FLOAT> bv(b);
+ 
+  REQUIRE(form(av,mat,bv)==Approx(0.5769));
+  
+}
