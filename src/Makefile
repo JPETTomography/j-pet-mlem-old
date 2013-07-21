@@ -71,6 +71,7 @@ endif
 ifeq ($(TARGET),Linux)
 ifeq ($(findstring clang,$(CXX)),)
 CPPFLAGS += -mssse3 -mfpmath=sse
+LDFLAGS += -lrt
 endif
 endif
 
