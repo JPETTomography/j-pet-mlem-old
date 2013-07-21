@@ -1,5 +1,7 @@
 TEMPLATE = subdirs
 
+cache()
+
 equals(PWD, $$OUT_PWD) {
   MAKEFILE = PET.mk
 }
