@@ -1,7 +1,7 @@
 #ifndef DATA_STRUCTURES_H
 #define DATA_STRUCTURES_H
 
-#define DEBUG 0
+#define DEBUG 1
 
 template <typename T>
 struct event {

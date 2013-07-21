@@ -11,7 +11,7 @@
 
 #include "data_structures.h"
 #include "scintillator.h"
-#include "bstream.h"
+#include "util/bstream.h"
 
 #define PI_2 1.5707963
 
@@ -54,11 +54,7 @@ class phantom {
     _inv_a2 = 1.0 / (_a * _a);
     _inv_b2 = 1.0 / (_b * _b);
 
-    scientilator_list.push_back(
-        scintillator<>(R_distance, 0.0f, Scentilator_length));
-    scientilator_list.push_back(
-        scintillator<>(-R_distance, 0.0f, Scentilator_length));
-  }
+   }
 
   bool in(T x, T y) const {
 
@@ -117,8 +113,8 @@ class phantom {
                  sqrt(static_cast<T>(1) + (tan(rangle) * tan(rangle))) +
              normal_dist(rng_list[omp_get_thread_num()]);
 
-        if (std::abs(z_u) < Scentilator_length &&
-            std::abs(z_d) < Scentilator_length) {
+        if (std::abs(z_u) < (Scentilator_length/2) &&
+            std::abs(z_d) < (Scentilator_length/2)) {
 
           temp_event.z_u = z_u;
           temp_event.z_d = z_d;
@@ -140,8 +136,8 @@ class phantom {
 
   pixel_location in_pixel(T &y, T &z) {
 
-    return std::make_pair(((Scentilator_length + y) / pixel_size),
-                          ((Scentilator_length + z) / pixel_size));
+    return std::make_pair((((Scentilator_length/2) + y) / pixel_size),
+                          (((Scentilator_length/2) + z) / pixel_size));
   }
 
   /*
