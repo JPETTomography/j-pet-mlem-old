@@ -1,9 +1,17 @@
 # libpng support
 
+# built-in libpng
+ifneq ($(wildcard /usr/include/png.h),)
+	CPPFLAGS += -DHAVE_LIBPNG
+	LDFLAGS  += -lpng
+else
+
+# provided via environment (i.e. modules)
 ifneq ($(LIBPNG),)
 	# defined by modules
 	LIBPNG_INCLUDE := $(LIBPNG)/include
 	LIBPNG_LIB     := $(LIBPNG)/lib
+
 else
 	# look in well known places
 	LIBPNG_INCLUDE := $(strip $(firstword \
@@ -18,4 +26,6 @@ endif
 ifneq ($(LIBPNG_INCLUDE),)
 	CPPFLAGS += -I$(LIBPNG_INCLUDE) -DHAVE_LIBPNG
 	LDFLAGS  += -L$(LIBPNG_LIB) -lpng
+endif
+
 endif
