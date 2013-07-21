@@ -17,8 +17,7 @@
 
 typedef std::minstd_rand0 rng;
 
-template <typename T = float>
-class phantom {
+template <typename T = float> class phantom {
 
   typedef std::pair<int, int> pixel_location;
 
@@ -33,12 +32,20 @@ class phantom {
   T _cos;
   T _inv_a2;
   T _inv_b2;
-  std::vector<event<T> > event_list;
-  std::vector<scintillator<> > scientilator_list;
+  std::vector<event<T>> event_list;
+  std::vector<scintillator<>> scientilator_list;
 
  public:
-  phantom(int &iteration, int n_pixels, T &pixel_size, T &R_distance,
-          T &Scentilator_length, T &x, T &y, T &a, T &b, T &phi)
+  phantom(int& iteration,
+          int n_pixels,
+          T& pixel_size,
+          T& R_distance,
+          T& Scentilator_length,
+          T& x,
+          T& y,
+          T& a,
+          T& b,
+          T& phi)
       : iteration(iteration),
         n_pixels(n_pixels),
         pixel_size(pixel_size),
@@ -53,8 +60,7 @@ class phantom {
     _cos = cos(static_cast<double>(_phi));
     _inv_a2 = 1.0 / (_a * _a);
     _inv_b2 = 1.0 / (_b * _b);
-
-   }
+  }
 
   bool in(T x, T y) const {
 
@@ -71,7 +77,7 @@ class phantom {
 
   void emit_event(int n_threads) {
 
-    std::vector<std::vector<event<T> > > event_list_per_thread;
+    std::vector<std::vector<event<T>>> event_list_per_thread;
     event<T> temp_event;
 
     T ry, rz, rangle;
@@ -113,8 +119,8 @@ class phantom {
                  sqrt(static_cast<T>(1) + (tan(rangle) * tan(rangle))) +
              normal_dist(rng_list[omp_get_thread_num()]);
 
-        if (std::abs(z_u) < (Scentilator_length/2) &&
-            std::abs(z_d) < (Scentilator_length/2)) {
+        if (std::abs(z_u) < (Scentilator_length / 2) &&
+            std::abs(z_d) < (Scentilator_length / 2)) {
 
           temp_event.z_u = z_u;
           temp_event.z_d = z_d;
@@ -127,17 +133,18 @@ class phantom {
 
     for (signed i = 0; i < omp_get_max_threads(); ++i) {
 
-      event_list.insert(event_list.end(), event_list_per_thread[i].begin(),
+      event_list.insert(event_list.end(),
+                        event_list_per_thread[i].begin(),
                         event_list_per_thread[i].end());
     }
 
     std::cout << "WIELKOSC: " << event_list.size() << std::endl;
   }
 
-  pixel_location in_pixel(T &y, T &z) {
+  pixel_location in_pixel(T& y, T& z) {
 
-    return std::make_pair((((Scentilator_length/2) + y) / pixel_size),
-                          (((Scentilator_length/2) + z) / pixel_size));
+    return std::make_pair((((Scentilator_length / 2) + y) / pixel_size),
+                          (((Scentilator_length / 2) + z) / pixel_size));
   }
 
   /*
@@ -230,7 +237,7 @@ class phantom {
     out << iteration;
     out << event_list.size();
 
-    typename std::vector<event<T> >::iterator it;
+    typename std::vector<event<T>>::iterator it;
 
     for (it = event_list.begin(); it != event_list.end(); ++it) {
 

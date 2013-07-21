@@ -3,8 +3,7 @@
 
 #endif  // SCINTILLATOR_H
 
-template <typename T = float>
-class scintillator {
+template <typename T = float> class scintillator {
 
  private:
   T y;
