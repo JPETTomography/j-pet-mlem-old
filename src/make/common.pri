@@ -3,7 +3,10 @@ CONFIG  += console
 CONFIG  -= app_bundle
 CONFIG  -= qt
 
-INCLUDEPATH += ../../lib/cmdline \
+QMAKE_CXXFLAGS += -std=c++11
+
+INCLUDEPATH += .. \
+               ../../lib/cmdline \
                ../../lib/catch/include \
 
 LIBPNGPATHS += /usr/include/libpng \
@@ -16,6 +19,7 @@ for(path, LIBPNGPATHS):exists($$path) {
   path         = $$dirname(path)
   path         = $$dirname(path)
   LIBS        += -L$$path/lib -lpng
+  SOURCES     += ../util/png_writer.cpp
   break()
 }
 
@@ -23,4 +27,10 @@ linux-g++ {
   DEFINES        += OMP=1
   QMAKE_CXXFLAGS += -fopenmp
   LIBS           += -fopenmp
+}
+
+macx-clang {
+  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+  QMAKE_CXXFLAGS += -stdlib=libc++
+  LIBS           += -stdlib=libc++
 }
