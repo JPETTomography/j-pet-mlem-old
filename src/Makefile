@@ -85,7 +85,7 @@ BIN  := $(patsubst %.cpp,%,$(MAIN))
 DEP  += $(MAIN:.cpp=.d)
 
 # binary is folder name
-SRC  := $(filter-out test.cpp, $(filter-out %_test.cpp, $(filter-out $(MAIN), $(wildcard **/*.cpp))))
+SRC  := $(filter-out util/test.cpp, $(filter-out %_test.cpp, $(filter-out $(MAIN), $(wildcard **/*.cpp))))
 OBJ  := $(SRC:.cpp=.o)
 DEP += $(SRC:.cpp=.d)
 
