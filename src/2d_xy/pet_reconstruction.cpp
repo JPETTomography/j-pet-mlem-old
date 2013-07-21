@@ -15,12 +15,12 @@
 #endif
 
 #include "cmdline.h"
-#include "cmdline_types.h"
-#include "bstream.h"
-#include "svg_ostream.h"
-#include "cmdline_types.h"
+#include "util/cmdline_types.h"
+#include "util/bstream.h"
+#include "util/svg_ostream.h"
+#include "util/cmdline_types.h"
 #include "reconstruction.h"
-#include "png_writer.h"
+#include "util/png_writer.h"
 
 #if _OPENMP
 #include <omp.h>

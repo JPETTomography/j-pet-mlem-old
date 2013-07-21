@@ -1,6 +1,6 @@
 #pragma once
 
-#include "point.h"
+#include "geometry/point.h"
 
 template <typename FType = double> struct Event {
   typedef FType F;

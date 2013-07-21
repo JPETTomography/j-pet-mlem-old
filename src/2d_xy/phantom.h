@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include <vector>
-#include "point.h"
+#include "geometry/point.h"
 
 class EllipticalRegion {
  public:

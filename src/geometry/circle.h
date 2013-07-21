@@ -1,8 +1,8 @@
 #pragma once
 
 #include "point.h"
-#include "event.h"
-#include "svg_ostream.h"
+#include "2d_xy/event.h"
+#include "util/svg_ostream.h"
 
 // produces secant angles circle/line intersection as a equation system solution
 // see /math/secant.nb

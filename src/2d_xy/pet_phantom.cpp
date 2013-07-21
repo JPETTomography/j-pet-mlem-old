@@ -11,13 +11,13 @@
 #include <fstream>
 
 #include "cmdline.h"
-#include "cmdline_types.h"
+#include "util/cmdline_types.h"
 
-#include "point.h"
+#include "geometry/point.h"
 #include "phantom.h"
 #include "detector_ring.h"
 #include "model.h"
-#include "png_writer.h"
+#include "util/png_writer.h"
 
 #if _OPENMP
 #include <omp.h>

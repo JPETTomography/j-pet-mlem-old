@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include "bstream.h"
+#include "util/bstream.h"
 
 #include <vector>
 

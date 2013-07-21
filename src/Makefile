@@ -77,18 +77,18 @@ endif
 # dependencies
 CPPFLAGS += -I../lib/catch/include
 CPPFLAGS += -I../lib/cmdline
-
+CPPFLAGS += -I.
 
 # binary is folder name
-SRC  := $(filter-out t.cpp, $(filter-out %_test.cpp, $(filter-out pet_%.cpp, $(wildcard *.cpp))))
+SRC  := $(filter-out t.cpp, $(filter-out %_test.cpp, $(filter-out pet_%.cpp, $(wildcard **/*.cpp))))
 OBJ  := $(SRC:.cpp=.o)
 DEP += $(SRC:.cpp=.d)
 
-TSRC := $(wildcard *_test.cpp)
+TSRC := $(wildcard **/*_test.cpp)
 TOBJ := t.o $(TSRC:.cpp=.o)
 DEP  += t.d $(TSRC:.cpp=.d)
 
-MAIN := $(wildcard pet_*.cpp)
+MAIN := $(wildcard **/pet_*.cpp)
 MOBJ := $(MAIN:.cpp=.o)
 BIN  := $(patsubst %.cpp,%,$(MAIN))
 DEP  += $(MAIN:.cpp=.d)
@@ -132,8 +132,8 @@ endef
 $(foreach bin,$(BIN),$(eval $(call BIN_template,$(bin))))
 
 # unit testing
-test: t ; @./t
-t: $(TOBJ) $(OBJ)
+test: util/t ; @util/t
+util/t: $(TOBJ) $(OBJ)
 	$(call LD_info)
 	@$(CXX) -o $@ $^  $(LDFLAGS)
 

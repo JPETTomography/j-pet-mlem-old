@@ -1,6 +1,6 @@
 #pragma once
 
-#include "polygon.h"
+#include "geometry/polygon.h"
 
 template <typename FType = double> class Detector : public Polygon<FType> {
  public:

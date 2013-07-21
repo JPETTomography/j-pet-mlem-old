@@ -1,6 +1,6 @@
 #pragma once
 
-#include "random.h"
+#include "util/random.h"
 
 /// Represents model which always produces a decay
 

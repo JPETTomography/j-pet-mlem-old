@@ -9,16 +9,16 @@
 #include <random>
 
 #include "cmdline.h"
-#include "cmdline_types.h"
+#include "util/cmdline_types.h"
 
-#include "random.h"
+#include "util/random.h"
 #include "detector_ring.h"
 #include "matrix_pixel_major.h"
-#include "pixel.h"
+#include "geometry/pixel.h"
 #include "lor.h"
 #include "model.h"
-#include "png_writer.h"
-#include "svg_ostream.h"
+#include "util/png_writer.h"
+#include "util/svg_ostream.h"
 
 #include "monte_carlo.h"
 

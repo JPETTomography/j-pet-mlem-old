@@ -2,8 +2,8 @@
 #include <iostream>
 
 #include "point.h"
-#include "event.h"
-#include "svg_ostream.h"
+#include "2d_xy/event.h"
+#include "util/svg_ostream.h"
 
 template <typename FType = double>
 class Polygon : public std::vector<Point<FType>> {

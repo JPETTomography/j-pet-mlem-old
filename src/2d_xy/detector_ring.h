@@ -2,12 +2,12 @@
 
 #include <map>
 
-#include "random.h"
+#include "util/random.h"
 #include "detector.h"
-#include "circle.h"
-#include "svg_ostream.h"
-#include "point.h"
-#include "pixel.h"
+#include "geometry/circle.h"
+#include "util/svg_ostream.h"
+#include "geometry/point.h"
+#include "geometry/pixel.h"
 #include "lor.h"
 
 /// Provides model for 2D ring of detectors
