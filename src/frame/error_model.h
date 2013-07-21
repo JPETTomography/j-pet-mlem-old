@@ -1,15 +1,12 @@
 #pragma once
 
+template <typename F> class ConstantErrorsModel {
 
-template<typename F> class ConstantErrorsModel {
-
-public:
+ public:
   ConstantErrorsModel(F sigma_z, F sigma_l, F correlation = 0.0)
-    : sigma_z_(sigma_z),
-      sigma_l_(sigma_l),
-      correlation_(correlation) {};
+      : sigma_z_(sigma_z), sigma_l_(sigma_l), correlation_(correlation) {};
 
-private:
+ private:
   F sigma_z_;
   F sigma_l_;
   F correlation_;
