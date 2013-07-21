@@ -1,7 +1,7 @@
 /data/
 */t
-*/*.o
-*/*.d
+*/**/*.o
+*/**/*.d
 */*.aux
 */*.log
 */*.pdf
@@ -10,9 +10,9 @@
 */*.toc
 */*.nav
 */*.snm
-src/pet_*
-!src/pet_*.cpp
-src/t
+src/**/pet_*
+!src/**/pet_*.cpp
+src/**/test
 doc/html/
 *~
 *.bin
