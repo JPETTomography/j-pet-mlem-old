@@ -1,5 +1,3 @@
-*/**/*.o
-*/**/*.d
 /data/
 */*.aux
 */*.log
@@ -15,11 +13,9 @@ doc/html/
 *.png
 *.svg
 *.txt
-/build*/
-/PET-build*/
-/src/PET.mk
 /src/*/*
 !/src/*/*.*
-/src/*/*.d
-/src/*/*.o
+*/**/*.o
+*/**/*.d
+/PET.mk
 *.pro.user
