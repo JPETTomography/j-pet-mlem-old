@@ -80,13 +80,13 @@ CPPFLAGS += -I../lib/catch/include
 CPPFLAGS += -I../lib/cmdline
 CPPFLAGS += -I.
 
-MAIN := $(wildcard **/pet_*.cpp)
+MAIN := $(wildcard **/*_cmd.cpp)
 MOBJ := $(MAIN:.cpp=.o)
-BIN  := $(patsubst %.cpp,%,$(MAIN))
+BIN  := $(patsubst %_cmd.cpp,%,$(MAIN))
 DEP  += $(MAIN:.cpp=.d)
 
 # binary is folder name
-SRC  := $(filter-out util/test.cpp, $(filter-out %_test.cpp, $(filter-out $(MAIN), $(wildcard **/*.cpp))))
+SRC  := $(filter-out util/test.cpp, $(filter-out %_test.cpp, $(filter-out %_cmd.cpp, $(wildcard **/*.cpp))))
 OBJ  := $(SRC:.cpp=.o)
 DEP += $(SRC:.cpp=.d)
 
@@ -125,9 +125,9 @@ endef
 
 # main executables
 define BIN_template
-$(1): $(1).o $$(OBJ) $$($(1)_OBJ)
+$(1): $(1)_cmd.o $$(OBJ) $$($(1)_OBJ)
 	$$(call LD_info)
-	$(Q)$$(CXX)  -o $$@ $$^ $$(LDFLAGS) $$(LDUFLAGS) $$($(1)_LDFLAGS)
+	$(Q)$$(CXX) -o $$@ $$^ $$(LDFLAGS) $$(LDUFLAGS) $$($(1)_LDFLAGS)
 LOBJ += $$($(1)_OBJ)
 endef
 $(foreach bin,$(BIN),$(eval $(call BIN_template,$(bin))))

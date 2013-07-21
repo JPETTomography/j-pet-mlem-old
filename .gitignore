@@ -1,7 +1,6 @@
-/data/
-*/t
 */**/*.o
 */**/*.d
+/data/
 */*.aux
 */*.log
 */*.pdf
@@ -10,9 +9,6 @@
 */*.toc
 */*.nav
 */*.snm
-src/**/pet_*
-!src/**/pet_*.cpp
-src/**/test
 doc/html/
 *~
 *.bin
@@ -21,4 +17,8 @@ doc/html/
 *.txt
 /build*/
 /PET-build*/
+/src/*/*
+!/src/*/*.*
+/src/*/*.d
+/src/*/*.o
 *.pro.user
