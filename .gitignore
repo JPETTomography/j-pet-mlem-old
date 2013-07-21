@@ -17,6 +17,7 @@ doc/html/
 *.txt
 /build*/
 /PET-build*/
+/src/PET.mk
 /src/*/*
 !/src/*/*.*
 /src/*/*.d

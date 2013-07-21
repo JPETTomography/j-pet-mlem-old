@@ -4,11 +4,16 @@ CONFIG  -= app_bundle
 CONFIG  -= qt
 CONFIG  += object_parallel_to_source
 
+HEADERS += geometry/*.h
+HEADERS += util/*.h
+
 QMAKE_CXXFLAGS += -std=c++11
 
-INCLUDEPATH += .. \
-               ../../lib/cmdline \
-               ../../lib/catch/include \
+DESTDIR = ..
+
+INCLUDEPATH += . \
+               ../lib/cmdline \
+               ../lib/catch/include \
 
 LIBPNGPATHS += /usr/include/libpng12 \
                /usr/include/libpng \
@@ -21,7 +26,7 @@ for(path, LIBPNGPATHS):exists($$path) {
   path         = $$dirname(path)
   path         = $$dirname(path)
   LIBS        += -L$$path/lib -lpng
-  SOURCES     += ../util/png_writer.cpp
+  SOURCES     += util/png_writer.cpp
   break()
 }
 
