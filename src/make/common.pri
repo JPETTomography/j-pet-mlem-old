@@ -2,6 +2,7 @@ TEMPLATE = app
 CONFIG  += console
 CONFIG  -= app_bundle
 CONFIG  -= qt
+CONFIG  += object_parallel_to_source
 
 QMAKE_CXXFLAGS += -std=c++11
 
