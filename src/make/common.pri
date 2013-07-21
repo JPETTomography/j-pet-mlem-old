@@ -9,7 +9,8 @@ INCLUDEPATH += .. \
                ../../lib/cmdline \
                ../../lib/catch/include \
 
-LIBPNGPATHS += /usr/include/libpng \
+LIBPNGPATHS += /usr/include/libpng12 \
+               /usr/include/libpng \
                /usr/local/include/libpng \
                /opt/X11/include/libpng15 \
 

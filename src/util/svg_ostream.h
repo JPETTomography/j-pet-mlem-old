@@ -6,7 +6,7 @@ template <typename FType = double> class svg_ostream : public std::ofstream {
  public:
   typedef FType F;
 
-  svg_ostream(const std::string fn,
+  svg_ostream(const std::string& fn,
               F x_max,
               F y_max,
               F image_width,
