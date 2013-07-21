@@ -4,7 +4,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
-#include "data_structures.h"
+#include "event.h"
 
 template <typename T = float> class spet_reconstruction {
 

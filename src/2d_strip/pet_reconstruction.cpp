@@ -5,14 +5,14 @@
 
 #include "phantom.h"
 #include "reconstruction.h"
-#include "data_structures.h"
-#include "omp.h"
+#include "event.h"
+
 
 using namespace std;
 
 int main() {
 
-  //_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+  _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
   float R_distance = 400.0f;
   float Scentilator_length = 400.0f;

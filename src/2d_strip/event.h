@@ -1,5 +1,4 @@
-#ifndef DATA_STRUCTURES_H
-#define DATA_STRUCTURES_H
+#pragma once
 
 #define DEBUG 1
 
@@ -10,4 +9,3 @@ template <typename T> struct event {
   T dl;
 };
 
-#endif  // DATA_STRUCTURES_H

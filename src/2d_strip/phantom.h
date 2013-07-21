@@ -7,9 +7,14 @@
 #include <ctime>
 #include <random>
 
+#if OMP
 #include <omp.h>
+#else
+#define omp_get_max_threads() 1
+#define omp_get_thread_num() 0
+#endif
 
-#include "data_structures.h"
+#include "event.h"
 #include "scintillator.h"
 #include "util/bstream.h"
 
@@ -83,7 +88,9 @@ template <typename T = float> class phantom {
     T ry, rz, rangle;
     T z_u, z_d, dl;
 
+#if OMP
     omp_set_num_threads(n_threads);
+#endif
 
     event_list_per_thread.resize(omp_get_max_threads());
 
@@ -101,8 +108,9 @@ template <typename T = float> class phantom {
       // OR
       // Turn on leapfrogging with an offset that depends on the task id
     }
-
+#if OMP
 #pragma omp for schedule(static) private(ry, rz, rangle, z_u, z_d, dl)
+#endif
     for (int i = 0; i < iteration; ++i) {
 
       ry = uniform_dist(rng_list[omp_get_thread_num()]);
