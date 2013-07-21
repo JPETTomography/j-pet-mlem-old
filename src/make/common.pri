@@ -1,13 +1,15 @@
 TEMPLATE = app
-CONFIG += console
-CONFIG -= app_bundle
-CONFIG -= qt
+CONFIG  += console
+CONFIG  -= app_bundle
+CONFIG  -= qt
 
-INCLUDEPATH += ../../lib/cmdline ../../lib/catch/include
+INCLUDEPATH += ../../lib/cmdline \
+               ../../lib/catch/include \
 
-LIBPNGPATHS += /usr/include/libpng
-LIBPNGPATHS += /usr/local/include/libpng
-LIBPNGPATHS += /opt/X11/include/libpng15
+LIBPNGPATHS += /usr/include/libpng \
+               /usr/local/include/libpng \
+               /opt/X11/include/libpng15 \
+
 for(path, LIBPNGPATHS):exists($$path) {
   DEFINES     += HAVE_LIBPNG
   INCLUDEPATH += $$path
@@ -15,4 +17,10 @@ for(path, LIBPNGPATHS):exists($$path) {
   path         = $$dirname(path)
   LIBS        += -L$$path/lib -lpng
   break()
+}
+
+linux-g++ {
+  DEFINES        += OMP=1
+  QMAKE_CXXFLAGS += -fopenmp
+  LIBS           += -fopenmp
 }
