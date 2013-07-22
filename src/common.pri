@@ -4,17 +4,34 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 CONFIG += object_parallel_to_source
-CONFIG += silent
 CONFIG += c++11
+
+!CONFIG(verbose): CONFIG += silent
 
 HEADERS += geometry/*.h
 HEADERS += util/*.h
 
+# drop binaries one level up
 equals(PWD, $$OUT_PWD) {
   DESTDIR = ..
 } else {
   DESTDIR = $$OUT_PWD/..
 }
+
+# don't use SDK but call compilers directly on Mac when not using Clang
+macx:!macx-clang {
+  CONFIG -= sdk
+}
+
+# turn on OpenMP for GCC & ICC
+*-g++-*|*-g++|*-icc|*-icc-* {
+  DEFINES        += OMP=1
+  QMAKE_CXXFLAGS += -fopenmp
+  LIBS           += -fopenmp
+}
+
+# enable realtime library for Linux
+linux-*:LIBS     += -lrt
 
 INCLUDEPATH += . \
                ../lib/cmdline \
@@ -39,13 +56,3 @@ for(path, LIBPNGPATHS):exists($$path) {
   SOURCES     += util/png_writer.cpp
   break()
 }
-
-*-g++-* {
-  DEFINES        += OMP=1
-  QMAKE_CXXFLAGS += -fopenmp
-  LIBS           += -fopenmp
-}
-
-linux-*:LIBS     += -lrt
-
-macx:QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
