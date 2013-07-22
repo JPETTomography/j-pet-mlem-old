@@ -11,7 +11,11 @@ HEADERS += util/*.h
 
 QMAKE_CXXFLAGS += -std=c++11
 
-DESTDIR = $$OUT_PWD/..
+equals(PWD, $$OUT_PWD) {
+  DESTDIR = ..
+} else {
+  DESTDIR = $$OUT_PWD/..
+}
 
 INCLUDEPATH += . \
                ../lib/cmdline \
