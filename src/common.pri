@@ -56,3 +56,9 @@ for(path, LIBPNGPATHS):exists($$path) {
   SOURCES     += util/png_writer.cpp
   break()
 }
+
+# workaround for missing old qmake c++11 config
+CONFIG(c++11):!greaterThan(QT_MAJOR_VERSION, 4) {
+  *-g++-*|*-g++|*-icc|*-icc-*:QMAKE_CXXFLAGS += -std=c++0x
+  else:QMAKE_CXXFLAGS += -std=c++11
+}
