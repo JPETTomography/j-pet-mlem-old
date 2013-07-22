@@ -5,11 +5,10 @@ CONFIG -= app_bundle
 CONFIG -= qt
 CONFIG += object_parallel_to_source
 CONFIG += silent
+CONFIG += c++11
 
 HEADERS += geometry/*.h
 HEADERS += util/*.h
-
-QMAKE_CXXFLAGS += -std=c++11
 
 equals(PWD, $$OUT_PWD) {
   DESTDIR = ..
@@ -34,10 +33,9 @@ for(path, LIBPNGPATHS):exists($$path) {
     INCLUDEPATH += $$path
     path         = $$dirname(path)
     path         = $$dirname(path)
-    LIBS        += -L$$path/lib -lpng
-  } else {
-    LIBS        += -lpng
+    LIBS        += -L$$path/lib
   }
+  LIBS        += -lpng
   SOURCES     += util/png_writer.cpp
   break()
 }
@@ -51,8 +49,3 @@ for(path, LIBPNGPATHS):exists($$path) {
 linux-*:LIBS     += -lrt
 
 macx:QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
-
-macx-clang {
-  QMAKE_CXXFLAGS += -stdlib=libc++
-  LIBS           += -stdlib=libc++
-}
