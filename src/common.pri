@@ -1,15 +1,17 @@
 TEMPLATE = app
-CONFIG  += console
-CONFIG  -= app_bundle
-CONFIG  -= qt
-CONFIG  += object_parallel_to_source
+
+CONFIG += console
+CONFIG -= app_bundle
+CONFIG -= qt
+CONFIG += object_parallel_to_source
+CONFIG += silent
 
 HEADERS += geometry/*.h
 HEADERS += util/*.h
 
 QMAKE_CXXFLAGS += -std=c++11
 
-DESTDIR = ..
+DESTDIR = $$OUT_PWD/..
 
 INCLUDEPATH += . \
                ../lib/cmdline \

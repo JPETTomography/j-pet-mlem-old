@@ -17,5 +17,5 @@ doc/html/
 !/src/*/*.*
 */**/*.o
 */**/*.d
-/PET.mk
+/build*/
 *.pro.user

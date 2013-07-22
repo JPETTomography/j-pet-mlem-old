@@ -1,13 +1,10 @@
 TEMPLATE = subdirs
 
-cache()
+CONFIG += silent
 
-equals(PWD, $$OUT_PWD) {
-  MAKEFILE = PET.mk
+# in Qt5 on Mac we require calling cache of we get complaints
+macx {
+  greaterThan(QT_MAJOR_VERSION, 4): cache()
 }
 
-SUBDIRS += src/2d_xy_matrix.pro
-SUBDIRS += src/2d_xy_phantom.pro
-SUBDIRS += src/2d_xy_reconstruction.pro
-SUBDIRS += src/2d_strip_reconstruction.pro
-SUBDIRS += src/test.pro
+SUBDIRS += $$files(src/*.pro)
