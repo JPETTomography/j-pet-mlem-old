@@ -21,29 +21,38 @@ INCLUDEPATH += . \
                ../lib/cmdline \
                ../lib/catch/include \
 
-LIBPNGPATHS += /usr/include/libpng12 \
+LIBPNGPATHS += /usr/include/png.h \
                /usr/include/libpng \
                /usr/local/include/libpng \
                /opt/X11/include/libpng15 \
 
 for(path, LIBPNGPATHS):exists($$path) {
+  basename = $$basename(path)
   DEFINES     += HAVE_LIBPNG
-  INCLUDEPATH += $$path
-  path         = $$dirname(path)
-  path         = $$dirname(path)
-  LIBS        += -L$$path/lib -lpng
+  # only define path if png is not system one
+  !equals(basename, png.h) {
+    INCLUDEPATH += $$path
+    path         = $$dirname(path)
+    path         = $$dirname(path)
+    LIBS        += -L$$path/lib -lpng
+  } else {
+    LIBS        += -lpng
+  }
   SOURCES     += util/png_writer.cpp
   break()
 }
 
-linux-g++ {
+*-g++-* {
   DEFINES        += OMP=1
   QMAKE_CXXFLAGS += -fopenmp
   LIBS           += -fopenmp
 }
 
+linux-*:LIBS     += -lrt
+
+macx:QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+
 macx-clang {
-  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
   QMAKE_CXXFLAGS += -stdlib=libc++
   LIBS           += -stdlib=libc++
 }
