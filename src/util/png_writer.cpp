@@ -12,7 +12,13 @@ struct png_writer_private {
 
 #include "png_writer.h"
 
-png_writer::png_writer(std::string fn) {
+#ifdef HAVE_LIBPNG
+#define USED
+#else
+#define USED __attribute__((unused))
+#endif
+
+png_writer::png_writer(std::string fn USED) {
 #ifdef HAVE_LIBPNG
   priv = new png_writer_private;
   priv->fp = NULL;
@@ -37,12 +43,14 @@ png_writer::png_writer(std::string fn) {
   }
 
   png_init_io(priv->png_ptr, priv->fp);
+#else
+  throw("PNG support is not available in this build");
 #endif
 }
 
-void png_writer::priv_write_header(unsigned int width,
-                                   unsigned int height,
-                                   unsigned int bpp) {
+void png_writer::priv_write_header(unsigned int width USED,
+                                   unsigned int height USED,
+                                   unsigned int bpp USED) {
 #ifdef HAVE_LIBPNG
   png_set_IHDR(priv->png_ptr,
                priv->info_ptr,
@@ -57,7 +65,7 @@ void png_writer::priv_write_header(unsigned int width,
 #endif
 }
 
-void png_writer::priv_write_row(unsigned char* row) {
+void png_writer::priv_write_row(unsigned char* row USED) {
 #ifdef HAVE_LIBPNG
   png_write_row(priv->png_ptr, row);
 #endif

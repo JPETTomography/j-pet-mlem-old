@@ -11,6 +11,8 @@ CONFIG += c++11
 HEADERS += geometry/*.h
 HEADERS += util/*.h
 
+SOURCES += util/png_writer.cpp
+
 # drop binaries one level up
 equals(PWD, $$OUT_PWD) {
   DESTDIR = ..
@@ -44,7 +46,7 @@ LIBPNGPATHS += /usr/include/png.h \
 
 for(path, LIBPNGPATHS):exists($$path) {
   basename = $$basename(path)
-  DEFINES     += HAVE_LIBPNG
+  DEFINES += HAVE_LIBPNG
   # only define path if png is not system one
   !equals(basename, png.h) {
     INCLUDEPATH += $$path
@@ -52,8 +54,7 @@ for(path, LIBPNGPATHS):exists($$path) {
     path         = $$dirname(path)
     LIBS        += -L$$path/lib
   }
-  LIBS        += -lpng
-  SOURCES     += util/png_writer.cpp
+  LIBS += -lpng
   break()
 }
 
