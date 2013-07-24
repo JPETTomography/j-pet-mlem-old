@@ -276,8 +276,14 @@ int main(int argc, char* argv[]) {
       std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
       os << cl;
 
-      png_writer png(fn_wo_ext + ".png");
-      matrix.output_bitmap(png);
+      try {
+        png_writer png(fn_wo_ext + ".png");
+        matrix.output_bitmap(png);
+      }
+      catch (const char * ex) {
+        // don't bail out just produce warning
+        std::cerr << "warning: " << ex << std::endl;
+      }
 
       svg_ostream<> svg(fn_wo_ext + ".svg",
                         radius + h_detector,
