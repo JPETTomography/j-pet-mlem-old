@@ -8,4 +8,3 @@ template <typename T> struct event {
   T z_d;
   T dl;
 };
-

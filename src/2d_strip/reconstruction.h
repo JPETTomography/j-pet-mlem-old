@@ -167,14 +167,15 @@ template <typename T = float> class spet_reconstruction {
     std::cout << "DET MATRIX: " << det_inverse_matrix << std::endl;
 
     T element_before_exp =
-        INVERSE_TWO_PI * (det_inverse_matrix / sqrt(element_sum_aa_ob));
+        INVERSE_TWO_PI * (det_inverse_matrix / std::sqrt(element_sum_aa_ob));
 
     std::cout << "ELEMENT_BEFORE_EXP: " << element_before_exp << std::endl;
 
-    T exp_element =
-        -T(0.5) * (element_bb - ((element_ba * element_ba) / element_sum_aa_ob));
-
-    return element_before_exp * exp_element;
+    T exp_element = -T(0.5) * (element_bb -
+                               ((element_ba * element_ba) / element_sum_aa_ob));
+    std::cout << "SENS: " << sensitivity(pixel.first, pixel.second)
+              << std::endl;
+    return (element_before_exp * exp_element);
   }
 
   void load_input(std::string fn) {
@@ -247,11 +248,11 @@ template <typename T = float> class spet_reconstruction {
 #endif
   }
 
-  T sensitivity(T& y, T& z) {
+  T sensitivity(T y, T z) {
 
-    T a = (T(0.5) * Scentilator_length - z) / (R_distance - y);
-    T b = (T(0.5) * Scentilator_length + z) / (R_distance + y);
-    T c = (T(0.5) * Scentilator_length + z) / (R_distance - y);
+    T a = (T(0.5) * (Scentilator_length / T(0.5)) - z) / (R_distance - y);
+    T b = (T(0.5) * (Scentilator_length / T(0.5)) + z) / (R_distance + y);
+    T c = (T(0.5) * (Scentilator_length / T(0.5)) + z) / (R_distance - y);
 
     return INVERSE_PI *
            (std::atan(std::min(a, b)) - std::atan(std::min(-c, -b)));

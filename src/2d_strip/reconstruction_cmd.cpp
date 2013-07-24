@@ -3,73 +3,113 @@
 #include <ctime>
 #include <xmmintrin.h>
 
+
+#include "cmdline.h"
+#include "util/cmdline_types.h"
+#include "util/bstream.h"
+#include "util/svg_ostream.h"
+#include "util/cmdline_types.h"
+
 #include "phantom.h"
 #include "reconstruction.h"
 #include "event.h"
 
-
 using namespace std;
 
-int main() {
+int main(int argc, char* argv[]) {
 
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
-  float R_distance = 400.0f;
-  float Scentilator_length = 400.0f;
-  int iteration = 100000;
-  float pixel_size = 5.0f;
-  int n_pixels = Scentilator_length / pixel_size;
-  float x = 0.0f;
-  float y = 0.0f;
-  float a = 10.0f;
-  float b = 63.0f;
-  float phi = 0.0f;
+  try {
+    cmdline::parser cl;
 
-  phantom<> test(iteration,
-                 n_pixels,
-                 pixel_size,
-                 R_distance,
-                 Scentilator_length,
-                 x,
-                 y,
-                 a,
-                 b,
-                 phi);
+#if _OPENMP
+    cl.add<int>("n-threads", 't', "number of OpenMP threads", false,4);
+#endif
+    cl.add<float>("r-distance", 'r', "R/2 distance between scientilators", false, 400.0f);
+    cl.add<float>("s-length", 'l', "Scentilator_length", false, 400.0f);
+    cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
+    cl.add<int>("n-pixels", 'n', "Number of pixels", false, 80);
+    cl.add<int>("iter", 'i', "Reconstruction iterations", false, 10);
+    cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
+    cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
+    cl.add<float>("gm", 'g', "Gamma error", false, 0.f);
 
-  int n_threads = 4;
 
-  std::clock_t t0, t1;
+    cl.parse_check(argc, argv);
 
-  t0 = std::clock();
+#if _OPENMP
+    if (cl.exist("n-threads")) {
+      omp_set_num_threads(cl.get<int>("n-threads"));
+    }
+#endif
 
-  test.emit_event(n_threads);
 
-  t1 = std::clock();
+    float R_distance = cl.get<float>("r-distance");
+    float Scentilator_length = cl.get<float>("s-length");
+    int iteration = cl.get<int>("iter");
+    float pixel_size = cl.get<int>("n-pixels");
+    int n_pixels = Scentilator_length / pixel_size;
+    float sigma = cl.get<float>("s-z");
+    float dl = cl.get<float>("s-dl");
+    float gamma = cl.get<float>("gm");
+    float x = 0.0f;
+    float y = 0.0f;
+    float a = 10.0f;
+    float b = 63.0f;
+    float phi = 0.0f;
 
-  std::cout << "Event time: " << (t1 - t0) / 1000 << std::endl;
+    phantom<> test(iteration,
+                   n_pixels,
+                   pixel_size,
+                   R_distance,
+                   Scentilator_length,
+                   x,
+                   y,
+                   a,
+                   b,
+                   phi);
 
-  std::string fn("test.bin");
-  test.save_output(fn);
-  test.load_input(fn);
+    int n_threads = 4;
 
-  float sigma = 10.0f;
-  float dl = 63.0f;
-  float gamma = 0.0f;
-  std::vector<event<float>> list;
+    std::clock_t t0, t1;
 
-  std::cout << "    REC!!!!    " << std::endl;
+    t0 = std::clock();
 
-  spet_reconstruction<> reconstruction(
-      R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl, gamma);
-  // reconstruction.load_input(fn);
+    test.emit_event(n_threads);
 
-  float x_1 = 0.0;
-  float y_1 = 0.0;
-  float tan = 1.0;
-  std::pair<int, int> p = reconstruction.in_pixel(x_1, y_1);
+    t1 = std::clock();
 
-  std::cout << p.first << " " << p.second << std::endl;
-  std::cout << "KERNEL: " << reconstruction.kernel(y, tan, p) << std::endl;
+    std::cout << "Event time: " << (t1 - t0) / 1000 << std::endl;
+
+    std::string fn("test.bin");
+    test.save_output(fn);
+    test.load_input(fn);
+
+    std::vector<event<float>> list;
+
+    std::cout << "    REC!!!!    " << std::endl;
+
+    spet_reconstruction<> reconstruction(
+        R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl, gamma);
+    // reconstruction.load_input(fn);
+
+    float x_1 = 0.0;
+    float y_1 = 0.0;
+    float tan = 1.0;
+    std::pair<int, int> p = reconstruction.in_pixel(x_1, y_1);
+
+    std::cout << p.first << " " << p.second << std::endl;
+    std::cout << "KERNEL: " << reconstruction.kernel(y, tan, p) << std::endl;
+
+
+  }
+  catch (std::string & ex) {
+    std::cerr << "error: " << ex << std::endl;
+  }
+  catch (const char * ex) {
+    std::cerr << "error: " << ex << std::endl;
+  }
 
   return 0;
 }
