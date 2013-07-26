@@ -158,7 +158,7 @@ class spet_reconstruction {
     in >> pixel_s;
     in >> iter;
     in >> size;
-
+int i =0;
     std::cout <<"DATA:" <<  n_pix << " " << pixel_s << " " << iter << " "
               << size << std::endl;
 #if DEBUG == 1
@@ -168,6 +168,11 @@ class spet_reconstruction {
 
 #endif
     for (;;) {
+
+      if (in.eof()) {
+        break;
+      }
+
 
       T z_u, z_d, dl;
 
@@ -184,7 +189,9 @@ class spet_reconstruction {
       pixel_location p = in_pixel(y, z);
 
       std::cout << "pixel:" << p.first << " " << p.second << std::endl;
-
+      event_list[p.first*n_pixels + p.second].push_back(temp_event);
+      ++i;
+     std::cout << "I:" << i << std::endl;
 #if DEBUG == 1
       std::cout << "DATA: " << z_u << "  " << z_d << " " << dl << std::endl;
       std::cout << "LOCATIONS: "
@@ -196,9 +203,6 @@ class spet_reconstruction {
 #endif
       // event_list[p.first * n_pixels + p.second].push_back(temp_event);
 
-      if (in.eof()) {
-        break;
-      }
     }
 
     std::cout << "VECTOR" << std::endl;
@@ -218,28 +222,22 @@ class spet_reconstruction {
 
   void reconstruction(int& iteration) {
     std::cout << "START:" << std::endl;
-    /*
-    typename std::vector<std::vector<event<T>>>::iterator event_list_per_pixel;
-    typename std::vector<event<T>>::iterator event_in_list;
 
-    for (event_list_per_pixel = event_list; event_list_per_pixel != event_list.end();
-         ++event_list_per_pixel) {
-
-      for (event_in_list = *event_list_per_pixel.begin(); event_in_list != *event_list_per_pixel.end();
-           ++event_in_list) {
-    */
-    for(auto& event_list_per_pixel : event_list){
-      for(auto& event_per_pixel : event_list_per_pixel){
+    for(auto& col: event_list){
+      for(auto& row: col){
 
         std::cout << "HERE: " << std::endl;
 
         T k = T();
-        T tan = get_event_tan(event_per_pixel.z_u, event_per_pixel.z_d);
-        T y = get_event_y(event_per_pixel.dl, tan);
-        T z = get_event_z(event_per_pixel.z_u, event_per_pixel.z_d, y, tan);
+        T tan = get_event_tan(row.z_u, row.z_d);
+        T y = get_event_y(row.dl, tan);
+        T z = get_event_z(row.z_u, row.z_d, y, tan);
+        std::cout << tan << " " << y << " " << z << std::endl;
+        pixel_location pixel = pixel_center(y,z);
+        T main_kernel = kernel(y,tan,pixel);
         /*
-         *   loop -> event in bounding box(ellipse)
-         *
+         * znajdz elipse dla zadanego punktu oraz piksele z nia stowarzyszone
+         * dla kazdego piksela w elipsie sprawdz czy event znajduje sie w pikselu
          *
          *
          *
