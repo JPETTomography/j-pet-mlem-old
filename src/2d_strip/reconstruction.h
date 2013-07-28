@@ -21,6 +21,8 @@ class spet_reconstruction {
   T pixel_size;
   T sigma_z;
   T sigma_dl;
+  T pow_sigma_z;
+  T pow_sigma_dl;
 
   std::vector<std::vector<event<T>>> event_list;
   std::vector<std::vector<T>> inverse_correlation_matrix;
@@ -40,6 +42,9 @@ class spet_reconstruction {
 
     event_list.resize(n_pixels * n_pixels);
     rho.resize(n_pixels * n_pixels);
+    pow_sigma_z = sigma_z * sigma_z;
+    pow_sigma_dl = sigma_dl * sigma_dl;
+
 
     set_inverse_correlation_matrix();
   }
@@ -47,9 +52,6 @@ class spet_reconstruction {
   void set_inverse_correlation_matrix() {
 
     inverse_correlation_matrix.resize(3, std::vector<T>(3, T()));
-
-    T pow_sigma_z = sigma_z * sigma_z;
-    T pow_sigma_dl = sigma_dl * sigma_dl;
 
     sqrt_det_correlation_matrix =
         std::sqrt(pow_sigma_z * pow_sigma_dl * pow_sigma_dl);
@@ -144,6 +146,80 @@ class spet_reconstruction {
             std::atan(std::min(L_minus / R_minus, L_plus / R_minus)));
   }
 
+
+
+  void reconstruction(int& iteration) {
+    std::cout << "START:" << std::endl;
+
+    for(auto& col: event_list){
+      for(auto& row: col){
+
+        T tan = get_event_tan(row.z_u, row.z_d);
+        T y = get_event_y(row.dl, tan);
+        T z = get_event_z(row.z_u, row.z_d, y, tan);
+        T angle = std::atan(tan);
+        pixel_location pixel = pixel_center(y,z);
+
+        T main_kernel = kernel(y,tan,pixel);
+
+        T a = ((T(4.0) * T(1.0)/(std::cos(angle) * std::cos(angle))) / pow_sigma_dl) +
+              ((tan*tan)/pow_sigma_z);
+        T b = T(2.0)/pow_sigma_z;
+        T c = (- T(4) * tan)/ pow_sigma_z;
+
+
+        //MIDPOINT CIRCLE ALGORITHM ?
+        /*
+         * znajdz elipse dla zadanego punktu oraz piksele z nia stowarzyszone
+         * dla kazdego piksela w elipsie sprawdz czy event znajduje sie w pikselu
+         *
+         *
+         *
+         */
+      }
+    }
+  }
+
+  T get_event_tan(T& z_u, T& z_d) const {
+    return (z_u - z_d) / (T(2) * R_distance);
+  }
+  T get_event_y(T& dl, T& tan_event) const {
+    return -T(0.5) * (dl / sqrt(T(1) + (tan_event * tan_event)));
+  }
+  T get_event_z(T& z_u, T& z_d, T& y, T& tan_event) const {
+    return T(0.5) * (z_u + z_d + (T(2) * y * tan_event));
+  }
+
+  pixel_location in_pixel(T& y, T& z) {
+
+    return std::make_pair(std::floor((R_distance - y) / pixel_size),
+                          std::floor((R_distance - z) / pixel_size));
+  }
+
+  pixel_location pixel_center(T& y, T& z) {
+
+    return std::make_pair(y * pixel_size + (T(0.5) * pixel_size),
+                          z * pixel_size + (T(0.5) * pixel_size));
+  }
+
+  bool ellipse_quadratic_form(T& y,T& z,T& a,T& b, T &c,pixel_location &pixel) {
+
+    T dy = (pixel.first - y);
+    T dz = (pixel.second - z);
+    /*
+    if((A *dy*dy) + (B * dz * dz) + (C*dy*dz) < T(9.0f)){
+
+
+      return true;
+    } else
+
+      return false;
+   */
+
+   return ((a * dy * dy) + (b * dz * dz) + (c * dy * dz) < T(9.0f)) ? true:false;
+
+  }
+
   void load_input(std::string fn) {
 
     ibstream in(fn, std::ios::binary);
@@ -205,70 +281,8 @@ int i =0;
 
     }
 
-    std::cout << "VECTOR" << std::endl;
-
-    typename std::vector<std::vector<event<T>>>::iterator it;
-    typename std::vector<event<T>>::iterator jt;
-
-    for (it = event_list.begin(); it != event_list.end(); ++it) {
-
-      for (jt = (*it).begin(); jt != (*it).end(); ++jt) {
-
-        std::cout << (*jt).z_u << " " << (*jt).z_d << " " << (*jt).dl
-                  << std::endl;
-      }
-    }
   }
 
-  void reconstruction(int& iteration) {
-    std::cout << "START:" << std::endl;
-
-    for(auto& col: event_list){
-      for(auto& row: col){
-
-        std::cout << "HERE: " << std::endl;
-
-        T k = T();
-        T tan = get_event_tan(row.z_u, row.z_d);
-        T y = get_event_y(row.dl, tan);
-        T z = get_event_z(row.z_u, row.z_d, y, tan);
-        std::cout << tan << " " << y << " " << z << std::endl;
-        pixel_location pixel = pixel_center(y,z);
-        T main_kernel = kernel(y,tan,pixel);
-        /*
-         * znajdz elipse dla zadanego punktu oraz piksele z nia stowarzyszone
-         * dla kazdego piksela w elipsie sprawdz czy event znajduje sie w pikselu
-         *
-         *
-         *
-         */
-      }
-    }
-  }
-
-  T get_event_tan(T& z_u, T& z_d) const {
-    return (z_u - z_d) / (T(2) * R_distance);
-  }
-  T get_event_y(T& dl, T& tan_event) const {
-    return -T(0.5) * (dl / sqrt(T(1) + (tan_event * tan_event)));
-  }
-  T get_event_z(T& z_u, T& z_d, T& y, T& tan_event) const {
-    return T(0.5) * (z_u + z_d + (T(2) * y * tan_event));
-  }
-
-  pixel_location in_pixel(T& y, T& z) {
-
-    return std::make_pair(std::floor((R_distance - y) / pixel_size),
-                          std::floor((R_distance - z) / pixel_size));
-  }
-
-  pixel_location pixel_center(T& y, T& z) {
-
-    return std::make_pair(y * pixel_size + (T(0.5) * pixel_size),
-                          z * pixel_size + (T(0.5) * pixel_size));
-  }
-
-  void ellipse_quadratic_form() {}
 };
 
 #endif  // SPET_RECONSTRUCTION_H
