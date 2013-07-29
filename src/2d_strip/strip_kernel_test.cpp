@@ -1,8 +1,3 @@
-#define CATCH_CONFIG_MAIN
-
-#include <iostream>
-#include <fstream>
-
 #include "catch.hpp"
 #include "reconstruction.h"
 
