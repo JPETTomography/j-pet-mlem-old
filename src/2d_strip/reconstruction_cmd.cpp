@@ -26,8 +26,8 @@ int main(int argc, char* argv[]) {
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
 #endif
     cl.add<float>("r-distance", 'r', "R distance between scientilators", false,
-                  200.0f);
-    cl.add<float>("s-length", 'l', "Scentilator_length", false, 400.0f);
+                  500.0f);
+    cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
     cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 80);
     cl.add<int>("iter", 'i', "Reconstruction iterations", false, 20);
@@ -74,29 +74,30 @@ int main(int argc, char* argv[]) {
     std::string fn("test.bin");
     test.save_output(fn);
 
-    std::vector<event<float>> list;
-
-    std::cout << "    REC!!!!    " << std::endl;
 
     spet_reconstruction<double> reconstruction(R_distance, Scentilator_length,
                                                n_pixels, pixel_size, sigma, dl);
-    reconstruction.load_input(fn);
+    //reconstruction.load_input(fn);
 
-    double x_1 = 0.0;
-    double y_1 = 0.0;
-    double tan = 1.0;
+    double y_1 = 300.0;
+    double z_1 = 0.0;
+    double angle = (45 * (M_PI/180));
     double z_u = -200.0f;
     double z_d = 200.0f;
     double t = reconstruction.get_event_tan(z_u, z_d);
 
     int it = 1;
     reconstruction.reconstruction(it);
-    std::cout << "TEST KERNELA DLA y = 0,z = 0, tan = 1,z_u = 200,z_d = -200 " <<std::endl;
-    std::cout << "TAN: " << t << std::endl;
-    std::pair<int, int> p = reconstruction.in_pixel(x_1, y_1);
+    std::cout << "TEST KERNELA " << std::endl;
+    std::pair<int, int> p = reconstruction.pixel_center(y_1,z_1);
 
-    // std::cout << p.first << " " << p.second << std::endl;
-    std::cout << "KERNEL: " << reconstruction.kernel(y, tan, p) << std::endl;
+    std::cout << "PIXEL DLA KERNELA: " << p.first << " " << p.second << std::endl;
+    std::cout << "KERNEL: " << reconstruction.kernel(y_1, z_1, angle,p)
+              << std::endl;
+
+    std::cout << "ELLIPSE: " << std::endl;
+
+    // reconstruction.DrawEllipse(0, 0, 5, 10);
   }
   catch (std::string & ex) {
     std::cerr << "error: " << ex << std::endl;
