@@ -1,3 +1,5 @@
+#include <cstdint>
+
 class png_writer {
  public:
   png_writer(std::string fn);

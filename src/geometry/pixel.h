@@ -14,7 +14,7 @@ template <typename SType = int> class Pixel {
 
   S x, y;
 
-  constexpr S index() const { return y * (y + 1) / 2 + x; }
+  const S index() const { return y * (y + 1) / 2 + x; }
 
   Pixel& operator++() {
     if (++x > y) {
@@ -24,7 +24,7 @@ template <typename SType = int> class Pixel {
     return *this;
   }
 
-  static constexpr Pixel end_for_n_pixels_in_row(S pixels_in_row) {
+  static const Pixel end_for_n_pixels_in_row(S pixels_in_row) {
     return Pixel(0, pixels_in_row);
   }
 
