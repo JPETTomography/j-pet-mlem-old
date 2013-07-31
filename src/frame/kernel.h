@@ -12,12 +12,17 @@ class Kernel {
 
   class EventKernel {
    public:
-    F operator()(F dy, F dz) { return 0.0; }
+    /// NYI
+    F operator()(F dy __attribute__((unused)), F dz __attribute__((unused))) {
+      return 0.0;
+    }
   };
 
   typedef EventKernel EventKernelType;
 
-  EventKernel MakeEventKernel(EventImageAngle<F> event) {
+  /// NYI
+  EventKernel MakeEventKernel(EventImageAngle<F> event
+                              __attribute__((unused))) {
     return EventKernel();
   }
 
