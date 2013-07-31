@@ -62,4 +62,7 @@ for(path, LIBPNGPATHS):exists($$path) {
 CONFIG(c++11):!greaterThan(QT_MAJOR_VERSION, 4) {
   *-g++-*|*-g++|*-icc|*-icc-*:QMAKE_CXXFLAGS += -std=c++0x
   else:QMAKE_CXXFLAGS += -std=c++11
+} else {
+  # -std=c++11 is not enabled anyway for ICC
+  CONFIG(c++11):*-icc|*-icc-*:QMAKE_CXXFLAGS += -std=c++11
 }

@@ -15,7 +15,7 @@ template <typename SType = int> class LOR : public std::pair<SType, SType> {
     }
   }
 
-  constexpr S index() const {
+  const S index() const {
     return (this->first * (this->first + 1)) / 2 + this->second;
   }
 
@@ -27,7 +27,7 @@ template <typename SType = int> class LOR : public std::pair<SType, SType> {
     return *this;
   }
 
-  static constexpr LOR end_for_detectors(S n_detectors) {
+  static const LOR end_for_detectors(S n_detectors) {
     return LOR(n_detectors, 0);
   }
 
