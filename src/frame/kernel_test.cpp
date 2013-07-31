@@ -1,8 +1,8 @@
 #include "catch.hpp"
 
-#include"detector.h"
-#include"error_model.h"
-#include"kernel.h"
+#include "detector_frame.h"
+#include "error_model.h"
+#include "kernel.h"
 
 typedef float FLOAT;
 

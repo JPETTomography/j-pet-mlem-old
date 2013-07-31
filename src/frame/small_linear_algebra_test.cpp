@@ -2,7 +2,7 @@
 
 #include "catch.hpp"
 
-#include"small_linear_algebra.h"
+#include "small_linear_algebra.h"
 
 typedef float FLOAT;
 
