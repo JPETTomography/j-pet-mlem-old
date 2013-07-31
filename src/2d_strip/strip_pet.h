@@ -13,8 +13,7 @@
 #include <boost/random/additive_combine.hpp>
 #include <boost/random/normal_distribution.hpp>
 
-#include "data_structures.h"
-#include "scintillator.h"
+
 
 typedef boost::ecuyer1988 base_generator_type;
 typedef boost::normal_distribution<> distribution_type;

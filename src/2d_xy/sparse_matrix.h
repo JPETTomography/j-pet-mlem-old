@@ -29,6 +29,22 @@
 
 #include <vector>
 
+#define fourcc(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
+
+// binary serialization          // n_pixels_  n_detectors  triagular
+static const uint32_t MAGIC_VERSION_1 =
+    fourcc('P', 'E', 'T', 't');  //                           X
+static const uint32_t MAGIC_VERSION_2 =
+    fourcc('P', 'E', 'T', 's');  //     X                     X
+static const uint32_t MAGIC_VERSION_TRIANGULAR =
+    fourcc('P', 'E', 'T', 'p');  //     X          X          X
+static const uint32_t MAGIC_VERSION_FULL =
+    fourcc('P', 'E', 'T', 'P');  //     X          X
+static const uint32_t MAGIC_VERSION_TOF_TRIANGULAR =
+    fourcc('T', 'O', 'F', 'p');  //     X          X          X
+static const uint32_t MAGIC_VERSION_TOF_FULL =
+    fourcc('T', 'O', 'F', 'P');  //     X          X
+
 template <typename LORType,
           typename PositionType,
           typename PixelType,
@@ -414,21 +430,4 @@ class SparseMatrix
     p.y += n_pixels_in_row_half();
     return p;
   }
-
-#define fourcc(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
-
- public:
-  // binary serialization          // n_pixels_  n_detectors  triagular
-  static const FileInt MAGIC_VERSION_1 =
-      fourcc('P', 'E', 'T', 't');  //                           X
-  static const FileInt MAGIC_VERSION_2 =
-      fourcc('P', 'E', 'T', 's');  //     X                     X
-  static const FileInt MAGIC_VERSION_TRIANGULAR =
-      fourcc('P', 'E', 'T', 'p');  //     X          X          X
-  static const FileInt MAGIC_VERSION_FULL =
-      fourcc('P', 'E', 'T', 'P');  //     X          X
-  static const FileInt MAGIC_VERSION_TOF_TRIANGULAR =
-      fourcc('T', 'O', 'F', 'p');  //     X          X          X
-  static const FileInt MAGIC_VERSION_TOF_FULL =
-      fourcc('T', 'O', 'F', 'P');  //     X          X
 };

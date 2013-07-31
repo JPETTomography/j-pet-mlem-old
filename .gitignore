@@ -1,3 +1,6 @@
+/*
+!/*/
+!/*.*
 /data/
 */*.aux
 */*.log
@@ -13,9 +16,10 @@ doc/html/
 *.png
 *.svg
 *.txt
-/src/*/*
-!/src/*/*.*
-*/**/*.o
-*/**/*.d
-/PET.mk
+/build*/
 *.pro.user
+/Makefile
+/src/Makefile.*
+/src/**/*.o
+/src/**/*.d
+/.qmake.*

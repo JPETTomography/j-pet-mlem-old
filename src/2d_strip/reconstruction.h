@@ -6,46 +6,45 @@
 #include <algorithm>
 #include "event.h"
 
-template <typename T = float> class spet_reconstruction {
+template <typename T = double>
+class spet_reconstruction {
 
   typedef std::pair<int, int> pixel_location;
 
  private:
-  T R_distance;
-  T Scentilator_length;
-  int n_pixels;
-  int n_pixels_2;
-  T pixel_size;
-  T sigma_z;
-  T sigma_dl;
-  T gamma;
-  std::vector<std::vector<event<T>>> event_list;
-  std::vector<std::vector<T>> inverse_correlation_matrix;
-  T inverse_correlation_matrix_factor;
-  std::vector<T> rho;
   static constexpr const T INVERSE_PI = T(0.31830988);
   static constexpr const T INVERSE_TWO_PI = T(0.15915494);
 
+  T R_distance;
+  T Scentilator_length;
+  int n_pixels;
+  T pixel_size;
+  T sigma_z;
+  T sigma_dl;
+  T pow_sigma_z;
+  T pow_sigma_dl;
+
+  std::vector<std::vector<event<T>>> event_list;
+  std::vector<std::vector<T>> inverse_correlation_matrix;
+  T sqrt_det_correlation_matrix;
+  std::vector<T> rho;
+
  public:
-  spet_reconstruction(T& R_distance,
-                      T& Scentilator_length,
-                      int& n_pixels,
-                      T& pixel_size,
-                      T& sigma_z,
-                      T& sigma_dl,
-                      T& gamma)
+  spet_reconstruction(T& R_distance, T& Scentilator_length, int& n_pixels,
+                      T& pixel_size, T& sigma_z, T& sigma_dl)
       : R_distance(R_distance),
         Scentilator_length(Scentilator_length),
         n_pixels(n_pixels),
         pixel_size(pixel_size),
         sigma_z(sigma_z),
-        sigma_dl(sigma_dl),
-        gamma(gamma) {
-
-    n_pixels_2 = n_pixels / 2;
+        sigma_dl(sigma_dl)
+        {
 
     event_list.resize(n_pixels * n_pixels);
     rho.resize(n_pixels * n_pixels);
+    pow_sigma_z = sigma_z * sigma_z;
+    pow_sigma_dl = sigma_dl * sigma_dl;
+
 
     set_inverse_correlation_matrix();
   }
@@ -54,49 +53,34 @@ template <typename T = float> class spet_reconstruction {
 
     inverse_correlation_matrix.resize(3, std::vector<T>(3, T()));
 
-    T pow_sigma_z = sigma_z * sigma_z;
-    T pow_sigma_dl = sigma_dl * sigma_dl;
-    T pow_gamma = gamma * gamma;
-
-    std::cout << "pow_gammas: " << pow_sigma_z << " " << pow_sigma_dl
-              << std::endl;
+    sqrt_det_correlation_matrix =
+        std::sqrt(pow_sigma_z * pow_sigma_dl * pow_sigma_dl);
 
     inverse_correlation_matrix[0][0] =
-        T(1) / pow_sigma_z;  // pow_gamma - (pow_sigma_z * pow_sigma_dl);
-    inverse_correlation_matrix[0][1] = T();
-    inverse_correlation_matrix[0][2] = T();
+        T(1) / pow_sigma_z;
+    inverse_correlation_matrix[0][1] = T(0.0f);
+    inverse_correlation_matrix[0][2] = T(0.0f);
 
-    std::cout << "D1: " << 1 / pow_sigma_z << std::endl;
-
-    inverse_correlation_matrix[1][0] = T();
+    inverse_correlation_matrix[1][0] = T(0.0f);
     inverse_correlation_matrix[1][1] =
-        T(1) / pow_sigma_z;  // pow_gamma - (pow_sigma_z * pow_sigma_dl);
-    inverse_correlation_matrix[1][2] = T();
+        T(1) / pow_sigma_z;
+    inverse_correlation_matrix[1][2] = T(0.0f);
 
-    std::cout << "D2: " << T(1) / pow_sigma_z << std::endl;
-
-    inverse_correlation_matrix[2][0] = T();
-    inverse_correlation_matrix[2][1] = T();
+    inverse_correlation_matrix[2][0] = T(0.0f);
+    inverse_correlation_matrix[2][1] = T(0.0f);
     inverse_correlation_matrix[2][2] =
-        T(1) / pow_sigma_dl;  // -pow_sigma_z * pow_sigma_z;
-
-    std::cout << "D3: " << T(1) / pow_sigma_dl << std::endl;
-
-    inverse_correlation_matrix_factor =
-        T(1) / ((pow_gamma * pow_sigma_z) + (pow_gamma * pow_sigma_z) +
-                (pow_sigma_z * pow_sigma_z * pow_sigma_dl));
+        T(1) / pow_sigma_dl;
   }
 
   T multiply_elements(std::vector<T>& vec_a, std::vector<T>& vec_b) {
 
-    T a[vec_a.size()];
-    T output = T();
+    std::vector<T> a(vec_a.size(), T(0));
+
+    float output = 0.f;
     // add AVX
     for (unsigned i = 0; i < vec_a.size(); ++i) {
-      for (unsigned j = 0; j < vec_a.size(); j++) {
-
+      for (unsigned j = 0; j < vec_b.size(); j++) {
         a[i] += vec_a[j] * inverse_correlation_matrix[j][i];
-        std::cout << "a[i]: " << a[i] << std::endl;
       }
       output += a[i] * vec_b[i];
     }
@@ -104,93 +88,198 @@ template <typename T = float> class spet_reconstruction {
     return output;
   }
 
-  T kernel(T& y, T& tan, pixel_location& pixel) {
+  T kernel(T& y,T& z, T& angle, pixel_location& pixel) {
 
-    std::cout << pixel.first << " " << pixel.second << std::endl;
 
-    T angle = std::atan(tan);
 
-    T event_inv_cos = T(1) / std::cos(angle * 180 * INVERSE_PI);
-    T pow_event_inv_cos = event_inv_cos * event_inv_cos;
-
-    std::cout << "INVERSE_CORRELATION_MATIRX: "
-              << inverse_correlation_matrix[0][0] << " "
-              << inverse_correlation_matrix[1][1] << " "
-              << inverse_correlation_matrix[2][2] << std::endl;
-
-    std::cout << "INVERSE_CORRELATION_MATIX_FACTOR: "
-              << inverse_correlation_matrix_factor << std::endl;
-
-    std::cout << "angle: " << std::atan(tan) << " " << angle * 180 * INVERSE_PI
-              << " inv_cos: " << event_inv_cos
-              << " pow_inv_cos: " << pow_event_inv_cos << std::endl;
+    std::cout << "ANGLE : " << angle << std::endl;
+    T _tan = std::tan(angle);
+    T inv_cos = T(1) / std::cos(angle);
+    T pow_inv_cos = inv_cos * inv_cos;
 
     std::vector<T> vec_o(3, T());
     std::vector<T> vec_a(3, T());
     std::vector<T> vec_b(3, T());
 
-    vec_o[0] = -(pixel.first + y - R_distance) * tan * pow_event_inv_cos;
-    vec_o[1] = -(pixel.first + y + R_distance) * tan * pow_event_inv_cos;
-    vec_o[2] = -(pixel.first + y) * event_inv_cos * (T(1) + (T(2) * tan * tan));
+    vec_o[0] = -(pixel.first + y - R_distance) * _tan * pow_inv_cos;
+    vec_o[1] = -(pixel.first + y + R_distance) * _tan * pow_inv_cos;
+    vec_o[2] = -(pixel.first + y) * inv_cos * (T(1) + T(2)*(_tan * _tan));
 
-    std::cout << "VEC_o: " << vec_o[0] << " " << vec_o[1] << " " << vec_o[2]
-              << std::endl;
+    //std::cout << "vec_o: " << vec_o[0] << " " << vec_o[1] << " " << vec_o[2] << std::endl;
 
-    vec_a[0] = -(pixel.first + y - R_distance) * pow_event_inv_cos;
-    vec_a[1] = -(pixel.first + y + R_distance) * pow_event_inv_cos;
-    vec_a[2] = -(pixel.first + y) * event_inv_cos * tan;
+    vec_a[0] = -(pixel.first + y - R_distance) * pow_inv_cos;
+    vec_a[1] = -(pixel.first + y + R_distance) * pow_inv_cos;
+    vec_a[2] = -T(2) * (pixel.first + y) *  (inv_cos * _tan);
 
-    std::cout << "VEC_a: " << vec_a[0] << " " << vec_a[1] << " " << vec_a[2]
-              << std::endl;
+    //std::cout << "vec_a: " << vec_a[0] << " " << vec_a[1] << " " << vec_a[2] << std::endl;
 
-    vec_b[0] = pixel.second - (pixel.first * tan);
-    vec_b[1] = pixel.second - (pixel.first * tan);
-    vec_b[2] = -T(2) * pixel.first * event_inv_cos;
+    vec_b[0] = pixel.second - (pixel.first * _tan);
+    vec_b[1] = pixel.second - (pixel.first * _tan);
+    vec_b[2] = -T(2) * pixel.first * inv_cos;
 
-    std::cout << "VEC_b: " << vec_b[0] << " " << vec_b[1] << " " << vec_b[2]
-              << std::endl;
+    //std::cout << "vec_b: " << vec_b[0] << " " << vec_b[1] << " " << vec_b[2] << std::endl;
 
-    T element_aa = multiply_elements(vec_a, vec_a);
-    T element_ba = multiply_elements(vec_b, vec_a);
-    T element_bb = multiply_elements(vec_b, vec_b);
-    T element_ob = multiply_elements(vec_o, vec_b);
+    T a_ic_a = multiply_elements(vec_a, vec_a);
+    T b_ic_a = multiply_elements(vec_b, vec_a);
+    T b_ic_b = multiply_elements(vec_b, vec_b);
+    T o_ic_b = multiply_elements(vec_o, vec_b);
 
-    std::cout << "element_aa: " << element_aa << " element_ob: " << element_ob
-              << std::endl;
+    T norm = a_ic_a + (T(2) * o_ic_b);
 
-    T element_sum_aa_ob = element_aa + (T(2) * element_ob);
+    T element_before_exp = INVERSE_TWO_PI * (sqrt_det_correlation_matrix /
+                                             std::sqrt(norm));
 
-    T det_inverse_matrix = inverse_correlation_matrix[0][0] *
-                           inverse_correlation_matrix[1][1] *
-                           inverse_correlation_matrix[2][2];
+    T exp_element = -T(0.5) * (b_ic_b -
+                               ((b_ic_a * b_ic_a) / norm));
 
-    std::cout << "DET MATRIX: " << det_inverse_matrix << std::endl;
+    T _exp = std::exp(exp_element);
+    /*
+    std::cout << "b.ic.b := " << b_ic_b << std::endl;
+    std::cout << "b.ic.a := " << b_ic_a << std::endl;
+    std::cout << "a.ic.a := " << a_ic_a << std::endl;
+    std::cout << "o.ic.b := " << o_ic_b << std::endl;
+    std::cout << "((b.ic.b - (b.ic.a)^2/(a.ic.a + 2 o.ic.b ))):"
+              << (b_ic_b - ((b_ic_a * b_ic_a) / norm)) << std::endl;
+    */
 
-    T element_before_exp =
-        INVERSE_TWO_PI * (det_inverse_matrix / sqrt(element_sum_aa_ob));
-
-    std::cout << "ELEMENT_BEFORE_EXP: " << element_before_exp << std::endl;
-
-    T exp_element =
-        -T(0.5) * (element_bb - ((element_ba * element_ba) / element_sum_aa_ob));
-
-    return element_before_exp * exp_element;
+    return (element_before_exp *
+            (sensitivity(y, z) * INVERSE_PI) * _exp) / sensitivity(pixel.first, pixel.second);
   }
 
+  T sensitivity(T y, T z) {
+
+
+    T L_plus = (Scentilator_length / T(0.5) + z);
+    T L_minus = (Scentilator_length / T(0.5) -z);
+    T R_plus = R_distance + y;
+    T R_minus = R_distance - y;
+
+    return INVERSE_PI *
+           (std::atan(std::max(
+                -L_plus / R_minus,
+                -L_plus / R_plus)) -
+            std::atan(std::min(L_minus / R_minus, L_plus / R_plus)));
+  }
+
+
+
+  void reconstruction(int& iteration) {
+
+    for(auto& col: event_list){
+      for(auto& row: col){
+
+        T tan = get_event_tan(row.z_u, row.z_d);
+        T y = get_event_y(row.dl, tan);
+        T z = get_event_z(row.z_u, row.z_d, y, tan);
+        T angle = std::atan(tan);
+        pixel_location pixel = pixel_center(y,z);
+
+        //T main_kernel = kernel(y, z,tan,pixel);
+
+        T a = ((T(4.0) * T(1.0)/(std::cos(angle) * std::cos(angle))) / pow_sigma_dl) +
+              ((tan*tan)/pow_sigma_z);
+        T b = T(2.0)/pow_sigma_z;
+        T c = (- T(4) * tan)/ pow_sigma_z;
+
+
+        //MIDPOINT CIRCLE ALGORITHM ?
+        /*
+         * znajdz elipse dla zadanego punktu oraz piksele z nia stowarzyszone
+         * dla kazdego piksela w elipsie sprawdz czy event znajduje sie w pikselu
+         *
+         *
+         *
+         */
+      }
+    }
+  }
+
+  void DrawEllipse(int x0, int y0, int width, int height)
+  {
+      int a2 = width * width;
+      int b2 = height * height;
+      int fa2 = 4 * a2, fb2 = 4 * b2;
+      int x, y, sigma;
+
+      /* first half */
+      for (x = 0, y = height, sigma = 2*b2+a2*(1-2*height); b2*x <= a2*y; x++)
+      {
+        std::cout << x0 + x << " "  << y0 + y << std::endl;
+        std::cout << x0 - x << " "  << y0 + y << std::endl;
+        std::cout << x0 + x << " "  << y0 - y << std::endl;
+        std::cout << x0 - x << " "  << y0 - y << std::endl;
+          if (sigma >= 0)
+          {
+              sigma += fa2 * (1 - y);
+              y--;
+          }
+          sigma += b2 * ((4 * x) + 6);
+      }
+
+      /* second half */
+      for (x = width, y = 0, sigma = 2*a2+b2*(1-2*width); a2*y <= b2*x; y++)
+      {
+        std::cout << x0 + x << " "  << y0 + y << std::endl;
+        std::cout << x0 - x << " "  << y0 + y << std::endl;
+        std::cout << x0 + x << " "  << y0 - y << std::endl;
+        std::cout << x0 - x << " "  << y0 - y << std::endl;
+          if (sigma >= 0)
+          {
+              sigma += fb2 * (1 - x);
+              x--;
+          }
+          sigma += a2 * ((4 * y) + 6);
+      }
+  }
+
+  T get_event_tan(T& z_u, T& z_d) const {
+    return (z_u - z_d) / (T(2) * R_distance);
+  }
+  T get_event_y(T& dl, T& tan_event) const {
+    return -T(0.5) * (dl / sqrt(T(1) + (tan_event * tan_event)));
+  }
+  T get_event_z(T& z_u, T& z_d, T& y, T& tan_event) const {
+    return T(0.5) * (z_u + z_d + (T(2) * y * tan_event));
+  }
+
+  pixel_location in_pixel(T& y, T& z) {
+
+    return std::make_pair(std::floor((R_distance - y) / pixel_size),
+                          std::floor((R_distance - z) / pixel_size));
+  }
+
+  pixel_location pixel_center(T& y, T& z) {
+
+    return std::make_pair(std::floor((R_distance - y) / pixel_size) + (T(0.5) * pixel_size),
+                          std::floor((R_distance - z) / pixel_size) + (T(0.5) * pixel_size));
+  }
+
+  bool ellipse_quadratic_form(T& y,T& z,T& a,T& b, T &c,pixel_location &pixel) {
+
+    T dy = (pixel.first - y);
+    T dz = (pixel.second - z);
+
+    return ((a * dy * dy) + (b * dz * dz) + (c * dy * dz) < T(9.0f)) ? true:false;
+
+  }
+/*
   void load_input(std::string fn) {
 
     ibstream in(fn, std::ios::binary);
     event<T> temp_event;
 
-    int number_of_pixels;
+    unsigned int n_pix;
     float pixel_s;
-    int iter;
-    int number_of_event_in_file;
+    unsigned int iter;
+    unsigned int size;
 
-    in >> number_of_pixels;
+    in >> n_pix;
     in >> pixel_s;
     in >> iter;
-    in >> number_of_event_in_file;
+    in >> size;
+int i =0;
+    std::cout <<"DATA:" <<  n_pix << " " << pixel_s << " " << iter << " "
+              << size << std::endl;
 #if DEBUG == 1
     std::cout << number_of_pixels << " " << pixel_s << " " << iter << " "
               << number_of_event_in_file << std::endl;
@@ -199,20 +288,29 @@ template <typename T = float> class spet_reconstruction {
 #endif
     for (;;) {
 
+      if (in.eof()) {
+        break;
+      }
+
+
       T z_u, z_d, dl;
 
       in >> z_u >> z_d >> dl;
-
+      std::cout << z_u << " " << z_d << " " << dl << std::endl;
       temp_event.z_u = z_u;
       temp_event.z_d = z_d;
       temp_event.dl = dl;
 
-      T tan = event_tan(z_u, z_d);
-      T y = event_y(z_d, tan);
-      T z = event_z(z_u, z_d, y, tan);
+      T tan = get_event_tan(z_u, z_d);
+      T y = get_event_y(z_d, tan);
+      T z = get_event_z(z_u, z_d, y, tan);
 
       pixel_location p = in_pixel(y, z);
 
+      std::cout << "pixel:" << p.first << " " << p.second << std::endl;
+      event_list[p.first*n_pixels + p.second].push_back(temp_event);
+      ++i;
+     std::cout << "I:" << i << std::endl;
 #if DEBUG == 1
       std::cout << "DATA: " << z_u << "  " << z_d << " " << dl << std::endl;
       std::cout << "LOCATIONS: "
@@ -224,81 +322,10 @@ template <typename T = float> class spet_reconstruction {
 #endif
       // event_list[p.first * n_pixels + p.second].push_back(temp_event);
 
-      if (in.eof()) {
-        break;
-      }
     }
 
-#if DEBUG == 1
-
-    std::cout << "VECTOR" << std::endl;
-
-    typename std::vector<std::vector<event<T>>>::iterator it;
-    typename std::vector<event<T>>::iterator jt;
-
-    for (it = event_list.begin(); it != event_list.end(); ++it) {
-
-      for (jt = (*it).begin(); jt != (*it).end(); ++jt) {
-
-        std::cout << (*jt).z_u << " " << (*jt).z_d << " " << (*jt).dl
-                  << std::endl;
-      }
-    }
-#endif
   }
-
-  T sensitivity(T& y, T& z) {
-
-    T a = (T(0.5) * Scentilator_length - z) / (R_distance - y);
-    T b = (T(0.5) * Scentilator_length + z) / (R_distance + y);
-    T c = (T(0.5) * Scentilator_length + z) / (R_distance - y);
-
-    return INVERSE_PI *
-           (std::atan(std::min(a, b)) - std::atan(std::min(-c, -b)));
-  }
-
-  void reconstruction(int& iteration) {
-
-    typename std::vector<event<T>>::iterator event_it;
-
-    for (unsigned pixel_iterator = 0; pixel_iterator < n_pixels * n_pixels;
-         ++pixel_iterator) {
-
-      for (event_it = event_list.begin(); event_it != event_list.end();
-           ++event_it) {
-
-        T k = T();
-        T tan = event_tan(event_it->z_u, event_it->z_d);
-        T y = event_y(event_it->dl, tan);
-        T z = event_z(event_it->z_u, event_it->z_d, y, tan);
-        /*
-         *   loop -> event in bounding box(ellipse)
-         *
-         *
-         *
-         *
-         */
-      }
-    }
-  }
-
-  T event_tan(T& z_u, T& z_d) const {
-    return (z_u - z_d) / (T(2) * R_distance);
-  }
-  T event_y(T& dl, T& tan_event) const {
-    return -T(0.5) * (dl / sqrt(T(1) + (tan_event * tan_event)));
-  }
-  T event_z(T& z_u, T& z_d, T& y, T& tan_event) const {
-    return T(0.5) * (z_u + z_d + (T(2) * y * tan_event));
-  }
-
-  pixel_location in_pixel(T& y, T& z) {
-
-    return std::make_pair((((Scentilator_length / T(2)) + y) / pixel_size),
-                          (((Scentilator_length / T(2)) + z) / pixel_size));
-  }
-
-  void ellipse_quadratic_form() {}
+*/
 };
 
 #endif  // SPET_RECONSTRUCTION_H

@@ -1,43 +1,68 @@
 TEMPLATE = app
-CONFIG  += console
-CONFIG  -= app_bundle
-CONFIG  -= qt
-CONFIG  += object_parallel_to_source
+
+CONFIG += console
+CONFIG -= app_bundle
+CONFIG -= qt
+CONFIG += object_parallel_to_source
+CONFIG += c++11
+
+!CONFIG(verbose): CONFIG += silent
 
 HEADERS += geometry/*.h
 HEADERS += util/*.h
 
-QMAKE_CXXFLAGS += -std=c++11
+SOURCES += util/png_writer.cpp
 
-DESTDIR = ..
-
-INCLUDEPATH += . \
-               ../lib/cmdline \
-               ../lib/catch/include \
-
-LIBPNGPATHS += /usr/include/libpng12 \
-               /usr/include/libpng \
-               /usr/local/include/libpng \
-               /opt/X11/include/libpng15 \
-
-for(path, LIBPNGPATHS):exists($$path) {
-  DEFINES     += HAVE_LIBPNG
-  INCLUDEPATH += $$path
-  path         = $$dirname(path)
-  path         = $$dirname(path)
-  LIBS        += -L$$path/lib -lpng
-  SOURCES     += util/png_writer.cpp
-  break()
+# drop binaries one level up
+equals(PWD, $$OUT_PWD) {
+  DESTDIR = ..
+} else {
+  DESTDIR = $$OUT_PWD/..
 }
 
-linux-g++ {
+# don't use SDK but call compilers directly on Mac when not using Clang
+macx:!macx-clang {
+  CONFIG -= sdk
+}
+
+# turn on OpenMP for GCC & ICC
+*-g++-*|*-g++|*-icc|*-icc-* {
   DEFINES        += OMP=1
   QMAKE_CXXFLAGS += -fopenmp
   LIBS           += -fopenmp
 }
 
-macx-clang {
-  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
-  QMAKE_CXXFLAGS += -stdlib=libc++
-  LIBS           += -stdlib=libc++
+# enable realtime library for Linux
+linux-*:LIBS     += -lrt
+
+INCLUDEPATH += . \
+               ../lib/cmdline \
+               ../lib/catch/include \
+
+LIBPNGPATHS += /usr/include/png.h \
+               /usr/include/libpng \
+               /usr/local/include/libpng \
+               /opt/X11/include/libpng15 \
+
+for(path, LIBPNGPATHS):exists($$path) {
+  basename = $$basename(path)
+  DEFINES += HAVE_LIBPNG
+  # only define path if png is not system one
+  !equals(basename, png.h) {
+    INCLUDEPATH += $$path
+    path         = $$dirname(path)
+    path         = $$dirname(path)
+    LIBS        += -L$$path/lib
+  }
+  LIBS += -lpng
+  break()
+}
+
+# workaround for missing old qmake c++11 config
+CONFIG(c++11):!greaterThan(QT_MAJOR_VERSION, 4) {
+  *-g++-*|*-g++|*-icc|*-icc-*:QMAKE_CXXFLAGS += -std=c++0x
+  else:QMAKE_CXXFLAGS += -std=c++11
+} else {
+  # -std=c++11 is not enabled anyway for ICC
+  CONFIG(c++11):*-icc|*-icc-*:QMAKE_CXXFLAGS += -std=c++11
 }
