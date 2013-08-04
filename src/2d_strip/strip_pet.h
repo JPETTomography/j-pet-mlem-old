@@ -13,14 +13,13 @@
 #include <boost/random/additive_combine.hpp>
 #include <boost/random/normal_distribution.hpp>
 
-
-
 typedef boost::ecuyer1988 base_generator_type;
 typedef boost::normal_distribution<> distribution_type;
 typedef boost::variate_generator<base_generator_type&, distribution_type>
-gen_type;
+    gen_type;
 
-template <typename T = float> class Strip_PET {
+template <typename T = float>
+class Strip_PET {
  private:
   T R_distance;
   T Scentilator_length;
@@ -33,12 +32,7 @@ template <typename T = float> class Strip_PET {
   std::vector<scintillator<>> scientilator_list;
 
  public:
-  Strip_PET(T& R_distance,
-            T& Scentilator_length,
-            T& x,
-            T& y,
-            T& a,
-            T& b,
+  Strip_PET(T& R_distance, T& Scentilator_length, T& x, T& y, T& a, T& b,
             T& phi)
       : R_distance(R_distance),
         Scentilator_length(Scentilator_length),

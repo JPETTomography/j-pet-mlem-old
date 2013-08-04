@@ -9,11 +9,12 @@
 template <typename T = double>
 class spet_reconstruction {
 
-  typedef std::pair<int, int> pixel_location;
+  typedef std::pair<T, T> pixel_location;
+  typedef std::pair<T, T> point;
 
  private:
-  static constexpr const T INVERSE_PI = T(0.31830988);
-  static constexpr const T INVERSE_TWO_PI = T(0.15915494);
+  static constexpr const T INVERSE_PI = T(1.0 / M_PI);
+  static constexpr const T INVERSE_POW_TWO_PI = T(1.0 / (2.0 * M_PI * M_PI));
 
   T R_distance;
   T Scentilator_length;
@@ -23,6 +24,7 @@ class spet_reconstruction {
   T sigma_dl;
   T pow_sigma_z;
   T pow_sigma_dl;
+  int m_pixel;
 
   std::vector<std::vector<event<T>>> event_list;
   std::vector<std::vector<T>> inverse_correlation_matrix;
@@ -37,15 +39,30 @@ class spet_reconstruction {
         n_pixels(n_pixels),
         pixel_size(pixel_size),
         sigma_z(sigma_z),
-        sigma_dl(sigma_dl)
-        {
+        sigma_dl(sigma_dl) {
 
     event_list.resize(n_pixels * n_pixels);
-    rho.resize(n_pixels * n_pixels);
+    rho.assign(n_pixels * n_pixels, T(0.1));
     pow_sigma_z = sigma_z * sigma_z;
     pow_sigma_dl = sigma_dl * sigma_dl;
+    m_pixel = (R_distance / pixel_size);
+#if DEBUG
+    std::cout << "TEST ELIPSY: " << std::endl;
 
+    T angle = T(32 * (M_PI / 180));
 
+    point ellipse_center = std::pair<T, T>(T(0.0), T(0.0));
+    point p = std::pair<T, T>(T(64.0), T(0));
+
+    T _sin = std::sin(angle);
+    T _cos = std::cos(angle);
+
+    bool t = in_ellipse(_sin, _cos, ellipse_center, p);
+
+    std::cout << "VALUE: " << t << std::endl;
+
+    EllipseBoundingBox(ellipse_center, angle);
+#endif
     set_inverse_correlation_matrix();
   }
 
@@ -53,23 +70,24 @@ class spet_reconstruction {
 
     inverse_correlation_matrix.resize(3, std::vector<T>(3, T()));
 
-    sqrt_det_correlation_matrix =
-        std::sqrt(pow_sigma_z * pow_sigma_dl * pow_sigma_dl);
+    // sqrt_det_correlation_matrix =
+    //    std::sqrt(pow_sigma_z * pow_sigma_dl * pow_sigma_dl);
 
-    inverse_correlation_matrix[0][0] =
-        T(1) / pow_sigma_z;
+    inverse_correlation_matrix[0][0] = T(1) / pow_sigma_z;
     inverse_correlation_matrix[0][1] = T(0.0f);
     inverse_correlation_matrix[0][2] = T(0.0f);
 
     inverse_correlation_matrix[1][0] = T(0.0f);
-    inverse_correlation_matrix[1][1] =
-        T(1) / pow_sigma_z;
+    inverse_correlation_matrix[1][1] = T(1) / pow_sigma_z;
     inverse_correlation_matrix[1][2] = T(0.0f);
 
     inverse_correlation_matrix[2][0] = T(0.0f);
     inverse_correlation_matrix[2][1] = T(0.0f);
-    inverse_correlation_matrix[2][2] =
-        T(1) / pow_sigma_dl;
+    inverse_correlation_matrix[2][2] = T(1) / pow_sigma_dl;
+
+    sqrt_det_correlation_matrix = std::sqrt(inverse_correlation_matrix[0][0] *
+                                            inverse_correlation_matrix[1][1] *
+                                            inverse_correlation_matrix[2][2]);
   }
 
   T multiply_elements(std::vector<T>& vec_a, std::vector<T>& vec_b) {
@@ -88,11 +106,11 @@ class spet_reconstruction {
     return output;
   }
 
-  T kernel(T& y,T& z, T& angle, pixel_location& pixel) {
+  T kernel(T& y, T& z, T& angle, pixel_location& pixel) {
 
-
-
+#if DEBUG > 0
     std::cout << "ANGLE : " << angle << std::endl;
+#endif
     T _tan = std::tan(angle);
     T inv_cos = T(1) / std::cos(angle);
     T pow_inv_cos = inv_cos * inv_cos;
@@ -103,22 +121,25 @@ class spet_reconstruction {
 
     vec_o[0] = -(pixel.first + y - R_distance) * _tan * pow_inv_cos;
     vec_o[1] = -(pixel.first + y + R_distance) * _tan * pow_inv_cos;
-    vec_o[2] = -(pixel.first + y) * inv_cos * (T(1) + T(2)*(_tan * _tan));
-
-    //std::cout << "vec_o: " << vec_o[0] << " " << vec_o[1] << " " << vec_o[2] << std::endl;
-
+    vec_o[2] = -(pixel.first + y) * inv_cos * (T(1) + T(2) * (_tan * _tan));
+#if DEBUG > 0
+    std::cout << "vec_o: " << vec_o[0] << " " << vec_o[1] << " " << vec_o[2]
+              << std::endl;
+#endif
     vec_a[0] = -(pixel.first + y - R_distance) * pow_inv_cos;
     vec_a[1] = -(pixel.first + y + R_distance) * pow_inv_cos;
-    vec_a[2] = -T(2) * (pixel.first + y) *  (inv_cos * _tan);
-
-    //std::cout << "vec_a: " << vec_a[0] << " " << vec_a[1] << " " << vec_a[2] << std::endl;
-
+    vec_a[2] = -T(2) * (pixel.first + y) * (inv_cos * _tan);
+#if DEBUG > 0
+    std::cout << "vec_a: " << vec_a[0] << " " << vec_a[1] << " " << vec_a[2]
+              << std::endl;
+#endif
     vec_b[0] = pixel.second - (pixel.first * _tan);
     vec_b[1] = pixel.second - (pixel.first * _tan);
     vec_b[2] = -T(2) * pixel.first * inv_cos;
-
-    //std::cout << "vec_b: " << vec_b[0] << " " << vec_b[1] << " " << vec_b[2] << std::endl;
-
+#if DEBUG > 0
+    std::cout << "vec_b: " << vec_b[0] << " " << vec_b[1] << " " << vec_b[2]
+              << std::endl;
+#endif
     T a_ic_a = multiply_elements(vec_a, vec_a);
     T b_ic_a = multiply_elements(vec_b, vec_a);
     T b_ic_b = multiply_elements(vec_b, vec_b);
@@ -126,66 +147,66 @@ class spet_reconstruction {
 
     T norm = a_ic_a + (T(2) * o_ic_b);
 
-    T element_before_exp = INVERSE_TWO_PI * (sqrt_det_correlation_matrix /
-                                             std::sqrt(norm));
-
-    T exp_element = -T(0.5) * (b_ic_b -
-                               ((b_ic_a * b_ic_a) / norm));
+    T element_before_exp = INVERSE_POW_TWO_PI *
+                           (sqrt_det_correlation_matrix / std::sqrt(norm)) *
+                           sensitivity(y, z);
+#if DEBUG > 0
+    std::cout << "SQRT DET_COR := " << sqrt_det_correlation_matrix << std::endl;
+    std::cout << "sqrt norm := " << std::sqrt(norm) << std::endl;
+    std::cout << "1/2pi^2 * (sqrt((det)/norm)) " << element_before_exp
+              << std::endl;
+#endif
+    T exp_element = -T(0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
     T _exp = std::exp(exp_element);
-    /*
+
+#if DEBUG > 0
     std::cout << "b.ic.b := " << b_ic_b << std::endl;
     std::cout << "b.ic.a := " << b_ic_a << std::endl;
     std::cout << "a.ic.a := " << a_ic_a << std::endl;
     std::cout << "o.ic.b := " << o_ic_b << std::endl;
-    std::cout << "((b.ic.b - (b.ic.a)^2/(a.ic.a + 2 o.ic.b ))):"
-              << (b_ic_b - ((b_ic_a * b_ic_a) / norm)) << std::endl;
-    */
+    std::cout << "norm: := " << norm << std::endl;
+    std::cout << "0.5*((b.ic.b - (b.ic.a)^2/(a.ic.a + 2 o.ic.b ))):"
+              << 0.5 * (b_ic_b - ((b_ic_a * b_ic_a) / norm)) << std::endl;
 
-    return (element_before_exp *
-            (sensitivity(y, z) * INVERSE_PI) * _exp) / sensitivity(pixel.first, pixel.second);
+    std::cout << "x,y SENS: " << sensitivity(y, z) << std::endl;
+
+    std::cout << "PIXEL SENS: " << sensitivity(pixel.first, pixel.second)
+              << std::endl;
+#endif
+    return (element_before_exp * _exp) / sensitivity(pixel.first, pixel.second);
   }
 
   T sensitivity(T y, T z) {
 
-
     T L_plus = (Scentilator_length / T(0.5) + z);
-    T L_minus = (Scentilator_length / T(0.5) -z);
+    T L_minus = (Scentilator_length / T(0.5) - z);
     T R_plus = R_distance + y;
     T R_minus = R_distance - y;
 
     return INVERSE_PI *
-           (std::atan(std::max(
-                -L_plus / R_minus,
-                -L_plus / R_plus)) -
+           (std::atan(std::max(-L_plus / R_minus, -L_plus / R_plus)) -
             std::atan(std::min(L_minus / R_minus, L_plus / R_plus)));
   }
 
-
-
   void reconstruction(int& iteration) {
 
-    for(auto& col: event_list){
-      for(auto& row: col){
+    for (auto& col : event_list) {
+      for (auto& row : col) {
 
         T tan = get_event_tan(row.z_u, row.z_d);
         T y = get_event_y(row.dl, tan);
         T z = get_event_z(row.z_u, row.z_d, y, tan);
         T angle = std::atan(tan);
-        pixel_location pixel = pixel_center(y,z);
+        pixel_location pixel = pixel_center(y, z);
 
-        //T main_kernel = kernel(y, z,tan,pixel);
+        // T main_kernel = kernel(y, z,tan,pixel);
 
-        T a = ((T(4.0) * T(1.0)/(std::cos(angle) * std::cos(angle))) / pow_sigma_dl) +
-              ((tan*tan)/pow_sigma_z);
-        T b = T(2.0)/pow_sigma_z;
-        T c = (- T(4) * tan)/ pow_sigma_z;
-
-
-        //MIDPOINT CIRCLE ALGORITHM ?
+        // MIDPOINT CIRCLE ALGORITHM ?
         /*
          * znajdz elipse dla zadanego punktu oraz piksele z nia stowarzyszone
-         * dla kazdego piksela w elipsie sprawdz czy event znajduje sie w pikselu
+         * dla kazdego piksela w elipsie sprawdz czy event znajduje sie w
+         *pikselu
          *
          *
          *
@@ -194,6 +215,79 @@ class spet_reconstruction {
     }
   }
 
+  bool EllipseBoundingBox(point& ellipse_center, T& angle) {
+
+    T ux = sigma_z * std::cos(angle);
+    T uy = sigma_z * std::sin(angle);
+    T vx = sigma_dl * std::cos(angle + M_PI_2);
+    T vy = sigma_dl * std::sin(angle + M_PI_2);
+
+    T bbox_halfwidth = std::sqrt(ux * ux + vx * vx);
+    T bbox_halfheight = std::sqrt(uy * uy + vy * vy);
+
+    point bbox_ul_corner =
+        std::pair<T, T>(ellipse_center.second - bbox_halfwidth,
+                        ellipse_center.first - bbox_halfheight);
+
+    point bbox_br_corner =
+        std::pair<T, T>(ellipse_center.second + bbox_halfwidth,
+                        ellipse_center.first + bbox_halfheight);
+
+    std::cout << bbox_br_corner.first << " " << bbox_br_corner.second << " "
+              << bbox_ul_corner.first << " " << bbox_ul_corner.second
+              << std::endl;
+  }
+
+  bool in_ellipse(T& _sin, T& _cos, point& ellipse_center, point& p) {
+
+    T dy = (ellipse_center.first - p.first);
+    T dz = (ellipse_center.second - p.second);
+    T d1 = (_cos * dz + _sin * dy);
+    T d2 = (_cos * dy + _sin * dz);
+
+    std::cout << "ELLIPSE VALUE: " << (d1 * d1 / pow_sigma_z) +
+                                          (d2 * d2 / pow_sigma_dl) << std::endl;
+
+    return ((d1 * d1 / pow_sigma_z) + (d2 * d2 / pow_sigma_dl)) <= T(1) ? true
+                                                                        : false;
+  }
+
+  T get_event_tan(T& z_u, T& z_d) const {
+    return (z_u - z_d) / (T(2) * R_distance);
+  }
+  T get_event_y(T& dl, T& tan_event) const {
+    return -T(0.5) * (dl / sqrt(T(1) + (tan_event * tan_event)));
+  }
+  T get_event_z(T& z_u, T& z_d, T& y, T& tan_event) const {
+    return T(0.5) * (z_u + z_d + (T(2) * y * tan_event));
+  }
+
+  pixel_location in_pixel(T& y, T& z) {
+    return std::make_pair(std::floor((R_distance - y) / pixel_size),
+                          std::floor((R_distance - z) / pixel_size));
+  }
+
+  pixel_location pixel_center(T& y, T& z) {
+    // std::cout << " PIXEL: " << std::floor((R_distance - y) / pixel_size) << "
+    // " << std::floor((R_distance - z) / pixel_size) << std::endl;
+    return std::make_pair(
+        (m_pixel - std::floor((R_distance - y) / pixel_size)) * pixel_size +
+            (T(0.5) * pixel_size),
+        (m_pixel - std::floor((R_distance - z) / pixel_size)) * pixel_size +
+            (T(0.5) * pixel_size));
+  }
+
+  bool ellipse_quadratic_form(T& y, T& z, T& a, T& b, T& c,
+                              pixel_location& pixel) {
+
+    T dy = (pixel.first - y);
+    T dz = (pixel.second - z);
+
+    return ((a * dy * dy) + (b * dz * dz) + (c * dy * dz) < T(9.0f)) ? true
+                                                                     : false;
+  }
+
+  /* MIDPOINT ELLIPSE METHOD
   void DrawEllipse(int x0, int y0, int width, int height)
   {
       int a2 = width * width;
@@ -201,7 +295,6 @@ class spet_reconstruction {
       int fa2 = 4 * a2, fb2 = 4 * b2;
       int x, y, sigma;
 
-      /* first half */
       for (x = 0, y = height, sigma = 2*b2+a2*(1-2*height); b2*x <= a2*y; x++)
       {
         std::cout << x0 + x << " "  << y0 + y << std::endl;
@@ -216,7 +309,6 @@ class spet_reconstruction {
           sigma += b2 * ((4 * x) + 6);
       }
 
-      /* second half */
       for (x = width, y = 0, sigma = 2*a2+b2*(1-2*width); a2*y <= b2*x; y++)
       {
         std::cout << x0 + x << " "  << y0 + y << std::endl;
@@ -231,38 +323,8 @@ class spet_reconstruction {
           sigma += a2 * ((4 * y) + 6);
       }
   }
+*/
 
-  T get_event_tan(T& z_u, T& z_d) const {
-    return (z_u - z_d) / (T(2) * R_distance);
-  }
-  T get_event_y(T& dl, T& tan_event) const {
-    return -T(0.5) * (dl / sqrt(T(1) + (tan_event * tan_event)));
-  }
-  T get_event_z(T& z_u, T& z_d, T& y, T& tan_event) const {
-    return T(0.5) * (z_u + z_d + (T(2) * y * tan_event));
-  }
-
-  pixel_location in_pixel(T& y, T& z) {
-
-    return std::make_pair(std::floor((R_distance - y) / pixel_size),
-                          std::floor((R_distance - z) / pixel_size));
-  }
-
-  pixel_location pixel_center(T& y, T& z) {
-
-    return std::make_pair(std::floor((R_distance - y) / pixel_size) + (T(0.5) * pixel_size),
-                          std::floor((R_distance - z) / pixel_size) + (T(0.5) * pixel_size));
-  }
-
-  bool ellipse_quadratic_form(T& y,T& z,T& a,T& b, T &c,pixel_location &pixel) {
-
-    T dy = (pixel.first - y);
-    T dz = (pixel.second - z);
-
-    return ((a * dy * dy) + (b * dz * dz) + (c * dy * dz) < T(9.0f)) ? true:false;
-
-  }
-/*
   void load_input(std::string fn) {
 
     ibstream in(fn, std::ios::binary);
@@ -277,8 +339,8 @@ class spet_reconstruction {
     in >> pixel_s;
     in >> iter;
     in >> size;
-int i =0;
-    std::cout <<"DATA:" <<  n_pix << " " << pixel_s << " " << iter << " "
+    int i = 0;
+    std::cout << "DATA:" << n_pix << " " << pixel_s << " " << iter << " "
               << size << std::endl;
 #if DEBUG == 1
     std::cout << number_of_pixels << " " << pixel_s << " " << iter << " "
@@ -291,12 +353,12 @@ int i =0;
       if (in.eof()) {
         break;
       }
-
+      i++;
 
       T z_u, z_d, dl;
 
       in >> z_u >> z_d >> dl;
-      std::cout << z_u << " " << z_d << " " << dl << std::endl;
+
       temp_event.z_u = z_u;
       temp_event.z_d = z_d;
       temp_event.dl = dl;
@@ -306,12 +368,12 @@ int i =0;
       T z = get_event_z(z_u, z_d, y, tan);
 
       pixel_location p = in_pixel(y, z);
+#if DEBUG == 1
 
       std::cout << "pixel:" << p.first << " " << p.second << std::endl;
-      event_list[p.first*n_pixels + p.second].push_back(temp_event);
+      event_list[p.first * n_pixels + p.second].push_back(temp_event);
       ++i;
-     std::cout << "I:" << i << std::endl;
-#if DEBUG == 1
+      std::cout << "I:" << i << std::endl;
       std::cout << "DATA: " << z_u << "  " << z_d << " " << dl << std::endl;
       std::cout << "LOCATIONS: "
                 << "y: " << y << " z: " << z << " tan: " << tan << std::endl;
@@ -321,11 +383,8 @@ int i =0;
 // assert(p.first < number_of_pixels || p.second < number_of_pixels);
 #endif
       // event_list[p.first * n_pixels + p.second].push_back(temp_event);
-
     }
-
   }
-*/
 };
 
 #endif  // SPET_RECONSTRUCTION_H

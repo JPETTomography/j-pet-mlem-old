@@ -1,16 +1,15 @@
+#define CATCH_CONFIG_MAIN
+
 #include "catch.hpp"
 #include "reconstruction.h"
 
+// TEST FOR EVENT (300,0,45.0) R = 450.0
 
-//TEST FOR EVENT (300,0,45.0) R = 450.0
-
-
-struct E{
+struct E {
 
   double y;
   double z;
   double angle;
-
 };
 
 TEST_CASE("ovec", "ovec_test") {
@@ -18,7 +17,7 @@ TEST_CASE("ovec", "ovec_test") {
   E e;
   e.y = 300.0f;
   e.z = 0.0;
-  e.angle = (45 * (M_PI/180));
+  e.angle = (45 * (M_PI / 180));
   double R_distance = 450.0;
 
   double pixel_y = 300.0;
@@ -27,17 +26,17 @@ TEST_CASE("ovec", "ovec_test") {
   double inv_cos = 1.0 / std::cos(e.angle);
   double pow_inv_cos = inv_cos * inv_cos;
 
-  //0vec parameters
+  // 0vec parameters
   double vec_o[3];
 
   vec_o[0] = -(pixel_y + e.y - R_distance) * std::tan(e.angle) * pow_inv_cos;
   vec_o[1] = -(pixel_y + e.y + R_distance) * std::tan(e.angle) * pow_inv_cos;
-  vec_o[2] = -(pixel_y + e.y) * inv_cos * (1.0 + (2.0 * std::tan(e.angle) * std::tan(e.angle)));
+  vec_o[2] = -(pixel_y + e.y) * inv_cos *
+             (1.0 + (2.0 * std::tan(e.angle) * std::tan(e.angle)));
 
   CHECK(vec_o[0] == Approx(-300.0));
   CHECK(vec_o[1] == Approx(-2100.0));
   CHECK(vec_o[2] == Approx(-1800 * std::sqrt(2)));
-
 }
 
 TEST_CASE("avec", "avec_test") {
@@ -45,7 +44,7 @@ TEST_CASE("avec", "avec_test") {
   E e;
   e.y = 300.0f;
   e.z = 0.0;
-  e.angle = (45 * (M_PI/180));
+  e.angle = (45 * (M_PI / 180));
   double R_distance = 450.0;
 
   double pixel_y = 300.0;
@@ -54,17 +53,16 @@ TEST_CASE("avec", "avec_test") {
   double inv_cos = 1.0 / std::cos(e.angle);
   double pow_inv_cos = inv_cos * inv_cos;
 
-  //0vec parameters
+  // 0vec parameters
   double vec_a[3];
 
   vec_a[0] = -(pixel_y + e.y - R_distance) * std::tan(e.angle) * pow_inv_cos;
   vec_a[1] = -(pixel_y + e.y + R_distance) * std::tan(e.angle) * pow_inv_cos;
-  vec_a[2] = -2.0 * (pixel_y + e.y) *  (inv_cos * std::tan(e.angle));
+  vec_a[2] = -2.0 * (pixel_y + e.y) * (inv_cos * std::tan(e.angle));
 
   CHECK(vec_a[0] == Approx(-300.0));
   CHECK(vec_a[1] == Approx(-2100.0));
   CHECK(vec_a[2] == Approx(-1200 * std::sqrt(2)));
-
 }
 
 TEST_CASE("bvec", "bvec_test") {
@@ -72,7 +70,7 @@ TEST_CASE("bvec", "bvec_test") {
   E e;
   e.y = 300.0f;
   e.z = 0.0;
-  e.angle = (45 * (M_PI/180));
+  e.angle = (45 * (M_PI / 180));
   double R_distance = 450.0;
 
   double pixel_y = 300.0;
@@ -88,7 +86,6 @@ TEST_CASE("bvec", "bvec_test") {
   CHECK(vec_b[0] == Approx(-300.0));
   CHECK(vec_b[1] == Approx(-300.0));
   CHECK(vec_b[2] == Approx(-600 * std::sqrt(2)));
-
 }
 
 /*
@@ -123,4 +120,3 @@ TEST_CASE("kernel probability", "kernel_test") {
 
 }
 */
-

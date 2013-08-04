@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 
     double R_distance = cl.get<float>("r-distance");
     double Scentilator_length = cl.get<float>("s-length");
-    int iteration = cl.get<int>("iter");
+    int iteration = 100000;
     double pixel_size = cl.get<float>("p-size");
     int n_pixels = Scentilator_length / pixel_size;
     double sigma = cl.get<float>("s-z");
@@ -74,30 +74,9 @@ int main(int argc, char* argv[]) {
     std::string fn("test.bin");
     test.save_output(fn);
 
-
     spet_reconstruction<double> reconstruction(R_distance, Scentilator_length,
                                                n_pixels, pixel_size, sigma, dl);
-    //reconstruction.load_input(fn);
-
-    double y_1 = 300.0;
-    double z_1 = 0.0;
-    double angle = (45 * (M_PI/180));
-    double z_u = -200.0f;
-    double z_d = 200.0f;
-    double t = reconstruction.get_event_tan(z_u, z_d);
-
-    int it = 1;
-    reconstruction.reconstruction(it);
-    std::cout << "TEST KERNELA " << std::endl;
-    std::pair<int, int> p = reconstruction.pixel_center(y_1,z_1);
-
-    std::cout << "PIXEL DLA KERNELA: " << p.first << " " << p.second << std::endl;
-    std::cout << "KERNEL: " << reconstruction.kernel(y_1, z_1, angle,p)
-              << std::endl;
-
-    std::cout << "ELLIPSE: " << std::endl;
-
-    // reconstruction.DrawEllipse(0, 0, 5, 10);
+    reconstruction.load_input(fn);
   }
   catch (std::string & ex) {
     std::cerr << "error: " << ex << std::endl;

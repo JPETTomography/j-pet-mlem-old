@@ -18,8 +18,6 @@
 #include "scintillator.h"
 #include "util/bstream.h"
 
-
-
 typedef std::minstd_rand0 rng;
 
 template <typename T = float>
@@ -112,8 +110,6 @@ class phantom {
       rz = uniform_z(rng_list[omp_get_thread_num()]);
       rangle = PI_2 * uniform_dist(rng_list[omp_get_thread_num()]);
 
-      std::cout << "WYGENROWANE: " << ry  << " " << rz << std::endl;
-
       if (in(ry, rz)) {
 
         z_u = rz + (R_distance - ry) * tan(rangle) +
@@ -125,7 +121,7 @@ class phantom {
 
         if (std::abs(z_u) < (Scentilator_length / T(2)) &&
             std::abs(z_d) < (Scentilator_length / T(2))) {
-          std::cout << z_u << " " << z_d << " " << dl << std::endl;
+          // std::cout << z_u << " " << z_d << " " << dl << std::endl;
           temp_event.z_u = z_u;
           temp_event.z_d = z_d;
           temp_event.dl = dl;
@@ -140,8 +136,6 @@ class phantom {
       event_list.insert(event_list.end(), event_list_per_thread[i].begin(),
                         event_list_per_thread[i].end());
     }
-
-    std::cout << "WIELKOSC: " << event_list.size() << std::endl;
   }
 
   void save_output(std::string fn) {
@@ -158,30 +152,11 @@ class phantom {
     out << size;
 
     typename std::vector<event<T>>::iterator it;
-
+    int i = 0;
     for (it = event_list.begin(); it != event_list.end(); ++it) {
-
+      ++i;
       out << it->z_u << it->z_d << it->dl;
-      std::cout << it->z_u << " " << it->z_d << " " << it->dl << std::endl;
     }
-  }
-
-  void load_input(std::string fn) {
-
-    ibstream in(fn, std::ios::binary);
-
-    int number_of_pixels;
-    float pixel_s;
-    int iter;
-    int number_of_event_in_file;
-
-    in >> number_of_pixels;
-    in >> pixel_s;
-    in >> iter;
-    in >> number_of_event_in_file;
-
-    std::cout << number_of_pixels << " " << pixel_s << " " << iter << " "
-              << number_of_event_in_file << std::endl;
   }
 };
 
