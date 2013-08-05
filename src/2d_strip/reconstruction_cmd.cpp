@@ -15,7 +15,7 @@
 
 using namespace std;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
@@ -78,7 +78,6 @@ int main(int argc, char* argv[]) {
                                                n_pixels, pixel_size, sigma, dl);
     reconstruction.Load_Input(fn);
     reconstruction.Test();
-
   }
   catch (std::string & ex) {
     std::cerr << "error: " << ex << std::endl;
