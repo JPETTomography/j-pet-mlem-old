@@ -25,6 +25,8 @@ class spet_reconstruction {
   T pow_sigma_z;
   T pow_sigma_dl;
   int m_pixel;
+  T epsilon_distance;
+  T half_pixel;
 
   std::vector<std::vector<event<T> > > event_list;
   std::vector<std::vector<T> > inverse_correlation_matrix;
@@ -46,6 +48,9 @@ class spet_reconstruction {
     pow_sigma_z = sigma_z * sigma_z;
     pow_sigma_dl = sigma_dl * sigma_dl;
     m_pixel = (R_distance / pixel_size);
+    epsilon_distance = pixel_size - T(0.000001);
+    half_pixel = pixel_size / T(2.0);
+
 #if DEBUG
     std::cout << "TEST ELIPSY: " << std::endl;
 
@@ -88,24 +93,37 @@ class spet_reconstruction {
                                             inverse_correlation_matrix[1][1] *
                                             inverse_correlation_matrix[2][2]);
   }
+  /*
+    T Multiply_Elements(std::vector<T> &vec_a, std::vector<T> &vec_b) {
 
+      std::vector<T> a(vec_a.size(), T(0));
+
+      float output = 0.f;
+      // add AVX
+      for (unsigned i = 0; i < vec_a.size(); ++i) {
+        for (unsigned j = 0; j < vec_b.size(); j++) {
+          a[i] += vec_a[j] * inverse_correlation_matrix[j][i];
+        }
+        output += a[i] * vec_b[i];
+      }
+
+      return output;
+    }
+  */
   T Multiply_Elements(std::vector<T> &vec_a, std::vector<T> &vec_b) {
 
     std::vector<T> a(vec_a.size(), T(0));
 
     float output = 0.f;
-    // add AVX
-    for (unsigned i = 0; i < vec_a.size(); ++i) {
-      for (unsigned j = 0; j < vec_b.size(); j++) {
-        a[i] += vec_a[j] * inverse_correlation_matrix[j][i];
-      }
+    for (unsigned i = 0; i < 3; ++i) {
+      a[i] += vec_a[i] * inverse_correlation_matrix[i][i];
       output += a[i] * vec_b[i];
     }
 
     return output;
   }
 
-  T Kernel(T &y, T &angle, Point &pixel_center) {
+  T Kernel(T &y, T &z, T &angle, Point &pixel_center) {
 
 #if DEBUG_KERNEL
     std::cout << "ANGLE : " << angle << std::endl;
@@ -154,8 +172,9 @@ class spet_reconstruction {
 
     T norm = a_ic_a + (T(2) * o_ic_b);
 
-    T element_before_exp =
-        INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / std::sqrt(norm));
+    T element_before_exp = INVERSE_POW_TWO_PI *
+                           (sqrt_det_correlation_matrix / std::sqrt(norm)) *
+                           Sensitivity(y, z);
 
 #if DEBUG_KERNEL
     std::cout << "SQRT DET_COR := " << sqrt_det_correlation_matrix << std::endl;
@@ -187,7 +206,8 @@ class spet_reconstruction {
     std::cout << "EXP: " << _exp << std::endl;
 #endif
 
-    return (element_before_exp * _exp);
+    return (element_before_exp * _exp) /
+           Sensitivity(pixel_center.first, pixel_center.second);
   }
 
   T Sensitivity(T y, T z) {
@@ -203,106 +223,132 @@ class spet_reconstruction {
   }
 
   void Reconstruction(int &iteration) {
-
+    unsigned int i = 0;
     for (auto &col : event_list) {
       for (auto &row : col) {
+        ++i;
+
+        if (i % 100 == 0) {
+
+          printf("%d\n", i);
+        }
 
         T tan = Event_Tan(row.z_u, row.z_d);
         T y = Event_Y(row.dl, tan);
         T z = Event_Z(row.z_u, row.z_d, y, tan);
+
+        Point pixel_center = Pixel_Center(y, z);
+
+        T main_kernel = Kernel(y, z, tan, pixel_center);
+
+        Point ellipse_center = std::pair<T, T>(y, z);
         T angle = std::atan(tan);
-        Pixel pixel = Pixel_Center(y, z);
-
-        T main_kernel = kernel(y, tan, pixel);
-
-        std::cout << main_kernel << std::endl;
-
-        //  Kernels_in_Bounding_Box()
-
-        // T accumulator = main_kernel *
-        // rho[Pixel_Location(pixel.first,pixel.second)]
-
-        // MIDPOINT CIRCLE ALGORITHM ?
-        /*
-         * znajdz elipse dla zadanego punktu oraz piksele z nia stowarzyszone
-         * dla kazdego piksela w elipsie sprawdz czy event znajduje sie w
-         *pikselu
-         *
-         *
-         *
-         */
+        Ellipse_Bounding_Box(ellipse_center, angle);
       }
     }
   }
 
   void Test() {
 
-    Point ellipse = std::pair<T, T>(0, 0);
-    T angle = (90 * (M_PI / 180));
-    Ellipse_Bounding_Box(ellipse, angle);
+    T x = 0;
+    T y = 0;
+    Point pixel = Pixel_Center(x, y);
+    std::cout << "PIKSEL: " << pixel.first << " " << pixel.second << " "
+              << epsilon_distance << " " << half_pixel << std::endl;
+    Point ellipse_center = Point(500, 500);
+    T angle = (0 * (M_PI / 180));
+
+    T _sin = std::sin(angle);
+    T _cos = std::cos(angle);
+
+    Ellipse_Bounding_Box(ellipse_center, angle);
   }
 
   T Ellipse_Bounding_Box(Point &ellipse_center, T &angle) {
 
-    T ux = sigma_z * std::cos(angle);
-    T uy = sigma_z * std::sin(angle);
+    T _cos = std::cos(angle);
+    T _sin = std::sin(angle);
+
+    T ux = sigma_z * _cos;
+    T uy = sigma_z * _sin;
     T vx = sigma_dl * std::cos(angle + M_PI_2);
     T vy = sigma_dl * std::sin(angle + M_PI_2);
 
     T bbox_halfwidth = std::sqrt(ux * ux + vx * vx);
     T bbox_halfheight = std::sqrt(uy * uy + vy * vy);
 
-    Pixel dl = Pixel_Location(ellipse_center.second - bbox_halfwidth,
-                              ellipse_center.first - bbox_halfheight);
-    Pixel ur = Pixel_Location(ellipse_center.second + bbox_halfwidth,
-                              ellipse_center.first + bbox_halfheight);
+    // std::cout << "x_u: " << ellipse_center.second - bbox_halfwidth -
+    // (R_distance) << " y_u: " << ellipse_center.first - bbox_halfheight -
+    // (R_distance) << std::endl;
+    // std::cout << "x_d: " << ellipse_center.second + bbox_halfwidth -
+    // (R_distance) << " y_d: " << ellipse_center.first + bbox_halfheight -
+    // (R_distance) << std::endl;
 
-    std::cout << "dl : " << dl.first << " " << dl.second << std::endl;
-    std::cout << "ur : " << ur.first << " " << ur.second << std::endl;
+    Pixel dl =
+        Pixel_Location(ellipse_center.second - bbox_halfwidth - (R_distance),
+                       ellipse_center.first - bbox_halfheight - (R_distance));
+    Pixel ur =
+        Pixel_Location(ellipse_center.second + bbox_halfwidth - (R_distance),
+                       ellipse_center.first + bbox_halfheight - (R_distance));
 
-    typename std::vector<std::vector<event<T> > > List;
-    typename std::vector<event<T> >::iterator it;
+    //std::cout << "dl : " << dl.first << " " << dl.second << std::endl;
+    //std::cout << "ur : " << ur.first << " " << ur.second << std::endl;
 
-    int m = 100;
-    int n = 100;
-
-    for (m = 0; m < n_pixels; m++) {
-      for (n = 0; n < n_pixels; n++) {
-
-        if (event_list[mem_location(m, n)].size() != 0) {
-
-          // std::cout << m << " " << n << " " << event_list[m][n].size() << " "
-          // << std::endl;
-        }
-      }
-    }
-
+    int iterator = 0;
     for (int i = dl.first; i <= ur.first; ++i) {
       for (int j = dl.second; j <= ur.second; ++j) {
 
+        //   std::cout << "ELLIPSE CENTER: " << ellipse_center.first << " " <<
+        // ellipse_center.second << std::endl;
+        //   std::cout << "dl : " << dl.first << " " << dl.second << std::endl;
+        //   std::cout << "ur : " << ur.first << " " << ur.second << std::endl;
+
         int location = mem_location(i, j);
 
-        if (event_list[location].size() != 0) {
-          for (int in = 0; in < event_list[location].size(); ++in) {
+        T px = (i * pixel_size) - (R_distance);
+        T py = (j * pixel_size) - (R_distance);
 
-            // T &y,T &angle,Point &pixel_center
+        //  std::cout << "PIXEL (i,j): " << i << " " << j << std::endl;
+        //  std::cout << "PIXEL (x,y): " << px << " " << py << std::endl;
 
-            T _tan = Event_Tan(event_list[location][in].z_u,
-                               event_list[location][in].z_d);
-            T y = Event_Y(event_list[location][in].dl, _tan);
-            T z = Event_Z(event_list[location][in].z_u,
-                          event_list[location][in].z_d, y, _tan);
+        Point pixel = Pixel_Center(px, py);
 
-            Point p = Pixel_Center(y, z);
-            T angle = std::atan(_tan);
-            T probability = Kernel(y, angle, p);
-            std::cout << probability << std::endl;
-            // kernel()
-            // T kernel(T y,T angle,Point pixel)
+        //  std::cout << "PIXEL center (x,y): " << pixel.first << " " <<
+        // pixel.second << std::endl;
+        //  std::cout << "R_distance: " << R_distance << std::endl;
+        //  std::cout << "Scentilator_length: " << Scentilator_length <<
+        // std::endl;
+
+        int k = Pixel_in_ellipse(pixel.first, pixel.second, ellipse_center,
+                                 _sin, _cos);
+
+        //if (k != 0) {
+        //  std::cout << "k: " << k << std::endl;
+        // }
+
+        if (k == 2 || k == 1) {
+          iterator++;
+          if (event_list[location].size() != 0) {
+            for (int in = 0; in < event_list[location].size(); ++in) {
+
+              T _tan = Event_Tan(event_list[location][in].z_u,
+                                 event_list[location][in].z_d);
+              T y = Event_Y(event_list[location][in].dl, _tan);
+              T z = Event_Z(event_list[location][in].z_u,
+                            event_list[location][in].z_d, y, _tan);
+
+              Point p = Pixel_Center(y, z);
+              T angle = std::atan(_tan);
+              T probability = Kernel(y, z, angle, p);
+              // std::cout << probability << std::endl;
+              // kernel()
+              // T kernel(T y,T angle,Point pixel)
+            }
           }
         }
       }
     }
+    //std::cout << "CALOSC: " << iterator << std::endl;
     return 2.0;
   }
 
@@ -313,11 +359,49 @@ class spet_reconstruction {
     T d1 = (_cos * dz + _sin * dy);
     T d2 = (_cos * dy + _sin * dz);
 
-    std::cout << "ELLIPSE VALUE: " << (d1 * d1 / pow_sigma_z) +
-                                          (d2 * d2 / pow_sigma_dl) << std::endl;
+    // std::cout << "ELLIPSE VALUE: " << (d1 * d1 / pow_sigma_z) +
+    //                                       (d2 * d2 / pow_sigma_dl) <<
+    // std::endl;
 
     return ((d1 * d1 / pow_sigma_z) + (d2 * d2 / pow_sigma_dl)) <= T(1) ? true
                                                                         : false;
+  }
+
+  int Pixel_in_ellipse(T &x, T &y, Point &ellipse_center, T &_sin, T &_cos) {
+
+    Point pixel_ur = Point(x - half_pixel + epsilon_distance,
+                           y - half_pixel + epsilon_distance);
+    Point pixel_ul = Point(x - half_pixel, y - half_pixel + epsilon_distance);
+    Point pixel_dr = Point(x - half_pixel + epsilon_distance, y - half_pixel);
+    Point pixel_dl = Point(x - half_pixel, y - half_pixel);
+
+    // std::cout << "Pixel_ur: " << pixel_ur.first << " " << pixel_ur.second <<
+    // std::endl;
+    // std::cout << "Pixel_ul: " << pixel_ul.first << " " << pixel_ul.second <<
+    // std::endl;
+    // std::cout << "Pixel_dr: " << pixel_dr.first << " " << pixel_dr.second <<
+    // std::endl;
+    // std::cout << "Pixel_dl: " << pixel_dl.first << " " << pixel_dl.second <<
+    // std::endl;
+
+    bool ur = in_ellipse(_sin, _cos, ellipse_center, pixel_ur);
+    bool ul = in_ellipse(_sin, _cos, ellipse_center, pixel_ul);
+    bool dr = in_ellipse(_sin, _cos, ellipse_center, pixel_dr);
+    bool dl = in_ellipse(_sin, _cos, ellipse_center, pixel_dl);
+
+    // std::cout << ur << std::endl;
+    // std::cout << ul << std::endl;
+    // std::cout << dr << std::endl;
+    // std::cout << dl << std::endl;
+
+    if (ur && ul && dr && dl) {
+      return 1;
+    }
+    if (ur || ul || dr || dl) {
+      return 2;
+    }
+
+    return 0;
   }
 
   T Event_Tan(T &z_u, T &z_d) const {
@@ -338,13 +422,10 @@ class spet_reconstruction {
   int mem_location(int &y, int &z) { return int(y * n_pixels + z); }
 
   Point Pixel_Center(T &y, T &z) {
-    // std::cout << " PIXEL: " << std::floor((R_distance - y) / pixel_size) << "
-    // " << std::floor((R_distance - z) / pixel_size) << std::endl;
-    return Point(
-        (m_pixel - std::floor((R_distance - y) / pixel_size)) * pixel_size +
-            (T(0.5) * pixel_size),
-        (m_pixel - std::floor((R_distance - z) / pixel_size)) * pixel_size +
-            (T(0.5) * pixel_size));
+    return Point((std::floor((R_distance + y) / pixel_size)) * pixel_size +
+                     (T(0.5) * pixel_size),
+                 (std::floor((R_distance + z) / pixel_size)) * pixel_size +
+                     (T(0.5) * pixel_size));
   }
 
   /* MIDPOINT ELLIPSE METHOD

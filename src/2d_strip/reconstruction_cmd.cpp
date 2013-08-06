@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 
     double R_distance = cl.get<float>("r-distance");
     double Scentilator_length = cl.get<float>("s-length");
-    int iteration = 100000;
+    int iteration = 10000;
     double pixel_size = cl.get<float>("p-size");
     int n_pixels = Scentilator_length / pixel_size;
     double sigma = cl.get<float>("s-z");
@@ -77,7 +77,8 @@ int main(int argc, char *argv[]) {
     spet_reconstruction<double> reconstruction(R_distance, Scentilator_length,
                                                n_pixels, pixel_size, sigma, dl);
     reconstruction.Load_Input(fn);
-    reconstruction.Test();
+    //reconstruction.Test();
+    reconstruction.Reconstruction(iteration);
   }
   catch (std::string & ex) {
     std::cerr << "error: " << ex << std::endl;
