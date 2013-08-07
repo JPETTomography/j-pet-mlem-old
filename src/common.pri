@@ -15,6 +15,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 
 HEADERS += geometry/*.h
 HEADERS += util/*.h
+HEADERS += math/*.h
 
 SOURCES += util/png_writer.cpp
 
