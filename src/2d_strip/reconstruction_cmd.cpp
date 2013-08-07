@@ -15,7 +15,7 @@
 
 using namespace std;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
@@ -25,8 +25,8 @@ int main(int argc, char *argv[]) {
 #if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
 #endif
-    cl.add<float>("r-distance", 'r', "R distance between scientilators", false,
-                  500.0f);
+    cl.add<float>(
+        "r-distance", 'r', "R distance between scientilators", false, 500.0f);
     cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
     cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 80);
@@ -56,8 +56,16 @@ int main(int argc, char *argv[]) {
     double b = 50.0f;
     double phi = 0.0f;
 
-    phantom<double> test(iteration, n_pixels, pixel_size, R_distance,
-                         Scentilator_length, x, y, a, b, phi);
+    Phantom<double> test(iteration,
+                         n_pixels,
+                         pixel_size,
+                         R_distance,
+                         Scentilator_length,
+                         x,
+                         y,
+                         a,
+                         b,
+                         phi);
 
     int n_threads = 4;
 
@@ -74,12 +82,12 @@ int main(int argc, char *argv[]) {
     std::string fn("test.bin");
     test.save_output(fn);
 
-    spet_reconstruction<double> reconstruction(R_distance, Scentilator_length,
-                                               n_pixels, pixel_size, sigma, dl);
+    Reconstruction<double> reconstruction(
+        R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
     ibstream in(fn);
     in >> reconstruction;
-    //reconstruction.Test();
-    reconstruction.Reconstruction(iteration);
+    // reconstruction.Test();
+    reconstruction(iteration);
   }
   catch (std::string & ex) {
     std::cerr << "error: " << ex << std::endl;

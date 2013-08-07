@@ -20,8 +20,7 @@
 
 typedef std::minstd_rand0 rng;
 
-template <typename T = float>
-class phantom {
+template <typename T = float> class Phantom {
 
   typedef std::pair<int, int> pixel_location;
 
@@ -41,8 +40,16 @@ class phantom {
   static constexpr const T PI_2 = 1.5707963;
 
  public:
-  phantom(int& iteration, int n_pixels, T& pixel_size, T& R_distance,
-          T& Scentilator_length, T& x, T& y, T& a, T& b, T& phi)
+  Phantom(int& iteration,
+          int n_pixels,
+          T& pixel_size,
+          T& R_distance,
+          T& Scentilator_length,
+          T& x,
+          T& y,
+          T& a,
+          T& b,
+          T& phi)
       : iteration(iteration),
         n_pixels(n_pixels),
         pixel_size(pixel_size),
@@ -133,7 +140,8 @@ class phantom {
 
     for (signed i = 0; i < omp_get_max_threads(); ++i) {
 
-      event_list.insert(event_list.end(), event_list_per_thread[i].begin(),
+      event_list.insert(event_list.end(),
+                        event_list_per_thread[i].begin(),
                         event_list_per_thread[i].end());
     }
   }
