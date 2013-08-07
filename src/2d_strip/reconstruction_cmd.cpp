@@ -76,7 +76,8 @@ int main(int argc, char *argv[]) {
 
     spet_reconstruction<double> reconstruction(R_distance, Scentilator_length,
                                                n_pixels, pixel_size, sigma, dl);
-    reconstruction.Load_Input(fn);
+    ibstream in(fn);
+    in >> reconstruction;
     //reconstruction.Test();
     reconstruction.Reconstruction(iteration);
   }

@@ -466,9 +466,9 @@ class spet_reconstruction {
   }
 */
 
-  void Load_Input(std::string fn) {
+  template <typename StreamType>
+  spet_reconstruction& operator<<(StreamType& in) {
 
-    ibstream in(fn, std::ios::binary);
     event<T> temp_event;
 
     unsigned int n_pix;
@@ -525,6 +525,14 @@ class spet_reconstruction {
 #endif
       event_list[mem_location(p.first, p.second)].push_back(temp_event);
     }
+
+    return *this;
+  }
+
+  template <typename StreamType>
+  friend StreamType& operator>>(StreamType& in, spet_reconstruction &r) {
+    r << in;
+    return in;
   }
 };
 
