@@ -19,7 +19,6 @@ TEST_CASE("ovec", "ovec_test") {
   double R_distance = 450.0;
 
   double pixel_y = 300.0;
-  double pixel_z = 0.0;
 
   double inv_cos = 1.0 / std::cos(e.angle);
   double pow_inv_cos = inv_cos * inv_cos;
@@ -46,7 +45,6 @@ TEST_CASE("avec", "avec_test") {
   double R_distance = 450.0;
 
   double pixel_y = 300.0;
-  double pixel_z = 0.0;
 
   double inv_cos = 1.0 / std::cos(e.angle);
   double pow_inv_cos = inv_cos * inv_cos;
@@ -69,7 +67,6 @@ TEST_CASE("bvec", "bvec_test") {
   e.y = 300.0f;
   e.z = 0.0;
   e.angle = (45 * (M_PI / 180));
-  double R_distance = 450.0;
 
   double pixel_y = 300.0;
   double pixel_z = 0.0;
