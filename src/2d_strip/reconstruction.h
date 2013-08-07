@@ -220,16 +220,10 @@ template <typename T = double> class Reconstruction {
             std::atan(std::min(L_minus / R_minus, L_plus / R_plus)));
   }
 
-  void operator()(int& iteration) {
-    unsigned int i = 0;
+  void operator()() {
+
     for (auto& col : event_list) {
       for (auto& row : col) {
-        ++i;
-
-        if (i % 100 == 0) {
-
-          printf("%d\n", i);
-        }
 
         T tan = event_tan(row.z_u, row.z_d);
         T y = event_y(row.dl, tan);
@@ -237,7 +231,7 @@ template <typename T = double> class Reconstruction {
 
         Point pcenter = pixel_center(y, z);
 
-        T main_kernel = kernel(y, z, tan, pcenter);
+        // T main_kernel = kernel(y, z, tan, pcenter);
 
         Point ellipse_center = std::pair<T, T>(y, z);
         T angle = std::atan(tan);
@@ -327,7 +321,7 @@ template <typename T = double> class Reconstruction {
         if (k == 2 || k == 1) {
           iterator++;
           if (event_list[location].size() != 0) {
-            for (int in = 0; in < event_list[location].size(); ++in) {
+            for (unsigned int in = 0; in < event_list[location].size(); ++in) {
 
               T _tan = event_tan(event_list[location][in].z_u,
                                  event_list[location][in].z_d);
@@ -338,8 +332,8 @@ template <typename T = double> class Reconstruction {
                             _tan);
 
               Point p = pixel_center(y, z);
-              T angle = std::atan(_tan);
-              T probability = kernel(y, z, angle, p);
+              // T angle = std::atan(_tan);
+              // T probability = kernel(y, z, angle, p);
               // std::cout << probability << std::endl;
               // kernel()
               // T kernel(T y,T angle,Point pixel)

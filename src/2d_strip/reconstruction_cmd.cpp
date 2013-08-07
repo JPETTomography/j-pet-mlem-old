@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
     ibstream in(fn);
     in >> reconstruction;
     // reconstruction.Test();
-    reconstruction(iteration);
+    reconstruction();
   }
   catch (std::string & ex) {
     std::cerr << "error: " << ex << std::endl;
