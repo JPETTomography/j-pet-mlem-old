@@ -146,9 +146,7 @@ template <typename T = float> class Phantom {
     }
   }
 
-  void save_output(std::string fn) {
-
-    obstream out(fn, std::ios::binary | std::ios::trunc);
+  template <typename StreamType> Phantom& operator>>(StreamType& out) {
 
     unsigned int n_pix = n_pixels;
     float pixel_s = pixel_size;
@@ -165,6 +163,13 @@ template <typename T = float> class Phantom {
       ++i;
       out << it->z_u << it->z_d << it->dl;
     }
+    return *this;
+  }
+
+  template <typename StreamType>
+  friend StreamType& operator<<(StreamType& out, Phantom& p) {
+    p >> out;
+    return out;
   }
 };
 

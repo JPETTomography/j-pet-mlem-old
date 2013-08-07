@@ -79,12 +79,12 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Event time: " << (t1 - t0) / 1000 << std::endl;
 
-    std::string fn("test.bin");
-    test.save_output(fn);
+    obstream out("test.bin");
+    test >> out;
 
     Reconstruction<double> reconstruction(
         R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
-    ibstream in(fn);
+    ibstream in("test.bin");
     in >> reconstruction;
     // reconstruction.Test();
     reconstruction();
