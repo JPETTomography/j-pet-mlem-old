@@ -24,7 +24,7 @@ template <typename T = float> class Phantom {
 
   typedef std::pair<int, int> pixel_location;
 
- private:
+private:
   int iteration;
   int n_pixels;
   T pixel_size;
@@ -35,31 +35,16 @@ template <typename T = float> class Phantom {
   T _cos;
   T _inv_a2;
   T _inv_b2;
-  std::vector<event<T>> event_list;
-  std::vector<scintillator<>> scientilator_list;
+  std::vector<event<T> > event_list;
+  std::vector<scintillator<> > scientilator_list;
   static constexpr const T PI_2 = 1.5707963;
 
- public:
-  Phantom(int& iteration,
-          int n_pixels,
-          T& pixel_size,
-          T& R_distance,
-          T& Scentilator_length,
-          T& x,
-          T& y,
-          T& a,
-          T& b,
-          T& phi)
-      : iteration(iteration),
-        n_pixels(n_pixels),
-        pixel_size(pixel_size),
-        R_distance(R_distance),
-        Scentilator_length(Scentilator_length),
-        _a(a),
-        _b(b),
-        _x(x),
-        _y(y),
-        _phi(phi) {
+public:
+  Phantom(int &iteration, int n_pixels, T &pixel_size, T &R_distance,
+          T &Scentilator_length, T &x, T &y, T &a, T &b, T &phi)
+      : iteration(iteration), n_pixels(n_pixels), pixel_size(pixel_size),
+        R_distance(R_distance), Scentilator_length(Scentilator_length), _a(a),
+        _b(b), _x(x), _y(y), _phi(phi) {
     _sin = sin(T(_phi));
     _cos = cos(T(_phi));
     _inv_a2 = T(1) / (_a * _a);
@@ -81,7 +66,7 @@ template <typename T = float> class Phantom {
 
   void emit_event(int n_threads) {
 
-    std::vector<std::vector<event<T>>> event_list_per_thread;
+    std::vector<std::vector<event<T> > > event_list_per_thread;
     event<T> temp_event;
 
     T ry, rz, rangle;
@@ -140,24 +125,24 @@ template <typename T = float> class Phantom {
 
     for (signed i = 0; i < omp_get_max_threads(); ++i) {
 
-      event_list.insert(event_list.end(),
-                        event_list_per_thread[i].begin(),
+      event_list.insert(event_list.end(), event_list_per_thread[i].begin(),
                         event_list_per_thread[i].end());
     }
   }
 
-  template <typename StreamType> Phantom& operator>>(StreamType& out) {
+  template <typename StreamType> Phantom &operator>>(StreamType &out) {
 
     unsigned int n_pix = n_pixels;
     float pixel_s = pixel_size;
     unsigned int iter = iteration;
     unsigned int size = event_list.size();
+    std::cout << "SAVE: " << n_pixels << " " << event_list.size() << std::endl;
     out << n_pix;
     out << pixel_s;
     out << iter;
     out << size;
 
-    typename std::vector<event<T>>::iterator it;
+    typename std::vector<event<T> >::iterator it;
     int i = 0;
     for (it = event_list.begin(); it != event_list.end(); ++it) {
       ++i;
@@ -167,10 +152,10 @@ template <typename T = float> class Phantom {
   }
 
   template <typename StreamType>
-  friend StreamType& operator<<(StreamType& out, Phantom& p) {
+  friend StreamType &operator<<(StreamType &out, Phantom &p) {
     p >> out;
     return out;
   }
 };
 
-#endif  // STRIP_PET_H
+#endif // STRIP_PET_H

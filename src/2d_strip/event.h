@@ -1,7 +1,7 @@
 #pragma once
 
 #define DEBUG 0
-#define DEBUG_KERNEL 0
+#define DEBUG_KERNEL 1
 
 template <typename T> struct event {
 

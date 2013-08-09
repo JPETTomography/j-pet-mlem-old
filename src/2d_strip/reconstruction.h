@@ -11,7 +11,7 @@ template <typename T = double> class Reconstruction {
   typedef std::pair<int, int> Pixel;
   typedef std::pair<T, T> Point;
 
- private:
+private:
   static constexpr const T INVERSE_PI = T(1.0 / M_PI);
   static constexpr const T INVERSE_POW_TWO_PI = T(1.0 / (2.0 * M_PI * M_PI));
 
@@ -27,23 +27,16 @@ template <typename T = double> class Reconstruction {
   T epsilon_distance;
   T half_pixel;
 
-  std::vector<std::vector<event<T>>> event_list;
-  std::vector<std::vector<T>> inverse_correlation_matrix;
+  std::vector<std::vector<event<T> > > event_list;
+  std::vector<std::vector<T> > inverse_correlation_matrix;
   T sqrt_det_correlation_matrix;
   std::vector<T> rho;
 
- public:
-  Reconstruction(T& R_distance,
-                 T& Scentilator_length,
-                 int& n_pixels,
-                 T& pixel_size,
-                 T& sigma_z,
-                 T& sigma_dl)
-      : R_distance(R_distance),
-        Scentilator_length(Scentilator_length),
-        n_pixels(n_pixels),
-        pixel_size(pixel_size),
-        sigma_z(sigma_z),
+public:
+  Reconstruction(T &R_distance, T &Scentilator_length, int &n_pixels,
+                 T &pixel_size, T &sigma_z, T &sigma_dl)
+      : R_distance(R_distance), Scentilator_length(Scentilator_length),
+        n_pixels(n_pixels), pixel_size(pixel_size), sigma_z(sigma_z),
         sigma_dl(sigma_dl) {
 
     event_list.resize(n_pixels * n_pixels);
@@ -91,23 +84,24 @@ template <typename T = double> class Reconstruction {
                                             inverse_correlation_matrix[1][1] *
                                             inverse_correlation_matrix[2][2]);
   }
-  /*
-    T Multiply_Elements(std::vector<T> &vec_a, std::vector<T> &vec_b) {
 
-      std::vector<T> a(vec_a.size(), T(0));
+  T multiply_elements(std::vector<T> &vec_a, std::vector<T> &vec_b) {
 
-      float output = 0.f;
-      // add AVX
-      for (unsigned i = 0; i < vec_a.size(); ++i) {
-        for (unsigned j = 0; j < vec_b.size(); j++) {
-          a[i] += vec_a[j] * inverse_correlation_matrix[j][i];
-        }
-        output += a[i] * vec_b[i];
+    std::vector<T> a(vec_a.size(), T(0));
+
+    float output = 0.f;
+    // add AVX
+    for (unsigned i = 0; i < vec_a.size(); ++i) {
+      for (unsigned j = 0; j < vec_b.size(); j++) {
+        a[i] += vec_a[j] * inverse_correlation_matrix[j][i];
       }
-
-      return output;
+      output += a[i] * vec_b[i];
     }
-  */
+
+    return output;
+  }
+
+  /*
   T multiply_elements(std::vector<T>& vec_a, std::vector<T>& vec_b) {
 
     std::vector<T> a(vec_a.size(), T(0));
@@ -120,8 +114,9 @@ template <typename T = double> class Reconstruction {
 
     return output;
   }
+  */
 
-  T kernel(T& y, T& z, T& angle, Point& pixel_center) {
+  T kernel(T &y, T &z, T &angle, Point &pixel_center) {
 
 #if DEBUG_KERNEL
     std::cout << "ANGLE : " << angle << std::endl;
@@ -141,6 +136,11 @@ template <typename T = double> class Reconstruction {
         -(pixel_center.first + y) * inv_cos * (T(1) + T(2) * (_tan * _tan));
 
 #if DEBUG_KERNEL
+    std::cout << "KERNEL METHOD" << std::endl;
+    std::cout << "y: " << y << " z: " << z
+              << " p_center: " << pixel_center.first << " "
+              << pixel_center.second << std::endl;
+    std::cout << "ANGLE : " << angle << std::endl;
     std::cout << "vec_o: " << vec_o[0] << " " << vec_o[1] << " " << vec_o[2]
               << std::endl;
 #endif
@@ -170,9 +170,9 @@ template <typename T = double> class Reconstruction {
 
     T norm = a_ic_a + (T(2) * o_ic_b);
 
-    T element_before_exp = INVERSE_POW_TWO_PI *
-                           (sqrt_det_correlation_matrix / std::sqrt(norm)) *
-                           sensitivity(y, z);
+    T element_before_exp =
+        INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / std::sqrt(norm)) *
+        sensitivity(y, z);
 
 #if DEBUG_KERNEL
     std::cout << "SQRT DET_COR := " << sqrt_det_correlation_matrix << std::endl;
@@ -195,10 +195,10 @@ template <typename T = double> class Reconstruction {
     std::cout << "0.5*((b.ic.b - (b.ic.a)^2/(a.ic.a + 2 o.ic.b ))):"
               << 0.5 * (b_ic_b - ((b_ic_a * b_ic_a) / norm)) << std::endl;
 
-    std::cout << "x,y SENS: " << Sensitivity(y, z) << std::endl;
+    std::cout << "x,y SENS: " << sensitivity(y, z) << std::endl;
 
-    std::cout << "PIXEL SENS: "
-              << Sensitivity(pixel_center.first, pixel_center.second)
+    std::cout << "PIXEL SENS: " << sensitivity(pixel_center.first,
+                                               pixel_center.second)
               << std::endl;
 
     std::cout << "EXP: " << _exp << std::endl;
@@ -222,41 +222,76 @@ template <typename T = double> class Reconstruction {
 
   void operator()() {
 
-    for (auto& col : event_list) {
-      for (auto& row : col) {
-
+    int k = 0;
+    for (auto &col : event_list) {
+      for (auto &row : col) {
+        std::cout << "k:= " << k << std::endl;
         T tan = event_tan(row.z_u, row.z_d);
         T y = event_y(row.dl, tan);
         T z = event_z(row.z_u, row.z_d, y, tan);
 
         Point pcenter = pixel_center(y, z);
 
-        // T main_kernel = kernel(y, z, tan, pcenter);
+        //T main_kernel = kernel(y, z, tan, pcenter);
+        //std::cout << "MAIN_KERNEL: " << main_kernel << std::endl;
 
         Point ellipse_center = std::pair<T, T>(y, z);
         T angle = std::atan(tan);
-        ellipse_bounding_box(ellipse_center, angle);
+        T denominator = ellipse_bounding_box(ellipse_center, angle);
+        ++k;
       }
     }
   }
 
   void test() {
 
-    T x = 0;
-    T y = 0;
-    Point pixel = pixel_center(x, y);
-    std::cout << "PIKSEL: " << pixel.first << " " << pixel.second << " "
-              << epsilon_distance << " " << half_pixel << std::endl;
-    Point ellipse_center = Point(500, 500);
+    T x = 0.0;
+    T y = 0.0;
+    /*
+    typename std::vector<std::vector<event<T>>>::iterator it;
+    typename std::vector<event<T>>::iterator jt;
+    int k = 0;
+    for(it = event_list.begin(); it != event_list.end();++it){
+        //for(jt = it->begin();jt != it->end();++jt){
+
+
+            k+= (*it).size();
+
+       // }
+
+        std::cout << "k: " << k  << std::endl;
+
+
+
+    }
+
+    */
+
+    Point pixel = pixel_location(x, y);
+    Point pp = pixel_center(x, y);
+
+    std::cout << "Pixel: " << pixel.first << " " << pixel.second << std::endl;
+    std::cout << "P_center: " << pp.first << " " << pp.second << std::endl;
+
+    Point ellipse_center = pixel_center(x, y);
     T angle = (0 * (M_PI / 180));
 
-    T _sin = std::sin(angle);
-    T _cos = std::cos(angle);
+    //T _sin = std::sin(angle);
+    //T _cos = std::cos(angle);
 
-    ellipse_bounding_box(ellipse_center, angle);
+    T k = ellipse_bounding_box(ellipse_center, angle);
+    std::cout << "VALUE:" << k << std::endl;
+
+    //T a = 0;
+    // T b = 0;
+
+    //T ss = kernel(a,b,angle,pp);
+
   }
 
-  T ellipse_bounding_box(Point& ellipse_center, T& angle) {
+  T ellipse_bounding_box(Point &ellipse_center, T &angle) {
+
+    T acc = T(0.0);
 
     T _cos = std::cos(angle);
     T _sin = std::sin(angle);
@@ -269,22 +304,22 @@ template <typename T = double> class Reconstruction {
     T bbox_halfwidth = std::sqrt(ux * ux + vx * vx);
     T bbox_halfheight = std::sqrt(uy * uy + vy * vy);
 
-    // std::cout << "x_u: " << ellipse_center.second - bbox_halfwidth -
-    // (R_distance) << " y_u: " << ellipse_center.first - bbox_halfheight -
-    // (R_distance) << std::endl;
-    // std::cout << "x_d: " << ellipse_center.second + bbox_halfwidth -
-    // (R_distance) << " y_d: " << ellipse_center.first + bbox_halfheight -
-    // (R_distance) << std::endl;
+    std::cout << "x_u: " << ellipse_center.second - bbox_halfwidth
+              << " y_u: " << ellipse_center.first - bbox_halfheight
+              << std::endl;
+    std::cout << "x_d: " << ellipse_center.second + bbox_halfwidth
+              << " y_d: " << ellipse_center.first + bbox_halfheight
+              << std::endl;
 
-    Pixel dl =
-        pixel_location(ellipse_center.second - bbox_halfwidth - (R_distance),
-                       ellipse_center.first - bbox_halfheight - (R_distance));
-    Pixel ur =
-        pixel_location(ellipse_center.second + bbox_halfwidth - (R_distance),
-                       ellipse_center.first + bbox_halfheight - (R_distance));
+    Pixel dl = pixel_location(ellipse_center.second - bbox_halfwidth,
+                              ellipse_center.first - bbox_halfheight);
+    Pixel ur = pixel_location(ellipse_center.second + bbox_halfwidth,
+                              ellipse_center.first + bbox_halfheight);
 
-    // std::cout << "dl : " << dl.first << " " << dl.second << std::endl;
-    // std::cout << "ur : " << ur.first << " " << ur.second << std::endl;
+    //std::cout << "HERE!" << std::endl;
+
+    std::cout << "dl : " << dl.first << " " << dl.second << std::endl;
+    std::cout << "ur : " << ur.first << " " << ur.second << std::endl;
 
     int iterator = 0;
     for (int i = dl.first; i <= ur.first; ++i) {
@@ -301,7 +336,7 @@ template <typename T = double> class Reconstruction {
         T py = (j * pixel_size) - (R_distance);
 
         //  std::cout << "PIXEL (i,j): " << i << " " << j << std::endl;
-        //  std::cout << "PIXEL (x,y): " << px << " " << py << std::endl;
+        //std::cout << "PIXEL (x,y): " << px << " " << py << std::endl;
 
         Point pixel = pixel_center(px, py);
 
@@ -311,15 +346,17 @@ template <typename T = double> class Reconstruction {
         //  std::cout << "Scentilator_length: " << Scentilator_length <<
         // std::endl;
 
-        int k = pixel_in_ellipse(
-            pixel.first, pixel.second, ellipse_center, _sin, _cos);
+        int k = pixel_in_ellipse(pixel.first, pixel.second, ellipse_center,
+                                 _sin, _cos);
 
         // if (k != 0) {
         //  std::cout << "k: " << k << std::endl;
         // }
 
         if (k == 2 || k == 1) {
+          std::cout << "P: " << i << " " << j << std::endl;
           iterator++;
+
           if (event_list[location].size() != 0) {
             for (unsigned int in = 0; in < event_list[location].size(); ++in) {
 
@@ -327,26 +364,29 @@ template <typename T = double> class Reconstruction {
                                  event_list[location][in].z_d);
               T y = event_y(event_list[location][in].dl, _tan);
               T z = event_z(event_list[location][in].z_u,
-                            event_list[location][in].z_d,
-                            y,
-                            _tan);
+                            event_list[location][in].z_d, y, _tan);
+
+              std::cout << "INSIDE: " << _tan << " " << y << " " << z
+                        << std::endl;
 
               Point p = pixel_center(y, z);
-              // T angle = std::atan(_tan);
-              // T probability = kernel(y, z, angle, p);
-              // std::cout << probability << std::endl;
-              // kernel()
-              // T kernel(T y,T angle,Point pixel)
+              T angle = std::atan(_tan);
+              T kk = kernel(y, z, angle, p);
+              std::cout << "kernel: " << kernel(y, z, angle, p) << std::endl;
+              acc += kk;
+
             }
+            //std::cout << iterator << std::endl;
           }
+
         }
       }
     }
-    // std::cout << "CALOSC: " << iterator << std::endl;
-    return 2.0;
+    std::cout << "CALOSC: " << acc << std::endl;
+    return acc;
   }
 
-  bool in_ellipse(T& _sin, T& _cos, Point& ellipse_center, Point& p) {
+  bool in_ellipse(T &_sin, T &_cos, Point &ellipse_center, Point &p) {
 
     T dy = (ellipse_center.first - p.first);
     T dz = (ellipse_center.second - p.second);
@@ -361,7 +401,7 @@ template <typename T = double> class Reconstruction {
                                                                         : false;
   }
 
-  int pixel_in_ellipse(T& x, T& y, Point& ellipse_center, T& _sin, T& _cos) {
+  int pixel_in_ellipse(T &x, T &y, Point &ellipse_center, T &_sin, T &_cos) {
 
     Point pixel_ur = Point(x - half_pixel + epsilon_distance,
                            y - half_pixel + epsilon_distance);
@@ -398,13 +438,13 @@ template <typename T = double> class Reconstruction {
     return 0;
   }
 
-  T event_tan(T& z_u, T& z_d) const {
+  T event_tan(T &z_u, T &z_d) const {
     return (z_u - z_d) / (T(2) * R_distance);
   }
-  T event_y(T& dl, T& tan_event) const {
+  T event_y(T &dl, T &tan_event) const {
     return -T(0.5) * (dl / sqrt(T(1) + (tan_event * tan_event)));
   }
-  T event_z(T& z_u, T& z_d, T& y, T& tan_event) const {
+  T event_z(T &z_u, T &z_d, T &y, T &tan_event) const {
     return T(0.5) * (z_u + z_d + (T(2) * y * tan_event));
   }
 
@@ -413,13 +453,11 @@ template <typename T = double> class Reconstruction {
                  std::floor((R_distance + z) / pixel_size));
   }
 
-  int mem_location(int& y, int& z) { return int(y * n_pixels + z); }
+  int mem_location(int &y, int &z) { return int(y * n_pixels + z); }
 
-  Point pixel_center(T& y, T& z) {
-    return Point((std::floor((R_distance + y) / pixel_size)) * pixel_size +
-                     (T(0.5) * pixel_size),
-                 (std::floor((R_distance + z) / pixel_size)) * pixel_size +
-                     (T(0.5) * pixel_size));
+  Point pixel_center(T y, T z) {
+    return Point((std::floor((y) / pixel_size)) + (T(0.5) * pixel_size),
+                 (std::floor((z) / pixel_size)) + (T(0.5) * pixel_size));
   }
 
   /* MIDPOINT ELLIPSE METHOD
@@ -460,7 +498,7 @@ template <typename T = double> class Reconstruction {
   }
 */
 
-  template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
+  template <typename StreamType> Reconstruction &operator<<(StreamType &in) {
 
     event<T> temp_event;
 
@@ -512,7 +550,7 @@ template <typename T = double> class Reconstruction {
       std::cout << "LOCATIONS: "
                 << "y: " << y << " z: " << z << " tan: " << tan << std::endl;
       std::cout << "PIXEL: " << p.first << " " << p.second << " "
-                << p.first* n_pixels + p.second << std::endl;
+                << p.first *n_pixels + p.second << std::endl;
       std::cout << "N_PIXELS: " << number_of_pixels << std::endl;
 // assert(p.first < number_of_pixels || p.second < number_of_pixels);
 #endif
@@ -523,10 +561,10 @@ template <typename T = double> class Reconstruction {
   }
 
   template <typename StreamType>
-      friend StreamType& operator>>(StreamType& in, Reconstruction& r) {
+  friend StreamType &operator>>(StreamType &in, Reconstruction &r) {
     r << in;
     return in;
   }
 };
 
-#endif  // SPET_RECONSTRUCTION_H
+#endif // SPET_RECONSTRUCTION_H
