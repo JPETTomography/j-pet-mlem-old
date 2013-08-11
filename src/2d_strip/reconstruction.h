@@ -1,10 +1,12 @@
-#ifndef SPET_RECONSTRUCTION_
+#ifndef SPET_RECONSTRUCTION_H
 #define SPET_RECONSTRUCTION_H
 
 #include <cmath>
 #include <vector>
 #include <algorithm>
 #include "event.h"
+
+using std::fpclassify;
 
 template <typename T = double> class Reconstruction {
 
@@ -31,6 +33,8 @@ private:
   std::vector<std::vector<T> > inverse_correlation_matrix;
   T sqrt_det_correlation_matrix;
   std::vector<T> rho;
+  std::vector<T> rho_temp;
+  std::vector<T> temp_kernels;
 
 public:
   Reconstruction(T &R_distance, T &Scentilator_length, int &n_pixels,
@@ -40,7 +44,8 @@ public:
         sigma_dl(sigma_dl) {
 
     event_list.resize(n_pixels * n_pixels);
-    rho.assign(n_pixels * n_pixels, T(0.1));
+    rho.assign(n_pixels * n_pixels, T(1.0));
+    rho_temp.assign(n_pixels * n_pixels, T(1.0));
     pow_sigma_z = sigma_z * sigma_z;
     pow_sigma_dl = sigma_dl * sigma_dl;
     m_pixel = (R_distance / pixel_size);
@@ -118,10 +123,6 @@ public:
 
   T kernel(T &y, T &z, T &angle, Point &pixel_center) {
 
-#if DEBUG_KERNEL
-    std::cout << "ANGLE : " << angle << std::endl;
-#endif
-
     T _tan = std::tan(angle);
     T inv_cos = T(1) / std::cos(angle);
     T pow_inv_cos = inv_cos * inv_cos;
@@ -135,33 +136,13 @@ public:
     vec_o[2] =
         -(pixel_center.first + y) * inv_cos * (T(1) + T(2) * (_tan * _tan));
 
-#if DEBUG_KERNEL
-    std::cout << "KERNEL METHOD" << std::endl;
-    std::cout << "y: " << y << " z: " << z
-              << " p_center: " << pixel_center.first << " "
-              << pixel_center.second << std::endl;
-    std::cout << "ANGLE : " << angle << std::endl;
-    std::cout << "vec_o: " << vec_o[0] << " " << vec_o[1] << " " << vec_o[2]
-              << std::endl;
-#endif
-
     vec_a[0] = -(pixel_center.first + y - R_distance) * pow_inv_cos;
     vec_a[1] = -(pixel_center.first + y + R_distance) * pow_inv_cos;
     vec_a[2] = -T(2) * (pixel_center.first + y) * (inv_cos * _tan);
 
-#if DEBUG_KERNEL
-    std::cout << "vec_a: " << vec_a[0] << " " << vec_a[1] << " " << vec_a[2]
-              << std::endl;
-#endif
-
     vec_b[0] = pixel_center.second - (pixel_center.first * _tan);
     vec_b[1] = pixel_center.second - (pixel_center.first * _tan);
     vec_b[2] = -T(2) * pixel_center.first * inv_cos;
-
-#if DEBUG_KERNEL
-    std::cout << "vec_b: " << vec_b[0] << " " << vec_b[1] << " " << vec_b[2]
-              << std::endl;
-#endif
 
     T a_ic_a = multiply_elements(vec_a, vec_a);
     T b_ic_a = multiply_elements(vec_b, vec_a);
@@ -170,39 +151,13 @@ public:
 
     T norm = a_ic_a + (T(2) * o_ic_b);
 
-    T element_before_exp =
-        INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / std::sqrt(norm)) *
-        sensitivity(y, z);
-
-#if DEBUG_KERNEL
-    std::cout << "SQRT DET_COR := " << sqrt_det_correlation_matrix << std::endl;
-    std::cout << "sqrt norm := " << std::sqrt(norm) << std::endl;
-    std::cout << "1/2pi^2 * (sqrt((det)/norm)) " << element_before_exp
-              << std::endl;
-    std::cout << "ELEMENT BEFORE EXP: " << element_before_exp << std::endl;
-#endif
+    T element_before_exp = INVERSE_POW_TWO_PI *
+                           (sqrt_det_correlation_matrix / std::sqrt(norm)) *
+                           sensitivity(y, z);
 
     T exp_element = -T(0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
     T _exp = std::exp(exp_element);
-
-#if DEBUG_KERNEL
-    std::cout << "b.ic.b := " << b_ic_b << std::endl;
-    std::cout << "b.ic.a := " << b_ic_a << std::endl;
-    std::cout << "a.ic.a := " << a_ic_a << std::endl;
-    std::cout << "o.ic.b := " << o_ic_b << std::endl;
-    std::cout << "norm: := " << norm << std::endl;
-    std::cout << "0.5*((b.ic.b - (b.ic.a)^2/(a.ic.a + 2 o.ic.b ))):"
-              << 0.5 * (b_ic_b - ((b_ic_a * b_ic_a) / norm)) << std::endl;
-
-    std::cout << "x,y SENS: " << sensitivity(y, z) << std::endl;
-
-    std::cout << "PIXEL SENS: " << sensitivity(pixel_center.first,
-                                               pixel_center.second)
-              << std::endl;
-
-    std::cout << "EXP: " << _exp << std::endl;
-#endif
 
     return (element_before_exp * _exp) /
            sensitivity(pixel_center.first, pixel_center.second);
@@ -225,71 +180,69 @@ public:
     int k = 0;
     for (auto &col : event_list) {
       for (auto &row : col) {
-        std::cout << "k:= " << k << std::endl;
+
         T tan = event_tan(row.z_u, row.z_d);
         T y = event_y(row.dl, tan);
         T z = event_z(row.z_u, row.z_d, y, tan);
 
-        Point pcenter = pixel_center(y, z);
+        std::cout << "tan:= " << tan << " y:= " << y << " z:= " << z
+                  << std::endl;
 
-        //T main_kernel = kernel(y, z, tan, pcenter);
-        //std::cout << "MAIN_KERNEL: " << main_kernel << std::endl;
-
-        Point ellipse_center = std::pair<T, T>(y, z);
+        Point ellipse_center = Point(y, z);
         T angle = std::atan(tan);
-        T denominator = ellipse_bounding_box(ellipse_center, angle);
-        ++k;
+        bb_pixel_updates(ellipse_center, angle, y, z);
+      }
+    }
+    rho = rho_temp;
+
+    for (auto &it : rho) {
+
+      if (it != T(1.0)) {
+
+        std::cout << it << std::endl;
       }
     }
   }
 
   void test() {
 
-    T x = 0.0;
-    T y = 0.0;
-    /*
-    typename std::vector<std::vector<event<T>>>::iterator it;
-    typename std::vector<event<T>>::iterator jt;
-    int k = 0;
-    for(it = event_list.begin(); it != event_list.end();++it){
-        //for(jt = it->begin();jt != it->end();++jt){
+    T y = 2.5;
+    T z = 2.5;
 
+    Point pixel = pixel_location(y, z);
+    Point pp = pixel_center(pixel.first, pixel.second);
 
-            k+= (*it).size();
-
-       // }
-
-        std::cout << "k: " << k  << std::endl;
-
-
-
-    }
-
-    */
-
-    Point pixel = pixel_location(x, y);
-    Point pp = pixel_center(x, y);
-
+    std::cout << y << " " << z << std::endl;
     std::cout << "Pixel: " << pixel.first << " " << pixel.second << std::endl;
     std::cout << "P_center: " << pp.first << " " << pp.second << std::endl;
 
-    Point ellipse_center = pixel_center(x, y);
+    Point ellipse_center = pixel_center(pixel.first, pixel.second);
+
     T angle = (0 * (M_PI / 180));
 
-    //T _sin = std::sin(angle);
-    //T _cos = std::cos(angle);
+    // T _sin = std::sin(angle);
+    // T _cos = std::cos(angle);
 
-    T k = ellipse_bounding_box(ellipse_center, angle);
+    T k = bb_pixel_updates(ellipse_center, angle, y, z);
     std::cout << "VALUE:" << k << std::endl;
 
-    //T a = 0;
-    // T b = 0;
+    Pixel kk = pixel_location(200, 200);
+    Point p = pixel_center(kk.first, kk.second);
+    std::cout << "p: " << p.first << " " << p.second << std::endl;
+    float ss = kernel(y, z, angle, p);
 
-    //T ss = kernel(a,b,angle,pp);
+    if (fpclassify(ss) == FP_SUBNORMAL) {
 
+      std::cout << "DUPA DENORMAL" << std::endl;
+    }
+
+    std::cout << "SS: " << ss << std::endl;
   }
 
-  T ellipse_bounding_box(Point &ellipse_center, T &angle) {
+  T bb_pixel_updates(Point &ellipse_center, T &angle, T y, T z) {
+
+    std::cout << "el_cent in BB: " << ellipse_center.first << " "
+              << ellipse_center.second << std::endl;
 
     T acc = T(0.0);
 
@@ -304,85 +257,74 @@ public:
     T bbox_halfwidth = std::sqrt(ux * ux + vx * vx);
     T bbox_halfheight = std::sqrt(uy * uy + vy * vy);
 
-    std::cout << "x_u: " << ellipse_center.second - bbox_halfwidth
-              << " y_u: " << ellipse_center.first - bbox_halfheight
-              << std::endl;
-    std::cout << "x_d: " << ellipse_center.second + bbox_halfwidth
-              << " y_d: " << ellipse_center.first + bbox_halfheight
-              << std::endl;
-
     Pixel dl = pixel_location(ellipse_center.second - bbox_halfwidth,
                               ellipse_center.first - bbox_halfheight);
     Pixel ur = pixel_location(ellipse_center.second + bbox_halfwidth,
                               ellipse_center.first + bbox_halfheight);
 
-    //std::cout << "HERE!" << std::endl;
-
-    std::cout << "dl : " << dl.first << " " << dl.second << std::endl;
-    std::cout << "ur : " << ur.first << " " << ur.second << std::endl;
-
     int iterator = 0;
+
+    std::vector<std::pair<Pixel, T> > bb_pixels;
+
     for (int i = dl.first; i <= ur.first; ++i) {
       for (int j = dl.second; j <= ur.second; ++j) {
 
-        //   std::cout << "ELLIPSE CENTER: " << ellipse_center.first << " " <<
-        // ellipse_center.second << std::endl;
-        //   std::cout << "dl : " << dl.first << " " << dl.second << std::endl;
-        //   std::cout << "ur : " << ur.first << " " << ur.second << std::endl;
+        Point p = pixel_center(j, i);
 
-        int location = mem_location(i, j);
-
-        T px = (i * pixel_size) - (R_distance);
-        T py = (j * pixel_size) - (R_distance);
-
-        //  std::cout << "PIXEL (i,j): " << i << " " << j << std::endl;
-        //std::cout << "PIXEL (x,y): " << px << " " << py << std::endl;
-
-        Point pixel = pixel_center(px, py);
-
-        //  std::cout << "PIXEL center (x,y): " << pixel.first << " " <<
-        // pixel.second << std::endl;
-        //  std::cout << "R_distance: " << R_distance << std::endl;
-        //  std::cout << "Scentilator_length: " << Scentilator_length <<
-        // std::endl;
-
-        int k = pixel_in_ellipse(pixel.first, pixel.second, ellipse_center,
-                                 _sin, _cos);
-
-        // if (k != 0) {
-        //  std::cout << "k: " << k << std::endl;
-        // }
-
+        int k = pixel_in_ellipse(p.first, p.second, ellipse_center, _sin, _cos);
         if (k == 2 || k == 1) {
-          std::cout << "P: " << i << " " << j << std::endl;
           iterator++;
 
-          if (event_list[location].size() != 0) {
-            for (unsigned int in = 0; in < event_list[location].size(); ++in) {
+          T event_kernel = kernel(y, z, angle, p);
 
-              T _tan = event_tan(event_list[location][in].z_u,
-                                 event_list[location][in].z_d);
-              T y = event_y(event_list[location][in].dl, _tan);
-              T z = event_z(event_list[location][in].z_u,
-                            event_list[location][in].z_d, y, _tan);
+          bb_pixels.push_back(std::pair<Pixel, T>(Pixel(j, i), event_kernel));
 
-              std::cout << "INSIDE: " << _tan << " " << y << " " << z
-                        << std::endl;
+          // std::cout << "event_kernel: " <<  event_kernel << " acc: " <<
+          // event_kernel*sensitivity(p.first,p.second)*rho[mem_location(j,i)]
+          // << std::endl;
 
-              Point p = pixel_center(y, z);
-              T angle = std::atan(_tan);
-              T kk = kernel(y, z, angle, p);
-              std::cout << "kernel: " << kernel(y, z, angle, p) << std::endl;
-              acc += kk;
-
-            }
-            //std::cout << iterator << std::endl;
-          }
-
+          acc += event_kernel * sensitivity(p.first, p.second) *
+                 rho[mem_location(j, i)];
         }
       }
     }
-    std::cout << "CALOSC: " << acc << std::endl;
+
+    for (auto &bb_event : bb_pixels) {
+
+      rho_temp[mem_location(bb_event.first.first, bb_event.first.second)] =
+          (bb_event.second *
+           sensitivity(bb_event.first.first, bb_event.first.second)) /
+          acc;
+
+      //      std::cout << "BB_sum: " << (bb_event.second *
+      // sensitivity(bb_event.first.first,bb_event.first.second))/acc <<
+      // std::endl;
+    }
+
+    /*
+    #if DEBUG_BBOX
+
+        std::cout << "x_u: " << ellipse_center.second - bbox_halfwidth
+                  << " y_u: " << ellipse_center.first - bbox_halfheight
+                  << std::endl;
+        std::cout << "x_d: " << ellipse_center.second + bbox_halfwidth
+                  << " y_d: " << ellipse_center.first + bbox_halfheight
+                  << std::endl;
+
+    #endif
+        Pixel dl = pixel_location(ellipse_center.second - bbox_halfwidth,
+                                  ellipse_center.first - bbox_halfheight);
+        Pixel ur = pixel_location(ellipse_center.second + bbox_halfwidth,
+                                  ellipse_center.first + bbox_halfheight);
+
+        //std::cout << "HERE!" << std::endl;
+    #if DEBUG_BBOX
+        std::cout << "dl : " << dl.first << " " << dl.second << std::endl;
+        std::cout << "ur : " << ur.first << " " << ur.second << std::endl;
+    #endif
+
+    */
+
     return acc;
   }
 
@@ -409,14 +351,16 @@ public:
     Point pixel_dr = Point(x - half_pixel + epsilon_distance, y - half_pixel);
     Point pixel_dl = Point(x - half_pixel, y - half_pixel);
 
-    // std::cout << "Pixel_ur: " << pixel_ur.first << " " << pixel_ur.second <<
-    // std::endl;
-    // std::cout << "Pixel_ul: " << pixel_ul.first << " " << pixel_ul.second <<
-    // std::endl;
-    // std::cout << "Pixel_dr: " << pixel_dr.first << " " << pixel_dr.second <<
-    // std::endl;
-    // std::cout << "Pixel_dl: " << pixel_dl.first << " " << pixel_dl.second <<
-    // std::endl;
+#if DEBUG_PIXEL_IN_ELLIPSE
+    std::cout << "Pixel_ur: " << pixel_ur.first << " " << pixel_ur.second
+              << std::endl;
+    std::cout << "Pixel_ul: " << pixel_ul.first << " " << pixel_ul.second
+              << std::endl;
+    std::cout << "Pixel_dr: " << pixel_dr.first << " " << pixel_dr.second
+              << std::endl;
+    std::cout << "Pixel_dl: " << pixel_dl.first << " " << pixel_dl.second
+              << std::endl;
+#endif
 
     bool ur = in_ellipse(_sin, _cos, ellipse_center, pixel_ur);
     bool ul = in_ellipse(_sin, _cos, ellipse_center, pixel_ul);
@@ -448,16 +392,19 @@ public:
     return T(0.5) * (z_u + z_d + (T(2) * y * tan_event));
   }
 
+  // coord Plane
   Pixel pixel_location(T y, T z) {
     return Pixel(std::floor((R_distance + y) / pixel_size),
                  std::floor((R_distance + z) / pixel_size));
   }
 
-  int mem_location(int &y, int &z) { return int(y * n_pixels + z); }
+  int mem_location(int y, int z) { return int(y * n_pixels + z); }
 
+  // pixel Plane
   Point pixel_center(T y, T z) {
-    return Point((std::floor((y) / pixel_size)) + (T(0.5) * pixel_size),
-                 (std::floor((z) / pixel_size)) + (T(0.5) * pixel_size));
+    return Point(
+        (std::floor((y) * pixel_size - R_distance)) + (T(0.5) * pixel_size),
+        (std::floor((z) * pixel_size - R_distance)) + (T(0.5) * pixel_size));
   }
 
   /* MIDPOINT ELLIPSE METHOD
@@ -561,7 +508,7 @@ public:
   }
 
   template <typename StreamType>
-  friend StreamType &operator>>(StreamType &in, Reconstruction &r) {
+      friend StreamType &operator>>(StreamType &in, Reconstruction &r) {
     r << in;
     return in;
   }
