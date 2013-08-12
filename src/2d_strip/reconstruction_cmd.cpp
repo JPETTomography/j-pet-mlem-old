@@ -45,16 +45,16 @@ int main(int argc, char *argv[]) {
 
     double R_distance = cl.get<float>("r-distance");
     double Scentilator_length = cl.get<float>("s-length");
-    int iteration = 100000;
+    int iteration = 500000;
     double pixel_size = cl.get<float>("p-size");
     int n_pixels = Scentilator_length / pixel_size;
     double sigma = cl.get<float>("s-z");
     double dl = cl.get<float>("s-dl");
     double x = 0.0f;
     double y = 0.0f;
-    double a = 100.0f;
-    double b = 30.0f;
-    double phi = 90.0f;
+    double a = 30.0f;
+    double b = 100.0f;
+    double phi = 45.0f;
 
     Phantom<double> test(iteration, n_pixels, pixel_size, R_distance,
                          Scentilator_length, x, y, a, b, phi);
@@ -74,12 +74,12 @@ int main(int argc, char *argv[]) {
     obstream out("test.bin");
     test >> out;
 
-    Reconstruction<double> reconstruction(5, R_distance, Scentilator_length,
+    Reconstruction<double> reconstruction(1, R_distance, Scentilator_length,
                                           n_pixels, pixel_size, sigma, dl);
     ibstream in("test.bin");
     in >> reconstruction;
-    //reconstruction.test();
-    reconstruction();
+    // reconstruction.test();
+    // reconstruction();
   }
   catch (std::string & ex) {
     std::cerr << "error: " << ex << std::endl;

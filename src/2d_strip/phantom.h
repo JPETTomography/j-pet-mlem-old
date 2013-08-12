@@ -48,14 +48,14 @@ public:
       : iteration(iteration), n_pixels(n_pixels), pixel_size(pixel_size),
         R_distance(R_distance), Scentilator_length(Scentilator_length), _a(a),
         _b(b), _x(x), _y(y), _phi(phi) {
-    _sin = sin(T(_phi * radian));
-    _cos = cos(T(_phi * radian));
+    _sin = std::sin(T(_phi * radian));
+    _cos = std::cos(T(_phi * radian));
     _inv_a2 = T(1) / (_a * _a);
     _inv_b2 = T(1) / (_b * _b);
     output.assign(n_pixels * n_pixels, T(0.0));
   }
 
-  bool in(T x, T y) const {
+  bool in(T y, T z) const {
     /*
         T dx = x - _x;
         T dy = y - _y;
@@ -67,9 +67,9 @@ public:
       */
 
     T dy = (y - _y);
-    T dz = (x - _x);
+    T dz = (z - _x);
     T d1 = (_cos * dz + _sin * dy);
-    T d2 = (-_cos * dy + _sin * dz);
+    T d2 = (_cos * dy - _sin * dz);
 
     // std::cout << "ELLIPSE VALUE: " << (d1 * d1 / pow_sigma_z) +
     //                                       (d2 * d2 / pow_sigma_dl) <<
@@ -97,7 +97,7 @@ public:
 
     std::uniform_real_distribution<T> uniform_dist(0, 1);
     std::uniform_real_distribution<T> uniform_y(_y - _b, _y + _b);
-    std::uniform_real_distribution<T> uniform_z(_x - _a, _x + _a);
+    std::uniform_real_distribution<T> uniform_z(_x - _b, _x + _b);
     std::normal_distribution<T> normal_dist_dz(0, 10);
     std::normal_distribution<T> normal_dist_dl(0, 63);
     rng rd;
@@ -120,7 +120,7 @@ public:
       rz = uniform_z(rng_list[omp_get_thread_num()]);
       rangle = M_PI_2 * uniform_dist(rng_list[omp_get_thread_num()]);
 
-      if (in(rz, ry)) {
+      if (in(ry, rz)) {
 
         z_u = rz + (R_distance - ry) * tan(rangle) +
               normal_dist_dz(rng_list[omp_get_thread_num()]);

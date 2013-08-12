@@ -184,11 +184,11 @@ public:
     for (int x = 0; x < n_pixels; ++x) {
       for (int y = 0; y < n_pixels; ++y) {
 
-      /*  if (rho[mem_location(y, x)] < 0.000001) {
+        /*  if (rho[mem_location(y, x)] < 0.000001) {
 
-          rho[mem_location(y, x)] = T(0.0);
-        }
-      */
+            rho[mem_location(y, x)] = T(0.0);
+          }
+        */
         file << x << " " << y << " " << rho[mem_location(y, x)] << std::endl;
       }
     }
@@ -254,15 +254,15 @@ public:
     T bbox_halfwidth = std::sqrt(ux * ux + vx * vx);
     T bbox_halfheight = std::sqrt(uy * uy + vy * vy);
 
-        Pixel dl = pixel_location(ellipse_center.second - bbox_halfwidth,
-                                  ellipse_center.first - bbox_halfheight);
-        Pixel ur = pixel_location(ellipse_center.second + bbox_halfwidth,
-                                  ellipse_center.first + bbox_halfheight);
+    Pixel dl = pixel_location(ellipse_center.second - bbox_halfwidth,
+                              ellipse_center.first - bbox_halfheight);
+    Pixel ur = pixel_location(ellipse_center.second + bbox_halfwidth,
+                              ellipse_center.first + bbox_halfheight);
 
-//    Pixel dl = pixel_location(ellipse_center.second - sigma_z,
-//                              ellipse_center.first - sigma_dl);
-//    Pixel ur = pixel_location(ellipse_center.second + sigma_z,
-//                              ellipse_center.first + sigma_dl);
+    //    Pixel dl = pixel_location(ellipse_center.second - sigma_z,
+    //                              ellipse_center.first - sigma_dl);
+    //    Pixel ur = pixel_location(ellipse_center.second + sigma_z,
+    //                              ellipse_center.first + sigma_dl);
     std::vector<std::pair<Pixel, T> > bb_pixels;
 
     for (int i = dl.first; i <= ur.first; ++i) {
@@ -289,10 +289,8 @@ public:
       int mem = mem_location(bb_event.first.first, bb_event.first.second);
 
       rho_temp[mem] += (bb_event.second * rho[mem]) / acc;
-
     }
-
-   }
+  }
 
   bool in_ellipse(T _sin, T _cos, Point ellipse_center, Point p) {
 
@@ -312,9 +310,10 @@ public:
     //                                       (d2 * d2 / pow_sigma_dl) <<
     // std::endl;
 
-    //   return ((d1 * d1 / pow_sigma_z) + (d2 * d2 / pow_sigma_dl)) <= T(1) ? true : false;
+    //   return ((d1 * d1 / pow_sigma_z) + (d2 * d2 / pow_sigma_dl)) <= T(1) ?
+    // true : false;
     // false;
-    //std::cout << "B^2 -4AC: " << (B*B) - 4*A*C << std::endl;
+    // std::cout << "B^2 -4AC: " << (B*B) - 4*A*C << std::endl;
     return ((A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz))) <= T(9) ? true
                                                                        : false;
   }
