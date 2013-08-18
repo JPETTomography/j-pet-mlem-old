@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
     ibstream in("test.bin");
     in >> reconstruction;
     // reconstruction.test();
-    // reconstruction();
+    reconstruction();
   }
   catch (std::string & ex) {
     std::cerr << "error: " << ex << std::endl;

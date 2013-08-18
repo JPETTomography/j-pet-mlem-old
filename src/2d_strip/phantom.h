@@ -71,15 +71,12 @@ public:
     T d1 = (_cos * dz + _sin * dy);
     T d2 = (_cos * dy - _sin * dz);
 
-    // std::cout << "ELLIPSE VALUE: " << (d1 * d1 / pow_sigma_z) +
-    //                                       (d2 * d2 / pow_sigma_dl) <<
-    // std::endl;
 
-    return ((d1 * d1 / (_a * _a)) + (d2 * d2 / (_b * _b))) <= T(1) ? true
-                                                                   : false;
+  return ((d1 * d1 / (_a * _a)) + (d2 * d2 / (_b * _b))) <= T(1) ? true
+                                                                  : false;
 
-    // return r2 < 1.0;
   }
+
 
   void emit_event(int n_threads) {
 
@@ -126,7 +123,7 @@ public:
               normal_dist_dz(rng_list[omp_get_thread_num()]);
         z_d = rz - (R_distance + ry) * tan(rangle) +
               normal_dist_dz(rng_list[omp_get_thread_num()]);
-        dl = -T(2) * sqrt(T(1) + (tan(rangle) * tan(rangle))) +
+        dl = -T(2) * ry * sqrt(T(1) + (tan(rangle) * tan(rangle))) +
              normal_dist_dl(rng_list[omp_get_thread_num()]);
 
         /*
@@ -143,7 +140,7 @@ public:
           T _y = event_y(dl, tan);
           T _z = event_z(z_u, z_d, _y, tan);
 
-          Pixel p = pixel_location(_y, _z);
+          Pixel p = pixel_location(ry, rz);
 
           output[mem_location(p.first, p.second)] += T(1);
 
@@ -177,7 +174,7 @@ public:
     auto output_gain =
         static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-    for (int y = 0; y < n_pixels; ++y) {
+   for (int y = n_pixels; y > 0 ; --y) {
       uint8_t row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -

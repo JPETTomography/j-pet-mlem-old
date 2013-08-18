@@ -135,7 +135,7 @@ public:
 
     T element_before_exp = INVERSE_POW_TWO_PI *
                            (sqrt_det_correlation_matrix / std::sqrt(norm)) *
-                           sensitivity(y, z);
+                           sensitivity(pixel_center.first, pixel_center.second);
 
     T exp_element = -T(0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
@@ -153,8 +153,8 @@ public:
     T R_minus = R_distance - y;
 
     return INVERSE_PI *
-           (std::atan(std::max(-L_plus / R_minus, -L_plus / R_plus)) -
-            std::atan(std::min(L_minus / R_minus, L_plus / R_plus)));
+
+            (std::atan(std::min(L_minus / R_minus, L_plus / R_plus)) - std::atan(std::max(-L_plus / R_minus, -L_plus / R_plus)));
   }
 
   void operator()() {
@@ -207,7 +207,7 @@ public:
     auto output_gain =
         static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-    for (int y = 0; y < n_pixels; ++y) {
+    for (int y = n_pixels; y > 0 ; --y) {
       uint8_t row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -
@@ -259,10 +259,14 @@ public:
     Pixel ur = pixel_location(ellipse_center.second + bbox_halfwidth,
                               ellipse_center.first + bbox_halfheight);
 
-    //    Pixel dl = pixel_location(ellipse_center.second - sigma_z,
-    //                              ellipse_center.first - sigma_dl);
-    //    Pixel ur = pixel_location(ellipse_center.second + sigma_z,
-    //                              ellipse_center.first + sigma_dl);
+    //Pixel dl = pixel_location(ellipse_center.second - bbox_halfheight,ellipse_center.first - bbox_halfwidth);
+    //Pixel ur = pixel_location(ellipse_center.second + bbox_halfheight,ellipse_center.first + bbox_halfwidth);
+
+
+       // Pixel dl = pixel_location(ellipse_center.second - sigma_z,
+       //                           ellipse_center.first - sigma_dl);
+      //  Pixel ur = pixel_location(ellipse_center.second + sigma_z,
+      //                            ellipse_center.first + sigma_dl);
     std::vector<std::pair<Pixel, T> > bb_pixels;
 
     for (int i = dl.first; i <= ur.first; ++i) {
@@ -310,12 +314,10 @@ public:
     //                                       (d2 * d2 / pow_sigma_dl) <<
     // std::endl;
 
-    //   return ((d1 * d1 / pow_sigma_z) + (d2 * d2 / pow_sigma_dl)) <= T(1) ?
-    // true : false;
-    // false;
-    // std::cout << "B^2 -4AC: " << (B*B) - 4*A*C << std::endl;
-    return ((A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz))) <= T(9) ? true
-                                                                       : false;
+      return ((d1 * d1 / pow_sigma_z) + (d2 * d2 / pow_sigma_dl)) <= T(1) ? true : false;
+
+   // return 0.5*((A * (d2 * d2)) + (B * d1 * d2) + (C * (d1 * d1))) <= T(1) ? true
+   //                                                                   : false;
   }
 
   int pixel_in_ellipse(T &y, T &z, Point &ellipse_center, T &_sin, T &_cos) {
