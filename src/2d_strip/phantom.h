@@ -38,7 +38,7 @@ private:
   T _inv_b2;
   std::vector<event<T> > event_list;
   std::vector<scintillator<> > scientilator_list;
-  std::vector<T> output;
+  std::vector<std::vector<T>> output;
   static constexpr const T PI_2 = 1.5707963;
   static constexpr const T radian = T(M_PI / 180);
 
@@ -52,28 +52,32 @@ public:
     _cos = std::cos(T(_phi * radian));
     _inv_a2 = T(1) / (_a * _a);
     _inv_b2 = T(1) / (_b * _b);
-    output.assign(n_pixels * n_pixels, T(0.0));
+    output.assign(n_pixels,std::vector<T>(n_pixels, T(0)));
   }
 
   bool in(T y, T z) const {
-    /*
-        T dx = x - _x;
-        T dy = y - _y;
-
-        T r_x = dx * _cos + dy * _sin;
-        T r_y = -dx * _sin + dy * _cos;
-
-        T r2 = r_x * r_x * _inv_a2 + r_y * r_y * _inv_b2;
-      */
-
-    T dy = (y - _y);
-    T dz = (z - _x);
-    T d1 = (_cos * dz + _sin * dy);
-    T d2 = (_cos * dy - _sin * dz);
 
 
-  return ((d1 * d1 / (_a * _a)) + (d2 * d2 / (_b * _b))) <= T(1) ? true
-                                                                  : false;
+     // T pow_sigma_dl = 63*63;
+     // T pow_sigma_z = 10*10;
+
+      T dy = (y - _y);
+      T dz = (z - _x);
+      T d1 = (_sin * dy + _cos * dz );//y
+      T d2 = (_sin * dz - _cos * dy);//x
+
+     /*
+      T tg = (_sin / _cos);
+
+      T A = (((T(4.0) * (T(1.0) / (_cos * _cos))) / pow_sigma_dl) +
+              (T(2.0) * tg * tg / pow_sigma_z));
+      T B = -T(4.0) * tg / pow_sigma_z;
+      T C = T(2.0) / pow_sigma_z;
+
+        return ((A * (d2 * d2)) + (B * d1 * d2) + (C * (d1 * d1))) <= T(1) ? true:false;
+     */
+
+   return ((d1 * d1 / (_a * _a)) + (d2 * d2 / (_b * _b))) <= T(1) ? true:false;
 
   }
 
@@ -115,34 +119,30 @@ public:
 
       ry = uniform_y(rng_list[omp_get_thread_num()]);
       rz = uniform_z(rng_list[omp_get_thread_num()]);
-      rangle = M_PI_2 * uniform_dist(rng_list[omp_get_thread_num()]);
+      rangle = M_PI_4 * uniform_dist(rng_list[omp_get_thread_num()]);
 
-      if (in(ry, rz)) {
+            if (in(ry, rz)) {
 
+          z_u = rz + (R_distance - ry) * tan(rangle);
+           z_d = rz - (R_distance + ry) * tan(rangle);
+            dl = -T(2) * ry * sqrt(T(1) + (tan(rangle) * tan(rangle)));
+
+/*
         z_u = rz + (R_distance - ry) * tan(rangle) +
               normal_dist_dz(rng_list[omp_get_thread_num()]);
         z_d = rz - (R_distance + ry) * tan(rangle) +
               normal_dist_dz(rng_list[omp_get_thread_num()]);
         dl = -T(2) * ry * sqrt(T(1) + (tan(rangle) * tan(rangle))) +
              normal_dist_dl(rng_list[omp_get_thread_num()]);
-
-        /*
-                z_u = rz + (R_distance - ry) * tan(rangle);
-                z_d = rz - (R_distance + ry) * tan(rangle);
-                dl = -T(2) * ry * sqrt(T(1) + (tan(rangle) * tan(rangle)));
-
-        */
+*/
         if (std::abs(z_u) < (Scentilator_length / T(2)) &&
             std::abs(z_d) < (Scentilator_length / T(2))) {
-          // std::cout << z_u << " " << z_d << " " << dl << std::endl;
-
-          T tan = event_tan(z_u, z_d);
-          T _y = event_y(dl, tan);
-          T _z = event_z(z_u, z_d, _y, tan);
 
           Pixel p = pixel_location(ry, rz);
 
-          output[mem_location(p.first, p.second)] += T(1);
+        //  std::cout << p.first << " " << p.second << " " << n_pixels <<  std::endl;
+
+          output[p.first][p.second]++;
 
           temp_event.z_u = z_u;
           temp_event.z_d = z_d;
@@ -166,19 +166,20 @@ public:
     png_writer png("phantom.png");
     png.write_header<>(n_pixels, n_pixels);
 
-    double output_max = 0.0;
-    for (auto it = output.begin(); it != output.end(); ++it) {
-      output_max = std::max(output_max, *it);
+    T output_max = 0.0;
+    for (auto& col: output) {
+        for(auto& row: col)
+      output_max = std::max(output_max, row);
     }
 
     auto output_gain =
         static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-   for (int y = n_pixels; y > 0 ; --y) {
+   for (int y = 0; y < n_pixels ; ++y) {
       uint8_t row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -
-                 output_gain * output[y * n_pixels + x];
+                output_gain * output[y][x];
       }
       png.write_row(row);
     }
@@ -196,19 +197,16 @@ public:
 
   // coord Plane
   Pixel pixel_location(T y, T z) {
-    return Pixel(std::floor((R_distance + y) / pixel_size),
+    return Pixel(std::floor((R_distance - y) / pixel_size),
                  std::floor((R_distance + z) / pixel_size));
   }
-
-  int mem_location(int y, int z) { return int(y * n_pixels + z); }
 
   // pixel Plane
   Point pixel_center(T y, T z) {
     return Point(
-        (std::floor((y) * pixel_size - R_distance)) + (T(0.5) * pixel_size),
+        (std::floor(R_distance - (y) * pixel_size)) + (T(0.5) * pixel_size),
         (std::floor((z) * pixel_size - R_distance)) + (T(0.5) * pixel_size));
   }
-
   template <typename StreamType> Phantom &operator>>(StreamType &out) {
 
     unsigned int n_pix = n_pixels;

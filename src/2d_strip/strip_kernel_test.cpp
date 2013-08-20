@@ -1,117 +1,106 @@
 #include "catch.hpp"
-#include "reconstruction.h"
+#include <vector>
+#include <cmath>
 
-// TEST FOR EVENT (300,0,45.0) R = 450.0
+typedef std::pair<int, int> Pixel;
+typedef std::pair<float, float> Point;
 
-struct E {
 
-  double y;
-  double z;
-  double angle;
-};
 
-TEST_CASE("ovec", "ovec_test") {
+template<typename T>
+T multiply_elements(std::vector<T> &vec_a, std::vector<T> &vec_b,std::vector<std::vector<T>>& inverse_correlation_matrix) {
 
-  E e;
-  e.y = 300.0f;
-  e.z = 0.0;
-  e.angle = (45 * (M_PI / 180));
-  double R_distance = 450.0;
+  std::vector<T> a(vec_a.size(), T(0));
 
-  double pixel_y = 300.0;
+  float output = 0.f;
+  // add AVX
+  for (unsigned i = 0; i < vec_a.size(); ++i) {
+    for (unsigned j = 0; j < vec_b.size(); j++) {
+      a[i] += vec_a[j] * inverse_correlation_matrix[j][i];
+    }
+    output += a[i] * vec_b[i];
+  }
 
-  double inv_cos = 1.0 / std::cos(e.angle);
-  double pow_inv_cos = inv_cos * inv_cos;
-
-  // 0vec parameters
-  double vec_o[3];
-
-  vec_o[0] = -(pixel_y + e.y - R_distance) * std::tan(e.angle) * pow_inv_cos;
-  vec_o[1] = -(pixel_y + e.y + R_distance) * std::tan(e.angle) * pow_inv_cos;
-  vec_o[2] = -(pixel_y + e.y) * inv_cos *
-             (1.0 + (2.0 * std::tan(e.angle) * std::tan(e.angle)));
-
-  CHECK(vec_o[0] == Approx(-300.0));
-  CHECK(vec_o[1] == Approx(-2100.0));
-  CHECK(vec_o[2] == Approx(-1800 * std::sqrt(2)));
+  return output;
 }
 
-TEST_CASE("avec", "avec_test") {
+template<typename T>
+T kernel(T y,T angle, Point pixel_center) {
 
-  E e;
-  e.y = 300.0f;
-  e.z = 0.0;
-  e.angle = (45 * (M_PI / 180));
-  double R_distance = 450.0;
+    T pow_sigma_z = 10 * 10;
+    T pow_sigma_dl = 63 * 63;
+    T R_distance = 500;
 
-  double pixel_y = 300.0;
+    std::vector<std::vector<T> > inverse_correlation_matrix;
 
-  double inv_cos = 1.0 / std::cos(e.angle);
-  double pow_inv_cos = inv_cos * inv_cos;
+    inverse_correlation_matrix.resize(3, std::vector<T>(3, T()));
 
-  // 0vec parameters
-  double vec_a[3];
+    inverse_correlation_matrix[0][0] = T(1) / pow_sigma_z;
+    inverse_correlation_matrix[0][1] = T(0.0f);
+    inverse_correlation_matrix[0][2] = T(0.0f);
 
-  vec_a[0] = -(pixel_y + e.y - R_distance) * std::tan(e.angle) * pow_inv_cos;
-  vec_a[1] = -(pixel_y + e.y + R_distance) * std::tan(e.angle) * pow_inv_cos;
-  vec_a[2] = -2.0 * (pixel_y + e.y) * (inv_cos * std::tan(e.angle));
+    inverse_correlation_matrix[1][0] = T(0.0f);
+    inverse_correlation_matrix[1][1] = T(1) / pow_sigma_z;
+    inverse_correlation_matrix[1][2] = T(0.0f);
 
-  CHECK(vec_a[0] == Approx(-300.0));
-  CHECK(vec_a[1] == Approx(-2100.0));
-  CHECK(vec_a[2] == Approx(-1200 * std::sqrt(2)));
-}
+    inverse_correlation_matrix[2][0] = T(0.0f);
+    inverse_correlation_matrix[2][1] = T(0.0f);
+    inverse_correlation_matrix[2][2] = T(1) / pow_sigma_dl;
 
-TEST_CASE("bvec", "bvec_test") {
 
-  E e;
-  e.y = 300.0f;
-  e.z = 0.0;
-  e.angle = (45 * (M_PI / 180));
+    T sqrt_det_correlation_matrix = std::sqrt(inverse_correlation_matrix[0][0] *
+                                            inverse_correlation_matrix[1][1] *
+                                            inverse_correlation_matrix[2][2]);
 
-  double pixel_y = 300.0;
-  double pixel_z = 0.0;
 
-  double inv_cos = 1.0 / std::cos(e.angle);
-  double vec_b[3];
 
-  vec_b[0] = pixel_z - (pixel_y * std::tan(e.angle));
-  vec_b[1] = pixel_z - (pixel_y * std::tan(e.angle));
-  vec_b[2] = -2.0 * pixel_y * inv_cos;
+  T _tan = std::tan(angle);
+  T inv_cos = T(1) / std::cos(angle);
+  T pow_inv_cos = inv_cos * inv_cos;
 
-  CHECK(vec_b[0] == Approx(-300.0));
-  CHECK(vec_b[1] == Approx(-300.0));
-  CHECK(vec_b[2] == Approx(-600 * std::sqrt(2)));
-}
+  std::vector<T> vec_o(3, T());
+  std::vector<T> vec_a(3, T());
+  std::vector<T> vec_b(3, T());
 
-/*
-TEST_CASE("kernel probability", "kernel_test") {
+  vec_o[0] = -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos;
+  vec_o[1] = -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos;
+  vec_o[2] =
+      -(pixel_center.first + y) * inv_cos * (T(1) + T(2) * (_tan * _tan));
 
-  E e;
-  e.y = 300.0f;
-  e.z = 0.0;
-  e.angle = (45 * (M_PI/180));
-  double R_distance = 450.0;
-  double S_length = 450.0;
-  double pixel_size = 5.0;
-  int n_pixels = S_length/pixel_size;
-  double sigma = 10.0;
-  double dl = 63;
+  vec_a[0] = -(pixel_center.first + y - R_distance) * pow_inv_cos;
+  vec_a[1] = -(pixel_center.first + y + R_distance) * pow_inv_cos;
+  vec_a[2] = -T(2) * (pixel_center.first + y) * (inv_cos * _tan);
 
-  spet_reconstruction<double> reconstruction(R_distance, S_length,
-                                             n_pixels, pixel_size, sigma, dl);
-  //reconstruction.load_input(fn);
+  vec_b[0] = pixel_center.second - (pixel_center.first * _tan);
+  vec_b[1] = pixel_center.second - (pixel_center.first * _tan);
+  vec_b[2] = -T(2) * pixel_center.first * inv_cos;
 
-  double y_1 = 0.0;
-  double z_1 = 0.0;
-  double angle = (45 * (M_PI/180));
-  double z_u = -200.0f;
-  double z_d = 200.0f;
-  double t = reconstruction.get_event_tan(z_u, z_d);
+  T a_ic_a = multiply_elements(vec_a, vec_a,inverse_correlation_matrix);
+  T b_ic_a = multiply_elements(vec_b, vec_a,inverse_correlation_matrix);
+  T b_ic_b = multiply_elements(vec_b, vec_b,inverse_correlation_matrix);
+  T o_ic_b = multiply_elements(vec_o, vec_b,inverse_correlation_matrix);
 
-  std::pair<int, int> p = reconstruction.pixel_center(y_1,z_1);
+  T norm = a_ic_a + (T(2) * o_ic_b);
 
-  std::cout << "KERNEL: " << reconstruction.kernel(y_1, z_1, angle,p)
-            << std::endl;
+  T element_before_exp = (1.0 / (2.0 * M_PI * M_PI)) * (sqrt_det_correlation_matrix / std::sqrt(norm));
+
+  T exp_element = -T(0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
+
+
+  T _exp = std::exp(exp_element);
+
+
+  return (element_before_exp * _exp);
 
 }
-*/
+
+
+TEST_CASE("kernel tests", "kernel") {
+
+//POINT = -25.35f,25.35f
+    CHECK(kernel<float>(-25.35f,0.65387f,Point(-22.5f,27.5f)) == Approx(1.15581e-16));
+
+ // CHECK(vec_o[1] == Approx(-2100.0));
+ // CHECK(vec_o[2] == Approx(-1800 * std::sqrt(2)));
+}
+
