@@ -43,20 +43,21 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    float R_distance = cl.get<float>("r-distance");
-    float Scentilator_length = cl.get<float>("s-length");
+    double R_distance = cl.get<float>("r-distance");
+    double Scentilator_length = cl.get<float>("s-length");
     int iteration = 500000;
-    float pixel_size = cl.get<float>("p-size");
+    double pixel_size = cl.get<float>("p-size");
     int n_pixels = Scentilator_length / pixel_size;
-    float sigma = cl.get<float>("s-z");
-    float dl = cl.get<float>("s-dl");
-    float x = 0.0f;
-    float y = 0.0f;
-    float a = 30.0f;
-    float b = 100.0f;
-    float phi = 30.0f;
+    double sigma = cl.get<float>("s-z");
+    double dl = cl.get<float>("s-dl");
 
-    Phantom<float> test(iteration, n_pixels, pixel_size, R_distance,
+    double x = 0.0f;
+    double y = 0.0f;
+    double a = 60.0f;
+    double b = 200.0f;
+    double phi = 45.0f;
+
+    Phantom<double> test(iteration, n_pixels, pixel_size, R_distance,
                          Scentilator_length, x, y, a, b, phi);
 
     int n_threads = 4;
@@ -74,7 +75,7 @@ int main(int argc, char *argv[]) {
     obstream out("test.bin");
     test >> out;
 
-    Reconstruction<float> reconstruction(1, R_distance, Scentilator_length,
+    Reconstruction<double> reconstruction(5, R_distance, Scentilator_length,
                                           n_pixels, pixel_size, sigma, dl);
     ibstream in("test.bin");
     in >> reconstruction;

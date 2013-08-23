@@ -20,7 +20,13 @@
 
 typedef std::minstd_rand0 rng;
 
-template <typename T = float> class Phantom {
+
+
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
+template <typename T = double> class Phantom {
 
   typedef std::pair<int, int> Pixel;
   typedef std::pair<T, T> Point;
@@ -58,15 +64,15 @@ public:
   bool in(T y, T z) const {
 
 
-     // T pow_sigma_dl = 63*63;
-     // T pow_sigma_z = 10*10;
+      T pow_sigma_dl = 63*63;
+      T pow_sigma_z = 10*10;
 
       T dy = (y - _y);
       T dz = (z - _x);
       T d1 = (_sin * dy + _cos * dz );//y
       T d2 = (_sin * dz - _cos * dy);//x
 
-     /*
+/*
       T tg = (_sin / _cos);
 
       T A = (((T(4.0) * (T(1.0) / (_cos * _cos))) / pow_sigma_dl) +
@@ -75,7 +81,7 @@ public:
       T C = T(2.0) / pow_sigma_z;
 
         return ((A * (d2 * d2)) + (B * d1 * d2) + (C * (d1 * d1))) <= T(1) ? true:false;
-     */
+*/
 
    return ((d1 * d1 / (_a * _a)) + (d2 * d2 / (_b * _b))) <= T(1) ? true:false;
 
@@ -119,7 +125,7 @@ public:
 
       ry = uniform_y(rng_list[omp_get_thread_num()]);
       rz = uniform_z(rng_list[omp_get_thread_num()]);
-      rangle = M_PI_4 * uniform_dist(rng_list[omp_get_thread_num()]);
+      rangle = (M_PI_4 - radian) * uniform_dist(rng_list[omp_get_thread_num()]);
 
             if (in(ry, rz)) {
 
@@ -201,11 +207,15 @@ public:
                  std::floor((R_distance + z) / pixel_size));
   }
 
-  // pixel Plane
   Point pixel_center(T y, T z) {
+
+    int sgn_y =  sgn<T>(y);
+    int sgn_z =  sgn<T>(z);
+
+
     return Point(
-        (std::floor(R_distance - (y) * pixel_size)) + (T(0.5) * pixel_size),
-        (std::floor((z) * pixel_size - R_distance)) + (T(0.5) * pixel_size));
+        (std::ceil(R_distance - (y) * pixel_size)) + (sgn<T>(y)*T(0.5) * pixel_size),
+        (std::ceil((z) * pixel_size - R_distance)) + (sgn<T>(z)*T(0.5) * pixel_size));
   }
   template <typename StreamType> Phantom &operator>>(StreamType &out) {
 
