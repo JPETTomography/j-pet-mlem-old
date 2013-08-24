@@ -20,11 +20,7 @@
 
 typedef std::minstd_rand0 rng;
 
-
-
-template <typename T> int sgn(T val) {
-    return (T(0) < val) - (val < T(0));
-}
+template <typename T> int sgn(T val) { return (T(0) < val) - (val < T(0)); }
 
 template <typename T = double> class Phantom {
 
@@ -44,7 +40,7 @@ private:
   T _inv_b2;
   std::vector<event<T> > event_list;
   std::vector<scintillator<> > scientilator_list;
-  std::vector<std::vector<T>> output;
+  std::vector<std::vector<T> > output;
   static constexpr const T PI_2 = 1.5707963;
   static constexpr const T radian = T(M_PI / 180);
 
@@ -58,35 +54,34 @@ public:
     _cos = std::cos(T(_phi * radian));
     _inv_a2 = T(1) / (_a * _a);
     _inv_b2 = T(1) / (_b * _b);
-    output.assign(n_pixels,std::vector<T>(n_pixels, T(0)));
+    output.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
   }
 
   bool in(T y, T z) const {
 
+    T pow_sigma_dl = 63 * 63;
+    T pow_sigma_z = 10 * 10;
 
-      T pow_sigma_dl = 63*63;
-      T pow_sigma_z = 10*10;
+    T dy = (y - _y);
+    T dz = (z - _x);
+    T d1 = (_sin * dy + _cos * dz); // y
+    T d2 = (_sin * dz - _cos * dy); // x
 
-      T dy = (y - _y);
-      T dz = (z - _x);
-      T d1 = (_sin * dy + _cos * dz );//y
-      T d2 = (_sin * dz - _cos * dy);//x
+    /*
+          T tg = (_sin / _cos);
 
-/*
-      T tg = (_sin / _cos);
+          T A = (((T(4.0) * (T(1.0) / (_cos * _cos))) / pow_sigma_dl) +
+                  (T(2.0) * tg * tg / pow_sigma_z));
+          T B = -T(4.0) * tg / pow_sigma_z;
+          T C = T(2.0) / pow_sigma_z;
 
-      T A = (((T(4.0) * (T(1.0) / (_cos * _cos))) / pow_sigma_dl) +
-              (T(2.0) * tg * tg / pow_sigma_z));
-      T B = -T(4.0) * tg / pow_sigma_z;
-      T C = T(2.0) / pow_sigma_z;
+            return ((A * (d2 * d2)) + (B * d1 * d2) + (C * (d1 * d1))) <= T(1) ?
+       true:false;
+    */
 
-        return ((A * (d2 * d2)) + (B * d1 * d2) + (C * (d1 * d1))) <= T(1) ? true:false;
-*/
-
-   return ((d1 * d1 / (_a * _a)) + (d2 * d2 / (_b * _b))) <= T(1) ? true:false;
-
+    return ((d1 * d1 / (_a * _a)) + (d2 * d2 / (_b * _b))) <= T(1) ? true
+                                                                   : false;
   }
-
 
   void emit_event(int n_threads) {
 
@@ -127,26 +122,27 @@ public:
       rz = uniform_z(rng_list[omp_get_thread_num()]);
       rangle = (M_PI_4 - radian) * uniform_dist(rng_list[omp_get_thread_num()]);
 
-            if (in(ry, rz)) {
+      if (in(ry, rz)) {
 
-          z_u = rz + (R_distance - ry) * tan(rangle);
-           z_d = rz - (R_distance + ry) * tan(rangle);
-            dl = -T(2) * ry * sqrt(T(1) + (tan(rangle) * tan(rangle)));
+        z_u = rz + (R_distance - ry) * tan(rangle);
+        z_d = rz - (R_distance + ry) * tan(rangle);
+        dl = -T(2) * ry * sqrt(T(1) + (tan(rangle) * tan(rangle)));
 
-/*
-        z_u = rz + (R_distance - ry) * tan(rangle) +
-              normal_dist_dz(rng_list[omp_get_thread_num()]);
-        z_d = rz - (R_distance + ry) * tan(rangle) +
-              normal_dist_dz(rng_list[omp_get_thread_num()]);
-        dl = -T(2) * ry * sqrt(T(1) + (tan(rangle) * tan(rangle))) +
-             normal_dist_dl(rng_list[omp_get_thread_num()]);
-*/
+        /*
+                z_u = rz + (R_distance - ry) * tan(rangle) +
+                      normal_dist_dz(rng_list[omp_get_thread_num()]);
+                z_d = rz - (R_distance + ry) * tan(rangle) +
+                      normal_dist_dz(rng_list[omp_get_thread_num()]);
+                dl = -T(2) * ry * sqrt(T(1) + (tan(rangle) * tan(rangle))) +
+                     normal_dist_dl(rng_list[omp_get_thread_num()]);
+        */
         if (std::abs(z_u) < (Scentilator_length / T(2)) &&
             std::abs(z_d) < (Scentilator_length / T(2))) {
 
           Pixel p = pixel_location(ry, rz);
 
-        //  std::cout << p.first << " " << p.second << " " << n_pixels <<  std::endl;
+          //  std::cout << p.first << " " << p.second << " " << n_pixels <<
+          // std::endl;
 
           output[p.first][p.second]++;
 
@@ -173,19 +169,19 @@ public:
     png.write_header<>(n_pixels, n_pixels);
 
     T output_max = 0.0;
-    for (auto& col: output) {
-        for(auto& row: col)
-      output_max = std::max(output_max, row);
+    for (auto &col : output) {
+      for (auto &row : col)
+        output_max = std::max(output_max, row);
     }
 
     auto output_gain =
         static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-   for (int y = 0; y < n_pixels ; ++y) {
+    for (int y = 0; y < n_pixels; ++y) {
       uint8_t row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
-        row[x] = std::numeric_limits<uint8_t>::max() -
-                output_gain * output[y][x];
+        row[x] =
+            std::numeric_limits<uint8_t>::max() - output_gain * output[y][x];
       }
       png.write_row(row);
     }
@@ -209,13 +205,13 @@ public:
 
   Point pixel_center(T y, T z) {
 
-    int sgn_y =  sgn<T>(y);
-    int sgn_z =  sgn<T>(z);
+    int sgn_y = sgn<T>(y);
+    int sgn_z = sgn<T>(z);
 
-
-    return Point(
-        (std::ceil(R_distance - (y) * pixel_size)) + (sgn<T>(y)*T(0.5) * pixel_size),
-        (std::ceil((z) * pixel_size - R_distance)) + (sgn<T>(z)*T(0.5) * pixel_size));
+    return Point((std::ceil(R_distance - (y) * pixel_size)) +
+                     (sgn<T>(y) * T(0.5) * pixel_size),
+                 (std::ceil((z) * pixel_size - R_distance)) +
+                     (sgn<T>(z) * T(0.5) * pixel_size));
   }
   template <typename StreamType> Phantom &operator>>(StreamType &out) {
 

@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     obstream out("test.bin");
     test >> out;
 
-    Reconstruction<double> reconstruction(5, R_distance, Scentilator_length,
+    Reconstruction<double> reconstruction(10, R_distance, Scentilator_length,
                                           n_pixels, pixel_size, sigma, dl);
     ibstream in("test.bin");
     in >> reconstruction;
