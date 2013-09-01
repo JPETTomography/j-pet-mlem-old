@@ -9,6 +9,7 @@
 #include "util/cmdline_types.h"
 #include "util/png_writer.h"
 
+#include "flags.h"
 #include "phantom.h"
 #include "reconstruction.h"
 #include "event.h"
@@ -17,7 +18,9 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
 
+#if SSE_FLUSH
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+#endif
 
   try {
     cmdline::parser cl;
@@ -29,7 +32,7 @@ int main(int argc, char *argv[]) {
                   500.0f);
     cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
     cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
-    cl.add<int>("n-pixels", 'n', "Number of pixels", false, 80);
+    cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
     cl.add<int>("iter", 'i', "Reconstruction iterations", false, 20);
     cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
     cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
@@ -55,31 +58,22 @@ int main(int argc, char *argv[]) {
     double y = 0.0f;
     double a = 60.0f;
     double b = 200.0f;
-    double phi = 45.0f;
+    double phi = 45.0;
 
     Phantom<double> test(iteration, n_pixels, pixel_size, R_distance,
                          Scentilator_length, x, y, a, b, phi);
 
     int n_threads = 4;
 
-    std::clock_t t0, t1;
-
-    t0 = std::clock();
-
     test.emit_event(n_threads);
-
-    t1 = std::clock();
-
-    std::cout << "Event time: " << (t1 - t0) / 1000 << std::endl;
 
     obstream out("test.bin");
     test >> out;
 
-    Reconstruction<double> reconstruction(10, R_distance, Scentilator_length,
+    Reconstruction<double> reconstruction(1, R_distance, Scentilator_length,
                                           n_pixels, pixel_size, sigma, dl);
     ibstream in("test.bin");
     in >> reconstruction;
-    //reconstruction.test();
     reconstruction();
   }
   catch (std::string & ex) {
