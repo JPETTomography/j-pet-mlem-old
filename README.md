@@ -31,15 +31,36 @@ Coding style
 ------------
 
 This project follows C++11 and [Chromium/Google source coding
-style](http://dev.chromium.org/developers/coding-style). This coding style is enforced using
+style](http://dev.chromium.org/developers/coding-style).
+
+This coding style is enforced using
 [clang-format](http://clang.llvm.org/docs/ClangFormat.html) reformat via:
 
 	./scripts/format
 
+When using *Qt Creator* code style used in this project can be imported using
+*Settings > C++ > Code Style > Import* from `src/Google.xml` file.
+
 Build
 -----
 
-Use *Qt Creator* to build source code or build from command line using `qmake` with following commands:
+Use *Qt Creator* to build source code or build from command line using `qmake`
+with following commands:
 
 	qmake
 	make
+
+Additional options:
+
+1. To build outside of project directory use:
+
+		qmake <path_to_project>
+
+2. To build in verbose mode showing issued compiler commands:
+
+		qmake CONFIG+=verbose
+
+3. To use different than default compiler:
+
+		qmake -spec intel-icc   # i.e. Intel CC on Linux
+		qmake -spec macx-gcc    # i.e. GCC on Mac OS X

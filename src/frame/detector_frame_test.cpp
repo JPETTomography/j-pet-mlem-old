@@ -2,7 +2,7 @@
 
 typedef float FLOAT;
 
-#include"detector.h"
+#include "detector_frame.h"
 
 TEST_CASE("EventImage/Angle", "Angle") {
 
@@ -47,14 +47,14 @@ TEST_CASE("EventDetector/Construct", "Construc") {
   REQUIRE(event.dl() == Approx(400.0));
 }
 
-TEST_CASE("Detector/Construct", "Construct") {
+TEST_CASE("DetectorFrame/Construct", "Construct") {
 
   Detector<FLOAT> detector(450.0, 300.0);
   REQUIRE(detector.R() == Approx(450.0));
   REQUIRE(detector.L() == Approx(300.0));
 }
 
-TEST_CASE("Detector/Conversions/ToEventImage", "Convert") {
+TEST_CASE("DetectorFrame/Conversions/ToEventImage", "Convert") {
 
   Detector<FLOAT> detector(450.0, 300.0);
 
@@ -75,7 +75,7 @@ TEST_CASE("Detector/Conversions/ToEventImage", "Convert") {
   REQUIRE(eventImageAngle.theta() == Approx(-0.132551532296674));
 }
 
-TEST_CASE("Detector/Conversions/ToEventDetector", "Convert") {
+TEST_CASE("DetectorFrame/Conversions/ToEventDetector", "Convert") {
   Detector<FLOAT> detector(450.0, 300.0);
 
   EventImageAngle<FLOAT> eventImageAngle(100, 25, -18.0 * Degree);

@@ -3,13 +3,19 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
-CONFIG += object_parallel_to_source
 CONFIG += c++11
 
 !CONFIG(verbose): CONFIG += silent
 
+greaterThan(QT_MAJOR_VERSION, 4) {
+  CONFIG += object_parallel_to_source
+} else:equals(PWD, $$OUT_PWD) {
+  CONFIG += object_with_source
+}
+
 HEADERS += geometry/*.h
 HEADERS += util/*.h
+HEADERS += math/*.h
 
 SOURCES += util/png_writer.cpp
 

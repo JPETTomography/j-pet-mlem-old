@@ -4,10 +4,10 @@
 #include <xmmintrin.h>
 
 #include "cmdline.h"
-#include "util/cmdline_types.h"
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
 #include "util/cmdline_types.h"
+#include "util/png_writer.h"
 
 #include "phantom.h"
 #include "reconstruction.h"
@@ -15,7 +15,7 @@
 
 using namespace std;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
@@ -45,18 +45,19 @@ int main(int argc, char* argv[]) {
 
     double R_distance = cl.get<float>("r-distance");
     double Scentilator_length = cl.get<float>("s-length");
-    int iteration = cl.get<int>("iter");
+    int iteration = 500000;
     double pixel_size = cl.get<float>("p-size");
     int n_pixels = Scentilator_length / pixel_size;
     double sigma = cl.get<float>("s-z");
     double dl = cl.get<float>("s-dl");
+
     double x = 0.0f;
     double y = 0.0f;
-    double a = 50.0f;
-    double b = 50.0f;
-    double phi = 0.0f;
+    double a = 60.0f;
+    double b = 200.0f;
+    double phi = 45.0f;
 
-    phantom<double> test(iteration, n_pixels, pixel_size, R_distance,
+    Phantom<double> test(iteration, n_pixels, pixel_size, R_distance,
                          Scentilator_length, x, y, a, b, phi);
 
     int n_threads = 4;
@@ -71,33 +72,15 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Event time: " << (t1 - t0) / 1000 << std::endl;
 
-    std::string fn("test.bin");
-    test.save_output(fn);
+    obstream out("test.bin");
+    test >> out;
 
-
-    spet_reconstruction<double> reconstruction(R_distance, Scentilator_length,
-                                               n_pixels, pixel_size, sigma, dl);
-    //reconstruction.load_input(fn);
-
-    double y_1 = 300.0;
-    double z_1 = 0.0;
-    double angle = (45 * (M_PI/180));
-    double z_u = -200.0f;
-    double z_d = 200.0f;
-    double t = reconstruction.get_event_tan(z_u, z_d);
-
-    int it = 1;
-    reconstruction.reconstruction(it);
-    std::cout << "TEST KERNELA " << std::endl;
-    std::pair<int, int> p = reconstruction.pixel_center(y_1,z_1);
-
-    std::cout << "PIXEL DLA KERNELA: " << p.first << " " << p.second << std::endl;
-    std::cout << "KERNEL: " << reconstruction.kernel(y_1, z_1, angle,p)
-              << std::endl;
-
-    std::cout << "ELLIPSE: " << std::endl;
-
-    // reconstruction.DrawEllipse(0, 0, 5, 10);
+    Reconstruction<double> reconstruction(10, R_distance, Scentilator_length,
+                                          n_pixels, pixel_size, sigma, dl);
+    ibstream in("test.bin");
+    in >> reconstruction;
+    //reconstruction.test();
+    reconstruction();
   }
   catch (std::string & ex) {
     std::cerr << "error: " << ex << std::endl;

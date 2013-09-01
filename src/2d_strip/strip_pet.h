@@ -13,15 +13,13 @@
 #include <boost/random/additive_combine.hpp>
 #include <boost/random/normal_distribution.hpp>
 
-
-
 typedef boost::ecuyer1988 base_generator_type;
 typedef boost::normal_distribution<> distribution_type;
-typedef boost::variate_generator<base_generator_type&, distribution_type>
+typedef boost::variate_generator<base_generator_type &, distribution_type>
 gen_type;
 
 template <typename T = float> class Strip_PET {
- private:
+private:
   T R_distance;
   T Scentilator_length;
   T _a, _b, _x, _y, _phi;
@@ -29,24 +27,14 @@ template <typename T = float> class Strip_PET {
   T _cos;
   T _inv_a2;
   T _inv_b2;
-  std::vector<event<T>> event_list;
-  std::vector<scintillator<>> scientilator_list;
+  std::vector<event<T> > event_list;
+  std::vector<scintillator<> > scientilator_list;
 
- public:
-  Strip_PET(T& R_distance,
-            T& Scentilator_length,
-            T& x,
-            T& y,
-            T& a,
-            T& b,
-            T& phi)
-      : R_distance(R_distance),
-        Scentilator_length(Scentilator_length),
-        _x(x),
-        _y(y),
-        _a(a),
-        _b(b),
-        _phi(phi) {
+public:
+  Strip_PET(T &R_distance, T &Scentilator_length, T &x, T &y, T &a, T &b,
+            T &phi)
+      : R_distance(R_distance), Scentilator_length(Scentilator_length), _x(x),
+        _y(y), _a(a), _b(b), _phi(phi) {
     _sin = sin(static_cast<double>(_phi));
     _cos = cos(static_cast<double>(_phi));
     _inv_a2 = 1.0 / (_a * _a);
@@ -112,4 +100,4 @@ template <typename T = float> class Strip_PET {
   }
 };
 
-#endif  // STRIP_PET_H
+#endif // STRIP_PET_H
