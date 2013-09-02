@@ -131,6 +131,9 @@ public:
           T y = event_y(dl, t);
           T z = event_z(z_u, z_d, y, t);
 
+       //   std::cout << t  << " " << y << " " << z << std::endl;
+          //std::cout << z_u << " " << z_d << " " << dl << std::endl;
+
 
 
           Pixel p = pixel_location(y, z);
