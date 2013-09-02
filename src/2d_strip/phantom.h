@@ -131,6 +131,8 @@ public:
           T y = event_y(dl, t);
           T z = event_z(z_u, z_d, y, t);
 
+
+
           Pixel p = pixel_location(y, z);
           Pixel pp = pixel_location(ry, rz);
 

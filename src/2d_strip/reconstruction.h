@@ -102,7 +102,7 @@ public:
     return output;
   }
 
-  T kernel(T y, T z, T angle, Point pixel_center) {
+  T kernel(T y, T angle, Point pixel_center) {
 
     // std::cout << "INSIDE: " << y << " "  << z << " " << angle << " "  <<
     // pixel_center.first << " "  << pixel_center.second << std::endl;
@@ -182,7 +182,7 @@ public:
 
 #endif
 
-        bb_pixel_updates(ellipse_center, angle, y, z);
+        bb_pixel_updates(ellipse_center, angle, y);
 
       }
 
@@ -215,14 +215,15 @@ public:
       uint8_t row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
         // if(rho[y][x] > 100){
-        row[x] = std::numeric_limits<uint8_t>::max() - output_gain * 10 *  rho[y][x];
+
+        row[x] = std::numeric_limits<uint8_t>::max() - output_gain *  rho[y][x];
       }
       // }
       png.write_row(row);
     }
   }
 
-  void bb_pixel_updates(Point ellipse_center, T angle, T y, T z) {
+  void bb_pixel_updates(Point ellipse_center, T angle, T y) {
 
     T acc = T(0.0);
 
@@ -251,7 +252,7 @@ public:
 
         if (in_ellipse(A, B, C, _sin, _cos, ellipse_center, pp)) {
 
-          T event_kernel = kernel(y, z, angle, pp);
+          T event_kernel = kernel(y, angle, pp);
 
           ellipse_kernels.push_back(
               std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));

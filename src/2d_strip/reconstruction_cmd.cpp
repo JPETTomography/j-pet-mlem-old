@@ -1,7 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+
+#if SSE_FLUSH
 #include <xmmintrin.h>
+#endif
 
 #include "cmdline.h"
 #include "util/bstream.h"
@@ -54,6 +57,8 @@ int main(int argc, char *argv[]) {
     double sigma = cl.get<float>("s-z");
     double dl = cl.get<float>("s-dl");
 
+
+
     double x = 0.0f;
     double y = 0.0f;
     double a = 60.0f;
@@ -62,7 +67,6 @@ int main(int argc, char *argv[]) {
 
     Phantom<double> test(iteration, n_pixels, pixel_size, R_distance,
                          Scentilator_length, x, y, a, b, phi);
-
     int n_threads = 4;
 
     test.emit_event(n_threads);

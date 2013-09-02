@@ -3,7 +3,7 @@
 
 #define SSE_FLUSH 0
 
-#define NO_GAUSS 1
+#define NO_GAUSS 0
 #define DEBUG_OUTPUT_SAVE 0
 
 
