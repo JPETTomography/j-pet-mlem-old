@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include "flags.h"
 #include "event.h"
 
 using std::fpclassify;
@@ -44,8 +45,8 @@ public:
         Scentilator_length(Scentilator_length), n_pixels(n_pixels),
         pixel_size(pixel_size), sigma_z(sigma_z), sigma_dl(sigma_dl) {
 
-    rho.assign(n_pixels, std::vector<T>(n_pixels, T(10)));
-    rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(10)));
+    rho.assign(n_pixels, std::vector<T>(n_pixels, T(100)));
+    rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(100)));
     pow_sigma_z = sigma_z * sigma_z;
     pow_sigma_dl = sigma_dl * sigma_dl;
     m_pixel = (R_distance / pixel_size);
@@ -70,25 +71,25 @@ public:
                                             inverse_correlation_matrix[1][1] *
                                             inverse_correlation_matrix[2][2]);
   }
+  /*
+    T multiply_elements(std::vector<T> &vec_a, std::vector<T> &vec_b) {
+
+      std::vector<T> a(vec_a.size(), T(0));
+
+      float output = 0.f;
+      // add AVX
+      for (unsigned i = 0; i < vec_a.size(); ++i) {
+        for (unsigned j = 0; j < vec_b.size(); j++) {
+          a[i] += vec_a[j] * inverse_correlation_matrix[j][i];
+        }
+        output += a[i] * vec_b[i];
+      }
+
+      return output;
+    }
+  */
 
   T multiply_elements(std::vector<T> &vec_a, std::vector<T> &vec_b) {
-
-    std::vector<T> a(vec_a.size(), T(0));
-
-    float output = 0.f;
-    // add AVX
-    for (unsigned i = 0; i < vec_a.size(); ++i) {
-      for (unsigned j = 0; j < vec_b.size(); j++) {
-        a[i] += vec_a[j] * inverse_correlation_matrix[j][i];
-      }
-      output += a[i] * vec_b[i];
-    }
-
-    return output;
-  }
-
-  /*
-  T multiply_elements(std::vector<T>& vec_a, std::vector<T>& vec_b) {
 
     std::vector<T> a(vec_a.size(), T(0));
 
@@ -100,9 +101,8 @@ public:
 
     return output;
   }
-  */
 
-  T kernel(T y, T z, T angle, Point pixel_center) {
+  T kernel(T y, T angle, Point pixel_center) {
 
     // std::cout << "INSIDE: " << y << " "  << z << " " << angle << " "  <<
     // pixel_center.first << " "  << pixel_center.second << std::endl;
@@ -120,18 +120,13 @@ public:
     vec_o[2] =
         -(pixel_center.first + y) * inv_cos * (T(1) + T(2) * (_tan * _tan));
 
-    // std::cout << vec_o[0] << " " << vec_o[1] << " " << vec_o[2] << std::endl;
     vec_a[0] = -(pixel_center.first + y - R_distance) * pow_inv_cos;
     vec_a[1] = -(pixel_center.first + y + R_distance) * pow_inv_cos;
     vec_a[2] = -T(2) * (pixel_center.first + y) * (inv_cos * _tan);
 
-    // std::cout << vec_a[0] << " " << vec_a[1] << " " << vec_a[2] << std::endl;
-
     vec_b[0] = pixel_center.second - (pixel_center.first * _tan);
     vec_b[1] = pixel_center.second - (pixel_center.first * _tan);
     vec_b[2] = -T(2) * pixel_center.first * inv_cos;
-
-    // std::cout << vec_b[0] << " " << vec_b[1] << " " << vec_b[2] << std::endl;
 
     T a_ic_a = multiply_elements(vec_a, vec_a);
     T b_ic_a = multiply_elements(vec_b, vec_a);
@@ -145,9 +140,6 @@ public:
                            sensitivity(pixel_center.first, pixel_center.second);
 
     T exp_element = -T(0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
-
-    // std::cout << "BEFORE EXP: " << element_before_exp << std::endl;
-    // std::cout << "EXP: " << exp_element << std::endl;
 
     T _exp = std::exp(exp_element);
 
@@ -184,9 +176,14 @@ public:
 
         Pixel pp = pixel_location(y, z);
 
-        // rho_temp[pp.first][pp.second]+= T(1000);
+#if NO_GAUSS
 
-        bb_pixel_updates(ellipse_center, angle, y, z);
+        rho_temp[pp.first][pp.second] += T(1000);
+
+#endif
+
+        bb_pixel_updates(ellipse_center, angle, y);
+
       }
 
       rho = rho_temp;
@@ -196,11 +193,6 @@ public:
     for (int x = 0; x < n_pixels; ++x) {
       for (int y = 0; y < n_pixels; ++y) {
 
-        /*  if (rho[mem_location(y, x)] < 0.000001) {
-
-            rho[mem_location(y, x)] = T(0.0);
-          }
-        */
         file << x << " " << y << " " << rho[x][y] << std::endl;
       }
     }
@@ -222,126 +214,33 @@ public:
     for (int y = 0; y < n_pixels; ++y) {
       uint8_t row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
-        row[x] = std::numeric_limits<uint8_t>::max() - output_gain * rho[y][x];
+        // if(rho[y][x] > 100){
+
+        row[x] = std::numeric_limits<uint8_t>::max() - output_gain *  rho[y][x];
       }
+      // }
       png.write_row(row);
     }
   }
 
-  void test() {
-    /*
-          Point ellipse_center = Point(-19.8911,-109.594);
-
-          Pixel p = pixel_location(ellipse_center.first,ellipse_center.second);
-
-          std::cout << p.first << " " << p.second << std::endl;
-
-       T angle = 0.192728;
-       T _sin = std::sin(angle);
-       T _cos = std::cos(angle);
-
-
-
-       Point k = pixel_center(p.first,p.second);
-       std::cout << "srodek: " << k.first << " " << k.second << std::endl;
-
-
-       std::cout << "ELIPSA:" << in_ellipse(_sin, _cos, ellipse_center,
-       Point(ellipse_center.first, ellipse_center.second)) << std::endl;
-
-       bb_pixel_updates(ellipse_center,angle,ellipse_center.first,ellipse_center.second);
-
-       std::cout << "PIXEL:" << p.first << " " << p.second << std::endl;
-       std::cout << "KERNEL: " <<
-       kernel(ellipse_center.first,ellipse_center.second,angle,pixel_center(104,78))
-       << std::endl;
-    */
-
-    // bb_pixel_updates(ellipse_center,angle,ellipse_center.first,ellipse_center.second);
-
-    std::cout << "---------------------------------------------" << std::endl;
-
-    Point pp = Point(0, 0);
-
-    Pixel p = pixel_location(pp.first, pp.second);
-
-    Point pc = pixel_center(p.first, p.second);
-
-    std::cout << "POINT: " << pp.first << " " << pp.second << " " << p.first
-              << "  " << p.second << std::endl;
-
-    std::cout << "CENTER: " << pc.first << " " << pc.second << std::endl;
-
-    std::cout << "---------------------------------------------" << std::endl;
-
-    pp = Point(6.0, 6.0);
-
-    p = pixel_location(pp.first, pp.second);
-
-    pc = pixel_center(p.first, p.second);
-
-    std::cout << "POINT: " << pp.first << " " << pp.second << " " << p.first
-              << "  " << p.second << std::endl;
-
-    std::cout << "CENTER: " << pc.first << " " << pc.second << std::endl;
-
-    std::cout << "---------------------------------------------" << std::endl;
-
-    pp = Point(-6.0, -6.0);
-
-    p = pixel_location(pp.first, pp.second);
-
-    pc = pixel_center(p.first, p.second);
-
-    std::cout << "POINT: " << pp.first << " " << pp.second << " " << p.first
-              << "  " << p.second << std::endl;
-
-    std::cout << "CENTER: " << pc.first << " " << pc.second << std::endl;
-
-    std::cout << "---------------------------------------------" << std::endl;
-
-    pp = Point(-6.0, 6.0);
-
-    p = pixel_location(pp.first, pp.second);
-
-    pc = pixel_center(p.first, p.second);
-
-    std::cout << "POINT: " << pp.first << " " << pp.second << " " << p.first
-              << "  " << p.second << std::endl;
-
-    std::cout << "CENTER: " << pc.first << " " << pc.second << std::endl;
-
-    std::cout << "---------------------------------------------" << std::endl;
-
-    pp = Point(6.0, -6.0);
-
-    p = pixel_location(pp.first, pp.second);
-
-    pc = pixel_center(p.first, p.second);
-
-    std::cout << "POINT: " << pp.first << " " << pp.second << " " << p.first
-              << "  " << p.second << std::endl;
-
-    std::cout << "CENTER: " << pc.first << " " << pc.second << std::endl;
-  }
-
-  void bb_pixel_updates(Point &ellipse_center, T &angle, T y, T z) {
+  void bb_pixel_updates(Point ellipse_center, T angle, T y) {
 
     T acc = T(0.0);
 
-    T _sin = std::sin(angle);
-    T _cos = std::cos(angle);
+    T _sin = std::sin((angle));
+    T _cos = std::cos((angle));
+
     T tg = _sin / _cos;
 
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);
 
-    Pixel ur = Pixel(center_pixel.first - 25, center_pixel.second + 25);
-    Pixel dl = Pixel(center_pixel.first + 25, center_pixel.second - 25);
+    Pixel ur = Pixel(center_pixel.first - 14, center_pixel.second + 14);
+    Pixel dl = Pixel(center_pixel.first + 14, center_pixel.second - 14);
 
     std::vector<std::pair<Pixel, T> > ellipse_kernels;
 
-    T A = (((T(4.0) * (T(1.0) / (_cos * _cos))) / pow_sigma_dl) +
+    T A = (((T(4.0) / (_cos * _cos)) / pow_sigma_dl) +
            (T(2.0) * tg * tg / pow_sigma_z));
     T B = -T(4.0) * tg / pow_sigma_z;
     T C = T(2.0) / pow_sigma_z;
@@ -353,11 +252,13 @@ public:
 
         if (in_ellipse(A, B, C, _sin, _cos, ellipse_center, pp)) {
 
-          T event_kernel = kernel(y, z, angle, pp);
+          T event_kernel = kernel(y, angle, pp);
 
           ellipse_kernels.push_back(
               std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
           acc += event_kernel * sensitivity(pp.first, pp.second) * rho[iy][iz];
+
+
         }
       }
     }
@@ -366,8 +267,7 @@ public:
 
       rho_temp[e.first.first][e.first.second] +=
           e.second * rho[e.first.first][e.first.second] / acc;
-      // std::cout << e.second*rho[e.first.first][e.first.second]/acc <<
-      // std::endl;
+
     }
   }
 
@@ -397,19 +297,14 @@ public:
   // coord Plane
   Pixel pixel_location(T y, T z) {
     return Pixel(std::floor((R_distance - y) / pixel_size),
-                 std::ceil((R_distance + z) / pixel_size));
+                 std::floor((R_distance + z) / pixel_size));
   }
 
   // pixel Plane
   Point pixel_center(T y, T z) {
 
-    int sgn_y = sgn<T>(y);
-    int sgn_z = sgn<T>(z);
-
-    return Point((std::floor(R_distance - (y) * pixel_size)) -
-                     (sgn<T>(y) * T(0.5) * pixel_size),
-                 (std::floor((z) * pixel_size - R_distance)) -
-                     (sgn<T>(z) * T(0.5) * pixel_size));
+    return Point((R_distance - (y + T(0.5)) * pixel_size),
+                 (z + T(0.5)) * pixel_size - R_distance);
   }
 
   template <typename StreamType> Reconstruction &operator<<(StreamType &in) {
@@ -426,9 +321,7 @@ public:
     in >> iter;
     in >> size;
     int i = 0;
-    std::cout << "DATA:" << n_pix << " " << pixel_s << " " << iter << " "
-              << size << std::endl;
-#if DEBUG == 1
+#if DEBUG_OUTPUT_SAVE
     std::cout << number_of_pixels << " " << pixel_s << " " << iter << " "
               << number_of_event_in_file << std::endl;
     std::cout << "VECTOR SIZE: " << event_list.size() << std::endl;
@@ -454,7 +347,7 @@ public:
       T z = event_z(z_u, z_d, y, tan);
 
       Pixel p = pixel_location(y, z);
-#if DEBUG == 1
+#if DEBUG_OUTPUT_SAVE
 
       std::cout << "pixel:" << p.first << " " << p.second << std::endl;
       event_list[p.first * n_pixels + p.second].push_back(temp_event);
@@ -479,6 +372,46 @@ public:
     r << in;
     return in;
   }
+
+      void test() {
+        /*
+              Point ellipse_center = Point(-19.8911,-109.594);
+
+              Pixel p = pixel_location(ellipse_center.first,ellipse_center.second);
+
+              std::cout << p.first << " " << p.second << std::endl;
+
+           T angle = 0.192728;
+           T _sin = std::sin(angle);
+           T _cos = std::cos(angle);
+
+
+
+           Point k = pixel_center(p.first,p.second);
+           std::cout << "srodek: " << k.first << " " << k.second << std::endl;
+
+
+           std::cout << "ELIPSA:" << in_ellipse(_sin, _cos, ellipse_center,
+           Point(ellipse_center.first, ellipse_center.second)) << std::endl;
+
+           bb_pixel_updates(ellipse_center,angle,ellipse_center.first,ellipse_center.second);
+
+           std::cout << "PIXEL:" << p.first << " " << p.second << std::endl;
+           std::cout << "KERNEL: " <<
+           kernel(ellipse_center.first,ellipse_center.second,angle,pixel_center(104,78))
+           << std::endl;
+        */
+
+        // bb_pixel_updates(ellipse_center,angle,ellipse_center.first,ellipse_center.second);
+
+        std::cout << "---------------------------------------------" << std::endl;
+
+        Point pp = Point(0, 0);
+
+        Pixel p = pixel_location(pp.first, pp.second);
+      }
+
+
 };
 
 #endif // SPET_RECONSTRUCTION_H
