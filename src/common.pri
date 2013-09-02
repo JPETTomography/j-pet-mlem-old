@@ -7,6 +7,11 @@ CONFIG += c++11
 
 !CONFIG(verbose): CONFIG += silent
 
+CONFIG(debug) {
+  QMAKE_CXXFLAGS += -O0 -ggdb
+  LIBS += -g -ggdb
+}
+
 greaterThan(QT_MAJOR_VERSION, 4) {
   CONFIG += object_parallel_to_source
 } else:equals(PWD, $$OUT_PWD) {

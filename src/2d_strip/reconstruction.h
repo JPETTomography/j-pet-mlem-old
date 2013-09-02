@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include <assert.h>
 #include "flags.h"
 #include "event.h"
 
@@ -77,6 +78,7 @@ public:
       std::vector<T> a(vec_a.size(), T(0));
 
       float output = 0.f;
+    T inv_cos = T(1) / std::cos(angle);
       // add AVX
       for (unsigned i = 0; i < vec_a.size(); ++i) {
         for (unsigned j = 0; j < vec_b.size(); j++) {
@@ -102,7 +104,7 @@ public:
     return output;
   }
 
-  T kernel(T y, T angle, Point pixel_center) {
+  T kernel(T y, T angle, Point pixel_center, bool debug = false) {
 
     // std::cout << "INSIDE: " << y << " "  << z << " " << angle << " "  <<
     // pixel_center.first << " "  << pixel_center.second << std::endl;
@@ -142,6 +144,9 @@ public:
     T exp_element = -T(0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
     T _exp = std::exp(exp_element);
+
+    if (debug)
+    std::cerr << "bele=" << element_before_exp << " expel=" << exp_element << " exp=" << _exp << std::endl;
 
     return (element_before_exp * _exp) /
            sensitivity(pixel_center.first, pixel_center.second);
@@ -216,7 +221,7 @@ public:
       for (auto x = 0; x < n_pixels; ++x) {
         // if(rho[y][x] > 100){
 
-        row[x] = std::numeric_limits<uint8_t>::max() - output_gain *  rho[y][x];
+        row[x] = std::numeric_limits<uint8_t>::max() - output_gain  *  rho[y][x];
       }
       // }
       png.write_row(row);
@@ -245,29 +250,65 @@ public:
     T B = -T(4.0) * tg / pow_sigma_z;
     T C = T(2.0) / pow_sigma_z;
 
+    int count = 0;
     for (int iz = dl.second; iz < ur.second; ++iz) {
       for (int iy = ur.first; iy < dl.first; ++iy) {
 
         Point pp = pixel_center(iy, iz);
-
         if (in_ellipse(A, B, C, _sin, _cos, ellipse_center, pp)) {
+
+            pp.first  -= ellipse_center.first;
+            pp.second -= ellipse_center.second;
 
           T event_kernel = kernel(y, angle, pp);
 
           ellipse_kernels.push_back(
               std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
           acc += event_kernel * sensitivity(pp.first, pp.second) * rho[iy][iz];
-
+            count ++;
 
         }
+
+
       }
+    }
+
+    if (acc == 0) {
+        for (int iz = dl.second; iz < ur.second; ++iz) {
+          for (int iy = ur.first; iy < dl.first; ++iy) {
+
+            Point pp = pixel_center(iy, iz);
+
+            if (in_ellipse(A, B, C, _sin, _cos, ellipse_center, pp)) {
+
+
+
+              T event_kernel = kernel(y, angle, pp, 1);
+
+              std::cout << "kernel=" << event_kernel
+                        << " sens=" << sensitivity(pp.first, pp.second)
+                        << " rho=" << rho[iy][iz]
+                        << " y=" << y
+                        << " angle=" << angle
+                        << " py=" << pp.first
+                        << " pz=" << pp.second
+                        << std::endl;
+            }
+
+
+          }
+        }
+
+
+        std::stringstream ss;
+        ss << "y=" << ellipse_center.first << " z=" << ellipse_center.second << " count=" << count;
+        throw(ss.str());
     }
 
     for (auto &e : ellipse_kernels) {
 
       rho_temp[e.first.first][e.first.second] +=
           e.second * rho[e.first.first][e.first.second] / acc;
-
     }
   }
 

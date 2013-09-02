@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
     cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
     cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
-    cl.add<int>("iter", 'i', "Reconstruction iterations", false, 20);
+    cl.add<int>("iter", 'i', "Reconstruction iterations", false, 1);
     cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
     cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
     cl.add<float>("gm", 'g', "Gamma error", false, 0.f);
@@ -49,23 +49,23 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    double R_distance = cl.get<float>("r-distance");
-    double Scentilator_length = cl.get<float>("s-length");
+    float R_distance = cl.get<float>("r-distance");
+    float Scentilator_length = cl.get<float>("s-length");
     int iteration = 500000;
-    double pixel_size = cl.get<float>("p-size");
+    float pixel_size = cl.get<float>("p-size");
     int n_pixels = Scentilator_length / pixel_size;
-    double sigma = cl.get<float>("s-z");
-    double dl = cl.get<float>("s-dl");
+    float sigma = cl.get<float>("s-z");
+    float dl = cl.get<float>("s-dl");
 
 
 
-    double x = 0.0f;
-    double y = 0.0f;
-    double a = 60.0f;
-    double b = 200.0f;
-    double phi = 45.0;
+    float x = 0.0f;
+    float y = 0.0f;
+    float a = 60.0f;
+    float b = 200.0f;
+    float phi = 45.0;
 
-    Phantom<double> test(iteration, n_pixels, pixel_size, R_distance,
+    Phantom<float> test(iteration, n_pixels, pixel_size, R_distance,
                          Scentilator_length, x, y, a, b, phi);
     int n_threads = 4;
 
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     obstream out("test.bin");
     test >> out;
 
-    Reconstruction<double> reconstruction(1, R_distance, Scentilator_length,
+    Reconstruction<float> reconstruction(cl.get<int>("iter"), R_distance, Scentilator_length,
                                           n_pixels, pixel_size, sigma, dl);
     ibstream in("test.bin");
     in >> reconstruction;
