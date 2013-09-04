@@ -199,11 +199,11 @@ int main(int argc, char* argv[]) {
 
     if (phantom.n_regions() > 0) {
       while (n_emitted < n_emissions) {
-       
+
         double x = fov_dis(gen);
         double y = fov_dis(gen);
 #if DEBUG
-        std::cerr<<n_emitted << " (" <<x << "," << y << ")" <<std::endl;
+        std::cerr << n_emitted << " (" << x << "," << y << ")" << std::endl;
 #endif
         if (x * x + y * y < fov_r2) {
           if (phantom.test_emit(x, y, one_dis(gen))) {
@@ -354,10 +354,10 @@ int main(int argc, char* argv[]) {
     }
     return 0;
   }
-  catch (std::string & ex) {
+  catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
   }
-  catch (const char * ex) {
+  catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
   }
 }

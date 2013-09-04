@@ -38,6 +38,8 @@ template <typename T = double> class Phantom {
   T _cos;
   T _inv_a2;
   T _inv_b2;
+  T sigma_z;
+  T sigma_dl;
   std::vector<ellipse_parameters<T>> ellipse_list;
   std::vector<event<T>> event_list;
   std::vector<std::vector<T>> output;
@@ -50,11 +52,15 @@ template <typename T = double> class Phantom {
           int n_pixels,
           T& pixel_size,
           T& R_distance,
-          T& Scentilator_length)
+          T& Scentilator_length,
+          T sigma_z,
+          T sigma_dl)
       : n_pixels(n_pixels),
         pixel_size(pixel_size),
         R_distance(R_distance),
-        Scentilator_length(Scentilator_length) {
+        Scentilator_length(Scentilator_length),
+        sigma_z(sigma_z),
+        sigma_dl(sigma_dl) {
     ellipse_list = el;
     output.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
     output_without_errors.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
@@ -96,8 +102,8 @@ template <typename T = double> class Phantom {
       std::uniform_real_distribution<T> uniform_dist(0, 1);
       std::uniform_real_distribution<T> uniform_y(el.y - max, el.y + max);
       std::uniform_real_distribution<T> uniform_z(el.x - max, el.x + max);
-      std::normal_distribution<T> normal_dist_dz(0, 10);
-      std::normal_distribution<T> normal_dist_dl(0, 63);
+      std::normal_distribution<T> normal_dist_dz(0, sigma_z);
+      std::normal_distribution<T> normal_dist_dl(0, sigma_dl);
       rng rd;
 
       std::vector<rng> rng_list;

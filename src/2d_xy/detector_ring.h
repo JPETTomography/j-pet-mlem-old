@@ -1,5 +1,5 @@
 #pragma once
-//#define DEBUG 1 
+//#define DEBUG 1
 #include <map>
 
 #include "util/random.h"

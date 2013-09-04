@@ -36,9 +36,9 @@ int main(int argc, char* argv[]) {
     cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
     cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
-    cl.add<int>("iter", 'i', "Reconstruction iterations", false, 10);
-    cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
-    cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
+    cl.add<int>("iter", 'i', "Reconstruction iterations", false, 1);
+    cl.add<float>("s-z", 's', "Sigma z error", false, 20.0f);
+    cl.add<float>("s-dl", 'd', "Sigma dl error", false, 20.0f);
     cl.add<float>("gm", 'g', "Gamma error", false, 0.f);
 
     cl.parse_check(argc, argv);
@@ -72,14 +72,19 @@ int main(int argc, char* argv[]) {
     el.x = 0.0f;
     el.y = 0.0f;
     el.a = 30.0f;
-    el.b = 30.0f;
+    el.b = 100.0f;
     el.angle = 45.0;
     el.iter = 500000;
 
     ellipse_list.push_back(el);
 
-    Phantom<double> test(
-        ellipse_list, n_pixels, pixel_size, R_distance, Scentilator_length);
+    Phantom<double> test(ellipse_list,
+                         n_pixels,
+                         pixel_size,
+                         R_distance,
+                         Scentilator_length,
+                         sigma,
+                         dl);
     int n_threads = 4;
 
     test.emit_event(n_threads);

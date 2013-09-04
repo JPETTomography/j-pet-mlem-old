@@ -38,6 +38,7 @@ template <typename T = double> class Reconstruction {
   std::vector<std::vector<T>> rho;
   std::vector<std::vector<T>> rho_temp;
   std::vector<T> temp_kernels;
+  std::vector<T> acc_log;
 
  public:
   Reconstruction(int iteration,
@@ -249,8 +250,8 @@ template <typename T = double> class Reconstruction {
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);
 
-    Pixel ur = Pixel(center_pixel.first - 14, center_pixel.second + 14);
-    Pixel dl = Pixel(center_pixel.first + 14, center_pixel.second - 14);
+    Pixel ur = Pixel(center_pixel.first - 20, center_pixel.second + 20);
+    Pixel dl = Pixel(center_pixel.first + 20, center_pixel.second - 20);
 
     std::vector<std::pair<Pixel, T>> ellipse_kernels;
 
@@ -297,17 +298,17 @@ template <typename T = double> class Reconstruction {
           }
         }
       }
-
-      std::stringstream ss;
-      ss << "y=" << ellipse_center.first << " z=" << ellipse_center.second
-         << " count=" << count;
-      throw(ss.str());
     }
+
+    acc_log.push_back(acc);
 
     for (auto& e : ellipse_kernels) {
 
       rho_temp[e.first.first][e.first.second] +=
           e.second * rho[e.first.first][e.first.second] / acc;
+      if (acc == T(0)) {
+        std::cout << rho_temp[e.first.first][e.first.second] << std::endl;
+      }
     }
   }
 
@@ -378,20 +379,7 @@ template <typename T = double> class Reconstruction {
       T z = event_z(z_u, z_d, y, tan);
 
       Pixel p = pixel_location(y, z);
-#if DEBUG_OUTPUT_SAVE
 
-      std::cout << "pixel:" << p.first << " " << p.second << std::endl;
-      event_list[p.first * n_pixels + p.second].push_back(temp_event);
-      ++i;
-      std::cout << "I:" << i << std::endl;
-      std::cout << "DATA: " << z_u << "  " << z_d << " " << dl << std::endl;
-      std::cout << "LOCATIONS: "
-                << "y: " << y << " z: " << z << " tan: " << tan << std::endl;
-      std::cout << "PIXEL: " << p.first << " " << p.second << " "
-                << p.first* n_pixels + p.second << std::endl;
-      std::cout << "N_PIXELS: " << number_of_pixels << std::endl;
-// assert(p.first < number_of_pixels || p.second < number_of_pixels);
-#endif
       event_list.push_back(temp_event);
     }
 

@@ -215,10 +215,10 @@ int main(int argc, char* argv[]) {
           std::cerr << "converted to pixel major" << std::endl;
       }
 
-      catch (std::string & ex) {
+      catch (std::string& ex) {
         throw(ex + ": " + *fn);
       }
-      catch (const char * ex) {
+      catch (const char* ex) {
         throw(std::string(ex) + ": " + *fn);
       }
     }
@@ -280,7 +280,7 @@ int main(int argc, char* argv[]) {
         png_writer png(fn_wo_ext + ".png");
         matrix.output_bitmap(png);
       }
-      catch (const char * ex) {
+      catch (const char* ex) {
         // don't bail out just produce warning
         std::cerr << "warning: " << ex << std::endl;
       }
@@ -375,10 +375,10 @@ int main(int argc, char* argv[]) {
 
     return 0;
   }
-  catch (std::string & ex) {
+  catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
   }
-  catch (const char * ex) {
+  catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
   }
 }
