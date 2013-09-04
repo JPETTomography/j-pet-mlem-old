@@ -6,6 +6,4 @@
 #define NO_GAUSS 0
 #define DEBUG_OUTPUT_SAVE 0
 
-
-
-#endif // FLAGS_H
+#endif  // FLAGS_H
