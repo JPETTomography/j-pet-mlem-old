@@ -1,5 +1,5 @@
 #pragma once
-
+//#define DEBUG 1
 #include <map>
 
 #include "util/random.h"
@@ -116,6 +116,7 @@ class DetectorRing : public std::vector<Detector<FType>> {
       // then test the model against these points distance
       if (points.size() == 2) {
         auto deposition_depth = model.deposition_depth(gen);
+
 #if DEBUG
         std::cerr << "dep " << deposition_depth << " "
                   << (points[1] - points[0]).length() << std::endl;
@@ -228,3 +229,4 @@ class DetectorRing : public std::vector<Detector<FType>> {
   F fov_radius_;
   F radius_diff_;
 };
+#undef DEBUG

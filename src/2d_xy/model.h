@@ -38,12 +38,12 @@ template <typename FType = double> class ScintilatorAccept {
 
   template <class RandomGenerator>
   bool operator()(RandomGenerator& gen, F length) {
-    return one_dis_(gen) >= exp(-length * scale_);
+    return one_dis_(gen) >= exp(-length * inv_scale_);
   }
 
   template <typename RandomGenerator> F deposition_depth(RandomGenerator& gen) {
     auto r = one_dis_(gen);
-    return -log(r) * inv_scale_;
+    return -log(r) * scale_;
   }
 
   static F max_bias() { return static_cast<F>(0); }

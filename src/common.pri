@@ -5,12 +5,10 @@ CONFIG -= app_bundle
 CONFIG -= qt
 CONFIG += c++11
 
-!CONFIG(verbose): CONFIG += silent
+!CONFIG(verbose):CONFIG += silent
 
-CONFIG(debug) {
-  QMAKE_CXXFLAGS += -O0 -ggdb
-  LIBS += -g -ggdb
-}
+# fix no symbol in current context on GCC 4.8
+debug:QMAKE_CXXFLAGS += -gdwarf-2
 
 greaterThan(QT_MAJOR_VERSION, 4) {
   CONFIG += object_parallel_to_source

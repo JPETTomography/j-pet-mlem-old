@@ -6,8 +6,9 @@ typedef std::pair<int, int> Pixel;
 typedef std::pair<float, float> Point;
 
 template <typename T>
-T multiply_elements(std::vector<T> &vec_a, std::vector<T> &vec_b,
-                    std::vector<std::vector<T> > &inverse_correlation_matrix) {
+T multiply_elements(std::vector<T>& vec_a,
+                    std::vector<T>& vec_b,
+                    std::vector<std::vector<T>>& inverse_correlation_matrix) {
 
   std::vector<T> a(vec_a.size(), T(0));
 
@@ -29,7 +30,7 @@ template <typename T> T kernel(T y, T angle, Point pixel_center) {
   T pow_sigma_dl = 63 * 63;
   T R_distance = 500;
 
-  std::vector<std::vector<T> > inverse_correlation_matrix;
+  std::vector<std::vector<T>> inverse_correlation_matrix;
 
   inverse_correlation_matrix.resize(3, std::vector<T>(3, T()));
 
