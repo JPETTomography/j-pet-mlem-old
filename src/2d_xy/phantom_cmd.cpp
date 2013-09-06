@@ -22,7 +22,7 @@
 #if _OPENMP
 #include <omp.h>
 #endif
-
+//#define DEBUG 1
 int main(int argc, char* argv[]) {
 
   try {
@@ -181,11 +181,7 @@ int main(int argc, char* argv[]) {
         } else if (type == "ellipse") {
           double x, y, a, b, angle, acceptance;
           is >> x >> y >> a >> b >> angle >> acceptance;
-          x *= dr.fov_radius();
-          y *= dr.fov_radius();
-          a *= dr.fov_radius();
-          b *= dr.fov_radius();
-
+         
           phantom.add_region(x, y, a, b, angle, acceptance);
         } else {
           std::ostringstream msg;
