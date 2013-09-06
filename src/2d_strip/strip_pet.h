@@ -16,7 +16,7 @@
 typedef boost::ecuyer1988 base_generator_type;
 typedef boost::normal_distribution<> distribution_type;
 typedef boost::variate_generator<base_generator_type&, distribution_type>
-gen_type;
+    gen_type;
 
 template <typename T = float> class Strip_PET {
  private:

@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
         } else if (type == "ellipse") {
           double x, y, a, b, angle, acceptance;
           is >> x >> y >> a >> b >> angle >> acceptance;
-         
+
           phantom.add_region(x, y, a, b, angle, acceptance);
         } else {
           std::ostringstream msg;

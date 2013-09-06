@@ -387,7 +387,7 @@ template <typename T = double> class Reconstruction {
   }
 
   template <typename StreamType>
-      friend StreamType& operator>>(StreamType& in, Reconstruction& r) {
+  friend StreamType& operator>>(StreamType& in, Reconstruction& r) {
     r << in;
     return in;
   }
