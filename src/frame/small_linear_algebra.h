@@ -5,7 +5,7 @@ template <typename F> class Slice {
   Slice(F* rep, int offset, int stride)
       : rep_(rep), offset_(offset), stride_(stride) {}
 
-  F& operator[](int i) { return rep_[offset_ + stride_ * i]; };
+  F& operator[](int i) { return rep_[offset_ + stride_ * i]; }
   F operator[](int i) const { return rep_[offset_ + stride_ * i]; }
 
  private:
@@ -28,7 +28,7 @@ template <int N, typename F> class Vector {
       rep_[i] = *it;
   }
 
-  F& operator[](int i) { return rep_[i]; };
+  F& operator[](int i) { return rep_[i]; }
   F operator[](int i) const { return rep_[i]; }
 
  private:
@@ -50,7 +50,7 @@ template <int N, int M, typename F = double> class Matrix {
     }
   }
 
-  Slice<F> operator[](int i) { return Slice<F>(rep_, i * M, 1); };
+  Slice<F> operator[](int i) { return Slice<F>(rep_, i * M, 1); }
 
  private:
   F rep_[N * M];

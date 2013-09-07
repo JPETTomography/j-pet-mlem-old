@@ -47,7 +47,7 @@ template <int N, typename F = double> class Vector {
     return *this;
   }
 
-  F& operator[](int i) { return v_[i]; };
+  F& operator[](int i) { return v_[i]; }
   F operator[](int i) const { return v_[i]; }
 
  private:
