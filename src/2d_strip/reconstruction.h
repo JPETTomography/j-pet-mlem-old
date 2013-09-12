@@ -276,7 +276,7 @@ template <typename T = double> class Reconstruction {
         for (int iy = ur.first; iy < dl.first; ++iy) {
 
           Point pp = pixel_center(iy, iz);
-          if (in_ellipse(A, B, C, _sin, _cos, ellipse_center, pp)) {
+          if (in_ellipse(A, B, C, ellipse_center, pp)) {
 
             pp.first -= ellipse_center.first;
             pp.second -= ellipse_center.second;
@@ -304,7 +304,7 @@ template <typename T = double> class Reconstruction {
   }
 
   bool
-  in_ellipse(T& A, T& B, T& C, T _sin, T _cos, Point ellipse_center, Point p) {
+  in_ellipse(T& A, T& B, T& C, Point ellipse_center, Point p) {
 
     T dy = (p.first - ellipse_center.first);
     T dz = (p.second - ellipse_center.second);
