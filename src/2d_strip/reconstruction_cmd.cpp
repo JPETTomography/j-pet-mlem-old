@@ -36,10 +36,12 @@ int main(int argc, char* argv[]) {
     cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
     cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
-    cl.add<int>("iter", 'i', "Reconstruction iterations", false, 1);
+    cl.add<int>("iter", 'i', "number of iterations", false, 1);
     cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
     cl.add<float>("s-dl", 'd', "Sigma dl error", false, 30.0f);
     cl.add<float>("gm", 'g', "Gamma error", false, 0.f);
+    cl.add<float>("gm", 'g', "Gamma error", false, 0.f);
+    cl.add<float>("emmisions", 'e', "number of emissions", false, 0.f);
 
     cl.parse_check(argc, argv);
 
@@ -55,17 +57,18 @@ int main(int argc, char* argv[]) {
     double n_pixels = Scentilator_length / pixel_size;
     double sigma = cl.get<float>("s-z");
     double dl = cl.get<float>("s-dl");
+    double emmisions = cl.get<float>("emmisions");
 
     std::vector<ellipse_parameters<double>> ellipse_list;
-
     ellipse_parameters<double> el;
+
 
     el.x = -50.0f;
     el.y = -50.0f;
     el.a = 80.0f;
     el.b = 160.0f;
     el.angle = 45.0;
-    el.iter = 500000;
+    el.iter = emmisions;
 
     ellipse_list.push_back(el);
 
@@ -74,9 +77,10 @@ int main(int argc, char* argv[]) {
     el.a = 30.0f;
     el.b = 50.0f;
     el.angle = 45.0;
-    el.iter = 500000;
+    el.iter = emmisions;
 
     ellipse_list.push_back(el);
+
 
     Phantom<double> test(ellipse_list,
                          n_pixels,
@@ -99,10 +103,12 @@ int main(int argc, char* argv[]) {
                                           pixel_size,
                                           sigma,
                                           dl);
-    ibstream in("test.bin");
+   ibstream in("test.bin");
     in >> reconstruction;
-    reconstruction();
-  }
+   reconstruction();
+
+
+}
   catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
   }
