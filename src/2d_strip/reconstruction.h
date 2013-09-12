@@ -275,7 +275,7 @@ template <typename T = double> class Reconstruction {
         // << std::endl;
           std::cout << (B * B / A) << " " << (B * B / C) << std::endl;
     */
-    std::cout << bb_y << " " << bb_z << std::endl;
+    //std::cout << bb_y << " " << bb_z << std::endl;
 
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);

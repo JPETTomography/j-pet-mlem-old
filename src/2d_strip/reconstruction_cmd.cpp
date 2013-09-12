@@ -36,9 +36,9 @@ int main(int argc, char* argv[]) {
     cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
     cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
-    cl.add<int>("iter", 'i', "number of iterations", false, 1);
+    cl.add<int>("iter", 'i', "number of iterations", false, 15);
     cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
-    cl.add<float>("s-dl", 'd', "Sigma dl error", false, 30.0f);
+    cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
     cl.add<float>("gm", 'g', "Gamma error", false, 0.f);
     cl.add<float>("emmisions", 'e', "number of emissions", false, 500000);
 
