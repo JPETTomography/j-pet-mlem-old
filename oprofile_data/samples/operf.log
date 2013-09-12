@@ -1,0 +1,51 @@
+
+Profiling started at Thu Sep 12 13:51:27 2013
+Profiling stopped at Thu Sep 12 13:52:26 2013
+
+-- OProfile/operf Statistics --
+Nr. non-backtrace samples: 2252698
+Nr. kernel samples: 4117
+Nr. user space samples: 2248581
+Nr. samples lost due to sample address not in expected range for domain: 0
+Nr. lost kernel samples: 0
+Nr. samples lost due to sample file open failure: 0
+Nr. samples lost due to no permanent mapping: 0
+Nr. user context kernel samples lost due to no app info available: 0
+Nr. user samples lost due to no app info available: 0
+Nr. backtraces skipped due to no file mapping: 0
+Nr. hypervisor samples dropped due to address out-of-range: 0
+Nr. samples lost reported by perf_events kernel: 0
+
+Profiling started at Thu Sep 12 13:52:51 2013
+Profiling stopped at Thu Sep 12 13:53:51 2013
+
+-- OProfile/operf Statistics --
+Nr. non-backtrace samples: 2511005
+Nr. kernel samples: 4672
+Nr. user space samples: 2506333
+Nr. samples lost due to sample address not in expected range for domain: 0
+Nr. lost kernel samples: 0
+Nr. samples lost due to sample file open failure: 0
+Nr. samples lost due to no permanent mapping: 0
+Nr. user context kernel samples lost due to no app info available: 0
+Nr. user samples lost due to no app info available: 0
+Nr. backtraces skipped due to no file mapping: 3481919
+Nr. hypervisor samples dropped due to address out-of-range: 0
+Nr. samples lost reported by perf_events kernel: 0
+
+Profiling started at Thu Sep 12 14:01:28 2013
+Profiling stopped at Thu Sep 12 14:02:28 2013
+
+-- OProfile/operf Statistics --
+Nr. non-backtrace samples: 2514616
+Nr. kernel samples: 4583
+Nr. user space samples: 2510033
+Nr. samples lost due to sample address not in expected range for domain: 0
+Nr. lost kernel samples: 0
+Nr. samples lost due to sample file open failure: 0
+Nr. samples lost due to no permanent mapping: 0
+Nr. user context kernel samples lost due to no app info available: 0
+Nr. user samples lost due to no app info available: 0
+Nr. backtraces skipped due to no file mapping: 3483844
+Nr. hypervisor samples dropped due to address out-of-range: 0
+Nr. samples lost reported by perf_events kernel: 0

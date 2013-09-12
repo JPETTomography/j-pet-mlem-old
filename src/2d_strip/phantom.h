@@ -196,9 +196,8 @@ template <typename T = double> class Phantom {
     strs << ellipse_list[0].angle;
     std::string str = strs.str();
 
-    std::string file = std::string("file");
-    file.append(str);
-    file.append(".png", 4);
+    std::string file = std::string("phantom.png");
+
     png_writer png(file);
     png.write_header<>(n_pixels, n_pixels);
 

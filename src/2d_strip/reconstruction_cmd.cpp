@@ -61,7 +61,6 @@ int main(int argc, char* argv[]) {
     std::vector<ellipse_parameters<double>> ellipse_list;
     ellipse_parameters<double> el;
 
-
     el.x = -50.0f;
     el.y = -50.0f;
     el.a = 80.0f;
@@ -79,7 +78,6 @@ int main(int argc, char* argv[]) {
     el.iter = emmisions;
 
     ellipse_list.push_back(el);
-
 
     Phantom<double> test(ellipse_list,
                          n_pixels,
@@ -102,12 +100,10 @@ int main(int argc, char* argv[]) {
                                           pixel_size,
                                           sigma,
                                           dl);
-   ibstream in("test.bin");
+    ibstream in("test.bin");
     in >> reconstruction;
-   reconstruction();
-
-
-}
+    reconstruction();
+  }
   catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
   }

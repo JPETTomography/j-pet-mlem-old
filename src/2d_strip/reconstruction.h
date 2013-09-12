@@ -179,7 +179,7 @@ template <typename T = double> class Reconstruction {
 
     for (int i = 0; i < iteration; i++) {
 
-      //  rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
+      rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
 
       std::cout << "ITERATION: " << i << std::endl;
       for (auto& event : event_list) {
@@ -204,41 +204,50 @@ template <typename T = double> class Reconstruction {
       }
 
       rho = rho_temp;
+
+      // output reconstruction PNG
+
+      std::string file = std::string("rec_iteration_");
+
+      file.append(std::to_string(i + 1));
+      file.append(".png");
+
+      png_writer png(file);
+      png.write_header<>(n_pixels, n_pixels);
+
+      T output_max = 0.0;
+      for (auto& col : rho) {
+        for (auto& row : col) {
+          output_max = std::max(output_max, row);
+        }
+      }
+
+      auto output_gain =
+          static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
+
+      for (int y = 0; y < n_pixels; ++y) {
+        uint8_t row[n_pixels];
+        for (auto x = 0; x < n_pixels; ++x) {
+          // if(rho[y][x] > 100){
+
+          row[x] =
+              std::numeric_limits<uint8_t>::max() - output_gain * rho[y][x];
+        }
+        // }
+        png.write_row(row);
+      }
     }
     std::ofstream file;
     file.open("pixels_output.txt");
     for (int x = 0; x < n_pixels; ++x) {
       for (int y = 0; y < n_pixels; ++y) {
 
-          if(rho[x][y] == 100){rho[x][y] = 1;}
+        if (rho[x][y] == 100) {
+          rho[x][y] = 1;
+        }
 
         file << x << " " << y << " " << rho[x][y] << std::endl;
       }
-    }
-
-    // output reconstruction PNG
-    png_writer png("out.png");
-    png.write_header<>(n_pixels, n_pixels);
-
-    T output_max = 0.0;
-    for (auto& col : rho) {
-      for (auto& row : col) {
-        output_max = std::max(output_max, row);
-      }
-    }
-
-    auto output_gain =
-        static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
-
-    for (int y = 0; y < n_pixels; ++y) {
-      uint8_t row[n_pixels];
-      for (auto x = 0; x < n_pixels; ++x) {
-        // if(rho[y][x] > 100){
-
-        row[x] = std::numeric_limits<uint8_t>::max() - output_gain * rho[y][x];
-      }
-      // }
-      png.write_row(row);
     }
   }
 
@@ -255,43 +264,46 @@ template <typename T = double> class Reconstruction {
            (T(2.0) * tg * tg / pow_sigma_z));
     T B = -T(4.0) * tg / pow_sigma_z;
     T C = T(2.0) / pow_sigma_z;
+    T B_2 = (B / T(2.0)) * (B / T(2.0));
 
-    //T bb_y = T(3.0) / (std::sqrt(2.0) * sqrt((C - (B * B / A))));
-    //T bb_z = T(3.0) / sqrt((A - (B * B / C)));
-
-    //  std::cout << "A: " << A << " B " << B << " C: " << C << std::endl;
-    //  std::cout << "first: " << (C - (B*B/A)) << " second: " << (A - (B*B/C)) << std::endl;
-    // << std::endl;
-     // std::cout << (B * B / A) << " " << (B * B / C) << std::endl;
-   //  std::cout << bb_y << " " << bb_z << std::endl;
+    T bb_y = T(3.0) / (sqrt(2) * sqrt(C - (B_2 / A)));
+    T bb_z = T(3.0) / sqrt((A - (B_2 / C)));
+    /*
+          std::cout << "A: " << A << " B " << B << " C: " << C << std::endl;
+          std::cout << "first: " << (C - (B*B/A)) << " second: " << (A -
+       (B*B/C)) << std::endl;
+        // << std::endl;
+          std::cout << (B * B / A) << " " << (B * B / C) << std::endl;
+    */
+    std::cout << bb_y << " " << bb_z << std::endl;
 
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);
 
-    Pixel ur = Pixel(center_pixel.first - 40, center_pixel.second + 40);
-    Pixel dl = Pixel(center_pixel.first + 40, center_pixel.second - 40);
+    Pixel ur = Pixel(center_pixel.first - bb_y, center_pixel.second + bb_z);
+    Pixel dl = Pixel(center_pixel.first + bb_y, center_pixel.second - bb_z);
 
     std::vector<std::pair<Pixel, T>> ellipse_kernels;
 
     int count = 0;
     for (int iz = dl.second; iz < ur.second; ++iz) {
-        for (int iy = ur.first; iy < dl.first; ++iy) {
+      for (int iy = ur.first; iy < dl.first; ++iy) {
 
-          Point pp = pixel_center(iy, iz);
-          if (in_ellipse(A, B, C, ellipse_center, pp)) {
+        Point pp = pixel_center(iy, iz);
+        if (in_ellipse(A, B, C, ellipse_center, pp)) {
 
-            pp.first -= ellipse_center.first;
-            pp.second -= ellipse_center.second;
+          pp.first -= ellipse_center.first;
+          pp.second -= ellipse_center.second;
 
-            T event_kernel = kernel(y, angle, pp);
+          T event_kernel = kernel(y, angle, pp);
 
-            ellipse_kernels.push_back(
-                std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
-            acc += event_kernel * sensitivity(pp.first, pp.second) * rho[iy][iz];
-            count++;
-          }
+          ellipse_kernels.push_back(
+              std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
+          acc += event_kernel * sensitivity(pp.first, pp.second) * rho[iy][iz];
+          count++;
         }
       }
+    }
 
     acc_log.push_back(acc);
 
@@ -305,8 +317,7 @@ template <typename T = double> class Reconstruction {
     }
   }
 
-  bool
-  in_ellipse(T& A, T& B, T& C, Point ellipse_center, Point p) {
+  bool in_ellipse(T& A, T& B, T& C, Point ellipse_center, Point p) {
 
     T dy = (p.first - ellipse_center.first);
     T dz = (p.second - ellipse_center.second);
