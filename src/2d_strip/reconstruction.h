@@ -57,7 +57,7 @@ template <typename T = double> class Reconstruction {
         sigma_dl(sigma_dl) {
 
     rho.assign(n_pixels, std::vector<T>(n_pixels, T(100)));
-    rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(100)));
+    rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(10)));
     pow_sigma_z = sigma_z * sigma_z;
     pow_sigma_dl = sigma_dl * sigma_dl;
     m_pixel = (R_distance / pixel_size);
@@ -208,6 +208,10 @@ template <typename T = double> class Reconstruction {
     for (int x = 0; x < n_pixels; ++x) {
       for (int y = 0; y < n_pixels; ++y) {
 
+        if (rho[x][y] == 100) {
+          rho[x][y] = 1;
+        }
+
         file << x << " " << y << " " << rho[x][y] << std::endl;
       }
     }
@@ -247,25 +251,35 @@ template <typename T = double> class Reconstruction {
 
     T tg = _sin / _cos;
 
-    Pixel center_pixel =
-        pixel_location(ellipse_center.first, ellipse_center.second);
-
-    Pixel ur = Pixel(center_pixel.first - 20, center_pixel.second + 20);
-    Pixel dl = Pixel(center_pixel.first + 20, center_pixel.second - 20);
-
-    std::vector<std::pair<Pixel, T>> ellipse_kernels;
-
     T A = (((T(4.0) / (_cos * _cos)) / pow_sigma_dl) +
            (T(2.0) * tg * tg / pow_sigma_z));
     T B = -T(4.0) * tg / pow_sigma_z;
     T C = T(2.0) / pow_sigma_z;
+
+    // T bb_y = T(3.0) / (std::sqrt(2.0) * sqrt((C - (B * B / A))));
+    // T bb_z = T(3.0) / sqrt((A - (B * B / C)));
+
+    //  std::cout << "A: " << A << " B " << B << " C: " << C << std::endl;
+    //  std::cout << "first: " << (C - (B*B/A)) << " second: " << (A - (B*B/C))
+    // << std::endl;
+    // << std::endl;
+    // std::cout << (B * B / A) << " " << (B * B / C) << std::endl;
+    //  std::cout << bb_y << " " << bb_z << std::endl;
+
+    Pixel center_pixel =
+        pixel_location(ellipse_center.first, ellipse_center.second);
+
+    Pixel ur = Pixel(center_pixel.first - 40, center_pixel.second + 40);
+    Pixel dl = Pixel(center_pixel.first + 40, center_pixel.second - 40);
+
+    std::vector<std::pair<Pixel, T>> ellipse_kernels;
 
     int count = 0;
     for (int iz = dl.second; iz < ur.second; ++iz) {
       for (int iy = ur.first; iy < dl.first; ++iy) {
 
         Point pp = pixel_center(iy, iz);
-        if (in_ellipse(A, B, C, _sin, _cos, ellipse_center, pp)) {
+        if (in_ellipse(A, B, C, ellipse_center, pp)) {
 
           pp.first -= ellipse_center.first;
           pp.second -= ellipse_center.second;
@@ -280,25 +294,7 @@ template <typename T = double> class Reconstruction {
       }
     }
 
-    if (acc == 0) {
-      for (int iz = dl.second; iz < ur.second; ++iz) {
-        for (int iy = ur.first; iy < dl.first; ++iy) {
 
-          Point pp = pixel_center(iy, iz);
-
-          if (in_ellipse(A, B, C, _sin, _cos, ellipse_center, pp)) {
-
-            T event_kernel = kernel(y, angle, pp, 1);
-
-            std::cout << "kernel=" << event_kernel
-                      << " sens=" << sensitivity(pp.first, pp.second)
-                      << " rho=" << rho[iy][iz] << " y=" << y
-                      << " angle=" << angle << " py=" << pp.first
-                      << " pz=" << pp.second << std::endl;
-          }
-        }
-      }
-    }
 
     acc_log.push_back(acc);
 
@@ -313,14 +309,12 @@ template <typename T = double> class Reconstruction {
   }
 
   bool
-  in_ellipse(T& A, T& B, T& C, T _sin, T _cos, Point ellipse_center, Point p) {
+  in_ellipse(T& A, T& B, T& C,Point ellipse_center, Point p) {
 
     T dy = (p.first - ellipse_center.first);
     T dz = (p.second - ellipse_center.second);
-    T d1 = (_cos * dz + _sin * dy);
-    T d2 = (_sin * dz - _cos * dy);
 
-    return (((A * (d2 * d2)) + (B * d1 * d2) + (C * (d1 * d1)))) <= T(1)
+    return (((A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)))) <= T(9.0)
                ? true
                : false;
   }
