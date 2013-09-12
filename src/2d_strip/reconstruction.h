@@ -179,6 +179,8 @@ template <typename T = double> class Reconstruction {
 
     for (int i = 0; i < iteration; i++) {
 
+      //  rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
+
       std::cout << "ITERATION: " << i << std::endl;
       for (auto& event : event_list) {
 
