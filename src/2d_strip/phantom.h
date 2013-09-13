@@ -111,6 +111,8 @@ template <typename T = double> class Phantom {
                 << el.angle << std::endl;
 
       std::uniform_real_distribution<T> uniform_dist(0, 1);
+      std::uniform_real_distribution<T> uniform_angle(-1, 1);
+
       std::uniform_real_distribution<T> uniform_y(el.y - max, el.y + max);
       std::uniform_real_distribution<T> uniform_z(el.x - max, el.x + max);
       std::normal_distribution<T> normal_dist_dz(0, sigma_z);
@@ -140,9 +142,9 @@ template <typename T = double> class Phantom {
 
         ry = uniform_y(rng_list[omp_get_thread_num()]);
         rz = uniform_z(rng_list[omp_get_thread_num()]);
-        rangle = (M_PI_4) * uniform_dist(rng_list[omp_get_thread_num()]);
+        rangle = (M_PI_4) * uniform_angle(rng_list[omp_get_thread_num()]);
 
-        if (in(ry, rz, el)) {
+        if (in(ry, rz, el) && (std::abs(rangle) != M_PI_2)) {
 
           z_u = rz + (R_distance - ry) * tan(rangle);
           z_d = rz - (R_distance + ry) * tan(rangle);
