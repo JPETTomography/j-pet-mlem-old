@@ -8,6 +8,13 @@
 #include "flags.h"
 #include "event.h"
 
+#if OMP
+#include <omp.h>
+#else
+#define omp_get_max_threads() 1
+#define omp_get_thread_num() 0
+#endif
+
 using std::fpclassify;
 
 template <typename T = double> class Reconstruction {
@@ -37,8 +44,8 @@ template <typename T = double> class Reconstruction {
   T sqrt_det_correlation_matrix;
   std::vector<std::vector<T>> rho;
   std::vector<std::vector<T>> rho_temp;
-  std::vector<T> temp_kernels;
   std::vector<T> acc_log;
+  std::vector<std::vector<T>> thread_rho;
 
  public:
   Reconstruction(int iteration,
@@ -177,33 +184,56 @@ template <typename T = double> class Reconstruction {
 
   void operator()() {
 
+    T tan, y, z, angle;
+    Point ellipse_center;
+    Pixel pp;
+    int tid;
+
+    std::cout << "Number of threads: " << omp_get_max_threads() << std::endl;
+
     for (int i = 0; i < iteration; i++) {
 
-      rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
+      thread_rho.assign(omp_get_max_threads(),
+                        std::vector<T>(n_pixels * n_pixels, T(0)));
 
       std::cout << "ITERATION: " << i << std::endl;
-      for (auto& event : event_list) {
 
-        T tan = event_tan(event.z_u, event.z_d);
-        T y = event_y(event.dl, tan);
-        T z = event_z(event.z_u, event.z_d, y, tan);
+      int size = event_list.size();
 
-        T angle = std::atan(tan);
-
-        Point ellipse_center = Point(y, z);
-
-        Pixel pp = pixel_location(y, z);
-
-#if NO_GAUSS
-
-        rho_temp[pp.first][pp.second] += T(1000);
-
+#if OMP
+#pragma omp parallel for schedule(dynamic) private( \
+    tan, y, z, angle, ellipse_center, pp, tid)
 #endif
+      for (int id = 0; id < size; ++id) {
 
-        bb_pixel_updates(ellipse_center, angle, y);
+        tid = omp_get_thread_num();
+
+        tan = event_tan(event_list[id].z_u, event_list[id].z_d);
+        y = event_y(event_list[id].dl, tan);
+        z = event_z(event_list[id].z_u, event_list[id].z_d, y, tan);
+
+        angle = std::atan(tan);
+
+        ellipse_center = Point(y, z);
+
+        pp = pixel_location(y, z);
+
+        bb_pixel_updates(ellipse_center, angle, y, tan, tid);
       }
 
-      rho = rho_temp;
+      rho.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
+
+      for (int i = 0; i < n_pixels; ++i) {
+        for (int j = 0; j < n_pixels; ++j) {
+
+          for (int k = 0; k < omp_get_max_threads(); ++k) {
+
+            rho[i][j] += thread_rho[k][i + j * n_pixels];
+          }
+        }
+      }
+
+      // rho = rho_temp;
 
       // output reconstruction PNG
 
@@ -251,14 +281,15 @@ template <typename T = double> class Reconstruction {
     }
   }
 
-  void bb_pixel_updates(Point ellipse_center, T angle, T y) {
+  void bb_pixel_updates(Point& ellipse_center,
+                        T& angle,
+                        T& y,
+                        T& tg,
+                        int& tid) {
 
     T acc = T(0.0);
 
-    T _sin = std::sin((angle));
     T _cos = std::cos((angle));
-
-    T tg = _sin / _cos;
 
     T A = (((T(4.0) / (_cos * _cos)) / pow_sigma_dl) +
            (T(2.0) * tg * tg / pow_sigma_z));
@@ -266,34 +297,29 @@ template <typename T = double> class Reconstruction {
     T C = T(2.0) / pow_sigma_z;
     T B_2 = (B / T(2.0)) * (B / T(2.0));
 
-    T bb_y = T(3.0) / sqrt(C - (B_2 / A));
-    T bb_z = T(3.0) / sqrt((A - (B_2 / C)));
+    T bb_z = T(3.0) / std::sqrt(C - (B_2 / A));
+    T bb_y = T(3.0) / std::sqrt((A - (B_2 / C)));
 
-    // std::cout << "A: " << A << " B " << B << " C: " << C << std::endl;
-    /*       std::cout << "first: " << (C - (B*B/A)) << " second: " << (A -
-        (B*B/C)) << std::endl;
-         // << std::endl;
-           std::cout << (B * B / A) << " " << (B * B / C) << std::endl;
-     */
-    // std::cout << bb_y << " " << bb_z << std::endl;
+    // std::cout << "A: " << A << " B: " << B << " C: " << C << std::endl;
 
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);
 
-    Pixel ur = Pixel(center_pixel.first - bb_y, center_pixel.second + bb_z);
-    Pixel dl = Pixel(center_pixel.first + bb_y, center_pixel.second - bb_z);
+    Pixel ur = Pixel(center_pixel.first - pixels_in_line(bb_y),
+                     center_pixel.second + pixels_in_line(bb_z));
+    Pixel dl = Pixel(center_pixel.first + pixels_in_line(bb_y),
+                     center_pixel.second - pixels_in_line(bb_z));
 
     std::vector<std::pair<Pixel, T>> ellipse_kernels;
 
-    // Point pp = pixel_center(ur.first, dl.second);
+    Point pp = pixel_center(ur.first, dl.second);
 
     int count = 0;
+
     for (int iz = dl.second; iz < ur.second; ++iz) {
       for (int iy = ur.first; iy < dl.first; ++iy) {
 
         Point pp = pixel_center(iy, iz);
-
-        // std::cout << std::get<1>(pp) << std::endl;
 
         if (in_ellipse(A, B, C, ellipse_center, pp)) {
 
@@ -310,18 +336,17 @@ template <typename T = double> class Reconstruction {
 
         // std::get<0>(pp)+=pixel_size;
       }
+      // std::get<0>(pp)=ur.first;
       // std::get<1>(pp)+=pixel_size;
     }
 
-    acc_log.push_back(acc);
-
     for (auto& e : ellipse_kernels) {
 
-      rho_temp[e.first.first][e.first.second] +=
+      // rho_temp[e.first.first][e.first.second] +=
+      //    e.second * rho[e.first.first][e.first.second] / acc;
+
+      thread_rho[tid][e.first.first + (e.first.second * n_pixels)] +=
           e.second * rho[e.first.first][e.first.second] / acc;
-      if (acc == T(0)) {
-        std::cout << rho_temp[e.first.first][e.first.second] << std::endl;
-      }
     }
   }
 
@@ -356,6 +381,11 @@ template <typename T = double> class Reconstruction {
 
     return Point((R_distance - (y + T(0.5)) * pixel_size),
                  (z + T(0.5)) * pixel_size - R_distance);
+  }
+
+  int pixels_in_line(T& length) {
+    T d = length / pixel_size;
+    return (d > 0) ? int(d) : int(d + 1);
   }
 
   template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
