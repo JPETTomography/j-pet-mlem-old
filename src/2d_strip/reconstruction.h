@@ -27,17 +27,14 @@ template <typename T = double> class Reconstruction {
   static constexpr const T INVERSE_POW_TWO_PI = T(1.0 / (2.0 * M_PI * M_PI));
 
   int iteration;
+  int n_pixels;
   T R_distance;
   T Scentilator_length;
-  int n_pixels;
   T pixel_size;
-  T sigma_z;
-  T sigma_dl;
-  T pow_sigma_z;
-  T pow_sigma_dl;
-  int m_pixel;
-  T epsilon_distance;
-  T half_pixel;
+  T sigma_z, sigma_dl;
+  T pow_sigma_z, pow_sigma_dl;
+  T inv_pow_sigma_z;
+  T inv_pow_sigma_dl;
 
   std::vector<event<T>> event_list;
   std::vector<std::vector<T>> inverse_correlation_matrix;
@@ -67,9 +64,6 @@ template <typename T = double> class Reconstruction {
     rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(10)));
     pow_sigma_z = sigma_z * sigma_z;
     pow_sigma_dl = sigma_dl * sigma_dl;
-    m_pixel = (R_distance / pixel_size);
-    epsilon_distance = pixel_size - T(0.000001);
-    half_pixel = pixel_size / T(2.0);
 
     inverse_correlation_matrix.resize(3, std::vector<T>(3, T()));
 
@@ -88,31 +82,17 @@ template <typename T = double> class Reconstruction {
     sqrt_det_correlation_matrix = std::sqrt(inverse_correlation_matrix[0][0] *
                                             inverse_correlation_matrix[1][1] *
                                             inverse_correlation_matrix[2][2]);
+
+    inv_pow_sigma_z = T(1.0) / pow_sigma_z;
+    inv_pow_sigma_dl = T(1.0) / pow_sigma_dl;
   }
-  /*
-    T multiply_elements(std::vector<T> &vec_a, std::vector<T> &vec_b) {
 
-      std::vector<T> a(vec_a.size(), T(0));
+  T multiply_elements(T* vec_a, T* vec_b) {
 
-      float output = 0.f;
-    T inv_cos = T(1) / std::cos(angle);
-      // add AVX
-      for (unsigned i = 0; i < vec_a.size(); ++i) {
-        for (unsigned j = 0; j < vec_b.size(); j++) {
-          a[i] += vec_a[j] * inverse_correlation_matrix[j][i];
-        }
-        output += a[i] * vec_b[i];
-      }
+    T a[3] = { T(), T(), T() };
 
-      return output;
-    }
-  */
-
-  T multiply_elements(std::vector<T>& vec_a, std::vector<T>& vec_b) {
-
-    std::vector<T> a(vec_a.size(), T(0));
-
-    float output = 0.f;
+    T output = 0.f;
+#pragma unroll(4)
     for (unsigned i = 0; i < 3; ++i) {
       a[i] += vec_a[i] * inverse_correlation_matrix[i][i];
       output += a[i] * vec_b[i];
@@ -121,18 +101,36 @@ template <typename T = double> class Reconstruction {
     return output;
   }
 
-  T kernel(T y, T angle, Point pixel_center, bool debug = false) {
+  T kernel(T& y,
+           T& angle,
+           T& _tan,
+           Point& pixel_center,
+           T* vec_o,
+           T* vec_a,
+           T* vec_b) {
 
-    // std::cout << "INSIDE: " << y << " "  << z << " " << angle << " "  <<
-    // pixel_center.first << " "  << pixel_center.second << std::endl;
-
-    T _tan = std::tan(angle);
-    T inv_cos = T(1) / std::cos(angle);
+    T inv_cos = T(1.0) / std::cos(angle);
     T pow_inv_cos = inv_cos * inv_cos;
 
-    std::vector<T> vec_o(3, T());
-    std::vector<T> vec_a(3, T());
-    std::vector<T> vec_b(3, T());
+    //    std::vector<T> vec_o(3, T());
+    //    std::vector<T> vec_a(3, T());
+    //    std::vector<T> vec_b(3, T());
+
+    //    __m128 vec_o = _mm_set1_ps(
+    //        -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos,
+    //        -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos,
+    //        -(pixel_center.first + y) * inv_cos * (T(1) + T(2) * (_tan *
+    // _tan)),
+    //        0.f);
+
+    //    __m128 vec_a = _mm_set_ps( -(pixel_center.first + y - R_distance) *
+    // _tan * pow_inv_cos,-(pixel_center.first + y + R_distance) * _tan *
+    // pow_inv_cos,-(pixel_center.first + y) * inv_cos * (T(1.0f) + T(2.0f) *
+    // (_tan * _tan)),0.f);
+
+    //    __m128 vec_b = _mm_set_ps(pixel_center.second - (pixel_center.first *
+    // _tan), -(pixel_center.first + y + R_distance) * pow_inv_cos, -T(2) *
+    // (pixel_center.first + y) * (inv_cos * _tan),0.f);
 
     vec_o[0] = -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos;
     vec_o[1] = -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos;
@@ -155,16 +153,12 @@ template <typename T = double> class Reconstruction {
     T norm = a_ic_a + (T(2) * o_ic_b);
 
     T element_before_exp = INVERSE_POW_TWO_PI *
-                           (sqrt_det_correlation_matrix / std::sqrt(norm)) *
+                           (sqrt_det_correlation_matrix * InvSqrt(norm)) *
                            sensitivity(pixel_center.first, pixel_center.second);
 
     T exp_element = -T(0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
     T _exp = std::exp(exp_element);
-
-    if (debug)
-      std::cerr << "bele=" << element_before_exp << " expel=" << exp_element
-                << " exp=" << _exp << std::endl;
 
     return (element_before_exp * _exp) /
            sensitivity(pixel_center.first, pixel_center.second);
@@ -233,8 +227,6 @@ template <typename T = double> class Reconstruction {
         }
       }
 
-      // rho = rho_temp;
-
       // output reconstruction PNG
 
       std::string file = std::string("rec_iteration_");
@@ -281,26 +273,39 @@ template <typename T = double> class Reconstruction {
     }
   }
 
+  // fast version on floats for GPU and maybe CPU, praise Carmack
+  float InvSqrt(float x) {
+    float xhalf = 0.5f * x;
+    int i = *(int*)&x;          // get bits for floating value
+    i = 0x5f375a86 - (i >> 1);  // gives initial guess y0
+    x = *(float*)&i;            // convert bits back to float
+    x = x *
+        (1.5f - xhalf * x * x);  // Newton step, repeating increases accuracy
+    return x;
+  }
+
   void bb_pixel_updates(Point& ellipse_center,
                         T& angle,
                         T& y,
                         T& tg,
                         int& tid) {
 
+    T vec_o[3] = { T(), T(), T() };
+    T vec_a[3] = { T(), T(), T() };
+    T vec_b[3] = { T(), T(), T() };
+
     T acc = T(0.0);
 
     T _cos = std::cos((angle));
 
-    T A = (((T(4.0) / (_cos * _cos)) / pow_sigma_dl) +
-           (T(2.0) * tg * tg / pow_sigma_z));
-    T B = -T(4.0) * tg / pow_sigma_z;
-    T C = T(2.0) / pow_sigma_z;
+    T A = (((T(4.0) / (_cos * _cos)) * inv_pow_sigma_dl) +
+           (T(2.0) * tg * tg * inv_pow_sigma_z));
+    T B = -T(4.0) * tg * inv_pow_sigma_z;
+    T C = T(2.0) * inv_pow_sigma_z;
     T B_2 = (B / T(2.0)) * (B / T(2.0));
 
-    T bb_z = T(3.0) / std::sqrt(C - (B_2 / A));
-    T bb_y = T(3.0) / std::sqrt((A - (B_2 / C)));
-
-    // std::cout << "A: " << A << " B: " << B << " C: " << C << std::endl;
+    T bb_z = T(3.0) * InvSqrt(C - (B_2 / A));
+    T bb_y = T(3.0) * InvSqrt((A - (B_2 / C)));
 
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);
@@ -326,7 +331,7 @@ template <typename T = double> class Reconstruction {
           pp.first -= ellipse_center.first;
           pp.second -= ellipse_center.second;
 
-          T event_kernel = kernel(y, angle, pp);
+          T event_kernel = kernel(y, angle, tg, pp, vec_o, vec_a, vec_b);
 
           ellipse_kernels.push_back(
               std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
@@ -364,7 +369,7 @@ template <typename T = double> class Reconstruction {
     return (z_u - z_d) / (T(2) * R_distance);
   }
   T event_y(T& dl, T& tan_event) const {
-    return -T(0.5) * (dl / sqrt(T(1) + (tan_event * tan_event)));
+    return -T(0.5) * (dl / std::sqrt(T(1) + (tan_event * tan_event)));
   }
   T event_z(T& z_u, T& z_d, T& y, T& tan_event) const {
     return T(0.5) * (z_u + z_d + (T(2) * y * tan_event));
@@ -372,6 +377,7 @@ template <typename T = double> class Reconstruction {
 
   // coord Plane
   Pixel pixel_location(T y, T z) {
+
     return Pixel(std::floor((R_distance - y) / pixel_size),
                  std::floor((R_distance + z) / pixel_size));
   }
@@ -430,44 +436,6 @@ template <typename T = double> class Reconstruction {
   friend StreamType& operator>>(StreamType& in, Reconstruction& r) {
     r << in;
     return in;
-  }
-
-  void test() {
-    /*
-          Point ellipse_center = Point(-19.8911,-109.594);
-
-          Pixel p = pixel_location(ellipse_center.first,ellipse_center.second);
-
-          std::cout << p.first << " " << p.second << std::endl;
-
-       T angle = 0.192728;
-       T _sin = std::sin(angle);
-       T _cos = std::cos(angle);
-
-
-
-       Point k = pixel_center(p.first,p.second);
-       std::cout << "srodek: " << k.first << " " << k.second << std::endl;
-
-
-       std::cout << "ELIPSA:" << in_ellipse(_sin, _cos, ellipse_center,
-       Point(ellipse_center.first, ellipse_center.second)) << std::endl;
-
-       bb_pixel_updates(ellipse_center,angle,ellipse_center.first,ellipse_center.second);
-
-       std::cout << "PIXEL:" << p.first << " " << p.second << std::endl;
-       std::cout << "KERNEL: " <<
-       kernel(ellipse_center.first,ellipse_center.second,angle,pixel_center(104,78))
-       << std::endl;
-    */
-
-    // bb_pixel_updates(ellipse_center,angle,ellipse_center.first,ellipse_center.second);
-
-    std::cout << "---------------------------------------------" << std::endl;
-
-    Point pp = Point(0, 0);
-
-    Pixel p = pixel_location(pp.first, pp.second);
   }
 };
 

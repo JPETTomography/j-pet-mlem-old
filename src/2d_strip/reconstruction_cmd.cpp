@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
     cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
     cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
-    cl.add<int>("iter", 'i', "number of iterations", false, 10);
+    cl.add<int>("iter", 'i', "number of iterations", false, 1);
     cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
     cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
     cl.add<float>("gm", 'g', "Gamma error", false, 0.f);
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
                          Scentilator_length,
                          sigma,
                          dl);
-    int n_threads = 4;
+    int n_threads = cl.get<int>("n-threads");
 
     test.emit_event(n_threads);
 
@@ -101,8 +101,16 @@ int main(int argc, char* argv[]) {
                                           sigma,
                                           dl);
     ibstream in("test.bin");
+
     in >> reconstruction;
+
+    clock_t begin = clock();
+
     reconstruction();
+
+    clock_t end = clock();
+
+    std::cout << "Time:" << double(end - begin) / CLOCKS_PER_SEC/4 << std::endl;
   }
   catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
