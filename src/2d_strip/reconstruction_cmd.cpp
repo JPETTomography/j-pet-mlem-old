@@ -110,7 +110,8 @@ int main(int argc, char* argv[]) {
 
     clock_t end = clock();
 
-    std::cout << "Time:" << double(end - begin) / CLOCKS_PER_SEC/4 << std::endl;
+    std::cout << "Time:" << double(end - begin) / CLOCKS_PER_SEC / 4
+              << std::endl;
   }
   catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;

@@ -27,9 +27,9 @@ template <typename T = double> class Reconstruction {
   static constexpr const T INVERSE_POW_TWO_PI = T(1.0 / (2.0 * M_PI * M_PI));
 
   int iteration;
-  int n_pixels;
   T R_distance;
   T Scentilator_length;
+  int n_pixels;
   T pixel_size;
   T sigma_z, sigma_dl;
   T pow_sigma_z, pow_sigma_dl;
@@ -92,7 +92,7 @@ template <typename T = double> class Reconstruction {
     T a[3] = { T(), T(), T() };
 
     T output = 0.f;
-#pragma unroll(4)
+    //#pragma unroll(4)
     for (unsigned i = 0; i < 3; ++i) {
       a[i] += vec_a[i] * inverse_correlation_matrix[i][i];
       output += a[i] * vec_b[i];
@@ -153,7 +153,7 @@ template <typename T = double> class Reconstruction {
     T norm = a_ic_a + (T(2) * o_ic_b);
 
     T element_before_exp = INVERSE_POW_TWO_PI *
-                           (sqrt_det_correlation_matrix * InvSqrt(norm)) *
+                           (sqrt_det_correlation_matrix / std::sqrt(norm)) *
                            sensitivity(pixel_center.first, pixel_center.second);
 
     T exp_element = -T(0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
@@ -274,16 +274,17 @@ template <typename T = double> class Reconstruction {
   }
 
   // fast version on floats for GPU and maybe CPU, praise Carmack
-  float InvSqrt(float x) {
-    float xhalf = 0.5f * x;
-    int i = *(int*)&x;          // get bits for floating value
-    i = 0x5f375a86 - (i >> 1);  // gives initial guess y0
-    x = *(float*)&i;            // convert bits back to float
-    x = x *
-        (1.5f - xhalf * x * x);  // Newton step, repeating increases accuracy
-    return x;
-  }
-
+  /*
+    float InvSqrt(float x) {
+      float xhalf = 0.5f * x;
+      int i = *(int*)&x;          // get bits for floating value
+      i = 0x5f375a86 - (i >> 1);  // gives initial guess y0
+      x = *(float*)&i;            // convert bits back to float
+      x = x *
+          (1.5f - xhalf * x * x);  // Newton step, repeating increases accuracy
+      return x;
+    }
+  */
   void bb_pixel_updates(Point& ellipse_center,
                         T& angle,
                         T& y,
@@ -304,8 +305,11 @@ template <typename T = double> class Reconstruction {
     T C = T(2.0) * inv_pow_sigma_z;
     T B_2 = (B / T(2.0)) * (B / T(2.0));
 
-    T bb_z = T(3.0) * InvSqrt(C - (B_2 / A));
-    T bb_y = T(3.0) * InvSqrt((A - (B_2 / C)));
+    // T bb_z = T(3.0) * InvSqrt(C - (B_2 / A))
+    T bb_z = T(3.0) / std::sqrt(C - (B_2 / A));
+
+    // T bb_y = T(3.0) * InvSqrt((A - (B_2 / C)));
+    T bb_y = T(3.0) / std::sqrt(A - (B_2 / C));
 
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);
