@@ -61,17 +61,26 @@ int main(int argc, char* argv[]) {
     std::vector<ellipse_parameters<double>> ellipse_list;
     ellipse_parameters<double> el;
 
-    el.x = -50.0f;
-    el.y = -50.0f;
-    el.a = 80.0f;
-    el.b = 160.0f;
-    el.angle = 45.0;
+    el.x = 0.0f;
+    el.y = 0.0f;
+    el.a = 120.0f;
+    el.b = 240.0f;
+    el.angle = 0.0;
     el.iter = emmisions;
 
     ellipse_list.push_back(el);
 
-    el.x = -50.0f;
+    el.x = 50.0f;
     el.y = -50.0f;
+    el.a = 30.0f;
+    el.b = 50.0f;
+    el.angle = 340.0;
+    el.iter = 200000;
+
+    ellipse_list.push_back(el);
+/*
+    el.x = -30.0f;
+    el.y = -30.0f;
     el.a = 30.0f;
     el.b = 50.0f;
     el.angle = 45.0;
@@ -79,6 +88,15 @@ int main(int argc, char* argv[]) {
 
     ellipse_list.push_back(el);
 
+    el.x = 0.0f;
+    el.y = 40.0f;
+    el.a = 30.0f;
+    el.b = 50.0f;
+    el.angle = 0.f;
+    el.iter = 400000;
+
+    ellipse_list.push_back(el);
+*/
     Phantom<double> test(ellipse_list,
                          n_pixels,
                          pixel_size,

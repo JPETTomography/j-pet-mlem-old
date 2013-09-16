@@ -8,6 +8,22 @@
 #include "flags.h"
 #include "event.h"
 
+#if _AVX
+
+// SSE 4.1
+
+#include <smmintrin.h>
+
+#endif
+
+// AVX2
+
+#if _AVX
+
+#include <immintrin.h>
+
+#endif
+
 #if OMP
 #include <omp.h>
 #else
@@ -23,6 +39,7 @@ template <typename T = double> class Reconstruction {
   typedef std::pair<T, T> Point;
 
  private:
+  static constexpr const int dp_pd_mask = 0x31;
   static constexpr const T INVERSE_PI = T(1.0 / M_PI);
   static constexpr const T INVERSE_POW_TWO_PI = T(1.0 / (2.0 * M_PI * M_PI));
 
@@ -37,7 +54,7 @@ template <typename T = double> class Reconstruction {
   T inv_pow_sigma_dl;
 
   std::vector<event<T>> event_list;
-  std::vector<std::vector<T>> inverse_correlation_matrix;
+  std::vector<std::vector<double>> inverse_correlation_matrix;
   T sqrt_det_correlation_matrix;
   std::vector<std::vector<T>> rho;
   std::vector<std::vector<T>> rho_temp;
@@ -89,48 +106,84 @@ template <typename T = double> class Reconstruction {
 
   T multiply_elements(T* vec_a, T* vec_b) {
 
-    T a[3] = { T(), T(), T() };
-
-    T output = 0.f;
+    T output = T(1.0);
     //#pragma unroll(4)
+    /*
     for (unsigned i = 0; i < 3; ++i) {
-      a[i] += vec_a[i] * inverse_correlation_matrix[i][i];
-      output += a[i] * vec_b[i];
+      //a[i] += vec_a[i] * inverse_correlation_matrix[i][i];
+      output += vec_a[i] * inverse_correlation_matrix[i][i] * vec_b[i];
     }
+    */
+    output += vec_a[0] * inverse_correlation_matrix[0][0] * vec_b[0];
+    output += vec_a[1] * inverse_correlation_matrix[1][1] * vec_b[1];
+    output += vec_a[2] * inverse_correlation_matrix[2][2] * vec_b[2];
 
     return output;
   }
 
-  T kernel(T& y,
-           T& angle,
-           T& _tan,
-           Point& pixel_center,
-           T* vec_o,
-           T* vec_a,
-           T* vec_b) {
+  T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
 
-    T inv_cos = T(1.0) / std::cos(angle);
-    T pow_inv_cos = inv_cos * inv_cos;
+#if _AVX
+    __m256d vec_o = _mm256_set_pd(
+        -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos,
+        -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos,
+        -(pixel_center.first + y) * inv_cos * (T(1) + T(2) * (_tan * _tan)),
+        0.f);
 
-    //    std::vector<T> vec_o(3, T());
-    //    std::vector<T> vec_a(3, T());
-    //    std::vector<T> vec_b(3, T());
+    __m256d vec_a = _mm256_set_pd(
+        -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos,
+        -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos,
+        -(pixel_center.first + y) * inv_cos *
+            (T(1.0f) + T(2.0f) * (_tan * _tan)),
+        0.f);
 
-    //    __m128 vec_o = _mm_set1_ps(
-    //        -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos,
-    //        -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos,
-    //        -(pixel_center.first + y) * inv_cos * (T(1) + T(2) * (_tan *
-    // _tan)),
-    //        0.f);
+    __m256d vec_b =
+        _mm256_set_pd(pixel_center.second - (pixel_center.first * _tan),
+                      -(pixel_center.first + y + R_distance) * pow_inv_cos,
+                      -T(2) * (pixel_center.first + y) * (inv_cos * _tan),
+                      0.f);
 
-    //    __m128 vec_a = _mm_set_ps( -(pixel_center.first + y - R_distance) *
-    // _tan * pow_inv_cos,-(pixel_center.first + y + R_distance) * _tan *
-    // pow_inv_cos,-(pixel_center.first + y) * inv_cos * (T(1.0f) + T(2.0f) *
-    // (_tan * _tan)),0.f);
+    __m256d icm = _mm256_set_pd(inverse_correlation_matrix[0][0],
+                                inverse_correlation_matrix[1][1],
+                                inverse_correlation_matrix[2][2],
+                                double(0));
 
-    //    __m128 vec_b = _mm_set_ps(pixel_center.second - (pixel_center.first *
-    // _tan), -(pixel_center.first + y + R_distance) * pow_inv_cos, -T(2) *
-    // (pixel_center.first + y) * (inv_cos * _tan),0.f);
+    __m256d temp_vec = _mm256_mul_pd(vec_a, icm);
+    __m256d xy = _mm256_mul_pd(temp_vec, vec_a);
+    __m256d temp = _mm256_hadd_pd(xy, xy);
+    __m128d hi128 = _mm256_extractf128_pd(temp, 1);
+    __m128d dotproduct = _mm_add_pd((__m128d)temp, hi128);
+
+    T a_ic_a = dotproduct.m128d_f64[0];
+
+    temp_vec = _mm256_mul_pd(vec_b, icm);
+    xy = _mm256_mul_pd(temp_vec, vec_a);
+    temp = _mm256_hadd_pd(xy, xy);
+    hi128 = _mm256_extractf128_pd(temp, 1);
+    dotproduct = _mm_add_pd((__m128d)temp, hi128);
+
+    T b_ic_a = dotproduct.m128d_f64[0];
+
+    temp_vec = _mm256_mul_pd(vec_b, icm);
+    xy = _mm256_mul_pd(temp_vec, vec_b);
+    temp = _mm256_hadd_pd(xy, xy);
+    hi128 = _mm256_extractf128_pd(temp, 1);
+    dotproduct = _mm_add_pd((__m128d)temp, hi128);
+
+    T b_ic_b = dotproduct.m128d_f64[0];
+
+    temp_vec = _mm256_mul_pd(vec_o, icm);
+    xy = _mm256_mul_pd(temp_vec, vec_b);
+    temp = _mm256_hadd_pd(xy, xy);
+    hi128 = _mm256_extractf128_pd(temp, 1);
+    dotproduct = _mm_add_pd((__m128d)temp, hi128);
+
+    T o_ic_b = dotproduct.m128d_f64[0];
+#endif
+
+    T vec_o[3];
+    T vec_a[3];
+    T vec_b[3];
 
     vec_o[0] = -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos;
     vec_o[1] = -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos;
@@ -217,10 +270,10 @@ template <typename T = double> class Reconstruction {
 
       rho.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
 
-      for (int i = 0; i < n_pixels; ++i) {
-        for (int j = 0; j < n_pixels; ++j) {
+      for (size_t i = 0; i < n_pixels; ++i) {
+        for (size_t j = 0; j < n_pixels; ++j) {
 
-          for (int k = 0; k < omp_get_max_threads(); ++k) {
+          for (size_t k = 0; k < omp_get_max_threads(); ++k) {
 
             rho[i][j] += thread_rho[k][i + j * n_pixels];
           }
@@ -291,13 +344,12 @@ template <typename T = double> class Reconstruction {
                         T& tg,
                         int& tid) {
 
-    T vec_o[3] = { T(), T(), T() };
-    T vec_a[3] = { T(), T(), T() };
-    T vec_b[3] = { T(), T(), T() };
-
     T acc = T(0.0);
 
     T _cos = std::cos((angle));
+
+    T inv_cos = T(1.0) / _cos;
+    T pow_inv_cos = inv_cos * inv_cos;
 
     T A = (((T(4.0) / (_cos * _cos)) * inv_pow_sigma_dl) +
            (T(2.0) * tg * tg * inv_pow_sigma_z));
@@ -335,18 +387,14 @@ template <typename T = double> class Reconstruction {
           pp.first -= ellipse_center.first;
           pp.second -= ellipse_center.second;
 
-          T event_kernel = kernel(y, angle, tg, pp, vec_o, vec_a, vec_b);
+          T event_kernel = kernel(y, tg, inv_cos, pow_inv_cos, pp);
 
           ellipse_kernels.push_back(
               std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
           acc += event_kernel * sensitivity(pp.first, pp.second) * rho[iy][iz];
           count++;
         }
-
-        // std::get<0>(pp)+=pixel_size;
       }
-      // std::get<0>(pp)=ur.first;
-      // std::get<1>(pp)+=pixel_size;
     }
 
     for (auto& e : ellipse_kernels) {
