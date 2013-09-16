@@ -30,8 +30,6 @@ TEST_CASE("kernel tests", "kernel") {
 
 
 Reconstruction<double> reconstructor(1,500,1000,200,5,10,63);
-Reconstruction<double>::Point  from_center_1(0,0);
-
 
 check(1.1372205719261035e-7,
         0.0,
@@ -57,6 +55,12 @@ check(5.5729829923449995e-8,
         100.0,
         45.0 * degree,
         -20.0,7.0,
+        reconstructor);
+
+ check(7.993589560016591e-8,
+        -10.0,
+        -13.0 * degree,
+        -2.0,-5.0,
         reconstructor);
 
 }
