@@ -123,63 +123,7 @@ public:
 
   T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
 
-#if _AVX
-    __m256d vec_o = _mm256_set_pd(
-        -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos,
-        -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos,
-        -(pixel_center.first + y) * inv_cos * (T(1) + T(2) * (_tan * _tan)),
-        0.f);
-
-    __m256d vec_a = _mm256_set_pd(
-        -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos,
-        -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos,
-        -(pixel_center.first + y) * inv_cos *
-            (T(1.0f) + T(2.0f) * (_tan * _tan)),
-        0.f);
-
-    __m256d vec_b =
-        _mm256_set_pd(pixel_center.second - (pixel_center.first * _tan),
-                      -(pixel_center.first + y + R_distance) * pow_inv_cos,
-                      -T(2) * (pixel_center.first + y) * (inv_cos * _tan),
-                      0.f);
-
-    __m256d icm = _mm256_set_pd(inverse_correlation_matrix[0][0],
-                                inverse_correlation_matrix[1][1],
-                                inverse_correlation_matrix[2][2],
-                                double(0));
-
-    __m256d temp_vec = _mm256_mul_pd(vec_a, icm);
-    __m256d xy = _mm256_mul_pd(temp_vec, vec_a);
-    __m256d temp = _mm256_hadd_pd(xy, xy);
-    __m128d hi128 = _mm256_extractf128_pd(temp, 1);
-    __m128d dotproduct = _mm_add_pd((__m128d)temp, hi128);
-
-    T a_ic_a = dotproduct.m128d_f64[0];
-
-    temp_vec = _mm256_mul_pd(vec_b, icm);
-    xy = _mm256_mul_pd(temp_vec, vec_a);
-    temp = _mm256_hadd_pd(xy, xy);
-    hi128 = _mm256_extractf128_pd(temp, 1);
-    dotproduct = _mm_add_pd((__m128d)temp, hi128);
-
-    T b_ic_a = dotproduct.m128d_f64[0];
-
-    temp_vec = _mm256_mul_pd(vec_b, icm);
-    xy = _mm256_mul_pd(temp_vec, vec_b);
-    temp = _mm256_hadd_pd(xy, xy);
-    hi128 = _mm256_extractf128_pd(temp, 1);
-    dotproduct = _mm_add_pd((__m128d)temp, hi128);
-
-    T b_ic_b = dotproduct.m128d_f64[0];
-
-    temp_vec = _mm256_mul_pd(vec_o, icm);
-    xy = _mm256_mul_pd(temp_vec, vec_b);
-    temp = _mm256_hadd_pd(xy, xy);
-    hi128 = _mm256_extractf128_pd(temp, 1);
-    dotproduct = _mm_add_pd((__m128d)temp, hi128);
-
-    T o_ic_b = dotproduct.m128d_f64[0];
-#endif
+    
 
     T vec_o[3];
     T vec_a[3];
