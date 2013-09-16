@@ -186,8 +186,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
     for (S p = 0; p < total_n_pixels_; ++p) {
       if (scale_[p] > 0) {
-        rho_[p] = rho_detected_[p];
-        // FIXME: adjusting with * scale_[p] does not bring anything good!!
+        rho_[p] = rho_detected_[p] * scale_[p];
       }
     }
 
