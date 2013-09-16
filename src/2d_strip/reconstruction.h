@@ -111,6 +111,7 @@ public:
 
   T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
 
+
 // right now, working only on floats, no _mm256_dp_pd
 #if _AVX2
 
