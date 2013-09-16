@@ -34,7 +34,7 @@
 using std::fpclassify;
 
 template <typename T = double> class Reconstruction {
-
+public:
   typedef std::pair<int, int> Pixel;
   typedef std::pair<T, T> Point;
 
@@ -106,7 +106,7 @@ template <typename T = double> class Reconstruction {
 
   T multiply_elements(T* vec_a, T* vec_b) {
 
-    T output = T(1.0);
+    T output = T(0.0);
     //#pragma unroll(4)
     /*
     for (unsigned i = 0; i < 3; ++i) {
