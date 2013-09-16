@@ -8,18 +8,9 @@
 #include "flags.h"
 #include "event.h"
 
-#if _AVX
-
-// SSE 4.1
+#if _AVX2
 
 #include <smmintrin.h>
-
-#endif
-
-// AVX2
-
-#if _AVX
-
 #include <immintrin.h>
 
 #endif
@@ -39,7 +30,8 @@ public:
   typedef std::pair<T, T> Point;
 
  private:
-  static constexpr const int dp_pd_mask = 0x31;
+  // store dot_product vector at 0 index (0001) // 11110001 = 0xf1
+  static constexpr const int dp_pd_mask = 0xf1;
   static constexpr const T INVERSE_PI = T(1.0 / M_PI);
   static constexpr const T INVERSE_POW_TWO_PI = T(1.0 / (2.0 * M_PI * M_PI));
 
@@ -52,9 +44,10 @@ public:
   T pow_sigma_z, pow_sigma_dl;
   T inv_pow_sigma_z;
   T inv_pow_sigma_dl;
+  T half_scentilator_length;
 
   std::vector<event<T>> event_list;
-  std::vector<std::vector<double>> inverse_correlation_matrix;
+  std::vector<std::vector<T>> inverse_correlation_matrix;
   T sqrt_det_correlation_matrix;
   std::vector<std::vector<T>> rho;
   std::vector<std::vector<T>> rho_temp;
@@ -102,18 +95,13 @@ public:
 
     inv_pow_sigma_z = T(1.0) / pow_sigma_z;
     inv_pow_sigma_dl = T(1.0) / pow_sigma_dl;
+    half_scentilator_length = Scentilator_length / T(0.5f);
   }
 
   T multiply_elements(T* vec_a, T* vec_b) {
 
     T output = T(0.0);
-    //#pragma unroll(4)
-    /*
-    for (unsigned i = 0; i < 3; ++i) {
-      //a[i] += vec_a[i] * inverse_correlation_matrix[i][i];
-      output += vec_a[i] * inverse_correlation_matrix[i][i] * vec_b[i];
-    }
-    */
+    
     output += vec_a[0] * inverse_correlation_matrix[0][0] * vec_b[0];
     output += vec_a[1] * inverse_correlation_matrix[1][1] * vec_b[1];
     output += vec_a[2] * inverse_correlation_matrix[2][2] * vec_b[2];
@@ -123,64 +111,140 @@ public:
 
   T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
 
-#if _AVX
-    __m256d vec_o = _mm256_set_pd(
+// right now, working only on floats, no _mm256_dp_pd
+#if _AVX2
+
+    float m128_output[4] __attribute__((aligned(16)));
+
+    __m128 vec_o1 = _mm_set_ps(
         -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos,
         -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos,
         -(pixel_center.first + y) * inv_cos * (T(1) + T(2) * (_tan * _tan)),
         0.f);
 
-    __m256d vec_a = _mm256_set_pd(
-        -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos,
-        -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos,
-        -(pixel_center.first + y) * inv_cos *
-            (T(1.0f) + T(2.0f) * (_tan * _tan)),
-        0.f);
+    __m128 vec_a1 =
+        _mm_set_ps(-(pixel_center.first + y - R_distance) * pow_inv_cos,
+                   -(pixel_center.first + y + R_distance) * pow_inv_cos,
+                   -T(2) * (pixel_center.first + y) * (inv_cos * _tan),
+                   0.f);
 
-    __m256d vec_b =
-        _mm256_set_pd(pixel_center.second - (pixel_center.first * _tan),
-                      -(pixel_center.first + y + R_distance) * pow_inv_cos,
-                      -T(2) * (pixel_center.first + y) * (inv_cos * _tan),
-                      0.f);
+    __m128 vec_b1 =
+        _mm_set_ps(pixel_center.second - (pixel_center.first * _tan),
+                   pixel_center.second - (pixel_center.first * _tan),
+                   -T(2) * pixel_center.first * inv_cos,
+                   0.f);
 
-    __m256d icm = _mm256_set_pd(inverse_correlation_matrix[0][0],
-                                inverse_correlation_matrix[1][1],
-                                inverse_correlation_matrix[2][2],
-                                double(0));
+    __m128 icm = _mm_set_ps(inverse_correlation_matrix[0][0],
+                            inverse_correlation_matrix[1][1],
+                            inverse_correlation_matrix[2][2],
+                            T(0.f));
 
-    __m256d temp_vec = _mm256_mul_pd(vec_a, icm);
-    __m256d xy = _mm256_mul_pd(temp_vec, vec_a);
-    __m256d temp = _mm256_hadd_pd(xy, xy);
-    __m128d hi128 = _mm256_extractf128_pd(temp, 1);
-    __m128d dotproduct = _mm_add_pd((__m128d)temp, hi128);
+    __m128 temp_vec = _mm_mul_ps(vec_a1, icm);
+    __m128 dot_product = _mm_dp_ps(temp_vec, vec_a1, dp_pd_mask);
 
-    T a_ic_a = dotproduct.m128d_f64[0];
+    _mm_store_ps(m128_output, dot_product);
 
-    temp_vec = _mm256_mul_pd(vec_b, icm);
-    xy = _mm256_mul_pd(temp_vec, vec_a);
-    temp = _mm256_hadd_pd(xy, xy);
-    hi128 = _mm256_extractf128_pd(temp, 1);
-    dotproduct = _mm_add_pd((__m128d)temp, hi128);
+    T a_ic_a = m128_output[0];
 
-    T b_ic_a = dotproduct.m128d_f64[0];
+    temp_vec = _mm_mul_ps(vec_b1, icm);
+    dot_product = _mm_dp_ps(temp_vec, vec_a1, dp_pd_mask);
 
-    temp_vec = _mm256_mul_pd(vec_b, icm);
-    xy = _mm256_mul_pd(temp_vec, vec_b);
-    temp = _mm256_hadd_pd(xy, xy);
-    hi128 = _mm256_extractf128_pd(temp, 1);
-    dotproduct = _mm_add_pd((__m128d)temp, hi128);
+    _mm_store_ps(m128_output, dot_product);
 
-    T b_ic_b = dotproduct.m128d_f64[0];
+    T b_ic_a = m128_output[0];
 
-    temp_vec = _mm256_mul_pd(vec_o, icm);
-    xy = _mm256_mul_pd(temp_vec, vec_b);
-    temp = _mm256_hadd_pd(xy, xy);
-    hi128 = _mm256_extractf128_pd(temp, 1);
-    dotproduct = _mm_add_pd((__m128d)temp, hi128);
+    temp_vec = _mm_mul_ps(vec_b1, icm);
+    dot_product = _mm_dp_ps(temp_vec, vec_b1, dp_pd_mask);
 
-    T o_ic_b = dotproduct.m128d_f64[0];
+    _mm_store_ps(m128_output, dot_product);
+
+    T b_ic_b = m128_output[0];
+
+    temp_vec = _mm_mul_ps(vec_o1, icm);
+    dot_product = _mm_dp_ps(temp_vec, vec_b1, dp_pd_mask);
+
+    _mm_store_ps(m128_output, dot_product);
+
+    T o_ic_b = m128_output[0];
 #endif
+/* --------------------DOUBLE
+ * ------------------------------------------------*/
+//------------------Experimental dot_product for double precision
+//
+//
+//     __m128 dotproduct = _mm_add_pd(_m128(temp), hi128) //broken in
+// gcc,check this modification on icc or vs12
+//
+//    __m128 vec_o = _mm256_set_pd(
+//        -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos,
+//        -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos,
+//        -(pixel_center.first + y) * inv_cos * (T(1.f) + T(2.f) * (_tan *
+// _tan)),
+//        0.f);
 
+//    __m128 vec_a = _mm256_set_pd(
+//        -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos,
+//        -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos,
+//        -(pixel_center.first + y) * inv_cos *
+//            (T(1.0f) + T(2.0f) * (_tan * _tan)),
+//        0.f);
+
+//    __m256 vec_b =
+//        _mm256_set_pd(pixel_center.second - (pixel_center.first * _tan),
+//                      -(pixel_center.first + y + R_distance) *
+// pow_inv_cos,
+//                      -T(2) * (pixel_center.first + y) * (inv_cos * _tan),
+//                      0.f);
+
+//    __m256 icm = _mm256_set_pd(inverse_correlation_matrix[0][0],
+//                                inverse_correlation_matrix[1][1],
+//                                inverse_correlation_matrix[2][2],
+//                                double(0));
+
+//    __m256 temp_vec = _mm256_mul_pd(vec_a, icm);
+//    __m256 xy = _mm256_mul_pd(temp_vec, vec_a);
+//    __m256 temp = _mm256_hadd_pd(xy, xy);
+//    __m128 hi128 = _mm256_extractf128_pd(temp, 1);
+//    __m128 low128 = _mm256_extractf128_pd(temp, 0);
+//    __m128 dotproduct = _mm_add_pd(low128, hi128);
+
+//    _mm_store_pd(m128_output,dotproduct);
+
+//    T a_ic_a = m128_output[0];
+
+//    temp_vec = _mm256_mul_pd(vec_b, icm);
+//    xy = _mm256_mul_pd(temp_vec, vec_a);
+//    temp = _mm256_hadd_pd(xy, xy);
+//    hi128 = _mm256_extractf128_pd(temp, 1);
+//    low128 = _mm256_extractf128_pd(temp, 0);
+//    dotproduct = _mm_add_pd(low128, hi128);
+
+//    _mm_store_pd(m128_output,dotproduct);
+
+//    T b_ic_a = m128_output[0];
+
+//    temp_vec = _mm256_mul_pd(vec_b, icm);
+//    xy = _mm256_mul_pd(temp_vec, vec_b);
+//    temp = _mm256_hadd_pd(xy, xy);
+//    hi128 = _mm256_extractf128_pd(temp, 1);
+//    low128 = _mm256_extractf128_pd(temp, 0);
+//    dotproduct = _mm_add_pd(low128, hi128);
+
+//    _mm_store_pd(m128_output,dotproduct);
+
+//    T b_ic_b = m128_output[0];
+
+//    temp_vec = _mm256_mul_pd(vec_o, icm);
+//    xy = _mm256_mul_pd(temp_vec, vec_b);
+//    temp = _mm256_hadd_pd(xy, xy);
+//    hi128 = _mm256_extractf128_pd(temp, 1);
+//    low128 = _mm256_extractf128_pd(temp, 0);
+//    dotproduct = _mm_add_pd(low128, hi128);
+
+//    _mm_store_pd(m128_output,dotproduct);
+
+//    T o_ic_b = m128_output[0];
+#if !_AVX2
     T vec_o[3];
     T vec_a[3];
     T vec_b[3];
@@ -202,16 +266,21 @@ public:
     T b_ic_a = multiply_elements(vec_b, vec_a);
     T b_ic_b = multiply_elements(vec_b, vec_b);
     T o_ic_b = multiply_elements(vec_o, vec_b);
+#endif
 
-    T norm = a_ic_a + (T(2) * o_ic_b);
+    T norm = a_ic_a + (T(2.f) * o_ic_b);
 
     T element_before_exp = INVERSE_POW_TWO_PI *
                            (sqrt_det_correlation_matrix / std::sqrt(norm)) *
                            sensitivity(pixel_center.first, pixel_center.second);
 
-    T exp_element = -T(0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
+    T exp_element = -T(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
+#if _AVX2
+    T _exp = fast_exp(exp_element);
+#else
     T _exp = std::exp(exp_element);
+#endif
 
     return (element_before_exp * _exp) /
            sensitivity(pixel_center.first, pixel_center.second);
@@ -219,8 +288,8 @@ public:
 
   T sensitivity(T y, T z) {
 
-    T L_plus = (Scentilator_length / T(0.5) + z);
-    T L_minus = (Scentilator_length / T(0.5) - z);
+    T L_plus = (half_scentilator_length + z);
+    T L_minus = (half_scentilator_length - z);
     T R_plus = R_distance + y;
     T R_minus = R_distance - y;
 
@@ -241,7 +310,7 @@ public:
     for (int i = 0; i < iteration; i++) {
 
       thread_rho.assign(omp_get_max_threads(),
-                        std::vector<T>(n_pixels * n_pixels, T(0)));
+                        std::vector<T>(n_pixels * n_pixels, T(0.f)));
 
       std::cout << "ITERATION: " << i << std::endl;
 
@@ -338,6 +407,27 @@ public:
       return x;
     }
   */
+
+  // Fast exponent function
+  // http://stackoverflow.com/questions/10552280/fast-exp-calculation-possible-to-improve-accuracy-without-losing-too-much-perfo/10792321#10792321
+
+  float fast_exp(float& x) {
+    volatile union {
+      float f;
+      unsigned int i;
+    } cvt;
+
+    /* exp(x) = 2^i * 2^f; i = floor (log2(e) * x), 0 <= f <= 1 */
+    float t = x * 1.442695041f;
+    float fi = floorf(t);
+    float f = t - fi;
+    int i = (int)fi;
+    cvt.f =
+        (0.3371894346f * f + 0.657636276f) * f + 1.00172476f; /* compute 2^f */
+    cvt.i += (i << 23);                                       /* scale by 2^i */
+    return cvt.f;
+  }
+
   void bb_pixel_updates(Point& ellipse_center,
                         T& angle,
                         T& y,
@@ -372,6 +462,7 @@ public:
                      center_pixel.second - pixels_in_line(bb_z));
 
     std::vector<std::pair<Pixel, T>> ellipse_kernels;
+    ellipse_kernels.reserve(2000);
 
     Point pp = pixel_center(ur.first, dl.second);
 

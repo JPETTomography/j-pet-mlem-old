@@ -50,16 +50,16 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    double R_distance = cl.get<float>("r-distance");
-    double Scentilator_length = cl.get<float>("s-length");
-    double pixel_size = cl.get<float>("p-size");
-    double n_pixels = Scentilator_length / pixel_size;
-    double sigma = cl.get<float>("s-z");
-    double dl = cl.get<float>("s-dl");
-    double emmisions = cl.get<float>("emmisions");
+    float R_distance = cl.get<float>("r-distance");
+    float Scentilator_length = cl.get<float>("s-length");
+    float pixel_size = cl.get<float>("p-size");
+    float n_pixels = Scentilator_length / pixel_size;
+    float sigma = cl.get<float>("s-z");
+    float dl = cl.get<float>("s-dl");
+    float emmisions = cl.get<float>("emmisions");
 
-    std::vector<ellipse_parameters<double>> ellipse_list;
-    ellipse_parameters<double> el;
+    std::vector<ellipse_parameters<float>> ellipse_list;
+    ellipse_parameters<float> el;
 
     el.x = 0.0f;
     el.y = 0.0f;
@@ -78,32 +78,32 @@ int main(int argc, char* argv[]) {
     el.iter = 200000;
 
     ellipse_list.push_back(el);
-/*
-    el.x = -30.0f;
-    el.y = -30.0f;
-    el.a = 30.0f;
-    el.b = 50.0f;
-    el.angle = 45.0;
-    el.iter = emmisions;
+    /*
+        el.x = -30.0f;
+        el.y = -30.0f;
+        el.a = 30.0f;
+        el.b = 50.0f;
+        el.angle = 45.0;
+        el.iter = emmisions;
 
-    ellipse_list.push_back(el);
+        ellipse_list.push_back(el);
 
-    el.x = 0.0f;
-    el.y = 40.0f;
-    el.a = 30.0f;
-    el.b = 50.0f;
-    el.angle = 0.f;
-    el.iter = 400000;
+        el.x = 0.0f;
+        el.y = 40.0f;
+        el.a = 30.0f;
+        el.b = 50.0f;
+        el.angle = 0.f;
+        el.iter = 400000;
 
-    ellipse_list.push_back(el);
-*/
-    Phantom<double> test(ellipse_list,
-                         n_pixels,
-                         pixel_size,
-                         R_distance,
-                         Scentilator_length,
-                         sigma,
-                         dl);
+        ellipse_list.push_back(el);
+    */
+    Phantom<float> test(ellipse_list,
+                        n_pixels,
+                        pixel_size,
+                        R_distance,
+                        Scentilator_length,
+                        sigma,
+                        dl);
     int n_threads = cl.get<int>("n-threads");
 
     test.emit_event(n_threads);
@@ -111,13 +111,13 @@ int main(int argc, char* argv[]) {
     obstream out("test.bin");
     test >> out;
 
-    Reconstruction<double> reconstruction(cl.get<int>("iter"),
-                                          R_distance,
-                                          Scentilator_length,
-                                          n_pixels,
-                                          pixel_size,
-                                          sigma,
-                                          dl);
+    Reconstruction<float> reconstruction(cl.get<int>("iter"),
+                                         R_distance,
+                                         Scentilator_length,
+                                         n_pixels,
+                                         pixel_size,
+                                         sigma,
+                                         dl);
     ibstream in("test.bin");
 
     in >> reconstruction;
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
 
     clock_t end = clock();
 
-    std::cout << "Time:" << double(end - begin) / CLOCKS_PER_SEC / 4
+    std::cout << "Time:" << float(end - begin) / CLOCKS_PER_SEC / 4
               << std::endl;
   }
   catch (std::string& ex) {
