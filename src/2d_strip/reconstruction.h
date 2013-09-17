@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <assert.h>
+#include <unordered_map>
 #include "flags.h"
 #include "event.h"
 
@@ -53,6 +54,7 @@ public:
   std::vector<std::vector<T>> rho_temp;
   std::vector<T> acc_log;
   std::vector<std::vector<T>> thread_rho;
+  std::vector<std::vector<T>> lookup_table;
 
  public:
   Reconstruction(int iteration,
@@ -96,6 +98,19 @@ public:
     inv_pow_sigma_z = T(1.0) / pow_sigma_z;
     inv_pow_sigma_dl = T(1.0) / pow_sigma_dl;
     half_scentilator_length = Scentilator_length / T(0.5f);
+
+    lookup_table.assign(n_pixels,std::vector<T>(n_pixels));
+
+    for(int y = 0; y < n_pixels;++y ){
+        for(int z = 0; z < n_pixels; ++z ){
+
+            Point pp = pixel_center(y, z);
+            lookup_table[y][z] = sensitivity(pp.first,pp.second);
+
+        }
+    }
+
+
   }
 
   T multiply_elements(T* vec_a, T* vec_b) {
@@ -109,7 +124,7 @@ public:
     return output;
   }
 
-  T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
+  T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center,T sensitivity) {
 
 
 // right now, working only on floats, no _mm256_dp_pd
@@ -240,7 +255,7 @@ public:
 //    temp = _mm256_hadd_pd(xy, xy);
 //    hi128 = _mm256_extractf128_pd(temp, 1);
 //    low128 = _mm256_extractf128_pd(temp, 0);
-//    dotproduct = _mm_add_pd(low128, hi128);
+//    dotproduct = _mm_add_pd(low128, hi128)lookup_table;
 
 //    _mm_store_pd(m128_output,dotproduct);
 
@@ -272,8 +287,7 @@ public:
     T norm = a_ic_a + (T(2.f) * o_ic_b);
 
     T element_before_exp = INVERSE_POW_TWO_PI *
-                           (sqrt_det_correlation_matrix / std::sqrt(norm)) *
-                           sensitivity(pixel_center.first, pixel_center.second);
+                           (sqrt_det_correlation_matrix / std::sqrt(norm)) * sensitivity;
 
     T exp_element = -T(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
@@ -284,7 +298,7 @@ public:
 #endif
 
     return (element_before_exp * _exp) /
-           sensitivity(pixel_center.first, pixel_center.second);
+           sensitivity;
   }
 
   T sensitivity(T y, T z) {
@@ -448,10 +462,8 @@ public:
     T C = T(2.0) * inv_pow_sigma_z;
     T B_2 = (B / T(2.0)) * (B / T(2.0));
 
-    // T bb_z = T(3.0) * InvSqrt(C - (B_2 / A))
     T bb_z = T(3.0) / std::sqrt(C - (B_2 / A));
 
-    // T bb_y = T(3.0) * InvSqrt((A - (B_2 / C)));
     T bb_y = T(3.0) / std::sqrt(A - (B_2 / C));
 
     Pixel center_pixel =
@@ -472,27 +484,28 @@ public:
     for (int iz = dl.second; iz < ur.second; ++iz) {
       for (int iy = ur.first; iy < dl.first; ++iy) {
 
-        Point pp = pixel_center(iy, iz);
+       Point pp = pixel_center(iy, iz);
 
         if (in_ellipse(A, B, C, ellipse_center, pp)) {
 
           pp.first -= ellipse_center.first;
           pp.second -= ellipse_center.second;
 
-          T event_kernel = kernel(y, tg, inv_cos, pow_inv_cos, pp);
+          T event_kernel = kernel(y, tg, inv_cos, pow_inv_cos, pp, lookup_table[iy][iz]);
+
+
+
 
           ellipse_kernels.push_back(
               std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
-          acc += event_kernel * sensitivity(pp.first, pp.second) * rho[iy][iz];
+          acc += event_kernel * lookup_table[iy][iz] * rho[iy][iz];
+
           count++;
         }
       }
     }
 
     for (auto& e : ellipse_kernels) {
-
-      // rho_temp[e.first.first][e.first.second] +=
-      //    e.second * rho[e.first.first][e.first.second] / acc;
 
       thread_rho[tid][e.first.first + (e.first.second * n_pixels)] +=
           e.second * rho[e.first.first][e.first.second] / acc;
