@@ -139,7 +139,7 @@ template <typename T = float> class Reconstruction {
                    -(pixel_center.first + y + R_distance) * pow_inv_cos,
                    -T(2) * (pixel_center.first + y) * (inv_cos * _tan),
                    0.f);
-    iz __m128 vec_b1 =
+     __m128 vec_b1 =
         _mm_set_ps(pixel_center.second - (pixel_center.first * _tan),
                    pixel_center.second - (pixel_center.first * _tan),
                    -T(2) * pixel_center.first * inv_cos,
@@ -496,7 +496,6 @@ template <typename T = float> class Reconstruction {
         }
       }
     }
-
     for (auto& e : ellipse_kernels) {
 
       thread_rho[tid][e.first.first + (e.first.second * n_pixels)] +=
