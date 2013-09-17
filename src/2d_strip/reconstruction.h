@@ -25,8 +25,8 @@
 
 using std::fpclassify;
 
-template <typename T = double> class Reconstruction {
-public:
+template <typename T = float> class Reconstruction {
+ public:
   typedef std::pair<int, int> Pixel;
   typedef std::pair<T, T> Point;
 
@@ -99,24 +99,21 @@ public:
     inv_pow_sigma_dl = T(1.0) / pow_sigma_dl;
     half_scentilator_length = Scentilator_length / T(0.5f);
 
-    lookup_table.assign(n_pixels,std::vector<T>(n_pixels));
+    lookup_table.assign(n_pixels, std::vector<T>(n_pixels));
 
-    for(int y = 0; y < n_pixels;++y ){
-        for(int z = 0; z < n_pixels; ++z ){
+    for (int y = 0; y < n_pixels; ++y) {
+      for (int z = 0; z < n_pixels; ++z) {
 
-            Point pp = pixel_center(y, z);
-            lookup_table[y][z] = sensitivity(pp.first,pp.second);
-
-        }
+        Point pp = pixel_center(y, z);
+        lookup_table[y][z] = sensitivity(pp.first, pp.second);
+      }
     }
-
-
   }
 
   T multiply_elements(T* vec_a, T* vec_b) {
 
     T output = T(0.0);
-    
+
     output += vec_a[0] * inverse_correlation_matrix[0][0] * vec_b[0];
     output += vec_a[1] * inverse_correlation_matrix[1][1] * vec_b[1];
     output += vec_a[2] * inverse_correlation_matrix[2][2] * vec_b[2];
@@ -124,8 +121,7 @@ public:
     return output;
   }
 
-  T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center,T sensitivity) {
-
+  T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
 
 // right now, working only on floats, no _mm256_dp_pd
 #if _AVX2
@@ -143,8 +139,7 @@ public:
                    -(pixel_center.first + y + R_distance) * pow_inv_cos,
                    -T(2) * (pixel_center.first + y) * (inv_cos * _tan),
                    0.f);
-
-    __m128 vec_b1 =
+    iz __m128 vec_b1 =
         _mm_set_ps(pixel_center.second - (pixel_center.first * _tan),
                    pixel_center.second - (pixel_center.first * _tan),
                    -T(2) * pixel_center.first * inv_cos,
@@ -286,8 +281,8 @@ public:
 
     T norm = a_ic_a + (T(2.f) * o_ic_b);
 
-    T element_before_exp = INVERSE_POW_TWO_PI *
-                           (sqrt_det_correlation_matrix / std::sqrt(norm)) * sensitivity;
+    T element_before_exp =
+        INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / std::sqrt(norm));
 
     T exp_element = -T(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
@@ -297,8 +292,7 @@ public:
     T _exp = std::exp(exp_element);
 #endif
 
-    return (element_before_exp * _exp) /
-           sensitivity;
+    return (element_before_exp * _exp);
   }
 
   T sensitivity(T y, T z) {
@@ -484,17 +478,15 @@ public:
     for (int iz = dl.second; iz < ur.second; ++iz) {
       for (int iy = ur.first; iy < dl.first; ++iy) {
 
-       Point pp = pixel_center(iy, iz);
+        Point pp = pixel_center(iy, iz);
 
         if (in_ellipse(A, B, C, ellipse_center, pp)) {
 
           pp.first -= ellipse_center.first;
           pp.second -= ellipse_center.second;
 
-          T event_kernel = kernel(y, tg, inv_cos, pow_inv_cos, pp, lookup_table[iy][iz]);
-
-
-
+          T event_kernel =
+              kernel(y, tg, inv_cos, pow_inv_cos, pp) / lookup_table[iy][iz];
 
           ellipse_kernels.push_back(
               std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
