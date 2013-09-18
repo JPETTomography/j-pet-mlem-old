@@ -8,27 +8,28 @@
 
 #include"reconstruction.h"
 
-typedef Reconstruction<float>::Point Point;
+typedef Reconstruction<double>::Point Point;
 
-const float degree = M_PI / 180.0;
-void check(float ref,
-           float y,
-           float angle,  // radians
-           float dy,
-           float dz,
-           Reconstruction<float>& rec) {
+const double degree = M_PI / 180.0;
 
-  float tan_value = tan(angle);
-  float inv_cos = 1.0 / cos(angle);
-  float inv_cos_sq = inv_cos * inv_cos;
+void check(double ref,
+           double y,
+           double angle,  // radians
+           double dy,
+           double dz,
+           Reconstruction<double>& rec) {
+
+  double tan_value = tan(angle);
+  double inv_cos = 1.0 / cos(angle);
+  double inv_cos_sq = inv_cos * inv_cos;
   Point delta(dy, dz);
-  float value = rec.kernel(y, tan_value, inv_cos, inv_cos_sq, delta);
-  CHECK(value == Approx(ref).epsilon(1e-8));
+  double value = rec.kernel(y, tan_value, inv_cos, inv_cos_sq, delta);
+  CHECK(value == Approx(ref).epsilon(1e-13));
 }
 
 TEST_CASE("kernel tests", "kernel") {
 
-  Reconstruction<float> reconstructor(1, 500, 1000, 200, 5, 10, 63);
+  Reconstruction<double> reconstructor(1, 500, 1000, 200, 5, 10, 63);
 
   check(1.1372205719261035e-7, 0.0, 0.0, 0.0, 0.0, reconstructor);
 
