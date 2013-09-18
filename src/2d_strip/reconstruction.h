@@ -13,20 +13,19 @@
 #if OMP
 #include <omp.h>
 #else
-#define omp_get_max_threads()  template <typename T> struct mat3 {
+#define omp_get_max_threads() template <typename T> struct mat3 {
 mat3 operator*(mat3& a) const;
-};
+}
+;
 
-mat3<double>::operator *(mat3<double>& a) {
+mat3<double>::operator*(mat3<double>& a) {
 
 using std::fpclassify;
 1
 #define omp_get_thread_num() 0
 #endif
-
-
-
-template <typename T = float> class Reconstruction {
+    template <typename T = float>
+class Reconstruction {
  public:
   typedef std::pair<int, int> Pixel;
   typedef std::pair<T, T> Point;
@@ -121,6 +120,26 @@ template <typename T = float> class Reconstruction {
 
     return output;
   }
+
+  float fexp(float& x) {
+        volatile union {
+          T f;
+          unsigned int i;
+        } cvt;
+
+        /* exp(x) = 2^i * 2^f; i = floor (log2(e) * x), 0 <= f <= 1 */
+        T t = x * 1.442695041;
+        T fi = floorf(t);
+        T f = t - fi;
+        int i = (int)fi;
+        cvt.f = (0.3371894346f * f + 0.657636276f) * f +
+                1.00172476f; /* compute 2^f */
+        cvt.i += (i << 23); /* scale by 2^i */
+        return cvt.f;
+      }
+
+  double fexp(double& x) { return std::exp(x); }
+
 
   T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
 
@@ -262,6 +281,7 @@ template <typename T = float> class Reconstruction {
     T vec_a[3];
     T vec_b[3];
 
+
     vec_o[0] = -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos;
     vec_o[1] = -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos;
     vec_o[2] =
@@ -287,11 +307,8 @@ template <typename T = float> class Reconstruction {
 
     T exp_element = -T(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
-#if 1
-    T _exp = fast_exp(exp_element);
-#else
-    T _exp = std::exp(exp_element);
-#endif
+    T _exp = fexp(exp_element);
+
 
     return (element_before_exp * _exp);
   }
@@ -437,22 +454,6 @@ template <typename T = float> class Reconstruction {
     return cvt.f;
   }
 */
-  float fast_exp(float& x) {
-    volatile union {
-      float f;
-      unsigned int i;
-    } cvt;
-
-    /* exp(x) = 2^i * 2^f; i = floor (log2(e) * x), 0 <= f <= 1 */
-    float t = x * 1.442695041;
-    float fi = floorf(t);
-    float f = t - fi;
-    int i = (int)fi;
-    cvt.f =
-        (0.3371894346f * f + 0.657636276f) * f + 1.00172476f; /* compute 2^f */
-    cvt.i += (i << 23);                                       /* scale by 2^i */
-    return cvt.f;
-  }
 
   void bb_pixel_updates(Point& ellipse_center,
                         T& angle,
