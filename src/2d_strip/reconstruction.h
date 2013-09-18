@@ -6,24 +6,25 @@
 #include <algorithm>
 #include <assert.h>
 #include <unordered_map>
-#include "flags.h"
 #include "event.h"
 
-#if _AVX2
-
-#include <smmintrin.h>
 #include <immintrin.h>
-
-#endif
 
 #if OMP
 #include <omp.h>
 #else
-#define omp_get_max_threads() 1
+#define omp_get_max_threads()  template <typename T> struct mat3 {
+mat3 operator*(mat3& a) const;
+};
+
+mat3<double>::operator *(mat3<double>& a) {
+
+using std::fpclassify;
+1
 #define omp_get_thread_num() 0
 #endif
 
-using std::fpclassify;
+
 
 template <typename T = float> class Reconstruction {
  public:
@@ -124,7 +125,8 @@ template <typename T = float> class Reconstruction {
   T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
 
 // right now, working only on floats, no _mm256_dp_pd
-#if _AVX2
+      /*
+#if __SSE4__
 
     float m128_output[4] __attribute__((aligned(16)));
 
@@ -178,6 +180,7 @@ template <typename T = float> class Reconstruction {
 
     T o_ic_b = m128_output[0];
 #endif
+*/
 /* --------------------DOUBLE
  * ------------------------------------------------*/
 //------------------Experimental dot_product for double precision
@@ -250,12 +253,11 @@ template <typename T = float> class Reconstruction {
 //    temp = _mm256_hadd_pd(xy, xy);
 //    hi128 = _mm256_extractf128_pd(temp, 1);
 //    low128 = _mm256_extractf128_pd(temp, 0);
-//    dotproduct = _mm_add_pd(low128, hi128)lookup_table;
+//    dotproduct = _mm_std::expadd_pd(low128, hi128)lookup_table;
 
 //    _mm_store_pd(m128_output,dotproduct);
 
 //    T o_ic_b = m128_output[0];
-#if !_AVX2
     T vec_o[3];
     T vec_a[3];
     T vec_b[3];
@@ -277,7 +279,6 @@ template <typename T = float> class Reconstruction {
     T b_ic_a = multiply_elements(vec_b, vec_a);
     T b_ic_b = multiply_elements(vec_b, vec_b);
     T o_ic_b = multiply_elements(vec_o, vec_b);
-#endif
 
     T norm = a_ic_a + (T(2.f) * o_ic_b);
 
@@ -286,7 +287,7 @@ template <typename T = float> class Reconstruction {
 
     T exp_element = -T(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
-#if _AVX2
+#if 1
     T _exp = fast_exp(exp_element);
 #else
     T _exp = std::exp(exp_element);
@@ -419,7 +420,23 @@ template <typename T = float> class Reconstruction {
 
   // Fast exponent function
   // http://stackoverflow.com/questions/10552280/fast-exp-calculation-possible-to-improve-accuracy-without-losing-too-much-perfo/10792321#10792321
+/*
+  T fast_exp(T& x) {
+    volatile union {
+      T f;
+      unsigned int i;
+    } cvt;
 
+    T t = x * 1.442695041;
+    T fi = floorf(t);
+    T f = t - fi;
+    int i = (int)fi;
+    cvt.f =
+        (0.3371894346f * f + 0.657636276f) * f + 1.00172476f;
+    cvt.i += (i << 23);
+    return cvt.f;
+  }
+*/
   float fast_exp(float& x) {
     volatile union {
       float f;
@@ -427,7 +444,7 @@ template <typename T = float> class Reconstruction {
     } cvt;
 
     /* exp(x) = 2^i * 2^f; i = floor (log2(e) * x), 0 <= f <= 1 */
-    float t = x * 1.442695041f;
+    float t = x * 1.442695041;
     float fi = floorf(t);
     float f = t - fi;
     int i = (int)fi;
