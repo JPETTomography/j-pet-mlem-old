@@ -62,11 +62,11 @@ TEST_CASE("circle/secant", "circle secant") {
     Circle<>::Event xone45(1., 0., M_PI_4);
     auto s = c.secant(xone45);
 
-    CHECK(std::min(s.first.x, s.second.x) == Approx(0.));
-    CHECK(std::max(s.first.x, s.second.x) == xone45.x);
+    CHECK(std::min(s.first.x, s.second.x) == Approx(0.0).epsilon(1.0e-13));
+    CHECK(std::max(s.first.x, s.second.x) == Approx(xone45.x));
 
-    CHECK(std::min(s.first.y, s.second.y) == Approx(-1.));
-    CHECK(std::max(s.first.y, s.second.y) == xone45.y);
+    CHECK(std::min(s.first.y, s.second.y) == Approx(-1.0));
+    CHECK(std::max(s.first.y, s.second.y) == Approx(xone45.y));
   }
 }
 

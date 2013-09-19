@@ -97,7 +97,7 @@ class Reconstruction {
 
     inv_pow_sigma_z = T(1.0) / pow_sigma_z;
     inv_pow_sigma_dl = T(1.0) / pow_sigma_dl;
-    half_scentilator_length = Scentilator_length / T(0.5f);
+    half_scentilator_length = Scentilator_length * T(0.5f);
 
     lookup_table.assign(n_pixels, std::vector<T>(n_pixels));
 
@@ -319,10 +319,9 @@ class Reconstruction {
     T L_minus = (half_scentilator_length - z);
     T R_plus = R_distance + y;
     T R_minus = R_distance - y;
-
     return INVERSE_PI *
            (std::atan(std::min(L_minus / R_minus, L_plus / R_plus)) -
-            std::atan(std::max(-L_plus / R_minus, -L_plus / R_plus)));
+            std::atan(std::max(-L_plus / R_minus, -L_minus / R_plus)));
   }
 
   void operator()() {
