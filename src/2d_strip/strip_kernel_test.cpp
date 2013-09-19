@@ -27,7 +27,7 @@ void check(double ref,
   CHECK(value == Approx(ref).epsilon(1e-13));
 }
 
-TEST_CASE("sensitivity tests", "square") {
+TEST_CASE("sensitivity tests/square", "square") {
 
 Reconstruction<double> reconstructor(1, 500, 1000, 200, 5, 10, 63);
 
@@ -36,6 +36,19 @@ Reconstruction<double> reconstructor(1, 500, 1000, 200, 5, 10, 63);
  CHECK(reconstructor.sensitivity(100.0,-50.0) == Approx(0.4410019151324715).epsilon(1e-13));
  CHECK(reconstructor.sensitivity(-200,-450) == Approx(0.07526632771111386).epsilon(1e-13));
 }
+
+
+TEST_CASE("sensitivity tests/non square", "non square") {
+
+Reconstruction<double> reconstructor(1, 450, 200, 200, 5, 10, 63);
+
+
+ CHECK(reconstructor.sensitivity(0.0,0.0) == Approx(0.1392089745461279).epsilon(1e-13));
+ CHECK(reconstructor.sensitivity(0.0,50.0) == Approx(0.07044657495455454).epsilon(1e-13));
+ CHECK(reconstructor.sensitivity(100.0,-50.0) == Approx(0.07402517367717103).epsilon(1e-13));
+ CHECK(reconstructor.sensitivity(-200,-70) == Approx(0.05269621503719814).epsilon(1e-13));
+}
+
 
 
 TEST_CASE("kernel tests", "kernel") {
