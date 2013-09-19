@@ -13,16 +13,8 @@
 #if OMP
 #include <omp.h>
 #else
-#define omp_get_max_threads() template <typename T> struct mat3 {
-mat3 operator*(mat3& a) const;
-}
-;
-
-mat3<double>::operator*(mat3<double>& a) {
-
-using std::fpclassify;
-1
-#define omp_get_thread_num() 0
+#define omp_get_max_threads() 1
+#define omp_get_thread_num()  0
 #endif
     template <typename T = float>
 class Reconstruction {
