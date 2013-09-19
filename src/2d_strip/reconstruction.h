@@ -1,5 +1,4 @@
-#ifndef SPET_RECONSTRUCTION_H
-#define SPET_RECONSTRUCTION_H
+#pragma once
 
 #include <cmath>
 #include <vector>
@@ -12,12 +11,17 @@
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
 
+#include"strip_detector.h"
+
 #if OMP
 #include <omp.h>
 #else
 #define omp_get_max_threads() 1
 #define omp_get_thread_num() 0
 #endif
+
+
+
 template <typename T = float> class Reconstruction {
  public:
   typedef std::pair<int, int> Pixel;
@@ -423,4 +427,3 @@ template <typename T = float> class Reconstruction {
   }
 };
 
-#endif  // SPET_RECONSTRUCTION_H
