@@ -11,6 +11,8 @@ public:
                 int n_z_pixels,
                 F pixel_height, //y direction
                 F pixel_width,  //z direction
+                F sigma_z,
+                F sigma_dl,
                 F grid_center_y = 0.0,
                 F grid_center_z = 0.0):
     radius_(radius),
@@ -19,6 +21,8 @@ public:
     n_z_pixels_(n_z_pixels), 
     pixel_width_(pixel_width),
     pixel_height_(pixel_height),
+    sigma_z_(sigma_z),
+    sigma_dl_(sigma_dl),
     grid_center_y_(grid_center_y),
     grid_center_z_(grid_center_z) {    
   }
@@ -27,7 +31,9 @@ public:
   F radius() const {return radius_;}
   F scinatilator_length() const {return scintilator_length_;}
   F half_scintilator_length() const {return F(0.5)*scintilator_length_;}
-  
+  F s_z()  const {return sigma_z_;}
+  F s_dl() const {return sigma_dl_;}
+
   event<F> to_projection_space_tan(const ImageSpaceEventTan<F>& ev) {    
     F z_u = ev.z + (radius()- ev.y)*ev.tan;
     F z_d = ev.z - (radius()+ ev.y)*ev.tan;
@@ -57,6 +63,9 @@ private:
   const int n_z_pixels_;
   const F pixel_width_;
   const F pixel_height_;
+  const F sigma_z_;
+  const F sigma_dl_;
   const F grid_center_y_;
   const F grid_center_z_;
+  
 };
