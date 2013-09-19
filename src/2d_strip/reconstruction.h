@@ -181,15 +181,10 @@ public:
        std::atan(std::max(-L_plus / R_minus, -L_minus / R_plus)));
   }
 
-  void operator()() {
-
-    T tan, y, z, angle;
-    Point ellipse_center;
-    Pixel pp;
-    int tid;
-
-    std::cout << "Number of threads: " << omp_get_max_threads() << std::endl;
-
+  /** Performs n_iterations of the list mode MEML algorithm 
+   */
+  void iterate(int n_iterations) {
+    
     for (int i = 0; i < iteration; i++) {
 
       thread_rho.assign(omp_get_max_threads(),
@@ -200,22 +195,21 @@ public:
       int size = event_list.size();
 
 #if OMP
-#pragma omp parallel for schedule(dynamic) private(                     \
-                                                   tan, y, z, angle, ellipse_center, pp, tid)
+#pragma omp parallel for schedule(dynamic) 
 #endif
       for (int id = 0; id < size; ++id) {
 
-	tid = omp_get_thread_num();
+	int tid = omp_get_thread_num();
 
-	tan = event_tan(event_list[id].z_u, event_list[id].z_d,R_distance);
-	y   = event_y(event_list[id].dl, tan);
-	z   = event_z(event_list[id].z_u, event_list[id].z_d, y, tan);
+	T tan = event_tan(event_list[id].z_u, event_list[id].z_d,R_distance);
+	T y   = event_y(event_list[id].dl, tan);
+	T z   = event_z(event_list[id].z_u, event_list[id].z_d, y, tan);
 
-	angle = std::atan(tan);
+	T angle = std::atan(tan);
 
-	ellipse_center = Point(y, z);
+	Point ellipse_center = Point(y, z);
 
-	pp = pixel_location(y, z);
+	Pixel pp = pixel_location(y, z);
 
 	bb_pixel_updates(ellipse_center, angle, y, tan, tid);
       }
@@ -224,7 +218,6 @@ public:
 
       for (size_t i = 0; i < n_pixels; ++i) {
 	for (size_t j = 0; j < n_pixels; ++j) {
-
 	  for (size_t k = 0; k < omp_get_max_threads(); ++k) {
 
 	    rho[i][j] += thread_rho[k][i + j * n_pixels];
@@ -232,6 +225,23 @@ public:
 	}
       }
 
+    }
+  }
+
+
+  void operator()(int n_blocks) { operator()(n_blocks,1);}
+  void operator()(int n_blocks, int n_iterations_in_block) {
+  
+
+    T tan, y, z, angle;
+    Point ellipse_center;
+    Pixel pp;
+    int tid;
+
+    std::cout << "Number of threads: " << omp_get_max_threads() << std::endl;
+
+    for (int i = 0; i < n_blocks; i++) {
+      iterate(n_iterations_in_block);
       // output reconstruction PNG
 
       std::string file = std::string("rec_iteration_");
@@ -255,15 +265,13 @@ public:
       for (int y = 0; y < n_pixels; ++y) {
 	uint8_t row[n_pixels];
 	for (auto x = 0; x < n_pixels; ++x) {
-	  // if(rho[y][x] > 100){
-
 	  row[x] =
 	    std::numeric_limits<uint8_t>::max() - output_gain * rho[y][x];
 	}
-	// }
 	png.write_row(row);
       }
     }
+
     std::ofstream file;
     file.open("pixels_output.txt");
     for (int x = 0; x < n_pixels; ++x) {

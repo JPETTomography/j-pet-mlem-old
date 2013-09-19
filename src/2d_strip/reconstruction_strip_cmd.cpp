@@ -110,8 +110,9 @@ int main(int argc, char* argv[]) {
 
     obstream out("test.bin");
     test >> out;
-
-    Reconstruction<float> reconstruction(cl.get<int>("iter"),
+    
+    int n_blocks=cl.get<int>("iter");
+    Reconstruction<float> reconstruction(n_blocks,
                                          R_distance,
                                          Scentilator_length,
                                          n_pixels,
@@ -124,7 +125,7 @@ int main(int argc, char* argv[]) {
 
     clock_t begin = clock();
 
-    reconstruction();
+    reconstruction(n_blocks);
 
     clock_t end = clock();
 
