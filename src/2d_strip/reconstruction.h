@@ -8,7 +8,10 @@
 #include <unordered_map>
 #include "event.h"
 
-#include <immintrin.h>
+#include "util/png_writer.h"
+#include "util/bstream.h"
+#include "util/svg_ostream.h"
+
 
 #if OMP
 #include <omp.h>
@@ -185,10 +188,10 @@ public:
    */
   void iterate(int n_iterations) {
     
-    for (int i = 0; i < iteration; i++) {
+    for (int i = 0; i < n_iterations; i++) {
 
       thread_rho.assign(omp_get_max_threads(),
-			std::vector<T>(n_pixels * n_pixels, T(0.f)));
+			std::vector<T>(n_pixels * n_pixels, T(0.0f)));
 
       std::cout << "ITERATION: " << i << std::endl;
 
@@ -233,14 +236,16 @@ public:
   void operator()(int n_blocks, int n_iterations_in_block) {
   
 
-    T tan, y, z, angle;
-    Point ellipse_center;
-    Pixel pp;
-    int tid;
+    // T tan, y, z, angle;
+    // Point ellipse_center;
+    // Pixel pp;
+    // int tid;
 
     std::cout << "Number of threads: " << omp_get_max_threads() << std::endl;
 
     for (int i = 0; i < n_blocks; i++) {
+       std::cout << "ITERATION BLOCK: " << i << std::endl;
+      
       iterate(n_iterations_in_block);
       // output reconstruction PNG
 
