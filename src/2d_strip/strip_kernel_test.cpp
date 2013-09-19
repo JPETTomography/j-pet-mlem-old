@@ -27,6 +27,14 @@ void check(double ref,
   CHECK(value == Approx(ref).epsilon(1e-13));
 }
 
+TEST_CASE("sensitivity tests", "sensitivity") {
+
+Reconstruction<double> reconstructor(1, 500, 1000, 200, 5, 10, 63);
+
+ CHECK(reconstructor.sensitivity(0.0,0.0) == Approx(0.5).epsilon(1e-13));
+}
+
+
 TEST_CASE("kernel tests", "kernel") {
 
   Reconstruction<double> reconstructor(1, 500, 1000, 200, 5, 10, 63);
