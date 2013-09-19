@@ -8,24 +8,17 @@
 #include <unordered_map>
 #include "event.h"
 
-#include <immintrin.h>
+#include "util/png_writer.h"
+#include "util/bstream.h"
+#include "util/svg_ostream.h"
 
 #if OMP
 #include <omp.h>
 #else
-#define omp_get_max_threads() template <typename T> struct mat3 {
-mat3 operator*(mat3& a) const;
-}
-;
-
-mat3<double>::operator*(mat3<double>& a) {
-
-using std::fpclassify;
-1
+#define omp_get_max_threads() 1
 #define omp_get_thread_num() 0
 #endif
-    template <typename T = float>
-class Reconstruction {
+template <typename T = float> class Reconstruction {
  public:
   typedef std::pair<int, int> Pixel;
   typedef std::pair<T, T> Point;
@@ -121,31 +114,29 @@ class Reconstruction {
   }
 
   float fexp(float& x) {
-        volatile union {
-          T f;
-          unsigned int i;
-        } cvt;
+    volatile union {
+      T f;
+      unsigned int i;
+    } cvt;
 
-        /* exp(x) = 2^i * 2^f; i = floor (log2(e) * x), 0 <= f <= 1 */
-        T t = x * 1.442695041;
-        T fi = floorf(t);
-        T f = t - fi;
-        int i = (int)fi;
-        cvt.f = (0.3371894346f * f + 0.657636276f) * f +
-                1.00172476f; /* compute 2^f */
-        cvt.i += (i << 23); /* scale by 2^i */
-        return cvt.f;
-      }
+    /* exp(x) = 2^i * 2^f; i = floor (log2(e) * x), 0 <= f <= 1 */
+    T t = x * 1.442695041;
+    T fi = floorf(t);
+    T f = t - fi;
+    int i = (int)fi;
+    cvt.f =
+        (0.3371894346f * f + 0.657636276f) * f + 1.00172476f; /* compute 2^f */
+    cvt.i += (i << 23);                                       /* scale by 2^i */
+    return cvt.f;
+  }
 
   double fexp(double& x) { return std::exp(x); }
-
 
   T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
 
     T vec_o[3];
     T vec_a[3];
     T vec_b[3];
-
 
     vec_o[0] = -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos;
     vec_o[1] = -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos;
@@ -174,7 +165,6 @@ class Reconstruction {
 
     T _exp = fexp(exp_element);
 
-
     return (element_before_exp * _exp);
   }
 
@@ -189,57 +179,66 @@ class Reconstruction {
             std::atan(std::max(-L_plus / R_minus, -L_minus / R_plus)));
   }
 
-  void operator()() {
+  /** Performs n_iterations of the list mode MEML algorithm
+   */
+  void iterate(int n_iterations) {
 
-    T tan, y, z, angle;
-    Point ellipse_center;
-    Pixel pp;
-    int tid;
-
-    std::cout << "Number of threads: " << omp_get_max_threads() << std::endl;
-
-    for (int i = 0; i < iteration; i++) {
+    for (int i = 0; i < n_iterations; i++) {
 
       thread_rho.assign(omp_get_max_threads(),
-                        std::vector<T>(n_pixels * n_pixels, T(0.f)));
+                        std::vector<T>(n_pixels * n_pixels, T(0.0f)));
 
       std::cout << "ITERATION: " << i << std::endl;
 
       int size = event_list.size();
 
 #if OMP
-#pragma omp parallel for schedule(dynamic) private( \
-    tan, y, z, angle, ellipse_center, pp, tid)
+#pragma omp parallel for schedule(dynamic)
 #endif
       for (int id = 0; id < size; ++id) {
 
-        tid = omp_get_thread_num();
+        int tid = omp_get_thread_num();
 
-        tan = event_tan(event_list[id].z_u, event_list[id].z_d);
-        y = event_y(event_list[id].dl, tan);
-        z = event_z(event_list[id].z_u, event_list[id].z_d, y, tan);
+        T tan = event_tan(event_list[id].z_u, event_list[id].z_d, R_distance);
+        T y = event_y(event_list[id].dl, tan);
+        T z = event_z(event_list[id].z_u, event_list[id].z_d, y, tan);
 
-        angle = std::atan(tan);
+        T angle = std::atan(tan);
 
-        ellipse_center = Point(y, z);
+        Point ellipse_center = Point(y, z);
 
-        pp = pixel_location(y, z);
+        Pixel pp = pixel_location(y, z);
 
         bb_pixel_updates(ellipse_center, angle, y, tan, tid);
       }
 
       rho.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
 
-      for (size_t i = 0; i < n_pixels; ++i) {
-        for (size_t j = 0; j < n_pixels; ++j) {
-
-          for (size_t k = 0; k < omp_get_max_threads(); ++k) {
+      for (int i = 0; i < n_pixels; ++i) {
+        for (int j = 0; j < n_pixels; ++j) {
+          for (int k = 0; k < omp_get_max_threads(); ++k) {
 
             rho[i][j] += thread_rho[k][i + j * n_pixels];
           }
         }
       }
+    }
+  }
 
+  void operator()(int n_blocks) { operator()(n_blocks, 1); }
+  void operator()(int n_blocks, int n_iterations_in_block) {
+
+    // T tan, y, z, angle;
+    // Point ellipse_center;
+    // Pixel pp;
+    // int tid;
+
+    std::cout << "Number of threads: " << omp_get_max_threads() << std::endl;
+
+    for (int i = 0; i < n_blocks; i++) {
+      std::cout << "ITERATION BLOCK: " << i << std::endl;
+
+      iterate(n_iterations_in_block);
       // output reconstruction PNG
 
       std::string file = std::string("rec_iteration_");
@@ -263,15 +262,13 @@ class Reconstruction {
       for (int y = 0; y < n_pixels; ++y) {
         uint8_t row[n_pixels];
         for (auto x = 0; x < n_pixels; ++x) {
-          // if(rho[y][x] > 100){
-
           row[x] =
               std::numeric_limits<uint8_t>::max() - output_gain * rho[y][x];
         }
-        // }
         png.write_row(row);
       }
     }
+
     std::ofstream file;
     file.open("pixels_output.txt");
     for (int x = 0; x < n_pixels; ++x) {
@@ -285,8 +282,6 @@ class Reconstruction {
       }
     }
   }
-
-
 
   void bb_pixel_updates(Point& ellipse_center,
                         T& angle,
@@ -364,16 +359,6 @@ class Reconstruction {
                : false;
   }
 
-  T event_tan(T& z_u, T& z_d) const {
-    return (z_u - z_d) / (T(2) * R_distance);
-  }
-  T event_y(T& dl, T& tan_event) const {
-    return -T(0.5) * (dl / std::sqrt(T(1) + (tan_event * tan_event)));
-  }
-  T event_z(T& z_u, T& z_d, T& y, T& tan_event) const {
-    return T(0.5) * (z_u + z_d + (T(2) * y * tan_event));
-  }
-
   // coord Plane
   Pixel pixel_location(T y, T z) {
 
@@ -419,7 +404,7 @@ class Reconstruction {
       temp_event.z_d = z_d;
       temp_event.dl = dl;
 
-      T tan = event_tan(z_u, z_d);
+      T tan = event_tan(z_u, z_d, R_distance);
       T y = event_y(z_d, tan);
       T z = event_z(z_u, z_d, y, tan);
 

@@ -76,17 +76,6 @@ template <typename T = double> class Phantom {
     return ((d1 * d1 / (el.a * el.a)) + (d2 * d2 / (el.b * el.b))) <= T(1)
                ? true
                : false;
-
-    // small reconstuction ellipse
-    // T A = (((T(4.0) / (_cos * _cos)) / (sigma_dl*sigma_dl)) +
-    //      (T(2.0) * std::tan(el.angle * radian) * std::tan(el.angle * radian)
-    // / (sigma_z*sigma_z)));
-    // T B = -T(4.0) * std::tan(el.angle * radian) / (sigma_z*sigma_z);
-    // T C = T(2.0) / (sigma_z*sigma_z);
-
-    // return (((A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)))) <= T(9.0)
-    //            ? true
-    //            : false;
   }
 
   void emit_event(int n_threads) {

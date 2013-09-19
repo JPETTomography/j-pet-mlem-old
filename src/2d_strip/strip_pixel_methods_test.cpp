@@ -1,67 +1,86 @@
 #include "catch.hpp"
+#include <vector>
 #include <cmath>
-#include <utility>
 
-typedef std::pair<int, int> Pixel;
-typedef std::pair<float, float> Point;
+#include "util/png_writer.h"
+#include "util/bstream.h"
+#include "util/svg_ostream.h"
 
-template <typename T> Pixel pixel_location(T y, T z) {
-  T R_distance = 500.0f;
-  T pixel_size = 5.0f;
-  return Pixel(std::floor((R_distance - y) / pixel_size),
-               std::floor((R_distance + z) / pixel_size));
-}
+#include"reconstruction.h"
 
-template <typename T> Point pixel_center(T y, T z) {
-  T R_distance = 500.0f;
-  T pixel_size = 5.0f;
-  return Point(
-      (std::floor(R_distance - (y) * pixel_size)) + (T(0.5) * pixel_size),
-      (std::floor((z) * pixel_size - R_distance)) + (T(0.5) * pixel_size));
-}
+typedef Reconstruction<double>::Pixel Pixel;
+typedef Reconstruction<double>::Point Point;
 
-TEST_CASE("strip_pixel_locations", "strip_pixel_methods_test") {
+TEST_CASE("Strip pixel location",
+          "Reconstruction<>::pixel_location method test") {
 
-  // test middle point
-  Pixel p = pixel_location<float>(0.0f, 0.0f);
+  Reconstruction<double> reconstructor(1, 500, 1000, 200, 5, 10, 63);
+
+  Pixel p = reconstructor.pixel_location(0.0, 0.0);
 
   CHECK(p.first == 100);
   CHECK(p.second == 100);
 
   // test boundary points
-  p = pixel_location<float>(500.0f, -500.0f);
+  p = reconstructor.pixel_location(500.0, -500.0);
 
   CHECK(p.first == 0);
   CHECK(p.second == 0);
 
-  p = pixel_location<float>(500.0f, 500.0f);
+  p = reconstructor.pixel_location(500.0, 500.0);
 
   CHECK(p.first == 0);
   CHECK(p.second == 200);
 
-  p = pixel_location<float>(-500.0f, -500.0f);
+  p = reconstructor.pixel_location(-500.0, -500.0);
 
   CHECK(p.first == 200);
   CHECK(p.second == 0);
 
-  p = pixel_location<float>(-500.0f, 500.0f);
+  p = reconstructor.pixel_location(-500.0, 500.0);
 
   CHECK(p.first == 200);
   CHECK(p.second == 200);
-
-  // CHECK(vec_o[1] == Approx(-2100.0));
-  // CHECK(vec_o[2] == Approx(-1800 * std::sqrt(2)));
 }
 
-TEST_CASE("strip_pixel_centers", "strip_pixel_center_methods_test") {
+TEST_CASE("Strip pixel center", "Reconstruction<>::pixel_center method test") {
+
+  // space->image_space  y: [R,-R] ->[0,n_pixels_y], z:[-L/2,L/2] ->
+  // [0,n_pixels_z]
+  Reconstruction<double> reconstructor(1, 500, 1000, 200, 5, 10, 63);
 
   // test middle point pixel center
-  Pixel p = pixel_location<float>(0.0f, 0.0f);
-  Point pc = pixel_center<float>(p.first, p.second);
+  Pixel p = reconstructor.pixel_location(0.0, 0.0);
+  Point pc = reconstructor.pixel_center(p.first, p.second);
 
-  CHECK(pc.first == 2.5);
+  CHECK(pc.first == -2.5);
   CHECK(pc.second == 2.5);
 
-  // CHECK(vec_o[1] == Approx(-2100.0));
-  // CHECK(vec_o[2] == Approx(-1800 * std::sqrt(2)));
+  // test -y,+z
+  p = reconstructor.pixel_location(-6.0, 3.0);
+  pc = reconstructor.pixel_center(p.first, p.second);
+
+  CHECK(pc.first == -7.5);
+  CHECK(pc.second == 2.5);
+
+  // test +y,+z
+  p = reconstructor.pixel_location(6.0, 3.0);
+  pc = reconstructor.pixel_center(p.first, p.second);
+
+  CHECK(pc.first == 7.5);
+  CHECK(pc.second == 2.5);
+
+  // test +y,-z
+  p = reconstructor.pixel_location(6.0, -3.0);
+  pc = reconstructor.pixel_center(p.first, p.second);
+
+  CHECK(pc.first == 7.5);
+  CHECK(pc.second == -2.5);
+
+  // test -y,-z
+  p = reconstructor.pixel_location(-6.0, -3.0);
+  pc = reconstructor.pixel_center(p.first, p.second);
+
+  CHECK(pc.first == -7.5);
+  CHECK(pc.second == -2.5);
 }
