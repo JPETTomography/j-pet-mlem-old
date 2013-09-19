@@ -110,8 +110,8 @@ int main(int argc, char* argv[]) {
 
     obstream out("test.bin");
     test >> out;
-    
-    int n_blocks=cl.get<int>("iter");
+
+    int n_blocks = cl.get<int>("iter");
     Reconstruction<float> reconstruction(n_blocks,
                                          R_distance,
                                          Scentilator_length,

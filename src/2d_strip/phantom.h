@@ -76,8 +76,6 @@ template <typename T = double> class Phantom {
     return ((d1 * d1 / (el.a * el.a)) + (d2 * d2 / (el.b * el.b))) <= T(1)
                ? true
                : false;
-
-
   }
 
   void emit_event(int n_threads) {
