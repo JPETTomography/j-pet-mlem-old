@@ -1,5 +1,4 @@
-#ifndef STRIP_PET_H
-#define STRIP_PET_H
+#pragma once
 
 #include <cmath>
 #include <vector>
@@ -151,10 +150,7 @@ template <typename T = double> class Phantom {
             T y = event_y(dl, t);
             T z = event_z(z_u, z_d, y, t);
 
-            //   std::cout << t  << " " << y << " " << z << std::endl;
-            // std::cout << z_u << " " << z_d << " " << dl << std::endl;
-
-            Pixel p = pixel_location(y, z);
+            Pixel p =  pixel_location(y, z);
             Pixel pp = pixel_location(ry, rz);
 
             output[p.first][p.second]++;
@@ -264,4 +260,4 @@ template <typename T = double> class Phantom {
   }
 };
 
-#endif  // STRIP_PET_H
+

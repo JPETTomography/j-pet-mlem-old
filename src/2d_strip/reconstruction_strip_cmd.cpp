@@ -72,10 +72,10 @@ int main(int argc, char* argv[]) {
 
     ellipse_list.push_back(el);
 
-    el.x = 50.0f;
+    el.x =  50.0f;
     el.y = -50.0f;
-    el.a = 30.0f;
-    el.b = 50.0f;
+    el.a =  30.0f;
+    el.b =  50.0f;
     el.angle = 340.0;
     el.iter = 200000;
 
