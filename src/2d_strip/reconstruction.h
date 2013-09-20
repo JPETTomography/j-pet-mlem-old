@@ -44,7 +44,6 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
   T half_scentilator_length;
 
   std::vector<event<T>> event_list;
-  std::vector<std::vector<T>> inverse_correlation_matrix;
   T sqrt_det_correlation_matrix;
   std::vector<std::vector<T>> rho;
   std::vector<std::vector<T>> rho_temp;
@@ -80,23 +79,11 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
     pow_sigma_z = sigma_z * sigma_z;
     pow_sigma_dl = sigma_dl * sigma_dl;
 
-    inverse_correlation_matrix.resize(3, std::vector<T>(3, T()));
 
-    inverse_correlation_matrix[0][0] = T(1) / pow_sigma_z;
-    inverse_correlation_matrix[0][1] = T(0.0f);
-    inverse_correlation_matrix[0][2] = T(0.0f);
+    sqrt_det_correlation_matrix = std::sqrt(detector_.inv_c(0,0) *
+                                            detector_.inv_c(1,1) *
+                                            detector_.inv_c(2,2));
 
-    inverse_correlation_matrix[1][0] = T(0.0f);
-    inverse_correlation_matrix[1][1] = T(1) / pow_sigma_z;
-    inverse_correlation_matrix[1][2] = T(0.0f);
-
-    inverse_correlation_matrix[2][0] = T(0.0f);
-    inverse_correlation_matrix[2][1] = T(0.0f);
-    inverse_correlation_matrix[2][2] = T(1) / pow_sigma_dl;
-
-    sqrt_det_correlation_matrix = std::sqrt(inverse_correlation_matrix[0][0] *
-                                            inverse_correlation_matrix[1][1] *
-                                            inverse_correlation_matrix[2][2]);
 
     inv_pow_sigma_z = T(1.0) / pow_sigma_z;
     inv_pow_sigma_dl = T(1.0) / pow_sigma_dl;
@@ -117,9 +104,9 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
 
     T output = T(0.0);
 
-    output += vec_a[0] * inverse_correlation_matrix[0][0] * vec_b[0];
-    output += vec_a[1] * inverse_correlation_matrix[1][1] * vec_b[1];
-    output += vec_a[2] * inverse_correlation_matrix[2][2] * vec_b[2];
+    output += vec_a[0] * detector_.inv_c(0,0) * vec_b[0];
+    output += vec_a[1] * detector_.inv_c(1,1) * vec_b[1];
+    output += vec_a[2] * detector_.inv_c(2,2) * vec_b[2];
 
     return output;
   }

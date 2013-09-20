@@ -34,15 +34,33 @@ public:
     grid_size_z_(n_z_pixels_*pixel_width_),
     grid_ul_y_(grid_center_y_+0.5*grid_size_y_),
     grid_ul_z_(grid_center_z_-0.5*grid_size_z_)
-  {    
+  {     
+    F s_z_sq  = s_z()*s_z();
+    F s_dl_sq = s_dl()*s_dl();
+    
+    F inv_s_z_sq  = 1.0/s_z_sq;
+    F inv_s_dl_sq = 1.0/s_dl_sq;
+    inverse_correlation_matrix_[0][0] = inv_s_z_sq;
+    inverse_correlation_matrix_[0][1] = F(0.0f);
+    inverse_correlation_matrix_[0][2] = F(0.0f);
+
+    inverse_correlation_matrix_[1][0] = F(0.0f);
+    inverse_correlation_matrix_[1][1] = inv_s_z_sq;
+    inverse_correlation_matrix_[1][2] = F(0.0f);
+
+    inverse_correlation_matrix_[2][0] = F(0.0f);
+    inverse_correlation_matrix_[2][1] = F(0.0f);
+    inverse_correlation_matrix_[2][2] = inv_s_dl_sq;
   }
 
 
   F radius() const {return radius_;}
-  F scinatilator_length() const {return scintilator_length_;}
+  F scintilator_length() const {return scintilator_length_;}
   F half_scintilator_length() const {return F(0.5)*scintilator_length_;}
   F s_z()  const {return sigma_z_;}
   F s_dl() const {return sigma_dl_;}
+
+  F inv_c(int i, int j) const {return inverse_correlation_matrix_[i][j];}
 
   event<F> to_projection_space_tan(const ImageSpaceEventTan<F>& ev) {    
     F z_u = ev.z + (radius()- ev.y)*ev.tan;
@@ -102,4 +120,5 @@ private:
   F grid_ul_y_;
   F grid_ul_z_;
   
+  F inverse_correlation_matrix_[3][3];
 };
