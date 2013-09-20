@@ -167,14 +167,7 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
   }
 
   T sensitivity(T y, T z) {
-
-    T L_plus = (half_scentilator_length + z);
-    T L_minus = (half_scentilator_length - z);
-    T R_plus = R_distance + y;
-    T R_minus = R_distance - y;
-    return INVERSE_PI *
-           (std::atan(std::min(L_minus / R_minus, L_plus / R_plus)) -
-            std::atan(std::max(-L_plus / R_minus, -L_minus / R_plus)));
+    return detector_.sensitivity(y,z);
   }
 
   /** Performs n_iterations of the list mode MEML algorithm

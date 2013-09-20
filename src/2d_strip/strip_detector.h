@@ -4,7 +4,11 @@
  * Class  responsible for the Strip detector together with
  * the pixel grid inside. 
  */
+
+
+
 template<typename F> class StripDetector {
+  static constexpr const F INVERSE_PI = F(1.0 / M_PI);
 public:
 
   typedef std::pair<int, int> Pixel;
@@ -101,6 +105,17 @@ public:
 
   Pixel pixel_location(Point p) {
     return pixel_location(p.first, p.second);
+  }
+
+  F sensitivity(F y, F z) {
+
+    F L_plus = (half_scintilator_length() + z);
+    F L_minus = (half_scintilator_length() - z);
+    F R_plus = radius() + y;
+    F R_minus = radius() - y;
+    return INVERSE_PI *
+           (std::atan(std::min(L_minus / R_minus, L_plus / R_plus)) -
+            std::atan(std::max(-L_plus / R_minus, -L_minus / R_plus)));
   }
 
 private:
