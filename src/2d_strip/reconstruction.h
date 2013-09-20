@@ -93,7 +93,7 @@ private:
       for (int z = 0; z < n_pixels; ++z) {
 
         Point pp = pixel_center(y, z);
-        lookup_table[y][z] = sensitivity(pp.first, pp.second);
+        lookup_table[y][z] = detector_.sensitivity(pp.first, pp.second);
       }
     }
   }
@@ -166,9 +166,6 @@ public:
     return (element_before_exp * _exp);
   }
 
-  T sensitivity(T y, T z) {
-    return detector_.sensitivity(y,z);
-  }
 
   /** Performs n_iterations of the list mode MEML algorithm
    */
@@ -280,17 +277,17 @@ public:
                         T& tg,
                         int& tid) {
 
-    T acc = T(0.0);
 
-    T _cos = std::cos((angle));
 
-    T inv_cos = T(1.0) / _cos;
-    T pow_inv_cos = inv_cos * inv_cos;
+    T cos_ = std::cos((angle));
 
-    T A = (((T(4.0) / (_cos * _cos)) * inv_pow_sigma_dl) +
+    T sec_ = T(1.0) / cos_;
+    T sec_sq_ = sec_ * sec_;
+
+    T A = (((T(4.0) / (cos_ * cos_)) * inv_pow_sigma_dl) +
            (T(2.0) * tg * tg * inv_pow_sigma_z));
     T B = -T(4.0) * tg * inv_pow_sigma_z;
-    T C = T(2.0) * inv_pow_sigma_z;
+    T C =  T(2.0) * inv_pow_sigma_z;
     T B_2 = (B / T(2.0)) * (B / T(2.0));
 
     T bb_z = T(3.0) / std::sqrt(C - (B_2 / A));
@@ -300,9 +297,9 @@ public:
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);
 
-    Pixel ur = Pixel(center_pixel.first - pixels_in_line(bb_y),
+    Pixel ur = Pixel(center_pixel.first  - pixels_in_line(bb_y),
                      center_pixel.second + pixels_in_line(bb_z));
-    Pixel dl = Pixel(center_pixel.first + pixels_in_line(bb_y),
+    Pixel dl = Pixel(center_pixel.first  + pixels_in_line(bb_y),
                      center_pixel.second - pixels_in_line(bb_z));
 
     std::vector<std::pair<Pixel, T>> ellipse_kernels;
@@ -310,8 +307,8 @@ public:
 
     Point pp = pixel_center(ur.first, dl.second);
 
-    int count = 0;
 
+    T acc = T(0.0);
     for (int iz = dl.second; iz < ur.second; ++iz) {
       for (int iy = ur.first; iy < dl.first; ++iy) {
 
@@ -323,13 +320,12 @@ public:
           pp.second -= ellipse_center.second;
 
           T event_kernel =
-              kernel(y, tg, inv_cos, pow_inv_cos, pp) / lookup_table[iy][iz];
+              kernel(y, tg, sec_, sec_sq_, pp) / lookup_table[iy][iz];
 
           ellipse_kernels.push_back(
               std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
           acc += event_kernel * lookup_table[iy][iz] * rho[iy][iz];
 
-          count++;
         }
       }
     }
@@ -350,20 +346,24 @@ public:
                : false;
   }
 
+
+private:
   // coord Plane
-  Pixel pixel_location(T y, T z) {
-    return detector_.pixel_location(y, z);
-  }
+Pixel pixel_location(T y, T z) {
+return detector_.pixel_location(y, z);
+}
 
-  // pixel Plane
-  Point pixel_center(T y, T z) {
-    return detector_.pixel_center( y, z);
-  }
+// pixel Plane
+Point pixel_center(T y, T z) {
+return detector_.pixel_center( y, z);
+}
 
-  int pixels_in_line(T& length) {
-    T d = length / pixel_size;
-    return (d > 0) ? int(d) : int(d + 1);
-  }
+int pixels_in_line(T length) {
+T d = (length+0.5) / pixel_size;
+return int(d);
+}
+
+public:
 
   template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
 
@@ -391,13 +391,8 @@ public:
       temp_event.z_d = z_d;
       temp_event.dl = dl;
 
-      T tan = event_tan(z_u, z_d, detector_.radius());
-      T y = event_y(z_d, tan);
-      T z = event_z(z_u, z_d, y, tan);
-
-      Pixel p = pixel_location(y, z);
-
       event_list.push_back(temp_event);
+
     }
 
     return *this;

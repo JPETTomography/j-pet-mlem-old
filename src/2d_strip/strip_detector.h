@@ -108,7 +108,6 @@ public:
   }
 
   F sensitivity(F y, F z) {
-
     F L_plus = (half_scintilator_length() + z);
     F L_minus = (half_scintilator_length() - z);
     F R_plus = radius() + y;
