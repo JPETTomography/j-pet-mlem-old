@@ -22,10 +22,10 @@
 
 
 
-template <typename T = float> class Reconstruction {
+template <typename T = float, typename D = StripDetector<T> > class Reconstruction {
  public:
-  typedef std::pair<int, int> Pixel;
-  typedef std::pair<T, T> Point;
+  typedef typename D::Pixel Pixel;
+  typedef typename D::Point Point;
 
  private:
 
@@ -52,6 +52,8 @@ template <typename T = float> class Reconstruction {
   std::vector<std::vector<T>> thread_rho;
   std::vector<std::vector<T>> lookup_table;
 
+  D detector_;
+
  public:
   Reconstruction(int iteration,
                  T R_distance,
@@ -66,7 +68,12 @@ template <typename T = float> class Reconstruction {
         n_pixels(n_pixels),
         pixel_size(pixel_size),
         sigma_z(sigma_z),
-        sigma_dl(sigma_dl) {
+        sigma_dl(sigma_dl),
+        detector_(R_distance, Scentilator_length, 
+                  n_pixels, n_pixels, 
+                  pixel_size, pixel_size,
+                  sigma_z, sigma_dl)
+  {
 
     rho.assign(n_pixels, std::vector<T>(n_pixels, T(100)));
     rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(10)));
@@ -365,16 +372,12 @@ template <typename T = float> class Reconstruction {
 
   // coord Plane
   Pixel pixel_location(T y, T z) {
-
-    return Pixel(std::floor((R_distance - y) / pixel_size),
-                 std::floor((R_distance + z) / pixel_size));
+    return detector_.pixel_location(y, z);
   }
 
   // pixel Plane
   Point pixel_center(T y, T z) {
-
-    return Point((R_distance - (y + T(0.5)) * pixel_size),
-                 (z + T(0.5)) * pixel_size - R_distance);
+    return detector_.pixel_center( y, z);
   }
 
   int pixels_in_line(T& length) {

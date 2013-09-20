@@ -5,6 +5,10 @@
  */
 template<typename F> class StripDetector {
 public:
+
+  typedef std::pair<int, int> Pixel;
+  typedef std::pair<F,F> Point;
+
   StripDetector(F radius,
                 F scintilator_length,
                 int n_y_pixels,
@@ -24,7 +28,12 @@ public:
     sigma_z_(sigma_z),
     sigma_dl_(sigma_dl),
     grid_center_y_(grid_center_y),
-    grid_center_z_(grid_center_z) {    
+    grid_center_z_(grid_center_z),
+    grid_size_y_(n_y_pixels_*pixel_height_), 
+    grid_size_z_(n_z_pixels_*pixel_width_),
+    grid_ul_y_(grid_center_y_+0.5*grid_size_y_),
+    grid_ul_z_(grid_center_z_-0.5*grid_size_z_)
+  {    
   }
 
 
@@ -56,6 +65,25 @@ public:
     return to_angle(from_projection_space_tan(ev));
   }
 
+  Point pixel_center(int i, int j) {
+    return std::make_pair<F>(grid_ul_y_-i*pixel_height_-0.5*pixel_height_, 
+                             grid_ul_z_+j*pixel_width_ +0.5*pixel_width_);
+    
+  } 
+  Point pixel_center(Pixel pix) {
+    return pixel_center(pix.first, pix.second);
+  } 
+
+  Pixel pixel_location(F y, F z) {
+    return std::make_pair<int>( floor( (grid_ul_y_-y)/pixel_height_),
+                                floor( (z-grid_ul_z_)/pixel_width_)
+                                );
+  }
+
+  Pixel pixel_location(Point p) {
+    return pixel_location(p.first, p.second);
+  }
+
 private:
   const F radius_;
   const F scintilator_length_;
@@ -67,5 +95,10 @@ private:
   const F sigma_dl_;
   const F grid_center_y_;
   const F grid_center_z_;
+  
+  F grid_size_y_;
+  F grid_size_z_;
+  F grid_ul_y_;
+  F grid_ul_z_;
   
 };
