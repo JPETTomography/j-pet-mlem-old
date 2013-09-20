@@ -33,8 +33,6 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
   static constexpr const T INVERSE_POW_TWO_PI = T(1.0 / (2.0 * M_PI * M_PI));
 
   int iteration;
-  T R_distance;
-  T Scentilator_length;
   int n_pixels;
   T pixel_size;
   T pow_sigma_z, pow_sigma_dl;
@@ -53,30 +51,32 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
   D detector_;
 
  public:
+  Reconstruction(int iteration,const D &detector):
+    iteration(iteration), detector_(detector) {
+    init(detector_);
+  };
   Reconstruction(int iteration,
-                 T R_distance,
-                 T Scentilator_length,
+                 T R_distance_a,
+                 T scintilator_length,
                  int n_pixels,
                  T pixel_size,
                  T sigma_z,
                  T sigma_dl)
-      : iteration(iteration),
-        R_distance(R_distance),
-        Scentilator_length(Scentilator_length),
+      : iteration(iteration),       
         n_pixels(n_pixels),
         pixel_size(pixel_size),
-        detector_(R_distance, Scentilator_length, 
+        detector_(R_distance_a, scintilator_length, 
                   n_pixels, n_pixels, 
                   pixel_size, pixel_size,
-                  sigma_z, sigma_dl)
-  {
-
+                  sigma_z, sigma_dl) {
+    init(detector_);
+  }
+private:
+  void init(const D &detector) {
     rho.assign(n_pixels, std::vector<T>(n_pixels, T(100)));
     rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(10)));
-    pow_sigma_z = detector_.s_z() * detector_.s_z();
-    pow_sigma_dl = detector_.s_dl() * detector_.s_dl();
-    pow_sigma_dl = sigma_dl * sigma_dl;
-
+    pow_sigma_z = detector_.s_z() * detector.s_z();
+    pow_sigma_dl = detector_.s_dl() * detector.s_dl();
 
     sqrt_det_correlation_matrix = std::sqrt(detector_.inv_c(0,0) *
                                             detector_.inv_c(1,1) *
@@ -97,7 +97,7 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
       }
     }
   }
-
+public:
   T multiply_elements(T* vec_a, T* vec_b) {
 
     T output = T(0.0);
@@ -128,8 +128,10 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
 
   double fexp(double& x) { return std::exp(x); }
 
-  T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
 
+
+  T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
+    T R_distance = detector_.radius();
     T vec_o[3];
     T vec_a[3];
     T vec_b[3];
@@ -188,7 +190,7 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
 
         int tid = omp_get_thread_num();
 
-        T tan = event_tan(event_list[id].z_u, event_list[id].z_d, R_distance);
+        T tan = event_tan(event_list[id].z_u, event_list[id].z_d, detector_.radius());
         T y = event_y(event_list[id].dl, tan);
         T z = event_z(event_list[id].z_u, event_list[id].z_d, y, tan);
 
@@ -389,7 +391,7 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
       temp_event.z_d = z_d;
       temp_event.dl = dl;
 
-      T tan = event_tan(z_u, z_d, R_distance);
+      T tan = event_tan(z_u, z_d, detector_.radius());
       T y = event_y(z_d, tan);
       T z = event_z(z_u, z_d, y, tan);
 
