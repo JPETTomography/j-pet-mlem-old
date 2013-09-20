@@ -1,3 +1,4 @@
+#pragma once
 #include"event.h"
 /**
  * Class  responsible for the Strip detector together with
