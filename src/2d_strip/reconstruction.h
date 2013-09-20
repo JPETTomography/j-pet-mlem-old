@@ -37,11 +37,10 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
   T Scentilator_length;
   int n_pixels;
   T pixel_size;
-  T sigma_z, sigma_dl;
   T pow_sigma_z, pow_sigma_dl;
   T inv_pow_sigma_z;
   T inv_pow_sigma_dl;
-  T half_scentilator_length;
+ 
 
   std::vector<event<T>> event_list;
   T sqrt_det_correlation_matrix;
@@ -66,8 +65,6 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
         Scentilator_length(Scentilator_length),
         n_pixels(n_pixels),
         pixel_size(pixel_size),
-        sigma_z(sigma_z),
-        sigma_dl(sigma_dl),
         detector_(R_distance, Scentilator_length, 
                   n_pixels, n_pixels, 
                   pixel_size, pixel_size,
@@ -76,7 +73,8 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
 
     rho.assign(n_pixels, std::vector<T>(n_pixels, T(100)));
     rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(10)));
-    pow_sigma_z = sigma_z * sigma_z;
+    pow_sigma_z = detector_.s_z() * detector_.s_z();
+    pow_sigma_dl = detector_.s_dl() * detector_.s_dl();
     pow_sigma_dl = sigma_dl * sigma_dl;
 
 
@@ -87,7 +85,7 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
 
     inv_pow_sigma_z = T(1.0) / pow_sigma_z;
     inv_pow_sigma_dl = T(1.0) / pow_sigma_dl;
-    half_scentilator_length = Scentilator_length * T(0.5f);
+    
 
     lookup_table.assign(n_pixels, std::vector<T>(n_pixels));
 
