@@ -290,9 +290,9 @@ public:
     T C =  T(2.0) * inv_pow_sigma_z;
     T B_2 = (B / T(2.0)) * (B / T(2.0));
 
-    T bb_z = T(3.0) / std::sqrt(C - (B_2 / A));
+    T bb_y = T(3.0) / std::sqrt(C - (B_2 / A));
 
-    T bb_y = T(3.0) / std::sqrt(A - (B_2 / C));
+    T bb_z = T(3.0) / std::sqrt(A - (B_2 / C));
 
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);
