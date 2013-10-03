@@ -20,9 +20,8 @@
 #define omp_get_thread_num() 0
 #endif
 
-
-
-template <typename T = float, typename D = StripDetector<T> > class Reconstruction {
+template <typename T = float, typename D = StripDetector<T>>
+class Reconstruction {
  public:
   typedef typename D::Pixel Pixel;
   typedef typename D::Point Point;
@@ -38,7 +37,6 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
   T pow_sigma_z, pow_sigma_dl;
   T inv_pow_sigma_z;
   T inv_pow_sigma_dl;
- 
 
   std::vector<event<T>> event_list;
   T sqrt_det_correlation_matrix;
@@ -51,10 +49,11 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
   D detector_;
 
  public:
-  Reconstruction(int iteration,const D &detector):
-    iteration(iteration), detector_(detector) {
+  Reconstruction(int iteration, const D& detector)
+      : iteration(iteration), detector_(detector) {
     init(detector_);
-  };
+  }
+  ;
   Reconstruction(int iteration,
                  T R_distance_a,
                  T scintilator_length,
@@ -62,30 +61,32 @@ template <typename T = float, typename D = StripDetector<T> > class Reconstructi
                  T pixel_size,
                  T sigma_z,
                  T sigma_dl)
-      : iteration(iteration),       
+      : iteration(iteration),
         n_pixels(n_pixels),
         pixel_size(pixel_size),
-        detector_(R_distance_a, scintilator_length, 
-                  n_pixels, n_pixels, 
-                  pixel_size, pixel_size,
-                  sigma_z, sigma_dl) {
+        detector_(R_distance_a,
+                  scintilator_length,
+                  n_pixels,
+                  n_pixels,
+                  pixel_size,
+                  pixel_size,
+                  sigma_z,
+                  sigma_dl) {
     init(detector_);
   }
-private:
-  void init(const D &detector) {
+
+ private:
+  void init(const D& detector) {
     rho.assign(n_pixels, std::vector<T>(n_pixels, T(100)));
     rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(10)));
     pow_sigma_z = detector_.s_z() * detector.s_z();
     pow_sigma_dl = detector_.s_dl() * detector.s_dl();
 
-    sqrt_det_correlation_matrix = std::sqrt(detector_.inv_c(0,0) *
-                                            detector_.inv_c(1,1) *
-                                            detector_.inv_c(2,2));
-
+    sqrt_det_correlation_matrix = std::sqrt(
+        detector_.inv_c(0, 0) * detector_.inv_c(1, 1) * detector_.inv_c(2, 2));
 
     inv_pow_sigma_z = T(1.0) / pow_sigma_z;
     inv_pow_sigma_dl = T(1.0) / pow_sigma_dl;
-    
 
     lookup_table.assign(n_pixels, std::vector<T>(n_pixels));
 
@@ -97,14 +98,15 @@ private:
       }
     }
   }
-public:
+
+ public:
   T multiply_elements(T* vec_a, T* vec_b) {
 
     T output = T(0.0);
 
-    output += vec_a[0] * detector_.inv_c(0,0) * vec_b[0];
-    output += vec_a[1] * detector_.inv_c(1,1) * vec_b[1];
-    output += vec_a[2] * detector_.inv_c(2,2) * vec_b[2];
+    output += vec_a[0] * detector_.inv_c(0, 0) * vec_b[0];
+    output += vec_a[1] * detector_.inv_c(1, 1) * vec_b[1];
+    output += vec_a[2] * detector_.inv_c(2, 2) * vec_b[2];
 
     return output;
   }
@@ -127,8 +129,6 @@ public:
   }
 
   double fexp(double& x) { return std::exp(x); }
-
-
 
   T kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
     T R_distance = detector_.radius();
@@ -166,7 +166,6 @@ public:
     return (element_before_exp * _exp);
   }
 
-
   /** Performs n_iterations of the list mode MEML algorithm
    */
   void iterate(int n_iterations) {
@@ -187,7 +186,8 @@ public:
 
         int tid = omp_get_thread_num();
 
-        T tan = event_tan(event_list[id].z_u, event_list[id].z_d, detector_.radius());
+        T tan = event_tan(
+            event_list[id].z_u, event_list[id].z_d, detector_.radius());
         T y = event_y(event_list[id].dl, tan);
         T z = event_z(event_list[id].z_u, event_list[id].z_d, y, tan);
 
@@ -277,8 +277,6 @@ public:
                         T& tg,
                         int& tid) {
 
-
-
     T cos_ = std::cos((angle));
 
     T sec_ = T(1.0) / cos_;
@@ -287,26 +285,25 @@ public:
     T A = (((T(4.0) / (cos_ * cos_)) * inv_pow_sigma_dl) +
            (T(2.0) * tg * tg * inv_pow_sigma_z));
     T B = -T(4.0) * tg * inv_pow_sigma_z;
-    T C =  T(2.0) * inv_pow_sigma_z;
+    T C = T(2.0) * inv_pow_sigma_z;
     T B_2 = (B / T(2.0)) * (B / T(2.0));
 
-    T bb_y = T(3.0) / std::sqrt(C - (B_2 / A));
+    T bb_y = bby(A, C, B_2);
 
-    T bb_z = T(3.0) / std::sqrt(A - (B_2 / C));
+    T bb_z = bbz(A, C, B_2);
 
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);
 
-    Pixel ur = Pixel(center_pixel.first  - pixels_in_line(bb_y),
+    Pixel ur = Pixel(center_pixel.first - pixels_in_line(bb_y),
                      center_pixel.second + pixels_in_line(bb_z));
-    Pixel dl = Pixel(center_pixel.first  + pixels_in_line(bb_y),
+    Pixel dl = Pixel(center_pixel.first + pixels_in_line(bb_y),
                      center_pixel.second - pixels_in_line(bb_z));
 
     std::vector<std::pair<Pixel, T>> ellipse_kernels;
     ellipse_kernels.reserve(2000);
 
     Point pp = pixel_center(ur.first, dl.second);
-
 
     T acc = T(0.0);
     for (int iz = dl.second; iz < ur.second; ++iz) {
@@ -325,7 +322,6 @@ public:
           ellipse_kernels.push_back(
               std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
           acc += event_kernel * lookup_table[iy][iz] * rho[iy][iz];
-
         }
       }
     }
@@ -346,24 +342,22 @@ public:
                : false;
   }
 
+  T bbz(T& A, T& C, T& B_2) { return T(3.0) / std::sqrt(C - (B_2 / A)); }
 
-private:
+  T bby(T& A, T& C, T& B_2) { return T(3.0) / std::sqrt(A - (B_2 / C)); }
+
   // coord Plane
-Pixel pixel_location(T y, T z) {
-return detector_.pixel_location(y, z);
-}
+  Pixel pixel_location(T y, T z) { return detector_.pixel_location(y, z); }
 
-// pixel Plane
-Point pixel_center(T y, T z) {
-return detector_.pixel_center( y, z);
-}
+  // pixel Plane
+  Point pixel_center(T y, T z) { return detector_.pixel_center(y, z); }
 
-int pixels_in_line(T length) {
-T d = (length+0.5) / pixel_size;
-return int(d);
-}
+  int pixels_in_line(T length) {
+    T d = (length + 0.5) / pixel_size;
+    return int(d);
+  }
 
-public:
+ public:
 
   template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
 
@@ -392,7 +386,6 @@ public:
       temp_event.dl = dl;
 
       event_list.push_back(temp_event);
-
     }
 
     return *this;
@@ -404,4 +397,3 @@ public:
     return in;
   }
 };
-
