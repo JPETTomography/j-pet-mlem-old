@@ -150,7 +150,7 @@ template <typename T = double> class Phantom {
             T y = event_y(dl, t);
             T z = event_z(z_u, z_d, y, t);
 
-            Pixel p =  pixel_location(y, z);
+            Pixel p = pixel_location(y, z);
             Pixel pp = pixel_location(ry, rz);
 
             output[p.first][p.second]++;
@@ -259,5 +259,3 @@ template <typename T = double> class Phantom {
     return out;
   }
 };
-
-
