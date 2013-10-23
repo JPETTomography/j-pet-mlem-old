@@ -54,25 +54,23 @@ TEST_CASE("sensitivity tests/non square", "non square") {
         Approx(0.05269621503719814).epsilon(1e-13));
 }
 
+#if DONT_TEST
 TEST_CASE("kernel tests constructor 1", "kernel") {
-  /*
-    StripDetector<double> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  StripDetector<double> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
-    Reconstruction<double> reconstructor(1, detector);
+  Reconstruction<double> reconstructor(1, detector);
 
-    check(1.1372205719261035e-7, 0.0, 0.0, 0.0, 0.0, reconstructor);
+  check(1.1372205719261035e-7, 0.0, 0.0, 0.0, 0.0, reconstructor);
 
-    check(1.99620227633633e-8, 0.0, 0.0, 10.0, 13.0, reconstructor);
+  check(1.99620227633633e-8, 0.0, 0.0, 10.0, 13.0, reconstructor);
 
-    check(5.5729829923449995e-8, 100.0, 45.0 * degree, 0.0, 0.0, reconstructor);
+  check(5.5729829923449995e-8, 100.0, 45.0 * degree, 0.0, 0.0, reconstructor);
 
-    check(3.12537857516921e-11, 100.0, 45.0 * degree, -20.0, 7.0,
-    reconstructor);
+  check(3.12537857516921e-11, 100.0, 45.0 * degree, -20.0, 7.0, reconstructor);
 
-    check(7.993589560016591e-8, -10.0, -13.0 * degree, -2.0, -5.0,
-    reconstructor);
-  */
+  check(7.993589560016591e-8, -10.0, -13.0 * degree, -2.0, -5.0, reconstructor);
 }
+#endif
 
 TEST_CASE("kernel tests constructor 2", "kernel") {
 
