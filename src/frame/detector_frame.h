@@ -61,13 +61,11 @@ template <typename F> class Detector {
     F z_dn = event.z() - (R() + event.y()) * event.tan();
     F dl = -2.0 * event.y() * ::sqrt(1 + event.tan() * event.tan());
     return EventDetector<F>(z_up, z_dn, dl);
-  }
-  ;
+  };
 
   EventDetector<F> EventImageAngleToDetector(const EventImageAngle<F>& event) {
     return EventImageTanToDetector(EventImageAngleToTan(event));
-  }
-  ;
+  };
 
   EventImageTan<F> EventDetectorToImageTan(const EventDetector<F>& event) {
     F tan = (event.z_up() - event.z_dn()) / (2.0 * R());

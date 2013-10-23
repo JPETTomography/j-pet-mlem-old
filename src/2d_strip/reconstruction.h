@@ -27,7 +27,6 @@ class Reconstruction {
   typedef typename D::Point Point;
 
  private:
-
   static constexpr const T INVERSE_PI = T(1.0 / M_PI);
   static constexpr const T INVERSE_POW_TWO_PI = T(1.0 / (2.0 * M_PI * M_PI));
 
@@ -52,8 +51,7 @@ class Reconstruction {
   Reconstruction(int iteration, const D& detector)
       : iteration(iteration), detector_(detector) {
     init(detector_);
-  }
-  ;
+  };
   Reconstruction(int iteration,
                  T R_distance_a,
                  T scintilator_length,
@@ -358,7 +356,6 @@ class Reconstruction {
   }
 
  public:
-
   template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
 
     event<T> temp_event;

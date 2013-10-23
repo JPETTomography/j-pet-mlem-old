@@ -64,5 +64,4 @@ F form(Vector<N, F> a, Matrix<N, M, F> mat, Vector<M, F> b) {
       sum += a[i] * mat[i][j] * b[j];
 
   return sum;
-}
-;
+};

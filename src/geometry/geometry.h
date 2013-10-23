@@ -66,8 +66,7 @@ template <int N, typename F> class Point {
       p_[i] += rhs[i];
 
     return *this;
-  }
-  ;
+  };
   Point& operator-=(const Vector<N, F>& rhs) {
     for (int i = 0; i < N; ++i)
       p_[i] -= rhs[i];

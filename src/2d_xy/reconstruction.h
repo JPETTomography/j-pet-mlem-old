@@ -51,7 +51,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     for (S p = 0; p < total_n_pixels_; ++p) {
       if (scale_[p] > 0) {
         scale_[p] = n_emissions / scale_[p];
-        std::cerr<<"scale_["<<p<<"]="<<scale_[p]<<"\n";
+        std::cerr << "scale_[" << p << "]=" << scale_[p] << "\n";
         rho_detected_[p] = static_cast<F>(1);
       }
     }
