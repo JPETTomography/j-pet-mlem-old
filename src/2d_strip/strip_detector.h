@@ -9,6 +9,7 @@ template <typename F> class StripDetector {
   static constexpr const F INVERSE_PI = F(1.0 / M_PI);
 
  public:
+
   typedef std::pair<int, int> Pixel;
   typedef std::pair<F, F> Point;
 
@@ -17,7 +18,7 @@ template <typename F> class StripDetector {
                 int n_y_pixels,
                 int n_z_pixels,
                 F pixel_height,  // y direction
-                F pixel_width,   // z direction
+                F pixel_width,  // z direction
                 F sigma_z,
                 F sigma_dl,
                 F grid_center_y = 0.0,
@@ -109,7 +110,6 @@ template <typename F> class StripDetector {
   }
 
   F get_sigma_dl() { return sigma_dl_; }
-
   F get_sigma_z() { return sigma_z_; }
 
  private:

@@ -27,6 +27,7 @@ class Reconstruction {
   typedef typename D::Point Point;
 
  private:
+
   static constexpr const T INVERSE_PI = T(1.0 / M_PI);
   static constexpr const T INVERSE_POW_TWO_PI = T(1.0 / (2.0 * M_PI * M_PI));
 
@@ -51,7 +52,8 @@ class Reconstruction {
   Reconstruction(int iteration, const D& detector)
       : iteration(iteration), detector_(detector) {
     init(detector_);
-  };
+  }
+  ;
   Reconstruction(int iteration,
                  T R_distance_a,
                  T scintilator_length,
@@ -269,9 +271,6 @@ class Reconstruction {
     }
   }
 
-  T bby(T& A, T& C, T& B_2) { return T(3.0) / std::sqrt(A - (B_2 / C)); }
-  T bbz(T& A, T& C, T& B_2) { return T(3.0) / std::sqrt(C - (B_2 / A)); }
-
   void bb_pixel_updates(Point& ellipse_center,
                         T& angle,
                         T& y,
@@ -289,9 +288,9 @@ class Reconstruction {
     T C = T(2.0) * inv_pow_sigma_z;
     T B_2 = (B / T(2.0)) * (B / T(2.0));
 
-    T bb_y = T(3.0) / std::sqrt(C - (B_2 / A));
+    T bb_y = bby(A, C, B_2);
 
-    T bb_z = T(3.0) / std::sqrt(A - (B_2 / C));
+    T bb_z = bbz(A, C, B_2);
 
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);
@@ -343,7 +342,10 @@ class Reconstruction {
                : false;
   }
 
- private:
+  T bbz(T& A, T& C, T& B_2) { return T(3.0) / std::sqrt(C - (B_2 / A)); }
+
+  T bby(T& A, T& C, T& B_2) { return T(3.0) / std::sqrt(A - (B_2 / C)); }
+
   // coord Plane
   Pixel pixel_location(T y, T z) { return detector_.pixel_location(y, z); }
 
@@ -356,6 +358,7 @@ class Reconstruction {
   }
 
  public:
+
   template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
 
     event<T> temp_event;
