@@ -2,9 +2,11 @@
 !/*/
 !/*.*
 /data/
+*/*.pdf
+**/*-converted-to.*
 **/*.aux
+**/*.out
 **/*.log
-**/*.pdf
 **/*.dvi
 **/*.synctex.gz
 **/*.toc
@@ -12,10 +14,10 @@
 **/*.snm
 doc/html/
 *~
-*.bin
-*.png
-*.svg
-*.txt
+/*.bin
+/*.png
+/*.svg
+/*.txt
 /build*/
 *.pro.user
 /Makefile
