@@ -1,22 +1,3 @@
-(* Content-type: application/vnd.wolfram.mathematica *)
-
-(*** Wolfram Notebook File ***)
-(* http://www.wolfram.com/nb *)
-
-(* CreatedBy='Mathematica 8.0' *)
-
-(*CacheID: 234*)
-(* Internal cache information:
-NotebookFileLineBreakTest
-NotebookFileLineBreakTest
-NotebookDataPosition[       157,          7]
-NotebookDataLength[    272702,       8913]
-NotebookOptionsPosition[    271640,       8872]
-NotebookOutlinePosition[    271977,       8887]
-CellTagsIndexPosition[    271934,       8884]
-WindowFrame->Normal*)
-
-(* Beginning of Notebook Content *)
 Notebook[{
 Cell[BoxData[
  RowBox[{
@@ -8872,51 +8853,8 @@ Cell[BoxData["130"], "Output",
 },
 WindowSize->{740, 839},
 WindowMargins->{{147, Automatic}, {Automatic, 29}},
-FrontEndVersion->"8.0 for Linux x86 (32-bit) (November 7, 2010)",
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+FrontEndVersion->"9.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (January 25, \
+2013)",
 StyleDefinitions->"Default.nb"
 ]
-(* End of Notebook Content *)
-
-(* Internal cache information *)
-(*CellTagsOutline
-CellTagsIndex->{}
-*)
-(*CellTagsIndex
-CellTagsIndex->{}
-*)
-(*NotebookFileOutline
-Notebook[{
-Cell[557, 20, 783, 21, 30, "Input"],
-Cell[CellGroupData[{
-Cell[1365, 45, 250, 5, 30, "Input"],
-Cell[1618, 52, 4068, 134, 164, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[5723, 191, 933, 20, 50, InheritFromParent],
-Cell[6659, 213, 255120, 8324, 11089, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[261816, 8542, 165, 3, 30, "Input"],
-Cell[261984, 8547, 94, 1, 30, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[262115, 8553, 213, 5, 30, "Input"],
-Cell[262331, 8560, 149, 3, 30, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[262517, 8568, 275, 6, 30, "Input"],
-Cell[262795, 8576, 4066, 134, 164, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[266898, 8715, 226, 5, 30, "Input"],
-Cell[267127, 8722, 4100, 133, 183, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[271264, 8860, 261, 6, 30, "Input"],
-Cell[271528, 8868, 96, 1, 30, "Output"]
-}, Open  ]]
-}
-]
-*)
-
-(* End of internal cache information *)
