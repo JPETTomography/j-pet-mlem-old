@@ -1,34 +1,19 @@
-(* Content-type: application/vnd.wolfram.mathematica *)
-
-(*** Wolfram Notebook File ***)
-(* http://www.wolfram.com/nb *)
-
-(* CreatedBy='Mathematica 9.0' *)
-
-(*CacheID: 234*)
-(* Internal cache information:
-NotebookFileLineBreakTest
-NotebookFileLineBreakTest
-NotebookDataPosition[       157,          7]
-NotebookDataLength[     36762,       1105]
-NotebookOptionsPosition[     34908,       1040]
-NotebookOutlinePosition[     35246,       1055]
-CellTagsIndexPosition[     35203,       1052]
-WindowFrame->Normal*)
-
-(* Beginning of Notebook Content *)
 Notebook[{
 Cell[BoxData[
- RowBox[{"<<", "\"\<~/PET/math/detector.m\>\""}]], "Input"],
-
-Cell[CellGroupData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"NotebookDirectory", "[", "]"}], "<>", "\"\<detector.m\>\""}], " ",
+   "//", " ", "Get"}]], "Input",
+ CellChangeTimes->{{3.591728413822504*^9, 3.591728416222723*^9}}],
 
 Cell[BoxData[
- RowBox[{"SetDirectory", "[", "\"\<~/PET/pubs\>\"", "]"}]], "Input"],
-
-Cell[BoxData["\<\"/home/elf/PET/pubs\"\>"], "Output",
- CellChangeTimes->{3.585916661484638*^9}]
-}, Open  ]],
+ RowBox[{"SetDirectory", "@", 
+  RowBox[{"FileNameJoin", "@", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], ",", "\"\<..\>\"", ",", 
+     "\"\<pubs\>\"", ",", "\"\<figures\>\""}], "}"}]}]}]], "Input",
+ CellChangeTimes->{{3.591728423384636*^9, 3.5917284315407953`*^9}}],
 
 Cell[CellGroupData[{
 
@@ -79,8 +64,7 @@ Cell[BoxData[
      SqrtBox[
       RowBox[{"1", "+", 
        SuperscriptBox[
-        RowBox[{"Tan", "[", "\[Theta]", "]"}], "2"]}]]}]}]}], "}"}]], "Output",\
-
+        RowBox[{"Tan", "[", "\[Theta]", "]"}], "2"]}]]}]}]}], "}"}]], "Output",
  CellChangeTimes->{3.585916661588516*^9}]
 }, Open  ]],
 
@@ -181,10 +165,10 @@ Cell[BoxData[
       Editable->False]}],
     SeriesData[$CellContext`\[Phi], 
      0, {$CellContext`dz - $CellContext`dy 
-      Tan[$CellContext`t\[Theta]], -($CellContext`dy - $CellContext`R + \
-$CellContext`ty) (1 + 
-       Tan[$CellContext`t\[Theta]]^2), -($CellContext`dy - $CellContext`R + \
-$CellContext`ty) (Tan[$CellContext`t\[Theta]] + 
+      Tan[$CellContext`t\[Theta]], (-($CellContext`dy - $CellContext`R + \
+$CellContext`ty)) (1 + 
+       Tan[$CellContext`t\[Theta]]^2), (-($CellContext`dy - $CellContext`R + \
+$CellContext`ty)) (Tan[$CellContext`t\[Theta]] + 
        Tan[$CellContext`t\[Theta]]^3)}, 0, 3, 1],
     Editable->False], ",", 
    InterpretationBox[
@@ -217,10 +201,10 @@ $CellContext`ty) (Tan[$CellContext`t\[Theta]] +
       Editable->False]}],
     SeriesData[$CellContext`\[Phi], 
      0, {$CellContext`dz - $CellContext`dy 
-      Tan[$CellContext`t\[Theta]], -($CellContext`dy + $CellContext`R + \
-$CellContext`ty) (1 + 
-       Tan[$CellContext`t\[Theta]]^2), -($CellContext`dy + $CellContext`R + \
-$CellContext`ty) (Tan[$CellContext`t\[Theta]] + 
+      Tan[$CellContext`t\[Theta]], (-($CellContext`dy + $CellContext`R + \
+$CellContext`ty)) (1 + 
+       Tan[$CellContext`t\[Theta]]^2), (-($CellContext`dy + $CellContext`R + \
+$CellContext`ty)) (Tan[$CellContext`t\[Theta]] + 
        Tan[$CellContext`t\[Theta]]^3)}, 0, 3, 1],
     Editable->False], ",", 
    InterpretationBox[
@@ -268,12 +252,13 @@ $CellContext`ty) (Tan[$CellContext`t\[Theta]] +
       SeriesData[$CellContext`\[Phi], 0, {}, 0, 3, 1],
       Editable->False]}],
     SeriesData[$CellContext`\[Phi], 
-     0, {(-2) $CellContext`dy (1 + Tan[$CellContext`t\[Theta]]^2)^
-       Rational[1, 2], (-2) ($CellContext`dy + $CellContext`ty) (1 + 
-        Tan[$CellContext`t\[Theta]]^2)^Rational[-1, 2] (
+     0, {((-2) $CellContext`dy) (1 + Tan[$CellContext`t\[Theta]]^2)^
+       Rational[
+        1, 2], (((-2) ($CellContext`dy + $CellContext`ty)) (1 + 
+         Tan[$CellContext`t\[Theta]]^2)^Rational[-1, 2]) (
        Tan[$CellContext`t\[Theta]] + 
-       Tan[$CellContext`t\[Theta]]^3), -($CellContext`dy + $CellContext`ty) (
-        1 + Tan[$CellContext`t\[Theta]]^2)^Rational[1, 2] (1 + 
+       Tan[$CellContext`t\[Theta]]^3), ((-($CellContext`dy + \
+$CellContext`ty)) (1 + Tan[$CellContext`t\[Theta]]^2)^Rational[1, 2]) (1 + 
        2 Tan[$CellContext`t\[Theta]]^2)}, 0, 3, 1],
     Editable->False]}], "}"}]], "Output",
  CellChangeTimes->{3.58591666175091*^9}]
@@ -313,11 +298,11 @@ Cell[BoxData[
       Editable->False]}],
     SeriesData[$CellContext`\[Phi], 
      0, {$CellContext`dz - $CellContext`dy 
-      Tan[$CellContext`t\[Theta]], -($CellContext`dy - $CellContext`R + \
-$CellContext`ty) 
-      Sec[$CellContext`t\[Theta]]^2, -($CellContext`dy - $CellContext`R + \
-$CellContext`ty) Sec[$CellContext`t\[Theta]]^2 Tan[$CellContext`t\[Theta]]}, 
-     0, 3, 1],
+      Tan[$CellContext`t\[Theta]], (-($CellContext`dy - $CellContext`R + \
+$CellContext`ty)) 
+      Sec[$CellContext`t\[Theta]]^2, ((-($CellContext`dy - $CellContext`R + \
+$CellContext`ty)) Sec[$CellContext`t\[Theta]]^2) Tan[$CellContext`t\[Theta]]},
+      0, 3, 1],
     Editable->False], ",", 
    InterpretationBox[
     RowBox[{
@@ -344,11 +329,11 @@ $CellContext`ty) Sec[$CellContext`t\[Theta]]^2 Tan[$CellContext`t\[Theta]]},
       Editable->False]}],
     SeriesData[$CellContext`\[Phi], 
      0, {$CellContext`dz - $CellContext`dy 
-      Tan[$CellContext`t\[Theta]], -($CellContext`dy + $CellContext`R + \
-$CellContext`ty) 
-      Sec[$CellContext`t\[Theta]]^2, -($CellContext`dy + $CellContext`R + \
-$CellContext`ty) Sec[$CellContext`t\[Theta]]^2 Tan[$CellContext`t\[Theta]]}, 
-     0, 3, 1],
+      Tan[$CellContext`t\[Theta]], (-($CellContext`dy + $CellContext`R + \
+$CellContext`ty)) 
+      Sec[$CellContext`t\[Theta]]^2, ((-($CellContext`dy + $CellContext`R + \
+$CellContext`ty)) Sec[$CellContext`t\[Theta]]^2) Tan[$CellContext`t\[Theta]]},
+      0, 3, 1],
     Editable->False], ",", 
    InterpretationBox[
     RowBox[{
@@ -386,11 +371,12 @@ $CellContext`ty) Sec[$CellContext`t\[Theta]]^2 Tan[$CellContext`t\[Theta]]},
       SeriesData[$CellContext`\[Phi], 0, {}, 0, 3, 1],
       Editable->False]}],
     SeriesData[$CellContext`\[Phi], 
-     0, {(-2) $CellContext`dy (Sec[$CellContext`t\[Theta]]^2)^
-       Rational[1, 2], (-2) ($CellContext`dy + $CellContext`ty) (
-        Sec[$CellContext`t\[Theta]]^2)^Rational[1, 2] 
-      Tan[$CellContext`t\[Theta]], -($CellContext`dy + $CellContext`ty) (
-        Sec[$CellContext`t\[Theta]]^2)^Rational[1, 2] (1 + 
+     0, {((-2) $CellContext`dy) (Sec[$CellContext`t\[Theta]]^2)^
+       Rational[
+        1, 2], (((-2) ($CellContext`dy + $CellContext`ty)) (
+         Sec[$CellContext`t\[Theta]]^2)^Rational[1, 2]) 
+      Tan[$CellContext`t\[Theta]], ((-($CellContext`dy + $CellContext`ty)) (
+         Sec[$CellContext`t\[Theta]]^2)^Rational[1, 2]) (1 + 
        2 Tan[$CellContext`t\[Theta]]^2)}, 0, 3, 1],
     Editable->False]}], "}"}]], "Output",
  CellChangeTimes->{3.5859166618140783`*^9}]
@@ -715,8 +701,8 @@ Cell[BoxData[
      RowBox[{"10.", ",", "50.", ",", "0"}], "}"}], ",", 
     RowBox[{"{", 
      RowBox[{"300", ",", "0", ",", 
-      RowBox[{"15", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}]}]], "Input",\
-
+      RowBox[{"15", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}]}]], "Input",
+ 
  CellChangeTimes->{{3.580814670505175*^9, 3.580814688906765*^9}, {
    3.580814779716079*^9, 3.580814780056293*^9}, {3.580814861770636*^9, 
    3.580814865622487*^9}, 3.580828507734313*^9, 3.580828563966299*^9}],
@@ -777,8 +763,8 @@ Cell[BoxData[
      RowBox[{"10.", ",", "50.", ",", "0"}], "}"}], ",", 
     RowBox[{"{", 
      RowBox[{"300", ",", "0", ",", 
-      RowBox[{"15", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}]}]], "Input",\
-
+      RowBox[{"15", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}]}]], "Input",
+ 
  CellChangeTimes->{{3.581082044990388*^9, 3.581082049499898*^9}}],
 
 Cell[BoxData[
@@ -1040,76 +1026,8 @@ Cell[BoxData[""], "Input",
 },
 WindowSize->{740, 867},
 WindowMargins->{{Automatic, 524}, {Automatic, 19}},
-FrontEndVersion->"9.0 for Linux x86 (64-bit) (November 20, 2012)",
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+FrontEndVersion->"9.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (January 25, \
+2013)",
 StyleDefinitions->"Default.nb"
 ]
-(* End of Notebook Content *)
-
-(* Internal cache information *)
-(*CellTagsOutline
-CellTagsIndex->{}
-*)
-(*CellTagsIndex
-CellTagsIndex->{}
-*)
-(*NotebookFileOutline
-Notebook[{
-Cell[557, 20, 73, 1, 32, "Input"],
-Cell[CellGroupData[{
-Cell[655, 25, 82, 1, 32, "Input"],
-Cell[740, 28, 95, 1, 32, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[872, 34, 441, 12, 55, "Input"],
-Cell[1316, 48, 1057, 35, 101, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[2410, 88, 373, 10, 32, "Input"],
-Cell[2786, 100, 1201, 39, 101, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[4024, 144, 172, 4, 32, "Input"],
-Cell[4199, 150, 4590, 128, 218, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[8826, 283, 122, 2, 32, "Input"],
-Cell[8951, 287, 4018, 108, 166, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[13006, 400, 121, 2, 32, "Input"],
-Cell[13130, 404, 1997, 59, 156, "Output"]
-}, Open  ]],
-Cell[15142, 466, 3153, 95, 319, "Input"],
-Cell[18298, 563, 2777, 77, 253, "Input"],
-Cell[21078, 642, 2188, 63, 209, "Input"],
-Cell[CellGroupData[{
-Cell[23291, 709, 497, 12, 32, "Input"],
-Cell[23791, 723, 1764, 43, 135, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[25592, 771, 355, 10, 32, "Input"],
-Cell[25950, 783, 466, 13, 37, "Output"]
-}, Open  ]],
-Cell[26431, 799, 3396, 87, 253, "Input"],
-Cell[CellGroupData[{
-Cell[29852, 890, 525, 12, 55, "Input"],
-Cell[30380, 904, 129, 3, 32, "Output"],
-Cell[30512, 909, 193, 5, 32, "Output"]
-}, Open  ]],
-Cell[30720, 917, 265, 4, 32, "Input"],
-Cell[CellGroupData[{
-Cell[31010, 925, 1868, 55, 187, "Input"],
-Cell[32881, 982, 321, 7, 32, "Output"],
-Cell[33205, 991, 320, 7, 32, "Output"],
-Cell[33528, 1000, 305, 7, 32, "Output"],
-Cell[33836, 1009, 505, 14, 49, "Output"],
-Cell[34344, 1025, 209, 3, 32, "Output"],
-Cell[34556, 1030, 215, 3, 34, "Output"]
-}, Open  ]],
-Cell[34786, 1036, 118, 2, 32, "Input"]
-}
-]
-*)
-
-(* End of internal cache information *)
-
