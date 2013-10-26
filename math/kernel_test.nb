@@ -12,7 +12,7 @@ Cell[BoxData[
    RowBox[{"{", 
     RowBox[{
      RowBox[{"NotebookDirectory", "[", "]"}], ",", "\"\<..\>\"", ",", 
-     "\"\<pubs\>\"", ",", "\"\<figures\>\""}], "}"}]}]}]], "Input",
+     "\"\<doc\>\"", ",", "\"\<figures\>\""}], "}"}]}]}]], "Input",
  CellChangeTimes->{{3.591728423384636*^9, 3.5917284315407953`*^9}}],
 
 Cell[CellGroupData[{
