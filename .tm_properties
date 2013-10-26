@@ -1,5 +1,6 @@
-binaries              = "t,pet_{matrix,phantom,reconstruction,tof}"
-excludeFiles          = "{*.d,$binaries}"
+binaries              = "test,pet_{matrix,phantom,reconstruction,tof}"
+texOutput             = "*.{aux,out,log,toc,nav,snm,synctex,gz}"
+excludeFiles          = "{*.d,$binaries,$texOutput}"
 excludeDirectories    = 'lib'
 excludeInFolderSearch = "{$excludeInFolderSearch,lib}"
 
