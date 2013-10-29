@@ -2,7 +2,8 @@
 !/*/
 !/*.*
 /data/
-*/*.pdf
+/doc/*.pdf
+/doc/html/
 **/*-converted-to.*
 **/*.aux
 **/*.out
@@ -12,7 +13,6 @@
 **/*.toc
 **/*.nav
 **/*.snm
-doc/html/
 *~
 /*.bin
 /*.png
@@ -26,4 +26,3 @@ doc/html/
 /src/**/*.d
 /.qmake.*
 *.o
-
