@@ -1,6 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 #if SSE_FLUSH
 #include <xmmintrin.h>
@@ -14,8 +17,6 @@
 
 #include "flags.h"
 #include "phantom.h"
-#include "event.h"
-#include "reconstruction.h"
 
 using namespace std;
 
@@ -56,28 +57,44 @@ int main(int argc, char* argv[]) {
     float n_pixels = Scentilator_length / pixel_size;
     float sigma = cl.get<float>("s-z");
     float dl = cl.get<float>("s-dl");
+    float emmisions = cl.get<float>("emmisions");
 
+    std::ifstream infile("phantom");
 
-    int n_blocks = cl.get<int>("iter");
-    Reconstruction<float> reconstruction(n_blocks,
-                                         R_distance,
-                                         Scentilator_length,
-                                         n_pixels,
-                                         pixel_size,
-                                         sigma,
-                                         dl);
-    ibstream in("phantom.bin");
+    std::vector<ellipse_parameters<float>> ellipse_list;
+    ellipse_parameters<float> el;
 
-    in >> reconstruction;
+    std::string line;
+    while (std::getline(infile, line)) {
+      std::istringstream iss(line);
+      float x, y, a, b, angle, acc;
+      if (!(iss >> x >> y >> a >> b >> angle >> acc)) {
+        break;
+      }  // error
 
-    clock_t begin = clock();
+      el.x = x;
+      el.y = y;
+      el.a = a;
+      el.b = b;
+      el.angle = angle;
+      el.iter = int(acc * emmisions);
 
-    reconstruction(n_blocks);
+      ellipse_list.push_back(el);
+    }
 
-    clock_t end = clock();
+    Phantom<float> test(ellipse_list,
+                        n_pixels,
+                        pixel_size,
+                        R_distance,
+                        Scentilator_length,
+                        sigma,
+                        dl);
+    int n_threads = cl.get<int>("n-threads");
 
-    std::cout << "Time:" << float(end - begin) / CLOCKS_PER_SEC / 4
-              << std::endl;
+    test.emit_event(n_threads);
+
+    obstream out("phantom.bin");
+    test >> out;
   }
   catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
