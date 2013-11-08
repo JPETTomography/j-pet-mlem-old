@@ -6,7 +6,8 @@
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
 
-#include"reconstruction.h"
+#include "reconstruction.h"
+#include "kernel.h"
 
 typedef Reconstruction<double>::Point Point;
 
@@ -19,11 +20,21 @@ void check(double ref,
            double dz,
            Reconstruction<double>& rec) {
 
+  StripDetector<double> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  Kernel<double> kernel = Kernel<double>();
+
   double tan_value = tan(angle);
   double inv_cos = 1.0 / cos(angle);
   double inv_cos_sq = inv_cos * inv_cos;
   Point delta(dy, dz);
-  double value = rec.kernel(y, tan_value, inv_cos, inv_cos_sq, delta);
+
+  double value = kernel.calculate_kernel(y,
+                                         tan_value,
+                                         inv_cos,
+                                         inv_cos_sq,
+                                         delta,
+                                         detector,
+                                         rec.sqrt_det_correlation_matrix);
   CHECK(value == Approx(ref).epsilon(1e-13));
 }
 

@@ -13,7 +13,6 @@
 #include "util/png_writer.h"
 
 #include "flags.h"
-#include "phantom.h"
 #include "event.h"
 #include "reconstruction.h"
 
@@ -40,7 +39,6 @@ int main(int argc, char* argv[]) {
     cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
     cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
     cl.add<float>("gm", 'g', "Gamma error", false, 0.f);
-    cl.add<float>("emmisions", 'e', "number of emissions", false, 500000);
 
     cl.parse_check(argc, argv);
 
@@ -56,7 +54,6 @@ int main(int argc, char* argv[]) {
     float n_pixels = Scentilator_length / pixel_size;
     float sigma = cl.get<float>("s-z");
     float dl = cl.get<float>("s-dl");
-
 
     int n_blocks = cl.get<int>("iter");
     Reconstruction<float> reconstruction(n_blocks,
