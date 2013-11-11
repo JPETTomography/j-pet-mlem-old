@@ -245,11 +245,14 @@ template <typename T = double> class Phantom {
   template <typename StreamType> Phantom& operator>>(StreamType& out) {
 
     typename std::vector<event<T>>::iterator it;
+    int size = event_list.size();
     int i = 0;
+    out << size;
     for (it = event_list.begin(); it != event_list.end(); ++it) {
       ++i;
       out << it->z_u << it->z_d << it->dl;
     }
+    std::cout <<"i: " <<  i << std::endl;
     return *this;
   }
 

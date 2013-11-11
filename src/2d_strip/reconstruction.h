@@ -101,18 +101,7 @@ class Reconstruction {
   }
 
  public:
-  /*
-    T multiply_elements(T* vec_a, T* vec_b) {
 
-      T output = T(0.0);
-
-      output += vec_a[0] * detector_.inv_c(0, 0) * vec_b[0];
-      output += vec_a[1] * detector_.inv_c(1, 1) * vec_b[1];
-      output += vec_a[2] * detector_.inv_c(2, 2) * vec_b[2];
-
-      return output;
-    }
-  */
   float fexp(float& x) {
     volatile union {
       T f;
@@ -131,43 +120,7 @@ class Reconstruction {
   }
 
   double fexp(double& x) { return std::exp(x); }
-  /*
-    T Kernel(T& y, T& _tan, T& inv_cos, T& pow_inv_cos, Point& pixel_center) {
-      T R_distance = detector_.radius();
-      T vec_o[3];
-      T vec_a[3];
-      T vec_b[3];
 
-      vec_o[0] = -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos;
-      vec_o[1] = -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos;
-      vec_o[2] =
-          -(pixel_center.first + y) * inv_cos * (T(1) + T(2) * (_tan * _tan));
-
-      vec_a[0] = -(pixel_center.first + y - R_distance) * pow_inv_cos;
-      vec_a[1] = -(pixel_center.first + y + R_distance) * pow_inv_cos;
-      vec_a[2] = -T(2) * (pixel_center.first + y) * (inv_cos * _tan);
-
-      vec_b[0] = pixel_center.second - (pixel_center.first * _tan);
-      vec_b[1] = pixel_center.second - (pixel_center.first * _tan);
-      vec_b[2] = -T(2) * pixel_center.first * inv_cos;
-
-      T a_ic_a = multiply_elements(vec_a, vec_a);
-      T b_ic_a = multiply_elements(vec_b, vec_a);
-      T b_ic_b = multiply_elements(vec_b, vec_b);
-      T o_ic_b = multiply_elements(vec_o, vec_b);
-
-      T norm = a_ic_a + (T(2.f) * o_ic_b);
-
-      T element_before_exp =
-          INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / std::sqrt(norm));
-
-      T exp_element = -T(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
-
-      T _exp = fexp(exp_element);
-
-      return (element_before_exp * _exp);
-    }
-  */
   /** Performs n_iterations of the list mode MEML algorithm
    */
   void iterate(int n_iterations) {
@@ -181,7 +134,7 @@ class Reconstruction {
 
       int size = event_list.size();
 
-#if OMP
+#if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
       for (int id = 0; id < size; ++id) {
@@ -327,7 +280,7 @@ class Reconstruction {
                                        detector_,
                                        sqrt_det_correlation_matrix) /
               lookup_table[iy][iz];
-          // Kernel(y, tg, sec_, sec_sq_, pp)
+
           ellipse_kernels.push_back(
               std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
           acc += event_kernel * lookup_table[iy][iz] * rho[iy][iz];
@@ -371,19 +324,16 @@ class Reconstruction {
 
     event<T> temp_event;
 
-    int i = 0;
+    int size;
+    in >> size;
 #if DEBUG_OUTPUT_SAVE
     std::cout << number_of_pixels << " " << pixel_s << " " << iter << " "
               << number_of_event_in_file << std::endl;
     std::cout << "VECTOR SIZE: " << event_list.size() << std::endl;
 
 #endif
-    for (;;) {
+  for (int it = 0; it < size; ++it) {
 
-      if (in.eof()) {
-        break;
-      }
-      i++;
 
       T z_u, z_d, dl;
 
