@@ -101,7 +101,6 @@ class Reconstruction {
   }
 
  public:
-
   float fexp(float& x) {
     volatile union {
       T f;
@@ -332,8 +331,7 @@ class Reconstruction {
     std::cout << "VECTOR SIZE: " << event_list.size() << std::endl;
 
 #endif
-  for (int it = 0; it < size; ++it) {
-
+    for (int it = 0; it < size; ++it) {
 
       T z_u, z_d, dl;
 

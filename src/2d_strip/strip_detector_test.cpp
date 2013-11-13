@@ -1,7 +1,7 @@
-#include"catch.hpp"
+#include "catch.hpp"
 #include <cmath>
 
-#include"strip_detector.h"
+#include "strip_detector.h"
 
 const double degree = M_PI / 180.0;
 

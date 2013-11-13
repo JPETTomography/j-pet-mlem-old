@@ -252,7 +252,7 @@ template <typename T = double> class Phantom {
       ++i;
       out << it->z_u << it->z_d << it->dl;
     }
-    std::cout <<"i: " <<  i << std::endl;
+    std::cout << "i: " << i << std::endl;
     return *this;
   }
 

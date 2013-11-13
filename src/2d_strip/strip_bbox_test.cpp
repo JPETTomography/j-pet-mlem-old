@@ -6,7 +6,7 @@
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
 
-#include"reconstruction.h"
+#include "reconstruction.h"
 
 StripDetector<double> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 Reconstruction<double> reconstructor(1, detector);

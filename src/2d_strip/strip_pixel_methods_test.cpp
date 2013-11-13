@@ -6,7 +6,7 @@
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
 
-#include"strip_detector.h"
+#include "strip_detector.h"
 
 typedef StripDetector<double>::Pixel Pixel;
 typedef StripDetector<double>::Point Point;
