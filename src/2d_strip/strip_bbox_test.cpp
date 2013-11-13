@@ -28,7 +28,7 @@ void check(double angle, double bby_value, double bbz_value) {
   CHECK(reconstructor.bbz(A, C, B_2) == Approx(bbz_value).epsilon(1e-4));
 }
 
-TEST_CASE("bounding box test", "4") {
+TEST_CASE("strip/bbox") {
 
   check(0.0470448, 94.3954, 21.6737);
   check(-0.594145, 78.3053, 56.9959);

@@ -5,7 +5,7 @@
 
 #include "polygon.h"
 
-TEST_CASE("polygon/intersection", "polygon intersection") {
+TEST_CASE("polygon/intersection") {
   Polygon<> p;
   p.push_back(Point<>(1., 1.));
   p.push_back(Point<>(2., 1.));
@@ -41,7 +41,7 @@ TEST_CASE("polygon/intersection", "polygon intersection") {
   }
 }
 
-TEST_CASE("polygon/intersection/math", "rectangle inters from mathematica") {
+TEST_CASE("polygon/intersection/math", "[math]") {
   std::ifstream in("polygon.test");
 
   if (!in) {

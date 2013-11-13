@@ -4,7 +4,7 @@
 
 #include "phantom.h"
 
-TEST_CASE("elliptical_region", "elliptical region") {
+TEST_CASE("phantom/elliptical_region") {
 
   EllipticalRegion disk(1.0, 1.0, 2.0, 2.0, 0.0, 0.5);
   EllipticalRegion region(0, 1, 1, 0.5, M_PI / 3.0, 0.75);
@@ -25,7 +25,7 @@ TEST_CASE("elliptical_region", "elliptical region") {
   }
 }
 
-TEST_CASE("phantom", "phantom") {
+TEST_CASE("phantom/phantom") {
 
   // Phantom phantom(-3, -3, 3, 3);
   Phantom phantom;

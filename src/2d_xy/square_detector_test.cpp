@@ -2,7 +2,8 @@
 
 #include "square_detector.h"
 
-TEST_CASE("detector/intersection", "polygon intersection") {
+TEST_CASE("square_detector/intersection") {
+
   SquareDetector<> d(2., 1.);
 
   CHECK(d[0].x == 1.);
@@ -39,7 +40,7 @@ TEST_CASE("detector/intersection", "polygon intersection") {
     CHECK(dr[0].x == Approx(d[0].x * c - d[0].y * s));
     CHECK(dr[0].y == Approx(d[0].x * s + d[0].y * c));
   }
-#if 0
+#if DONT_TEST
   SECTION("detector/translated+rotated", "translated and rotated") {
     Detector<>::Point p(2., 3.);
     auto dtr = (d + p).rotated(M_PI_4);

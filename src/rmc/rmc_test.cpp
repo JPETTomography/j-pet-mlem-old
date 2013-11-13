@@ -6,7 +6,7 @@
 
 typedef double FLOAT;
 
-TEST_CASE("tor/create", "TOR create") {
+TEST_CASE("tor/ctor", "[ctor]") {
   Point<FLOAT> c[2] = { { 450, 0 }, { -450, 0 } };
   FLOAT a[2] = { 0.0, M_PI };
   FLOAT w[2] = { 5, 6 };

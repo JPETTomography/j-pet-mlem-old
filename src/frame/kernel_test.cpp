@@ -17,9 +17,9 @@ const FLOAT sigma_l = 63.0;
 typedef Kernel<FLOAT, SquareDetector, ConstantErrorsModel> KernelType;
 typedef KernelType::EventKernelType EventKernelType;
 
-#if TEST_FRAME_KERNEL
 // FIXME: this doesn't work as it is NYI, disable
-TEST_CASE("Kernel/Create", "Create") {
+#if DONT_TEST
+TEST_CASE("kernel/ctor", "[ctor]") {
 
   KernelType kernel(Detector<FLOAT>(R, L),
                     ConstantErrorsModel<FLOAT>(sigma_z, sigma_l));

@@ -38,7 +38,7 @@ void check(double ref,
   CHECK(value == Approx(ref).epsilon(1e-13));
 }
 
-TEST_CASE("sensitivity tests/square", "square") {
+TEST_CASE("strip/sensitivity/square") {
 
   StripDetector<double> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
@@ -51,7 +51,7 @@ TEST_CASE("sensitivity tests/square", "square") {
         Approx(0.07526632771111386).epsilon(1e-13));
 }
 
-TEST_CASE("sensitivity tests/non square", "non square") {
+TEST_CASE("strip/sensitivity/non_square") {
 
   StripDetector<double> detector(450, 200, 200, 200, 5, 5, 10, 63);
 
@@ -66,7 +66,7 @@ TEST_CASE("sensitivity tests/non square", "non square") {
 }
 
 #if DONT_TEST
-TEST_CASE("kernel tests constructor 1", "kernel") {
+TEST_CASE("strip/kernel/ctor1", "[ctor]") {
   StripDetector<double> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
   Reconstruction<double> reconstructor(1, detector);
@@ -83,7 +83,7 @@ TEST_CASE("kernel tests constructor 1", "kernel") {
 }
 #endif
 
-TEST_CASE("kernel tests constructor 2", "kernel") {
+TEST_CASE("strip/kernel/ctor2", "[ctor]") {
 
   Reconstruction<double> reconstructor(1, 500, 100, 200, 5, 10, 63);
 

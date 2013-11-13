@@ -9,7 +9,7 @@
 
 #include "matrix_pixel_major.h"
 
-TEST_CASE("lor/init", "LOR initalisation") {
+TEST_CASE("lor/ctor", "[ctor]") {
 
   LOR<> lor(9, 7);
 
@@ -19,7 +19,7 @@ TEST_CASE("lor/init", "LOR initalisation") {
   CHECK(lor.index() == 9 * (9 + 1) / 2 + 7);
 }
 
-TEST_CASE("lor/iterator", "LOR iterator") {
+TEST_CASE("lor/iterator", "[iterator]") {
 
   int count = 0;
   for (auto lor = LOR<>(); lor != LOR<>::end_for_detectors(10); ++lor) {
@@ -28,12 +28,12 @@ TEST_CASE("lor/iterator", "LOR iterator") {
   CHECK(count == 10 * (10 + 1) / 2);
 }
 
-TEST_CASE("pix_major_system_matrix/init", "simple pix matrix test") {
+TEST_CASE("pix_major_system_matrix/ctor", "[ctor]") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 }
 
-TEST_CASE("pix_major_system_matrix/add", "add one element") {
+TEST_CASE("pix_major_system_matrix/add") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
@@ -52,7 +52,7 @@ TEST_CASE("pix_major_system_matrix/add", "add one element") {
   CHECK(hits == 0);
 }
 
-TEST_CASE("pix_major_system_matrix/add_twice", "add one element twice") {
+TEST_CASE("pix_major_system_matrix/add_twice") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
@@ -67,8 +67,7 @@ TEST_CASE("pix_major_system_matrix/add_twice", "add one element twice") {
   CHECK(matrix.n_lors_at_pixel_index(13) == 1);
 }
 
-TEST_CASE("pix_major_system_matrix/add_to_all",
-          "add one element to all pixels") {
+TEST_CASE("pix_major_system_matrix/add_to_all") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
@@ -86,7 +85,7 @@ TEST_CASE("pix_major_system_matrix/add_to_all",
   }
 }
 
-TEST_CASE("pix_major_system_matrix/to_sparse", "flatten") {
+TEST_CASE("pix_major_system_matrix/to_sparse") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 

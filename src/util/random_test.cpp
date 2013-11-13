@@ -2,7 +2,7 @@
 
 #include "random.h"
 
-TEST_CASE("random", "random") {
+TEST_CASE("random") {
   tausworthe gen;
   uniform_real_distribution<> one;
   uniform_real_distribution<> d99to100(99., 100.);

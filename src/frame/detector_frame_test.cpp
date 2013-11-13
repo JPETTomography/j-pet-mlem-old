@@ -4,7 +4,7 @@ typedef float FLOAT;
 
 #include "detector_frame.h"
 
-TEST_CASE("EventImage/Angle", "Angle") {
+TEST_CASE("frame/event_image/angle") {
 
   EventImageAngle<FLOAT> event(20.0, 100.0, 18 * Degree);
 
@@ -13,7 +13,7 @@ TEST_CASE("EventImage/Angle", "Angle") {
   REQUIRE(event.theta() == Approx(18 * Degree));
 }
 
-TEST_CASE("EventImage/Tan", "Tangent") {
+TEST_CASE("frame/event_image/tan") {
 
   EventImageTan<FLOAT> event(20.0, 100.0, 0.75);
 
@@ -22,7 +22,7 @@ TEST_CASE("EventImage/Tan", "Tangent") {
   REQUIRE(event.tan() == Approx(0.75));
 }
 
-TEST_CASE("EventImage/Convert", "Conversion") {
+TEST_CASE("frame/event_image/convert") {
 
   EventImageTan<FLOAT> eventTan(20.0, 100.0, ::tan(18 * Degree));
   EventImageAngle<FLOAT> eventAngle = EventImageTanToAngle(eventTan);
@@ -38,7 +38,7 @@ TEST_CASE("EventImage/Convert", "Conversion") {
   REQUIRE(eventTan2.tan() == Approx(tan(18 * Degree)));
 }
 
-TEST_CASE("EventDetector/Construct", "Construc") {
+TEST_CASE("frame/event_detector/ctor", "[ctor]") {
 
   EventDetector<FLOAT> event(-20.0, 100.0, 400);
 
@@ -47,14 +47,14 @@ TEST_CASE("EventDetector/Construct", "Construc") {
   REQUIRE(event.dl() == Approx(400.0));
 }
 
-TEST_CASE("DetectorFrame/Construct", "Construct") {
+TEST_CASE("frame/detector/ctor", "[ctor]") {
 
   Detector<FLOAT> detector(450.0, 300.0);
   REQUIRE(detector.R() == Approx(450.0));
   REQUIRE(detector.L() == Approx(300.0));
 }
 
-TEST_CASE("DetectorFrame/Conversions/ToEventImage", "Convert") {
+TEST_CASE("frame/detector/conversions/to_event_image") {
 
   Detector<FLOAT> detector(450.0, 300.0);
 
@@ -75,7 +75,7 @@ TEST_CASE("DetectorFrame/Conversions/ToEventImage", "Convert") {
   REQUIRE(eventImageAngle.theta() == Approx(-0.132551532296674));
 }
 
-TEST_CASE("DetectorFrame/Conversions/ToEventDetector", "Convert") {
+TEST_CASE("frame/detector/conversions/to_event_detector") {
   Detector<FLOAT> detector(450.0, 300.0);
 
   EventImageAngle<FLOAT> eventImageAngle(100, 25, -18.0 * Degree);

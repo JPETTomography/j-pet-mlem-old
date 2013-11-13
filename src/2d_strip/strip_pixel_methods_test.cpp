@@ -11,8 +11,7 @@
 typedef StripDetector<double>::Pixel Pixel;
 typedef StripDetector<double>::Point Point;
 
-TEST_CASE("Strip pixel location",
-          "StripDetector<>::pixel_location method test") {
+TEST_CASE("strip/pixel/location") {
 
   StripDetector<double> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
@@ -43,7 +42,7 @@ TEST_CASE("Strip pixel location",
   CHECK(p.second == 200);
 }
 
-TEST_CASE("Strip pixel center", "Reconstruction<>::pixel_center method test") {
+TEST_CASE("strip/pixel/center") {
 
   // space->image_space  y: [R,-R] ->[0,n_pixels_y], z:[-L/2,L/2] ->
   // [0,n_pixels_z]

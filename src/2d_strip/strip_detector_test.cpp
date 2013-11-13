@@ -5,7 +5,7 @@
 
 const double degree = M_PI / 180.0;
 
-TEST_CASE("event conversions 1", "1") {
+TEST_CASE("strip/detector/conversions1") {
   StripDetector<double> detector(450.0, 200.0, 200, 200, 5.0, 5.0, 10, 63);
 
   ImageSpaceEventAngle<double> img_angle(10.0, 20.0, 7.0 * degree);
@@ -28,7 +28,7 @@ TEST_CASE("event conversions 1", "1") {
   CHECK(re_img_angle.angle == Approx(img_angle.angle).epsilon(1e-13));
 }
 
-TEST_CASE("event conversions 2", "2") {
+TEST_CASE("strip/detector/conversions2") {
   StripDetector<double> detector(450.0, 200.0, 200, 200, 5.0, 5.0, 10, 63);
 
   ImageSpaceEventAngle<double> img_angle(-10.0, 37.0, -5.0 * degree);

@@ -6,21 +6,21 @@
 
 typedef float FLOAT;
 
-TEST_CASE("Slice/01", "Slice") {
+TEST_CASE("small_algebra/slice/1") {
   FLOAT rep[8] = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 };
   Slice<FLOAT> slice = Slice<FLOAT>(rep, 0, 1);
   for (int i = 0; i < 8; i++)
     REQUIRE(slice[i] == Approx(rep[i]));
 }
 
-TEST_CASE("Slice/51", "Slice") {
+TEST_CASE("small_algebra/slice/51") {
   FLOAT rep[8] = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 };
   Slice<FLOAT> slice = Slice<FLOAT>(rep, 5, 1);
   for (int i = 0; i < 3; i++)
     REQUIRE(slice[i] == Approx(rep[i + 5]));
 }
 
-TEST_CASE("Slice/32", "Slice") {
+TEST_CASE("small_algebra/slice/32") {
   FLOAT rep[8] = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 };
   Slice<FLOAT> slice = Slice<FLOAT>(rep, 3, 2);
 
@@ -29,7 +29,7 @@ TEST_CASE("Slice/32", "Slice") {
   REQUIRE(slice[2] == Approx(rep[7]));
 }
 
-TEST_CASE("Matrix/Square", "Square") {
+TEST_CASE("small_algebra/matrix/square") {
 
   Matrix<3, 3, FLOAT> matrix;
 
@@ -41,7 +41,7 @@ TEST_CASE("Matrix/Square", "Square") {
     REQUIRE(rep[i] == Approx(i));
 }
 
-TEST_CASE("Matrix/Square/Init", "Square/Init") {
+TEST_CASE("small_algebra/matrix/square/ctor", "[ctor]") {
 
   FLOAT data[9] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
 
@@ -60,7 +60,7 @@ TEST_CASE("Matrix/Square/Init", "Square/Init") {
     REQUIRE(repIt[i] == Approx(data[i]));
 }
 
-TEST_CASE("Vector/Init", "Init") {
+TEST_CASE("small_algebra/vector/ctor", "[ctor]") {
 
   FLOAT data[9] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
 
@@ -77,7 +77,7 @@ TEST_CASE("Vector/Init", "Init") {
     REQUIRE(vectorIt[i] == Approx(data[i]));
 }
 
-TEST_CASE("Form", "Form") {
+TEST_CASE("small_algebra/form") {
 
   FLOAT data[6] = { 0.1, 0.2, 0.4, 0.5, 0.7, 0.8 };
   Matrix<3, 2, FLOAT> mat(data);
