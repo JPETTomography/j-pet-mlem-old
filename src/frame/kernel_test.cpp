@@ -3,6 +3,7 @@
 #include "detector_frame.h"
 #include "error_model.h"
 #include "kernel.h"
+#include "2d_xy/square_detector.h"
 
 typedef float FLOAT;
 
@@ -13,7 +14,7 @@ const FLOAT L = 300.0;
 const FLOAT sigma_z = 10.0;
 const FLOAT sigma_l = 63.0;
 
-typedef Kernel<FLOAT, Detector, ConstantErrorsModel> KernelType;
+typedef Kernel<FLOAT, SquareDetector, ConstantErrorsModel> KernelType;
 typedef KernelType::EventKernelType EventKernelType;
 
 #if 0

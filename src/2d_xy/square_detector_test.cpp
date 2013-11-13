@@ -1,9 +1,9 @@
 #include "catch.hpp"
 
-#include "detector.h"
+#include "square_detector.h"
 
 TEST_CASE("detector/intersection", "polygon intersection") {
-  Detector<> d(2., 1.);
+  SquareDetector<> d(2., 1.);
 
   CHECK(d[0].x == 1.);
   CHECK(d[0].y == .5);
@@ -14,8 +14,8 @@ TEST_CASE("detector/intersection", "polygon intersection") {
   CHECK(d[3].x == -1.);
   CHECK(d[3].y == .5);
 
-  Detector<>::Event e1(1., 0., M_PI_4);
-  Detector<>::Event e2(1., -3., -M_PI_4);
+  SquareDetector<>::Event e1(1., 0., M_PI_4);
+  SquareDetector<>::Event e2(1., -3., -M_PI_4);
 
   CHECK(true == d.intersects(e1));
   CHECK(false == d.intersects(e2));

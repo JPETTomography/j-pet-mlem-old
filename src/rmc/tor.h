@@ -1,7 +1,7 @@
 #pragma once
 
 #include "geometry/point.h"
-#include "2d_xy/detector.h"
+#include "2d_xy/square_detector.h"
 
 template <typename F> class ToR {
  public:
@@ -21,10 +21,10 @@ template <typename F> class ToR {
   F width(int i) const { return w_[i]; }
   F height(int i) const { return h_[i]; }
   F angle(int i) const { return angle_[i]; }
-  Detector<F> detector(int i) const { return d_[i]; }
+  SquareDetector<F> detector(int i) const { return d_[i]; }
 
  private:
-  Detector<F> d_[2];
+  SquareDetector<F> d_[2];
   Point<F> c_[2];
   F angle_[2];
   F w_[2], h_[2];

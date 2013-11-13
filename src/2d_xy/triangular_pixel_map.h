@@ -14,9 +14,8 @@ class TriangularPixelMap {
   TriangularPixelMap(S n_pixels_in_row)
       : n_pixels_in_row_(n_pixels_in_row),
         n_pixels_in_row_half_(n_pixels_in_row / 2),
-        total_n_pixels_in_triangle_(n_pixels_in_row / 2 *
-                                    (n_pixels_in_row / 2 + 1) /
-                                    2),
+        total_n_pixels_in_triangle_(
+            n_pixels_in_row / 2 * (n_pixels_in_row / 2 + 1) / 2),
         end_pixel_(Pixel::end_for_n_pixels_in_row(n_pixels_in_row)) {
     if (n_pixels_in_row % 2)
       throw("number of pixels must be multiple of 2");

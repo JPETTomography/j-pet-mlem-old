@@ -3,7 +3,7 @@
 #include <map>
 
 #include "util/random.h"
-#include "detector.h"
+#include "square_detector.h"
 #include "geometry/circle.h"
 #include "util/svg_ostream.h"
 #include "geometry/point.h"
@@ -11,8 +11,10 @@
 #include "lor.h"
 
 /// Provides model for 2D ring of detectors
-template <typename FType = double, typename SType = int>
-class DetectorRing : public std::vector<Detector<FType>> {
+template <typename FType = double,
+          typename SType = int,
+          typename DetectorType = SquareDetector<FType>>
+class DetectorRing : public std::vector<DetectorType> {
  public:
   typedef FType F;
   typedef SType S;
@@ -20,7 +22,7 @@ class DetectorRing : public std::vector<Detector<FType>> {
   typedef ::Pixel<S> Pixel;
   typedef ::Circle<F> Circle;
   typedef ::Point<F> Point;
-  typedef ::Detector<F> Detector;
+  typedef ::SquareDetector<F> Detector;
   typedef ::Event<F> Event;
 
   /// @param n_detectors number of detectors on ring
