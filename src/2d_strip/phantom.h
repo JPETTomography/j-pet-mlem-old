@@ -7,7 +7,7 @@
 #include <random>
 #include <algorithm>
 
-#if OMP
+#if _OPENMP
 #include <omp.h>
 #else
 #define omp_get_max_threads() 1
@@ -85,7 +85,7 @@ template <typename T = double> class Phantom {
     T ry, rz, rangle;
     T z_u, z_d, dl;
 
-#if OMP
+#if _OPENMP
     omp_set_num_threads(n_threads);
 #endif
 
@@ -123,7 +123,7 @@ template <typename T = double> class Phantom {
       _inv_b2 = T(1) / (el.b * el.b);
       iteration = el.iter;
 
-#if OMP
+#if _OPENMP
 #pragma omp for schedule(static) private(ry, rz, rangle, z_u, z_d, dl)
 #endif
       for (int i = 0; i < iteration; ++i) {

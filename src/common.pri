@@ -38,7 +38,6 @@ macx:!macx-clang {
 
 # turn on OpenMP for GCC & ICC
 *-g++-*|*-g++|*-icc|*-icc-* {
-  DEFINES        += OMP=1
   QMAKE_CXXFLAGS += -fopenmp
   LIBS           += -fopenmp
 }

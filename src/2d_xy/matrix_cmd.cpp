@@ -224,7 +224,9 @@ int main(int argc, char* argv[]) {
     }
 
     if (cl.exist("verbose")) {
-      monte_carlo.verbose = true;
+#if _OPENMP
+      std::cerr << "threads       = " << omp_get_max_threads() << std::endl;
+#endif
       std::cerr << "max bias      = " << max_bias << std::endl;
       std::cerr << "TOF step      = " << tof_step << std::endl;
       std::cerr << "TOF positions = " << n_tof_positions << std::endl;
@@ -369,8 +371,8 @@ int main(int argc, char* argv[]) {
 
     if (cl.exist("wait")) {
       std::cerr << "Press Enter." << std::endl;
-      while (getc(stdin) != '\n')
-        ;
+      while (getc(stdin) != '\n') {
+      }
     }
 
     return 0;

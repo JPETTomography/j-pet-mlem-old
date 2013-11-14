@@ -18,6 +18,10 @@
 #include "flags.h"
 #include "phantom.h"
 
+#if _OPENMP
+#include <omp.h>
+#endif
+
 using namespace std;
 
 int main(int argc, char* argv[]) {
@@ -29,7 +33,7 @@ int main(int argc, char* argv[]) {
   try {
     cmdline::parser cl;
 
-#if OMP
+#if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
 #endif
     cl.add<float>(
@@ -45,7 +49,7 @@ int main(int argc, char* argv[]) {
 
     cl.parse_check(argc, argv);
 
-#if OMP
+#if _OPENMP
     if (cl.exist("n-threads")) {
       omp_set_num_threads(cl.get<int>("n-threads"));
     }

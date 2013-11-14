@@ -24,8 +24,7 @@ class MonteCarlo {
       : detector_ring_(detector_ring),
         matrix_(matrix),
         pixel_size_(pixel_size),
-        tof_step_(tof_step),
-        verbose(false) {}
+        tof_step_(tof_step) {}
 
   /// Executes Monte-Carlo system matrix generation for given detector ring
   /// @param gen   random number generator
@@ -56,7 +55,7 @@ class MonteCarlo {
       mp_gens[t].seed(gen());
     }
 
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(dynamic) collapse(2)
 #endif
     // iterating only triangular matrix,
     // being upper right part or whole system matrix
@@ -119,10 +118,6 @@ class MonteCarlo {
 
           }  // if (hits>=2)
         }    // loop over emmisions from pixel
-        if (verbose)
-          std::cout << std::setw(2) << thread_id << std::setw(4) << x
-                    << std::setw(4) << y << std::setw(8) << pixel_hit_count
-                    << std::endl;
         matrix_.compact_pixel_index(i_pixel);
       }
     }
@@ -133,7 +128,4 @@ class MonteCarlo {
   Matrix& matrix_;
   F pixel_size_;
   F tof_step_;
-
- public:
-  bool verbose;
 };

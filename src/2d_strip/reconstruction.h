@@ -14,7 +14,7 @@
 #include "strip_detector.h"
 #include "kernel.h"
 
-#if OMP
+#if _OPENMP
 #include <omp.h>
 #else
 #define omp_get_max_threads() 1
