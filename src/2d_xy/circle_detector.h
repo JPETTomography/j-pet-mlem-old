@@ -15,7 +15,7 @@ template <typename FType = double> class CircleDetector {
   CircleDetector& rotate(Angle phi __attribute__((unused))) { return *this; }
 
   CircleDetector rotated(Angle phi __attribute__((unused))) {
-    SquareDetector r(radius, center);
+    CircleDetector r(radius, center);
     return r;
   }
 
