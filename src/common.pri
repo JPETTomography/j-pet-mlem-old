@@ -47,23 +47,29 @@ INCLUDEPATH += . \
                ../lib/cmdline \
                ../lib/catch/include \
 
-LIBPNGPATHS += /usr/include/png.h \
-               /usr/include/libpng \
-               /usr/local/include/libpng \
-               /opt/X11/include/libpng15 \
+isEmpty(PNGCONFIG) {
+  LIBPNGPATHS += /usr/include/png.h \
+                 /usr/include/libpng \
+                 /usr/local/include/libpng \
+                 /opt/X11/include/libpng15 \
 
-for(path, LIBPNGPATHS):exists($$path) {
-  basename = $$basename(path)
-  DEFINES += HAVE_LIBPNG
-  # only define path if png is not system one
-  !equals(basename, png.h) {
-    INCLUDEPATH += $$path
-    path         = $$dirname(path)
-    path         = $$dirname(path)
-    LIBS        += -L$$path/lib
+  for(path, LIBPNGPATHS):exists($$path) {
+    basename = $$basename(path)
+    DEFINES += HAVE_LIBPNG
+    # only define path if png is not system one
+    !equals(basename, png.h) {
+      INCLUDEPATH += $$path
+      path         = $$dirname(path)
+      path         = $$dirname(path)
+      LIBS        += -L$$path/lib
+    }
+    LIBS += -lpng
+    break()
   }
-  LIBS += -lpng
-  break()
+} else {
+  DEFINES        += HAVE_LIBPNG
+  QMAKE_CXXFLAGS += $$system($$PNGCONFIG --I_opts)
+  LIBS           += $$system($$PNGCONFIG --L_opts --libs) -lz
 }
 
 # workaround for missing old qmake c++11 config
