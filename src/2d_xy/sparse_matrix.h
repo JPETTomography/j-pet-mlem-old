@@ -29,21 +29,15 @@
 
 #include <vector>
 
-#define fourcc(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
+#define fourcc(str, sym) static const uint32_t sym = (*(int*)(str))
 
-// binary serialization          // n_pixels_  n_detectors  triagular
-static const uint32_t MAGIC_VERSION_1 =
-    fourcc('P', 'E', 'T', 't');  //                           X
-static const uint32_t MAGIC_VERSION_2 =
-    fourcc('P', 'E', 'T', 's');  //     X                     X
-static const uint32_t MAGIC_VERSION_TRIANGULAR =
-    fourcc('P', 'E', 'T', 'p');  //     X          X          X
-static const uint32_t MAGIC_VERSION_FULL =
-    fourcc('P', 'E', 'T', 'P');  //     X          X
-static const uint32_t MAGIC_VERSION_TOF_TRIANGULAR =
-    fourcc('T', 'O', 'F', 'p');  //     X          X          X
-static const uint32_t MAGIC_VERSION_TOF_FULL =
-    fourcc('T', 'O', 'F', 'P');  //     X          X
+// binary serialization                        //  pixels detectors triangular
+fourcc("PETt", MAGIC_VERSION_1);               //                       X
+fourcc("PETs", MAGIC_VERSION_2);               //     X                 X
+fourcc("PETp", MAGIC_VERSION_TRIANGULAR);      //     X        X        X
+fourcc("PETP", MAGIC_VERSION_FULL);            //     X        X
+fourcc("TOFp", MAGIC_VERSION_TOF_TRIANGULAR);  //     X        X        X
+fourcc("TOFP", MAGIC_VERSION_TOF_FULL);        //     X        X
 
 template <typename LORType,
           typename PositionType,
