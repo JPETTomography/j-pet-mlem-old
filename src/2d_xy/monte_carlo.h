@@ -55,13 +55,18 @@ class MonteCarlo {
       mp_gens[t].seed(gen());
     }
 
+// NOTE: workaround for GCC bug
+// https://bugzilla.redhat.com/show_bug.cgi?id=999674
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #pragma omp parallel for schedule(dynamic) collapse(2)
 #endif
     // iterating only triangular matrix,
     // being upper right part or whole system matrix
-    // descending, since biggest chunks start first, but may end last
-    for (SS y = n_pixels_2 - 1; y >= 0; --y) {
+    for (auto y = 0; y < n_pixels_2; ++y) {
       for (auto x = 0; x <= y; ++x) {
+#pragma GCC diagnostic pop
 
         if ((x * x + y * y) * pixel_size_ * pixel_size_ >
             detector_ring_.fov_radius() * detector_ring_.fov_radius())
