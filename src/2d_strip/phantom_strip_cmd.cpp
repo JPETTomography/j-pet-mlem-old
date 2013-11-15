@@ -93,9 +93,8 @@ int main(int argc, char* argv[]) {
                         Scentilator_length,
                         sigma,
                         dl);
-    int n_threads = cl.get<int>("n-threads");
 
-    test.emit_event(n_threads);
+    test.emit_event();
 
     obstream out("phantom.bin");
     test >> out;

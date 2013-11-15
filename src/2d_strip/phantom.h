@@ -77,17 +77,13 @@ template <typename T = double> class Phantom {
                : false;
   }
 
-  void emit_event(int n_threads) {
+  void emit_event() {
 
     std::vector<std::vector<event<T>>> event_list_per_thread;
     event<T> temp_event;
 
     T ry, rz, rangle;
     T z_u, z_d, dl;
-
-#if _OPENMP
-    omp_set_num_threads(n_threads);
-#endif
 
     event_list_per_thread.resize(omp_get_max_threads());
 

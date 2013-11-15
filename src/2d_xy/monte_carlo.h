@@ -62,10 +62,6 @@ class MonteCarlo {
     // descending, since biggest chunks start first, but may end last
     for (SS y = n_pixels_2 - 1; y >= 0; --y) {
       for (auto x = 0; x <= y; ++x) {
-        int thread_id = 0;
-#if _OPENMP
-        thread_id = omp_get_thread_num();
-#endif
 
         if ((x * x + y * y) * pixel_size_ * pixel_size_ >
             detector_ring_.fov_radius() * detector_ring_.fov_radius())

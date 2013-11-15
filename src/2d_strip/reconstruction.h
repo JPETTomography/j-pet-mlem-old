@@ -149,8 +149,6 @@ class Reconstruction {
 
         Point ellipse_center = Point(y, z);
 
-        Pixel pp = pixel_location(y, z);
-
         bb_pixel_updates(ellipse_center, angle, y, tan, tid);
       }
 
@@ -256,8 +254,6 @@ class Reconstruction {
 
     std::vector<std::pair<Pixel, T>> ellipse_kernels;
     ellipse_kernels.reserve(2000);
-
-    Point pp = pixel_center(ur.first, dl.second);
 
     T acc = T(0.0);
     for (int iz = dl.second; iz < ur.second; ++iz) {
