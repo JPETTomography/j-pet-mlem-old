@@ -130,6 +130,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
               SparseElementLORComparator());
   }
 
+  Pixel pixel_at_index(S i_pixel) { return index_to_pixel_[i_pixel]; }
+
   SparseMatrix to_sparse() {
     SparseMatrix sparse(this->n_pixels_in_row(),
                         this->n_detectors(),

@@ -53,6 +53,10 @@ class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
 
   void compact_pixel_index(S i_pixel __attribute__((unused))) {}
 
+  Pixel pixel_at_index(S i_pixel __attribute__((unused))) {
+    throw(__PRETTY_FUNCTION__);
+  }
+
   SparseMatrix to_sparse() const { throw(__PRETTY_FUNCTION__); }
 
  private:
