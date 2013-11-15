@@ -9,12 +9,10 @@ CONFIG += c++11
 
 # fix no symbol in current context on GCC 4.8
 debug:QMAKE_CXXFLAGS += -gdwarf-2
-QMAKE_CXXFLAGS += -g -O3 -funroll-loops
-LIBS += -g
 
 greaterThan(QT_MAJOR_VERSION, 4) {
   CONFIG += object_parallel_to_source
-} else:equals(PWD, $$OUqT_PWD) {
+} else:equals(PWD, $$OUT_PWD) {
   CONFIG += object_with_source
 }
 
