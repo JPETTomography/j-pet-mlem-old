@@ -44,7 +44,6 @@ class MonteCarlo {
     uniform_real_distribution<> one_dis(0., 1.);
     uniform_real_distribution<> phi_dis(0., M_PI);
 
-    auto n_pixels_2 = matrix_.n_pixels_in_row() / 2;
     matrix_.add_emissions(n_emissions);
 
 #if _OPENMP
@@ -55,72 +54,68 @@ class MonteCarlo {
       mp_gens[t].seed(gen());
     }
 
-// NOTE: workaround for GCC bug
-// https://bugzilla.redhat.com/show_bug.cgi?id=999674
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuninitialized"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#pragma omp parallel for schedule(dynamic) collapse(2)
+#pragma omp parallel for schedule(dynamic)
 #endif
     // iterating only triangular matrix,
     // being upper right part or whole system matrix
-    for (auto y = 0; y < n_pixels_2; ++y) {
-      for (auto x = 0; x <= y; ++x) {
-#pragma GCC diagnostic pop
+    // NOTE: we must iterate pixel indices instead of x, y since we need proper
+    // thread distribution when issuing on MIC
+    for (auto i_pixel = 0; i_pixel < matrix_.total_n_pixels_in_triangle();
+         ++i_pixel) {
 
-        if ((x * x + y * y) * pixel_size_ * pixel_size_ >
-            detector_ring_.fov_radius() * detector_ring_.fov_radius())
+      auto pixel = matrix_.pixel_at_index(i_pixel);
+
+      if ((pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size_ * pixel_size_ >
+          detector_ring_.fov_radius() * detector_ring_.fov_radius())
+        continue;
+
+      int pixel_hit_count = 0;
+      for (auto n = 0; n < n_emissions; ++n) {
+#if _OPENMP
+        auto& l_gen = mp_gens[omp_get_thread_num()];
+#else
+        auto& l_gen = gen;
+#endif
+        auto rx = (pixel.x + one_dis(l_gen)) * pixel_size_;
+        auto ry = (pixel.y + one_dis(l_gen)) * pixel_size_;
+
+        // ensure we are within a triangle
+        if (rx > ry)
           continue;
 
-        auto i_pixel = Pixel<S>(x, y).index();
-        int pixel_hit_count = 0;
-        for (auto n = 0; n < n_emissions; ++n) {
-#if _OPENMP
-          auto& l_gen = mp_gens[omp_get_thread_num()];
-#else
-          auto& l_gen = gen;
-#endif
-          auto rx = (x + one_dis(l_gen)) * pixel_size_;
-          auto ry = (y + one_dis(l_gen)) * pixel_size_;
+        auto angle = phi_dis(l_gen);
+        LOR lor;
+        F position = (F)0.0;
+        auto hits = detector_ring_.emit_event(
+            l_gen, model, rx, ry, angle, lor, position);
 
-          // ensure we are within a triangle
-          if (rx > ry)
-            continue;
-
-          auto angle = phi_dis(l_gen);
-          LOR lor;
-          F position = (F)0.0;
-          auto hits = detector_ring_.emit_event(
-              l_gen, model, rx, ry, angle, lor, position);
-
-          S quantized_position = 0;
-          if (tof)
-            quantized_position = detector_ring_.quantize_position(
-                position, tof_step_, n_positions);
+        S quantized_position = 0;
+        if (tof)
+          quantized_position = detector_ring_.quantize_position(
+              position, tof_step_, n_positions);
 #ifdef DEBUG
-          std::cerr << "quantized_position " << quantized_position << std::endl;
+        std::cerr << "quantized_position " << quantized_position << std::endl;
 #endif
-          // do we have hit on both sides?
-          if (hits >= 2) {
-            if (o_collect_mc_matrix) {
-              if (lor.first == lor.second) {
-                std::ostringstream msg;
-                msg << __PRETTY_FUNCTION__ << " invalid LOR in Monte-Carlo ("
-                    << lor.first << ", " << lor.second << ")";
-                throw(msg.str());
-              }
-              matrix_.hit_lor(lor, quantized_position, i_pixel, 1);
+        // do we have hit on both sides?
+        if (hits >= 2) {
+          if (o_collect_mc_matrix) {
+            if (lor.first == lor.second) {
+              std::ostringstream msg;
+              msg << __PRETTY_FUNCTION__ << " invalid LOR in Monte-Carlo ("
+                  << lor.first << ", " << lor.second << ")";
+              throw(msg.str());
             }
+            matrix_.hit_lor(lor, quantized_position, i_pixel, 1);
+          }
 
-            if (o_collect_pixel_stats) {
-              matrix_.hit(i_pixel);
-            }
-            pixel_hit_count++;
+          if (o_collect_pixel_stats) {
+            matrix_.hit(i_pixel);
+          }
+          pixel_hit_count++;
 
-          }  // if (hits>=2)
-        }    // loop over emmisions from pixel
-        matrix_.compact_pixel_index(i_pixel);
-      }
+        }  // if (hits>=2)
+      }    // loop over emmisions from pixel
+      matrix_.compact_pixel_index(i_pixel);
     }
   }
 
