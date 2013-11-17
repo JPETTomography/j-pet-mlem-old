@@ -1,10 +1,8 @@
 [submodule "lib/catch"]
 	path = lib/catch
-	url = git://github.com/philsquared/Catch.git
+	url = git://github.com/ujhpc/Catch.git
 	ignore = all
-	branch = master
 [submodule "lib/cmdline"]
 	path = lib/cmdline
-	url = git://github.com/nanoant/cmdline.git
+	url = git://github.com/ujhpc/cmdline.git
 	ignore = all
-	branch = devel
