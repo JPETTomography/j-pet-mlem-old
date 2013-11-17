@@ -5,8 +5,6 @@ CONFIG -= app_bundle
 CONFIG -= qt
 CONFIG += c++11
 
-!CONFIG(verbose):CONFIG += silent
-
 # fix no symbol in current context on GCC 4.8
 debug:QMAKE_CXXFLAGS += -gdwarf-2
 
