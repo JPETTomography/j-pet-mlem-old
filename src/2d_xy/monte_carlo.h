@@ -55,6 +55,7 @@ class MonteCarlo {
     }
 
 #pragma omp parallel for schedule(dynamic)
+// #pragma omp parallel for
 #endif
     // iterating only triangular matrix,
     // being upper right part or whole system matrix

@@ -64,3 +64,7 @@ Additional options:
 
 		qmake -spec intel-icc   # i.e. Intel CC on Linux
 		qmake -spec macx-gcc    # i.e. GCC on Mac OS X
+
+4. To build on MIC (Intel Xeon Phi):
+
+		QMAKE_CXXFLAGS+=-mmic QMAKE_LFLAGS+=-mmic PNGCONFIG=$HOME/Documents/MIC/bin/libpng-config
