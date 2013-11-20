@@ -1,5 +1,9 @@
 void run_kernel(char* str, int* val, int str_size, int val_size);
 
+#if !HAVE_CUDA
+#error Need to have CUDA!
+#endif
+
 int main(int argc __attribute__((unused)),
          char* argv[] __attribute__((unused))) {
 

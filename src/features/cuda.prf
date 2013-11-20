@@ -1,5 +1,9 @@
 # Based on:
 # https://code.google.com/p/qmakecuda/
+#
+# Usage (either/or):
+# (1) use CONFIG += cuda in your project
+# (2) run qmake CONFIG+=cuda
 
 CUDA_HOME = $$system(which nvcc | sed 's,/bin/nvcc$,,')
 isEmpty(CUDA_HOME):CUDA_HOME=$$[CUDA_HOME]
@@ -24,5 +28,6 @@ QMAKE_EXTRA_COMPILERS += cuda
 INCLUDEPATH *= $$CUDA_HOME/include
 *-64:LIBS *= -L$$CUDA_HOME/lib64 -lcudart
 else:LIBS *= -L$$CUDA_HOME/lib -lcudart
+DEFINES   *= HAVE_CUDA
 
 OTHER_FILES += $$CUDA_SOURCES
