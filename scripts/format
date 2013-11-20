@@ -1,6 +1,6 @@
 #!/bin/bash
 dir="$(dirname $0)/.."
-find "$dir" \( -iname '*.c' -or -iname '*.cpp' -or -iname '*.h' \) \
+find "$dir" \( -iname '*.c' -or -iname '*.cpp' -or -iname '*.cu' -or -iname '*.h' \) \
 	\! -iname 'cmdline.h' \
 	\! -ipath "$dir/lib/*" \
 	\! -ipath "$dir/doc/*" \

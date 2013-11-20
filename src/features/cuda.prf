@@ -1,0 +1,28 @@
+# Based on:
+# https://code.google.com/p/qmakecuda/
+
+CUDA_HOME = $$system(which nvcc | sed 's,/bin/nvcc$,,')
+isEmpty(CUDA_HOME):CUDA_HOME=$$[CUDA_HOME]
+isEmpty(CUDA_HOME):error(CUDA could not be found)
+
+NVCC = $$CUDA_HOME/bin/nvcc
+debug:NVCC_FLAGS += -g -G
+
+cuda.input = CUDA_SOURCES
+cuda.output = ${QMAKE_FILE_BASE}.o
+cuda.commands = $$NVCC \
+  -Xcompiler $$join(QMAKE_CXXFLAGS,",") \
+  $$NVCC_OPTS $$NVCC_FLAGS \
+  -c ${QMAKE_FILE_NAME} -o ${QMAKE_FILE_OUT}
+cuda.depend_command = $$NVCC \
+  -Xcompiler $$join(QMAKE_CXXFLAGS,",") \
+  $$NVCC_OPTS $$NVCC_FLAGS \
+  -M $$CUDA_INC ${QMAKE_FILE_NAME}
+cuda.dependency_type = TYPE_C
+QMAKE_EXTRA_COMPILERS += cuda
+
+INCLUDEPATH *= $$CUDA_HOME/include
+*-64:LIBS *= -L$$CUDA_HOME/lib64 -lcudart
+else:LIBS *= -L$$CUDA_HOME/lib -lcudart
+
+OTHER_FILES += $$CUDA_SOURCES

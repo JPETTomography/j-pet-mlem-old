@@ -15,3 +15,7 @@ macx:!macx-clang {
 }
 
 SUBDIRS += $$files(src/*.pro)
+
+!cuda {
+  SUBDIRS -= $$files(src/cuda_*.pro) $$files(src/*_cuda.pro)
+}
