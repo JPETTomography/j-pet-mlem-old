@@ -25,9 +25,13 @@ cuda.depend_command = $$NVCC \
 cuda.dependency_type = TYPE_C
 QMAKE_EXTRA_COMPILERS += cuda
 
+*-64:CUDA_LIB = $$CUDA_HOME/lib64
+else:CUDA_LIB = $$CUDA_HOME/lib
+
+QMAKE_RPATHDIR *= $$CUDA_LIB
+
 INCLUDEPATH *= $$CUDA_HOME/include
-*-64:LIBS *= -L$$CUDA_HOME/lib64 -lcudart
-else:LIBS *= -L$$CUDA_HOME/lib -lcudart
-DEFINES   *= HAVE_CUDA
+LIBS        *= -L$$CUDA_LIB -lcudart
+DEFINES     *= HAVE_CUDA
 
 OTHER_FILES += $$CUDA_SOURCES
