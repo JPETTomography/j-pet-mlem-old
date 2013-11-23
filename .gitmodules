@@ -6,3 +6,6 @@
 	path = lib/cmdline
 	url = git://github.com/ujhpc/cmdline.git
 	ignore = all
+[submodule "mkspecs"]
+	path = mkspecs
+	url = git://github.com/ujhpc/mkspecs_hpc.git
