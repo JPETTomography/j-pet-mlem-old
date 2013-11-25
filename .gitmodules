@@ -9,3 +9,4 @@
 [submodule "mkspecs"]
 	path = mkspecs
 	url = git://github.com/ujhpc/mkspecs_hpc.git
+	ignore = all
