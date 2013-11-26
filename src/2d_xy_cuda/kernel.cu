@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include "config.h"
+#include "data_structures.h"
 
 /*-----------------------------------------GENERATORS-----------------------------------------------------*/
 
@@ -60,58 +61,6 @@ __device__ float rand_MWC_oc(unsigned long long* x, unsigned int* a) {
   return 1.0f - rand_MWC_co(x, a);
 }  // end __device__ rand_MWC_oc
 
-/*-------------------------------DATA STRUCTURES
- * DEFINITON-------------------------------------------------*/
-
-struct data {
-
-  float x, y;
-  float f_data[8];
-};
-
-// x,y,z,w
-//__builtin_align__(32)
-
-struct Points {
-
-  float x, y;
-};
-
-struct Hits {
-
-  Points p[2];
-};
-
-struct Detectors {
-
-  Points points[4];
-};
-
-struct Detector_Ring {
-
-  Detectors detector_list[NUMBER_OF_DETECTORS];
-};
-
-struct Matrix_Element {
-
-  float lor[LORS];
-};
-
-struct Secant_Points {
-
-  float x1, y1, x2, y2;
-};
-
-struct Secant_Angle {
-
-  float angle1, angle2;
-};
-
-struct Secant_Sections {
-
-  int ss1, ss2;
-};
-
 /*****************************METHODS*************************************************/
 
 CUDA_CALLABLE_MEMBER Secant_Points
@@ -157,7 +106,7 @@ CUDA_CALLABLE_MEMBER Secant_Angle secant_angles(Secant_Points& e) {
 CUDA_CALLABLE_MEMBER int section(float angle, int n_detectors) {
   // converting angles to [0,2 Pi) interval
   float normalised_angle = angle > 0 ? angle : (float)2.0 * M_PI + angle;
-  return static_cast<int>(round(normalised_angle * n_detectors * INV_TWO_PI)) %
+  return static_cast<int>(round(normalised_angle * n_detectors * ITP)) %
          (n_detectors);
 }
 
@@ -326,6 +275,56 @@ __device__ int lor_iterator(int& id1, int& id2) {
   return ((id1 * (id1 + 1)) / 2) + id2;
 }
 
+__global__ void gpu_detector_geometry_test(float radius,
+                                           float h_detector,
+                                           float w_detector,
+                                           float pixel_size,
+                                           Detector_Ring* cpu_output) {
+
+  __shared__ Detector_Ring test_ring;
+
+  if (threadIdx.x < NUMBER_OF_DETECTORS) {
+
+    Detectors detector_base;
+
+    detector_base.points[0].x =
+        (w_detector / 2.0f) + radius + (h_detector / 2.0f);
+    detector_base.points[0].y = h_detector / 2.0f;
+    detector_base.points[1].x =
+        (w_detector / 2.0f) + radius + (h_detector / 2.0f);
+    detector_base.points[1].y = -h_detector / 2.0f;
+    detector_base.points[2].x =
+        (-w_detector / 2.0f) + radius + (h_detector / 2.0f);
+    detector_base.points[2].y = -h_detector / 2.0f;
+    detector_base.points[3].x =
+        (-w_detector / 2.0) + radius + (h_detector / 2.0f);
+    detector_base.points[3].y = h_detector / 2.0f;
+
+    test_ring.detector_list[threadIdx.x] = detector_base;
+
+    float angle = 2.0f * M_PI * threadIdx.x / NUMBER_OF_DETECTORS;
+    float sin_phi = __sinf(angle);
+    float cos_phi = __cosf(angle);
+
+    for (int j = 0; j < 4; ++j) {
+
+      float temp_x = test_ring.detector_list[threadIdx.x].points[j].x;
+      float temp_y = test_ring.detector_list[threadIdx.x].points[j].y;
+
+      test_ring.detector_list[threadIdx.x].points[j].x =
+          temp_x * cos_phi - temp_y * sin_phi;
+      test_ring.detector_list[threadIdx.x].points[j].y =
+          temp_x * sin_phi + temp_y * cos_phi;
+    }
+  }
+
+  if (threadIdx.x < NUMBER_OF_DETECTORS) {
+
+    cpu_output->detector_list[threadIdx.x] =
+        test_ring.detector_list[threadIdx.x];
+  }
+}
+
 __global__ void gpu_phantom_generation(int x,
                                        int y,
                                        int iteration,
@@ -431,8 +430,8 @@ __global__ void gpu_phantom_generation(int x,
 
     if (!check_for_hits(i_inner,
                         i_outer,
-                        x,
-                        y,
+                        rx,
+                        ry,
                         angle,
                         NUMBER_OF_DETECTORS,
                         test_ring,
@@ -448,8 +447,8 @@ __global__ void gpu_phantom_generation(int x,
 
     if (!check_for_hits(i_inner,
                         i_outer,
-                        x,
-                        y,
+                        rx,
+                        ry,
                         angle,
                         NUMBER_OF_DETECTORS,
                         test_ring,
@@ -471,7 +470,7 @@ __global__ void gpu_phantom_generation(int x,
     // hit[0].x) + (hit[1].y - hit[0].y) * (hit[1].x - hit[0].x) ))) {
 
     atomicAdd(&pixel_data[blockIdx.x].lor[lor_iterator(detector1, detector2)],
-              1.0f / iteration / threads);
+              1.0f);
     //}
   }
 
@@ -527,6 +526,8 @@ void phantom_kernel(int number_of_threads_per_block,
 
   unsigned int* cpu_prng_seed;
 
+  cudaSetDevice(0);
+
   cpu_prng_seed =
       (unsigned int*)malloc(number_of_blocks * number_of_threads_per_block * 4 *
                             sizeof(unsigned int));
@@ -568,8 +569,11 @@ void phantom_kernel(int number_of_threads_per_block,
 
   double timer = getwtime();
 
-  for (int j = pixels_in_row / 2 - 1; j >= 0; --j) {
-    for (int i = 0; i <= j; ++i) {
+  //  for (int j = pixels_in_row / 2 - 1; j >= 0; --j) {
+  //    for (int i = 0; i <= j; ++i) {
+
+  for (int j = 0; j < 1; ++j) {
+    for (int i = 0; i < 1; ++i) {
 
       mem_clean_lors(cpu_matrix, number_of_blocks);
 
@@ -624,4 +628,53 @@ void phantom_kernel(int number_of_threads_per_block,
 
   cuda(Free, gpu_prng_seed);
   cuda(Free, gpu_matrix_element);
+}
+
+void gpu_detector_geometry_kernel_test(float radius,
+                                       float h_detector,
+                                       float w_detector,
+                                       float pixel_size,
+                                       Detector_Ring& cpu_output) {
+
+  dim3 blocks(1);
+  dim3 threads(NUMBER_OF_DETECTORS);
+
+  cudaSetDevice(0);
+
+  Detector_Ring* cpu_detectors = (Detector_Ring*)malloc(sizeof(Detector_Ring));
+
+  Detector_Ring* gpu_detectors;
+
+  cuda(Malloc, (void**)&gpu_detectors, sizeof(Detector_Ring));
+
+  printf("Execute gpu_kernel_test for detectors geometry\n");
+
+  cuda(Memcpy,
+       gpu_detectors,
+       cpu_detectors,
+       sizeof(Detector_Ring),
+       cudaMemcpyHostToDevice);
+
+  gpu_detector_geometry_test << <blocks, threads>>>
+      (radius, h_detector, w_detector, pixel_size, gpu_detectors);
+
+  cudaThreadSynchronize();
+
+  cuda(Memcpy,
+       cpu_detectors,
+       gpu_detectors,
+       sizeof(Detector_Ring),
+       cudaMemcpyDeviceToHost);
+
+  for (int i = 0; i < NUMBER_OF_DETECTORS; ++i) {
+    for (int j = 0; j < 4; j++) {
+
+      cpu_output.detector_list[i].points[j].x =
+          cpu_detectors->detector_list[i].points[j].x;
+      cpu_output.detector_list[i].points[j].y =
+          cpu_detectors->detector_list[i].points[j].y;
+    }
+  }
+
+  cuda(Free, gpu_detectors);
 }
