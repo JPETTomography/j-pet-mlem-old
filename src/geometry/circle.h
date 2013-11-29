@@ -4,8 +4,10 @@
 #include "2d_xy/event.h"
 #include "util/svg_ostream.h"
 
-// produces secant angles circle/line intersection as a equation system solution
-// see /math/secant.nb
+/// Produces secant angles circle/line intersection as a equation system
+/// solution.
+/// @see /math/secant.nb
+/// @note This circle has only radius specified and center point lies in (0, 0).
 template <typename F = double, typename S = int> class Circle {
  public:
   Circle(F radius)

@@ -22,7 +22,7 @@ class DetectorRing : public std::vector<DetectorType> {
   typedef ::Pixel<S> Pixel;
   typedef ::Circle<F> Circle;
   typedef ::Point<F> Point;
-  typedef ::SquareDetector<F> Detector;
+  typedef DetectorType Detector;
   typedef ::Event<F> Event;
 
   /// @param n_detectors number of detectors on ring

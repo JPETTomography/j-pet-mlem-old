@@ -13,6 +13,7 @@
 
 #include "util/random.h"
 #include "detector_ring.h"
+#include "circle_detector.h"
 #include "matrix_pixel_major.h"
 #include "geometry/pixel.h"
 #include "lor.h"
@@ -42,19 +43,25 @@ int main(int argc, char* argv[]) {
 #endif
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
-    cl.add<int>("n-detectors", 'd', "number of ring detectors", false, 64);
+    cl.add<int>("n-detectors", 'd', "number of detectors in ring", false, 64);
     cl.add<int>("n-emissions", 'e', "emissions per pixel", false, 0);
     cl.add<double>("radius", 'r', "inner detector ring radius", false, 0);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
     cl.add<double>("tof-step", 'T', "TOF quantisation step", false);
+    cl.add<std::string>("shape",
+                        'S',
+                        "detector (scintillator) shape (square, circle)",
+                        false,
+                        "square",
+                        cmdline::oneof<std::string>("square", "circle"));
     cl.add<double>("w-detector", 'w', "detector width", false);
     cl.add<double>("h-detector", 'h', "detector height", false);
     cl.add<std::string>("model",
                         'm',
-                        "acceptance model",
+                        "acceptance model (always, scintillator)",
                         false,
-                        "scintilator",
-                        cmdline::oneof<std::string>("always", "scintilator"));
+                        "scintillator",
+                        cmdline::oneof<std::string>("always", "scintillator"));
     // NOTE: this options is obsolete (use base-length instead)
     cl.add<double>("acceptance",
                    'a',
@@ -190,7 +197,10 @@ int main(int argc, char* argv[]) {
       gen.seed(cl.get<tausworthe::seed_type>("seed"));
     }
 
-    DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
+    DetectorRing<> square_detector_ring(
+        n_detectors, radius, w_detector, h_detector);
+    DetectorRing<double, int, CircleDetector<>> circle_detector_ring(
+        n_detectors, radius, w_detector, h_detector);
 
     int n_tof_positions = 1;
     double max_bias = 0;
@@ -199,13 +209,11 @@ int main(int argc, char* argv[]) {
         max_bias = AlwaysAccept<>::max_bias();
       if (cl.get<std::string>("model") == "scintilator")
         max_bias = ScintilatorAccept<>::max_bias();
-      n_tof_positions = dr.n_positions(tof_step, max_bias);
+      n_tof_positions = square_detector_ring.n_positions(tof_step, max_bias);
     }
 
     typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
     MatrixImpl matrix(n_pixels, n_detectors, n_tof_positions);
-    MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(
-        dr, matrix, s_pixel, tof_step);
 
     for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
       ibstream in(*fn, std::ios::binary);
@@ -251,6 +259,8 @@ int main(int argc, char* argv[]) {
       std::cerr << "emissions     = " << n_emissions << std::endl;
     }
 
+    MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(
+        square_detector_ring, matrix, s_pixel, tof_step);
 #ifdef __linux__
     struct timespec start, stop;
     clock_gettime(CLOCK_REALTIME, &start);
@@ -258,7 +268,8 @@ int main(int argc, char* argv[]) {
 
     if (cl.get<std::string>("model") == "always")
       monte_carlo(gen, AlwaysAccept<>(), n_emissions);
-    if (cl.get<std::string>("model") == "scintilator")
+    if (cl.get<std::string>("model") == "scintilator" /* spelling error */ ||
+        cl.get<std::string>("model") == "scintillator")
       monte_carlo(gen, ScintilatorAccept<>(length_scale), n_emissions);
 
 #ifdef __linux__
@@ -309,7 +320,7 @@ int main(int argc, char* argv[]) {
                         radius + h_detector,
                         1024.,
                         1024.);
-      svg << dr;
+      svg << square_detector_ring;
 
       svg.link_image(fn_wo_path + ".png",
                      -(s_pixel * n_pixels) / 2.,
@@ -355,7 +366,7 @@ int main(int argc, char* argv[]) {
                         radius + h_detector,
                         1024.,
                         1024.);
-      svg << dr;
+      svg << square_detector_ring;
 
       svg.link_image(fn_wo_path + ".png",
                      -(s_pixel * n_pixels) / 2.,
@@ -376,7 +387,7 @@ int main(int argc, char* argv[]) {
         }
       }
       std::cerr << "Non zero LORs: " << matrix.non_zero_lors() << '/'
-                << dr.lors() << std::endl;
+                << square_detector_ring.lors() << std::endl;
       std::cerr << "Min hits: " << pixel_min << std::endl;
       std::cerr << "Max hits: " << pixel_max << std::endl;
     }
