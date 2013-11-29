@@ -27,6 +27,9 @@
 #include <omp.h>
 #endif
 
+typedef DetectorRing<double, int, SquareDetector<double>> SquareDetectorRing;
+typedef DetectorRing<double, int, CircleDetector<double>> CircleDetectorRing;
+
 int main(int argc, char* argv[]) {
 
   try {
@@ -106,14 +109,20 @@ int main(int argc, char* argv[]) {
     auto& n_emissions = cl.get<int>("n-emissions");
     auto& radius = cl.get<double>("radius");
     auto& s_pixel = cl.get<double>("s-pixel");
+    auto& shape = cl.get<std::string>("shape");
     auto& w_detector = cl.get<double>("w-detector");
     auto& h_detector = cl.get<double>("h-detector");
     auto& tof_step = cl.get<double>("tof-step");
+    auto& model = cl.get<std::string>("model");
     auto& length_scale = cl.get<double>("base-length");
 
     // convert obsolete acceptance option to length scale
     if (cl.exist("acceptance") && !cl.exist("base-length")) {
       length_scale = 1.0 / cl.get<double>("acceptance");
+    }
+    // FIXME: fixup for spelling mistake, present in previous versions
+    if (cl.exist("model") && model == "scintilator") {
+      model = "scintillator";
     }
     // check options
     if (cl.exist("png") && !cl.exist("from")) {
@@ -197,19 +206,22 @@ int main(int argc, char* argv[]) {
       gen.seed(cl.get<tausworthe::seed_type>("seed"));
     }
 
-    DetectorRing<> square_detector_ring(
+    SquareDetectorRing square_detector_ring(
         n_detectors, radius, w_detector, h_detector);
-    DetectorRing<double, int, CircleDetector<>> circle_detector_ring(
+    CircleDetectorRing circle_detector_ring(
         n_detectors, radius, w_detector, h_detector);
 
     int n_tof_positions = 1;
     double max_bias = 0;
     if (cl.exist("tof-step") && tof_step > 0) {
-      if (cl.get<std::string>("model") == "always")
+      if (model == "always")
         max_bias = AlwaysAccept<>::max_bias();
-      if (cl.get<std::string>("model") == "scintilator")
+      else if (model == "scintilator")
         max_bias = ScintilatorAccept<>::max_bias();
-      n_tof_positions = square_detector_ring.n_positions(tof_step, max_bias);
+      if (shape == "square")
+        n_tof_positions = square_detector_ring.n_positions(tof_step, max_bias);
+      else if (shape == "circle")
+        n_tof_positions = circle_detector_ring.n_positions(tof_step, max_bias);
     }
 
     typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
@@ -259,18 +271,26 @@ int main(int argc, char* argv[]) {
       std::cerr << "emissions     = " << n_emissions << std::endl;
     }
 
-    MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(
-        square_detector_ring, matrix, s_pixel, tof_step);
 #ifdef __linux__
     struct timespec start, stop;
     clock_gettime(CLOCK_REALTIME, &start);
 #endif
 
-    if (cl.get<std::string>("model") == "always")
-      monte_carlo(gen, AlwaysAccept<>(), n_emissions);
-    if (cl.get<std::string>("model") == "scintilator" /* spelling error */ ||
-        cl.get<std::string>("model") == "scintillator")
-      monte_carlo(gen, ScintilatorAccept<>(length_scale), n_emissions);
+    if (shape == "square") {
+      MonteCarlo<SquareDetectorRing, MatrixImpl> monte_carlo(
+          square_detector_ring, matrix, s_pixel, tof_step);
+      if (model == "always")
+        monte_carlo(gen, AlwaysAccept<>(), n_emissions);
+      if (model == "scintillator")
+        monte_carlo(gen, ScintilatorAccept<>(length_scale), n_emissions);
+    } else if (shape == "circle") {
+      MonteCarlo<CircleDetectorRing, MatrixImpl> monte_carlo(
+          circle_detector_ring, matrix, s_pixel, tof_step);
+      if (model == "always")
+        monte_carlo(gen, AlwaysAccept<>(), n_emissions);
+      if (model == "scintillator")
+        monte_carlo(gen, ScintilatorAccept<>(length_scale), n_emissions);
+    }
 
 #ifdef __linux__
     clock_gettime(CLOCK_REALTIME, &stop);
