@@ -30,7 +30,10 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    cl.footer("matrix_file ...");
+    std::ostringstream msg;
+    msg << "matrix_file ..." << std::endl
+        << "note: All length options below should be expressed in meters.";
+    cl.footer(msg.str());
 
     cl.add<cmdline::string>(
         "config", 'c', "load config file", false, cmdline::string(), false);
@@ -52,9 +55,19 @@ int main(int argc, char* argv[]) {
                         false,
                         "scintilator",
                         cmdline::oneof<std::string>("always", "scintilator"));
-
-    cl.add<double>(
-        "acceptance", 'a', "acceptance probability factor", false, 10.);
+    // NOTE: this options is obsolete (use base-length instead)
+    cl.add<double>("acceptance",
+                   'a',
+                   "acceptance probability factor",
+                   false,
+                   10.,
+                   false,
+                   true /* hidden */);
+    cl.add<double>("base-length",
+                   'l',
+                   "scintillator emission base length P(l)=1-e^(-1)",
+                   false,
+                   0.1);
     cl.add<tausworthe::seed_type>(
         "seed", 's', "random number generator seed", false, 0, false);
     cl.add<cmdline::string>(
@@ -89,7 +102,12 @@ int main(int argc, char* argv[]) {
     auto& w_detector = cl.get<double>("w-detector");
     auto& h_detector = cl.get<double>("h-detector");
     auto& tof_step = cl.get<double>("tof-step");
+    auto& length_scale = cl.get<double>("base-length");
 
+    // convert obsolete acceptance option to length scale
+    if (cl.exist("acceptance") && !cl.exist("base-length")) {
+      length_scale = 1.0 / cl.get<double>("acceptance");
+    }
     // check options
     if (cl.exist("png") && !cl.exist("from")) {
       throw("need to specify output --png option when --from is specified");
@@ -241,8 +259,7 @@ int main(int argc, char* argv[]) {
     if (cl.get<std::string>("model") == "always")
       monte_carlo(gen, AlwaysAccept<>(), n_emissions);
     if (cl.get<std::string>("model") == "scintilator")
-      monte_carlo(
-          gen, ScintilatorAccept<>(cl.get<double>("acceptance")), n_emissions);
+      monte_carlo(gen, ScintilatorAccept<>(length_scale), n_emissions);
 
 #ifdef __linux__
     clock_gettime(CLOCK_REALTIME, &stop);
