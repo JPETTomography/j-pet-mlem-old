@@ -19,3 +19,6 @@ SUBDIRS += $$files(src/*.pro)
 !cuda {
   SUBDIRS -= $$files(src/cuda_*.pro) $$files(src/*_cuda.pro)
 }
+
+OTHER_FILES += $$files(scripts/*)
+OTHER_FILES += README.md
