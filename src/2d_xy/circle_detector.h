@@ -21,11 +21,9 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
 
   CircleDetector(F radius, Point center) : Super(radius), center(center) {}
 
+  // rotation has no effect on circle (return itself)
   CircleDetector& rotate(Angle phi __attribute__((unused))) { return *this; }
-
-  CircleDetector rotated(Angle phi __attribute__((unused))) {
-    return CircleDetector(this->radius(), center);
-  }
+  CircleDetector rotated(Angle phi __attribute__((unused))) { return *this; }
 
   CircleDetector& operator+=(Point t) {
     center += t;

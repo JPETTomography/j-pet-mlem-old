@@ -61,8 +61,8 @@ template <typename F = double, typename S = int> class Circle {
   }
 
  private:
-  const F radius_;
-  const F radius2_;
+  F radius_;
+  F radius2_;
   static const F TWO_PI;
   static const F INV_TWO_PI;
 };
