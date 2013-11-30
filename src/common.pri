@@ -46,10 +46,10 @@ INCLUDEPATH += . \
                ../lib/catch/include \
 
 isEmpty(PNGCONFIG) {
-  LIBPNGPATHS += /usr/include/png.h \
-                 /usr/include/libpng \
-                 /usr/local/include/libpng \
-                 /opt/X11/include/libpng15 \
+  !*-mic:LIBPNGPATHS += /usr/include/png.h \
+                        /usr/include/libpng \
+                        /usr/local/include/libpng \
+                        /opt/X11/include/libpng15 \
 
   for(path, LIBPNGPATHS):exists($$path) {
     basename = $$basename(path)
