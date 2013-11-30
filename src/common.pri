@@ -56,10 +56,9 @@ isEmpty(PNGCONFIG) {
     DEFINES += HAVE_LIBPNG
     # only define path if png is not system one
     !equals(basename, png.h) {
-      INCLUDEPATH += $$path
-      path         = $$dirname(path)
-      path         = $$dirname(path)
-      LIBS        += -L$$path/lib
+      INCLUDEPATH      += $$path
+      for(i, 1..2):path = $$dirname(path)
+      LIBS             += -L$$path/lib
     }
     LIBS += -lpng
     break()
@@ -70,11 +69,21 @@ isEmpty(PNGCONFIG) {
   LIBS           += $$system($$PNGCONFIG --L_opts --libs) -lz
 }
 
-# workaround for missing old qmake c++11 config
-CONFIG(c++11):!greaterThan(QT_MAJOR_VERSION, 4) {
-  *-g++-*|*-g++|*-icc|*-icc-*:QMAKE_CXXFLAGS += -std=c++0x
-  else:QMAKE_CXXFLAGS += -std=c++11
-} else {
-  # -std=c++11 is not enabled anyway for ICC
-  CONFIG(c++11):*-icc|*-icc-*:QMAKE_CXXFLAGS += -std=c++11
+c++11 {
+  # workaround for missing old qmake c++11 config
+  !greaterThan(QT_MAJOR_VERSION, 4) {
+    *-g++-*|*-g++|*-icc|*-icc-*:QMAKE_CXXFLAGS += -std=c++0x
+    else:QMAKE_CXXFLAGS += -std=c++11
+  } else:*-icc|*-icc-* {
+    # c++11 is not enabled in ICC spec
+    QMAKE_CXXFLAGS   += -std=c++11
+    macx {
+      QMAKE_CXXFLAGS += -stdlib=libc++
+      QMAKE_LFLAGS   += -stdlib=libc++
+    }
+  }
+}
+
+unix:*-icc|*-icc-* {
+  QMAKE_LFLAGS += -static-intel
 }
