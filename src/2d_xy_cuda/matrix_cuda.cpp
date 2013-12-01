@@ -9,6 +9,11 @@
 #include "2d_xy/detector_ring.h"
 #include "2d_xy/square_detector.h"
 #include "geometry/point.h"
+#include "2d_xy/monte_carlo.h"
+#include "2d_xy/matrix_pixel_major.h"
+#include "2d_xy/model.h"
+#include "2d_xy/lor.h"
+#include "geometry/pixel.h"
 
 // reference stuff from kernel.cu file
 
@@ -27,6 +32,13 @@ void gpu_detector_geometry_kernel_test(float radius,
                                        float pixel_size,
                                        Detector_Ring& cpu_output);
 
+void gpu_detector_hits_kernel_test(float crx,
+                                   float cry,
+                                   float cangle,
+                                   float radius,
+                                   float h_detector,
+                                   float w_detector);
+
 int main(int argc, char* argv[]) {
 
   try {
@@ -39,7 +51,7 @@ int main(int argc, char* argv[]) {
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 64);
     cl.add<int>("n-detectors", 'd', "number of ring detectors", false, 64);
-    cl.add<int>("n-emissions", 'e', "emissions per pixel", false, 10000);
+    cl.add<int>("n-emissions", 'e', "emissions per pixel", false, 1);
     cl.add<float>("radius", 'r', "inner detector ring radius", false, 100);
     cl.add<float>("s-pixel", 'p', "pixel size", false, 1.0f);
     cl.add<float>("tof-step", 'T', "TOF quantisation step", false);
@@ -59,10 +71,12 @@ int main(int argc, char* argv[]) {
     int s_pixel = cl.get<float>("s-pixel");
     float w_detector = cl.get<float>("w-detector");
     float h_detector = cl.get<float>("h-detector");
-    // float tof_step = cl.get<float>("tof-step");
+    float tof_step = 0;
 
     int number_of_blocks = cl.get<int>("block-num");
     int number_of_threads_per_block = cl.get<int>("threads-per-block");
+
+    //----------SYSTEM MATRIX GENERATION----------//
 
     phantom_kernel(number_of_threads_per_block,
                    number_of_blocks,
@@ -72,6 +86,8 @@ int main(int argc, char* argv[]) {
                    h_detector,
                    w_detector,
                    s_pixel);
+
+    //----------GEOMETRY GEOMETRY----------//
 
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
 
@@ -129,11 +145,41 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    if (error_list.size() > 0) {
+    if (!error_list.size()) {
 
       std::cout << "Number of errors in cpu|gpu detectors geometry comparison: "
                 << error_list.size() << std::endl;
     }
+
+    //----------MATRIX OUTPUT----------//
+
+    std::cout << "Matrix output Test:" << std::endl;
+
+    int n_tof_positions = 1;
+
+    typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
+    MatrixImpl matrix(pixels_in_row, n_detectors, n_tof_positions);
+    MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(
+        dr, matrix, s_pixel, tof_step);
+
+    std::random_device rd;
+    tausworthe gen(rd());
+    gen.seed(2345255);
+
+    //    HIT DATA:0.149976 0.59646 0.979102
+    //    CPU HIT1: -29.0753 -96.7248 -28.787 -95.7673
+    //    CPU HIT2: 29.1538 96.701 28.8656 95.7434
+
+    int cpu_emmisions = 1;
+
+    monte_carlo.emit_pixel(gen, AlwaysAccept<>(), cpu_emmisions,0.149976,0.59646,0.979102);
+
+    matrix.get_pixel_data(cpu_emmisions);
+
+    //-------------GPU_DETECTOR_HITS_TEST------------------//
+
+    gpu_detector_hits_kernel_test(
+       0.149976, 0.59646, 0.979102, radius, h_detector, w_detector);
   }
 
   catch (std::string& ex) {

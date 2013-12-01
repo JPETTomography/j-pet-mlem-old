@@ -68,3 +68,9 @@ Additional options:
 4. To build on MIC (Intel Xeon Phi):
 
 		QMAKE_CXXFLAGS+=-mmic QMAKE_LFLAGS+=-mmic PNGCONFIG=$HOME/Documents/MIC/bin/libpng-config
+
+5. To build on CUDA (Nvidia version):
+
+                qmake CONFIG+=cuda
+
+
