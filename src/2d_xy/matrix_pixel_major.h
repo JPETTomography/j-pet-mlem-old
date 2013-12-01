@@ -203,12 +203,12 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     for (auto it = pixel_lor_hits_[0].begin(); it != pixel_lor_hits_[0].end();
          ++it) {
 
-      printf("LOR(%d,%d): %f\n ",(*it).lor.first,(*it).lor.second,(*it).hits/static_cast<double>(emmisions));
-
+      printf("LOR(%d,%d): %f\n ",
+             (*it).lor.first,
+             (*it).lor.second,
+             (*it).hits / static_cast<double>(emmisions));
     }
   }
-
-
 
   S size() const { return size_; }
   S n_lors_at_pixel_index(S i_pixel) const { return pixel_lor_count_[i_pixel]; }

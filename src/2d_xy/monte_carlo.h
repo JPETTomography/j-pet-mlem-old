@@ -121,96 +121,95 @@ class MonteCarlo {
   }
 
   template <typename RandomGenerator, typename AcceptanceModel>
-   void emit_pixel(RandomGenerator& gen,
-                   AcceptanceModel model,
-                   S n_emissions,F crx = 0,F cry = 0,F cangle = 0,
-                   bool o_collect_mc_matrix = true,
-                   bool o_collect_pixel_stats = true) {
+  void emit_pixel(RandomGenerator& gen,
+                  AcceptanceModel model,
+                  S n_emissions,
+                  F crx = 0,
+                  F cry = 0,
+                  F cangle = 0,
+                  bool o_collect_mc_matrix = true,
+                  bool o_collect_pixel_stats = true) {
 
-     if (n_emissions <= 0)
-       return;
+    if (n_emissions <= 0)
+      return;
 
-     auto n_positions = detector_ring_.n_positions(tof_step_, model.max_bias());
-     bool tof = (tof_step_ > static_cast<F>(0));
-     uniform_real_distribution<> one_dis(0., 1.);
-     uniform_real_distribution<> phi_dis(0., M_PI);
+    auto n_positions = detector_ring_.n_positions(tof_step_, model.max_bias());
+    bool tof = (tof_step_ > static_cast<F>(0));
+    uniform_real_distribution<> one_dis(0., 1.);
+    uniform_real_distribution<> phi_dis(0., M_PI);
 
-     matrix_.add_emissions(n_emissions);
-     RandomGenerator mp_gens[1];
+    matrix_.add_emissions(n_emissions);
+    RandomGenerator mp_gens[1];
 
-     mp_gens[0].seed(gen());
+    mp_gens[0].seed(gen());
 
-     for (auto i_pixel = 0; i_pixel < 1; ++i_pixel) {
+    for (auto i_pixel = 0; i_pixel < 1; ++i_pixel) {
 
-       auto pixel = matrix_.pixel_at_index(i_pixel);
+      auto pixel = matrix_.pixel_at_index(i_pixel);
 
-       std::cout << "Pixel(" << pixel.x << "," << pixel.y << ")" << std::endl;
+      std::cout << "Pixel(" << pixel.x << "," << pixel.y << ")" << std::endl;
 
-       if ((pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size_ * pixel_size_ >
-           detector_ring_.fov_radius() * detector_ring_.fov_radius())
-         continue;
+      if ((pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size_ * pixel_size_ >
+          detector_ring_.fov_radius() * detector_ring_.fov_radius())
+        continue;
 
-       int pixel_hit_count = 0;
-       for (auto n = 0; n < n_emissions; ++n) {
+      int pixel_hit_count = 0;
+      for (auto n = 0; n < n_emissions; ++n) {
 
-         auto& l_gen = gen;
+        auto& l_gen = gen;
 
-         auto rx = (pixel.x + one_dis(l_gen)) * pixel_size_;
-         auto ry = (pixel.y + one_dis(l_gen)) * pixel_size_;
+        auto rx = (pixel.x + one_dis(l_gen)) * pixel_size_;
+        auto ry = (pixel.y + one_dis(l_gen)) * pixel_size_;
 
-         if(n_emissions == 1){
+        if (n_emissions == 1) {
 
           rx = crx;
           ry = cry;
+        }
 
-         }
+        // ensure we are within a triangle
+        if (rx > ry)
+          continue;
 
-         // ensure we are within a triangle
-         if (rx > ry)
-           continue;
+        auto angle = phi_dis(l_gen);
 
-         auto angle = phi_dis(l_gen);
+        if (n_emissions == 1) {
 
-         if(n_emissions == 1){
+          angle = cangle;
+        }
 
-           angle = cangle;
+        LOR lor;
+        F position = (F)0.0;
+        auto hits = detector_ring_.emit_event(
+            l_gen, model, rx, ry, angle, lor, position);
 
-         }
+        S quantized_position = 0;
+        if (tof)
+          quantized_position = detector_ring_.quantize_position(
+              position, tof_step_, n_positions);
 
+        // do we have hit on both sides?
+        if (hits >= 2) {
+          if (o_collect_mc_matrix) {
+            if (lor.first == lor.second) {
+              std::ostringstream msg;
+              msg << __PRETTY_FUNCTION__ << " invalid LOR in Monte-Carlo ("
+                  << lor.first << ", " << lor.second << ")";
+              throw(msg.str());
+            }
+            matrix_.hit_lor(lor, quantized_position, i_pixel, 1);
+          }
 
-         LOR lor;
-         F position = (F)0.0;
-         auto hits = detector_ring_.emit_event(
-             l_gen, model, rx, ry, angle, lor, position);
+          if (o_collect_pixel_stats) {
+            matrix_.hit(i_pixel);
+          }
+          pixel_hit_count++;
 
-         S quantized_position = 0;
-         if (tof)
-           quantized_position = detector_ring_.quantize_position(
-               position, tof_step_, n_positions);
-
-         // do we have hit on both sides?
-         if (hits >= 2) {
-           if (o_collect_mc_matrix) {
-             if (lor.first == lor.second) {
-               std::ostringstream msg;
-               msg << __PRETTY_FUNCTION__ << " invalid LOR in Monte-Carlo ("
-                   << lor.first << ", " << lor.second << ")";
-               throw(msg.str());
-             }
-             matrix_.hit_lor(lor, quantized_position, i_pixel, 1);
-           }
-
-           if (o_collect_pixel_stats) {
-             matrix_.hit(i_pixel);
-           }
-           pixel_hit_count++;
-
-         }  // if (hits>=2)
-       }    // loop over emmisions from pixel
-       matrix_.compact_pixel_index(i_pixel);
-     }
-   }
-
+        }  // if (hits>=2)
+      }    // loop over emmisions from pixel
+      matrix_.compact_pixel_index(i_pixel);
+    }
+  }
 
  private:
   DetectorRing& detector_ring_;

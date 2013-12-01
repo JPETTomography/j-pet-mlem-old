@@ -172,14 +172,15 @@ int main(int argc, char* argv[]) {
 
     int cpu_emmisions = 1;
 
-    monte_carlo.emit_pixel(gen, AlwaysAccept<>(), cpu_emmisions,0.149976,0.59646,0.979102);
+    monte_carlo.emit_pixel(
+        gen, AlwaysAccept<>(), cpu_emmisions, 0.149976, 0.59646, 0.979102);
 
     matrix.get_pixel_data(cpu_emmisions);
 
     //-------------GPU_DETECTOR_HITS_TEST------------------//
 
     gpu_detector_hits_kernel_test(
-       0.149976, 0.59646, 0.979102, radius, h_detector, w_detector);
+        0.149976, 0.59646, 0.979102, radius, h_detector, w_detector);
   }
 
   catch (std::string& ex) {
