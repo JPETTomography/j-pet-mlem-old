@@ -28,15 +28,13 @@ double getwtime() {
   return (double)(tv.tv_sec - sec) + (double)tv.tv_usec / 1e6;
 }
 
-
-
 void mem_clean_lors(Matrix_Element* cpu_matrix, int number_of_blocks) {
 
   for (int i = 0; i < number_of_blocks; ++i) {
     for (int j = 0; j < LORS; ++j) {
 
       cpu_matrix[i].lor[j] = 0.f;
-       }
+    }
   }
 }
 
@@ -160,7 +158,6 @@ void phantom_kernel(int number_of_threads_per_block,
   cuda(Free, gpu_matrix_element);
 }
 
-
 void gpu_detector_geometry_kernel_test(float radius,
                                        float h_detector,
                                        float w_detector,
@@ -209,8 +206,6 @@ void gpu_detector_geometry_kernel_test(float radius,
 
   cuda(Free, gpu_detectors);
 }
-
-
 
 void gpu_detector_hits_kernel_test(float crx,
                                    float cry,
