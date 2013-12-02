@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 64);
     cl.add<int>("n-detectors", 'd', "number of ring detectors", false, 64);
-    cl.add<int>("n-emissions", 'e', "emissions per pixel", false, 1);
+    cl.add<int>("n-emissions", 'e', "emissions per pixel", false, 10000);
     cl.add<float>("radius", 'r', "inner detector ring radius", false, 100);
     cl.add<float>("s-pixel", 'p', "pixel size", false, 1.0f);
     cl.add<float>("tof-step", 'T', "TOF quantisation step", false);
@@ -87,9 +87,9 @@ int main(int argc, char* argv[]) {
                    w_detector,
                    s_pixel);
 
-    //----------GEOMETRY GEOMETRY----------//
-
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
+
+#ifdef TEST
 
     Detector_Ring cpu_output;
 
@@ -155,6 +155,8 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Matrix output Test:" << std::endl;
 
+#endif
+
     int n_tof_positions = 1;
 
     typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
@@ -167,20 +169,25 @@ int main(int argc, char* argv[]) {
     gen.seed(2345255);
 
     //    HIT DATA:0.149976 0.59646 0.979102
-    //    CPU HIT1: -29.0753 -96.7248 -28.787 -95.7673
-    //    CPU HIT2: 29.1538 96.701 28.8656 95.7434
 
-    int cpu_emmisions = 1;
+    int cpu_emmisions = 10000 * 512 * 64;
 
-    monte_carlo.emit_pixel(
-        gen, AlwaysAccept<>(), cpu_emmisions, 0.149976, 0.59646, 0.979102);
+    //    monte_carlo.emit_pixel(
+    //        gen, AlwaysAccept<>(), cpu_emmisions, 0.149976, 0.59646,
+    // 0.979102);
+
+    monte_carlo.emit_pixel(gen, AlwaysAccept<>(), cpu_emmisions);
 
     matrix.get_pixel_data(cpu_emmisions);
+
+#ifdef TEST
 
     //-------------GPU_DETECTOR_HITS_TEST------------------//
 
     gpu_detector_hits_kernel_test(
         0.149976, 0.59646, 0.979102, radius, h_detector, w_detector);
+
+#endif
   }
 
   catch (std::string& ex) {

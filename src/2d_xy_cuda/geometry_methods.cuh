@@ -9,9 +9,6 @@ __device__ Secant_Points secant(float x, float y, float angle, float radius) {
   float b = -std::cos(angle);
   float c = a * x + b * y;
 
-  // std::cout << "a: " << a << " b: " << b << " c: " << c << std::endl;
-
-  // helper variables
   float b2 = b * b;
   float b2c = b2 * c;
   float ac = a * c;
@@ -20,8 +17,6 @@ __device__ Secant_Points secant(float x, float y, float angle, float radius) {
 
   float sq = sqrt(b2 * (-(c * c) + a2_b2 * radius * radius));
   float asq = a * sq;
-
-  // std::cout << "sq: " << sq << " asq: " << asq << std::endl;
 
   Secant_Points secant_positions;
 
@@ -68,27 +63,15 @@ CUDA_CALLABLE_MEMBER int intersections(float x,
                                        int detector_id,
                                        Hits& hit) {
 
-  // float temp_x =
-  // ring.detector_list[detector_id].get_element(3).get_locationx();
-  // float temp_y =
-  // ring.detector_list[detector_id].get_element(3).get_locationy();
-
   float p1_x = ring.detector_list[detector_id].points[3].x;
   float p1_y = ring.detector_list[detector_id].points[3].y;
 
-  // std::cout << "temp_x: " <<  temp_x << " " << "temp_y: " << temp_y <<
-  // std::endl;
 
   float a = std::sin(angle);
   float b = -std::cos(angle);
   float c = a * x + b * y;
 
-  // std::cout << "a: " << a << " " << "b: " << b << " " << "c: " << c <<
-  // std::endl;
-
   float v1 = a * p1_x + b * p1_y - c;
-
-  // std::cout <<"V1: " <<  v1 << std::endl;
 
   int r = 0;
 
@@ -102,28 +85,25 @@ CUDA_CALLABLE_MEMBER int intersections(float x,
     if (v2 == 0.0f) {
       hit.p[r].x = ring.detector_list[detector_id].points[i].x;
       hit.p[r].y = ring.detector_list[detector_id].points[i].y;
-      // v2 is crossing point
+
       r++;
-      // std::cout << " " << p2_x << "  " << p2_y;
-      if (r == 2)
+
+      if (r == 2){
         return r;
+      }
     } else if (v1 * v2 < 0.0f) {
       // calculate intersection
 
       float m = a * (p1_x - p2_x) + b * (p1_y - p2_y);
-      /*
-       std::cout
-       << (c * (p1_x - p2_x) + b * (p2_x * p1_y - p1_x * p2_y)) / m
-       << "  "
-       << ((c * (p1_y - p2_y) + a * (p1_x * p2_y - p2_x * p1_y))
-       / m) << std::endl;*/
+
       hit.p[r].x = (c * (p1_x - p2_x) + b * (p2_x * p1_y - p1_x * p2_y)) / m;
       hit.p[r].y = (c * (p1_y - p2_y) + a * (p1_x * p2_y - p2_x * p1_y)) / m;
 
       r++;
 
-      if (r == 2)
+      if (r == 2){
         return r;
+      }
     }
     v1 = v2;
     p1_x = p2_x;
@@ -138,8 +118,8 @@ CUDA_CALLABLE_MEMBER float secant_angle(float x1, float y1) {
 
 CUDA_CALLABLE_MEMBER bool check_for_hits(int inner,
                                          int outer,
-                                         int x,
-                                         int y,
+                                         float x,
+                                         float y,
                                          float angle,
                                          int n_detectors,
                                          Detector_Ring& ring,

@@ -67,30 +67,13 @@ __global__ void gpu_detector_hit_test(float crx,
 
     printf("DATA: rx:= %f ry:= %f angle:= %f\n", rx, ry, angle);
 
-    // innetr and outer secant for circles
     Secant_Points inner_secant = secant(rx, ry, angle, radius);
     Secant_Points outer_secant = secant(rx, ry, angle, radius + h_detector);
-
-    printf("Inner_Secant: (%f,%f)  (%f,%f)\n",
-           inner_secant.x1,
-           inner_secant.y1,
-           inner_secant.x2,
-           inner_secant.y2);
-    printf("Outer_Secant: (%f,%f)  (%f,%f)\n",
-           outer_secant.x1,
-           outer_secant.y1,
-           outer_secant.x2,
-           outer_secant.y2);
-
-    // hits per detector(if hits = 2 we got pair of detector, else generate
-    // new random position and angle)
 
     i_inner = section(secant_angle(inner_secant.x1, inner_secant.y1),
                       NUMBER_OF_DETECTORS);
     i_outer = section(secant_angle(outer_secant.x1, inner_secant.y1),
                       NUMBER_OF_DETECTORS);
-
-    printf("FIRST Inner_Section: %d  Outer_Section: %d\n", i_inner, i_outer);
 
     if (!check_for_hits(i_inner,
                         i_outer,
@@ -107,8 +90,6 @@ __global__ void gpu_detector_hit_test(float crx,
                       NUMBER_OF_DETECTORS);
     i_outer = section(secant_angle(outer_secant.x2, inner_secant.y2),
                       NUMBER_OF_DETECTORS);
-
-    printf("SECOND Inner_Section: %d  Outer_Section: %d\n", i_inner, i_outer);
 
     if (!check_for_hits(i_inner,
                         i_outer,

@@ -134,7 +134,7 @@ void phantom_kernel(int number_of_threads_per_block,
 
       for (int i = 0; i < LORS; i++) {
         float temp = 0.f;
-        for (int j = 1; j < 2; ++j) {
+        for (int j = 0; j < number_of_blocks; ++j) {
 
           temp += cpu_matrix[j].lor[i];
         }
