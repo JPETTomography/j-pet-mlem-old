@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cuda_runtime.h>
+
 #include "config.h"
 #include "data_structures.h"
 #include "geometry_methods.cuh"
