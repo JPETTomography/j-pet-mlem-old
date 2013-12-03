@@ -63,6 +63,18 @@ void phantom_kernel(int number_of_threads_per_block,
     cpu_prng_seed[i] = 53445 + i;
   }
 
+  Lor lookup_table_lors[LORS];
+
+  for (int i = 0; i < NUMBER_OF_DETECTORS; ++i) {
+    for (int j = 0; j < NUMBER_OF_DETECTORS; ++j) {
+
+      Lor temp;
+      temp.lor_a = i;
+      temp.lor_b = j;
+      lookup_table_lors[(i * (i + 1) / 2) + j] = temp;
+    }
+  }
+
   int triangular_matrix_size =
       ((pixels_in_row / 2) * ((pixels_in_row / 2) + 1) / 2);
 
@@ -98,55 +110,57 @@ void phantom_kernel(int number_of_threads_per_block,
   //  for (int j = pixels_in_row / 2 - 1; j >= 0; --j) {
   //    for (int i = 0; i <= j; ++i) {
 
-  for (int j = 0; j < 1; ++j) {
-    for (int i = 0; i < 1; ++i) {
+  // for (int j = 0; j < 1; ++j) {
+  //   for (int i = 0; i < 1; ++i) {
+  int i = 0;
+  int j = 1;
+  mem_clean_lors(cpu_matrix, number_of_blocks);
 
-      mem_clean_lors(cpu_matrix, number_of_blocks);
+  cuda(Memcpy,
+       gpu_matrix_element,
+       cpu_matrix,
+       number_of_blocks * sizeof(Matrix_Element),
+       cudaMemcpyHostToDevice);
 
-      cuda(Memcpy,
-           gpu_matrix_element,
-           cpu_matrix,
-           number_of_blocks * sizeof(Matrix_Element),
-           cudaMemcpyHostToDevice);
+  printf("Pixel(%d,%d) n_emissions: %d \n", i, j, n_emissions);
 
-      printf("Pixel(%d,%d) n_emissions: %d \n", i, j, n_emissions);
+  gpu_phantom_generation << <blocks, threads>>> (i,
+                                                 j,
+                                                 n_emissions,
+                                                 gpu_prng_seed,
+                                                 gpu_matrix_element,
+                                                 number_of_threads_per_block,
+                                                 pixels_in_row,
+                                                 radius,
+                                                 h_detector,
+                                                 w_detector,
+                                                 pixel_size);
 
-      gpu_phantom_generation << <blocks, threads>>>
-          (i,
-           j,
-           n_emissions,
-           gpu_prng_seed,
-           gpu_matrix_element,
-           number_of_threads_per_block,
-           pixels_in_row,
-           radius,
-           h_detector,
-           w_detector,
-           pixel_size);
+  cudaThreadSynchronize();
 
-      cudaThreadSynchronize();
+  cuda(Memcpy,
+       cpu_matrix,
+       gpu_matrix_element,
+       number_of_blocks * sizeof(Matrix_Element),
+       cudaMemcpyDeviceToHost);
 
-      cuda(Memcpy,
-           cpu_matrix,
-           gpu_matrix_element,
-           number_of_blocks * sizeof(Matrix_Element),
-           cudaMemcpyDeviceToHost);
+  for (int i = 0; i < LORS; i++) {
+    float temp = 0.f;
+    for (int j = 0; j < number_of_blocks; ++j) {
 
-      for (int i = 0; i < LORS; i++) {
-        float temp = 0.f;
-        for (int j = 0; j < number_of_blocks; ++j) {
+      temp += cpu_matrix[j].lor[i];
+    }
 
-          temp += cpu_matrix[j].lor[i];
-        }
-
-        if (temp > 0.0f) {
-          printf("%f\n",
-                 temp / number_of_blocks / number_of_threads_per_block /
-                     n_emissions);
-        }
-      }
+    if (temp > 0.0f) {
+      printf(
+          "LOR(%d,%d) %f\n",
+          lookup_table_lors[i].lor_a,
+          lookup_table_lors[i].lor_b,
+          temp / number_of_blocks / number_of_threads_per_block / n_emissions);
     }
   }
+  //   }
+  // }
   double time = 0.0f;
 
   time = getwtime() - time;

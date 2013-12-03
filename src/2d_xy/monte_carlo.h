@@ -143,7 +143,7 @@ class MonteCarlo {
 
     mp_gens[0].seed(gen());
 
-    for (auto i_pixel = 0; i_pixel < 1; ++i_pixel) {
+    for (auto i_pixel = 1; i_pixel < 2; ++i_pixel) {
 
       auto pixel = matrix_.pixel_at_index(i_pixel);
 

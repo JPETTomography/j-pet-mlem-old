@@ -1,6 +1,7 @@
 #include <iostream>
 #include <utility>
 #include <iomanip>
+#include <ctime>
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "config.h"
@@ -176,9 +177,17 @@ int main(int argc, char* argv[]) {
     //        gen, AlwaysAccept<>(), cpu_emmisions, 0.149976, 0.59646,
     // 0.979102);
 
+    clock_t begin = clock();
+
     monte_carlo.emit_pixel(gen, AlwaysAccept<>(), cpu_emmisions);
 
-    matrix.get_pixel_data(cpu_emmisions);
+    matrix.get_pixel_data(cpu_emmisions, 1);
+
+    clock_t end = clock();
+
+    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+
+    std::cout << "CPU TIME: " << elapsed_secs << std::endl;
 
 #ifdef TEST
 

@@ -50,3 +50,9 @@ struct Secant_Sections {
 
   int ss1, ss2;
 };
+
+struct Lor {
+
+  int lor_a;
+  int lor_b;
+};
