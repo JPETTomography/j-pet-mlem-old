@@ -2,6 +2,8 @@
 #include <utility>
 #include <iomanip>
 #include <ctime>
+#include <random>
+
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "config.h"
