@@ -3,7 +3,6 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
-CONFIG += c++11
 
 # fix no symbol in current context on GCC 4.8
 QMAKE_CFLAGS_DEBUG += -gdwarf-2
