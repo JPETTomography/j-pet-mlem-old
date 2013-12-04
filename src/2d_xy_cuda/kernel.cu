@@ -1,4 +1,5 @@
 // if we don't include that Qt Creator will show many errors
+#include<iostream>
 #include <cuda_runtime.h>
 #include <sys/time.h>
 #include <stdio.h>
@@ -137,6 +138,11 @@ void phantom_kernel(int number_of_threads_per_block,
                                                  pixel_size);
 
   cudaThreadSynchronize();
+  cudaError_t info = cudaGetLastError();
+  if(info != cudaSuccess) {
+    std::cerr<<cudaGetErrorString(info)<<std::endl;
+  }
+
 
   cuda(Memcpy,
        cpu_matrix,
