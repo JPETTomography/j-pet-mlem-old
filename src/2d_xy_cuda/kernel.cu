@@ -122,8 +122,11 @@ void phantom_kernel(int number_of_threads_per_block,
        cpu_matrix,
        number_of_blocks * sizeof(Matrix_Element),
        cudaMemcpyHostToDevice);
-
-  printf("Pixel(%d,%d) n_emissions: %d \n", i, j, n_emissions);
+  
+  long int total_emissions =  (long)n_emissions*number_of_blocks*number_of_threads_per_block;
+  printf("Pixel(%d,%d) n_emissions: %d %ld\n", i, j,
+	 n_emissions, 
+	 total_emissions);
   if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
     gpu_phantom_generation << <blocks, threads>>> (i,
 						   j,

@@ -198,7 +198,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     return it->hits;
   }
 
-  void get_pixel_data(int emmisions, int pixel_id) {
+  void get_pixel_data(long int emissions, int pixel_id) {
 
     for (auto it = pixel_lor_hits_[pixel_id].begin();
          it != pixel_lor_hits_[pixel_id].end();
@@ -207,7 +207,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       printf("LOR(%d,%d): %f\n ",
              (*it).lor.first,
              (*it).lor.second,
-             (*it).hits / static_cast<double>(emmisions));
+             (*it).hits / static_cast<double>(emissions));
     }
   }
 

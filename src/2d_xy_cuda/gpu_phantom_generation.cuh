@@ -44,7 +44,6 @@ __global__ void gpu_phantom_generation(int x,
   Hits hit1;
   Hits hit2;
 
-  float fov_radius = radius / M_SQRT2;
   //FIXME: will fail for large number of detectors
   if (threadIdx.x < NUMBER_OF_DETECTORS) {
 

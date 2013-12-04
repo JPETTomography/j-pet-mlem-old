@@ -33,7 +33,7 @@ class MonteCarlo {
   template <typename RandomGenerator, typename AcceptanceModel>
   void operator()(RandomGenerator& gen,
                   AcceptanceModel model,
-                  S n_emissions,
+                  S    n_emissions,
                   bool o_collect_mc_matrix = true,
                   bool o_collect_pixel_stats = true) {
     if (n_emissions <= 0)
@@ -123,7 +123,7 @@ class MonteCarlo {
   template <typename RandomGenerator, typename AcceptanceModel>
   void emit_pixel(RandomGenerator& gen,
                   AcceptanceModel model,
-                  S n_emissions,
+                  long n_emissions,
                   F crx = 0,
                   F cry = 0,
                   F cangle = 0,
@@ -147,7 +147,7 @@ class MonteCarlo {
 
       auto pixel = matrix_.pixel_at_index(i_pixel);
 
-      std::cout << "Pixel(" << pixel.x << "," << pixel.y << ")" << std::endl;
+      std::cout << "Pixel(" << pixel.x << "," << pixel.y << ")" <<" n_emissions: "<<n_emissions<< std::endl;
 
       if ((pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size_ * pixel_size_ >
           detector_ring_.fov_radius() * detector_ring_.fov_radius())
