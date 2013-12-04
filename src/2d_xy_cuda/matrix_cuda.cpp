@@ -60,7 +60,6 @@ int main(int argc, char* argv[]) {
     cl.add<float>("tof-step", 'T', "TOF quantisation step", false);
     cl.add<float>("w-detector", 'w', "detector width", false, 1.0f);
     cl.add<float>("h-detector", 'h', "detector height", false, 1.0f);
-    cl.add<float>("pixel-size", 's', "pixel size", false, 1.0f);
     cl.add<int>("block-num", 'B', "number of block", false, 64);
     cl.add<int>(
         "threads-per-block", 'P', "number of threads per block", false, 512);
