@@ -5,6 +5,44 @@
 #include "data_structures.h"
 #include "config.h"
 
+__device__ void create_detector_ring(float& h_detector,
+                                     float& w_detector,
+                                     float& radius,
+                                     Detector_Ring& test_ring) {
+
+  Detectors detector_base;
+
+  detector_base.points[0].x =
+      (h_detector / 2.0f) + radius + (h_detector / 2.0f);
+  detector_base.points[0].y = w_detector / 2.0f;
+  detector_base.points[1].x =
+      (h_detector / 2.0f) + radius + (h_detector / 2.0f);
+  detector_base.points[1].y = -w_detector / 2.0f;
+  detector_base.points[2].x =
+      (-h_detector / 2.0f) + radius + (h_detector / 2.0f);
+  detector_base.points[2].y = -w_detector / 2.0f;
+  detector_base.points[3].x =
+      (-h_detector / 2.0) + radius + (h_detector / 2.0f);
+  detector_base.points[3].y = w_detector / 2.0f;
+
+  test_ring.detector_list[threadIdx.x] = detector_base;
+
+  float angle = 2.0f * M_PI * threadIdx.x / NUMBER_OF_DETECTORS;
+  float sin_phi = __sinf(angle);
+  float cos_phi = __cosf(angle);
+
+  for (int j = 0; j < 4; ++j) {
+
+    float temp_x = test_ring.detector_list[threadIdx.x].points[j].x;
+    float temp_y = test_ring.detector_list[threadIdx.x].points[j].y;
+
+    test_ring.detector_list[threadIdx.x].points[j].x =
+        temp_x * cos_phi - temp_y * sin_phi;
+    test_ring.detector_list[threadIdx.x].points[j].y =
+        temp_x * sin_phi + temp_y * cos_phi;
+  }
+}
+
 __device__ Secant_Points secant(float x, float y, float angle, float radius) {
 
   float a = std::sin(angle);
@@ -68,7 +106,6 @@ CUDA_CALLABLE_MEMBER int intersections(float x,
   float p1_x = ring.detector_list[detector_id].points[3].x;
   float p1_y = ring.detector_list[detector_id].points[3].y;
 
-
   float a = std::sin(angle);
   float b = -std::cos(angle);
   float c = a * x + b * y;
@@ -90,7 +127,7 @@ CUDA_CALLABLE_MEMBER int intersections(float x,
 
       r++;
 
-      if (r == 2){
+      if (r == 2) {
         return r;
       }
     } else if (v1 * v2 < 0.0f) {
@@ -103,7 +140,7 @@ CUDA_CALLABLE_MEMBER int intersections(float x,
 
       r++;
 
-      if (r == 2){
+      if (r == 2) {
         return r;
       }
     }

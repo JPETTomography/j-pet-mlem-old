@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
     cl.add<float>("s-pixel", 'p', "pixel size", false, 1.0f);
     cl.add<float>("tof-step", 'T', "TOF quantisation step", false);
     cl.add<float>("w-detector", 'w', "detector width", false, 1.0f);
-    cl.add<float>("h-detector", 'h', "detector height", false, 1.0f);
+    cl.add<float>("h-detector", 'h', "detector height", false, 2.0f);
     cl.add<int>("block-num", 'B', "number of block", false, 64);
     cl.add<int>(
         "threads-per-block", 'P', "number of threads per block", false, 512);
@@ -78,7 +78,8 @@ int main(int argc, char* argv[]) {
     int number_of_blocks = cl.get<int>("block-num");
     int number_of_threads_per_block = cl.get<int>("threads-per-block");
 
-    std::cerr<<radius<<" "<<s_pixel<<" "<<w_detector<<" "<<h_detector<<std::endl;
+    std::cerr << radius << " " << s_pixel << " " << w_detector << " "
+              << h_detector << std::endl;
     //----------SYSTEM MATRIX GENERATION----------//
 
     phantom_kernel(number_of_threads_per_block,
@@ -92,8 +93,6 @@ int main(int argc, char* argv[]) {
 
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
 
-#ifdef TEST
-
     Detector_Ring cpu_output;
 
     typedef std::pair<int, float> error;
@@ -104,15 +103,13 @@ int main(int argc, char* argv[]) {
 
     gpu_detector_geometry_kernel_test(
         radius, h_detector, w_detector, s_pixel, cpu_output);
-
+#ifdef VERBOSE
     for (int detector_id = 0; detector_id < NUMBER_OF_DETECTORS;
          ++detector_id) {
 
       auto detector_points = dr[detector_id];
 
-#if VERBOSE
       std::cout << "DETECTOR: " << detector_id << std::endl;
-#endif
 
       for (int point_id = 0; point_id < 4; ++point_id) {
 
@@ -121,21 +118,17 @@ int main(int argc, char* argv[]) {
             point.x - cpu_output.detector_list[detector_id].points[point_id].x);
         if (diff > epsilon_error) {
           error_list.push_back(std::make_pair(detector_id, diff));
-#if VERBOSE
+
           std::cout << "Diff x : " << diff << std::endl;
-#endif
         }
 
         diff = std::fabs(
             point.y - cpu_output.detector_list[detector_id].points[point_id].y);
         if (diff > epsilon_error) {
           error_list.push_back(std::make_pair(detector_id, diff));
-#if VERBOSE
-          std::cout << "Diff y : " << diff << std::endl;
-#endif
-        }
 
-#if VERBOSE
+          std::cout << "Diff y : " << diff << std::endl;
+        }
 
         std::cout << std::setprecision(10) << "Cpu representation: " << point.x
                   << " " << point.y << std::endl;
@@ -144,7 +137,6 @@ int main(int argc, char* argv[]) {
                   << " "
                   << cpu_output.detector_list[detector_id].points[point_id].y
                   << std::endl;
-#endif
       }
     }
 
@@ -153,12 +145,10 @@ int main(int argc, char* argv[]) {
       std::cout << "Number of errors in cpu|gpu detectors geometry comparison: "
                 << error_list.size() << std::endl;
     }
-
+#endif
     //----------MATRIX OUTPUT----------//
 
     std::cout << "Matrix output Test:" << std::endl;
-
-#endif
 
     int n_tof_positions = 1;
 

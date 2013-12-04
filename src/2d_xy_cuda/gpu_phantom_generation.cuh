@@ -39,46 +39,16 @@ __global__ void gpu_phantom_generation(int x,
   seed[2] = gpu_prng_seed[4 * tid + 2];
   seed[3] = gpu_prng_seed[4 * tid + 3];
 
-  __shared__ Detector_Ring test_ring;
+  __shared__ Detector_Ring ring;
 
   Hits hit1;
   Hits hit2;
 
   float fov_radius = radius / M_SQRT2;
-  //FIXME: will fail for large number of detectors
+  // FIXME: will fail for large number of detectors
   if (threadIdx.x < NUMBER_OF_DETECTORS) {
 
-    Detectors detector_base;
-
-    detector_base.points[0].x =
-        (w_detector / 2.0f) + radius + (h_detector / 2.0f);
-    detector_base.points[0].y = h_detector / 2.0f;
-    detector_base.points[1].x =
-        (w_detector / 2.0f) + radius + (h_detector / 2.0f);
-    detector_base.points[1].y = -h_detector / 2.0f;
-    detector_base.points[2].x =
-        (-w_detector / 2.0f) + radius + (h_detector / 2.0f);
-    detector_base.points[2].y = -h_detector / 2.0f;
-    detector_base.points[3].x =
-        (-w_detector / 2.0) + radius + (h_detector / 2.0f);
-    detector_base.points[3].y = h_detector / 2.0f;
-
-    test_ring.detector_list[threadIdx.x] = detector_base;
-
-    float angle = 2.0f * M_PI * threadIdx.x / NUMBER_OF_DETECTORS;
-    float sin_phi = __sinf(angle);
-    float cos_phi = __cosf(angle);
-
-    for (int j = 0; j < 4; ++j) {
-
-      float temp_x = test_ring.detector_list[threadIdx.x].points[j].x;
-      float temp_y = test_ring.detector_list[threadIdx.x].points[j].y;
-
-      test_ring.detector_list[threadIdx.x].points[j].x =
-          temp_x * cos_phi - temp_y * sin_phi;
-      test_ring.detector_list[threadIdx.x].points[j].y =
-          temp_x * sin_phi + temp_y * cos_phi;
-    }
+    create_detector_ring(h_detector, w_detector, radius, ring);
   }
 
   __syncthreads();
@@ -91,8 +61,6 @@ __global__ void gpu_phantom_generation(int x,
 
 #pragma unroll
   for (int i = 0; i < iteration; ++i) {
-    
-    
 
     float rx =
         (x + HybridTaus(seed[0], seed[1], seed[2], seed[3])) * pixel_size;
@@ -123,7 +91,7 @@ __global__ void gpu_phantom_generation(int x,
                         ry,
                         angle,
                         NUMBER_OF_DETECTORS,
-                        test_ring,
+                        ring,
                         detector1,
                         hit1)) {
       continue;
@@ -140,7 +108,7 @@ __global__ void gpu_phantom_generation(int x,
                         ry,
                         angle,
                         NUMBER_OF_DETECTORS,
-                        test_ring,
+                        ring,
                         detector2,
                         hit2)) {
       continue;

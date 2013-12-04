@@ -1,5 +1,5 @@
 // if we don't include that Qt Creator will show many errors
-#include<iostream>
+#include <iostream>
 #include <cuda_runtime.h>
 #include <sys/time.h>
 #include <stdio.h>
@@ -126,21 +126,21 @@ void phantom_kernel(int number_of_threads_per_block,
   printf("Pixel(%d,%d) n_emissions: %d \n", i, j, n_emissions);
   if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
     gpu_phantom_generation << <blocks, threads>>> (i,
-						   j,
-						   n_emissions,
-						   gpu_prng_seed,
-						   gpu_matrix_element,
-						   number_of_threads_per_block,
-						   pixels_in_row,
-						   radius,
-						   h_detector,
-						   w_detector,
-						   pixel_size);
+                                                   j,
+                                                   n_emissions,
+                                                   gpu_prng_seed,
+                                                   gpu_matrix_element,
+                                                   number_of_threads_per_block,
+                                                   pixels_in_row,
+                                                   radius,
+                                                   h_detector,
+                                                   w_detector,
+                                                   pixel_size);
 
     cudaThreadSynchronize();
     cudaError_t info = cudaGetLastError();
-    if(info != cudaSuccess) {
-      std::cerr<<cudaGetErrorString(info)<<std::endl;
+    if (info != cudaSuccess) {
+      std::cerr << cudaGetErrorString(info) << std::endl;
     }
   }
 
