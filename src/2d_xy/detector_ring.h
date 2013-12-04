@@ -113,12 +113,12 @@ class DetectorRing : public std::vector<DetectorType> {
                  : n_detectors_ - 1;
     S end = (outer + step) % n_detectors_;
     for (auto i = inner; i != end; i = (i + step) % n_detectors_) {
-      auto points = (*this)[i].intersections(e);
+      auto intersections = (*this)[i].intersections(e);
       // check if we got 2 point intersection
       // then test the model against these points distance
-      if (points.size() == 2) {
+      if (intersections.size() == 2) {
         auto deposition_depth = model.deposition_depth(gen);
-
+        auto points = intersections.begin();
 #if DEBUG
         std::cerr << "dep " << deposition_depth << " "
                   << (points[1] - points[0]).length() << std::endl;
@@ -164,10 +164,16 @@ class DetectorRing : public std::vector<DetectorType> {
     auto inner_secant = c_inner_.secant(e);
     auto outer_secant = c_outer_.secant(e);
 
+    if (inner_secant.size() != 2 || outer_secant.size() != 2)
+      return 0;
+
+    auto inner_secant_points = inner_secant.begin();
+    auto outer_secant_points = outer_secant.begin();
+
     auto i_inner =
-        c_inner_.section(c_inner_.angle(inner_secant.first), n_detectors_);
+        c_inner_.section(c_inner_.angle(inner_secant_points[0]), n_detectors_);
     auto i_outer =
-        c_outer_.section(c_inner_.angle(outer_secant.first), n_detectors_);
+        c_outer_.section(c_inner_.angle(outer_secant_points[0]), n_detectors_);
     S detector1;
     F depth1;
 
@@ -177,9 +183,9 @@ class DetectorRing : public std::vector<DetectorType> {
       return 0;
 
     i_inner =
-        c_inner_.section(c_inner_.angle(inner_secant.second), n_detectors_);
+        c_inner_.section(c_inner_.angle(inner_secant_points[1]), n_detectors_);
     i_outer =
-        c_outer_.section(c_inner_.angle(outer_secant.second), n_detectors_);
+        c_outer_.section(c_inner_.angle(outer_secant_points[1]), n_detectors_);
     S detector2;
     F depth2;
     Point d2_p1, d2_p2;

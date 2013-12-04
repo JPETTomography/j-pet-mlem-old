@@ -6,11 +6,22 @@ template <typename FType = double> struct Event {
   typedef FType F;
   typedef ::Point<F> Point;
 
-  Event(F x_a, F y_a, F phi_a) : x(x_a), y(y_a), phi(phi_a) {
+  Event(F x, F y, F phi) : x(x), y(y), phi(phi) {
     // get line equation coefficients
     // a x + b y == c
     a = std::sin(phi);
     b = -std::cos(phi);
+    precalculate();
+  }
+
+ private:
+  Event(F x, F y, F phi, F a, F b) : x(x), y(y), phi(phi), a(a), b(b) {
+    precalculate();
+  }
+
+  void precalculate() {
+    // get line equation coefficients (cont.)
+    // a x + b y == c
     c = a * x + b * y;
 
     // helper variables
@@ -21,11 +32,20 @@ template <typename FType = double> struct Event {
     b_a2_b2 = b * a2_b2;
   }
 
+ public:
   Event(Point p, F phi) : Event(p.x, p.y, phi) {}
 
   // evaluates line equation side on given point
   // 0 means points lies on the line, -1 left, 1 right
   F operator()(const Point& p) { return a * p.x + b * p.y - c; }
+
+  Event operator+(const Point& p) const {
+    return Event(x + p.x, y + p.y, phi, a, c);
+  }
+
+  Event operator-(const Point& p) const {
+    return Event(x - p.x, y - p.y, phi, a, c);
+  }
 
   F x, y;
   F phi;

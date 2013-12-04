@@ -1,5 +1,7 @@
 #pragma once
 
+#include <initializer_list>
+
 #include "point.h"
 #include "2d_xy/event.h"
 #include "util/svg_ostream.h"
@@ -18,17 +20,17 @@ template <typename F = double, typename S = int> class Circle {
   typedef F Angle;
   typedef ::Point<F> Point;
   typedef ::Event<F> Event;
-  typedef std::pair<Point, Point> Secant;
-  typedef std::pair<Angle, Angle> SecantAngle;
-  typedef std::pair<S, S> SecantSections;
+  typedef std::initializer_list<Point> Secant;
+  typedef std::initializer_list<Angle> SecantAngle;
+  typedef std::initializer_list<S> SecantSections;
 
-  Secant secant(Event& e) {
-    auto sq = sqrt(e.b2 * (-(e.c * e.c) + e.a2_b2 * radius2_));
+  Secant secant(const Event& e) {
+    auto cabr2 = (-(e.c * e.c) + e.a2_b2 * radius2_);
+    auto sq = sqrt(e.b2 * cabr2);
     auto asq = e.a * sq;
 
-    return std::make_pair(
-        Point((e.ac - sq) / e.a2_b2, (e.b2c + asq) / e.b_a2_b2),
-        Point((e.ac + sq) / e.a2_b2, (e.b2c - asq) / e.b_a2_b2));
+    return Secant({ Point((e.ac - sq) / e.a2_b2, (e.b2c + asq) / e.b_a2_b2),
+                    Point((e.ac + sq) / e.a2_b2, (e.b2c - asq) / e.b_a2_b2) });
   }
 
   F angle(Point p) { return std::atan2(p.y, p.x); }

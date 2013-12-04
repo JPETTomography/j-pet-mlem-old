@@ -9,7 +9,8 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
   typedef Circle<F> Super;
   typedef F Angle;
   typedef ::Point<F> Point;
-  typedef std::vector<Point> Intersections;
+  typedef std::initializer_list<Point> Intersections;
+  typedef typename Super::Event Event;
 
   CircleDetector(F radius) : Circle<F>(radius), center() {}
 
@@ -33,12 +34,7 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
   Point center;
 
   Intersections intersections(typename Super::Event e) {
-    typename Super::Event translated(e.x - center.x, e.y - center.y, e.phi);
-    auto secant = this->secant(translated);
-    Intersections r(2);
-    r.push_back(secant.first);
-    r.push_back(secant.second);
-    return r;
+    return this->secant(e - center);
   }
 
  private:
