@@ -19,6 +19,7 @@
 #include "geometry/pixel.h"
 
 // reference stuff from kernel.cu file
+// TODO: Should go into a separate header file.
 
 void phantom_kernel(int number_of_threads_per_block,
                     int blocks,
@@ -163,17 +164,18 @@ int main(int argc, char* argv[]) {
 
     //    HIT DATA:0.149976 0.59646 0.979102
 
-    int cpu_emmisions = 10000 * 512 * 64;
-
-    //    monte_carlo.emit_pixel(
-    //        gen, AlwaysAccept<>(), cpu_emmisions, 0.149976, 0.59646,
-    // 0.979102);
-
+    long cpu_emissions =
+        (long)n_emissions * number_of_blocks * number_of_threads_per_block;
+    std::cerr << "CPU " << cpu_emissions << std::endl;
+#if GPU_EMIT_PIXEL
+    monte_carlo.emit_pixel(
+        gen, AlwaysAccept<>(), cpu_emmisions, 0.149976, 0.59646, 0.979102);
+#endif
     clock_t begin = clock();
 
-    monte_carlo.emit_pixel(gen, AlwaysAccept<>(), cpu_emmisions);
+    monte_carlo.emit_pixel(gen, AlwaysAccept<>(), cpu_emissions);
 
-    matrix.get_pixel_data(cpu_emmisions, 1);
+    matrix.get_pixel_data(cpu_emissions, 1);
 
     clock_t end = clock();
 
