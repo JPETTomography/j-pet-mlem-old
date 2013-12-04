@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
     int n_detectors = cl.get<int>("n-detectors");
     int n_emissions = cl.get<int>("n-emissions");
     float radius = cl.get<float>("radius");
-    int s_pixel = cl.get<float>("s-pixel");
+    float s_pixel = cl.get<float>("s-pixel");
     float w_detector = cl.get<float>("w-detector");
     float h_detector = cl.get<float>("h-detector");
     float tof_step = 0;
@@ -78,6 +78,7 @@ int main(int argc, char* argv[]) {
     int number_of_blocks = cl.get<int>("block-num");
     int number_of_threads_per_block = cl.get<int>("threads-per-block");
 
+    std::cerr<<radius<<" "<<s_pixel<<" "<<w_detector<<" "<<h_detector<<std::endl;
     //----------SYSTEM MATRIX GENERATION----------//
 
     phantom_kernel(number_of_threads_per_block,
