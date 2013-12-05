@@ -1,7 +1,6 @@
 #pragma once
 
 #include "matrix.h"
-#include "../2d_xy_cuda/data_structures.h"
 
 /// This class represents a system matrix that stores the content in
 /// "pixel major" mode. That is for each pixel a list w lors is kept.
@@ -149,22 +148,6 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     return sparse;
   }
 
-  SparseMatrix to_sparse(Matrix_Element* gpu_data) {
-    SparseMatrix sparse(this->n_pixels_in_row(),
-                        this->n_detectors(),
-                        this->n_emissions(),
-                        this->n_tof_positions());
-    sparse.reserve(size_);
-    for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
-      for (auto it = pixel_lor_hits_[i_pixel].begin();
-           it != pixel_lor_hits_[i_pixel].end();
-           ++it) {
-        sparse.push_back(*it);
-      }
-    }
-    return sparse;
-  }
-
   MatrixPixelMajor& operator<<(SparseMatrix& sparse) {
 
     sparse.sort_by_pixel();
@@ -217,14 +200,14 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
   void get_pixel_data(long int emissions, int pixel_id) {
 
-    std::cout << "HERE size: " << pixel_lor_hits_[pixel_id].size() << std::endl;
-
     for (auto it = pixel_lor_hits_[pixel_id].begin();
          it != pixel_lor_hits_[pixel_id].end();
          ++it) {
 
-      printf(
-          "LOR(%d,%d): %d\n ", (*it).lor.first, (*it).lor.second, (*it).hits);
+      printf("LOR(%d,%d): %f\n ",
+             (*it).lor.first,
+             (*it).lor.second,
+             (*it).hits / static_cast<double>(emissions));
     }
   }
 
