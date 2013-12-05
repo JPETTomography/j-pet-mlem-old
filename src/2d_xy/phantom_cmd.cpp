@@ -79,17 +79,21 @@ int main(int argc, char* argv[]) {
     auto& tof_step = cl.get<double>("tof-step");
     auto& acceptance = cl.get<double>("acceptance");
 
-    // load config file
-    if (cl.exist("config")) {
-      std::ifstream in(cl.get<cmdline::string>("config"));
+    // load config file(s) (one config may call other with --config=other)
+    std::string config, last_config;
+    while (cl.exist("config") &&
+           (config = cl.get<cmdline::string>("config")).length() &&
+           config != last_config) {
+      std::ifstream in(config);
       if (!in.is_open()) {
         throw("cannot open input config file: " +
               cl.get<cmdline::string>("config"));
       }
       // load except n-emissions
       auto n_prev_emissions = n_emissions;
-      in >> cl;
+      cl.parse_check(in, config.c_str());
       n_emissions = n_prev_emissions;
+      last_config = config;
     }
 
     PointSources<> point_sources;

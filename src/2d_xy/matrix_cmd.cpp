@@ -154,37 +154,42 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
     throw("need to specify --from lor when output --png option is specified");
   }
 
-  // load config file
-  if (cl.exist("config")) {
-    std::ifstream in(cl.get<cmdline::string>("config"));
+  // load config file(s) (one config may call other with --config=other)
+  std::string config, last_config;
+  while (cl.exist("config") &&
+         (config = cl.get<cmdline::string>("config")).length() &&
+         config != last_config) {
+    std::ifstream in(config);
     if (!in.is_open()) {
       throw("cannot open input config file: " +
             cl.get<cmdline::string>("config"));
     }
     // load except n-emissions
     auto n_prev_emissions = n_emissions;
+    cl.parse_check(in, config.c_str());
+    n_emissions = n_prev_emissions;
+    last_config = config;
+  }
+
+  // load config files accompanying matrix files
+  for (auto& fn : cl.rest()) {
+    auto fn_sep = fn.find_last_of("\\/");
+    auto fn_ext = fn.find_last_of(".");
+    auto fn_wo_ext =
+        fn.substr(0,
+                  fn_ext != std::string::npos &&
+                          (fn_sep == std::string::npos || fn_sep < fn_ext)
+                      ? fn_ext
+                      : std::string::npos);
+    std::ifstream in(fn_wo_ext + ".cfg");
+    if (!in.is_open())
+      continue;
+    // load except n-emissions
+    auto n_prev_emissions = n_emissions;
     in >> cl;
     n_emissions = n_prev_emissions;
-  } else
-    // load config files accompanying matrix files
-    for (auto& fn : cl.rest()) {
-      auto fn_sep = fn.find_last_of("\\/");
-      auto fn_ext = fn.find_last_of(".");
-      auto fn_wo_ext =
-          fn.substr(0,
-                    fn_ext != std::string::npos &&
-                            (fn_sep == std::string::npos || fn_sep < fn_ext)
-                        ? fn_ext
-                        : std::string::npos);
-      std::ifstream in(fn_wo_ext + ".cfg");
-      if (!in.is_open())
-        continue;
-      // load except n-emissions
-      auto n_prev_emissions = n_emissions;
-      in >> cl;
-      n_emissions = n_prev_emissions;
-      break;  // only one config file allowed!
-    }
+    break;  // only one config file allowed!
+  }
 
 #if _OPENMP
   if (cl.exist("n-threads")) {
