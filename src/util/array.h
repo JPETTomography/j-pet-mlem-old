@@ -5,7 +5,11 @@
 template <std::size_t MaxSize, typename T> class Array {
  public:
   Array() : s(0) {}
+#if __INTEL_COMPILER
+  template <typename... Ts> Array(Ts... e) : s(sizeof...(e)), v{ e... } {}
+#else
   template <typename... Ts> Array(Ts&&... e) : s(sizeof...(e)), v{ e... } {}
+#endif
 
   // minimal std::vector compatibility
   typedef T value_type;
