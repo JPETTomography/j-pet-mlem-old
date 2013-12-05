@@ -19,10 +19,10 @@ class TriangularPixelMap {
         end_pixel_(Pixel::end_for_n_pixels_in_row(n_pixels_in_row)) {
     if (n_pixels_in_row % 2)
       throw("number of pixels must be multiple of 2");
-    t_hits_ = new Hit[total_n_pixels_in_triangle_]();
+    t_hits = new Hit[total_n_pixels_in_triangle_]();
   }
 
-  ~TriangularPixelMap() { delete[] t_hits_; }
+  ~TriangularPixelMap() { delete[] t_hits; }
 
   static Pixel begin_pixel() { return Pixel(); }
   const Pixel& end_pixel() { return end_pixel_; }
@@ -64,17 +64,17 @@ class TriangularPixelMap {
     bool diag;
     S symmetry;
     auto i_pixel = pixel_index(p, diag, symmetry);
-    return t_hits_[i_pixel] * (diag ? 2 : 1);
+    return t_hits[i_pixel] * (diag ? 2 : 1);
   }
 
   Hit operator[](Pixel p) const {
     bool diag;
     S symmetry;
     auto i_pixel = pixel_index(p, diag, symmetry);
-    return t_hits_[i_pixel] * (diag ? 2 : 1);
+    return t_hits[i_pixel] * (diag ? 2 : 1);
   }
 
-  void hit(S i_pixel, S hits = 1) { t_hits_[i_pixel] += hits; }
+  void hit(S i_pixel, S hits = 1) { t_hits[i_pixel] += hits; }
 
   template <class FileWriter> void output_bitmap(FileWriter& fw) {
     fw.template write_header<BitmapPixel>(n_pixels_in_row_, n_pixels_in_row_);
@@ -97,7 +97,7 @@ class TriangularPixelMap {
   }
 
  private:
-  Pixels t_hits_;
+  Pixels t_hits;
   S n_pixels_in_row_;
   S n_pixels_in_row_half_;
   S total_n_pixels_in_triangle_;

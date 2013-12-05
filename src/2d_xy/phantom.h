@@ -14,8 +14,8 @@ class EllipticalRegion {
                    double act)
       : x_(x), y_(y), a_(a), b_(b), phi_(phi), activity_(act) {
     sincos(phi, &sin_, &cos_);
-    inv_a2_ = 1.0 / (a_ * a_);
-    inv_b2_ = 1.0 / (b_ * b_);
+    inv_a2 = 1.0 / (a_ * a_);
+    inv_b2 = 1.0 / (b_ * b_);
   }
 
   double activity() const { return activity_; }
@@ -27,7 +27,7 @@ class EllipticalRegion {
     double r_x = dx * cos_ + dy * sin_;
     double r_y = -dx * sin_ + dy * cos_;
 
-    double r2 = r_x * r_x * inv_a2_ + r_y * r_y * inv_b2_;
+    double r2 = r_x * r_x * inv_a2 + r_y * r_y * inv_b2;
 
     return r2 < 1.0;
   }
@@ -46,21 +46,21 @@ class EllipticalRegion {
   double phi_;
   double activity_;
 
-  double inv_a2_;
-  double inv_b2_;
+  double inv_a2;
+  double inv_b2;
 
   double sin_;
   double cos_;
 
 #ifdef __APPLE__
   static inline void sincos(double a, double* s, double* c) {
-    *s = sin(a);
-    *c = cos(a);
+    *s = std::sin(a);
+    *c = std::cos(a);
   }
 
   static inline void sincosf(float a, float* s, float* c) {
-    *s = sinf(a);
-    *c = cosf(a);
+    *s = std::sinf(a);
+    *c = std::cosf(a);
   }
 #endif
 };
@@ -77,7 +77,7 @@ class Phantom {
       : ll_x_(ll_x), ll_y_(ll_y), ur_x_(ur_x), ur_y_(ur_y) {}
 #endif
 
-  size_t n_regions() const { return regions_.size(); }
+  size_t n_regions() const { return regions.size(); }
 
   void add_region(double x,
                   double y,
@@ -85,11 +85,11 @@ class Phantom {
                   double b,
                   double phi,
                   double act) {
-    regions_.push_back(new EllipticalRegion(x, y, a, b, phi, act));
+    regions.push_back(new EllipticalRegion(x, y, a, b, phi, act));
   }
 
   double activity(double x, double y) const {
-    for (auto rit = regions_.rbegin(); rit != regions_.rend(); ++rit) {
+    for (auto rit = regions.rbegin(); rit != regions.rend(); ++rit) {
       if ((*rit)->in(x, y)) {
         return (*rit)->activity();
       }
@@ -101,23 +101,18 @@ class Phantom {
     return activity(x, y) > rnd;
   }
 
-  const_iterator begin() const { return regions_.begin(); }
-  const_iterator end() const { return regions_.end(); }
+  const_iterator begin() const { return regions.begin(); }
+  const_iterator end() const { return regions.end(); }
 
   ~Phantom() {
-    Container::iterator rit = regions_.begin();
-    for (; rit != regions_.end(); ++rit) {
+    Container::iterator rit = regions.begin();
+    for (; rit != regions.end(); ++rit) {
       delete (*rit);
     }
   }
 
  private:
-#if 0
-  double ll_x_, ll_y_;
-  double ur_x_, ur_y_;
-#endif
-
-  Container regions_;
+  Container regions;
 };
 
 template <typename FType = double> struct PointSource {

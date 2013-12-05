@@ -6,7 +6,7 @@ template <typename FType = double> struct Point {
   typedef FType F;
 
   Point() : x(static_cast<F>(0)), y(static_cast<F>(0)) {}
-  Point(F x_a, F y_a) : x(x_a), y(y_a) {}
+  Point(F x, F y) : x(x), y(y) {}
   Point(std::pair<F, F> p) : x(p.first), y(p.second) {}
 
   F x, y;

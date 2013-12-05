@@ -32,24 +32,24 @@ template <typename FType = double> class ScintilatorAccept {
   typedef FType F;
 
   ScintilatorAccept(F scale)
-      : one_dis_(static_cast<F>(0), static_cast<F>(1)),
-        scale_(scale),
-        inv_scale_(static_cast<F>(1) / scale) {}
+      : one_dis(static_cast<F>(0), static_cast<F>(1)),
+        scale(scale),
+        inv_scale(static_cast<F>(1) / scale) {}
 
   template <class RandomGenerator>
   bool operator()(RandomGenerator& gen, F length) {
-    return one_dis_(gen) >= exp(-length * inv_scale_);
+    return one_dis(gen) >= exp(-length * inv_scale);
   }
 
   template <typename RandomGenerator> F deposition_depth(RandomGenerator& gen) {
-    auto r = one_dis_(gen);
-    return -log(r) * scale_;
+    auto r = one_dis(gen);
+    return -log(r) * scale;
   }
 
   static F max_bias() { return static_cast<F>(0); }
 
  private:
-  uniform_real_distribution<F> one_dis_;
-  F scale_;
-  F inv_scale_;
+  uniform_real_distribution<F> one_dis;
+  F scale;
+  F inv_scale;
 };

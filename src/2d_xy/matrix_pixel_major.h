@@ -36,23 +36,23 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
   MatrixPixelMajor(S n_pixels_in_row, S n_detectors, S n_tof_positions = 1)
       : Super(n_pixels_in_row, n_detectors, n_tof_positions),
-        n_pixels_in_row_half_(n_pixels_in_row / 2),
+        n_pixels_in_row_half(n_pixels_in_row / 2),
         n_pixels_(Pixel::end_for_n_pixels_in_row(n_pixels_in_row).index()),
-        n_lors_(LOR::end_for_detectors(n_detectors).index()),
+        n_lors(LOR::end_for_detectors(n_detectors).index()),
         size_(0),
-        pixel_lor_hits_ptr_(new S* [n_pixels_]()),
-        pixel_lor_hits_(n_pixels_),
-        pixel_lor_count_(n_pixels_),
-        index_to_lor_(n_lors_),
-        index_to_pixel_(n_pixels_) {
+        pixel_lor_hits_ptr(new S* [n_pixels_]()),
+        pixel_lor_hits(n_pixels_),
+        pixel_lor_count(n_pixels_),
+        index_to_lor(n_lors),
+        index_to_pixel(n_pixels_) {
     // store index to LOR mapping
     for (auto lor = this->begin_lor(); lor != this->end_lor(); ++lor) {
-      index_to_lor_[lor.index()] = lor;
+      index_to_lor[lor.index()] = lor;
     }
     // store index to pixel mapping
     for (auto pixel = this->begin_pixel(); pixel != this->end_pixel();
          ++pixel) {
-      index_to_pixel_[pixel.index()] = pixel;
+      index_to_pixel[pixel.index()] = pixel;
     }
   }
 
@@ -69,20 +69,20 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
           << lor.first << ", " << lor.second << ")";
       throw(msg.str());
     }
-    if (!pixel_lor_hits_ptr_[i_pixel]) {
-      pixel_lor_hits_ptr_[i_pixel] = new S[n_lors_ * this->n_tof_positions()]();
+    if (!pixel_lor_hits_ptr[i_pixel]) {
+      pixel_lor_hits_ptr[i_pixel] = new S[n_lors * this->n_tof_positions()]();
       // unpack previous values (if any)
-      for (auto it = pixel_lor_hits_[i_pixel].begin();
-           it != pixel_lor_hits_[i_pixel].end();
+      for (auto it = pixel_lor_hits[i_pixel].begin();
+           it != pixel_lor_hits[i_pixel].end();
            ++it) {
         hit_lor(it->lor, it->position, i_pixel, it->hits);
       }
     }
 
-    auto& current_hits = pixel_lor_hits_ptr_
+    auto& current_hits = pixel_lor_hits_ptr
         [i_pixel][lor.index() * this->n_tof_positions() + position];
     if (current_hits == 0) {
-      pixel_lor_count_[i_pixel]++;
+      pixel_lor_count[i_pixel]++;
       size_++;
     }
     current_hits += hits;
@@ -90,26 +90,26 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
   ~MatrixPixelMajor() {
     for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
-      if (pixel_lor_hits_ptr_[i_pixel]) {
-        delete[] pixel_lor_hits_ptr_[i_pixel];
+      if (pixel_lor_hits_ptr[i_pixel]) {
+        delete[] pixel_lor_hits_ptr[i_pixel];
       }
     }
-    delete[] pixel_lor_hits_ptr_;
+    delete[] pixel_lor_hits_ptr;
   }
 
   void compact_pixel_index(S i_pixel) {
-    if (!pixel_lor_hits_ptr_[i_pixel] || i_pixel >= n_pixels_)
+    if (!pixel_lor_hits_ptr[i_pixel] || i_pixel >= n_pixels_)
       return;
 
     // ensure we have enough space for the all LORs for that pixel
-    pixel_lor_hits_[i_pixel].resize(pixel_lor_count_[i_pixel]);
+    pixel_lor_hits[i_pixel].resize(pixel_lor_count[i_pixel]);
 
-    for (S i_lor = 0, lor_count = 0; i_lor < n_lors_; ++i_lor) {
+    for (S i_lor = 0, lor_count = 0; i_lor < n_lors; ++i_lor) {
       for (S position = 0; position < this->n_tof_positions(); ++position) {
-        auto hits = pixel_lor_hits_ptr_
+        auto hits = pixel_lor_hits_ptr
             [i_pixel][i_lor * this->n_tof_positions() + position];
         if (hits > 0) {
-          LOR lor = index_to_lor_[i_lor];
+          LOR lor = index_to_lor[i_lor];
           if (lor.first == lor.second) {
             std::ostringstream msg;
             msg << __PRETTY_FUNCTION__ << " invalid LOR " << i_lor << " ("
@@ -117,20 +117,20 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
                 << i_pixel;
             throw(msg.str());
           }
-          pixel_lor_hits_[i_pixel][lor_count++] = SparseElement(
-              index_to_lor_[i_lor], position, index_to_pixel_[i_pixel], hits);
+          pixel_lor_hits[i_pixel][lor_count++] = SparseElement(
+              index_to_lor[i_lor], position, index_to_pixel[i_pixel], hits);
         }
       }
     }
 
-    delete[] pixel_lor_hits_ptr_[i_pixel], pixel_lor_hits_ptr_[i_pixel] = NULL;
+    delete[] pixel_lor_hits_ptr[i_pixel], pixel_lor_hits_ptr[i_pixel] = NULL;
 
-    std::sort(pixel_lor_hits_[i_pixel].begin(),
-              pixel_lor_hits_[i_pixel].end(),
+    std::sort(pixel_lor_hits[i_pixel].begin(),
+              pixel_lor_hits[i_pixel].end(),
               SparseElementLORComparator());
   }
 
-  Pixel pixel_at_index(S i_pixel) { return index_to_pixel_[i_pixel]; }
+  Pixel pixel_at_index(S i_pixel) { return index_to_pixel[i_pixel]; }
 
   SparseMatrix to_sparse() {
     SparseMatrix sparse(this->n_pixels_in_row(),
@@ -139,8 +139,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
                         this->n_tof_positions());
     sparse.reserve(size_);
     for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
-      for (auto it = pixel_lor_hits_[i_pixel].begin();
-           it != pixel_lor_hits_[i_pixel].end();
+      for (auto it = pixel_lor_hits[i_pixel].begin();
+           it != pixel_lor_hits[i_pixel].end();
            ++it) {
         sparse.push_back(*it);
       }
@@ -159,8 +159,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       Pixel pixel = it->pixel;
       auto triangular = sparse.triangular();
       if (!triangular) {
-        pixel.x -= n_pixels_in_row_half_;
-        pixel.y -= n_pixels_in_row_half_;
+        pixel.x -= n_pixels_in_row_half;
+        pixel.y -= n_pixels_in_row_half;
         if (pixel.x < 0 || pixel.y < 0 || pixel.y < pixel.x)
           continue;
       }
@@ -188,20 +188,20 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   // for testing purposes
   S lor_hits_at_pixel_index(LOR lor, S i_pixel) {
     auto it =
-        std::lower_bound(pixel_lor_hits_[i_pixel].begin(),
-                         pixel_lor_hits_[i_pixel].end(),
-                         SparseElement(lor, 0, index_to_pixel_[i_pixel], 0),
+        std::lower_bound(pixel_lor_hits[i_pixel].begin(),
+                         pixel_lor_hits[i_pixel].end(),
+                         SparseElement(lor, 0, index_to_pixel[i_pixel], 0),
                          SparseElementLORComparator());
 
-    if (it == pixel_lor_hits_[i_pixel].end())
+    if (it == pixel_lor_hits[i_pixel].end())
       return 0;
     return it->hits;
   }
 
   void get_pixel_data(long int emissions, int pixel_id) {
 
-    for (auto it = pixel_lor_hits_[pixel_id].begin();
-         it != pixel_lor_hits_[pixel_id].end();
+    for (auto it = pixel_lor_hits[pixel_id].begin();
+         it != pixel_lor_hits[pixel_id].end();
          ++it) {
 
       printf("LOR(%d,%d): %f\n ",
@@ -212,7 +212,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   }
 
   S size() const { return size_; }
-  S n_lors_at_pixel_index(S i_pixel) const { return pixel_lor_count_[i_pixel]; }
+  S n_lors_at_pixel_index(S i_pixel) const { return pixel_lor_count[i_pixel]; }
   S n_pixels() const { return n_pixels_; }
 
  private:
@@ -228,13 +228,13 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     }
   };
 
-  S n_pixels_in_row_half_;
+  S n_pixels_in_row_half;
   S n_pixels_;
-  S n_lors_;
+  S n_lors;
   S size_;
-  Hit** pixel_lor_hits_ptr_;
-  std::vector<std::vector<SparseElement>> pixel_lor_hits_;
-  std::vector<S> pixel_lor_count_;
-  std::vector<LOR> index_to_lor_;
-  std::vector<Pixel> index_to_pixel_;
+  Hit** pixel_lor_hits_ptr;
+  std::vector<std::vector<SparseElement>> pixel_lor_hits;
+  std::vector<S> pixel_lor_count;
+  std::vector<LOR> index_to_lor;
+  std::vector<Pixel> index_to_pixel;
 };

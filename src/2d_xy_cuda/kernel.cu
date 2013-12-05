@@ -72,7 +72,7 @@ void phantom_kernel(int number_of_threads_per_block,
       ((pixels_in_row / 2) * ((pixels_in_row / 2) + 1) / 2);
 
   // Pixel<> lookup_table_pixel[triangular_matrix_size];
-  std::vector< Pixel<> > lookup_table_pixel;
+  std::vector<Pixel<>> lookup_table_pixel;
   lookup_table_pixel.resize(triangular_matrix_size);
 
   // Matrix_Element triangle_matrix_output[triangular_matrix_size];

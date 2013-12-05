@@ -44,16 +44,16 @@ template <typename LORType,
           typename PixelType,
           typename HitType = int>
 struct SparseElement {
-  SparseElement(LORType&& lor_a,
-                PositionType&& position_a,
-                PixelType&& pixel_a,
-                HitType&& hits_a)
-      : lor(lor_a), position(position_a), pixel(pixel_a), hits(hits_a) {}
-  SparseElement(const LORType& lor_a,
-                const PositionType& position_a,
-                const PixelType& pixel_a,
-                const HitType& hits_a)
-      : lor(lor_a), position(position_a), pixel(pixel_a), hits(hits_a) {}
+  SparseElement(LORType&& lor,
+                PositionType&& position,
+                PixelType&& pixel,
+                HitType&& hits)
+      : lor(lor), position(position), pixel(pixel), hits(hits) {}
+  SparseElement(const LORType& lor,
+                const PositionType& position,
+                const PixelType& pixel,
+                const HitType& hits)
+      : lor(lor), position(position), pixel(pixel), hits(hits) {}
   SparseElement() = default;
 
   LORType lor;
