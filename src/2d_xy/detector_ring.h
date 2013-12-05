@@ -202,9 +202,6 @@ class DetectorRing : public std::vector<DetectorType> {
       throw(msg.str());
     }
 
-    // printf("CPU HIT1: %f %f %f %f \n",d1_p1.x,d1_p1.y,d1_p2.x,d1_p2.y);
-    // printf("CPU HIT1: %f %f %f %f \n",d2_p1.x,d2_p1.y,d2_p2.x,d2_p2.y);
-
     Point origin(rx, ry);
     F length1 = origin.nearest_distance(d1_p1, d1_p2) + depth1;
     F length2 = origin.nearest_distance(d2_p1, d2_p2) + depth2;
