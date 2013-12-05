@@ -1,7 +1,7 @@
-include(common.pri)
-
 CONFIG  += c++11
 CONFIG  += cuda
+
+include(common.pri)
 
 NVCC_FLAGS += -arch=compute_20 -code=sm_20,sm_30
 NVCC_FLAGS_RELEASE += -Xptxas -O3

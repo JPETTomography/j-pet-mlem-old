@@ -1,6 +1,6 @@
-include (common.pri)
-
 CONFIG  += c++11
+
+include (common.pri)
 
 DIRS = $$files(*)
 for(path, DIRS) {
