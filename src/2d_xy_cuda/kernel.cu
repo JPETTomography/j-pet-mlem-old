@@ -50,6 +50,8 @@ void phantom_kernel(int number_of_threads_per_block,
                     float h_detector,
                     float w_detector,
                     float pixel_size,
+                    std::vector<Pixel<> >& lookup_table_pixel,
+                    std::vector<Lor>& lookup_table_lors,
                     std::vector<Matrix_Element>& gpu_output) {
 
   dim3 blocks(number_of_blocks);
@@ -71,38 +73,12 @@ void phantom_kernel(int number_of_threads_per_block,
   int triangular_matrix_size =
       ((pixels_in_row / 2) * ((pixels_in_row / 2) + 1) / 2);
 
-  // Pixel<> lookup_table_pixel[triangular_matrix_size];
-  std::vector<Pixel<>> lookup_table_pixel;
-  lookup_table_pixel.resize(triangular_matrix_size);
-
-  // Matrix_Element triangle_matrix_output[triangular_matrix_size];
-
-  for (int j = pixels_in_row / 2 - 1; j >= 0; --j) {
-    for (int i = 0; i <= j; ++i) {
-
-      Pixel<> pixel(i, j);
-      lookup_table_pixel[pixel.index()] = pixel;
-    }
-  }
 
   for (int i = 0; i < triangular_matrix_size; ++i) {
 
     for (int lor = 0; lor < LORS; ++lor) {
 
       gpu_output[i].hit[lor] = 0;
-    }
-  }
-  // Lor lookup_table_lors[LORS];
-  std::vector<Lor> lookup_table_lors;
-  lookup_table_lors.resize(LORS);
-
-  for (int i = 0; i < NUMBER_OF_DETECTORS; ++i) {
-    for (int j = 0; j < NUMBER_OF_DETECTORS; ++j) {
-
-      Lor temp;
-      temp.lor_a = i;
-      temp.lor_b = j;
-      lookup_table_lors[(i * (i + 1) / 2) + j] = temp;
     }
   }
 
@@ -132,7 +108,7 @@ void phantom_kernel(int number_of_threads_per_block,
 
   double timer = getwtime();
 
-  for (int p = 0; p < 2; ++p) {
+  for (int p = 0; p < triangular_matrix_size; ++p) {
 
     Pixel<> pixel = lookup_table_pixel[p];
 
@@ -194,9 +170,6 @@ void phantom_kernel(int number_of_threads_per_block,
 
       if (temp > 0.0f) {
         LOR<> lor(lookup_table_lors[i].lor_a, lookup_table_lors[i].lor_b);
-#if 0
-        gpu_output[p].hit[(lookup_table_lors[i].lor_a * (lookup_table_lors[i].lor_a+ 1)) /2 +lookup_table_lors[i].lor_b] = temp;
-#endif
         gpu_output[p].hit[lor.index()] = temp;
 
         printf("LOR(%d,%d) %f\n",
