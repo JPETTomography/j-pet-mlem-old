@@ -266,15 +266,15 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
     n_tof_positions = detector_ring.n_positions(tof_step, max_bias);
   }
 
-  typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
-  MatrixImpl matrix(n_pixels, n_detectors, n_tof_positions);
+  typedef MatrixPixelMajor<Pixel<>, LOR<>> ComputeMatrix;
+  ComputeMatrix matrix(n_pixels, n_detectors, n_tof_positions);
 
   for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
     ibstream in(*fn, std::ios::binary);
     if (!in.is_open())
       throw("cannot open input file: " + *fn);
     try {
-      MatrixImpl::SparseMatrix sparse_matrix(in);
+      ComputeMatrix::SparseMatrix sparse_matrix(in);
       if (cl.exist("verbose"))
         std::cerr << "read in " << *fn << " " << sparse_matrix.n_tof_positions()
                   << std::endl;
@@ -318,7 +318,7 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
   clock_gettime(CLOCK_REALTIME, &start);
 #endif
 
-  MonteCarlo<DetectorRing, MatrixImpl> monte_carlo(
+  MonteCarlo<DetectorRing, ComputeMatrix> monte_carlo(
       detector_ring, matrix, s_pixel, tof_step);
   if (model == "always")
     monte_carlo(gen, AlwaysAccept<>(), n_emissions);
@@ -434,7 +434,7 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
     auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
     for (auto y = 0; y < n_pixels; ++y) {
       for (auto x = 0; x < n_pixels; ++x) {
-        auto hits = matrix[MatrixImpl::Pixel(x, y)];
+        auto hits = matrix[ComputeMatrix::Pixel(x, y)];
         pixel_min = std::min(pixel_min, hits);
         pixel_max = std::max(pixel_max, hits);
       }

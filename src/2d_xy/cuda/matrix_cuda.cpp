@@ -44,7 +44,7 @@ void gpu_detector_hits_kernel_test(float crx,
                                    float h_detector,
                                    float w_detector);
 
-SparseMatrix<Pixel<>, LOR<>> run_gpu(cmdline::parser& cl) {
+OutputMatrix run_gpu(cmdline::parser& cl) {
 
   auto pixels_in_row = cl.get<int>("n-pixels");
   auto n_detectors = cl.get<int>("n-detectors");
@@ -121,9 +121,6 @@ SparseMatrix<Pixel<>, LOR<>> run_gpu(cmdline::parser& cl) {
     }
   }
 
-  typedef SparseMatrix<Pixel<>, LOR<>> MatrixImpl;
-  MatrixImpl matrix(pixels_in_row, n_detectors, n_tof_positions);
-
   std::vector<Matrix_Element> gpu_vector_output;
 
   gpu_vector_output.resize(triangle_pixel_size);
@@ -142,29 +139,30 @@ SparseMatrix<Pixel<>, LOR<>> run_gpu(cmdline::parser& cl) {
                  lookup_table_lors,
                  gpu_vector_output);
 
+  OutputMatrix output_matrix(pixels_in_row, n_detectors, n_tof_positions);
+
   for (auto p : gpu_vector_output) {
 
     for (int i = 0; i < LORS; ++i) {
 
       if (p.hit[i] > 0) {
 
-        SparseElement<LOR<>, int, Pixel<>, int> temp;
-
-        LOR<> lor(lookup_table_lors[i].lor_a, lookup_table_lors[i].lor_b);
+        OutputMatrix::LOR lor(lookup_table_lors[i].lor_a, lookup_table_lors[i].lor_b);
 
         auto pixel = lookup_table_pixel[i];
 
         // printf("LOR(%d,%d) %f\n",lor.first,lor.second, p.hit[i]);
 
-        temp.lor = lor;
-        temp.pixel = pixel;
-        temp.hits = p.hit[i];
-        temp.position = 1;
+        OutputMatrix::Element element;
+        element.lor = lor;
+        element.pixel = pixel;
+        element.hits = p.hit[i];
+        element.position = 0;
 
-        matrix.push_back(temp);
+        output_matrix.push_back(element);
       }
     }
   }
 
-  return matrix;
+  return output_matrix;
 }
