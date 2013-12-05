@@ -20,9 +20,7 @@ __global__ void gpu_detector_hit_test(float crx,
 
   if (threadIdx.x < NUMBER_OF_DETECTORS) {
 
-
     create_detector_ring(h_detector, w_detector, radius, test_ring);
-
   }
 
   __syncthreads();
