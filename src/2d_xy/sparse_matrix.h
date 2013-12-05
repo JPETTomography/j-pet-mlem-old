@@ -317,10 +317,10 @@ class SparseMatrix
     SparseMatrix full(
         n_pixels_in_row_, n_detectors_, n_emissions_, n_tof_positions_, false);
     full.reserve(this->size() * 8);
-    for (auto it = this->begin(); it != this->end(); ++it) {
+    for (auto& e : *this) {
       for (auto symmetry = 0; symmetry < 8; ++symmetry) {
-        auto pixel = it->pixel;
-        auto hits = it->hits;
+        auto pixel = e.pixel;
+        auto hits = e.hits;
 // FIXME: this is not valid solution below, but converting to
 // full matrix we likely get two entries for same pixel, but this does
 // not hurt reconstruction though.
@@ -334,8 +334,8 @@ class SparseMatrix
           hits *= 2;
         }
 #endif
-        auto lor = symmetric_lor(it->lor, symmetry);
-        auto position = it->position;
+        auto lor = symmetric_lor(e.lor, symmetry);
+        auto position = e.position;
         // if LOR is swapped, then position should be too
         if (lor.first < lor.second) {
           std::swap(lor.first, lor.second);

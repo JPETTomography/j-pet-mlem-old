@@ -215,8 +215,8 @@ class DetectorRing : public std::vector<DetectorType> {
     svg << dr.c_outer;
     svg << dr.c_inner;
 
-    for (auto detector = dr.begin(); detector != dr.end(); ++detector) {
-      svg << *detector;
+    for (auto& detector : dr) {
+      svg << detector;
     }
 
     return svg;

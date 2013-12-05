@@ -19,8 +19,7 @@ class Polygon : public Array<NumPoints, Point<FType>> {
   bool intersects(Event& e) {
     auto p1 = this->back();
     auto v1 = e(p1);
-    for (auto it = this->begin(); it != this->end(); ++it) {
-      auto p2 = *it;
+    for (auto& p2 : *this) {
       auto v2 = e(p2);
       if (v1 * v2 <= 0.)
         return true;
@@ -33,8 +32,7 @@ class Polygon : public Array<NumPoints, Point<FType>> {
     auto p1 = this->back();
     auto v1 = e(p1);
     Intersections intersections;
-    for (auto it = this->begin(); it != this->end(); ++it) {
-      auto p2 = *it;
+    for (auto& p2 : *this) {
       auto v2 = e(p2);
       if (v2 == 0.) {
         // v2 is crossing point

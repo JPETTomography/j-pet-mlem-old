@@ -19,6 +19,7 @@ class EllipticalRegion {
   }
 
   double activity() const { return activity_; }
+
   bool in(double x, double y) const {
 
     double dx = x - x_;
@@ -31,6 +32,7 @@ class EllipticalRegion {
 
     return r2 < 1.0;
   }
+
   double x() const { return x_; }
   double y() const { return y_; }
   double a() const { return a_; }
@@ -65,19 +67,10 @@ class EllipticalRegion {
 #endif
 };
 
-class Phantom {
-  typedef std::vector<EllipticalRegion*> Container;
+class Phantom : public std::vector<EllipticalRegion> {
 
  public:
-  typedef Container::const_iterator const_iterator;
-  Phantom() {}
-
-#if 0
-  Phantom(double ll_x, double ll_y, double ur_x, double ur_y)
-      : ll_x_(ll_x), ll_y_(ll_y), ur_x_(ur_x), ur_y_(ur_y) {}
-#endif
-
-  size_t n_regions() const { return regions.size(); }
+  size_t n_regions() const { return size(); }
 
   void add_region(double x,
                   double y,
@@ -85,13 +78,13 @@ class Phantom {
                   double b,
                   double phi,
                   double act) {
-    regions.push_back(new EllipticalRegion(x, y, a, b, phi, act));
+    this->push_back(EllipticalRegion(x, y, a, b, phi, act));
   }
 
   double activity(double x, double y) const {
-    for (auto rit = regions.rbegin(); rit != regions.rend(); ++rit) {
-      if ((*rit)->in(x, y)) {
-        return (*rit)->activity();
+    for (auto rit = this->rbegin(); rit != this->rend(); ++rit) {
+      if (rit->in(x, y)) {
+        return rit->activity();
       }
     }
     return 0.0;
@@ -100,19 +93,6 @@ class Phantom {
   bool test_emit(double x, double y, double rnd) const {
     return activity(x, y) > rnd;
   }
-
-  const_iterator begin() const { return regions.begin(); }
-  const_iterator end() const { return regions.end(); }
-
-  ~Phantom() {
-    Container::iterator rit = regions.begin();
-    for (; rit != regions.end(); ++rit) {
-      delete (*rit);
-    }
-  }
-
- private:
-  Container regions;
 };
 
 template <typename FType = double> struct PointSource {
@@ -123,40 +103,40 @@ template <typename FType = double> struct PointSource {
   F intensity;
 };
 
-template <typename FType = double> class PointSources {
+template <typename FType = double>
+class PointSources : public std::vector<PointSource<FType>> {
  public:
   typedef FType F;
 
-  size_t n_sources() const { return sources_.size(); }
+  size_t n_sources() const { return this->size(); }
 
   void add(F x, F y, F intensity) {
-    sources_.push_back(PointSource<F>(x, y, intensity));
+    this->push_back(PointSource<F>(x, y, intensity));
   }
 
   void normalize() {
-    total_ = 0.0;
-    for (auto it = sources_.begin(); it != sources_.end(); ++it) {
-      total_ += (*it).intensity;
+    total = 0.0;
+    for (auto& source : *this) {
+      total += source.intensity;
     }
 
     F cumulant = 0.0;
-    cumulant_.clear();
-    for (auto it = sources_.begin(); it != sources_.end(); ++it) {
-      cumulant += (*it).intensity /= total_;
-      cumulant_.push_back(cumulant);
+    cumulants.clear();
+    for (auto& source : *this) {
+      cumulant += source.intensity /= total;
+      cumulants.push_back(cumulant);
     }
   }
 
   Point<F> draw(F rng) {
     int i = 0;
-    while (rng > cumulant_[i]) {
+    while (rng > cumulants[i]) {
       ++i;
     }
-    return sources_[i].p;
+    return (*this)[i].p;
   }
 
  private:
-  std::vector<PointSource<F>> sources_;
-  std::vector<F> cumulant_;
-  F total_;
+  std::vector<F> cumulants;
+  F total;
 };

@@ -18,23 +18,24 @@ class SquareDetector : public Polygon<4, FType> {
 
   SquareDetector& rotate(Angle phi) {
     SquareDetector r;
-    for (auto it = this->begin(); it != this->end(); ++it) {
-      it->rotate(phi);
+    for (auto& p : *this) {
+      p.rotate(phi);
     }
     return *this;
   }
 
   SquareDetector rotated(Angle phi) {
     SquareDetector r;
-    for (auto it = this->begin(); it != this->end(); ++it) {
-      r.push_back((*it).rotated(phi));
+    for (auto& p : *this) {
+      r.push_back(p.rotated(phi));
     }
     return r;
   }
 
   SquareDetector& operator+=(Point t) {
-    for (auto it = this->begin(); it != this->end(); ++it)
-      *it += t;
+    for (auto& p : *this) {
+      p += t;
+    }
     return *this;
   }
 

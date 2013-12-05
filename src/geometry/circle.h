@@ -38,7 +38,7 @@ template <typename F = double, typename S = int> class Circle {
 
   SecantAngles secant_angles(Event& e) {
     SecantAngles sa;
-    for (auto p : secant(e)) {
+    for (auto& p : secant(e)) {
       sa.push_back(angle(p));
     }
     return sa;
@@ -53,7 +53,7 @@ template <typename F = double, typename S = int> class Circle {
 
   SecantSections secant_sections(Event& e, S n_detectors) {
     SecantSections ss;
-    for (auto sa : secant_angles(e)) {
+    for (auto& sa : secant_angles(e)) {
       ss.push_back(section(sa, n_detectors));
     }
     return ss;

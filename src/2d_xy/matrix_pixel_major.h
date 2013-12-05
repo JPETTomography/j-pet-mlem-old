@@ -72,10 +72,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     if (!pixel_lor_hits_ptr[i_pixel]) {
       pixel_lor_hits_ptr[i_pixel] = new S[n_lors * this->n_tof_positions()]();
       // unpack previous values (if any)
-      for (auto it = pixel_lor_hits[i_pixel].begin();
-           it != pixel_lor_hits[i_pixel].end();
-           ++it) {
-        hit_lor(it->lor, it->position, i_pixel, it->hits);
+      for (auto& e : pixel_lor_hits[i_pixel]) {
+        hit_lor(e.lor, e.position, e.pixel.index(), e.hits);
       }
     }
 
@@ -139,10 +137,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
                         this->n_tof_positions());
     sparse.reserve(size_);
     for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
-      for (auto it = pixel_lor_hits[i_pixel].begin();
-           it != pixel_lor_hits[i_pixel].end();
-           ++it) {
-        sparse.push_back(*it);
+      for (auto& e : pixel_lor_hits[i_pixel]) {
+        sparse.push_back(e);
       }
     }
     return sparse;
@@ -155,8 +151,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
     S i_current_pixel = n_pixels_;
 
-    for (auto it = sparse.begin(); it != sparse.end(); ++it) {
-      Pixel pixel = it->pixel;
+    for (auto& e : sparse) {
+      Pixel pixel = e.pixel;
       auto triangular = sparse.triangular();
       if (!triangular) {
         pixel.x -= n_pixels_in_row_half;
@@ -164,8 +160,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
         if (pixel.x < 0 || pixel.y < 0 || pixel.y < pixel.x)
           continue;
       }
-      auto lor = it->lor;
-      auto hits = it->hits;
+      auto lor = e.lor;
+      auto hits = e.hits;
 
       // if we are at diagonal in full matrix, we should have there
       // half of entries
@@ -178,7 +174,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
         compact_pixel_index(i_current_pixel);
         i_current_pixel = i_pixel;
       }
-      hit_lor(lor, it->position, i_pixel, hits);
+      hit_lor(lor, e.position, i_pixel, hits);
       this->hit(i_pixel, hits);
     }
     compact_pixel_index(i_current_pixel);
@@ -200,14 +196,11 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
   void get_pixel_data(long int emissions, int pixel_id) {
 
-    for (auto it = pixel_lor_hits[pixel_id].begin();
-         it != pixel_lor_hits[pixel_id].end();
-         ++it) {
-
+    for (auto& e : pixel_lor_hits[pixel_id]) {
       printf("LOR(%d,%d): %f\n ",
-             (*it).lor.first,
-             (*it).lor.second,
-             (*it).hits / static_cast<double>(emissions));
+             e.lor.first,
+             e.lor.second,
+             e.hits / static_cast<double>(emissions));
     }
   }
 

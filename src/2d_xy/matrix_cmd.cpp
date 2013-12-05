@@ -167,15 +167,15 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
     n_emissions = n_prev_emissions;
   } else
     // load config files accompanying matrix files
-    for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
-      auto fn_sep = fn->find_last_of("\\/");
-      auto fn_ext = fn->find_last_of(".");
+    for (auto& fn : cl.rest()) {
+      auto fn_sep = fn.find_last_of("\\/");
+      auto fn_ext = fn.find_last_of(".");
       auto fn_wo_ext =
-          fn->substr(0,
-                     fn_ext != std::string::npos &&
-                             (fn_sep == std::string::npos || fn_sep < fn_ext)
-                         ? fn_ext
-                         : std::string::npos);
+          fn.substr(0,
+                    fn_ext != std::string::npos &&
+                            (fn_sep == std::string::npos || fn_sep < fn_ext)
+                        ? fn_ext
+                        : std::string::npos);
       std::ifstream in(fn_wo_ext + ".cfg");
       if (!in.is_open())
         continue;
