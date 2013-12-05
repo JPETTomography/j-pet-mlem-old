@@ -50,15 +50,15 @@ int main(int argc, char* argv[]) {
         "config", 'c', "load config file", false, cmdline::string(), false);
 #if HAVE_CUDA
     cl.add("gpu", 'g', "run on GPU (via CUDA)");
-    cl.add<int>("blocks", 0, "number of CUDA blocks", false, 64, false);
-    cl.add<int>("threads-per-block",
-                0,
-                "number of threads in block",
-                false,
-                512,
-                false);
+    cl.add<int>("n-blocks", 0, "number of CUDA blocks", false, 64, false);
 #endif
-#if _OPENMP
+#if _OPENMP&& HAVE_CUDA
+    cl.add<int>(
+        "n-threads", 't', "number of OpenMP/CUDA threads", false, 0, false);
+#elif HAVE_CUDA
+    cl.add<int>(
+        "n-threads", 't', "number of CUDA threads per block", false, 0, false);
+#elif _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 0, false);
 #endif
     cl.add<int>(

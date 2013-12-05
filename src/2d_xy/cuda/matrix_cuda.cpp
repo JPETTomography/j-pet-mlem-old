@@ -54,8 +54,8 @@ SparseMatrix<Pixel<>, LOR<>> run_gpu(cmdline::parser& cl) {
   auto w_detector = cl.get<double>("w-detector");
   auto h_detector = cl.get<double>("h-detector");
 
-  auto number_of_blocks = cl.get<int>("blocks");
-  auto number_of_threads_per_block = cl.get<int>("threads-per-block");
+  auto number_of_blocks = cl.get<int>("n-blocks") ?: 512;
+  auto number_of_threads_per_block = cl.get<int>("n-threads");
 
   // automatic pixel size
   if (!cl.exist("radius")) {
