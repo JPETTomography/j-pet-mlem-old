@@ -23,9 +23,14 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
 
   CircleDetector(F radius, Point center) : Super(radius), center(center) {}
 
-  // rotation has no effect on circle (return itself)
-  CircleDetector& rotate(Angle phi __attribute__((unused))) { return *this; }
-  CircleDetector rotated(Angle phi __attribute__((unused))) { return *this; }
+  CircleDetector& rotate(Angle phi) {
+    center.rotate(phi);
+    return *this;
+  }
+
+  CircleDetector rotated(Angle phi) {
+    return CircleDetector(this->radius(), center.rotated(phi));
+  }
 
   CircleDetector& operator+=(Point t) {
     center += t;
@@ -39,8 +44,8 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
   }
 
   friend svg_ostream<F>& operator<<(svg_ostream<F>& svg, CircleDetector& cd) {
-    svg << "<circle cx=\"" << cd.center.x << "\" cy=\"" << cd.center.y
-        << "\" r=\"" << cd.radius() << "\"/>" << std::endl;
+    svg << "<circle class=\"detector\" cx=\"" << cd.center.x << "\" cy=\""
+        << cd.center.y << "\" r=\"" << cd.radius() << "\"/>" << std::endl;
     return svg;
   }
 
