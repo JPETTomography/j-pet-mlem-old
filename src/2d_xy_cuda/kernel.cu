@@ -73,7 +73,6 @@ void phantom_kernel(int number_of_threads_per_block,
   int triangular_matrix_size =
       ((pixels_in_row / 2) * ((pixels_in_row / 2) + 1) / 2);
 
-
   for (int i = 0; i < triangular_matrix_size; ++i) {
 
     for (int lor = 0; lor < LORS; ++lor) {
@@ -172,10 +171,10 @@ void phantom_kernel(int number_of_threads_per_block,
         LOR<> lor(lookup_table_lors[i].lor_a, lookup_table_lors[i].lor_b);
         gpu_output[p].hit[lor.index()] = temp;
 
-        printf("LOR(%d,%d) %f\n",
-               lor.first,
-               lor.second,
-               gpu_output[p].hit[lor.index()]);
+        //        printf("LOR(%d,%d) %f\n",
+        //               lor.first,
+        //               lor.second,
+        //               gpu_output[p].hit[lor.index()]);
       }
     }
   }
