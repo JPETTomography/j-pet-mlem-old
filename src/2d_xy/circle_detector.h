@@ -3,6 +3,7 @@
 #include "geometry/point.h"
 #include "geometry/circle.h"
 #include "util/svg_ostream.h"
+#include "util/array.h"
 
 template <typename FType = double> class CircleDetector : Circle<FType> {
  public:
@@ -10,7 +11,7 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
   typedef Circle<F> Super;
   typedef F Angle;
   typedef ::Point<F> Point;
-  typedef std::initializer_list<Point> Intersections;
+  typedef Array<2, Point> Intersections;
   typedef typename Super::Event Event;
 
   CircleDetector(F radius) : Circle<F>(radius), center() {}

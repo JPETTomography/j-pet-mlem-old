@@ -4,14 +4,15 @@
 #include "point.h"
 #include "2d_xy/event.h"
 #include "util/svg_ostream.h"
+#include "util/array.h"
 
-template <typename FType = double>
-class Polygon : public std::vector<Point<FType>> {
+template <std::size_t NumPoints, typename FType = double>
+class Polygon : public Array<NumPoints, Point<FType>> {
  public:
   typedef FType F;
   typedef ::Point<F> Point;
   typedef ::Event<F> Event;
-  typedef std::initializer_list<Point> Intersections;
+  typedef Array<2, Point> Intersections;
   typedef ::svg_ostream<F> svg_ostream;
 
   // tests for intersection with generic form line equation

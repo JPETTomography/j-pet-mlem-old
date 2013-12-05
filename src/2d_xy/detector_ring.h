@@ -118,16 +118,16 @@ class DetectorRing : public std::vector<DetectorType> {
       // then test the model against these points distance
       if (intersections.size() == 2) {
         auto deposition_depth = model.deposition_depth(gen);
-        auto points = intersections.begin();
 #if DEBUG
         std::cerr << "dep " << deposition_depth << " "
-                  << (points[1] - points[0]).length() << std::endl;
+                  << (intersections[1] - intersections[0]).length()
+                  << std::endl;
 #endif
-        if (deposition_depth < (points[1] - points[0]).length()) {
+        if (deposition_depth < (intersections[1] - intersections[0]).length()) {
           detector = i;
           depth = deposition_depth;
-          p1 = points[0];
-          p2 = points[1];
+          p1 = intersections[0];
+          p2 = intersections[1];
           return true;
         }
       }
@@ -167,13 +167,10 @@ class DetectorRing : public std::vector<DetectorType> {
     if (inner_secant.size() != 2 || outer_secant.size() != 2)
       return 0;
 
-    auto inner_secant_points = inner_secant.begin();
-    auto outer_secant_points = outer_secant.begin();
-
     auto i_inner =
-        c_inner_.section(c_inner_.angle(inner_secant_points[0]), n_detectors_);
+        c_inner_.section(c_inner_.angle(inner_secant[0]), n_detectors_);
     auto i_outer =
-        c_outer_.section(c_inner_.angle(outer_secant_points[0]), n_detectors_);
+        c_outer_.section(c_inner_.angle(outer_secant[0]), n_detectors_);
     S detector1;
     F depth1;
 
@@ -182,10 +179,8 @@ class DetectorRing : public std::vector<DetectorType> {
              gen, model, i_inner, i_outer, e, detector1, depth1, d1_p1, d1_p2))
       return 0;
 
-    i_inner =
-        c_inner_.section(c_inner_.angle(inner_secant_points[1]), n_detectors_);
-    i_outer =
-        c_outer_.section(c_inner_.angle(outer_secant_points[1]), n_detectors_);
+    i_inner = c_inner_.section(c_inner_.angle(inner_secant[1]), n_detectors_);
+    i_outer = c_outer_.section(c_inner_.angle(outer_secant[1]), n_detectors_);
     S detector2;
     F depth2;
     Point d2_p1, d2_p2;

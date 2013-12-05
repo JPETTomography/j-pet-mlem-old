@@ -5,6 +5,7 @@
 #include "point.h"
 #include "2d_xy/event.h"
 #include "util/svg_ostream.h"
+#include "util/array.h"
 
 /// Produces secant angles circle/line intersection as a equation system
 /// solution.
@@ -20,9 +21,9 @@ template <typename F = double, typename S = int> class Circle {
   typedef F Angle;
   typedef ::Point<F> Point;
   typedef ::Event<F> Event;
-  typedef std::initializer_list<Point> Secant;
-  typedef std::initializer_list<Angle> SecantAngle;
-  typedef std::initializer_list<S> SecantSections;
+  typedef Array<2, Point> Secant;
+  typedef Array<2, Angle> SecantAngle;
+  typedef Array<2, S> SecantSections;
 
   Secant secant(const Event& e) {
     auto cabr2 = (-(e.c * e.c) + e.a2_b2 * radius2_);
