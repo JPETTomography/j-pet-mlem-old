@@ -32,29 +32,26 @@ class Polygon : public Array<NumPoints, Point<FType>> {
   Intersections intersections(Event& e) {
     auto p1 = this->back();
     auto v1 = e(p1);
-    Point first, second;
-    auto count = 0;
+    Intersections intersections;
     for (auto it = this->begin(); it != this->end(); ++it) {
       auto p2 = *it;
       auto v2 = e(p2);
       if (v2 == 0.) {
         // v2 is crossing point
-        (!(count++) ? first : second) = p2;
+        intersections.push_back(p2);
       } else if (v1 * v2 < 0.) {
         // calculate intersection
         auto m = e.a * (p1.x - p2.x) + e.b * (p1.y - p2.y);
-        (!(count++) ? first : second) = Point(
+        intersections.push_back(Point(
             (e.c * (p1.x - p2.x) + e.b * (p2.x * p1.y - p1.x * p2.y)) / m,
-            (e.c * (p1.y - p2.y) + e.a * (p1.x * p2.y - p2.x * p1.y)) / m);
+            (e.c * (p1.y - p2.y) + e.a * (p1.x * p2.y - p2.x * p1.y)) / m));
       }
-      if (count == 2)
-        return { first, second };
+      if (intersections.full())
+        return intersections;
       v1 = v2;
       p1 = p2;
     }
-    if (count)
-      return { first };
-    return {};
+    return intersections;
   }
 
   friend svg_ostream& operator<<(svg_ostream& svg, Polygon& pg) {

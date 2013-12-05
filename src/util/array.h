@@ -2,6 +2,9 @@
 
 #include <cstddef>
 
+/// This class is drop-in replacement for std::vector for all cases when maximum
+/// size is known at compile time.
+/// This way we can pass everything via stack, omitting unnecessary allocations.
 template <std::size_t MaxSize, typename T> class Array {
  public:
   Array() : s(0) {}
@@ -10,6 +13,9 @@ template <std::size_t MaxSize, typename T> class Array {
 #else
   template <typename... Ts> Array(Ts&&... e) : s(sizeof...(e)), v{ e... } {}
 #endif
+
+  /// returns if the array is full (has max number of elements)
+  bool full() const { return (s == MaxSize); }
 
   // minimal std::vector compatibility
   typedef T value_type;
