@@ -2,6 +2,7 @@
 
 #include "geometry/point.h"
 #include "geometry/circle.h"
+#include "util/svg_ostream.h"
 
 template <typename FType = double> class CircleDetector : Circle<FType> {
  public:
@@ -35,6 +36,19 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
 
   Intersections intersections(typename Super::Event e) {
     return this->secant(e - center);
+  }
+
+  friend svg_ostream<F>& operator<<(svg_ostream<F>& svg, CircleDetector& cd) {
+    svg << "<circle cx=\"" << cd.center.x << "\" cy=\"" << cd.center.y
+        << "\" r=\"" << cd.radius() << "\"/>" << std::endl;
+    return svg;
+  }
+
+  friend std::ostream& operator<<(std::ostream& out, CircleDetector& cd) {
+    out << "circle (" << cd.center.x << ", " << cd.center.y << ") radius "
+        << cd.radius() << std::endl;
+    out << std::flush;
+    return out;
   }
 
  private:
