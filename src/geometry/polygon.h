@@ -47,6 +47,7 @@ class Polygon : public std::vector<Point<FType>> {
             (e.c * (p1.y - p2.y) + e.a * (p1.x * p2.y - p2.x * p1.y)) / m);
       }
       if (count == 2)
+
         return { first, second };
       v1 = v2;
       p1 = p2;

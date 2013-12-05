@@ -1,11 +1,14 @@
 // if we don't include that Qt Creator will show many errors
 #include <iostream>
+#include <vector>
 #include <cuda_runtime.h>
 #include <sys/time.h>
 #include <stdio.h>
 #include "config.h"
 #include "data_structures.h"
 #include "prng.cuh"
+#include "../geometry/pixel.h"
+#include "../2d_xy/lor.h"
 #include "geometry_methods.cuh"
 #include "gpu_detector_geometry_test.cuh"
 #include "gpu_detector_hit_test.cuh"
@@ -34,7 +37,7 @@ void mem_clean_lors(Matrix_Element* cpu_matrix, int number_of_blocks) {
   for (int i = 0; i < number_of_blocks; ++i) {
     for (int j = 0; j < LORS; ++j) {
 
-      cpu_matrix[i].lor[j] = 0.f;
+      cpu_matrix[i].hit[j] = 0.f;
     }
   }
 }
@@ -46,14 +49,15 @@ void phantom_kernel(int number_of_threads_per_block,
                     float radius,
                     float h_detector,
                     float w_detector,
-                    float pixel_size) {
+                    float pixel_size,
+                    std::vector<Matrix_Element>& gpu_output) {
 
   dim3 blocks(number_of_blocks);
   dim3 threads(number_of_threads_per_block);
 
   unsigned int* cpu_prng_seed;
   float fov_radius = radius / M_SQRT2;
-  cudaSetDevice(0);
+  cudaSetDevice(1);
 
   cpu_prng_seed =
       (unsigned int*)malloc(number_of_blocks * number_of_threads_per_block * 4 *
@@ -64,7 +68,33 @@ void phantom_kernel(int number_of_threads_per_block,
     cpu_prng_seed[i] = 53445 + i;
   }
 
-  Lor lookup_table_lors[LORS];
+  int triangular_matrix_size =
+      ((pixels_in_row / 2) * ((pixels_in_row / 2) + 1) / 2);
+
+  // Pixel<> lookup_table_pixel[triangular_matrix_size];
+  std::vector< Pixel<> > lookup_table_pixel;
+  lookup_table_pixel.resize(triangular_matrix_size);
+
+  // Matrix_Element triangle_matrix_output[triangular_matrix_size];
+
+  for (int j = pixels_in_row / 2 - 1; j >= 0; --j) {
+    for (int i = 0; i <= j; ++i) {
+
+      Pixel<> pixel(i, j);
+      lookup_table_pixel[pixel.index()] = pixel;
+    }
+  }
+
+  for (int i = 0; i < triangular_matrix_size; ++i) {
+
+    for (int lor = 0; lor < LORS; ++lor) {
+
+      gpu_output[i].hit[lor] = 0;
+    }
+  }
+  // Lor lookup_table_lors[LORS];
+  std::vector<Lor> lookup_table_lors;
+  lookup_table_lors.resize(LORS);
 
   for (int i = 0; i < NUMBER_OF_DETECTORS; ++i) {
     for (int j = 0; j < NUMBER_OF_DETECTORS; ++j) {
@@ -76,13 +106,8 @@ void phantom_kernel(int number_of_threads_per_block,
     }
   }
 
-  int triangular_matrix_size =
-      ((pixels_in_row / 2) * ((pixels_in_row / 2) + 1) / 2);
-
   Matrix_Element* cpu_matrix =
       (Matrix_Element*)malloc(number_of_blocks * sizeof(Matrix_Element));
-
-  // unsigned int matrix_size = triangular_matrix_size * number_of_blocks;
 
   unsigned int* gpu_prng_seed;
   Matrix_Element* gpu_matrix_element;
@@ -103,73 +128,84 @@ void phantom_kernel(int number_of_threads_per_block,
       cudaMemcpyHostToDevice);
 
   printf("GPU kernel start\n");
-  printf(
-      "Number of Detectors %d Numer of LORS: %d\n", NUMBER_OF_DETECTORS, LORS);
+  printf("DETECTORS %d LORS: %d\n", NUMBER_OF_DETECTORS, LORS);
 
   double timer = getwtime();
 
-  //  for (int j = pixels_in_row / 2 - 1; j >= 0; --j) {
-  //    for (int i = 0; i <= j; ++i) {
+  for (int p = 0; p < 2; ++p) {
 
-  // for (int j = 0; j < 1; ++j) {
-  //   for (int i = 0; i < 1; ++i) {
-  int i = 0;
-  int j = 1;
-  mem_clean_lors(cpu_matrix, number_of_blocks);
+    Pixel<> pixel = lookup_table_pixel[p];
 
-  cuda(Memcpy,
-       gpu_matrix_element,
-       cpu_matrix,
-       number_of_blocks * sizeof(Matrix_Element),
-       cudaMemcpyHostToDevice);
+    int i = pixel.x;
+    int j = pixel.y;
 
-  long total_emissions =
-      (long)n_emissions * number_of_blocks * number_of_threads_per_block;
-  printf(
-      "Pixel(%d,%d) n_emissions: %d %ld\n", i, j, n_emissions, total_emissions);
-  if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
-    gpu_phantom_generation << <blocks, threads>>> (i,
-                                                   j,
-                                                   n_emissions,
-                                                   gpu_prng_seed,
-                                                   gpu_matrix_element,
-                                                   number_of_threads_per_block,
-                                                   pixels_in_row,
-                                                   radius,
-                                                   h_detector,
-                                                   w_detector,
-                                                   pixel_size);
+    mem_clean_lors(cpu_matrix, number_of_blocks);
 
-    cudaThreadSynchronize();
-    cudaError_t info = cudaGetLastError();
-    if (info != cudaSuccess) {
-      std::cerr << cudaGetErrorString(info) << std::endl;
+    cuda(Memcpy,
+         gpu_matrix_element,
+         cpu_matrix,
+         number_of_blocks * sizeof(Matrix_Element),
+         cudaMemcpyHostToDevice);
+
+    long total_emissions =
+        (long)n_emissions * number_of_blocks * number_of_threads_per_block;
+
+    printf("Pixel(%d,%d) n_emissions: %d %ld\n",
+           i,
+           j,
+           n_emissions,
+           total_emissions);
+
+    if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
+      gpu_phantom_generation << <blocks, threads>>>
+          (i,
+           j,
+           n_emissions,
+           gpu_prng_seed,
+           gpu_matrix_element,
+           number_of_threads_per_block,
+           pixels_in_row,
+           radius,
+           h_detector,
+           w_detector,
+           pixel_size);
+
+      cudaThreadSynchronize();
+
+      cudaError_t info = cudaGetLastError();
+
+      if (info != cudaSuccess) {
+        std::cerr << cudaGetErrorString(info) << std::endl;
+      }
+    }
+
+    cuda(Memcpy,
+         cpu_matrix,
+         gpu_matrix_element,
+         number_of_blocks * sizeof(Matrix_Element),
+         cudaMemcpyDeviceToHost);
+
+    for (int i = 0; i < LORS; i++) {
+      float temp = 0.f;
+      for (int j = 0; j < number_of_blocks; ++j) {
+
+        temp += cpu_matrix[j].hit[i];
+      }
+
+      if (temp > 0.0f) {
+        LOR<> lor(lookup_table_lors[i].lor_a, lookup_table_lors[i].lor_b);
+#if 0
+        gpu_output[p].hit[(lookup_table_lors[i].lor_a * (lookup_table_lors[i].lor_a+ 1)) /2 +lookup_table_lors[i].lor_b] = temp;
+#endif
+        gpu_output[p].hit[lor.index()] = temp;
+
+        printf("LOR(%d,%d) %f\n",
+               lor.first,
+               lor.second,
+               gpu_output[p].hit[lor.index()]);
+      }
     }
   }
-
-  cuda(Memcpy,
-       cpu_matrix,
-       gpu_matrix_element,
-       number_of_blocks * sizeof(Matrix_Element),
-       cudaMemcpyDeviceToHost);
-
-  for (int i = 0; i < LORS; i++) {
-    float temp = 0.f;
-    for (int j = 0; j < number_of_blocks; ++j) {
-
-      temp += cpu_matrix[j].lor[i];
-    }
-
-    if (temp > 0.0f) {
-      printf(
-          "LOR(%d,%d) %f\n",
-          lookup_table_lors[i].lor_a,
-          lookup_table_lors[i].lor_b,
-          temp / number_of_blocks / number_of_threads_per_block / n_emissions);
-    }
-  }
-  //   }
-  // }
   double time = 0.0f;
 
   time = getwtime() - time;

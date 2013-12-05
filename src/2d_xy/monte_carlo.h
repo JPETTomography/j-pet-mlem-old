@@ -143,7 +143,7 @@ class MonteCarlo {
 
     mp_gens[0].seed(gen());
 
-    for (auto i_pixel = 1; i_pixel < 2; ++i_pixel) {
+    for (auto i_pixel = 0; i_pixel < 1; ++i_pixel) {
 
       auto pixel = matrix_.pixel_at_index(i_pixel);
 
@@ -191,6 +191,7 @@ class MonteCarlo {
 
         // do we have hit on both sides?
         if (hits >= 2) {
+          std::cout << "HIT" << std::endl;
           if (o_collect_mc_matrix) {
             if (lor.first == lor.second) {
               std::ostringstream msg;

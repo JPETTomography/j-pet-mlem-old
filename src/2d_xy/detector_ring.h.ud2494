@@ -164,8 +164,8 @@ class DetectorRing : public std::vector<DetectorType> {
     auto inner_secant = c_inner_.secant(e);
     auto outer_secant = c_outer_.secant(e);
 
-    if (inner_secant.size() != 2 || outer_secant.size() != 2)
-      return 0;
+    //if (inner_secant.size() != 2 || outer_secant.size() != 2)
+    //  return 0;
 
     auto inner_secant_points = inner_secant.begin();
     auto outer_secant_points = outer_secant.begin();
@@ -193,6 +193,8 @@ class DetectorRing : public std::vector<DetectorType> {
              gen, model, i_inner, i_outer, e, detector2, depth2, d2_p1, d2_p2))
       return 0;
 
+                               std::cout << "HIT: " << std::endl;
+
     lor = LOR(detector1, detector2);
 
     if (lor.first == lor.second) {
@@ -201,6 +203,9 @@ class DetectorRing : public std::vector<DetectorType> {
           << lor.second << ")";
       throw(msg.str());
     }
+
+    // printf("CPU HIT1: %f %f %f %f \n",d1_p1.x,d1_p1.y,d1_p2.x,d1_p2.y);
+    // printf("CPU HIT1: %f %f %f %f \n",d2_p1.x,d2_p1.y,d2_p2.x,d2_p2.y);
 
     Point origin(rx, ry);
     F length1 = origin.nearest_distance(d1_p1, d1_p2) + depth1;

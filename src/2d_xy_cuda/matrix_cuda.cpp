@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <ctime>
 #include <random>
+#include <vector>
 
 #include "cmdline.h"
 #include "util/cmdline_types.h"
@@ -28,7 +29,8 @@ void phantom_kernel(int number_of_threads_per_block,
                     float radius,
                     float h_detector,
                     float w_detector,
-                    float pixel_size);
+                    float pixel_size,
+                    std::vector<Matrix_Element>& gpu_output);
 
 void gpu_detector_geometry_kernel_test(float radius,
                                        float h_detector,
@@ -55,7 +57,7 @@ int main(int argc, char* argv[]) {
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 64);
     cl.add<int>("n-detectors", 'd', "number of ring detectors", false, 64);
-    cl.add<int>("n-emissions", 'e', "emissions per pixel", false, 10000);
+    cl.add<int>("n-emissions", 'e', "emissions per pixel", false, 1000);
     cl.add<float>("radius", 'r', "inner detector ring radius", false, 100);
     cl.add<float>("s-pixel", 'p', "pixel size", false, 1.0f);
     cl.add<float>("tof-step", 'T', "TOF quantisation step", false);
@@ -81,7 +83,17 @@ int main(int argc, char* argv[]) {
 
     std::cerr << radius << " " << s_pixel << " " << w_detector << " "
               << h_detector << std::endl;
-    //----------SYSTEM MATRIX GENERATION----------//
+
+    int n_tof_positions = 1;
+
+    typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
+    MatrixImpl matrix(pixels_in_row, n_detectors, n_tof_positions);
+
+    std::vector<Matrix_Element> gpu_vector_output;
+
+    gpu_vector_output.resize(matrix.total_n_pixels_in_triangle());
+
+    std::cout << "VECTOR size: " << gpu_vector_output.size() << std::endl;
 
     phantom_kernel(number_of_threads_per_block,
                    number_of_blocks,
@@ -90,71 +102,11 @@ int main(int argc, char* argv[]) {
                    radius,
                    h_detector,
                    w_detector,
-                   s_pixel);
+                   s_pixel,
+                   gpu_vector_output);
 
     DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
 
-    Detector_Ring cpu_output;
-
-    typedef std::pair<int, float> error;
-
-    std::vector<error> error_list;
-
-    float epsilon_error = 0.0001f;
-
-    gpu_detector_geometry_kernel_test(
-        radius, h_detector, w_detector, s_pixel, cpu_output);
-#ifdef VERBOSE
-    for (int detector_id = 0; detector_id < NUMBER_OF_DETECTORS;
-         ++detector_id) {
-
-      auto detector_points = dr[detector_id];
-
-      std::cout << "DETECTOR: " << detector_id << std::endl;
-
-      for (int point_id = 0; point_id < 4; ++point_id) {
-
-        auto point = detector_points[point_id];
-        float diff = std::fabs(
-            point.x - cpu_output.detector_list[detector_id].points[point_id].x);
-        if (diff > epsilon_error) {
-          error_list.push_back(std::make_pair(detector_id, diff));
-
-          std::cout << "Diff x : " << diff << std::endl;
-        }
-
-        diff = std::fabs(
-            point.y - cpu_output.detector_list[detector_id].points[point_id].y);
-        if (diff > epsilon_error) {
-          error_list.push_back(std::make_pair(detector_id, diff));
-
-          std::cout << "Diff y : " << diff << std::endl;
-        }
-
-        std::cout << std::setprecision(10) << "Cpu representation: " << point.x
-                  << " " << point.y << std::endl;
-        std::cout << std::setprecision(10) << "Gpu representation: "
-                  << cpu_output.detector_list[detector_id].points[point_id].x
-                  << " "
-                  << cpu_output.detector_list[detector_id].points[point_id].y
-                  << std::endl;
-      }
-    }
-
-    if (!error_list.size()) {
-
-      std::cout << "Number of errors in cpu|gpu detectors geometry comparison: "
-                << error_list.size() << std::endl;
-    }
-#endif
-    //----------MATRIX OUTPUT----------//
-
-    std::cout << "Matrix output Test:" << std::endl;
-
-    int n_tof_positions = 1;
-
-    typedef MatrixPixelMajor<Pixel<>, LOR<>> MatrixImpl;
-    MatrixImpl matrix(pixels_in_row, n_detectors, n_tof_positions);
     MonteCarlo<DetectorRing<>, MatrixImpl> monte_carlo(
         dr, matrix, s_pixel, tof_step);
 
@@ -162,20 +114,16 @@ int main(int argc, char* argv[]) {
     tausworthe gen(rd());
     gen.seed(2345255);
 
-    //    HIT DATA:0.149976 0.59646 0.979102
-
     long cpu_emissions =
         (long)n_emissions * number_of_blocks * number_of_threads_per_block;
+
     std::cerr << "CPU " << cpu_emissions << std::endl;
-#if GPU_EMIT_PIXEL
-    monte_carlo.emit_pixel(
-        gen, AlwaysAccept<>(), cpu_emmisions, 0.149976, 0.59646, 0.979102);
-#endif
+
     clock_t begin = clock();
 
     monte_carlo.emit_pixel(gen, AlwaysAccept<>(), cpu_emissions);
 
-    matrix.get_pixel_data(cpu_emissions, 1);
+    matrix.get_pixel_data(cpu_emissions, 0);
 
     clock_t end = clock();
 
@@ -183,14 +131,18 @@ int main(int argc, char* argv[]) {
 
     std::cout << "CPU TIME: " << elapsed_secs << std::endl;
 
-#ifdef TEST
+    std::cout << "KERNEL OUTPUT" << std::endl;
 
-    //-------------GPU_DETECTOR_HITS_TEST------------------//
+    for (auto p : gpu_vector_output) {
 
-    gpu_detector_hits_kernel_test(
-        0.149976, 0.59646, 0.979102, radius, h_detector, w_detector);
+      for (int i = 0; i < LORS; ++i) {
 
-#endif
+        if (p.hit[i] > 0) {
+
+          printf("%f\n", p.hit[i]);
+        }
+      }
+    }
   }
 
   catch (std::string& ex) {

@@ -33,7 +33,7 @@ struct Detector_Ring {
 
 struct Matrix_Element {
 
-  float lor[LORS];
+  float hit[LORS];
 };
 
 struct Secant_Points {

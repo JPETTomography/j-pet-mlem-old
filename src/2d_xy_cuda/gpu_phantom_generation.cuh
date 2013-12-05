@@ -5,6 +5,7 @@
 #include "data_structures.h"
 #include "prng.cuh"
 #include "geometry_methods.cuh"
+#include "../2d_xy/lor.h"
 
 __device__ int lor_iterator(int& id1, int& id2) {
 
@@ -44,7 +45,7 @@ __global__ void gpu_phantom_generation(int x,
   Hits hit1;
   Hits hit2;
 
-  float fov_radius = radius / M_SQRT2;
+  // float fov_radius = radius / M_SQRT2;
   // FIXME: will fail for large number of detectors
   if (threadIdx.x < NUMBER_OF_DETECTORS) {
 
@@ -127,7 +128,12 @@ __global__ void gpu_phantom_generation(int x,
     // if(deposition_depth < (sqrt( (hit[1].x - hit[0].x) * (hit[1].x -
     // hit[0].x) + (hit[1].y - hit[0].y) * (hit[1].x - hit[0].x) ))) {
 
-    atomicAdd(&pixel_data[blockIdx.x].lor[lor_iterator(detector1, detector2)],
+    //    LOR<> lor(detector1,detector2);
+
+    //    atomicAdd(&pixel_data[blockIdx.x].hit[lor.index()],
+    //              1.0f);
+
+    atomicAdd(&pixel_data[blockIdx.x].hit[lor_iterator(detector1, detector2)],
               1.0f);
     //}
   }
