@@ -5,7 +5,7 @@
 #include "data_structures.h"
 #include "prng.cuh"
 #include "geometry_methods.cuh"
-#include "../2d_xy/lor.h"
+#include "2d_xy/lor.h"
 
 __device__ int lor_iterator(int& id1, int& id2) {
 

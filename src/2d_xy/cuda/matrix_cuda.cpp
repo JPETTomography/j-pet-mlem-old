@@ -5,20 +5,16 @@
 #include <random>
 #include <vector>
 
-#include "cmdline.h"
-#include "util/cmdline_types.h"
-#include "../util/png_writer.h"
+#include "matrix_cuda.h"
+
 #include "config.h"
 #include "data_structures.h"
 
 #include "2d_xy/detector_ring.h"
 #include "2d_xy/square_detector.h"
-#include "geometry/point.h"
 #include "2d_xy/monte_carlo.h"
-#include "2d_xy/sparse_matrix.h"
 #include "2d_xy/model.h"
-#include "2d_xy/lor.h"
-#include "geometry/pixel.h"
+#include "geometry/point.h"
 
 // reference stuff from kernel.cu file
 // TODO: Should go into a separate header file.
@@ -50,17 +46,16 @@ void gpu_detector_hits_kernel_test(float crx,
 
 SparseMatrix<Pixel<>, LOR<>> run_gpu(cmdline::parser& cl) {
 
-  int pixels_in_row = cl.get<int>("n-pixels");
-  int n_detectors = cl.get<int>("n-detectors");
-  int n_emissions = cl.get<int>("n-emissions");
-  float radius = cl.get<float>("radius");
-  float s_pixel = cl.get<float>("s-pixel");
-  float w_detector = cl.get<float>("w-detector");
-  float h_detector = cl.get<float>("h-detector");
-  float tof_step = 0;
+  auto pixels_in_row = cl.get<int>("n-pixels");
+  auto n_detectors = cl.get<int>("n-detectors");
+  auto n_emissions = cl.get<int>("n-emissions");
+  auto radius = cl.get<double>("radius");
+  auto s_pixel = cl.get<double>("s-pixel");
+  auto w_detector = cl.get<double>("w-detector");
+  auto h_detector = cl.get<double>("h-detector");
 
-  int number_of_blocks = cl.get<int>("block-num");
-  int number_of_threads_per_block = cl.get<int>("threads-per-block");
+  auto number_of_blocks = cl.get<int>("blocks");
+  auto number_of_threads_per_block = cl.get<int>("threads-per-block");
 
   // automatic pixel size
   if (!cl.exist("radius")) {
@@ -169,7 +164,6 @@ SparseMatrix<Pixel<>, LOR<>> run_gpu(cmdline::parser& cl) {
         matrix.push_back(temp);
       }
     }
-
   }
 
   return matrix;

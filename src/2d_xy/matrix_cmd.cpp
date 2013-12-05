@@ -27,6 +27,10 @@
 #include <omp.h>
 #endif
 
+#if HAVE_CUDA
+#include "cuda/matrix_cuda.h"
+#endif
+
 // all available detector shapes
 typedef DetectorRing<double, int, SquareDetector<double>> SquareDetectorRing;
 typedef DetectorRing<double, int, CircleDetector<double>> CircleDetectorRing;
@@ -44,6 +48,16 @@ int main(int argc, char* argv[]) {
 
     cl.add<cmdline::string>(
         "config", 'c', "load config file", false, cmdline::string(), false);
+#if HAVE_CUDA
+    cl.add("gpu", 'g', "run on GPU (via CUDA)");
+    cl.add<int>("blocks", 0, "number of CUDA blocks", false, 64, false);
+    cl.add<int>("threads-per-block",
+                0,
+                "number of threads in block",
+                false,
+                512,
+                false);
+#endif
 #if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 0, false);
 #endif
@@ -107,13 +121,20 @@ int main(int argc, char* argv[]) {
 
     cl.parse_check(argc, argv);
 
-    auto& shape = cl.get<std::string>("shape");
+    if (cl.exist("gpu")) {
+#if HAVE_CUDA
+      run_gpu(cl);
+#endif
+    } else {
 
-    // run simmulation on given detector shape
-    if (shape == "square") {
-      run<SquareDetectorRing>(cl);
-    } else if (shape == "circle") {
-      run<CircleDetectorRing>(cl);
+      auto& shape = cl.get<std::string>("shape");
+
+      // run simmulation on given detector shape
+      if (shape == "square") {
+        run<SquareDetectorRing>(cl);
+      } else if (shape == "circle") {
+        run<CircleDetectorRing>(cl);
+      }
     }
   }
   catch (std::string& ex) {
