@@ -128,6 +128,25 @@ int main(int argc, char* argv[]) {
 
     cl.try_parse(argc, argv);
 
+    // load config file(s) (one config may call other with --config=other)
+    std::string config, last_config;
+    while (cl.exist("config") &&
+           (config = cl.get<cmdline::string>("config")).length() &&
+           config != last_config) {
+      std::ifstream in(config);
+      if (!in.is_open()) {
+        throw("cannot open input config file: " +
+              cl.get<cmdline::string>("config"));
+      }
+      cl.try_parse(in, false, config.c_str());
+      last_config = config;
+    }
+
+    // emissions must be set explicitely
+    cl.get<int>("n-emissions") = 0;
+    // parse again to override file settings from command line
+    cl.try_parse(argc, argv, false);
+
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
       run_gpu(cl);
@@ -193,23 +212,6 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
   }
   if (!cl.exist("png") && cl.exist("from")) {
     throw("need to specify --from lor when output --png option is specified");
-  }
-
-  // load config file(s) (one config may call other with --config=other)
-  std::string config, last_config;
-  while (cl.exist("config") &&
-         (config = cl.get<cmdline::string>("config")).length() &&
-         config != last_config) {
-    std::ifstream in(config);
-    if (!in.is_open()) {
-      throw("cannot open input config file: " +
-            cl.get<cmdline::string>("config"));
-    }
-    // load except n-emissions
-    auto n_prev_emissions = n_emissions;
-    cl.try_parse(in, false, config.c_str());
-    n_emissions = n_prev_emissions;
-    last_config = config;
   }
 
   // load config files accompanying matrix files

@@ -63,6 +63,25 @@ int main(int argc, char* argv[]) {
 
     cl.try_parse(argc, argv);
 
+    // load config file(s) (one config may call other with --config=other)
+    std::string config, last_config;
+    while (cl.exist("config") &&
+           (config = cl.get<cmdline::string>("config")).length() &&
+           config != last_config) {
+      std::ifstream in(config);
+      if (!in.is_open()) {
+        throw("cannot open input config file: " +
+              cl.get<cmdline::string>("config"));
+      }
+      cl.try_parse(in, false, config.c_str());
+      last_config = config;
+    }
+
+    // emissions must be set explicitely
+    cl.get<int>("n-emissions") = 0;
+    // parse again to override file settings from command line
+    cl.try_parse(argc, argv, false);
+
 #if _OPENMP
     if (cl.exist("n-threads")) {
       omp_set_num_threads(cl.get<int>("n-threads"));
@@ -78,23 +97,6 @@ int main(int argc, char* argv[]) {
     auto& h_detector = cl.get<double>("h-detector");
     auto& tof_step = cl.get<double>("tof-step");
     auto& acceptance = cl.get<double>("acceptance");
-
-    // load config file(s) (one config may call other with --config=other)
-    std::string config, last_config;
-    while (cl.exist("config") &&
-           (config = cl.get<cmdline::string>("config")).length() &&
-           config != last_config) {
-      std::ifstream in(config);
-      if (!in.is_open()) {
-        throw("cannot open input config file: " +
-              cl.get<cmdline::string>("config"));
-      }
-      // load except n-emissions
-      auto n_prev_emissions = n_emissions;
-      cl.try_parse(in, false, config.c_str());
-      n_emissions = n_prev_emissions;
-      last_config = config;
-    }
 
     PointSources<> point_sources;
 
