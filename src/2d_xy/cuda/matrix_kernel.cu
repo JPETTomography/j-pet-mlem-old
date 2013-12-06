@@ -150,10 +150,12 @@ bool run_monte_carlo_kernel(int number_of_threads_per_block,
         gpu_output[p].hit[lookup_table_lors[i].index()] = temp;
 
 #ifdef PRINT
+        if(p == 0){
         printf("LOR(%d,%d) %f\n",
-               lor.first,
-               lor.second,
-               gpu_output[p].hit[lor.index()]);
+               lookup_table_lors[i].lor_a,
+               lookup_table_lors[i].lor_b,
+               gpu_output[p].hit[lookup_table_lors[i].index()]);
+        }
 #endif
       }
     }

@@ -80,7 +80,7 @@ __global__ void monte_carlo_kernel(int x,
     SecantSections i_inner = secant_sections(inner_secant, NUMBER_OF_DETECTORS);
     SecantSections i_outer = secant_sections(outer_secant, NUMBER_OF_DETECTORS);
 
-    check_for_hits(i_inner.ss1,
+    if(!check_for_hits(i_inner.ss1,
                    i_outer.ss1,
                    rx,
                    ry,
@@ -88,9 +88,9 @@ __global__ void monte_carlo_kernel(int x,
                    NUMBER_OF_DETECTORS,
                    ring,
                    detector1,
-                   hit1);
+                   hit1)){continue;}
 
-    check_for_hits(i_inner.ss2,
+    if(!check_for_hits(i_inner.ss2,
                    i_outer.ss2,
                    rx,
                    ry,
@@ -98,7 +98,7 @@ __global__ void monte_carlo_kernel(int x,
                    NUMBER_OF_DETECTORS,
                    ring,
                    detector2,
-                   hit2);
+                   hit2)){continue;}
 
 #if FIXME
     float deposition_depth =
