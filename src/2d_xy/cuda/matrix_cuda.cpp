@@ -140,9 +140,11 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   int n_tof_positions = 1;
   int triangle_pixel_size = (pixels_in_row / 2 * (pixels_in_row / 2 + 1) / 2);
 
-  gpu::LOR lookup_table_lors[LORS];
+  std::vector<gpu::LOR> lookup_table_lors;
+  lookup_table_lors.resize(LORS);
 
-  Pixel<> lookup_table_pixel[triangle_pixel_size];
+  std::vector<Pixel<>> lookup_table_pixel;
+  lookup_table_pixel.resize(triangle_pixel_size);
 
   std::vector<gpu::MatrixElement> gpu_vector_output;
   gpu_vector_output.resize(triangle_pixel_size);
@@ -153,8 +155,8 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
       (unsigned int*)malloc(number_of_blocks * number_of_threads_per_block * 4 *
                             sizeof(unsigned int));
 
-  fill_gpu_data(lookup_table_lors,
-                lookup_table_pixel,
+  fill_gpu_data(lookup_table_lors.data(),
+                lookup_table_pixel.data(),
                 cpu_prng_seed,
                 number_of_blocks,
                 number_of_threads_per_block,
@@ -180,8 +182,8 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
                          h_detector,
                          w_detector,
                          s_pixel,
-                         lookup_table_lors,
-                         lookup_table_pixel,
+                         lookup_table_lors.data(),
+                         lookup_table_pixel.data(),
                          cpu_prng_seed,
                          cpu_matrix.data(),
                          gpu_vector_output.data());

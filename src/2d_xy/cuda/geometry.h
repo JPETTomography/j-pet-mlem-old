@@ -44,5 +44,8 @@ struct SecantSections {
 struct LOR {
   int lor_a;
   int lor_b;
+  int index() const {
+    return (lor_a * (lor_a + 1)) / 2 + lor_b;
+  }
 };
 }

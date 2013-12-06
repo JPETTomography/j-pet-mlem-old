@@ -10,6 +10,6 @@ cuda {
   NVCC_FLAGS_RELEASE += -Xptxas -O3
 
   SOURCES      += 2d_xy/cuda/matrix_cuda.cpp
-  CUDA_SOURCES += 2d_xy/cuda/kernel.cu
+  CUDA_SOURCES += 2d_xy/cuda/matrix_kernel.cu
   HEADERS      += $$files(2d_xy/cuda/*.h) $$files(2d_xy/cuda/*.cuh)
 }

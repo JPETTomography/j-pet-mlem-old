@@ -1,8 +1,5 @@
 #pragma once
 
-#include <iostream>
-#include <algorithm>
-
 template <typename SType = int> class Pixel {
  public:
   typedef SType S;
