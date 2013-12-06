@@ -31,6 +31,17 @@
 #include "cuda/matrix_cuda.h"
 #endif
 
+// detect build variant
+#if _OPENMP /* both */&& HAVE_CUDA
+#define VARIANT "OpenMP/CUDA"
+#elif _OPENMP
+#define VARIANT "OpenMP"
+#elif HAVE_CUDA
+#define VARIANT "CUDA"
+#else
+#define VARIANT "single-threaded CPU"
+#endif
+
 // all available detector shapes
 typedef DetectorRing<double, int, SquareDetector<double>> SquareDetectorRing;
 typedef DetectorRing<double, int, CircleDetector<double>> CircleDetectorRing;
@@ -42,8 +53,9 @@ int main(int argc, char* argv[]) {
   try {
     cmdline::parser cl;
     std::ostringstream msg;
-    msg << "matrix_file ..." << std::endl
-        << "note: All length options below should be expressed in meters.";
+    msg << "matrix_file ..." << std::endl;
+    msg << "build: " << VARIANT << std::endl;
+    msg << "note: All length options below should be expressed in meters.";
     cl.footer(msg.str());
 
     cl.add<cmdline::string>(
@@ -52,14 +64,9 @@ int main(int argc, char* argv[]) {
     cl.add("gpu", 'g', "run on GPU (via CUDA)");
     cl.add<int>("n-blocks", 0, "number of CUDA blocks", false, 64, false);
 #endif
-#if _OPENMP&& HAVE_CUDA
+#if _OPENMP || HAVE_CUDA
     cl.add<int>(
-        "n-threads", 't', "number of OpenMP/CUDA threads", false, 0, false);
-#elif HAVE_CUDA
-    cl.add<int>(
-        "n-threads", 't', "number of CUDA threads per block", false, 0, false);
-#elif _OPENMP
-    cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 0, false);
+        "n-threads", 't', "number of " VARIANT " threads", false, 0, false);
 #endif
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
