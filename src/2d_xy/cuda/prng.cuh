@@ -1,6 +1,7 @@
 #pragma once
 
-#include <stdio.h>
+#include <cuda_runtime.h>
+#include <cstdio>
 
 /*-----------------------------------------GENERATORS-----------------------------------------------------*/
 

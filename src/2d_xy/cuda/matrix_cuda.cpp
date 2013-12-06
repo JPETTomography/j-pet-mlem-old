@@ -5,10 +5,9 @@
 #include <random>
 #include <vector>
 
-#include "matrix_cuda.h"
-
 #include "config.h"
-#include "data_structures.h"
+#include "matrix.h"
+#include "geometry.h"
 
 #include "2d_xy/detector_ring.h"
 #include "2d_xy/square_detector.h"
@@ -16,33 +15,81 @@
 #include "2d_xy/model.h"
 #include "geometry/point.h"
 
+#if FIXME
 // reference stuff from kernel.cu file
 // TODO: Should go into a separate header file.
 
-void phantom_kernel(int number_of_threads_per_block,
-                    int blocks,
-                    int n_emissions,
-                    int pixels_in_row,
-                    float radius,
-                    float h_detector,
-                    float w_detector,
-                    float pixel_size,
-                    std::vector<Pixel<>>& lookup_table_pixel,
-                    std::vector<Lor>& lookup_table_lors,
-                    std::vector<Matrix_Element>& gpu_output);
+void run_phantom_kernel(int number_of_threads_per_block,
+                        int blocks,
+                        int n_emissions,
+                        int pixels_in_row,
+                        float radius,
+                        float h_detector,
+                        float w_detector,
+                        float pixel_size,
+                        Pixel<>* lookup_table_pixel,
+                        Lor* lookup_table_lors,
+                        std::vector<MatrixElement>& gpu_output);
+#endif
 
-void gpu_detector_geometry_kernel_test(float radius,
+void run_monte_carlo_kernel(int number_of_threads_per_block,
+                            int number_of_blocks,
+                            int n_emissions,
+                            int pixels_in_row,
+                            int triangle_pixel_size,
+                            float radius,
+                            float h_detector,
+                            float w_detector,
+                            float pixel_size,
+                            gpu::LOR* lookup_table_lors,
+                            Pixel<>* lookup_table_pixels,
+                            unsigned int* cpu_prng_seed,
+                            gpu::MatrixElement* cpu_matrix,
+                            gpu::MatrixElement* gpu_output);
+
+void run_detector_geometry_test_kernel(float radius,
                                        float h_detector,
                                        float w_detector,
                                        float pixel_size,
-                                       Detector_Ring& cpu_output);
+                                       gpu::DetectorRing& cpu_output);
 
-void gpu_detector_hits_kernel_test(float crx,
+void run_detector_hits_test_kernel(float crx,
                                    float cry,
                                    float cangle,
                                    float radius,
                                    float h_detector,
                                    float w_detector);
+
+void fill_gpu_data(gpu::LOR* lookup_table_lors,
+                   Pixel<>* lookup_table_pixel,
+                   unsigned int* cpu_prng_seed,
+                   int& number_of_blocks,
+                   int& number_of_threads_per_block,
+                   int& pixels_in_row) {
+
+  for (int i = 0; i < NUMBER_OF_DETECTORS; ++i) {
+    for (int j = 0; j < NUMBER_OF_DETECTORS; ++j) {
+
+      gpu::LOR temp;
+      temp.lor_a = i;
+      temp.lor_b = j;
+      lookup_table_lors[(i * (i + 1) / 2) + j] = temp;
+    }
+  }
+
+  for (int j = pixels_in_row / 2 - 1; j >= 0; --j) {
+    for (int i = 0; i <= j; ++i) {
+
+      Pixel<> pixel(i, j);
+      lookup_table_pixel[pixel.index()] = pixel;
+    }
+  }
+
+  for (int i = 0; i < 4 * number_of_blocks * number_of_threads_per_block; ++i) {
+
+    cpu_prng_seed[i] = 53445 + i;
+  }
+}
 
 OutputMatrix run_gpu(cmdline::parser& cl) {
 
@@ -93,76 +140,79 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   int n_tof_positions = 1;
   int triangle_pixel_size = (pixels_in_row / 2 * (pixels_in_row / 2 + 1) / 2);
 
-  // Lor lookup_table_lors[LORS];
-  std::vector<Lor> lookup_table_lors;
-  lookup_table_lors.resize(LORS);
+  gpu::LOR lookup_table_lors[LORS];
 
-  for (int i = 0; i < NUMBER_OF_DETECTORS; ++i) {
-    for (int j = 0; j < NUMBER_OF_DETECTORS; ++j) {
+  Pixel<> lookup_table_pixel[triangle_pixel_size];
 
-      Lor temp;
-      temp.lor_a = i;
-      temp.lor_b = j;
-      lookup_table_lors[(i * (i + 1) / 2) + j] = temp;
-    }
-  }
-
-  // Pixel<> lookup_table_pixel[triangular_matrix_size];
-  std::vector<Pixel<>> lookup_table_pixel;
-  lookup_table_pixel.resize(triangle_pixel_size);
-
-  // Matrix_Element triangle_matrix_output[triangular_matrix_size];
-
-  for (int j = pixels_in_row / 2 - 1; j >= 0; --j) {
-    for (int i = 0; i <= j; ++i) {
-
-      Pixel<> pixel(i, j);
-      lookup_table_pixel[pixel.index()] = pixel;
-    }
-  }
-
-  std::vector<Matrix_Element> gpu_vector_output;
-
+  std::vector<gpu::MatrixElement> gpu_vector_output;
   gpu_vector_output.resize(triangle_pixel_size);
 
-  std::cout << "VECTOR size: " << gpu_vector_output.size() << std::endl;
+  unsigned int* cpu_prng_seed;
 
-  phantom_kernel(number_of_threads_per_block,
-                 number_of_blocks,
-                 n_emissions,
-                 pixels_in_row,
-                 radius,
-                 h_detector,
-                 w_detector,
-                 s_pixel,
-                 lookup_table_pixel,
-                 lookup_table_lors,
-                 gpu_vector_output);
+  cpu_prng_seed =
+      (unsigned int*)malloc(number_of_blocks * number_of_threads_per_block * 4 *
+                            sizeof(unsigned int));
+
+  fill_gpu_data(lookup_table_lors,
+                lookup_table_pixel,
+                cpu_prng_seed,
+                number_of_blocks,
+                number_of_threads_per_block,
+                pixels_in_row);
+
+  for (int i = 0; i < triangle_pixel_size; ++i) {
+
+    for (int lor = 0; lor < LORS; ++lor) {
+
+      gpu_vector_output[i].hit[lor] = 0;
+    }
+  }
+
+  std::vector<gpu::MatrixElement> cpu_matrix;
+  cpu_matrix.resize(number_of_blocks);
+
+  run_monte_carlo_kernel(number_of_threads_per_block,
+                         number_of_blocks,
+                         n_emissions,
+                         pixels_in_row,
+                         triangle_pixel_size,
+                         radius,
+                         h_detector,
+                         w_detector,
+                         s_pixel,
+                         lookup_table_lors,
+                         lookup_table_pixel,
+                         cpu_prng_seed,
+                         cpu_matrix.data(),
+                         gpu_vector_output.data());
 
   OutputMatrix output_matrix(pixels_in_row, n_detectors, n_tof_positions);
 
-  for (auto p : gpu_vector_output) {
+  for (int id = 0; id < triangle_pixel_size; ++id) {
 
     for (int i = 0; i < LORS; ++i) {
 
-      if (p.hit[i] > 0) {
+      if (gpu_vector_output[id].hit[i] > 0) {
 
-        OutputMatrix::LOR lor(lookup_table_lors[i].lor_a, lookup_table_lors[i].lor_b);
+        OutputMatrix::LOR lor(lookup_table_lors[i].lor_a,
+                              lookup_table_lors[i].lor_b);
 
         auto pixel = lookup_table_pixel[i];
-
-        // printf("LOR(%d,%d) %f\n",lor.first,lor.second, p.hit[i]);
-
+#ifdef PRINT
+        printf("LOR(%d,%d) %f\n", lor.first, lor.second, p.hit[i]);
+#endif
         OutputMatrix::Element element;
         element.lor = lor;
         element.pixel = pixel;
-        element.hits = p.hit[i];
+        element.hits = gpu_vector_output[id].hit[i];
         element.position = 0;
 
         output_matrix.push_back(element);
       }
     }
   }
+
+  free(cpu_prng_seed);
 
   return output_matrix;
 }

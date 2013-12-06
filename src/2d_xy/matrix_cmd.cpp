@@ -28,7 +28,7 @@
 #endif
 
 #if HAVE_CUDA
-#include "cuda/matrix_cuda.h"
+#include "cuda/matrix.h"
 #endif
 
 // detect build variant
