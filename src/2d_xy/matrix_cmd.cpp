@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
     cl.add("wait", 0, "wait before exit");
     cl.add("verbose", 'v', "prints the iterations information on std::out");
 
-    cl.parse_check(argc, argv);
+    cl.try_parse(argc, argv);
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
@@ -141,6 +141,19 @@ int main(int argc, char* argv[]) {
         run<SquareDetectorRing>(cl);
       } else if (shape == "circle") {
         run<CircleDetectorRing>(cl);
+      }
+    }
+  }
+  catch (cmdline::exception& ex) {
+    if (ex.help()) {
+      std::cerr << ex.usage();
+    }
+    for (auto &msg : ex.errors()) {
+      auto name = ex.name();
+      if (name) {
+        std::cerr << "error at " << name << ": " << msg << std::endl;
+      } else {
+        std::cerr << "error: " << msg << std::endl;
       }
     }
   }
@@ -194,7 +207,7 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
     }
     // load except n-emissions
     auto n_prev_emissions = n_emissions;
-    cl.parse_check(in, config.c_str());
+    cl.try_parse(in, false, config.c_str());
     n_emissions = n_prev_emissions;
     last_config = config;
   }

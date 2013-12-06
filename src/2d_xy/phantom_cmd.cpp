@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
                             false);
     cl.add("detected", '\0', "collects detected emissions");
 
-    cl.parse_check(argc, argv);
+    cl.try_parse(argc, argv);
 
 #if _OPENMP
     if (cl.exist("n-threads")) {
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
       }
       // load except n-emissions
       auto n_prev_emissions = n_emissions;
-      cl.parse_check(in, config.c_str());
+      cl.try_parse(in, false, config.c_str());
       n_emissions = n_prev_emissions;
       last_config = config;
     }
@@ -353,6 +353,19 @@ int main(int argc, char* argv[]) {
       pixels_detected_text_out << "\n";
     }
     return 0;
+  }
+  catch (cmdline::exception& ex) {
+    if (ex.help()) {
+      std::cerr << ex.usage();
+    }
+    for (auto &msg : ex.errors()) {
+      auto name = ex.name();
+      if (name) {
+        std::cerr << "error at " << name << ": " << msg << std::endl;
+      } else {
+        std::cerr << "error: " << msg << std::endl;
+      }
+    }
   }
   catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
