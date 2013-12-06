@@ -55,14 +55,9 @@ class EllipticalRegion {
   double cos_;
 
 #ifdef __APPLE__
-  static inline void sincos(double a, double* s, double* c) {
+  template <typename T> static inline void sincos(T a, T* s, T* c) {
     *s = std::sin(a);
     *c = std::cos(a);
-  }
-
-  static inline void sincosf(float a, float* s, float* c) {
-    *s = std::sinf(a);
-    *c = std::cosf(a);
   }
 #endif
 };
