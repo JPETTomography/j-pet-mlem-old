@@ -121,12 +121,12 @@ int main(int argc, char* argv[]) {
 
     cl.parse_check(argc, argv);
 
-    if (cl.exist("gpu")) {
 #if HAVE_CUDA
+    if (cl.exist("gpu")) {
       run_gpu(cl);
+    } else
 #endif
-    } else {
-
+    {
       auto& shape = cl.get<std::string>("shape");
 
       // run simmulation on given detector shape
