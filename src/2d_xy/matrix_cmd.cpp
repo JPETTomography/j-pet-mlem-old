@@ -151,51 +151,27 @@ int main(int argc, char* argv[]) {
     // parse again to override file settings from command line
     cl.try_parse(argc, argv, false);
 
-    auto radius = cl.get<double>("radius");
-    auto s_pixel = cl.get<double>("s-pixel");
-    auto w_detector = cl.get<double>("w-detector");
-    auto h_detector = cl.get<double>("h-detector");
-    auto n_pixels = cl.get<int>("n-pixels");
-    auto n_detectors = cl.get<int>("n-detectors");
-
 #if HAVE_CUDA
-    typedef SparseMatrix<Pixel<>, LOR<>> OutputMatrix;
-    SquareDetectorRing detector_ring(
-        n_detectors, radius, w_detector, h_detector);
-
-    OutputMatrix output = run_gpu(cl);
-
-    std::cout << "output size: " << output.size() << std::endl;
-
-    if (cl.exist("png")) {
-      auto fn = cl.get<cmdline::string>("png");
-      std::cout << "filename output: " << fn << std::endl;
-      png_writer png(fn + ".png");
-      LOR<> lor(0, 0);
-      auto position = cl.get<int>("pos");
-      if (cl.exist("full")) {
-        output.to_full().output_bitmap(png, lor, position);
-      } else {
-        output.output_bitmap(png, lor, position);
-      }
-
-      svg_ostream<> svg(
-          fn + ".svg", radius + h_detector, radius + h_detector, 1024., 1024.);
-      svg << detector_ring;
-
-      svg.link_image(fn + "2.png",
-                     -(s_pixel * n_pixels) / 2.,
-                     -(s_pixel * n_pixels) / 2.,
-                     s_pixel * n_pixels,
-                     s_pixel * n_pixels);
-    }
+    if (cl.exist("gpu")) {
+      run_gpu(cl);
+    } else
 #endif
+    {
+      auto& shape = cl.get<std::string>("shape");
+
+      // run simmulation on given detector shape
+      if (shape == "square") {
+        run<SquareDetectorRing>(cl);
+      } else if (shape == "circle") {
+        run<CircleDetectorRing>(cl);
+      }
+    }
   }
   catch (cmdline::exception& ex) {
     if (ex.help()) {
       std::cerr << ex.usage();
     }
-    for (auto& msg : ex.errors()) {
+    for (auto &msg : ex.errors()) {
       auto name = ex.name();
       if (name) {
         std::cerr << "error at " << name << ": " << msg << std::endl;
