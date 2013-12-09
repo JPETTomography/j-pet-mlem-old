@@ -291,9 +291,16 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
       throw("cannot open input file: " + fn);
     try {
       ComputeMatrix::SparseMatrix in_sparse_matrix(in);
-      if (cl.exist("verbose"))
-        std::cerr << "read in " << fn << " " << in_sparse_matrix.n_tof_positions()
+      if (cl.exist("verbose")) {
+        std::cerr << "read sparse matrix: " << fn << std::endl;
+        std::cerr << "pixels in row = " << in_sparse_matrix.n_pixels_in_row()
                   << std::endl;
+        std::cerr << "TOF positions = " << in_sparse_matrix.n_tof_positions()
+                  << std::endl;
+        std::cerr << "emissions     = " << in_sparse_matrix.n_emissions()
+                  << std::endl;
+        std::cerr << std::endl;
+      }
       if (sparse_matrix.empty()) {
         sparse_matrix = in_sparse_matrix;
       } else {
@@ -326,6 +333,7 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
 #if _OPENMP
     std::cerr << "threads       = " << omp_get_max_threads() << std::endl;
 #endif
+    std::cerr << "pixels in row = " << n_pixels << std::endl;
     std::cerr << "max bias      = " << max_bias << std::endl;
     std::cerr << "TOF step      = " << tof_step << std::endl;
     std::cerr << "TOF positions = " << n_tof_positions << std::endl;

@@ -198,6 +198,8 @@ class SparseMatrix
       throw("cannot join two incompatible sparse matrices");
     }
 
+    n_emissions_ += other.n_emissions_;
+
     this->reserve(this->size() + other.size());
     this->insert(this->end(), other.begin(), other.end());
 
