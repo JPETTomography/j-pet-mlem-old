@@ -77,40 +77,32 @@ int main(int argc, char* argv[]) {
     cl.add<int>(
         "n-threads", 't', "number of " VARIANT " threads", cmdline::dontsave);
 #endif
-    cl.add<int>("n-pixels",
-                'n',
-                "number of pixels in one dimension",
-                cmdline::optional,
-                256);
-    cl.add<int>("n-detectors",
-                'd',
-                "number of detectors in ring",
-                cmdline::optional,
-                64);
+    cl.add<int>(
+        "n-pixels", 'n', "number of pixels in one dimension", false, 256);
+    cl.add<int>("n-detectors", 'd', "number of detectors in ring", false, 64);
     cl.add<int>("n-emissions",
                 'e',
                 "emissions per pixel",
-                cmdline::optional,
+                false,
                 0,
                 cmdline::default_reader<int>(),
                 cmdline::not_from_file);
-    cl.add<double>(
-        "radius", 'r', "inner detector ring radius", cmdline::optional);
-    cl.add<double>("s-pixel", 'p', "pixel size", cmdline::optional);
-    cl.add<double>("tof-step", 'T', "TOF quantisation step", cmdline::optional);
+    cl.add<double>("radius", 'r', "inner detector ring radius", false);
+    cl.add<double>("s-pixel", 'p', "pixel size", false);
+    cl.add<double>("tof-step", 'T', "TOF quantisation step", false);
     cl.add<std::string>(
         "shape",
         'S',
         "detector (scintillator) shape (square, circle,triangle)",
-        cmdline::optional,
+        false,
         "square",
         cmdline::oneof<std::string>("square", "circle", "triangle"));
-    cl.add<double>("w-detector", 'w', "detector width", cmdline::optional);
-    cl.add<double>("h-detector", 'h', "detector height", cmdline::optional);
+    cl.add<double>("w-detector", 'w', "detector width", false);
+    cl.add<double>("h-detector", 'h', "detector height", false);
     cl.add<std::string>("model",
                         'm',
                         "acceptance model (always, scintillator)",
-                        cmdline::optional,
+                        false,
                         "scintillator",
                         cmdline::oneof<std::string>("always", "scintillator"));
     // NOTE: this options is obsolete (use base-length instead)
@@ -122,7 +114,7 @@ int main(int argc, char* argv[]) {
     cl.add<double>("base-length",
                    'l',
                    "scintillator emission base length P(l)=1-e^(-1)",
-                   cmdline::optional,
+                   false,
                    0.1);
     cl.add<tausworthe::seed_type>(
         "seed", 's', "random number generator seed", cmdline::dontsave);

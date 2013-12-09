@@ -33,7 +33,8 @@ int main(int argc, char* argv[]) {
     cl.add<cmdline::string>(
         "config", 'c', "load config file", cmdline::dontsave);
 #if _OPENMP
-    cl.add<int>("n-threads", 't', "number of OpenMP threads", cmdline::dontsave, 0);
+    cl.add<int>(
+        "n-threads", 't', "number of OpenMP threads", cmdline::dontsave);
 #endif
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
@@ -67,25 +68,6 @@ int main(int argc, char* argv[]) {
     cl.add("detected", 0, "collects detected emissions");
 
     cl.try_parse(argc, argv);
-
-    // load config file(s) (one config may call other with --config=other)
-    std::string config, last_config;
-    while (cl.exist("config") &&
-           (config = cl.get<cmdline::string>("config")).length() &&
-           config != last_config) {
-      std::ifstream in(config);
-      if (!in.is_open()) {
-        throw("cannot open input config file: " +
-              cl.get<cmdline::string>("config"));
-      }
-      cl.try_parse(in, false, config.c_str());
-      last_config = config;
-    }
-
-    // emissions must be set explicitely
-    cl.get<int>("n-emissions") = 0;
-    // parse again to override file settings from command line
-    cl.try_parse(argc, argv, false);
 
 #if _OPENMP
     if (cl.exist("n-threads")) {
