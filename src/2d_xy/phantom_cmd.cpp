@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     cl.add<cmdline::string>(
         "config", 'c', "load config file", cmdline::dontsave);
 #if _OPENMP
-    cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 0, false);
+    cl.add<int>("n-threads", 't', "number of OpenMP threads", cmdline::dontsave, 0);
 #endif
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
