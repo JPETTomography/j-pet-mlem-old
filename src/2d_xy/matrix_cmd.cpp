@@ -14,6 +14,7 @@
 #include "util/random.h"
 #include "detector_ring.h"
 #include "circle_detector.h"
+#include "triangle_detector.h"
 #include "matrix_pixel_major.h"
 #include "geometry/pixel.h"
 #include "lor.h"
@@ -45,6 +46,8 @@
 // all available detector shapes
 typedef DetectorRing<double, int, SquareDetector<double>> SquareDetectorRing;
 typedef DetectorRing<double, int, CircleDetector<double>> CircleDetectorRing;
+typedef DetectorRing<double, int, TriangleDetector<double>>
+    TriangleDetectorRing;
 
 template <class DetectorRing> void run(cmdline::parser& cl);
 
@@ -75,12 +78,13 @@ int main(int argc, char* argv[]) {
     cl.add<double>("radius", 'r', "inner detector ring radius", false, 0);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
     cl.add<double>("tof-step", 'T', "TOF quantisation step", false);
-    cl.add<std::string>("shape",
-                        'S',
-                        "detector (scintillator) shape (square, circle)",
-                        false,
-                        "square",
-                        cmdline::oneof<std::string>("square", "circle"));
+    cl.add<std::string>(
+        "shape",
+        'S',
+        "detector (scintillator) shape (square, circle,triangle)",
+        false,
+        "square",
+        cmdline::oneof<std::string>("square", "circle", "triangle"));
     cl.add<double>("w-detector", 'w', "detector width", false);
     cl.add<double>("h-detector", 'h', "detector height", false);
     cl.add<std::string>("model",
