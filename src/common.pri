@@ -17,7 +17,7 @@ HEADERS += geometry/*.h
 HEADERS += util/*.h
 HEADERS += math/*.h
 
-SOURCES += util/png_writer.cpp
+SOURCES += util/png_writer.cpp util/cmdline_hooks.cpp
 
 # drop binaries one level up
 equals(PWD, $$OUT_PWD) {

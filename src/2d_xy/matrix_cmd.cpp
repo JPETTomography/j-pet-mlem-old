@@ -10,6 +10,7 @@
 
 #include "cmdline.h"
 #include "util/cmdline_types.h"
+#include "util/cmdline_hooks.h"
 
 #include "util/random.h"
 #include "detector_ring.h"
@@ -61,8 +62,13 @@ int main(int argc, char* argv[]) {
     msg << "note: All length options below should be expressed in meters.";
     cl.footer(msg.str());
 
-    cl.add<cmdline::string>(
-        "config", 'c', "load config file", cmdline::dontsave);
+    cl.add<cmdline::string>("config",
+                            'c',
+                            "load config file",
+                            cmdline::dontsave,
+                            cmdline::string(),
+                            cmdline::default_reader<cmdline::string>(),
+                            cmdline::load);
 #if HAVE_CUDA
     cl.add("gpu", 'g', "run on GPU (via CUDA)");
     cl.add<int>("n-blocks", 0, "number of CUDA blocks", cmdline::dontsave, 64);
@@ -81,7 +87,13 @@ int main(int argc, char* argv[]) {
                 "number of detectors in ring",
                 cmdline::optional,
                 64);
-    cl.add<int>("n-emissions", 'e', "emissions per pixel", cmdline::optional);
+    cl.add<int>("n-emissions",
+                'e',
+                "emissions per pixel",
+                cmdline::optional,
+                0,
+                cmdline::default_reader<int>(),
+                cmdline::not_from_file);
     cl.add<double>(
         "radius", 'r', "inner detector ring radius", cmdline::optional);
     cl.add<double>("s-pixel", 'p', "pixel size", cmdline::optional);
@@ -136,25 +148,6 @@ int main(int argc, char* argv[]) {
 
     cl.try_parse(argc, argv);
 
-    // load config file(s) (one config may call other with --config=other)
-    std::string config, last_config;
-    while (cl.exist("config") &&
-           (config = cl.get<cmdline::string>("config")).length() &&
-           config != last_config) {
-      std::ifstream in(config);
-      if (!in.is_open()) {
-        throw("cannot open input config file: " +
-              cl.get<cmdline::string>("config"));
-      }
-      cl.try_parse(in, false, config.c_str());
-      last_config = config;
-    }
-
-    // emissions must be set explicitely
-    cl.get<int>("n-emissions") = 0;
-    // parse again to override file settings from command line
-    cl.try_parse(argc, argv, false);
-
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
       run_gpu(cl);
@@ -175,7 +168,7 @@ int main(int argc, char* argv[]) {
     if (ex.help()) {
       std::cerr << ex.usage();
     }
-    for (auto &msg : ex.errors()) {
+    for (auto& msg : ex.errors()) {
       auto name = ex.name();
       if (name) {
         std::cerr << "error at " << name << ": " << msg << std::endl;
