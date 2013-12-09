@@ -62,67 +62,71 @@ int main(int argc, char* argv[]) {
     cl.footer(msg.str());
 
     cl.add<cmdline::string>(
-        "config", 'c', "load config file", false, cmdline::string(), false);
+        "config", 'c', "load config file", cmdline::dontsave);
 #if HAVE_CUDA
     cl.add("gpu", 'g', "run on GPU (via CUDA)");
-    cl.add<int>("n-blocks", 0, "number of CUDA blocks", false, 64, false);
+    cl.add<int>("n-blocks", 0, "number of CUDA blocks", cmdline::dontsave, 64);
 #endif
 #if _OPENMP || HAVE_CUDA
     cl.add<int>(
-        "n-threads", 't', "number of " VARIANT " threads", false, 0, false);
+        "n-threads", 't', "number of " VARIANT " threads", cmdline::dontsave);
 #endif
-    cl.add<int>(
-        "n-pixels", 'n', "number of pixels in one dimension", false, 256);
-    cl.add<int>("n-detectors", 'd', "number of detectors in ring", false, 64);
-    cl.add<int>("n-emissions", 'e', "emissions per pixel", false, 0);
-    cl.add<double>("radius", 'r', "inner detector ring radius", false, 0);
-    cl.add<double>("s-pixel", 'p', "pixel size", false);
-    cl.add<double>("tof-step", 'T', "TOF quantisation step", false);
+    cl.add<int>("n-pixels",
+                'n',
+                "number of pixels in one dimension",
+                cmdline::optional,
+                256);
+    cl.add<int>("n-detectors",
+                'd',
+                "number of detectors in ring",
+                cmdline::optional,
+                64);
+    cl.add<int>("n-emissions", 'e', "emissions per pixel", cmdline::optional);
+    cl.add<double>(
+        "radius", 'r', "inner detector ring radius", cmdline::optional);
+    cl.add<double>("s-pixel", 'p', "pixel size", cmdline::optional);
+    cl.add<double>("tof-step", 'T', "TOF quantisation step", cmdline::optional);
     cl.add<std::string>(
         "shape",
         'S',
         "detector (scintillator) shape (square, circle,triangle)",
-        false,
+        cmdline::optional,
         "square",
         cmdline::oneof<std::string>("square", "circle", "triangle"));
-    cl.add<double>("w-detector", 'w', "detector width", false);
-    cl.add<double>("h-detector", 'h', "detector height", false);
+    cl.add<double>("w-detector", 'w', "detector width", cmdline::optional);
+    cl.add<double>("h-detector", 'h', "detector height", cmdline::optional);
     cl.add<std::string>("model",
                         'm',
                         "acceptance model (always, scintillator)",
-                        false,
+                        cmdline::optional,
                         "scintillator",
                         cmdline::oneof<std::string>("always", "scintillator"));
     // NOTE: this options is obsolete (use base-length instead)
     cl.add<double>("acceptance",
                    'a',
                    "acceptance probability factor",
-                   false,
-                   10.,
-                   false,
-                   true /* hidden */);
+                   cmdline::dontsave | cmdline::hidden,
+                   10.);
     cl.add<double>("base-length",
                    'l',
                    "scintillator emission base length P(l)=1-e^(-1)",
-                   false,
+                   cmdline::optional,
                    0.1);
     cl.add<tausworthe::seed_type>(
-        "seed", 's', "random number generator seed", false, 0, false);
+        "seed", 's', "random number generator seed", cmdline::dontsave);
     cl.add<cmdline::string>(
         "output",
         'o',
         "output binary triangular/full sparse system matrix",
-        false,
-        cmdline::string(),
-        false);
+        cmdline::dontsave);
     cl.add("full", 'f', "output full non-triangular sparse system matrix");
 
     // visual debugging params
-    cl.add<cmdline::string>(
-        "png", 0, "output lor to png", false, cmdline::string(), false);
-    cl.add<int>("from", 0, "lor start detector to output", false, -1, false);
-    cl.add<int>("to", 0, "lor end detector to output", false, -1, false);
-    cl.add<int>("pos", 0, "position to output", false, -1, false);
+    cl.add<cmdline::string>("png", 0, "output lor to png", cmdline::dontsave);
+    cl.add<int>(
+        "from", 0, "lor start detector to output", cmdline::dontsave, -1);
+    cl.add<int>("to", 0, "lor end detector to output", cmdline::dontsave, -1);
+    cl.add<int>("pos", 0, "position to output", cmdline::dontsave, -1);
 
     // printing & stats params
     cl.add("print", 0, "print triangular sparse system matrix");

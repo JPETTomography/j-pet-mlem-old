@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     cl.footer("phantom_description");
 
     cl.add<cmdline::string>(
-        "config", 'c', "load config file", false, cmdline::string(), false);
+        "config", 'c', "load config file", cmdline::dontsave);
 #if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 0, false);
 #endif
@@ -52,13 +52,11 @@ int main(int argc, char* argv[]) {
     cl.add<double>(
         "acceptance", 'a', "acceptance probability factor", false, 10.);
     cl.add<std::mt19937::result_type>(
-        "seed", 's', "random number generator seed", false, 0, false);
+        "seed", 's', "random number generator seed", cmdline::dontsave);
     cl.add<cmdline::string>("output",
                             'o',
                             "output lor hits for supplied phantom",
-                            false,
-                            cmdline::string(),
-                            false);
+                            cmdline::dontsave);
     cl.add("detected", '\0', "collects detected emissions");
 
     cl.try_parse(argc, argv);
