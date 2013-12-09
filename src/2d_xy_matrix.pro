@@ -3,7 +3,8 @@ CONFIG  += c++11
 include(common.pri)
 
 SOURCES += 2d_xy/matrix_cmd.cpp
-HEADERS += 2d_xy/*.h
+HEADERS += 2d_xy/*.h \
+    2d_xy/TriangleDetector.h
 
 cuda {
   NVCC_FLAGS         += -arch=compute_20 -code=sm_20,sm_30
