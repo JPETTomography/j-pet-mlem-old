@@ -360,7 +360,7 @@ int main(int argc, char* argv[]) {
     if (ex.help()) {
       std::cerr << ex.usage();
     }
-    for (auto &msg : ex.errors()) {
+    for (auto& msg : ex.errors()) {
       auto name = ex.name();
       if (name) {
         std::cerr << "error at " << name << ": " << msg << std::endl;

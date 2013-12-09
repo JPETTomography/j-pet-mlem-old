@@ -201,7 +201,13 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
 
         auto pixel = lookup_table_pixel[i];
 #ifdef PRINT
-        printf("LOR(%d,%d) %f\n", lor.first, lor.second, p.hit[i]);
+        if (id == 1) {
+          printf("ID: %d LOR(%d,%d) %f\n",
+                 id,
+                 lor.first,
+                 lor.second,
+                 gpu_vector_output[id].hit[i]);
+        }
 #endif
         OutputMatrix::Element element;
         element.lor = lor;
