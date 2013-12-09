@@ -145,10 +145,14 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   }
 
   MatrixPixelMajor& operator<<(SparseMatrix& sparse) {
+    if (this->n_emissions()) {
+      throw("cannot load multiple sparse matrices into pixel-major matrix");
+    }
 
-    sparse.sort_by_pixel();
+    sparse.sort_by_pixel_n_lor();
     this->add_emissions(sparse.n_emissions());
 
+    S lor_count = 0;
     S i_current_pixel = n_pixels_;
 
     for (auto& e : sparse) {
@@ -160,24 +164,28 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
         if (pixel.x < 0 || pixel.y < 0 || pixel.y < pixel.x)
           continue;
       }
-      auto lor = e.lor;
-      auto hits = e.hits;
 
       // if we are at diagonal in full matrix, we should have there
       // half of entries
+      auto hits = e.hits;
       if (!triangular && pixel.x == pixel.y)
         hits /= 2;
 
-      S i_pixel = pixel.index();
-
+      auto i_pixel = pixel.index();
       if (i_current_pixel != i_pixel) {
-        compact_pixel_index(i_current_pixel);
+        if (lor_count) {
+          pixel_lor_count[i_current_pixel] += lor_count;
+        }
+        lor_count = 0;
         i_current_pixel = i_pixel;
       }
-      hit_lor(lor, e.position, i_pixel, hits);
       this->hit(i_pixel, hits);
+      pixel_lor_hits[i_pixel]
+          .push_back(SparseElement(e.lor, e.position, pixel, hits));
     }
-    compact_pixel_index(i_current_pixel);
+    if (lor_count) {
+      pixel_lor_count[i_current_pixel] += lor_count;
+    }
     return *this;
   }
 

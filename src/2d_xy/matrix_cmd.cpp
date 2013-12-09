@@ -282,40 +282,44 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
   }
 
   typedef MatrixPixelMajor<Pixel<>, LOR<>> ComputeMatrix;
-  ComputeMatrix matrix(n_pixels, n_detectors, n_tof_positions);
+  ComputeMatrix::SparseMatrix sparse_matrix(
+      n_pixels, n_detectors, n_tof_positions);
 
-  for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
-    ibstream in(*fn, std::ios::binary);
+  for (auto& fn : cl.rest()) {
+    ibstream in(fn, std::ios::binary);
     if (!in.is_open())
-      throw("cannot open input file: " + *fn);
+      throw("cannot open input file: " + fn);
     try {
-      ComputeMatrix::SparseMatrix sparse_matrix(in);
+      ComputeMatrix::SparseMatrix in_sparse_matrix(in);
       if (cl.exist("verbose"))
-        std::cerr << "read in " << *fn << " " << sparse_matrix.n_tof_positions()
+        std::cerr << "read in " << fn << " " << in_sparse_matrix.n_tof_positions()
                   << std::endl;
-      if (sparse_matrix.n_tof_positions() != n_tof_positions) {
-        std::ostringstream msg;
-        msg << "input has different TOF positions "
-            << sparse_matrix.n_tof_positions() << " than specified "
-            << n_tof_positions;
-        throw(msg.str());
+      if (sparse_matrix.empty()) {
+        sparse_matrix = in_sparse_matrix;
+      } else {
+        sparse_matrix << in_sparse_matrix;
       }
-
-      sparse_matrix.sort_by_pixel();
-      if (cl.exist("verbose"))
-        std::cerr << "sorted" << std::endl;
-
-      matrix << sparse_matrix;
-      if (cl.exist("verbose"))
-        std::cerr << "converted to pixel major" << std::endl;
     }
 
     catch (std::string& ex) {
-      throw(ex + ": " + *fn);
+      throw(ex + ": " + fn);
     }
     catch (const char* ex) {
-      throw(std::string(ex) + ": " + *fn);
+      throw(std::string(ex) + ": " + fn);
     }
+  }
+
+  // input sparse matrix has priority
+  if (!sparse_matrix.empty()) {
+    n_pixels = sparse_matrix.n_pixels_in_row();
+    n_detectors = sparse_matrix.n_detectors();
+    n_tof_positions = sparse_matrix.n_tof_positions();
+  }
+
+  ComputeMatrix matrix(n_pixels, n_detectors, n_tof_positions);
+  if (!sparse_matrix.empty()) {
+    matrix << sparse_matrix;
+    sparse_matrix.resize(0);
   }
 
   if (cl.exist("verbose")) {
@@ -347,7 +351,7 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
                                 1.0e9 << std::endl;
 #endif
 
-  auto sparse_matrix = matrix.to_sparse();
+  sparse_matrix = matrix.to_sparse();
 
   // generate output
   if (cl.exist("output")) {

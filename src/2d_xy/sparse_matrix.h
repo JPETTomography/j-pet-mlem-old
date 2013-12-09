@@ -189,6 +189,38 @@ class SparseMatrix
     }
   }
 
+  SparseMatrix& operator<<(const SparseMatrix& other) {
+
+    if (n_pixels_in_row_ != other.n_pixels_in_row_ ||
+        n_detectors_ != other.n_detectors_ ||
+        triangular_ != other.triangular_ ||
+        n_tof_positions_ != other.n_tof_positions_) {
+      throw("cannot join two incompatible sparse matrices");
+    }
+
+    this->reserve(this->size() + other.size());
+    this->insert(this->end(), other.begin(), other.end());
+
+    auto& first = this->front();
+    sort_by_pixel_n_lor();
+    for (auto& e : *this) {
+      if (first.lor != e.lor || first.position != e.position ||
+          first.pixel != e.pixel) {
+        first = e;
+      } else {
+        first.hits += e.hits;
+        e.hits = 0;
+      }
+    }
+    sort_by_pixel_n_lor_leaving_empty();
+    auto first_empty = std::lower_bound(Super::begin(),
+                                        Super::end(),
+                                        Element(LOR(), 0, Pixel(), 0),
+                                        SortByPixelNPositionNLORLeavingEmpty());
+    this->resize(first_empty - this->begin());
+    return *this;
+  }
+
   friend obstream& operator<<(obstream& out, SparseMatrix& sm) {
     auto tof = (sm.n_tof_positions_ > 1);
     if (sm.triangular_) {
@@ -309,6 +341,13 @@ class SparseMatrix
   void sort_by_lor_n_pixel() {
     std::sort(Super::begin(), Super::end(), SortByLORNPositionNPixel());
   }
+  void sort_by_pixel_n_lor() {
+    std::sort(Super::begin(), Super::end(), SortByPixelNPositionNLOR());
+  }
+  void sort_by_pixel_n_lor_leaving_empty() {
+    std::sort(
+        Super::begin(), Super::end(), SortByPixelNPositionNLORLeavingEmpty());
+  }
 
   SparseMatrix to_full() {
     if (!triangular_) {
@@ -374,19 +413,53 @@ class SparseMatrix
     }
   };
 
+#define SparseMatrixCompareField(a, b, field) \
+  if (a.field < b.field) {                    \
+    return true;                              \
+  }                                           \
+  if (a.field > b.field) {                    \
+    return false;                             \
+  }
+
+  struct SortByPixelNPositionNLOR {
+    bool operator()(const Element& a, const Element& b) const {
+      SparseMatrixCompareField(a, b, pixel.y);
+      SparseMatrixCompareField(a, b, pixel.x);
+      SparseMatrixCompareField(a, b, position);
+      SparseMatrixCompareField(a, b, lor);
+      return false;
+    }
+  };
+
+  struct SortByPixelNPositionNLORLeavingEmpty {
+    bool operator()(const Element& a, const Element& b) const {
+      if (a.hits && !b.hits)
+        return true;
+      if (!a.hits && b.hits)
+        return false;
+      SparseMatrixCompareField(a, b, pixel.y);
+      SparseMatrixCompareField(a, b, pixel.x);
+      SparseMatrixCompareField(a, b, position);
+      SparseMatrixCompareField(a, b, lor);
+      return false;
+    }
+  };
+
   struct SortByLORNPosition {
     bool operator()(const Element& a, const Element& b) const {
-      return a.lor < b.lor || (a.lor == b.lor && a.position < b.position);
+      SparseMatrixCompareField(a, b, lor);
+      SparseMatrixCompareField(a, b, position);
+      return false;
     }
   };
 
   struct SortByLORNPositionNPixel {
     bool operator()(const Element& a, const Element& b) const {
-      return a.lor < b.lor ||
-             (a.lor == b.lor &&
-              (a.position < b.position ||
-               (a.pixel.y < b.pixel.y ||
-                (a.pixel.y == b.pixel.y && a.pixel.x < b.pixel.x))));
+      SparseMatrixCompareField(a, b, lor);
+      SparseMatrixCompareField(a, b, position);
+      SparseMatrixCompareField(a, b, pixel.y);
+      SparseMatrixCompareField(a, b, pixel.x);
+      return false;
     }
   };
 
