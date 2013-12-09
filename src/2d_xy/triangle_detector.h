@@ -3,7 +3,7 @@
 #include "geometry/polygon.h"
 
 template <typename FType = double>
-class TriangleDetector : public Polygon<4, FType> {
+class TriangleDetector : public Polygon<3, FType> {
  public:
   typedef FType F;
   typedef F Angle;
