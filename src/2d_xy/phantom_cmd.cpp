@@ -30,8 +30,13 @@ int main(int argc, char* argv[]) {
     cmdline::parser cl;
     cl.footer("phantom_description");
 
-    cl.add<cmdline::string>(
-        "config", 'c', "load config file", cmdline::dontsave);
+    cl.add<cmdline::string>("config",
+                            'c',
+                            "load config file",
+                            cmdline::dontsave,
+                            cmdline::string(),
+                            cmdline::default_reader<cmdline::string>(),
+                            cmdline::load);
 #if _OPENMP
     cl.add<int>(
         "n-threads", 't', "number of OpenMP threads", cmdline::dontsave);
