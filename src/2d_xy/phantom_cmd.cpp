@@ -72,6 +72,9 @@ int main(int argc, char* argv[]) {
                             cmdline::dontsave);
     cl.add("detected", 0, "collects detected emissions");
 
+    // printing & stats params
+    cl.add("verbose", 'v', "prints the iterations information on std::out");
+
     cl.try_parse(argc, argv);
 
 #if _OPENMP
