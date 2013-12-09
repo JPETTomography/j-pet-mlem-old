@@ -12,6 +12,7 @@
 
 #include "cmdline.h"
 #include "util/cmdline_types.h"
+#include "util/cmdline_hooks.h"
 
 #include "geometry/point.h"
 #include "phantom.h"
@@ -37,7 +38,13 @@ int main(int argc, char* argv[]) {
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
     cl.add<int>("n-detectors", 'd', "number of ring detectors", false, 64);
-    cl.add<int>("n-emissions", 'e', "emissions", false, 0);
+    cl.add<int>("n-emissions",
+                'e',
+                "emissions",
+                cmdline::optional,
+                0,
+                cmdline::default_reader<int>(),
+                cmdline::not_from_file);
     cl.add<double>("radius", 'r', "inner detector ring radius", false);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
     cl.add<double>("tof-step", 'T', "TOF quantisation step", false);
@@ -57,7 +64,7 @@ int main(int argc, char* argv[]) {
                             'o',
                             "output lor hits for supplied phantom",
                             cmdline::dontsave);
-    cl.add("detected", '\0', "collects detected emissions");
+    cl.add("detected", 0, "collects detected emissions");
 
     cl.try_parse(argc, argv);
 
