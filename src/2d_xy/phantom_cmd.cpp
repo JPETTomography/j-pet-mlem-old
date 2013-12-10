@@ -17,11 +17,11 @@
 #include "geometry/point.h"
 #include "phantom.h"
 #include "detector_ring.h"
-#include "model.h"
-#include "util/png_writer.h"
-
 #include "circle_detector.h"
 #include "triangle_detector.h"
+#include "polygonal_detector.h"
+#include "model.h"
+#include "util/png_writer.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -32,6 +32,8 @@ typedef DetectorRing<double, int, SquareDetector<double>> SquareDetectorRing;
 typedef DetectorRing<double, int, CircleDetector<double>> CircleDetectorRing;
 typedef DetectorRing<double, int, TriangleDetector<double>>
     TriangleDetectorRing;
+typedef DetectorRing<double, int, PolygonalDetector<6, double>>
+    HexagonalDetectorRing;
 
 template <typename DetectorRing, typename Model>
 void run(cmdline::parser& cl, Model& model);
@@ -70,10 +72,10 @@ int main(int argc, char* argv[]) {
     cl.add<std::string>(
         "shape",
         'S',
-        "detector (scintillator) shape (square, circle,triangle)",
+        "detector (scintillator) shape (square, circle, triangle, hexagon)",
         false,
         "square",
-        cmdline::oneof<std::string>("square", "circle", "triangle"));
+        cmdline::oneof<std::string>("square", "circle", "triangle", "hexagon"));
     cl.add<double>("w-detector", 'w', "detector width", false);
     cl.add<double>("h-detector", 'h', "detector height", false);
     cl.add<std::string>(
@@ -125,8 +127,8 @@ int main(int argc, char* argv[]) {
       model = "scintillator";
     }
 
-    auto& shape = cl.get<std::string>("shape");
     // run simmulation on given detector model & shape
+    auto& shape = cl.get<std::string>("shape");
     if (model == "always") {
       AlwaysAccept<> model;
       if (shape == "square") {
@@ -135,8 +137,9 @@ int main(int argc, char* argv[]) {
         run<CircleDetectorRing>(cl, model);
       } else if (shape == "triangle") {
         run<TriangleDetectorRing>(cl, model);
+      } else if (shape == "hexagon") {
+        run<HexagonalDetectorRing>(cl, model);
       }
-
     } else if (model == "scintillator") {
       ScintilatorAccept<> model(length_scale);
       if (shape == "square") {
@@ -145,6 +148,8 @@ int main(int argc, char* argv[]) {
         run<CircleDetectorRing>(cl, model);
       } else if (shape == "triangle") {
         run<TriangleDetectorRing>(cl, model);
+      } else if (shape == "hexagon") {
+        run<HexagonalDetectorRing>(cl, model);
       }
     }
 

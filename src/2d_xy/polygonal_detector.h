@@ -9,13 +9,19 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
   typedef F Angle;
   typedef typename Polygon<NVertices, F>::Point Point;
 
-  PolygonalDetector(F w, F h, F size) {
-    for (auto i = 0; i < NVertices; ++i) {
-      angle = (2. * M_PI) / F(NVertices) * (i + F(0.5));
+  PolygonalDetector(F w, F h __attribute__((unused))) {
+    auto radius = w / 2.;
+    auto step = 2. * M_PI / F(NVertices);
 
+    for (std::size_t i = 0; i < NVertices; ++i) {
+      auto angle = step * (i + F(0.5));
       this->push_back(
-          Point(w + size * std::cos(angle), h + size * std::sin(angle)));
+          Point(radius * std::cos(angle), radius * std::sin(angle)));
     }
+  }
+
+  static F default_height_for_width(const F w __attribute__((unused))) {
+    return F();
   }
 
  private:
