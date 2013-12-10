@@ -12,12 +12,12 @@ class HexagonalTriangle : public Polygon<6, FType> {
 
   HexagonalTriangle(F w, F h, F size) {
 
-    for(int i = 0; i < 6; ++i){
+    for (int i = 0; i < 6; ++i) {
 
-      angle = (2*M_PI)/F(6.0) * (i + F(0.5));
+      angle = (2 * M_PI) / F(6.0) * (i + F(0.5));
 
-      this->push_back(Point(w + size * std::cos(angle)  , h + size * std::sin(angle) ));
-
+      this->push_back(
+          Point(w + size * std::cos(angle), h + size * std::sin(angle)));
     }
   }
 
