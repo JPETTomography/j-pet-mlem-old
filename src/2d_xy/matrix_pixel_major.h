@@ -202,16 +202,6 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     return it->hits;
   }
 
-  void get_pixel_data(long int emissions, int pixel_id) {
-
-    for (auto& e : pixel_lor_hits[pixel_id]) {
-      printf("LOR(%d,%d): %f\n ",
-             e.lor.first,
-             e.lor.second,
-             e.hits / static_cast<double>(emissions));
-    }
-  }
-
   S size() const { return size_; }
   S n_lors_at_pixel_index(S i_pixel) const { return pixel_lor_count[i_pixel]; }
   S n_pixels() const { return n_pixels_; }
