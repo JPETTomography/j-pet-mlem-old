@@ -38,25 +38,30 @@ class DetectorRing : public std::vector<DetectorType> {
         radius_diff(c_outer.radius() - c_inner.radius()) {
     if (radius <= 0.)
       throw("invalid radius");
-    if (w_detector <= 0. || h_detector < 0.)
+    if (w_detector > 0. && h_detector == 0.)
+      h_detector = Detector::default_height_for_width(w_detector);
+    // NOTE: detector may return 0 for default height, which means we need to
+    // have height given explicitely
+    if (w_detector <= 0. || h_detector <= 0.)
       throw("invalid detector size");
     if (n_detectors % 4)
       throw("number of detectors must be multiple of 4");
 
     fov_radius_ = radius / M_SQRT2;
 
-    Detector detector_base(h_detector, w_detector);
+    Detector detector_base(w_detector, h_detector);
 
     // move detector to the right edge of inner ring
     // along zero angle polar coordinate
-    detector_base += Point(radius + h_detector / 2, 0.);
+    detector_base += Point(0., radius + h_detector / 2);
 
     // fix up outer circle
     c_outer = Circle(detector_base.max_distance());
 
     // produce detector ring rotating base detector n times
     for (auto n = 0; n < n_detectors; ++n) {
-      this->push_back(detector_base.rotated(2. * M_PI * n / n_detectors));
+      this->push_back(
+          detector_base.rotated(2. * M_PI * n / n_detectors - M_PI_2));
     }
   }
 

@@ -10,15 +10,13 @@ class SquareDetector : public Polygon<4, FType> {
   typedef typename Polygon<4, F>::Point Point;
 
   SquareDetector(F w, F h) {
-    // if height is not specified, make it same as width
-    if (h == F()) {
-      h = w;
-    }
     this->push_back(Point(w / 2., h / 2.));
     this->push_back(Point(w / 2., -h / 2.));
     this->push_back(Point(-w / 2., -h / 2.));
     this->push_back(Point(-w / 2., h / 2.));
   }
+
+  static F default_height_for_width(const F w) { return w; }
 
   SquareDetector& rotate(Angle phi) {
     SquareDetector r;

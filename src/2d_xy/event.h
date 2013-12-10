@@ -40,11 +40,11 @@ template <typename FType = double> struct Event {
   F operator()(const Point& p) { return a * p.x + b * p.y - c; }
 
   Event operator+(const Point& p) const {
-    return Event(x + p.x, y + p.y, phi, a, c);
+    return Event(x + p.x, y + p.y, phi, a, b);
   }
 
   Event operator-(const Point& p) const {
-    return Event(x - p.x, y - p.y, phi, a, c);
+    return Event(x - p.x, y - p.y, phi, a, b);
   }
 
   F x, y;
