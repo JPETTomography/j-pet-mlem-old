@@ -38,7 +38,7 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
     return *this;
   }
 
-  F max_distance() { center.length() + this->radius(); }
+  F max_distance() { return center.length() + this->radius(); }
 
   Point center;
 
