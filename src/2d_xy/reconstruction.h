@@ -51,7 +51,6 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     for (S p = 0; p < total_n_pixels_; ++p) {
       if (scale_[p] > 0) {
         scale_[p] = n_emissions / scale_[p];
-        std::cerr << "scale_[" << p << "]=" << scale_[p] << "\n";
         rho_detected_[p] = static_cast<F>(1);
       }
     }
@@ -79,11 +78,6 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     } else {
       std::sort(means_.begin(), means_.end(), SortByLOR());
     }
-
-    std::cout << " TOF pos.: " << matrix_.n_tof_positions() << std::endl;
-    std::cout << "   Pixels: " << n_pixels_in_row_ << std::endl;
-    std::cout << "Emissions: " << n_emissions_ << std::endl;
-    std::cout << "Detectors: " << n_detectors_ << std::endl;
   }
 
   void emt(S n_iterations) {
