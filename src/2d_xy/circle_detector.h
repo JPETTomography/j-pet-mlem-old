@@ -38,6 +38,8 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
     return *this;
   }
 
+  F max_distance() { center.length() + this->radius(); }
+
   Point center;
 
   Intersections intersections(typename Super::Event e) {

@@ -28,6 +28,14 @@ class Polygon : public Array<NumPoints, Point<FType>> {
     return false;
   }
 
+  F max_distance() {
+    F distance = 0;
+    for (auto& p : *this) {
+      distance = std::max(distance, p.length());
+    }
+    return distance;
+  }
+
   Intersections intersections(Event& e) {
     auto p1 = this->back();
     auto v1 = e(p1);

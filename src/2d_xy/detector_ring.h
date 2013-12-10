@@ -51,6 +51,9 @@ class DetectorRing : public std::vector<DetectorType> {
     // along zero angle polar coordinate
     detector_base += Point(radius + h_detector / 2, 0.);
 
+    // fix up outer circle
+    c_outer = Circle(detector_base.max_distance());
+
     // produce detector ring rotating base detector n times
     for (auto n = 0; n < n_detectors; ++n) {
       this->push_back(detector_base.rotated(2. * M_PI * n / n_detectors));
@@ -58,6 +61,7 @@ class DetectorRing : public std::vector<DetectorType> {
   }
 
   F radius() const { return c_inner.radius(); }
+  F outer_radius() const { return c_outer.radius(); }
   S lors() const { return n_lors; }
   S detectors() const { return n_detectors; }
   F fov_radius() const { return fov_radius_; }

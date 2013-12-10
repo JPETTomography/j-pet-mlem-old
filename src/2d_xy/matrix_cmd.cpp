@@ -359,6 +359,8 @@ void run(cmdline::parser& cl, Model& model) {
     std::cerr << " threads       = " << omp_get_max_threads() << std::endl;
 #endif
     std::cerr << " pixels in row = " << n_pixels << std::endl;
+    std::cerr << " outer radius  = " << detector_ring.outer_radius()
+              << std::endl;
     std::cerr << " max bias      = " << max_bias << std::endl;
     std::cerr << " TOF step      = " << tof_step << std::endl;
     std::cerr << " TOF positions = " << n_tof_positions << std::endl;
