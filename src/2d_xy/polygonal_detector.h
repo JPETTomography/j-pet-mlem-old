@@ -20,9 +20,7 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
     }
   }
 
-  static F default_height_for_width(const F w __attribute__((unused))) {
-    return F();
-  }
+  static F default_height_for_width(const F w) { return w; }
 
  private:
   PolygonalDetector() {}
