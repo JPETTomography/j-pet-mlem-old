@@ -137,6 +137,7 @@ int main(int argc, char* argv[]) {
   catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
   }
+  return 1;
 }
 
 template <typename Model> void run(cmdline::parser& cl, Model& model) {

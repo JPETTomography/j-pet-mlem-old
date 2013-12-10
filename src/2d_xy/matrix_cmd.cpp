@@ -179,6 +179,8 @@ int main(int argc, char* argv[]) {
         }
       }
     }
+
+    return 0;
   }
   catch (cmdline::exception& ex) {
     if (ex.help()) {
@@ -199,7 +201,7 @@ int main(int argc, char* argv[]) {
   catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
   }
-  return 0;
+  return 1;
 }
 
 template <typename DetectorRing, typename Model>

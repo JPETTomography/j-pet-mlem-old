@@ -163,4 +163,5 @@ int main(int argc, char* argv[]) {
   catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
   }
+  return 1;
 }
