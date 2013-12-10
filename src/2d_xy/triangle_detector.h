@@ -9,10 +9,10 @@ class TriangleDetector : public Polygon<3, FType> {
   typedef F Angle;
   typedef typename Polygon<3, F>::Point Point;
 
-  TriangleDetector(F w, F h) {
-    this->push_back(Point(w / 2., h / 2.));
-    this->push_back(Point(-w / 2., -h / 2.));
-    this->push_back(Point(w / 2., h));
+  TriangleDetector(F h __attribute__((unused)), F w) {
+    this->push_back(Point(0., w / 2.));
+    this->push_back(Point(0., -w / 2.));
+    this->push_back(Point(w * (std::sqrt(3) / 2.0), 0.));
   }
 
   TriangleDetector& rotate(Angle phi) {

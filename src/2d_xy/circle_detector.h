@@ -17,10 +17,8 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
   CircleDetector(F radius) : Circle<F>(radius), center() {}
 
   // this is for compatibility with square detector
-  CircleDetector(F diameter, F diameter2) : Super(diameter / 2.), center() {
-    if (diameter != diameter2)
-      throw("circle detector width and height must be equal");
-  }
+  CircleDetector(F diameter, F height __attribute__((unused)))
+      : Super(diameter / 2.), center() {}
 
   CircleDetector(F radius, Point center) : Super(radius), center(center) {}
 

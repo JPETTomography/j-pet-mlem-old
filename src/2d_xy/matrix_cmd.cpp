@@ -169,6 +169,8 @@ int main(int argc, char* argv[]) {
           run<SquareDetectorRing>(cl, model);
         } else if (shape == "circle") {
           run<CircleDetectorRing>(cl, model);
+        } else if (shape == "triangle") {
+          run<TriangleDetectorRing>(cl, model);
         }
       } else if (model == "scintillator") {
         ScintilatorAccept<> model(length_scale);
@@ -176,6 +178,8 @@ int main(int argc, char* argv[]) {
           run<SquareDetectorRing>(cl, model);
         } else if (shape == "circle") {
           run<CircleDetectorRing>(cl, model);
+        } else if (shape == "triangle") {
+          run<TriangleDetectorRing>(cl, model);
         }
       }
     }

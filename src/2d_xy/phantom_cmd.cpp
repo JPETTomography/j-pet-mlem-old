@@ -20,11 +20,21 @@
 #include "model.h"
 #include "util/png_writer.h"
 
+#include "circle_detector.h"
+#include "triangle_detector.h"
+
 #if _OPENMP
 #include <omp.h>
 #endif
 
-template <typename Model> void run(cmdline::parser& cl, Model& model);
+// all available detector shapes
+typedef DetectorRing<double, int, SquareDetector<double>> SquareDetectorRing;
+typedef DetectorRing<double, int, CircleDetector<double>> CircleDetectorRing;
+typedef DetectorRing<double, int, TriangleDetector<double>>
+    TriangleDetectorRing;
+
+template <typename DetectorRing, typename Model>
+void run(cmdline::parser& cl, Model& model);
 
 int main(int argc, char* argv[]) {
 
@@ -56,6 +66,13 @@ int main(int argc, char* argv[]) {
     cl.add<double>("radius", 'r', "inner detector ring radius", false);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
     cl.add<double>("tof-step", 'T', "TOF quantisation step", false);
+    cl.add<std::string>(
+        "shape",
+        'S',
+        "detector (scintillator) shape (square, circle,triangle)",
+        false,
+        "square",
+        cmdline::oneof<std::string>("square", "circle", "triangle"));
     cl.add<double>("w-detector", 'w', "detector width", false);
     cl.add<double>("h-detector", 'h', "detector height", false);
     cl.add<std::string>(
@@ -107,13 +124,27 @@ int main(int argc, char* argv[]) {
       model = "scintillator";
     }
 
-    // run simmulation on given detector shape
+    auto& shape = cl.get<std::string>("shape");
+    // run simmulation on given detector model & shape
     if (model == "always") {
       AlwaysAccept<> model;
-      run(cl, model);
+      if (shape == "square") {
+        run<SquareDetectorRing>(cl, model);
+      } else if (shape == "circle") {
+        run<CircleDetectorRing>(cl, model);
+      } else if (shape == "triangle") {
+        run<TriangleDetectorRing>(cl, model);
+      }
+
     } else if (model == "scintillator") {
       ScintilatorAccept<> model(length_scale);
-      run(cl, model);
+      if (shape == "square") {
+        run<SquareDetectorRing>(cl, model);
+      } else if (shape == "circle") {
+        run<CircleDetectorRing>(cl, model);
+      } else if (shape == "triangle") {
+        run<TriangleDetectorRing>(cl, model);
+      }
     }
 
     return 0;
@@ -140,7 +171,8 @@ int main(int argc, char* argv[]) {
   return 1;
 }
 
-template <typename Model> void run(cmdline::parser& cl, Model& model) {
+template <typename DetectorRing, typename Model>
+void run(cmdline::parser& cl, Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& n_detectors = cl.get<int>("n-detectors");
@@ -179,7 +211,7 @@ template <typename Model> void run(cmdline::parser& cl, Model& model) {
     gen.seed(cl.get<std::mt19937::result_type>("seed"));
   }
 
-  DetectorRing<> dr(n_detectors, radius, w_detector, h_detector);
+  DetectorRing dr(n_detectors, radius, w_detector, h_detector);
 
   int n_tof_positions = 1;
   double max_bias = 0;
@@ -258,7 +290,7 @@ template <typename Model> void run(cmdline::parser& cl, Model& model) {
       if (x * x + y * y < fov_r2) {
         if (phantom.test_emit(x, y, one_dis(gen))) {
           auto pixel = dr.pixel(x, y, s_pixel);
-          DetectorRing<>::LOR lor;
+          typename DetectorRing::LOR lor;
           pixels[pixel.y][pixel.x]++;
           double angle = phi_dis(gen);
           double position;
@@ -295,7 +327,7 @@ template <typename Model> void run(cmdline::parser& cl, Model& model) {
 
       pixels[pixel.y][pixel.x]++;
       double angle = phi_dis(gen);
-      DetectorRing<>::LOR lor;
+      typename DetectorRing::LOR lor;
       double position;
       auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor, position);
       if (hits == 2) {

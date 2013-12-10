@@ -38,7 +38,7 @@ class DetectorRing : public std::vector<DetectorType> {
         radius_diff(c_outer.radius() - c_inner.radius()) {
     if (radius <= 0.)
       throw("invalid radius");
-    if (w_detector <= 0. || h_detector <= 0.)
+    if (w_detector <= 0. || h_detector < 0.)
       throw("invalid detector size");
     if (n_detectors % 4)
       throw("number of detectors must be multiple of 4");
