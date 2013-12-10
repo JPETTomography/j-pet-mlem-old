@@ -303,7 +303,15 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
       }
       if (sparse_matrix.empty()) {
         sparse_matrix = in_sparse_matrix;
+        // if we don't have stuff set, set it using matrix
+        if (!cl.exist("n-pixels"))
+          n_pixels = sparse_matrix.n_pixels_in_row();
+        if (!cl.exist("n-detectors"))
+          n_detectors = sparse_matrix.n_detectors();
+        if (!cl.exist("tof-step"))
+          n_tof_positions = sparse_matrix.n_tof_positions();
       } else {
+        // join with previous matrix
         sparse_matrix << in_sparse_matrix;
       }
     }
@@ -314,13 +322,6 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
     catch (const char* ex) {
       throw(std::string(ex) + ": " + fn);
     }
-  }
-
-  // input sparse matrix has priority
-  if (!sparse_matrix.empty()) {
-    n_pixels = sparse_matrix.n_pixels_in_row();
-    n_detectors = sparse_matrix.n_detectors();
-    n_tof_positions = sparse_matrix.n_tof_positions();
   }
 
   ComputeMatrix matrix(n_pixels, n_detectors, n_tof_positions);
