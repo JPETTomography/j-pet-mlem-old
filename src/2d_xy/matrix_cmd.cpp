@@ -190,6 +190,7 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
   auto& tof_step = cl.get<double>("tof-step");
   auto& model = cl.get<std::string>("model");
   auto& length_scale = cl.get<double>("base-length");
+  auto verbose = cl.exist("verbose");
 
   // convert obsolete acceptance option to length scale
   if (cl.exist("acceptance") && !cl.exist("base-length")) {
@@ -232,6 +233,10 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
     omp_set_num_threads(cl.get<int>("n-threads"));
   }
 #endif
+
+  if (verbose) {
+    std::cerr << "assumed:" << std::endl;
+  }
 
   // automatic pixel size
   if (!cl.exist("radius")) {
@@ -291,13 +296,13 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
       throw("cannot open input file: " + fn);
     try {
       ComputeMatrix::SparseMatrix in_sparse_matrix(in);
-      if (cl.exist("verbose")) {
+      if (verbose) {
         std::cerr << "read sparse matrix: " << fn << std::endl;
-        std::cerr << "pixels in row = " << in_sparse_matrix.n_pixels_in_row()
+        std::cerr << " pixels in row = " << in_sparse_matrix.n_pixels_in_row()
                   << std::endl;
-        std::cerr << "TOF positions = " << in_sparse_matrix.n_tof_positions()
+        std::cerr << " TOF positions = " << in_sparse_matrix.n_tof_positions()
                   << std::endl;
-        std::cerr << "emissions     = " << in_sparse_matrix.n_emissions()
+        std::cerr << " emissions     = " << in_sparse_matrix.n_emissions()
                   << std::endl;
         std::cerr << std::endl;
       }
@@ -308,8 +313,12 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
           n_pixels = sparse_matrix.n_pixels_in_row();
         if (!cl.exist("n-detectors"))
           n_detectors = sparse_matrix.n_detectors();
-        if (!cl.exist("tof-step"))
+        if (!cl.exist("tof-step")) {
           n_tof_positions = sparse_matrix.n_tof_positions();
+          if (n_emissions > 0) {
+            throw("TOF step must be specified for input TOF matrix: " + fn);
+          }
+        }
       } else {
         // join with previous matrix
         sparse_matrix << in_sparse_matrix;
@@ -330,15 +339,16 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
     sparse_matrix.resize(0);
   }
 
-  if (cl.exist("verbose")) {
+  if (verbose) {
+    std::cerr << "Monte-Carlo:" << std::endl;
 #if _OPENMP
-    std::cerr << "threads       = " << omp_get_max_threads() << std::endl;
+    std::cerr << " threads       = " << omp_get_max_threads() << std::endl;
 #endif
-    std::cerr << "pixels in row = " << n_pixels << std::endl;
-    std::cerr << "max bias      = " << max_bias << std::endl;
-    std::cerr << "TOF step      = " << tof_step << std::endl;
-    std::cerr << "TOF positions = " << n_tof_positions << std::endl;
-    std::cerr << "emissions     = " << n_emissions << std::endl;
+    std::cerr << " pixels in row = " << n_pixels << std::endl;
+    std::cerr << " max bias      = " << max_bias << std::endl;
+    std::cerr << " TOF step      = " << tof_step << std::endl;
+    std::cerr << " TOF positions = " << n_tof_positions << std::endl;
+    std::cerr << " emissions     = " << n_emissions << std::endl;
   }
 
 #ifdef __linux__
@@ -354,10 +364,12 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
     monte_carlo(gen, ScintilatorAccept<>(length_scale), n_emissions);
 
 #ifdef __linux__
-  clock_gettime(CLOCK_REALTIME, &stop);
-  std::cout << "time : " << ((1.0e9 * stop.tv_sec + stop.tv_nsec) -
-                             (1.0e9 * start.tv_sec + start.tv_nsec)) /
-                                1.0e9 << std::endl;
+  if (verbose) {
+    clock_gettime(CLOCK_REALTIME, &stop);
+    std::cerr << "time : " << ((1.0e9 * stop.tv_sec + stop.tv_nsec) -
+                               (1.0e9 * start.tv_sec + start.tv_nsec)) /
+                                  1.0e9 << std::endl;
+  }
 #endif
 
   sparse_matrix = matrix.to_sparse();
@@ -376,8 +388,13 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
     auto fn_wo_path =
         fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
 
+    bool full = cl.exist("full");
+    if (verbose) {
+      std::cerr << "save sparse " << (full ? "full" : "triangular")
+                << " matrix: " << fn << std::endl;
+    }
     obstream out(fn, std::ios::binary | std::ios::trunc);
-    if (cl.exist("full")) {
+    if (full) {
       auto full_matrix = sparse_matrix.to_full();
       out << full_matrix;
     } else {
