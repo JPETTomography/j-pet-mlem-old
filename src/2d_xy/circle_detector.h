@@ -31,10 +31,6 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
     return *this;
   }
 
-  CircleDetector rotated(Angle phi) {
-    return CircleDetector(this->radius(), center.rotated(phi));
-  }
-
   CircleDetector& operator+=(Point t) {
     center += t;
     return *this;

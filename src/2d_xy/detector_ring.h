@@ -60,8 +60,9 @@ class DetectorRing : public std::vector<DetectorType> {
 
     // produce detector ring rotating base detector n times
     for (auto n = 0; n < n_detectors; ++n) {
-      this->push_back(
-          detector_base.rotated(2. * M_PI * n / n_detectors - M_PI_2));
+      auto detector = detector_base;
+      detector.rotate(2. * M_PI * n / n_detectors - M_PI_2);
+      this->push_back(detector);
     }
   }
 

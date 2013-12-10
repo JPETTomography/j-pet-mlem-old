@@ -6,7 +6,6 @@ template <typename FType = double>
 class SquareDetector : public Polygon<4, FType> {
  public:
   typedef FType F;
-  typedef F Angle;
   typedef typename Polygon<4, F>::Point Point;
 
   SquareDetector(F w, F h) {
@@ -17,29 +16,6 @@ class SquareDetector : public Polygon<4, FType> {
   }
 
   static F default_height_for_width(const F w) { return w; }
-
-  SquareDetector& rotate(Angle phi) {
-    SquareDetector r;
-    for (auto& p : *this) {
-      p.rotate(phi);
-    }
-    return *this;
-  }
-
-  SquareDetector rotated(Angle phi) {
-    SquareDetector r;
-    for (auto& p : *this) {
-      r.push_back(p.rotated(phi));
-    }
-    return r;
-  }
-
-  SquareDetector& operator+=(Point t) {
-    for (auto& p : *this) {
-      p += t;
-    }
-    return *this;
-  }
 
  private:
   SquareDetector() {}

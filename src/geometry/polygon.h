@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <cmath>
 
 #include "point.h"
 #include "2d_xy/event.h"
@@ -10,10 +11,25 @@ template <std::size_t NumPoints, typename FType = double>
 class Polygon : public Array<NumPoints, Point<FType>> {
  public:
   typedef FType F;
+  typedef F Angle;
   typedef ::Point<F> Point;
   typedef ::Event<F> Event;
   typedef Array<2, Point> Intersections;
   typedef ::svg_ostream<F> svg_ostream;
+
+  Polygon& rotate(Angle phi) {
+    for (auto& p : *this) {
+      p.rotate(phi);
+    }
+    return *this;
+  }
+
+  Polygon& operator+=(Point t) {
+    for (auto& p : *this) {
+      p += t;
+    }
+    return *this;
+  }
 
   // tests for intersection with generic form line equation
   bool intersects(Event& e) {
