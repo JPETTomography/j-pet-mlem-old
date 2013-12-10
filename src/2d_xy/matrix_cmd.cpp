@@ -50,7 +50,8 @@ typedef DetectorRing<double, int, CircleDetector<double>> CircleDetectorRing;
 typedef DetectorRing<double, int, TriangleDetector<double>>
     TriangleDetectorRing;
 
-template <class DetectorRing> void run(cmdline::parser& cl);
+template <typename DetectorRing, typename Model>
+void run(cmdline::parser& cl, Model& model);
 
 int main(int argc, char* argv[]) {
 
@@ -99,12 +100,14 @@ int main(int argc, char* argv[]) {
         cmdline::oneof<std::string>("square", "circle", "triangle"));
     cl.add<double>("w-detector", 'w', "detector width", false);
     cl.add<double>("h-detector", 'h', "detector height", false);
-    cl.add<std::string>("model",
-                        'm',
-                        "acceptance model (always, scintillator)",
-                        false,
-                        "scintillator",
-                        cmdline::oneof<std::string>("always", "scintillator"));
+    cl.add<std::string>(
+        "model",
+        'm',
+        "acceptance model (always, scintillator)",
+        false,
+        "scintillator",
+        cmdline::oneof<std::string>(
+            "always", "scintillator", /* obsolete */ "scintilator"));
     // NOTE: this options is obsolete (use base-length instead)
     cl.add<double>("acceptance",
                    'a',
@@ -140,6 +143,17 @@ int main(int argc, char* argv[]) {
 
     cl.try_parse(argc, argv);
 
+    // convert obsolete acceptance option to length scale
+    auto& length_scale = cl.get<double>("base-length");
+    if (cl.exist("acceptance") && !cl.exist("base-length")) {
+      length_scale = 1.0 / cl.get<double>("acceptance");
+    }
+    // FIXME: fixup for spelling mistake, present in previous versions
+    auto& model = cl.get<std::string>("model");
+    if (model == "scintilator") {
+      model = "scintillator";
+    }
+
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
       run_gpu(cl);
@@ -148,11 +162,21 @@ int main(int argc, char* argv[]) {
     {
       auto& shape = cl.get<std::string>("shape");
 
-      // run simmulation on given detector shape
-      if (shape == "square") {
-        run<SquareDetectorRing>(cl);
-      } else if (shape == "circle") {
-        run<CircleDetectorRing>(cl);
+      // run simmulation on given detector model & shape
+      if (model == "always") {
+        AlwaysAccept<> model;
+        if (shape == "square") {
+          run<SquareDetectorRing>(cl, model);
+        } else if (shape == "circle") {
+          run<CircleDetectorRing>(cl, model);
+        }
+      } else if (model == "scintillator") {
+        ScintilatorAccept<> model(length_scale);
+        if (shape == "square") {
+          run<SquareDetectorRing>(cl, model);
+        } else if (shape == "circle") {
+          run<CircleDetectorRing>(cl, model);
+        }
       }
     }
   }
@@ -178,7 +202,8 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
-template <class DetectorRing> void run(cmdline::parser& cl) {
+template <typename DetectorRing, typename Model>
+void run(cmdline::parser& cl, Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& n_detectors = cl.get<int>("n-detectors");
@@ -188,18 +213,8 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
   auto& w_detector = cl.get<double>("w-detector");
   auto& h_detector = cl.get<double>("h-detector");
   auto& tof_step = cl.get<double>("tof-step");
-  auto& model = cl.get<std::string>("model");
-  auto& length_scale = cl.get<double>("base-length");
   auto verbose = cl.exist("verbose");
 
-  // convert obsolete acceptance option to length scale
-  if (cl.exist("acceptance") && !cl.exist("base-length")) {
-    length_scale = 1.0 / cl.get<double>("acceptance");
-  }
-  // FIXME: fixup for spelling mistake, present in previous versions
-  if (cl.exist("model") && model == "scintilator") {
-    model = "scintillator";
-  }
   // check options
   if (cl.exist("png") && !cl.exist("from")) {
     throw("need to specify output --png option when --from is specified");
@@ -279,10 +294,7 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
   int n_tof_positions = 1;
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
-    if (model == "always")
-      max_bias = AlwaysAccept<>::max_bias();
-    else if (model == "scintilator")
-      max_bias = ScintilatorAccept<>::max_bias();
+    max_bias = Model::max_bias();
     n_tof_positions = detector_ring.n_positions(tof_step, max_bias);
   }
 
@@ -358,10 +370,7 @@ template <class DetectorRing> void run(cmdline::parser& cl) {
 
   MonteCarlo<DetectorRing, ComputeMatrix> monte_carlo(
       detector_ring, matrix, s_pixel, tof_step);
-  if (model == "always")
-    monte_carlo(gen, AlwaysAccept<>(), n_emissions);
-  if (model == "scintillator")
-    monte_carlo(gen, ScintilatorAccept<>(length_scale), n_emissions);
+  monte_carlo(gen, model, n_emissions);
 
 #ifdef __linux__
   if (verbose) {
