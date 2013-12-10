@@ -65,7 +65,8 @@ int main(int argc, char* argv[]) {
                 cmdline::not_from_file);
     cl.add<double>("radius", 'r', "inner detector ring radius", false);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
-    cl.add<double>("tof-step", 'T', "TOF quantisation step", false);
+    cl.add<double>(
+        "tof-step", 'T', "TOF quantisation step for distance delta", false);
     cl.add<std::string>(
         "shape",
         'S',
