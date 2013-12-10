@@ -47,12 +47,7 @@ template <typename FType = double> struct Point {
   F length() const { return std::sqrt(x * x + y * y); }
 
   F nearest_distance(const Point& p1, const Point& p2) const {
-    F d1 = (p1 - *this).length();
-    F d2 = (p2 - *this).length();
-    if (d1 <= d2)
-      return d1;
-    else
-      return d2;
+    return std::min((p1 - *this).length(), (p2 - *this).length());
   }
 };
 
