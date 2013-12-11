@@ -23,7 +23,7 @@ bool load(cmdline::parser& parser,
   }
   auto dir_sep = path.find_last_of('/');
   if (dir_sep != std::string::npos) {
-    dir_stack.push_back(arg.substr(0, dir_sep + 1));
+    dir_stack.push_back(path.substr(0, dir_sep + 1));
   } else {
     dir_stack.push_back(std::string());
   }
