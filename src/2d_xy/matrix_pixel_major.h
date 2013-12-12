@@ -77,8 +77,9 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       }
     }
 
-    auto& current_hits = pixel_lor_hits_ptr
-        [i_pixel][lor.index() * this->n_tof_positions() + position];
+    auto& current_hits =
+        pixel_lor_hits_ptr[i_pixel][lor.index() * this->n_tof_positions() +
+                                    position];
     if (current_hits == 0) {
       pixel_lor_count[i_pixel]++;
       size_++;
@@ -104,8 +105,9 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
     for (S i_lor = 0, lor_count = 0; i_lor < n_lors; ++i_lor) {
       for (S position = 0; position < this->n_tof_positions(); ++position) {
-        auto hits = pixel_lor_hits_ptr
-            [i_pixel][i_lor * this->n_tof_positions() + position];
+        auto hits =
+            pixel_lor_hits_ptr[i_pixel][i_lor * this->n_tof_positions() +
+                                        position];
         if (hits > 0) {
           LOR lor = index_to_lor[i_lor];
           if (lor.first == lor.second) {
