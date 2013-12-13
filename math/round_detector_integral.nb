@@ -1,0 +1,158 @@
+Notebook[{
+Cell[BoxData[
+ RowBox[{"p", "=", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"t", " ", 
+      RowBox[{"Sin", "[", "\[Phi]", "]"}]}], "-", "d"}], ",", " ", 
+    RowBox[{"t", " ", 
+     RowBox[{"Cos", "[", "\[Phi]", "]"}]}]}], "}"}]}]], "Input",
+ CellChangeTimes->{{3.595938553543523*^9, 3.595938599399221*^9}, {
+  3.595938638643856*^9, 3.595938639465228*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"p", ".", "p"}], " ", "==", " ", "r2"}]], "Input",
+ CellChangeTimes->{{3.595938646672842*^9, 3.595938670751376*^9}}],
+
+Cell[BoxData[
+ RowBox[{"%", "//", 
+  RowBox[{
+   RowBox[{"Solve", "[", 
+    RowBox[{"#", ",", "t"}], "]"}], "&"}]}]], "Input",
+ CellChangeTimes->{{3.5959386757193737`*^9, 3.595938715336605*^9}, {
+   3.5959389389527884`*^9, 3.59593894843808*^9}, 3.595939031249296*^9, {
+   3.5959392690093203`*^9, 3.595939272763768*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   FractionBox[
+    RowBox[{
+     RowBox[{
+      RowBox[{"-", 
+       SqrtBox["2"]}], " ", 
+      SqrtBox[
+       RowBox[{
+        RowBox[{"-", 
+         SuperscriptBox["d", "2"]}], "+", 
+        RowBox[{"2", " ", "r2"}], "-", 
+        RowBox[{
+         SuperscriptBox["d", "2"], " ", 
+         RowBox[{"Cos", "[", 
+          RowBox[{"2", " ", "\[Phi]"}], "]"}]}]}]]}], "+", 
+     RowBox[{"2", " ", "d", " ", 
+      RowBox[{"Sin", "[", "\[Phi]", "]"}]}]}], 
+    RowBox[{"2", " ", 
+     RowBox[{"(", 
+      RowBox[{
+       SuperscriptBox[
+        RowBox[{"Cos", "[", "\[Phi]", "]"}], "2"], "+", 
+       SuperscriptBox[
+        RowBox[{"Sin", "[", "\[Phi]", "]"}], "2"]}], ")"}]}]], "-", 
+   FractionBox[
+    RowBox[{
+     RowBox[{
+      SqrtBox["2"], " ", 
+      SqrtBox[
+       RowBox[{
+        RowBox[{"-", 
+         SuperscriptBox["d", "2"]}], "+", 
+        RowBox[{"2", " ", "r2"}], "-", 
+        RowBox[{
+         SuperscriptBox["d", "2"], " ", 
+         RowBox[{"Cos", "[", 
+          RowBox[{"2", " ", "\[Phi]"}], "]"}]}]}]]}], "+", 
+     RowBox[{"2", " ", "d", " ", 
+      RowBox[{"Sin", "[", "\[Phi]", "]"}]}]}], 
+    RowBox[{"2", " ", 
+     RowBox[{"(", 
+      RowBox[{
+       SuperscriptBox[
+        RowBox[{"Cos", "[", "\[Phi]", "]"}], "2"], "+", 
+       SuperscriptBox[
+        RowBox[{"Sin", "[", "\[Phi]", "]"}], "2"]}], ")"}]}]]}], "//", 
+  "Simplify"}]], "Input",
+ CellChangeTimes->{{3.5959395179550734`*^9, 3.59593953583692*^9}, {
+  3.595940726908421*^9, 3.59594074500329*^9}}],
+
+Cell[BoxData[
+ RowBox[{"Plot", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      SqrtBox["2"], 
+      SqrtBox[
+       RowBox[{
+        RowBox[{"-", 
+         SuperscriptBox["d", "2"]}], "+", 
+        RowBox[{"2", " ", "r2"}], "-", 
+        RowBox[{
+         SuperscriptBox["d", "2"], " ", 
+         RowBox[{"Cos", "[", 
+          RowBox[{"2", " ", "\[Phi]"}], "]"}]}]}]]}], "/.", 
+     RowBox[{"r2", "->", "1"}]}], "/.", 
+    RowBox[{"d", "->", "0.8"}]}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\[Phi]", ",", "0", ",", "\[Pi]"}], "}"}], ",", 
+   RowBox[{"PlotRange", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"0", ",", "2"}], "}"}]}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.595939933769959*^9, 3.595940042917141*^9}, {
+  3.595940101430397*^9, 3.5959401500077763`*^9}, {3.595940205369217*^9, 
+  3.595940232975526*^9}}],
+
+Cell[BoxData[
+ RowBox[{"Plot", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      SqrtBox["2"], 
+      SqrtBox[
+       RowBox[{
+        RowBox[{"-", 
+         SuperscriptBox["d", "2"]}], "+", 
+        RowBox[{"2", " ", "r2"}], "-", 
+        RowBox[{
+         SuperscriptBox["d", "2"], " ", 
+         RowBox[{"Cos", "[", 
+          RowBox[{"2", " ", "\[Phi]"}], "]"}]}]}]]}], "/.", 
+     RowBox[{"r2", "->", "1"}]}], "/.", 
+    RowBox[{"d", "->", "2"}]}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\[Phi]", ",", "0", ",", "\[Pi]"}], "}"}], ",", 
+   RowBox[{"PlotRange", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"0", ",", "2"}], "}"}]}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.595939933769959*^9, 3.595940042917141*^9}, {
+  3.595940101430397*^9, 3.5959401500077763`*^9}, {3.595940205369217*^9, 
+  3.595940267726676*^9}}],
+
+Cell[BoxData[
+ RowBox[{"Integrate", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"-", 
+     SqrtBox["2"]}], " ", 
+    SqrtBox[
+     RowBox[{
+      RowBox[{"-", 
+       SuperscriptBox["d", "2"]}], "+", 
+      RowBox[{"2", " ", "r2"}], "-", 
+      RowBox[{
+       SuperscriptBox["d", "2"], " ", 
+       RowBox[{"Cos", "[", 
+        RowBox[{"2", " ", "\[Phi]"}], "]"}]}]}]]}], ",", "\[Phi]"}], 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.595939544088979*^9, 3.595939565344059*^9}}]
+},
+WindowSize->{1259, 909},
+WindowMargins->{{155, Automatic}, {Automatic, 16}},
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (November 20, \
+2013)",
+StyleDefinitions->"Default.nb"
+]
