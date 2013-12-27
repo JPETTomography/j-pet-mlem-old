@@ -20,12 +20,12 @@ template <typename FType = double> class AlwaysAccept {
   static F max_bias() { return static_cast<F>(0); }
 };
 
-/// Represents model of scintilator where probability of decay is given by:
-/// $p = 1-e^{-scale * length}$, where for:
-/// $length = 0$, probability is equal to $0$
-/// $length = 1/2*scale$, probability is equal to $1-1/\sqrt{e}$
-/// $length = 1/scale$, probability is equal to $1-1/e$
-/// $length = 2/scale$, probability is equal to $1-1/e^2$
+/// Represents model of scintilator where CDF of decay is given by:
+/// F = 1-e^(-scale * length), where for length l we get:
+/// l = 0:           F(l) = 0
+/// l = 1/2 * scale: F(l) = 1 - 1/sqrt(e)
+/// l = 1/scale:     F(l) = 1 - 1/e
+/// l = 2/scale:     F(l) = 1 - 1/e^2
 
 template <typename FType = double> class ScintilatorAccept {
  public:
