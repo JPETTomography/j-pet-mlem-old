@@ -1,22 +1,3 @@
-(* Content-type: application/vnd.wolfram.mathematica *)
-
-(*** Wolfram Notebook File ***)
-(* http://www.wolfram.com/nb *)
-
-(* CreatedBy='Mathematica 8.0' *)
-
-(*CacheID: 234*)
-(* Internal cache information:
-NotebookFileLineBreakTest
-NotebookFileLineBreakTest
-NotebookDataPosition[       157,          7]
-NotebookDataLength[      6148,        190]
-NotebookOptionsPosition[      5473,        165]
-NotebookOutlinePosition[      5798,        180]
-CellTagsIndexPosition[      5755,        177]
-WindowFrame->Normal*)
-
-(* Beginning of Notebook Content *)
 Notebook[{
 Cell[BoxData[
  RowBox[{
@@ -35,16 +16,11 @@ Cell[BoxData[
       RowBox[{"(", 
        RowBox[{"m", "+", 
         RowBox[{"Transpose", "[", "m", "]"}]}], ")"}]}]}], "]"}]}], 
-  "\[IndentingNewLine]", "\[IndentingNewLine]"}]], "Input",
- CellChangeTimes->{{3.579172399550424*^9, 3.579172413664665*^9}, {
-  3.579172538887873*^9, 3.579172567618622*^9}, {3.579172684807351*^9, 
-  3.579172726112241*^9}, {3.579172761513965*^9, 3.579172805306087*^9}}],
+  "\[IndentingNewLine]", "\[IndentingNewLine]"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{"es", "=", 
-  RowBox[{"Eigensystem", "[", "m", "]"}]}]], "Input",
- CellChangeTimes->{{3.579172582353029*^9, 3.579172590821609*^9}, {
-  3.579172712934754*^9, 3.579172733018503*^9}}],
+  RowBox[{"Eigensystem", "[", "m", "]"}]}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -53,12 +29,9 @@ Cell[BoxData[
     RowBox[{"es", "[", 
      RowBox[{"[", "2", "]"}], "]"}], "]"}], ".", 
    RowBox[{"es", "[", 
-    RowBox[{"[", "2", "]"}], "]"}]}], "//", "Chop"}]], "Input",
- CellChangeTimes->{{3.57917273513361*^9, 3.579172750704727*^9}, {
-  3.57917281754481*^9, 3.579172818773625*^9}}],
+    RowBox[{"[", "2", "]"}], "]"}]}], "//", "Chop"}]], "Input"],
 
-Cell[BoxData[""], "Input",
- CellChangeTimes->{{3.579172813380209*^9, 3.579172814199937*^9}}],
+Cell[BoxData[""], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -67,9 +40,7 @@ Cell[BoxData[
     RowBox[{"[", "2", "]"}], "]"}], ".", "m", ".", 
    RowBox[{"Transpose", "[", 
     RowBox[{"es", "[", 
-     RowBox[{"[", "2", "]"}], "]"}], " ", "]"}]}], "//", "Chop"}]], "Input",
- CellChangeTimes->{{3.57917273513361*^9, 3.579172750704727*^9}, {
-  3.57917281754481*^9, 3.579172847586836*^9}}],
+     RowBox[{"[", "2", "]"}], "]"}], " ", "]"}]}], "//", "Chop"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -80,8 +51,7 @@ Cell[BoxData[
    RowBox[{"es", "[", 
     RowBox[{"[", "1", "]"}], "]"}], " ", "]"}], ".", 
   RowBox[{"es", "[", 
-   RowBox[{"[", "2", "]"}], "]"}]}]], "Input",
- CellChangeTimes->{{3.579172860436033*^9, 3.579172891905371*^9}}],
+   RowBox[{"[", "2", "]"}], "]"}]}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -118,11 +88,7 @@ Cell[BoxData[
           "/", 
           RowBox[{"Sqrt", "[", "d", "]"}]}], ")"}]}], ",", 
        RowBox[{"{", "n", "}"}]}], "]"}]}]}], "\[IndentingNewLine]", 
-   "]"}]}]], "Input",
- CellChangeTimes->{{3.579173039281335*^9, 3.579173242577701*^9}, {
-  3.579173355676885*^9, 3.579173375599915*^9}, {3.579173452176235*^9, 
-  3.57917346133439*^9}, {3.579173503846909*^9, 3.579173504545119*^9}, {
-  3.579186213652631*^9, 3.579186214086094*^9}}],
+   "]"}]}]], "Input"],
 
 Cell[BoxData[
  RowBox[{"c", "=", " ", 
@@ -133,67 +99,30 @@ Cell[BoxData[
     RowBox[{"{", 
      RowBox[{"0", ",", "1", ",", "0.5"}], "}"}], ",", 
     RowBox[{"{", 
-     RowBox[{"0.5", ",", "0.5", ",", "2"}], "}"}]}], "}"}]}]], "Input",
- CellChangeTimes->{{3.579173260806115*^9, 3.579173282198336*^9}, {
-  3.579173388982357*^9, 3.579173406845195*^9}, {3.579173623978018*^9, 
-  3.57917365469091*^9}}],
+     RowBox[{"0.5", ",", "0.5", ",", "2"}], "}"}]}], "}"}]}]], "Input"],
 
 Cell[BoxData[
- RowBox[{"%", "//", "MatrixForm"}]], "Input",
- CellChangeTimes->{{3.579173659713704*^9, 3.579173662900003*^9}}],
+ RowBox[{"%", "//", "MatrixForm"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
   RowBox[{"data", "=", 
    RowBox[{"gauss", "[", 
-    RowBox[{"c", ",", "1000000"}], "]"}]}], ";"}]], "Input",
- CellChangeTimes->{{3.579173284896927*^9, 3.579173332998099*^9}, 
-   3.579173534397836*^9, 3.579173688231253*^9}],
+    RowBox[{"c", ",", "1000000"}], "]"}]}], ";"}]], "Input"],
 
 Cell[BoxData[
- RowBox[{"Variance", "[", "data", "]"}]], "Input",
- CellChangeTimes->{{3.579173310043735*^9, 3.579173323241491*^9}, {
-  3.579173524166521*^9, 3.579173529305956*^9}}],
+ RowBox[{"Variance", "[", "data", "]"}]], "Input"],
 
-Cell[BoxData[""], "Input",
- CellChangeTimes->{{3.579173170682562*^9, 3.579173171849629*^9}}],
+Cell[BoxData[""], "Input"],
 
 Cell[BoxData[
- RowBox[{"Covariance", "[", "data", "]"}]], "Input",
- CellChangeTimes->{{3.579173552546144*^9, 3.579173560798158*^9}, {
-  3.579173609841201*^9, 3.579173611599321*^9}}]
+ RowBox[{"Covariance", "[", "data", "]"}]], "Input"]
 },
 WindowSize->{740, 1111},
-WindowMargins->{{378, 542}, {-6, -8}},
-FrontEndVersion->"8.0 for Linux x86 (32-bit) (November 7, 2010)",
+WindowMargins->{{378, 111}, {-355, 0}},
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+TrackCellChangeTimes->False,
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (December 16, \
+2013)",
 StyleDefinitions->"Default.nb"
 ]
-(* End of Notebook Content *)
-
-(* Internal cache information *)
-(*CellTagsOutline
-CellTagsIndex->{}
-*)
-(*CellTagsIndex
-CellTagsIndex->{}
-*)
-(*NotebookFileOutline
-Notebook[{
-Cell[557, 20, 760, 20, 88, "Input"],
-Cell[1320, 42, 203, 4, 30, "Input"],
-Cell[1526, 48, 338, 9, 30, "Input"],
-Cell[1867, 59, 92, 1, 30, "Input"],
-Cell[1962, 62, 353, 9, 30, "Input"],
-Cell[2318, 73, 370, 10, 30, "Input"],
-Cell[2691, 85, 1470, 39, 126, "Input"],
-Cell[4164, 126, 465, 12, 30, "Input"],
-Cell[4632, 140, 125, 2, 30, "Input"],
-Cell[4760, 144, 248, 6, 30, "Input"],
-Cell[5011, 152, 179, 3, 30, "Input"],
-Cell[5193, 157, 92, 1, 30, "Input"],
-Cell[5288, 160, 181, 3, 30, "Input"]
-}
-]
-*)
-
-(* End of internal cache information *)

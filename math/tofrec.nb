@@ -1,22 +1,3 @@
-(* Content-type: application/vnd.wolfram.mathematica *)
-
-(*** Wolfram Notebook File ***)
-(* http://www.wolfram.com/nb *)
-
-(* CreatedBy='Mathematica 8.0' *)
-
-(*CacheID: 234*)
-(* Internal cache information:
-NotebookFileLineBreakTest
-NotebookFileLineBreakTest
-NotebookDataPosition[       157,          7]
-NotebookDataLength[      8309,        314]
-NotebookOptionsPosition[      7262,        272]
-NotebookOutlinePosition[      7599,        287]
-CellTagsIndexPosition[      7556,        284]
-WindowFrame->Normal*)
-
-(* Beginning of Notebook Content *)
 Notebook[{
 
 Cell[CellGroupData[{
@@ -29,9 +10,7 @@ Cell[BoxData[
       RowBox[{"x", "^", "2"}]}], "]"}], "/", 
     RowBox[{"(", 
      RowBox[{"1", "+", 
-      RowBox[{"x", "^", "2"}]}], ")"}]}], ",", "x"}], "]"}]], "Input",
- CellChangeTimes->{{3.546579416467066*^9, 3.5465794723123217`*^9}, {
-  3.546579530845705*^9, 3.546579540380275*^9}}],
+      RowBox[{"x", "^", "2"}]}], ")"}]}], ",", "x"}], "]"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{"\[Integral]", 
@@ -42,8 +21,7 @@ Cell[BoxData[
       SuperscriptBox["x", "2"]}]], 
     RowBox[{"1", "+", 
      SuperscriptBox["x", "2"]}]], 
-   RowBox[{"\[DifferentialD]", "x"}]}]}]], "Output",
- CellChangeTimes->{{3.546579535073691*^9, 3.546579541219925*^9}}]
+   RowBox[{"\[DifferentialD]", "x"}]}]}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -69,8 +47,7 @@ Cell[BoxData[
       RowBox[{"Sqrt", "[", 
        RowBox[{
         RowBox[{"t", "^", "2"}], "+", "1"}], "]"}]}]}], ")"}], "^", 
-   "2"}]}]], "Input",
- CellChangeTimes->{{3.546580232359817*^9, 3.546580308155032*^9}}],
+   "2"}]}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -94,8 +71,7 @@ Cell[BoxData[
      RowBox[{"-", "x"}], "+", "xd", "+", 
      RowBox[{"t", " ", 
       RowBox[{"(", 
-       RowBox[{"R", "+", "y"}], ")"}]}]}], ")"}], "2"]}]], "Output",
- CellChangeTimes->{3.54658027472999*^9, 3.546580311192589*^9}]
+       RowBox[{"R", "+", "y"}], ")"}]}]}], ")"}], "2"]}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -103,8 +79,7 @@ Cell[CellGroupData[{
 Cell[BoxData[
  RowBox[{
   RowBox[{"D", "[", 
-   RowBox[{"%", ",", "t"}], "]"}], " ", "//", "Simplify"}]], "Input",
- CellChangeTimes->{{3.5465803164791193`*^9, 3.5465803257943163`*^9}}],
+   RowBox[{"%", ",", "t"}], "]"}], " ", "//", "Simplify"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{"2", " ", 
@@ -124,8 +99,7 @@ Cell[BoxData[
          RowBox[{"1", "+", 
           SuperscriptBox["t", "2"]}]]], "-", 
        RowBox[{"2", " ", "x"}], "+", "xd", "+", "xu", "+", 
-       RowBox[{"6", " ", "t", " ", "y"}]}], ")"}]}]}], ")"}]}]], "Output",
- CellChangeTimes->{3.546580326654293*^9}]
+       RowBox[{"6", " ", "t", " ", "y"}]}], ")"}]}]}], ")"}]}]], "Output"]
 }, Open  ]],
 
 Cell[BoxData[
@@ -133,8 +107,7 @@ Cell[BoxData[
   RowBox[{"sol", "=", 
    RowBox[{"Solve", "[", 
     RowBox[{
-     RowBox[{"%8", "\[Equal]", "0"}], ",", "t"}], "]"}]}], ";"}]], "Input",
- CellChangeTimes->{{3.546580330441794*^9, 3.546580374393368*^9}}],
+     RowBox[{"%8", "\[Equal]", "0"}], ",", "t"}], "]"}]}], ";"}]], "Input"],
 
 Cell[CellGroupData[{
 
@@ -168,16 +141,14 @@ Cell[BoxData[
      RowBox[{"-", "x"}], "+", "xd", "+", 
      RowBox[{"t", " ", 
       RowBox[{"(", 
-       RowBox[{"R", "+", "y"}], ")"}]}]}], ")"}], "2"]}]], "Output",
- CellChangeTimes->{3.5465899411814013`*^9}]
+       RowBox[{"R", "+", "y"}], ")"}]}]}], ")"}], "2"]}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{"D", "[", 
-  RowBox[{"%", ",", "t"}], "]"}]], "Input",
- CellChangeTimes->{{3.54658994276501*^9, 3.546589946313513*^9}}],
+  RowBox[{"%", ",", "t"}], "]"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -199,8 +170,7 @@ Cell[BoxData[
      RowBox[{"-", "x"}], "+", "xd", "+", 
      RowBox[{"t", " ", 
       RowBox[{"(", 
-       RowBox[{"R", "+", "y"}], ")"}]}]}], ")"}]}]}]], "Output",
- CellChangeTimes->{3.546589946674062*^9}]
+       RowBox[{"R", "+", "y"}], ")"}]}]}], ")"}]}]}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -208,8 +178,7 @@ Cell[CellGroupData[{
 Cell[BoxData[
  RowBox[{"Solve", "[", 
   RowBox[{
-   RowBox[{"%", "\[Equal]", "0"}], ",", "t"}], "]"}]], "Input",
- CellChangeTimes->{{3.5465899484110327`*^9, 3.546589953198394*^9}}],
+   RowBox[{"%", "\[Equal]", "0"}], ",", "t"}], "]"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{"{", 
@@ -227,12 +196,10 @@ Cell[BoxData[
       RowBox[{"(", 
        RowBox[{
         SuperscriptBox["R", "2"], "+", 
-        SuperscriptBox["y", "2"]}], ")"}]}]]}], "}"}], "}"}]], "Output",
- CellChangeTimes->{3.54658995384834*^9}]
+        SuperscriptBox["y", "2"]}], ")"}]}]]}], "}"}], "}"}]], "Output"]
 }, Open  ]],
 
-Cell[BoxData[""], "Input",
- CellChangeTimes->{{3.546589961091061*^9, 3.546589961569778*^9}}],
+Cell[BoxData[""], "Input"],
 
 Cell[CellGroupData[{
 
@@ -250,8 +217,7 @@ Cell[BoxData[
     RowBox[{"(", 
      RowBox[{
       SuperscriptBox["R", "2"], "+", 
-      SuperscriptBox["y", "2"]}], ")"}]}]], "//", "Simplify"}]], "Input",
- CellChangeTimes->{{3.546589967888575*^9, 3.546589970910677*^9}}],
+      SuperscriptBox["y", "2"]}], ")"}]}]], "//", "Simplify"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{"-", 
@@ -266,58 +232,14 @@ Cell[BoxData[
     RowBox[{"2", " ", 
      SuperscriptBox["R", "2"]}], "+", 
     RowBox[{"2", " ", 
-     SuperscriptBox["y", "2"]}]}]]}]], "Output",
- CellChangeTimes->{3.546589972182371*^9}]
+     SuperscriptBox["y", "2"]}]}]]}]], "Output"]
 }, Open  ]]
 },
 WindowSize->{740, 867},
 WindowMargins->{{169, Automatic}, {Automatic, 54}},
-FrontEndVersion->"8.0 for Linux x86 (64-bit) (November 7, 2010)",
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+TrackCellChangeTimes->False,
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (December 16, \
+2013)",
 StyleDefinitions->"Default.nb"
 ]
-(* End of Notebook Content *)
-
-(* Internal cache information *)
-(*CellTagsOutline
-CellTagsIndex->{}
-*)
-(*CellTagsIndex
-CellTagsIndex->{}
-*)
-(*NotebookFileOutline
-Notebook[{
-Cell[CellGroupData[{
-Cell[579, 22, 384, 11, 30, "Input"],
-Cell[966, 35, 336, 10, 55, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[1339, 50, 668, 22, 30, "Input"],
-Cell[2010, 74, 679, 23, 49, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[2726, 102, 184, 4, 30, "Input"],
-Cell[2913, 108, 613, 19, 55, "Output"]
-}, Open  ]],
-Cell[3541, 130, 227, 6, 30, "Input"],
-Cell[CellGroupData[{
-Cell[3793, 140, 392, 13, 30, "Input"],
-Cell[4188, 155, 466, 16, 31, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[4691, 176, 142, 3, 30, "Input"],
-Cell[4836, 181, 601, 21, 29, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[5474, 207, 180, 4, 30, "Input"],
-Cell[5657, 213, 536, 17, 54, "Output"]
-}, Open  ]],
-Cell[6208, 233, 92, 1, 30, "Input"],
-Cell[CellGroupData[{
-Cell[6325, 238, 489, 15, 60, "Input"],
-Cell[6817, 255, 429, 14, 50, "Output"]
-}, Open  ]]
-}
-]
-*)
-
-(* End of internal cache information *)
