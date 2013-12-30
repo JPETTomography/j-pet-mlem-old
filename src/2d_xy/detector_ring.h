@@ -31,35 +31,45 @@ class DetectorRing : public std::vector<DetectorType> {
   /// @param h_detector  height/depth of single detector
   ///                    (perpendicular to ring)
   DetectorRing(S n_detectors, F radius, F w_detector, F h_detector)
-      : c_inner_(radius),
-        c_outer_(radius + h_detector),
-        n_detectors_(n_detectors),
-        n_lors_(n_detectors * (n_detectors + 1) / 2),
-        radius_diff_(c_outer_.radius() - c_inner_.radius()) {
+      : c_inner(radius),
+        c_outer(radius + h_detector),
+        n_detectors(n_detectors),
+        n_lors(n_detectors * (n_detectors + 1) / 2),
+        radius_diff(c_outer.radius() - c_inner.radius()) {
     if (radius <= 0.)
       throw("invalid radius");
+    if (w_detector > 0. && h_detector == 0.)
+      h_detector = Detector::default_height_for_width(w_detector);
+    // NOTE: detector may return 0 for default height, which means we need to
+    // have height given explicitely
     if (w_detector <= 0. || h_detector <= 0.)
       throw("invalid detector size");
-    if (n_detectors_ % 4)
+    if (n_detectors % 4)
       throw("number of detectors must be multiple of 4");
 
     fov_radius_ = radius / M_SQRT2;
 
-    Detector detector_base(h_detector, w_detector);
+    Detector detector_base(w_detector, h_detector);
 
     // move detector to the right edge of inner ring
     // along zero angle polar coordinate
-    detector_base += Point(radius + h_detector / 2, 0.);
+    detector_base += Point(0., radius + h_detector / 2);
+
+    // fix up outer circle
+    c_outer = Circle(detector_base.max_distance());
 
     // produce detector ring rotating base detector n times
-    for (auto n = 0; n < n_detectors_; ++n) {
-      this->push_back(detector_base.rotated(2. * M_PI * n / n_detectors_));
+    for (auto n = 0; n < n_detectors; ++n) {
+      auto detector = detector_base;
+      detector.rotate(2. * M_PI * n / n_detectors - M_PI_2);
+      this->push_back(detector);
     }
   }
 
-  F radius() const { return c_inner_.radius(); }
-  S lors() const { return n_lors_; }
-  S detectors() const { return n_detectors_; }
+  F radius() const { return c_inner.radius(); }
+  F outer_radius() const { return c_outer.radius(); }
+  S lors() const { return n_lors; }
+  S detectors() const { return n_detectors; }
   F fov_radius() const { return fov_radius_; }
 
   Pixel pixel(F x, F y, F pixel_size) {
@@ -70,7 +80,7 @@ class DetectorRing : public std::vector<DetectorType> {
   }
 
   F max_dl(F max_bias_size) const {
-    return 2.0 * c_outer_.radius() + max_bias_size;
+    return 2.0 * c_outer.radius() + max_bias_size;
   }
 
   /// Quantizes position with given:
@@ -107,27 +117,27 @@ class DetectorRing : public std::vector<DetectorType> {
                       Point& p2) {
 
     // tells in which direction we got shorter modulo distance
-    S step = ((n_detectors_ + inner - outer) % n_detectors_ >
-              (n_detectors_ + outer - inner) % n_detectors_)
+    S step = ((n_detectors + inner - outer) % n_detectors >
+              (n_detectors + outer - inner) % n_detectors)
                  ? 1
-                 : n_detectors_ - 1;
-    S end = (outer + step) % n_detectors_;
-    for (auto i = inner; i != end; i = (i + step) % n_detectors_) {
-      auto points = (*this)[i].intersections(e);
+                 : n_detectors - 1;
+    S end = (outer + step) % n_detectors;
+    for (auto i = inner; i != end; i = (i + step) % n_detectors) {
+      auto intersections = (*this)[i].intersections(e);
       // check if we got 2 point intersection
       // then test the model against these points distance
-      if (points.size() == 2) {
+      if (intersections.size() == 2) {
         auto deposition_depth = model.deposition_depth(gen);
-
 #if DEBUG
         std::cerr << "dep " << deposition_depth << " "
-                  << (points[1] - points[0]).length() << std::endl;
+                  << (intersections[1] - intersections[0]).length()
+                  << std::endl;
 #endif
-        if (deposition_depth < (points[1] - points[0]).length()) {
+        if (deposition_depth < (intersections[1] - intersections[0]).length()) {
           detector = i;
           depth = deposition_depth;
-          p1 = points[0];
-          p2 = points[1];
+          p1 = intersections[0];
+          p2 = intersections[1];
           return true;
         }
       }
@@ -161,13 +171,14 @@ class DetectorRing : public std::vector<DetectorType> {
 
     typename Circle::Event e(rx, ry, angle);
 
-    auto inner_secant = c_inner_.secant(e);
-    auto outer_secant = c_outer_.secant(e);
+    auto inner_secant = c_inner.secant(e);
+    auto outer_secant = c_outer.secant(e);
 
-    auto i_inner =
-        c_inner_.section(c_inner_.angle(inner_secant.first), n_detectors_);
-    auto i_outer =
-        c_outer_.section(c_inner_.angle(outer_secant.first), n_detectors_);
+    if (inner_secant.size() != 2 || outer_secant.size() != 2)
+      return 0;
+
+    auto i_inner = c_inner.section(c_inner.angle(inner_secant[0]), n_detectors);
+    auto i_outer = c_outer.section(c_inner.angle(outer_secant[0]), n_detectors);
     S detector1;
     F depth1;
 
@@ -176,10 +187,8 @@ class DetectorRing : public std::vector<DetectorType> {
              gen, model, i_inner, i_outer, e, detector1, depth1, d1_p1, d1_p2))
       return 0;
 
-    i_inner =
-        c_inner_.section(c_inner_.angle(inner_secant.second), n_detectors_);
-    i_outer =
-        c_outer_.section(c_inner_.angle(outer_secant.second), n_detectors_);
+    i_inner = c_inner.section(c_inner.angle(inner_secant[1]), n_detectors);
+    i_outer = c_outer.section(c_inner.angle(outer_secant[1]), n_detectors);
     S detector2;
     F depth2;
     Point d2_p1, d2_p2;
@@ -195,9 +204,6 @@ class DetectorRing : public std::vector<DetectorType> {
           << lor.second << ")";
       throw(msg.str());
     }
-
-    // printf("CPU HIT1: %f %f %f %f \n",d1_p1.x,d1_p1.y,d1_p2.x,d1_p2.y);
-    // printf("CPU HIT1: %f %f %f %f \n",d2_p1.x,d2_p1.y,d2_p2.x,d2_p2.y);
 
     Point origin(rx, ry);
     F length1 = origin.nearest_distance(d1_p1, d1_p2) + depth1;
@@ -216,22 +222,22 @@ class DetectorRing : public std::vector<DetectorType> {
   }
 
   friend svg_ostream<F>& operator<<(svg_ostream<F>& svg, DetectorRing& dr) {
-    svg << dr.c_outer_;
-    svg << dr.c_inner_;
+    svg << dr.c_outer;
+    svg << dr.c_inner;
 
-    for (auto detector = dr.begin(); detector != dr.end(); ++detector) {
-      svg << *detector;
+    for (auto& detector : dr) {
+      svg << detector;
     }
 
     return svg;
   }
 
  private:
-  Circle c_inner_;
-  Circle c_outer_;
-  S n_detectors_;
-  S n_lors_;
+  Circle c_inner;
+  Circle c_outer;
+  S n_detectors;
+  S n_lors;
   F fov_radius_;
-  F radius_diff_;
+  F radius_diff;
 };
 #undef DEBUG

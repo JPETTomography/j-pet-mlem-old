@@ -31,7 +31,7 @@ template <typename FType = double> class svg_ostream : public std::ofstream {
 #if BLACK_BACKGROUND
     *this << "    svg     { background: black; }" << std::endl;
 #endif
-    *this << "    polygon {"
+    *this << "    polygon, .detector {"
           << " fill: #ff9090;"
           << " stroke: red;"
           << " stroke-width: " << stroke << ";"

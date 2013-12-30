@@ -1,3 +1,5 @@
+CONFIG  += c++11
+
 include(common.pri)
 
 SOURCES += \

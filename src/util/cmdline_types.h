@@ -3,6 +3,7 @@
 // @cond PRIVATE
 // redefine help formatting for greater readibility
 namespace cmdline {
+
 class string : public std::string {};
 namespace detail {
 template <> inline std::string readable_typename<int>() { return "size"; }
@@ -21,5 +22,6 @@ template <> inline std::string default_value<ssize_t>(ssize_t def) {
   return detail::lexical_cast<std::string>(def);
 }
 }
-}
+
+}  // cmdline
 // @end cond

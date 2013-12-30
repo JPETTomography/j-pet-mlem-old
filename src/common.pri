@@ -3,7 +3,6 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
-CONFIG += c++11
 
 # fix no symbol in current context on GCC 4.8
 QMAKE_CFLAGS_DEBUG += -gdwarf-2
@@ -18,7 +17,7 @@ HEADERS += geometry/*.h
 HEADERS += util/*.h
 HEADERS += math/*.h
 
-SOURCES += util/png_writer.cpp
+SOURCES += util/png_writer.cpp util/cmdline_hooks.cpp
 
 # drop binaries one level up
 equals(PWD, $$OUT_PWD) {

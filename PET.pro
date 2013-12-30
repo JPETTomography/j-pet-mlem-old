@@ -11,14 +11,9 @@ macx:!macx-clang {
 
 SUBDIRS += $$files(src/*.pro)
 
-# tests needs to be explicitely enabled
-!test {
-  SUBDIRS -= src/test.pro
-}
-
-!cuda {
-  SUBDIRS -= $$files(src/cuda_*.pro) $$files(src/*_cuda.pro)
-}
+# tests & cuda need to be explicitly enabled
+!test:SUBDIRS -= src/test.pro
+!cuda:SUBDIRS -= src/cuda_example.pro
 
 OTHER_FILES += $$files(scripts/*)
 OTHER_FILES += README.md

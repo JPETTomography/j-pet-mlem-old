@@ -5,7 +5,7 @@
 class tausworthe {
  public:
   typedef unsigned int result_type;
-  typedef long int seed_type;
+  typedef long seed_type;
 
   static result_type min() { return 0; }
   static result_type max() { return std::numeric_limits<result_type>::max(); }

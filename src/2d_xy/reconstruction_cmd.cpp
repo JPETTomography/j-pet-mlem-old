@@ -59,6 +59,9 @@ int main(int argc, char* argv[]) {
     cl.add<cmdline::string>("output", 'o', "output reconstruction", false);
     cl.add<double>("threshold", 0, "discretisation treshold", false, 0.0);
 
+    // additional options
+    cl.add("verbose", 'v', "prints the iterations information on std::out");
+
     cl.parse_check(argc, argv);
 
 #if _OPENMP
@@ -66,6 +69,8 @@ int main(int argc, char* argv[]) {
       omp_set_num_threads(cl.get<int>("n-threads"));
     }
 #endif
+
+    auto verbose = cl.exist("verbose");
 
     ibstream in_matrix(cl.get<cmdline::string>("system"));
     if (!in_matrix.is_open())
@@ -82,6 +87,17 @@ int main(int argc, char* argv[]) {
                                     matrix,
                                     in_means,
                                     cl.get<double>("threshold"));
+
+    if (verbose) {
+      std::cerr << "reconstruction:" << std::endl;
+#if _OPENMP
+      std::cerr << " threads       = " << omp_get_max_threads() << std::endl;
+#endif
+      std::cerr << " pixels in row = " << matrix.n_pixels_in_row() << std::endl;
+      std::cerr << " TOF positions = " << matrix.n_tof_positions() << std::endl;
+      std::cerr << " emissions     = " << matrix.n_emissions() << std::endl;
+      std::cerr << " detectors     = " << matrix.n_detectors() << std::endl;
+    }
 
     auto n_pixels_in_row = reconstruction.n_pixels_in_row();
     auto total_n_pixels = n_pixels_in_row * n_pixels_in_row;
@@ -163,4 +179,5 @@ int main(int argc, char* argv[]) {
   catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
   }
+  return 1;
 }

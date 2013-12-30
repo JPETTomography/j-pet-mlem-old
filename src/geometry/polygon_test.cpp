@@ -6,15 +6,15 @@
 #include "polygon.h"
 
 TEST_CASE("polygon/intersection") {
-  Polygon<> p;
+  Polygon<4> p;
   p.push_back(Point<>(1., 1.));
   p.push_back(Point<>(2., 1.));
   p.push_back(Point<>(2., 2.));
   p.push_back(Point<>(1., 2.));
 
-  Polygon<>::Event e1(0., .5, M_PI_4);
-  Polygon<>::Event e2(0., 1.5, M_PI_4);
-  Polygon<>::Event e3(0., 1.5, 0.);
+  Polygon<4>::Event e1(0., .5, M_PI_4);
+  Polygon<4>::Event e2(0., 1.5, M_PI_4);
+  Polygon<4>::Event e3(0., 1.5, 0.);
 
   CHECK(true == p.intersects(e1));
   CHECK(false == p.intersects(e2));
@@ -52,12 +52,12 @@ TEST_CASE("polygon/intersection/math", "[math]") {
   int n_events;
   in >> n_events;
 
-  Polygon<> poly;
+  Polygon<4> poly;
 
   for (int i = 0; i < 4; ++i) {
     double x, y;
     in >> x >> y;
-    Polygon<>::Point p(x, y);
+    Polygon<4>::Point p(x, y);
     poly.push_back(p);
   }
 
@@ -71,7 +71,7 @@ TEST_CASE("polygon/intersection/math", "[math]") {
     size_t n_iters;
     in >> n_iters;
 
-    Polygon<>::Event event(x, y, phi);
+    Polygon<4>::Event event(x, y, phi);
     bool intersects = n_iters > 0;
 
     CHECKED_IF(poly.intersects(event) == intersects) {
@@ -81,11 +81,11 @@ TEST_CASE("polygon/intersection/math", "[math]") {
 
         if (n_iters > 0) {
           double ix, iy;
-          Polygon<>::Intersections m_inters;
+          Polygon<4>::Intersections m_inters;
 
           for (size_t j = 0; j < n_iters; ++j) {
             in >> ix >> iy;
-            Polygon<>::Point p(ix, iy);
+            Polygon<4>::Point p(ix, iy);
             m_inters.push_back(p);
           }
 

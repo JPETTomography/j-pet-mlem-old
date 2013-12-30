@@ -2,10 +2,50 @@
 
 #include <cuda_runtime.h>
 
-#include "data_structures.h"
+#include "geometry.h"
 #include "config.h"
 
-__device__ Secant_Points secant(float x, float y, float angle, float radius) {
+using namespace gpu;
+
+__device__ void create_detector_ring(float& h_detector,
+                                     float& w_detector,
+                                     float& radius,
+                                     DetectorRing& test_ring) {
+
+  Detector detector_base;
+
+  detector_base.points[0].x =
+      (h_detector / 2.0f) + radius + (h_detector / 2.0f);
+  detector_base.points[0].y = w_detector / 2.0f;
+  detector_base.points[1].x =
+      (h_detector / 2.0f) + radius + (h_detector / 2.0f);
+  detector_base.points[1].y = -w_detector / 2.0f;
+  detector_base.points[2].x =
+      (-h_detector / 2.0f) + radius + (h_detector / 2.0f);
+  detector_base.points[2].y = -w_detector / 2.0f;
+  detector_base.points[3].x =
+      (-h_detector / 2.0) + radius + (h_detector / 2.0f);
+  detector_base.points[3].y = w_detector / 2.0f;
+
+  test_ring.detector_list[threadIdx.x] = detector_base;
+
+  float angle = 2.0f * M_PI * threadIdx.x / NUMBER_OF_DETECTORS;
+  float sin_phi = __sinf(angle);
+  float cos_phi = __cosf(angle);
+
+  for (int j = 0; j < 4; ++j) {
+
+    float temp_x = test_ring.detector_list[threadIdx.x].points[j].x;
+    float temp_y = test_ring.detector_list[threadIdx.x].points[j].y;
+
+    test_ring.detector_list[threadIdx.x].points[j].x =
+        temp_x * cos_phi - temp_y * sin_phi;
+    test_ring.detector_list[threadIdx.x].points[j].y =
+        temp_x * sin_phi + temp_y * cos_phi;
+  }
+}
+
+__device__ SecantPoints secant(float x, float y, float angle, float radius) {
 
   float a = std::sin(angle);
   float b = -std::cos(angle);
@@ -20,7 +60,7 @@ __device__ Secant_Points secant(float x, float y, float angle, float radius) {
   float sq = sqrt(b2 * (-(c * c) + a2_b2 * radius * radius));
   float asq = a * sq;
 
-  Secant_Points secant_positions;
+  SecantPoints secant_positions;
 
   secant_positions.x1 = (ac - sq) / a2_b2;
   secant_positions.y1 = ((b2c + asq) / b_a2_b2);
@@ -30,9 +70,9 @@ __device__ Secant_Points secant(float x, float y, float angle, float radius) {
   return secant_positions;
 }
 
-__device__ Secant_Angle secant_angles(Secant_Points& e) {
+__device__ SecantAngles secant_angles(SecantPoints& e) {
 
-  Secant_Angle temp;
+  SecantAngles temp;
   temp.angle1 = atan2(e.y1, e.x1);
   temp.angle2 = atan2(e.y2, e.x2);
 
@@ -46,11 +86,11 @@ __device__ int section(float angle, int n_detectors) {
          (n_detectors);
 }
 
-__device__ Secant_Sections secant_sections(Secant_Points& e, int n_detectors) {
+__device__ SecantSections secant_sections(SecantPoints& e, int n_detectors) {
 
-  Secant_Angle angles = secant_angles(e);
+  SecantAngles angles = secant_angles(e);
 
-  Secant_Sections temp;
+  SecantSections temp;
 
   temp.ss1 = section(angles.angle1, n_detectors);
   temp.ss2 = section(angles.angle2, n_detectors);
@@ -58,16 +98,15 @@ __device__ Secant_Sections secant_sections(Secant_Points& e, int n_detectors) {
   return temp;
 }
 
-CUDA_CALLABLE_MEMBER int intersections(float x,
-                                       float y,
-                                       float angle,
-                                       Detector_Ring& ring,
-                                       int detector_id,
-                                       Hits& hit) {
+__device__ int intersections(float x,
+                             float y,
+                             float angle,
+                             DetectorRing& ring,
+                             int detector_id,
+                             Hits& hit) {
 
   float p1_x = ring.detector_list[detector_id].points[3].x;
   float p1_y = ring.detector_list[detector_id].points[3].y;
-
 
   float a = std::sin(angle);
   float b = -std::cos(angle);
@@ -90,7 +129,7 @@ CUDA_CALLABLE_MEMBER int intersections(float x,
 
       r++;
 
-      if (r == 2){
+      if (r == 2) {
         return r;
       }
     } else if (v1 * v2 < 0.0f) {
@@ -103,7 +142,7 @@ CUDA_CALLABLE_MEMBER int intersections(float x,
 
       r++;
 
-      if (r == 2){
+      if (r == 2) {
         return r;
       }
     }
@@ -114,19 +153,17 @@ CUDA_CALLABLE_MEMBER int intersections(float x,
   return r;
 }
 
-CUDA_CALLABLE_MEMBER float secant_angle(float x1, float y1) {
-  return atan2(y1, x1);
-}
+__device__ float SecantAngles(float x1, float y1) { return atan2(y1, x1); }
 
-CUDA_CALLABLE_MEMBER bool check_for_hits(int inner,
-                                         int outer,
-                                         float x,
-                                         float y,
-                                         float angle,
-                                         int n_detectors,
-                                         Detector_Ring& ring,
-                                         int& detector,
-                                         Hits& hit) {
+__device__ bool check_for_hits(int inner,
+                               int outer,
+                               float x,
+                               float y,
+                               float angle,
+                               int n_detectors,
+                               DetectorRing& ring,
+                               int& detector,
+                               Hits& hit) {
 
   int points;
 

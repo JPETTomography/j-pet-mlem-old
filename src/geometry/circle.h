@@ -1,8 +1,11 @@
 #pragma once
 
+#include <initializer_list>
+
 #include "point.h"
 #include "2d_xy/event.h"
 #include "util/svg_ostream.h"
+#include "util/array.h"
 
 /// Produces secant angles circle/line intersection as a equation system
 /// solution.
@@ -18,24 +21,27 @@ template <typename F = double, typename S = int> class Circle {
   typedef F Angle;
   typedef ::Point<F> Point;
   typedef ::Event<F> Event;
-  typedef std::pair<Point, Point> Secant;
-  typedef std::pair<Angle, Angle> SecantAngle;
-  typedef std::pair<S, S> SecantSections;
+  typedef Array<2, Point> Secant;
+  typedef Array<2, Angle> SecantAngles;
+  typedef Array<2, S> SecantSections;
 
-  Secant secant(Event& e) {
-    auto sq = sqrt(e.b2 * (-(e.c * e.c) + e.a2_b2 * radius2_));
+  Secant secant(const Event& e) {
+    auto cabr2 = (-(e.c * e.c) + e.a2_b2 * radius2_);
+    auto sq = sqrt(e.b2 * cabr2);
     auto asq = e.a * sq;
 
-    return std::make_pair(
-        Point((e.ac - sq) / e.a2_b2, (e.b2c + asq) / e.b_a2_b2),
-        Point((e.ac + sq) / e.a2_b2, (e.b2c - asq) / e.b_a2_b2));
+    return Secant({ Point((e.ac - sq) / e.a2_b2, (e.b2c + asq) / e.b_a2_b2),
+                    Point((e.ac + sq) / e.a2_b2, (e.b2c - asq) / e.b_a2_b2) });
   }
 
   F angle(Point p) { return std::atan2(p.y, p.x); }
 
-  SecantAngle secant_angles(Event& e) {
-    auto s = secant(e);
-    return SecantAngle(angle(s.first), angle(s.second));
+  SecantAngles secant_angles(Event& e) {
+    SecantAngles sa;
+    for (auto& p : secant(e)) {
+      sa.push_back(angle(p));
+    }
+    return sa;
   }
 
   S section(F angle, S n_detectors) {
@@ -46,10 +52,11 @@ template <typename F = double, typename S = int> class Circle {
   }
 
   SecantSections secant_sections(Event& e, S n_detectors) {
-    auto sa = secant_angles(e);
-
-    return SecantSections(section(sa.first, n_detectors),
-                          section(sa.second, n_detectors));
+    SecantSections ss;
+    for (auto& sa : secant_angles(e)) {
+      ss.push_back(section(sa, n_detectors));
+    }
+    return ss;
   }
 
   F radius() const { return radius_; }
