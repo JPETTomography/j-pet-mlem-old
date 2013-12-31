@@ -109,7 +109,6 @@ int main(int argc, char* argv[]) {
       for (int i = 0; i < n_i_blocks; ++i) {
         reconstruction.emt(cl.get<int>("iterations"));
         rho = reconstruction.rho();
-        rho_detected = reconstruction.rho_detected();
       }
       return 0;
     }
@@ -137,9 +136,8 @@ int main(int argc, char* argv[]) {
     out_detected.open(fn_wo_ext + "_detected" + fn_ext);
 
     for (int i = 0; i < n_i_blocks; ++i) {
-      reconstruction.emt_clean(cl.get<int>("iterations"));
+      reconstruction.emt(cl.get<int>("iterations"));
       rho = reconstruction.rho();
-      rho_detected = reconstruction.rho_detected();
       output_vector(out, rho.begin(), rho.end(), n_pixels_in_row);
       output_vector(out_detected,
                     rho_detected.begin(),

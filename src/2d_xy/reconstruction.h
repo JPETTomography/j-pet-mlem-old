@@ -39,8 +39,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
     total_n_pixels_ = n_pixels_in_row_ * n_pixels_in_row_;
 
-    rho_.resize(total_n_pixels_, static_cast<F>(0));
-    rho_detected_.resize(total_n_pixels_, static_cast<F>(0));
+    rho_.resize(total_n_pixels_, static_cast<F>(1));
     scale_.resize(total_n_pixels_, static_cast<F>(0));
 
     for (auto it = matrix_.begin(); it != matrix_.end(); ++it) {
@@ -51,7 +50,6 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     for (S p = 0; p < total_n_pixels_; ++p) {
       if (scale_[p] > 0) {
         scale_[p] = n_emissions / scale_[p];
-        rho_detected_[p] = static_cast<F>(1);
       }
     }
 
@@ -89,7 +87,6 @@ template <typename FType = double, typename SType = int> class Reconstruction {
       std::cout << ".", std::cout.flush();
 
       for (S p = 0; p < total_n_pixels_; ++p) {
-        //rho_detected_[p] = F(0);
         y[p] = static_cast<F>(0);
       }
 
@@ -148,7 +145,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
           // count u for current LOR
           while (matrix_it->lor == lor && matrix_it->position == position) {
             auto i_pixel = pixel_index(matrix_it->pixel);
-            u += rho_detected_[i_pixel] * static_cast<F>(matrix_it->hits) *
+            u += rho_[i_pixel] * static_cast<F>(matrix_it->hits) *
                  scale_[i_pixel];
             ++matrix_it;
           }
@@ -169,133 +166,14 @@ template <typename FType = double, typename SType = int> class Reconstruction {
         }
         ++means_it;
       }
-
-      for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
-        if (scale_[p] > 0) {
-          rho_detected_[p] *= y[p];
-        }
-      }
-    }
-
-    clock_t stop = clock();
-    std::cout << std::endl;
-
-    for (S p = 0; p < total_n_pixels_; ++p) {
-      if (scale_[p] > 0) {
-        rho_[p] = rho_detected_[p] * scale_[p];
-      }
-    }
-
-    double time = static_cast<double>(stop - start) / CLOCKS_PER_SEC;
-    std::cout << "time = " << time << "s "
-              << "time/iter = " << time / n_iterations << "s" << std::endl;
-  }
-
-  void emt_clean(S n_iterations) {
-    F y[n_pixels_in_row_ * n_pixels_in_row_];
-
-    clock_t start = clock();
-
-    for (S i = 0; i < n_iterations; ++i) {
-      std::cout << ".", std::cout.flush();
 
       for (S p = 0; p < total_n_pixels_; ++p) {
-        rho_detected_[p] = F(0);
-        y[p] = static_cast<F>(0);
-      }
-
-      auto matrix_it = matrix_.begin();
-      auto means_it = means_.begin();
-      for (;;) {
-        // skip LORs that does not exist in means
-        while (matrix_it != matrix_.end() &&
-               (matrix_it->lor < means_it->lor ||
-                (matrix_it->lor == means_it->lor &&
-                 matrix_it->position < means_it->position))) {
-#if DEBUG
-          std::cerr << "skip matrix LOR (" << matrix_it->lor.first << ", "
-                    << matrix_it->lor.second << ") position "
-                    << matrix_it->position << std::endl;
-#endif
-          ++matrix_it;
-        }
-
-        // skip LORs that does not exist in system matrix
-        while (means_it != means_.end() &&
-               (matrix_it->lor > means_it->lor ||
-                (matrix_it->lor == means_it->lor &&
-                 matrix_it->position > means_it->position))) {
-#if 1  // this warning should not appear if system matrix is complete
-          std::cerr << "warning: mean LOR (" << means_it->lor.first << ", "
-                    << means_it->lor.second << ") position "
-                    << means_it->position << " not found in system matrix"
-                    << std::endl;
-#endif
-          ++means_it;
-        }
-
-        // check if we are EOT
-        if (matrix_it == matrix_.end() || means_it == means_.end())
-          break;
-
-        if (matrix_it->lor != means_it->lor ||
-            matrix_it->position != means_it->position)
-          continue;
-
-        // store current lor & position
-        auto lor = matrix_it->lor;
-        auto position = matrix_it->position;
-
-#if DEBUG
-        std::cerr << "processing LOR (" << lor.first << ", " << lor.second
-                  << ") position " << position << std::endl;
-#endif
-
-        // if there any mean anyway here?
-        if (means_it->mean > 0) {
-          F u = static_cast<F>(0);
-          auto prev_it = matrix_it;
-
-          // count u for current LOR
-          while (matrix_it->lor == lor && matrix_it->position == position) {
-            auto i_pixel = pixel_index(matrix_it->pixel);
-            u += rho_detected_[i_pixel] * static_cast<F>(matrix_it->hits) *
-                 scale_[i_pixel];
-            ++matrix_it;
-          }
-          F phi = means_it->mean / u;
-
-          // count y for current lor
-          matrix_it = prev_it;
-          while (matrix_it->lor == lor && matrix_it->position == position) {
-            auto i_pixel = pixel_index(matrix_it->pixel);
-            y[pixel_index(matrix_it->pixel)] +=
-                phi * static_cast<F>(matrix_it->hits) * scale_[i_pixel];
-            ++matrix_it;
-          }
-        } else {
-          // skip this LOR
-          while (matrix_it->lor == lor && matrix_it->position == position)
-            ++matrix_it;
-        }
-        ++means_it;
-      }
-
-      for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
-        if (scale_[p] > 0) {
-          rho_detected_[p] *= y[p];
-        }
+        rho_[p] *= y[p];
       }
     }
 
     clock_t stop = clock();
     std::cout << std::endl;
-
-    for (S p = 0; p < total_n_pixels_; ++p) {
-      if (scale_[p] > 0) {
-        rho_[p] = rho_detected_[p] * scale_[p];
-      }
-    }
 
     double time = static_cast<double>(stop - start) / CLOCKS_PER_SEC;
     std::cout << "time = " << time << "s "
@@ -304,13 +182,8 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
   S n_pixels_in_row() { return n_pixels_in_row_; }
   F rho(const S p) const { return rho_[p]; }
-  F rho_detected(const S p) const { return rho_detected_[p]; }
   F rho(const Pixel& pixel) const { return rho_[pixel_index(pixel)]; }
-  F rho_detected(const Pixel& pixel) const {
-    return rho_detected_[pixel_index(pixel)];
-  }
   Output rho() const { return rho_; }
-  Output rho_detected() const { return rho_detected_; }
 
  public:
   F threshold;
@@ -325,7 +198,6 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   S n_emissions_;
   Output scale_;
   Output rho_;
-  Output rho_detected_;
   Matrix& matrix_;
   Means means_;
 
