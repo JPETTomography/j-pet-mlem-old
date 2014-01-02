@@ -39,7 +39,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
     total_n_pixels_ = n_pixels_in_row_ * n_pixels_in_row_;
 
-    rho_.resize(total_n_pixels_, static_cast<F>(1));
+    rho_.resize(total_n_pixels_);
     rho_detected_.resize(total_n_pixels_, static_cast<F>(1));
     scale_.resize(total_n_pixels_, static_cast<F>(0));
 
@@ -48,6 +48,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     }
 
     auto n_emissions = static_cast<F>(n_emissions_);
+
     for (S p = 0; p < total_n_pixels_; ++p) {
       if (scale_[p] > 0) {
         scale_[p] = n_emissions / scale_[p];
@@ -168,13 +169,10 @@ template <typename FType = double, typename SType = int> class Reconstruction {
         ++means_it;
       }
 
-      for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
-        if (scale_[p] > 0) {
-          rho_detected_[p] *= y[p];
-        }
+      for (S p = 0; p < total_n_pixels_; ++p) {
+        rho_detected_[p] *= y[p];
       }
     }
-
 
     for (S p = 0; p < total_n_pixels_; ++p) {
       rho_[p] = rho_detected_[p] * scale_[p];
@@ -192,7 +190,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   F rho(const S p) const { return rho_[p]; }
   F rho(const Pixel& pixel) const { return rho_[pixel_index(pixel)]; }
   Output rho() const { return rho_; }
-  Output rho_detected() {return rho_detected_;}
+  Output rho_detected() { return rho_detected_; }
 
  public:
   F threshold;
