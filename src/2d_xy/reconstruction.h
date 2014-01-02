@@ -40,6 +40,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     total_n_pixels_ = n_pixels_in_row_ * n_pixels_in_row_;
 
     rho_.resize(total_n_pixels_, static_cast<F>(1));
+    rho_detected_.resize(total_n_pixels_, static_cast<F>(1));
     scale_.resize(total_n_pixels_, static_cast<F>(0));
 
     for (auto it = matrix_.begin(); it != matrix_.end(); ++it) {
@@ -145,7 +146,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
           // count u for current LOR
           while (matrix_it->lor == lor && matrix_it->position == position) {
             auto i_pixel = pixel_index(matrix_it->pixel);
-            u += rho_[i_pixel] * static_cast<F>(matrix_it->hits) *
+            u += rho_detected_[i_pixel] * static_cast<F>(matrix_it->hits) *
                  scale_[i_pixel];
             ++matrix_it;
           }
@@ -167,9 +168,16 @@ template <typename FType = double, typename SType = int> class Reconstruction {
         ++means_it;
       }
 
-      for (S p = 0; p < total_n_pixels_; ++p) {
-        rho_[p] *= y[p];
+      for (S p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
+        if (scale_[p] > 0) {
+          rho_detected_[p] *= y[p];
+        }
       }
+    }
+
+
+    for (S p = 0; p < total_n_pixels_; ++p) {
+      rho_[p] = rho_detected_[p] * scale_[p];
     }
 
     clock_t stop = clock();
@@ -184,6 +192,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   F rho(const S p) const { return rho_[p]; }
   F rho(const Pixel& pixel) const { return rho_[pixel_index(pixel)]; }
   Output rho() const { return rho_; }
+  Output rho_detected() {return rho_detected_;}
 
  public:
   F threshold;
@@ -198,6 +207,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   S n_emissions_;
   Output scale_;
   Output rho_;
+  Output rho_detected_;
   Matrix& matrix_;
   Means means_;
 

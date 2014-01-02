@@ -138,6 +138,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < n_i_blocks; ++i) {
       reconstruction.emt(cl.get<int>("iterations"));
       rho = reconstruction.rho();
+      rho_detected = reconstruction.rho_detected();
       output_vector(out, rho.begin(), rho.end(), n_pixels_in_row);
       output_vector(out_detected,
                     rho_detected.begin(),
