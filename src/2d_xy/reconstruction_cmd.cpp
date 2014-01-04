@@ -31,14 +31,13 @@ void output_vector(std::ostream& out,
                    Iterator it,
                    Iterator end,
                    int line_length) {
-  for (int c = 0; it != end; ++it, ++c) {
+  for (int c = 1; it != end; ++it, ++c) {
+    out << *it;
     if (c % line_length == 0) {
-      if (c)
-        out << "\n";
+      out << "\n";
     } else {
       out << " ";
     }
-    out << *it;
   }
 }
 
