@@ -28,14 +28,16 @@
 
 template <typename Iterator>
 void output_vector(std::ostream& out,
-                   Iterator start,
-                   Iterator stop,
+                   Iterator it,
+                   Iterator end,
                    int line_length) {
-  int index = 0;
-  for (; start != stop; ++start, ++index) {
-    out << *start << " ";
-    if (index % line_length == 0)
+  for (int c = 1; it != end; ++it, ++c) {
+    out << *it;
+    if (c % line_length == 0) {
       out << "\n";
+    } else {
+      out << " ";
+    }
   }
 }
 
