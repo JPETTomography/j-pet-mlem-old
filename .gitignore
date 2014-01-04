@@ -2,7 +2,7 @@
 !/*/
 !/*.*
 /data/
-/doc/*.pdf
+/pubs/*.pdf
 /doc/html/
 **/*-converted-to.*
 **/*.aux
