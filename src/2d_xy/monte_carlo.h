@@ -69,6 +69,13 @@ class MonteCarlo {
       if ((pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
           detector_ring.fov_radius() * detector_ring.fov_radius())
         continue;
+#if _OPENMP
+        auto thread_id = omp_get_thread_num();
+#else
+        auto thread_id = 0;
+#endif
+
+      std::cerr<<"thread "<<thread_id<<" starting pixel "<<pixel.x<<" "<<pixel.y<<std::endl;
 
       int pixel_hit_count = 0;
       for (auto n = 0; n < n_emissions; ++n) {
