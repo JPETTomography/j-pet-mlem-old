@@ -56,6 +56,8 @@ typedef DetectorRing<double, int, PolygonalDetector<6, double>>
 template <typename DetectorRing, typename Model>
 void run(cmdline::parser& cl, Model& model);
 
+void progress_callback(int pixel, int n_pixels);
+
 int main(int argc, char* argv[]) {
 
   try {
@@ -385,7 +387,7 @@ void run(cmdline::parser& cl, Model& model) {
 
   MonteCarlo<DetectorRing, ComputeMatrix> monte_carlo(
       detector_ring, matrix, s_pixel, tof_step);
-  monte_carlo(gen, model, n_emissions);
+  monte_carlo(gen, model, n_emissions, verbose ? progress_callback : NULL);
 
 #ifdef __linux__
   if (verbose) {
@@ -524,4 +526,9 @@ void run(cmdline::parser& cl, Model& model) {
     while (getc(stdin) != '\n') {
     }
   }
+}
+
+void progress_callback(int pixel, int n_pixels) {
+  int percent = pixel * 100 / n_pixels;
+  std::cerr << " " << percent << "% " << pixel << "/" << n_pixels << "\r";
 }

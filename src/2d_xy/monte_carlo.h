@@ -17,6 +17,9 @@ class MonteCarlo {
   typedef typename Matrix::LOR LOR;
 
  public:
+  typedef void (*ProgressCallback)(S pixel, S n_pixels);
+
+ public:
   MonteCarlo(DetectorRing& detector_ring,
              Matrix& matrix,
              F pixel_size,
@@ -34,6 +37,7 @@ class MonteCarlo {
   void operator()(RandomGenerator& gen,
                   AcceptanceModel model,
                   S n_emissions,
+                  ProgressCallback callback = NULL,
                   bool o_collect_mc_matrix = true,
                   bool o_collect_pixel_stats = true) {
     if (n_emissions <= 0)
@@ -63,6 +67,15 @@ class MonteCarlo {
     // thread distribution when issuing on MIC
     for (auto i_pixel = 0; i_pixel < matrix.total_n_pixels_in_triangle();
          ++i_pixel) {
+
+      if (callback
+#if _OPENMP
+          &&
+          omp_get_thread_num() == 0
+#endif
+          ) {
+        callback(i_pixel, matrix.total_n_pixels_in_triangle());
+      }
 
       auto pixel = matrix.pixel_at_index(i_pixel);
 
