@@ -17,6 +17,9 @@ class MonteCarlo {
   typedef typename Matrix::LOR LOR;
 
  public:
+  typedef void (*ProgressCallback)(S pixel, S n_pixels);
+
+ public:
   MonteCarlo(DetectorRing& detector_ring,
              Matrix& matrix,
              F pixel_size,
@@ -34,6 +37,7 @@ class MonteCarlo {
   void operator()(RandomGenerator& gen,
                   AcceptanceModel model,
                   S n_emissions,
+                  ProgressCallback callback = NULL,
                   bool o_collect_mc_matrix = true,
                   bool o_collect_pixel_stats = true) {
     if (n_emissions <= 0)
@@ -64,18 +68,20 @@ class MonteCarlo {
     for (auto i_pixel = 0; i_pixel < matrix.total_n_pixels_in_triangle();
          ++i_pixel) {
 
+      if (callback
+#if _OPENMP
+          &&
+          omp_get_thread_num() == 0
+#endif
+          ) {
+        callback(i_pixel, matrix.total_n_pixels_in_triangle());
+      }
+
       auto pixel = matrix.pixel_at_index(i_pixel);
 
       if ((pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
           detector_ring.fov_radius() * detector_ring.fov_radius())
         continue;
-#if _OPENMP
-        auto thread_id = omp_get_thread_num();
-#else
-        auto thread_id = 0;
-#endif
-
-      std::cerr<<"thread "<<thread_id<<" starting pixel "<<pixel.x<<" "<<pixel.y<<std::endl;
 
       int pixel_hit_count = 0;
       for (auto n = 0; n < n_emissions; ++n) {
