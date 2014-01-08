@@ -26,6 +26,8 @@
 
 #include "monte_carlo.h"
 
+#define HAVE_CUDA 1
+
 #if _OPENMP
 #include <omp.h>
 #endif
@@ -160,9 +162,48 @@ int main(int argc, char* argv[]) {
       model = "scintillator";
     }
 
+    auto n_pixels = cl.get<int>("n-pixels");
+    auto radius = cl.get<double>("radius");
+
+    float s_pixel;
+
+    // automatic pixel size
+    if (!cl.exist("s-pixel")) {
+      if (!cl.exist("radius")) {
+        s_pixel = 2. / n_pixels;  // exact result
+      } else {
+        s_pixel = M_SQRT2 * radius / n_pixels;
+      }
+      std::cerr << "--s-pixel=" << s_pixel << std::endl;
+    }
+
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-      run_gpu(cl);
+      auto sparse_matrix = run_gpu(cl);
+
+      std::cout << "HERE " << std::endl;
+
+      // generate output
+      if (cl.exist("output")) {
+        auto fn = cl.get<cmdline::string>("output");
+        auto fn_sep = fn.find_last_of("\\/");
+        auto fn_ext = fn.find_last_of(".");
+        auto fn_wo_ext =
+            fn.substr(0,
+                      fn_ext != std::string::npos &&
+                              (fn_sep == std::string::npos || fn_sep < fn_ext)
+                          ? fn_ext
+                          : std::string::npos);
+        auto fn_wo_path =
+            fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
+
+        obstream out(fn, std::ios::binary | std::ios::trunc);
+
+        out << sparse_matrix;
+
+        std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
+        os << cl;
+      }
     } else
 #endif
     {
@@ -268,7 +309,7 @@ void run(cmdline::parser& cl, Model& model) {
     std::cerr << "assumed:" << std::endl;
   }
 
-  // automatic pixel size
+  // automatic radius size
   if (!cl.exist("radius")) {
     if (!cl.exist("s-pixel")) {
       radius = M_SQRT2;  // exact result
@@ -278,7 +319,7 @@ void run(cmdline::parser& cl, Model& model) {
     std::cerr << "--radius=" << radius << std::endl;
   }
 
-  // automatic radius
+  // automatic pixel size
   if (!cl.exist("s-pixel")) {
     if (!cl.exist("radius")) {
       s_pixel = 2. / n_pixels;  // exact result
