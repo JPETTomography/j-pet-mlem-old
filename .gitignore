@@ -1,9 +1,23 @@
+# ignore everything in root
+# and not files with extensions
+# but not in subfolders
 /*
 !/*/
 !/*.*
+
+# ignore data
 /data/
-/pubs/*.pdf
+
+# Doxygen output
 /doc/html/
+
+# LaTeX output
+/pubs/*.pdf
+
+# in some subfolders too
+/pubs/201401_report/*.pdf
+
+# LaTeX temporary files
 **/*-converted-to.*
 **/*.aux
 **/*.out
@@ -13,13 +27,19 @@
 **/*.toc
 **/*.nav
 **/*.snm
+
+# well known temporary files
 *~
 /*.bin
 /*.png
 /*.svg
 /*.txt
 /build*/
+
+# QtCreator user files
 *.pro.user
+
+# build files
 /Makefile
 /src/Makefile*
 /src/**/*.o
