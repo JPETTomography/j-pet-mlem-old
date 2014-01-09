@@ -110,6 +110,10 @@ class SparseMatrix:
         if self.header.magick == "TOFp":
             self.body = SparseMatrixTOFpBody(self.header, file)
         
+    def Add(self, file):
+        header = SparseMatrixHeader(file);
+            
+        
     def show(self):
         self.header.show();
         self.body.show();
@@ -121,7 +125,7 @@ if len(sys.argv)>1:
 matrix = SparseMatrix(file)
 matrix.show();
 matrix.body.Read()
-print matrix.body.stats()
+print matrix.body.stats()[0:3]
 
 pixmap=matrix.body.FillPixMap()
 imgplot=plt.imshow(pixmap)
