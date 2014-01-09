@@ -14,6 +14,8 @@
 #include <pmmintrin.h>
 #endif
 
+#include <ctime>
+
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/bstream.h"
@@ -137,8 +139,15 @@ int main(int argc, char* argv[]) {
     out.open(fn);
     out_detected.open(fn_wo_ext + "_detected" + fn_ext);
 
+    double sec = 0.0;
+    auto n_iterations = cl.get<int>("iterations");
+
     for (int i = 0; i < n_i_blocks; ++i) {
-      reconstruction.emt(cl.get<int>("iterations"));
+      clock_t start = clock();
+      reconstruction.emt(n_iterations);
+      clock_t stop = clock();
+      sec += static_cast<double>(stop - start) / CLOCKS_PER_SEC;
+
       rho = reconstruction.rho();
       rho_detected = reconstruction.rho_detected();
       output_vector(out, rho.begin(), rho.end(), n_pixels_in_row);
@@ -146,6 +155,13 @@ int main(int argc, char* argv[]) {
                     rho_detected.begin(),
                     rho_detected.end(),
                     n_pixels_in_row);
+    }
+
+    std::cout << std::endl;
+    if (verbose) {
+      std::cout << "time = " << sec << "s "
+                << "time/iter = " << sec / (n_i_blocks * n_iterations) << "s"
+                << std::endl;
     }
 
     out.close();

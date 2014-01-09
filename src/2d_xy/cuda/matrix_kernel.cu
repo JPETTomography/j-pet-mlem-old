@@ -100,8 +100,6 @@ bool run_monte_carlo_kernel(int number_of_threads_per_block,
          number_of_blocks * sizeof(MatrixElement),
          cudaMemcpyHostToDevice);
 
-#ifdef PRINT
-
     long total_emissions =
         (long)n_emissions * number_of_blocks * number_of_threads_per_block;
 
@@ -110,7 +108,6 @@ bool run_monte_carlo_kernel(int number_of_threads_per_block,
            j,
            n_emissions,
            total_emissions);
-#endif
 
     if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
 

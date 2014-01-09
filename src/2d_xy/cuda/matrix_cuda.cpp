@@ -101,8 +101,8 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   auto w_detector = cl.get<double>("w-detector");
   auto h_detector = cl.get<double>("h-detector");
 
-  auto number_of_blocks = cl.get<int>("n-blocks") ?: 512;
-  auto number_of_threads_per_block = cl.get<int>("n-threads");
+  auto number_of_blocks = cl.get<int>("n-blocks") ?: 256;
+  auto number_of_threads_per_block = cl.get<int>("n-threads") ?: 512;
 
   // automatic pixel size
   if (!cl.exist("radius")) {
@@ -199,7 +199,7 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
         OutputMatrix::LOR lor(lookup_table_lors[i].lor_a,
                               lookup_table_lors[i].lor_b);
 
-        auto pixel = lookup_table_pixel[i];
+        auto pixel = lookup_table_pixel[id];
 #ifdef PRINT
         if (id == 1) {
           printf("ID: %d LOR(%d,%d) %f\n",
