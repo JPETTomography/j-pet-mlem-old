@@ -26,6 +26,7 @@
 
 #include "monte_carlo.h"
 
+
 #if _OPENMP
 #include <omp.h>
 #endif
