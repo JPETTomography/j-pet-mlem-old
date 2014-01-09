@@ -5,8 +5,6 @@
 #include <list>
 #include <algorithm>
 
-#include <ctime>
-
 #include "detector_ring.h"
 #include "sparse_matrix.h"
 #include "geometry/pixel.h"
@@ -82,8 +80,6 @@ template <typename FType = double, typename SType = int> class Reconstruction {
 
   void emt(S n_iterations) {
     F y[n_pixels_in_row_ * n_pixels_in_row_];
-
-    clock_t start = clock();
 
     for (S i = 0; i < n_iterations; ++i) {
       std::cout << ".", std::cout.flush();
@@ -177,13 +173,6 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     for (S p = 0; p < total_n_pixels_; ++p) {
       rho_[p] = rho_detected_[p] * scale_[p];
     }
-
-    clock_t stop = clock();
-    std::cout << std::endl;
-
-    double time = static_cast<double>(stop - start) / CLOCKS_PER_SEC;
-    std::cout << "time = " << time << "s "
-              << "time/iter = " << time / n_iterations << "s" << std::endl;
   }
 
   S n_pixels_in_row() { return n_pixels_in_row_; }

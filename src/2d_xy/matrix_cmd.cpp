@@ -26,7 +26,6 @@
 
 #include "monte_carlo.h"
 
-#define HAVE_CUDA 0
 
 #if _OPENMP
 #include <omp.h>
@@ -160,21 +159,6 @@ int main(int argc, char* argv[]) {
     auto& model = cl.get<std::string>("model");
     if (model == "scintilator") {
       model = "scintillator";
-    }
-
-    auto n_pixels = cl.get<int>("n-pixels");
-    auto radius = cl.get<double>("radius");
-
-    float s_pixel;
-
-    // automatic pixel size
-    if (!cl.exist("s-pixel")) {
-      if (!cl.exist("radius")) {
-        s_pixel = 2. / n_pixels;  // exact result
-      } else {
-        s_pixel = M_SQRT2 * radius / n_pixels;
-      }
-      std::cerr << "--s-pixel=" << s_pixel << std::endl;
     }
 
 #if HAVE_CUDA
