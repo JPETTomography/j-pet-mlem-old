@@ -26,7 +26,7 @@
 
 #include "monte_carlo.h"
 
-#define HAVE_CUDA 1
+#define HAVE_CUDA 0
 
 #if _OPENMP
 #include <omp.h>
