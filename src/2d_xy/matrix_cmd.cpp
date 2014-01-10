@@ -462,8 +462,8 @@ void run(cmdline::parser& cl, Model& model) {
     }
 
     svg_ostream<> svg(fn_wo_ext + ".svg",
-                      radius + h_detector,
-                      radius + h_detector,
+                      detector_ring.outer_radius(),
+                      detector_ring.outer_radius(),
                       1024.,
                       1024.);
     svg << detector_ring;
@@ -508,8 +508,8 @@ void run(cmdline::parser& cl, Model& model) {
     }
 
     svg_ostream<> svg(fn_wo_ext + ".svg",
-                      radius + h_detector,
-                      radius + h_detector,
+                      detector_ring.outer_radius(),
+                      detector_ring.outer_radius(),
                       1024.,
                       1024.);
     svg << detector_ring;
