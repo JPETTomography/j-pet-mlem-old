@@ -16,8 +16,8 @@ inline void report_progress(time_t start_time, int completed, int total) {
 
   double persec = (double)completed / (double)(time(NULL) - start_time);
 
-  std::cerr << " " << (completed * 100 / total) << "% " << completed << "/"
-            << total;
+  std::cerr << " " << std::round((double)completed / (double)total * 100.0)
+            << "% " << completed << "/" << total;
 
   if (!std::isnan(persec)) {
     std::cerr << " "
