@@ -26,7 +26,6 @@
 
 #include "monte_carlo.h"
 
-
 #if _OPENMP
 #include <omp.h>
 #endif
@@ -318,10 +317,7 @@ void run(cmdline::parser& cl, Model& model) {
     w_detector = 2 * M_PI * .9 * radius / n_detectors;
     std::cerr << "--w-detector=" << w_detector << std::endl;
   }
-  if (!cl.exist("h-detector")) {
-    h_detector = w_detector;
-    std::cerr << "--h-detector=" << h_detector << std::endl;
-  }
+  // NOTE: detector height will be determined per shape
 
   std::random_device rd;
   tausworthe gen(rd());
@@ -465,8 +461,8 @@ void run(cmdline::parser& cl, Model& model) {
     }
 
     svg_ostream<> svg(fn_wo_ext + ".svg",
-                      radius + h_detector,
-                      radius + h_detector,
+                      detector_ring.outer_radius(),
+                      detector_ring.outer_radius(),
                       1024.,
                       1024.);
     svg << detector_ring;
@@ -511,8 +507,8 @@ void run(cmdline::parser& cl, Model& model) {
     }
 
     svg_ostream<> svg(fn_wo_ext + ".svg",
-                      radius + h_detector,
-                      radius + h_detector,
+                      detector_ring.outer_radius(),
+                      detector_ring.outer_radius(),
                       1024.,
                       1024.);
     svg << detector_ring;

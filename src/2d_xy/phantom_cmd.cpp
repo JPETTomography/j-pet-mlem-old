@@ -206,10 +206,7 @@ void run(cmdline::parser& cl, Model& model) {
     w_detector = 2 * M_PI * .9 * radius / n_detectors;
     std::cerr << "--w-detector=" << w_detector << std::endl;
   }
-  if (!cl.exist("h-detector")) {
-    h_detector = w_detector;
-    std::cerr << "--h-detector=" << h_detector << std::endl;
-  }
+  // NOTE: detector height will be determined per shape
 
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -285,8 +282,15 @@ void run(cmdline::parser& cl, Model& model) {
     } while (!in.eof());
   }
 
+  auto verbose = cl.exist("verbose");
+
   if (phantom.n_regions() > 0) {
     while (n_emitted < n_emissions) {
+
+      if (verbose && !(n_emitted % (only_detected ? 10000 : 1000000))) {
+        std::cerr << " " << (n_emitted * 100 / n_emissions) << "% " << n_emitted
+                  << "/" << n_emissions << "\r";
+      }
 
       double x = fov_dis(gen);
       double y = fov_dis(gen);
