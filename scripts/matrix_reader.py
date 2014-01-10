@@ -4,6 +4,7 @@ import re
 import datetime
 import sys
 import struct
+import math
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -127,8 +128,18 @@ matrix.show();
 matrix.body.Read()
 print matrix.body.stats()[0:3]
 
+
+def callback(event):
+    ix = math.floor(event.xdata);
+    iy = math.floor(event.ydata);
+    print ix, iy, pixmap[ix,iy];
+    
+    
+
+
 pixmap=matrix.body.FillPixMap()
 imgplot=plt.imshow(pixmap)
 imgplot.set_interpolation("nearest")
+imgplot.figure.canvas.mpl_connect('button_press_event',callback);
 plt.colorbar(imgplot);
 plt.show()
