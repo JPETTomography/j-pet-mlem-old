@@ -8,7 +8,9 @@
 
 #include <random>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
+#include <ctime>
 
 #include "cmdline.h"
 #include "util/cmdline_types.h"
@@ -22,6 +24,7 @@
 #include "polygonal_detector.h"
 #include "model.h"
 #include "util/png_writer.h"
+#include "util/util.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -206,10 +209,7 @@ void run(cmdline::parser& cl, Model& model) {
     w_detector = 2 * M_PI * .9 * radius / n_detectors;
     std::cerr << "--w-detector=" << w_detector << std::endl;
   }
-  if (!cl.exist("h-detector")) {
-    h_detector = w_detector;
-    std::cerr << "--h-detector=" << h_detector << std::endl;
-  }
+  // NOTE: detector height will be determined per shape
 
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -285,8 +285,14 @@ void run(cmdline::parser& cl, Model& model) {
     } while (!in.eof());
   }
 
+  auto verbose = cl.exist("verbose");
+  time_t time_start = time(NULL);
+
   if (phantom.n_regions() > 0) {
     while (n_emitted < n_emissions) {
+      if (verbose && !(n_emitted % (only_detected ? 10000 : 1000000))) {
+        report_progress(time_start, n_emitted, n_emissions);
+      }
 
       double x = fov_dis(gen);
       double y = fov_dis(gen);
@@ -320,6 +326,9 @@ void run(cmdline::parser& cl, Model& model) {
         }
       }
     }
+  }
+  if (verbose) {
+    report_progress(time_start, n_emitted, n_emissions);
   }
 
   if (point_sources.n_sources() > 0) {
