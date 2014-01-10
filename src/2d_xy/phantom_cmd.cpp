@@ -8,7 +8,9 @@
 
 #include <random>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
+#include <ctime>
 
 #include "cmdline.h"
 #include "util/cmdline_types.h"
@@ -22,6 +24,7 @@
 #include "polygonal_detector.h"
 #include "model.h"
 #include "util/png_writer.h"
+#include "util/util.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -283,13 +286,12 @@ void run(cmdline::parser& cl, Model& model) {
   }
 
   auto verbose = cl.exist("verbose");
+  time_t time_start = time(NULL);
 
   if (phantom.n_regions() > 0) {
     while (n_emitted < n_emissions) {
-
       if (verbose && !(n_emitted % (only_detected ? 10000 : 1000000))) {
-        std::cerr << " " << (n_emitted * 100 / n_emissions) << "% " << n_emitted
-                  << "/" << n_emissions << "\r";
+        report_progress(time_start, n_emitted, n_emissions);
       }
 
       double x = fov_dis(gen);
@@ -324,6 +326,9 @@ void run(cmdline::parser& cl, Model& model) {
         }
       }
     }
+  }
+  if (verbose) {
+    report_progress(time_start, n_emitted, n_emissions);
   }
 
   if (point_sources.n_sources() > 0) {
