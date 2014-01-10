@@ -206,10 +206,7 @@ void run(cmdline::parser& cl, Model& model) {
     w_detector = 2 * M_PI * .9 * radius / n_detectors;
     std::cerr << "--w-detector=" << w_detector << std::endl;
   }
-  if (!cl.exist("h-detector")) {
-    h_detector = w_detector;
-    std::cerr << "--h-detector=" << h_detector << std::endl;
-  }
+  // NOTE: detector height will be determined per shape
 
   std::random_device rd;
   std::mt19937 gen(rd());
