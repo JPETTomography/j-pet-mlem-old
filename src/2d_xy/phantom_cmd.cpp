@@ -282,8 +282,15 @@ void run(cmdline::parser& cl, Model& model) {
     } while (!in.eof());
   }
 
+  auto verbose = cl.exist("verbose");
+
   if (phantom.n_regions() > 0) {
     while (n_emitted < n_emissions) {
+
+      if (verbose && !(n_emitted % (only_detected ? 10000 : 1000000))) {
+        std::cerr << " " << (n_emitted * 100 / n_emissions) << "% " << n_emitted
+                  << "/" << n_emissions << "\r";
+      }
 
       double x = fov_dis(gen);
       double y = fov_dis(gen);
