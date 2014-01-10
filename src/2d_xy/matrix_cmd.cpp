@@ -23,6 +23,7 @@
 #include "model.h"
 #include "util/png_writer.h"
 #include "util/svg_ostream.h"
+#include "util/util.h"
 
 #include "monte_carlo.h"
 
@@ -550,6 +551,8 @@ void run(cmdline::parser& cl, Model& model) {
 }
 
 void progress_callback(int pixel, int n_pixels) {
-  int percent = pixel * 100 / n_pixels;
-  std::cerr << " " << percent << "% " << pixel << "/" << n_pixels << "\r";
+  static time_t start_time = 0;
+  if (!start_time)
+    start_time = time(NULL);
+  report_progress(start_time, pixel, n_pixels);
 }
