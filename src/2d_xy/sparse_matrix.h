@@ -294,6 +294,38 @@ class SparseMatrix
     return out;
   }
 
+  template <class FileWriter> void output_bitmap(FileWriter& fw) {
+    S* pixels = new S[n_pixels_in_row_ * n_pixels_in_row_]();
+    if (triangular_) {
+      for (auto& e : *this) {
+        for (auto symmetry = 0; symmetry < 8; ++symmetry) {
+          auto pixel = symmetric_pixel(e.pixel, symmetry);
+          pixels[n_pixels_in_row_ * pixel.y + pixel.x] += e.hits;
+        }
+      }
+    } else {
+      for (auto& e : *this) {
+        pixels[n_pixels_in_row_ * e.pixel.y + e.pixel.x] += e.hits;
+      }
+    }
+
+    fw.template write_header<BitmapPixel>(n_pixels_in_row_, n_pixels_in_row_);
+    Hit pixel_max = 0;
+    for (auto p = 0; p < n_pixels_in_row_ * n_pixels_in_row_; ++p) {
+      pixel_max = std::max(pixel_max, pixels[p]);
+    }
+    auto gain = static_cast<double>(std::numeric_limits<BitmapPixel>::max()) /
+                pixel_max;
+    for (SS y = n_pixels_in_row_ - 1; y >= 0; --y) {
+      BitmapPixel row[n_pixels_in_row_];
+      for (auto x = 0; x < n_pixels_in_row_; ++x) {
+        row[x] = std::numeric_limits<BitmapPixel>::max() -
+                 gain * pixels[n_pixels_in_row_ * y + x];
+      }
+      fw.write_row(row);
+    }
+  }
+
   template <class FileWriter>
   void output_bitmap(FileWriter& fw, LOR& lor, S position = -1) {
     sort_by_lor();
