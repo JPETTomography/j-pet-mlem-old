@@ -1,0 +1,27 @@
+#!/usr/local/bin/MathKernel -script
+(* Mathematica notebook runner
+ * Copyright (c) 2014 Adam Strzelecki
+ * License: MIT (see http://opensource.org/licenses/MIT)
+ *)
+
+WriteString[$Output, "Creating FrontEnd...\n"];
+
+(* this way we may launch Mathematica with headless X server *)
+<<JLink`
+$FrontEndLaunchCommand = "xvfb-run -a -w 0 -s '-screen 0 800x600x24+32' Mathematica"
+ConnectToFrontEnd[]
+
+(* now process all command line files with FrontEnd *)
+UseFrontEnd[With[
+	{ nb = NotebookOpen[#] },
+	WriteString[$Output, "Evaluating: ", #, "\n"];
+	(* we need to use SelectionEvaluate rather than NotebookEvaluate producing bad graphics *)
+	SelectionMove[nb, All, Notebook];
+	SelectionEvaluate[nb];
+	(* wait till all cells are evaluated, SelectionEvaluate does not wait *)
+	SelectionMove[nb, All, Notebook];
+	While[Or @@ Map["Evaluating" /. # &, Developer`CellInformation[nb]], Pause[.5]];
+	NotebookClose[nb]]] & /@ $CommandLine[[4;;]]
+	(* command line parameters begin from 4th *)
+
+WriteString[$Output, "Done.\n"];
