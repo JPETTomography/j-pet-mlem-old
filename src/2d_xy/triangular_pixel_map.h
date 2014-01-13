@@ -76,26 +76,6 @@ class TriangularPixelMap {
 
   void hit(S i_pixel, S hits = 1) { t_hits[i_pixel] += hits; }
 
-  template <class FileWriter> void output_bitmap(FileWriter& fw) {
-    fw.template write_header<BitmapPixel>(n_pixels_in_row_, n_pixels_in_row_);
-    Hit pixel_max = 0;
-    for (auto y = 0; y < n_pixels_in_row_; ++y) {
-      for (auto x = 0; x < n_pixels_in_row_; ++x) {
-        pixel_max = std::max(pixel_max, (*this)[Pixel(x, y)]);
-      }
-    }
-    auto gain = static_cast<double>(std::numeric_limits<BitmapPixel>::max()) /
-                pixel_max;
-    for (auto y = 0; y < n_pixels_in_row_; ++y) {
-      BitmapPixel row[n_pixels_in_row_];
-      for (auto x = 0; x < n_pixels_in_row_; ++x) {
-        row[x] = std::numeric_limits<BitmapPixel>::max() -
-                 gain * (*this)[Pixel(x, y)];
-      }
-      fw.write_row(row);
-    }
-  }
-
  private:
   Pixels t_hits;
   S n_pixels_in_row_;
