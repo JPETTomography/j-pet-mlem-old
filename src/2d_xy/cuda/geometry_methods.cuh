@@ -163,7 +163,7 @@ __device__ bool check_for_hits(int inner,
                                int n_detectors,
                                DetectorRing& ring,
                                int& detector,
-                               Hits& hit) {
+                               Hits& hit,unsigned int *seed) {
 
   int points;
 
