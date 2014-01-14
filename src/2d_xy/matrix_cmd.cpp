@@ -55,7 +55,14 @@ typedef DetectorRing<double, int, PolygonalDetector<6, double>>
     HexagonalDetectorRing;
 
 template <typename DetectorRing, typename Model>
-void run(cmdline::parser& cl, Model& model);
+SparseMatrix<Pixel<>, LOR<>> run_cpu(cmdline::parser& cl,
+                                     DetectorRing& detector_ring,
+                                     Model& model);
+
+template <typename DetectorRing>
+void post_process(cmdline::parser& cl,
+                  DetectorRing& detector_ring,
+                  SparseMatrix<Pixel<>, LOR<>>& sparse_matrix);
 
 void progress_callback(int pixel, int n_pixels);
 
@@ -161,60 +168,114 @@ int main(int argc, char* argv[]) {
       model = "scintillator";
     }
 
-#if HAVE_CUDA
-    if (cl.exist("gpu")) {
-      auto sparse_matrix = run_gpu(cl);
+    auto& n_pixels = cl.get<int>("n-pixels");
+    auto& n_detectors = cl.get<int>("n-detectors");
+    auto& n_emissions = cl.get<int>("n-emissions");
+    auto& radius = cl.get<double>("radius");
+    auto& s_pixel = cl.get<double>("s-pixel");
+    auto& w_detector = cl.get<double>("w-detector");
+    auto& h_detector = cl.get<double>("h-detector");
+    auto verbose = cl.exist("verbose");
 
-      std::cout << "HERE " << std::endl;
+    // check options
+    if (cl.exist("png") && !cl.exist("from")) {
+      throw("need to specify --from lor when output --png option is specified");
+    }
+    if (!cl.exist("png") && cl.exist("from")) {
+      throw("need to specify output --png option when --from is specified");
+    }
 
-      // generate output
-      if (cl.exist("output")) {
-        auto fn = cl.get<cmdline::string>("output");
-        auto fn_sep = fn.find_last_of("\\/");
-        auto fn_ext = fn.find_last_of(".");
-        auto fn_wo_ext =
-            fn.substr(0,
-                      fn_ext != std::string::npos &&
-                              (fn_sep == std::string::npos || fn_sep < fn_ext)
-                          ? fn_ext
-                          : std::string::npos);
-        auto fn_wo_path =
-            fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
+    // load config files accompanying matrix files
+    for (auto& fn : cl.rest()) {
+      auto fn_sep = fn.find_last_of("\\/");
+      auto fn_ext = fn.find_last_of(".");
+      auto fn_wo_ext =
+          fn.substr(0,
+                    fn_ext != std::string::npos &&
+                            (fn_sep == std::string::npos || fn_sep < fn_ext)
+                        ? fn_ext
+                        : std::string::npos);
+      std::ifstream in(fn_wo_ext + ".cfg");
+      if (!in.is_open())
+        continue;
+      // load except n-emissions
+      auto n_prev_emissions = n_emissions;
+      in >> cl;
+      n_emissions = n_prev_emissions;
+      break;  // only one config file allowed!
+    }
 
-        obstream out(fn, std::ios::binary | std::ios::trunc);
-
-        out << sparse_matrix;
-
-        std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
-        os << cl;
-      }
-    } else
+#if _OPENMP
+    if (cl.exist("n-threads")) {
+      omp_set_num_threads(cl.get<int>("n-threads"));
+    }
 #endif
-    {
-      // run simmulation on given detector model & shape
-      auto& shape = cl.get<std::string>("shape");
-      if (model == "always") {
-        AlwaysAccept<> model;
-        if (shape == "square") {
-          run<SquareDetectorRing>(cl, model);
-        } else if (shape == "circle") {
-          run<CircleDetectorRing>(cl, model);
-        } else if (shape == "triangle") {
-          run<TriangleDetectorRing>(cl, model);
-        } else if (shape == "hexagon") {
-          run<HexagonalDetectorRing>(cl, model);
-        }
-      } else if (model == "scintillator") {
-        ScintilatorAccept<> model(length_scale);
-        if (shape == "square") {
-          run<SquareDetectorRing>(cl, model);
-        } else if (shape == "circle") {
-          run<CircleDetectorRing>(cl, model);
-        } else if (shape == "triangle") {
-          run<TriangleDetectorRing>(cl, model);
-        } else if (shape == "hexagon") {
-          run<HexagonalDetectorRing>(cl, model);
-        }
+
+    if (verbose) {
+      std::cerr << "assumed:" << std::endl;
+    }
+
+    // automatic radius size
+    if (!cl.exist("radius")) {
+      if (!cl.exist("s-pixel")) {
+        radius = M_SQRT2;  // exact result
+      } else {
+        radius = s_pixel * n_pixels / M_SQRT2;
+      }
+      std::cerr << "--radius=" << radius << std::endl;
+    }
+
+    // automatic pixel size
+    if (!cl.exist("s-pixel")) {
+      if (!cl.exist("radius")) {
+        s_pixel = 2. / n_pixels;  // exact result
+      } else {
+        s_pixel = M_SQRT2 * radius / n_pixels;
+      }
+      std::cerr << "--s-pixel=" << s_pixel << std::endl;
+    }
+
+    // automatic detector size
+    // NOTE: detector height will be determined per shape
+    if (!cl.exist("w-detector")) {
+      w_detector = 2 * M_PI * .9 * radius / n_detectors;
+      std::cerr << "--w-detector=" << w_detector << std::endl;
+    }
+
+// these are wrappers running actual simulation
+#if HAVE_CUDA
+#define _RUN(cl, detector_ring, model) \
+  cl.exist("gpu") ? run_gpu(cl) : run_cpu(cl, detector_ring, model)
+#else
+#define _RUN(cl, detector_ring, model) run_cpu(cl, detector_ring, model)
+#endif
+#define RUN(detector_type, model_type, ...)                                 \
+  detector_type detector_ring(n_detectors, radius, w_detector, h_detector); \
+  model_type model{ __VA_ARGS__ };                                          \
+  auto sparse_matrix = _RUN(cl, detector_ring, model);                      \
+  post_process(cl, detector_ring, sparse_matrix)
+
+    // run simmulation on given detector model & shape
+    auto& shape = cl.get<std::string>("shape");
+    if (model == "always") {
+      if (shape == "square") {
+        RUN(SquareDetectorRing, AlwaysAccept<>);
+      } else if (shape == "circle") {
+        RUN(CircleDetectorRing, AlwaysAccept<>);
+      } else if (shape == "triangle") {
+        RUN(TriangleDetectorRing, AlwaysAccept<>);
+      } else if (shape == "hexagon") {
+        RUN(HexagonalDetectorRing, AlwaysAccept<>);
+      }
+    } else if (model == "scintillator") {
+      if (shape == "square") {
+        RUN(SquareDetectorRing, ScintilatorAccept<>, length_scale);
+      } else if (shape == "circle") {
+        RUN(CircleDetectorRing, ScintilatorAccept<>, length_scale);
+      } else if (shape == "triangle") {
+        RUN(TriangleDetectorRing, ScintilatorAccept<>, length_scale);
+      } else if (shape == "hexagon") {
+        RUN(HexagonalDetectorRing, ScintilatorAccept<>, length_scale);
       }
     }
 
@@ -243,90 +304,22 @@ int main(int argc, char* argv[]) {
 }
 
 template <typename DetectorRing, typename Model>
-void run(cmdline::parser& cl, Model& model) {
+SparseMatrix<Pixel<>, LOR<>> run_cpu(cmdline::parser& cl,
+                                     DetectorRing& detector_ring,
+                                     Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
+  auto& s_pixel = cl.get<double>("s-pixel");
   auto& n_detectors = cl.get<int>("n-detectors");
   auto& n_emissions = cl.get<int>("n-emissions");
-  auto& radius = cl.get<double>("radius");
-  auto& s_pixel = cl.get<double>("s-pixel");
-  auto& w_detector = cl.get<double>("w-detector");
-  auto& h_detector = cl.get<double>("h-detector");
   auto& tof_step = cl.get<double>("tof-step");
   auto verbose = cl.exist("verbose");
-
-  // check options
-  if (cl.exist("png") && !cl.exist("from")) {
-    throw("need to specify output --png option when --from is specified");
-  }
-  if (!cl.exist("png") && cl.exist("from")) {
-    throw("need to specify --from lor when output --png option is specified");
-  }
-
-  // load config files accompanying matrix files
-  for (auto& fn : cl.rest()) {
-    auto fn_sep = fn.find_last_of("\\/");
-    auto fn_ext = fn.find_last_of(".");
-    auto fn_wo_ext =
-        fn.substr(0,
-                  fn_ext != std::string::npos &&
-                          (fn_sep == std::string::npos || fn_sep < fn_ext)
-                      ? fn_ext
-                      : std::string::npos);
-    std::ifstream in(fn_wo_ext + ".cfg");
-    if (!in.is_open())
-      continue;
-    // load except n-emissions
-    auto n_prev_emissions = n_emissions;
-    in >> cl;
-    n_emissions = n_prev_emissions;
-    break;  // only one config file allowed!
-  }
-
-#if _OPENMP
-  if (cl.exist("n-threads")) {
-    omp_set_num_threads(cl.get<int>("n-threads"));
-  }
-#endif
-
-  if (verbose) {
-    std::cerr << "assumed:" << std::endl;
-  }
-
-  // automatic radius size
-  if (!cl.exist("radius")) {
-    if (!cl.exist("s-pixel")) {
-      radius = M_SQRT2;  // exact result
-    } else {
-      radius = s_pixel * n_pixels / M_SQRT2;
-    }
-    std::cerr << "--radius=" << radius << std::endl;
-  }
-
-  // automatic pixel size
-  if (!cl.exist("s-pixel")) {
-    if (!cl.exist("radius")) {
-      s_pixel = 2. / n_pixels;  // exact result
-    } else {
-      s_pixel = M_SQRT2 * radius / n_pixels;
-    }
-    std::cerr << "--s-pixel=" << s_pixel << std::endl;
-  }
-
-  // automatic detector size
-  if (!cl.exist("w-detector")) {
-    w_detector = 2 * M_PI * .9 * radius / n_detectors;
-    std::cerr << "--w-detector=" << w_detector << std::endl;
-  }
-  // NOTE: detector height will be determined per shape
 
   std::random_device rd;
   tausworthe gen(rd());
   if (cl.exist("seed")) {
     gen.seed(cl.get<tausworthe::seed_type>("seed"));
   }
-
-  DetectorRing detector_ring(n_detectors, radius, w_detector, h_detector);
 
   int n_tof_positions = 1;
   double max_bias = 0;
@@ -420,7 +413,17 @@ void run(cmdline::parser& cl, Model& model) {
   }
 #endif
 
-  sparse_matrix = matrix.to_sparse();
+  return matrix.to_sparse();
+}
+
+template <typename DetectorRing>
+void post_process(cmdline::parser& cl,
+                  DetectorRing& detector_ring,
+                  SparseMatrix<Pixel<>, LOR<>>& sparse_matrix) {
+
+  auto& n_pixels = cl.get<int>("n-pixels");
+  auto& s_pixel = cl.get<double>("s-pixel");
+  auto& n_detectors = cl.get<int>("n-detectors");
 
   // generate output
   if (cl.exist("output")) {
@@ -437,10 +440,6 @@ void run(cmdline::parser& cl, Model& model) {
         fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
 
     bool full = cl.exist("full");
-    if (verbose) {
-      std::cerr << "save sparse " << (full ? "full" : "triangular")
-                << " matrix: " << fn << std::endl;
-    }
     obstream out(fn, std::ios::binary | std::ios::trunc);
     if (full) {
       auto full_matrix = sparse_matrix.to_full();
@@ -454,7 +453,7 @@ void run(cmdline::parser& cl, Model& model) {
 
     try {
       png_writer png(fn_wo_ext + ".png");
-      matrix.output_bitmap(png);
+      sparse_matrix.output_bitmap(png);
     }
     catch (const char* ex) {
       // don't bail out just produce warning
@@ -519,34 +518,6 @@ void run(cmdline::parser& cl, Model& model) {
                    -(s_pixel * n_pixels) / 2.,
                    s_pixel * n_pixels,
                    s_pixel * n_pixels);
-  }
-
-  // show stats if requested
-  if (cl.exist("stats")) {
-    auto pixel_max = 0;
-    auto pixel_min = std::numeric_limits<decltype(pixel_max)>::max();
-    for (auto y = 0; y < n_pixels; ++y) {
-      for (auto x = 0; x < n_pixels; ++x) {
-        auto hits = matrix[ComputeMatrix::Pixel(x, y)];
-        pixel_min = std::min(pixel_min, hits);
-        pixel_max = std::max(pixel_max, hits);
-      }
-    }
-    std::cerr << "Non zero LORs: " << matrix.non_zero_lors() << '/'
-              << detector_ring.lors() << std::endl;
-    std::cerr << "Min hits: " << pixel_min << std::endl;
-    std::cerr << "Max hits: " << pixel_max << std::endl;
-  }
-
-  if (cl.exist("print")) {
-    sparse_matrix.sort_by_lor_n_pixel();
-    std::cout << sparse_matrix;
-  }
-
-  if (cl.exist("wait")) {
-    std::cerr << "Press Enter." << std::endl;
-    while (getc(stdin) != '\n') {
-    }
   }
 }
 
