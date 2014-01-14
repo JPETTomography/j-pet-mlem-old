@@ -1,7 +1,3 @@
-#include"pixelgrid.h"
+#include "pixelgrid.h"
 
-int main() {
-
-
-return 0;
-}
+int main() { return 0; }
