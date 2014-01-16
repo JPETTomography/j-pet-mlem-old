@@ -11,7 +11,8 @@ import argparse
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
-
+import scipy as sp
+import scipy.stats as stats
 
 import petmatrix as pet
 
@@ -48,14 +49,24 @@ def callback(event):
 a_n=a_matrix.n_emissions();
 b_n=b_matrix.n_emissions();
 
-a_p = pet.FillPixMap(a_matrix.body)/a_matrix.n_emissions();
-b_p = pet.FillPixMap(b_matrix.body)/b_matrix.n_emissions();
-diff = (a_p-b_p);
+a_p = pet.FillOctantPixMap(a_matrix.body)/a_matrix.n_emissions();
+b_p = pet.FillOctantPixMap(b_matrix.body)/b_matrix.n_emissions();
+diff = (a_p-b_p)
+
+mask = (a_p+b_p)<=0
+
 s_ab =np.sqrt((a_n*a_p*(1.0-a_p)+b_n*b_p*(1.0-b_p))/(
-    (a_matrix.n_emissions() +     a_matrix.n_emissions() -2)))*np.sqrt(1.0/a_n+1.0/b_n);
+    (a_n + b_n -2)))*np.sqrt(1.0/a_n+1.0/b_n);
+s_ab_masked =  np.ma.masked_array(s_ab,mask=mask )
+n_df =  s_ab_masked.count()
+tval=diff/s_ab_masked.filled(1.0);
+student = stats.t(a_n+b_n-2)
+p = np.ma.masked_array(2*(1.0-student.cdf(abs(tval))) , mask = mask);
+imgplot=plt.imshow(p.filled(0));
 
-imgplot=plt.imshow(diff/s_ab)
-
+chi2 = -2*np.log(p.filled(1.0)).sum();
+chi2dist = stats.chi2(2*n_df)
+print "chi^2  = ", chi2, " n dof = ", 2*n_df, " p = ", 1-chi2dist.cdf(chi2)
 imgplot.set_interpolation("nearest")
 imgplot.figure.canvas.mpl_connect('button_press_event',callback);
 plt.colorbar(imgplot);
