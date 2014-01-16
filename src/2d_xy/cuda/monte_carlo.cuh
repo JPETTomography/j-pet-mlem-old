@@ -88,7 +88,7 @@ __global__ void monte_carlo_kernel(int x,
                         NUMBER_OF_DETECTORS,
                         ring,
                         detector1,
-                        hit1)) {
+                        hit1,seed)) {
       continue;
     }
 
@@ -100,7 +100,7 @@ __global__ void monte_carlo_kernel(int x,
                         NUMBER_OF_DETECTORS,
                         ring,
                         detector2,
-                        hit2)) {
+                        hit2,seed)) {
       continue;
     }
 

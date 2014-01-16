@@ -163,7 +163,7 @@ __device__ bool check_for_hits(int inner,
                                int n_detectors,
                                DetectorRing& ring,
                                int& detector,
-                               Hits& hit) {
+                               Hits& hit,unsigned int *seed) {
 
   int points;
 
@@ -178,6 +178,14 @@ __device__ bool check_for_hits(int inner,
     if (points == 2) {
 
       detector = i;
+
+
+//      if (-log(HybridTaus(seed[0], seed[1], seed[2], seed[3])) * inv_unit_prob_ <
+//          (sqrt((hit.p[1].x - hit.p[0].x) * (hit.p[1].x - hit.p[0].x) +
+//                (hit.p[1].y - hit.p[0].y) * (hit.p[1].y - hit.p[0].y)))) {
+//      }
+
+
       return true;
     }
 

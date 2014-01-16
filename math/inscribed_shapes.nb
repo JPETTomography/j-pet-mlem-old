@@ -1,0 +1,252 @@
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Sctintillator shapes inscribed into photomultiplier", "Title"],
+
+Cell[CellGroupData[{
+
+Cell["Helper functions definitions", "Section"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"RegularPolygon", "[", 
+   RowBox[{"n_", ",", 
+    RowBox[{"r_", ":", "1"}], ",", 
+    RowBox[{"\[Theta]_", ":", "0"}]}], "]"}], ":=", 
+  RowBox[{"Line", "[", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"r", " ", 
+         RowBox[{"Cos", "[", "#1", "]"}]}], ",", 
+        RowBox[{"r", " ", 
+         RowBox[{"Sin", "[", "#1", "]"}]}]}], "}"}], "&"}], ")"}], "/@", 
+    RowBox[{"Range", "[", 
+     RowBox[{"\[Theta]", ",", 
+      RowBox[{"\[Theta]", "+", 
+       RowBox[{"2", " ", "\[Pi]"}]}], ",", 
+      FractionBox[
+       RowBox[{"2", " ", "\[Pi]"}], "n"]}], "]"}]}], "]"}]}], "\n", 
+ RowBox[{
+  RowBox[{"RegularPolygonArea", "[", 
+   RowBox[{"n_", ",", "r_"}], "]"}], ":=", 
+  RowBox[{
+   FractionBox["1", "2"], " ", 
+   SuperscriptBox["r", "2"], " ", "n", " ", 
+   RowBox[{"Sin", "[", 
+    FractionBox[
+     RowBox[{"2", " ", "\[Pi]"}], "n"], "]"}]}]}], "\n", 
+ RowBox[{
+  RowBox[{"RectangleFrame", "[", 
+   RowBox[{"w_", ",", "h_"}], "]"}], ":=", 
+  RowBox[{"Line", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", 
+        FractionBox["w", "2"]}], ",", 
+       RowBox[{"-", 
+        FractionBox["h", "2"]}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       FractionBox["w", "2"], ",", 
+       RowBox[{"-", 
+        FractionBox["h", "2"]}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       FractionBox["w", "2"], ",", 
+       FractionBox["h", "2"]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", 
+        FractionBox["w", "2"]}], ",", 
+       FractionBox["h", "2"]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", 
+        FractionBox["w", "2"]}], ",", 
+       RowBox[{"-", 
+        FractionBox["h", "2"]}]}], "}"}]}], "}"}], "]"}]}]}], "Input"],
+
+Cell[CellGroupData[{
+
+Cell["Detector ring definition", "Subsection"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"DetectorRing", "[", 
+   RowBox[{"shape_", ",", 
+    RowBox[{"radius_", ":", ".45"}], ",", 
+    RowBox[{"dradius_", ":", ".01"}], ",", 
+    RowBox[{"ndetectors_", ":", "144"}]}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "angles", "}"}], ",", 
+    RowBox[{
+     RowBox[{"angles", "=", 
+      RowBox[{"Range", "[", 
+       RowBox[{"0", ",", 
+        RowBox[{"2", " ", "\[Pi]"}], ",", 
+        FractionBox[
+         RowBox[{"2", " ", "\[Pi]"}], "ndetectors"]}], "]"}]}], ";", 
+     RowBox[{"Graphics", "[", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"Rotate", "[", 
+            RowBox[{
+             RowBox[{"Translate", "[", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"LightGray", ",", 
+                 RowBox[{"Circle", "[", 
+                  RowBox[{
+                   RowBox[{"{", 
+                    RowBox[{"0", ",", "0"}], "}"}], ",", "dradius"}], "]"}], 
+                 ",", "Black", ",", "shape"}], "}"}], ",", 
+               RowBox[{"{", 
+                RowBox[{"0", ",", 
+                 RowBox[{"radius", "+", "dradius"}]}], "}"}]}], "]"}], ",", 
+             "#1", ",", 
+             RowBox[{"{", 
+              RowBox[{"0", ",", "0"}], "}"}]}], "]"}], "&"}], ")"}], "/@", 
+         "angles"}], ",", 
+        RowBox[{"Darker", "[", "Green", "]"}], ",", 
+        RowBox[{"Circle", "[", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"0", ",", "0"}], "}"}], ",", "radius"}], "]"}]}], "}"}], 
+      "]"}]}]}], "]"}]}]], "Input"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Constants", "Subsection"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"range", "=", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", ".06"}], ",", ".06"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{".445", ",", ".472"}], "}"}]}], "}"}]}], ";"}]], "Input"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Helper functions showing certain configurations", "Subsection"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"ShowRectangular", "[", 
+   RowBox[{"w_", ",", "h_", ",", 
+    RowBox[{"R_:", ".01"}]}], "]"}], ":=", 
+  RowBox[{"With", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"darea", "=", 
+      RowBox[{"\[Pi]", " ", 
+       SuperscriptBox["R", "2"]}]}], "}"}], ",", 
+    RowBox[{
+     RowBox[{"Print", "[", 
+      FractionBox[
+       RowBox[{"w", " ", "h"}], "darea"], "]"}], ";", 
+     RowBox[{"Show", "[", 
+      RowBox[{
+       RowBox[{"DetectorRing", "[", 
+        RowBox[{"RectangleFrame", "[", 
+         RowBox[{"w", ",", "h"}], "]"}], "]"}], ",", 
+       RowBox[{"PlotRange", "\[Rule]", "range"}]}], "]"}]}]}], 
+   "]"}]}], "\n", 
+ RowBox[{
+  RowBox[{"ShowRegular", "[", 
+   RowBox[{"n_", ",", "r_", ",", 
+    RowBox[{"R_:", ".01"}]}], "]"}], ":=", 
+  RowBox[{"With", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"darea", "=", 
+      RowBox[{"\[Pi]", " ", 
+       SuperscriptBox["R", "2"]}]}], "}"}], ",", 
+    RowBox[{
+     RowBox[{"Print", "[", 
+      FractionBox[
+       RowBox[{"RegularPolygonArea", "[", 
+        RowBox[{"3", ",", "r"}], "]"}], "darea"], "]"}], ";", 
+     RowBox[{"Show", "[", 
+      RowBox[{
+       RowBox[{"DetectorRing", "[", 
+        RowBox[{"RegularPolygon", "[", 
+         RowBox[{"3", ",", "r", ",", 
+          FractionBox["\[Pi]", "2"]}], "]"}], "]"}], ",", 
+       RowBox[{"PlotRange", "\[Rule]", "range"}]}], "]"}]}]}], 
+   "]"}]}], "\n", 
+ RowBox[{
+  RowBox[{"ShowCircle", "[", 
+   RowBox[{"r_", ",", 
+    RowBox[{"R_", ":", ".01"}]}], "]"}], ":=", 
+  RowBox[{"With", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"darea", "=", 
+      RowBox[{"\[Pi]", " ", 
+       SuperscriptBox["R", "2"]}]}], "}"}], ",", 
+    RowBox[{
+     RowBox[{"Print", "[", 
+      FractionBox[
+       RowBox[{"\[Pi]", " ", 
+        SuperscriptBox["r", "2"]}], "darea"], "]"}], ";", 
+     RowBox[{"Show", "[", 
+      RowBox[{
+       RowBox[{"DetectorRing", "[", 
+        RowBox[{"Circle", "[", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"0", ",", "0"}], "}"}], ",", "r"}], "]"}], "]"}], ",", 
+       RowBox[{"PlotRange", "\[Rule]", "range"}]}], "]"}]}]}], 
+   "]"}]}]}], "Input"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Output", "Section"],
+
+Cell[BoxData[
+ RowBox[{"ShowRectangular", "[", 
+  RowBox[{".019", ",", ".005"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"ShowRectangular", "[", 
+  RowBox[{".005", ",", ".019"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"ShowRegular", "[", 
+  RowBox[{"3", ",", ".01"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"ShowRegular", "[", 
+  RowBox[{"6", ",", ".01"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"ShowCircle", "[", ".006", "]"}]], "Input"]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1229, 756},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+TrackCellChangeTimes->False,
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (December 16, \
+2013)",
+StyleDefinitions->"Default.nb"
+]
+

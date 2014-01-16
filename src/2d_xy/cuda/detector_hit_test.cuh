@@ -18,6 +18,8 @@ __global__ void detector_hit_test_kernel(float crx,
   Hits hit1;
   Hits hit2;
 
+  unsigned int *seed = NULL;
+
   if (threadIdx.x < NUMBER_OF_DETECTORS) {
 
     create_detector_ring(h_detector, w_detector, radius, test_ring);
@@ -50,7 +52,7 @@ __global__ void detector_hit_test_kernel(float crx,
                    NUMBER_OF_DETECTORS,
                    test_ring,
                    detector1,
-                   hit1);
+                   hit1,seed);
 
     check_for_hits(i_inner.ss2,
                    i_outer.ss2,
@@ -60,7 +62,7 @@ __global__ void detector_hit_test_kernel(float crx,
                    NUMBER_OF_DETECTORS,
                    test_ring,
                    detector2,
-                   hit2);
+                   hit2,seed);
 
     printf("GPU HIT1: %f %f %f %f\n",
            hit1.p[0].x,
