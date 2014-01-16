@@ -19,6 +19,8 @@ import petmatrix as pet
 parser = argparse.ArgumentParser(description='Statistically compare two system matrices.')
 parser.add_argument('--a-file', '-a')
 parser.add_argument('--b-file', '-b')
+parser.add_argument('--a-emissions')
+parser.add_argument('--b-emissions')
 args=parser.parse_args()
 
 
@@ -28,12 +30,16 @@ if args.b_file:
     b_file = open(args.b_file,"rb")
 
 a_matrix = pet.SparseMatrix(a_file)
+if(args.a_emissions):
+    a_matrix.header.n_emissions=int(args.a_emissions)
 a_matrix.show();
 a_matrix.body.Read()
 print a_matrix.body.stats()[0:2]
 print a_matrix.n_emissions()
 
 b_matrix = pet.SparseMatrix(b_file)
+if(args.b_emissions):
+    b_matrix.header.n_emissions=int(args.b_emissions)
 b_matrix.show();
 b_matrix.body.Read()
 print b_matrix.body.stats()[0:2]
