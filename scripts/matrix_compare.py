@@ -11,6 +11,9 @@ import argparse
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
+import scipy as sp
+import scipy.stats as stats
+from scipy.stats import t
 
 
 import petmatrix as pet
