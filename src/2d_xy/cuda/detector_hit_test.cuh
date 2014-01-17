@@ -18,7 +18,7 @@ __global__ void detector_hit_test_kernel(float crx,
   Hits hit1;
   Hits hit2;
 
-  unsigned int *seed = NULL;
+  unsigned int* seed = NULL;
 
   if (threadIdx.x < NUMBER_OF_DETECTORS) {
 
@@ -29,6 +29,8 @@ __global__ void detector_hit_test_kernel(float crx,
 
   int detector1;
   int detector2;
+
+  float depth1, depth2;
 
   if (threadIdx.x == 0 && blockIdx.x == 0) {
 
@@ -52,7 +54,9 @@ __global__ void detector_hit_test_kernel(float crx,
                    NUMBER_OF_DETECTORS,
                    test_ring,
                    detector1,
-                   hit1,seed);
+                   hit1,
+                   seed,
+                   depth1);
 
     check_for_hits(i_inner.ss2,
                    i_outer.ss2,
@@ -62,7 +66,9 @@ __global__ void detector_hit_test_kernel(float crx,
                    NUMBER_OF_DETECTORS,
                    test_ring,
                    detector2,
-                   hit2,seed);
+                   hit2,
+                   seed,
+                   depth2);
 
     printf("GPU HIT1: %f %f %f %f\n",
            hit1.p[0].x,

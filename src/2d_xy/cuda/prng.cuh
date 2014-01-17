@@ -8,8 +8,8 @@
 __constant__ unsigned int shift1[4] = { 6, 2, 13, 3 };
 __constant__ unsigned int shift2[4] = { 13, 27, 21, 12 };
 __constant__ unsigned int shift3[4] = { 18, 2, 7, 13 };
-__constant__ unsigned int offset[4] = { 4294967294, 4294967288,
-                                        4294967280, 4294967168 };
+__constant__ unsigned int offset[4] = { 4294967294, 4294967288, 4294967280,
+                                        4294967168 };
 
 __shared__ unsigned int randStates[32];
 

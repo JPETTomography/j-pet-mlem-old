@@ -85,9 +85,14 @@ void fill_gpu_data(gpu::LOR* lookup_table_lors,
     }
   }
 
+  std::default_random_engine gen;
+  std::uniform_int_distribution<unsigned int> dis(1024, 1000000);
+  gen.seed(345555);
+
   for (int i = 0; i < 4 * number_of_blocks * number_of_threads_per_block; ++i) {
 
-    cpu_prng_seed[i] = 53445 + i;
+    // cpu_prng_seed[i] = 53445 + i; //dis(gen);
+    cpu_prng_seed[i] = dis(gen);
   }
 }
 
