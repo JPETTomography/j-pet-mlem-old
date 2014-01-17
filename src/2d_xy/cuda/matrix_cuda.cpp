@@ -35,6 +35,7 @@ void run_phantom_kernel(int number_of_threads_per_block,
 void run_monte_carlo_kernel(int number_of_threads_per_block,
                             int number_of_blocks,
                             int n_emissions,
+                            int n_detectors,
                             int pixels_in_row,
                             int triangle_pixel_size,
                             float radius,
@@ -106,8 +107,17 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   auto w_detector = cl.get<double>("w-detector");
   auto h_detector = cl.get<double>("h-detector");
 
-  auto number_of_blocks = cl.get<int>("n-blocks") ?: 256;
+
+
+  // GTX 770 - 8 SMX * 192 cores = 1536 cores -
+  // each SMX can use 8 active blocks,
+
+
+
+  auto number_of_blocks = cl.get<int>("n-blocks") ?: 96;
   auto number_of_threads_per_block = cl.get<int>("n-threads") ?: 512;
+
+  auto iteration_per_thread = floor(n_emissions/ (number_of_blocks * number_of_threads_per_block));
 
   // automatic pixel size
   if (!cl.exist("radius")) {
@@ -180,7 +190,8 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
 
   run_monte_carlo_kernel(number_of_threads_per_block,
                          number_of_blocks,
-                         n_emissions,
+                         iteration_per_thread,
+                         n_detectors,
                          pixels_in_row,
                          triangle_pixel_size,
                          radius,

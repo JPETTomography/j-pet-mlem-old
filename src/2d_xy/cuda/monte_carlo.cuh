@@ -21,6 +21,7 @@ __device__ int lor_iterator(int& id1, int& id2) {
 __global__ void monte_carlo_kernel(int x,
                                    int y,
                                    int iteration,
+                                   int n_detectors,
                                    unsigned int* gpu_prng_seed,
                                    MatrixElement* pixel_data,
                                    int threads,

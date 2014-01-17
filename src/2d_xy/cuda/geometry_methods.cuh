@@ -108,8 +108,8 @@ __device__ int intersections(float x,
   float p1_x = ring.detector_list[detector_id].points[3].x;
   float p1_y = ring.detector_list[detector_id].points[3].y;
 
-  float a = std::sin(angle);
-  float b = -std::cos(angle);
+  float a = __sinf(angle);
+  float b = -__cosf(angle);
   float c = a * x + b * y;
 
   float v1 = a * p1_x + b * p1_y - c;
@@ -191,7 +191,7 @@ __device__ bool check_for_hits(int inner,
 
       detector = i;
 
-      depth = -log(HybridTaus(seed[0], seed[1], seed[2], seed[3])) * 0.1f;
+      depth = -__logf(HybridTaus(seed[0], seed[1], seed[2], seed[3])) * 0.1f;
 
       //      if (depth <
       //          (sqrt((hit.p[1].x - hit.p[0].x) * (hit.p[1].x - hit.p[0].x) +
