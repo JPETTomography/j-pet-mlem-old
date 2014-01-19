@@ -86,7 +86,7 @@ bool run_monte_carlo_kernel(int number_of_threads_per_block,
 
   float fov_radius = radius / M_SQRT2;
 
-  unsigned int number_of_lors = (n_detectors*(n_detectors + 1)) / 2;
+  unsigned int number_of_lors = (n_detectors * (n_detectors + 1)) / 2;
 
   for (int p = 0; p < triangular_matrix_size; ++p) {
 
@@ -139,7 +139,6 @@ bool run_monte_carlo_kernel(int number_of_threads_per_block,
          gpu_MatrixElement,
          number_of_blocks * sizeof(MatrixElement),
          cudaMemcpyDeviceToHost);
-
 
     for (int i = 0; i < LORS; i++) {
       float temp = 0.f;
