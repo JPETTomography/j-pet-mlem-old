@@ -14,10 +14,11 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
   typedef Array<2, Point> Intersections;
   typedef typename Super::Event Event;
 
-  CircleDetector(F radius) : Circle<F>(radius), center() {}
+  CircleDetector(F radius)
+      : Circle<F>(radius), center(), svg_class("detector") {}
 
   // this is for compatibility with square detector
-  CircleDetector(F w, F h) : Super(w / 2.), center() {
+  CircleDetector(F w, F h) : Super(w / 2.), center(), svg_class("detector") {
     if (w != h)
       throw("circle detector height and width must be equal");
   }
@@ -48,9 +49,12 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
     return intersections;
   }
 
+  const char* svg_class;
+
   friend svg_ostream<F>& operator<<(svg_ostream<F>& svg, CircleDetector& cd) {
-    svg << "<circle class=\"detector\" cx=\"" << cd.center.x << "\" cy=\""
-        << cd.center.y << "\" r=\"" << cd.radius() << "\"/>" << std::endl;
+    svg << "<circle class=\"" << cd.svg_class << "\" cx=\"" << cd.center.x
+        << "\" cy=\"" << cd.center.y << "\" r=\"" << cd.radius() << "\"/>"
+        << std::endl;
     return svg;
   }
 

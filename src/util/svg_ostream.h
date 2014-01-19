@@ -40,6 +40,10 @@ template <typename FType = double> class svg_ostream : public std::ofstream {
           << " stroke: green;"
           << " stroke-width: " << stroke << ";"
           << " }" << std::endl;
+    *this << "    .circle_detector { fill: #eeeeee;"
+          << " stroke: #cccccc;"
+          << " stroke-width: " << stroke << ";"
+          << " }" << std::endl;
     *this << "  ]]>"
           << "</style>" << std::endl;
     *this << "</defs>" << std::endl;

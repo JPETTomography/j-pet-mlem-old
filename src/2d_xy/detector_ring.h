@@ -9,6 +9,7 @@
 #include "geometry/point.h"
 #include "geometry/pixel.h"
 #include "lor.h"
+#include "circle_detector.h"
 
 /// Provides model for 2D ring of detectors
 template <typename FType = double,
@@ -30,9 +31,14 @@ class DetectorRing : public std::vector<DetectorType> {
   /// @param w_detector  width of single detector (along ring)
   /// @param h_detector  height/depth of single detector
   ///                    (perpendicular to ring)
-  DetectorRing(S n_detectors, F radius, F w_detector, F h_detector)
+  /// @param d_detector  diameter of circle single detector is inscribed in
+  DetectorRing(S n_detectors,
+               F radius,
+               F w_detector,
+               F h_detector,
+               F d_detector = F())
       : c_inner(radius),
-        c_outer(radius + h_detector),
+        c_outer(radius + (d_detector > F() ? d_detector : h_detector)),
         n_detectors(n_detectors),
         n_lors(n_detectors * (n_detectors + 1) / 2),
         radius_diff(c_outer.radius() - c_inner.radius()) {
@@ -50,19 +56,31 @@ class DetectorRing : public std::vector<DetectorType> {
     fov_radius_ = radius / M_SQRT2;
 
     Detector detector_base(w_detector, h_detector);
+    auto r_detector = d_detector / 2.;
+    CircleDetector<F> circle_detector_base(r_detector);
+    circle_detector_base.svg_class = "circle_detector";
 
     // move detector to the right edge of inner ring
     // along zero angle polar coordinate
-    detector_base += Point(0., radius + h_detector / 2);
+    detector_base +=
+        Point(0., radius + (d_detector > F() ? d_detector : h_detector) / 2.);
+    circle_detector_base += Point(0., radius + r_detector);
 
     // fix up outer circle
-    c_outer = Circle(detector_base.max_distance());
+    if (d_detector == F()) {
+      c_outer = Circle(detector_base.max_distance());
+    }
 
     // produce detector ring rotating base detector n times
     for (auto n = 0; n < n_detectors; ++n) {
       auto detector = detector_base;
       detector.rotate(2. * M_PI * n / n_detectors - M_PI_2);
       this->push_back(detector);
+      if (d_detector > F()) {
+        auto circle_detector = circle_detector_base;
+        circle_detector.rotate(2. * M_PI * n / n_detectors - M_PI_2);
+        c_detectors.push_back(circle_detector);
+      }
     }
   }
 
@@ -225,6 +243,9 @@ class DetectorRing : public std::vector<DetectorType> {
     svg << dr.c_outer;
     svg << dr.c_inner;
 
+    for (auto& detector : dr.c_detectors) {
+      svg << detector;
+    }
     for (auto& detector : dr) {
       svg << detector;
     }
@@ -235,6 +256,7 @@ class DetectorRing : public std::vector<DetectorType> {
  private:
   Circle c_inner;
   Circle c_outer;
+  std::vector<CircleDetector<F>> c_detectors;
   S n_detectors;
   S n_lors;
   F fov_radius_;

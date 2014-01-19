@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
 #endif
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
-    cl.add<int>("n-detectors", 'd', "number of detectors in ring", false, 64);
+    cl.add<int>("n-detectors", 'd', "number of detectors in ring", false);
     cl.add<int>("n-emissions",
                 'e',
                 "emissions per pixel",
@@ -114,6 +114,10 @@ int main(int argc, char* argv[]) {
         cmdline::oneof<std::string>("square", "circle", "triangle", "hexagon"));
     cl.add<double>("w-detector", 'w', "detector width", false);
     cl.add<double>("h-detector", 'h', "detector height", false);
+    cl.add<double>("d-detector",
+                   0,
+                   "inscribe detector shape into circle of given diameter",
+                   false);
     cl.add<std::string>(
         "model",
         'm',
@@ -175,9 +179,16 @@ int main(int argc, char* argv[]) {
     auto& s_pixel = cl.get<double>("s-pixel");
     auto& w_detector = cl.get<double>("w-detector");
     auto& h_detector = cl.get<double>("h-detector");
+    auto& d_detector = cl.get<double>("d-detector");
+    auto& shape = cl.get<std::string>("shape");
     auto verbose = cl.exist("verbose");
 
     // check options
+    if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
+        !cl.exist("n-detectors")) {
+      throw(
+          "need to specify either --w-detector, --d-detector or --n-detectors");
+    }
     if (cl.exist("png") && !cl.exist("from")) {
       throw("need to specify --from lor when output --png option is specified");
     }
@@ -235,11 +246,49 @@ int main(int argc, char* argv[]) {
       std::cerr << "--s-pixel=" << s_pixel << std::endl;
     }
 
+    if (!cl.exist("w-detector")) {
+      if (cl.exist("n-detectors")) {
+        w_detector = 2 * M_PI * .9 * radius / n_detectors;
+      } else if (cl.exist("d-detector")) {
+        if (shape == "circle") {
+          w_detector = d_detector;
+        } else {
+          auto mult = 1.;
+          auto sides = 0.;
+          if (shape == "triangle") {
+            sides = 3.;
+          } else if (shape == "square") {
+            sides = 4.;
+          } else if (shape == "hexagon") {
+            sides = 6.;
+            mult = 2.;
+          } else {
+            throw("cannot determine detector width for given shape");
+          }
+          w_detector = d_detector * std::sin(M_PI / sides) * mult;
+        }
+      }
+      std::cerr << "--w-detector=" << w_detector << std::endl;
+    }
+
     // automatic detector size
     // NOTE: detector height will be determined per shape
-    if (!cl.exist("w-detector")) {
-      w_detector = 2 * M_PI * .9 * radius / n_detectors;
-      std::cerr << "--w-detector=" << w_detector << std::endl;
+    if (!cl.exist("n-detectors")) {
+      if (cl.exist("d-detector")) {
+        n_detectors =
+            ((int)std::floor(
+                 M_PI / std::atan2(d_detector, 2. * radius + d_detector / 2.)) /
+             4) *
+            4;
+      } else {
+        n_detectors =
+            ((int)std::floor(M_PI / std::atan2(w_detector, 2. * radius)) / 4) *
+            4;
+      }
+      if (!n_detectors) {
+        throw("detector width is too big for given detector ring radius");
+      }
+      std::cerr << "--n-detectors=" << n_detectors << std::endl;
     }
 
 // these are wrappers running actual simulation
@@ -249,14 +298,14 @@ int main(int argc, char* argv[]) {
 #else
 #define _RUN(cl, detector_ring, model) run_cpu(cl, detector_ring, model)
 #endif
-#define RUN(detector_type, model_type, ...)                                 \
-  detector_type detector_ring(n_detectors, radius, w_detector, h_detector); \
-  model_type model{ __VA_ARGS__ };                                          \
-  auto sparse_matrix = _RUN(cl, detector_ring, model);                      \
+#define RUN(detector_type, model_type, ...)                     \
+  detector_type detector_ring(                                  \
+      n_detectors, radius, w_detector, h_detector, d_detector); \
+  model_type model{ __VA_ARGS__ };                              \
+  auto sparse_matrix = _RUN(cl, detector_ring, model);          \
   post_process(cl, detector_ring, sparse_matrix)
 
     // run simmulation on given detector model & shape
-    auto& shape = cl.get<std::string>("shape");
     if (model == "always") {
       if (shape == "square") {
         RUN(SquareDetectorRing, AlwaysAccept<>);
