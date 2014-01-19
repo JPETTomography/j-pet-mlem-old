@@ -55,7 +55,7 @@ class DetectorRing : public std::vector<DetectorType> {
 
     fov_radius_ = radius / M_SQRT2;
 
-    Detector detector_base(w_detector, h_detector);
+    Detector detector_base(w_detector, h_detector, d_detector);
     auto r_detector = d_detector / 2.;
     CircleDetector<F> circle_detector_base(r_detector);
     circle_detector_base.svg_class = "circle_detector";

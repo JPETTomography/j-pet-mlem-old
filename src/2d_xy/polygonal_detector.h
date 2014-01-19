@@ -9,8 +9,10 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
   typedef F Angle;
   typedef typename Polygon<NVertices, F>::Point Point;
 
-  PolygonalDetector(F w, F h __attribute__((unused))) {
-    auto radius = w / 2.;
+  PolygonalDetector(F w,
+                    F h __attribute__((unused)),
+                    F d __attribute__((unused)) = F()) {
+    auto radius = w / 2. * std::sin(M_PI / F(NVertices));
     auto step = 2. * M_PI / F(NVertices);
 
     for (std::size_t i = 0; i < NVertices; ++i) {
