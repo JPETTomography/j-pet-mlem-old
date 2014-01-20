@@ -207,4 +207,13 @@ __device__ bool check_for_hits(int inner,
   }
 
   return false;
+
+}
+
+
+__device__ int quantize_position(float& position,float& step_size,float& n_positions) {
+  if (position < 0)
+    return n_positions / 2.0f - 1.0f - static_cast<int>(floor(-position / step_size));
+  else
+    return static_cast<int>(floor(position / step_size)) + n_positions / 2.0f;
 }
