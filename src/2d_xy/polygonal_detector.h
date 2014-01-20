@@ -12,7 +12,7 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
   PolygonalDetector(F w,
                     F h __attribute__((unused)),
                     F d __attribute__((unused)) = F()) {
-    auto radius = w / 2. * std::sin(M_PI / F(NVertices));
+    auto radius = w / (4. * std::sin(M_PI / F(NVertices)));
     auto step = 2. * M_PI / F(NVertices);
 
     for (std::size_t i = 0; i < NVertices; ++i) {
