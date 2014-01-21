@@ -46,6 +46,7 @@ void mem_clean_lors(MatrixElement* cpu_matrix, int number_of_blocks) {
 bool run_monte_carlo_kernel(int number_of_threads_per_block,
                             int number_of_blocks,
                             int n_emissions,
+                            int n_detectors,
                             int pixels_in_row,
                             int triangular_matrix_size,
                             float radius,
@@ -85,6 +86,8 @@ bool run_monte_carlo_kernel(int number_of_threads_per_block,
 
   float fov_radius = radius / M_SQRT2;
 
+  unsigned int number_of_lors = (n_detectors * (n_detectors + 1)) / 2;
+
   for (int p = 0; p < triangular_matrix_size; ++p) {
 
     Pixel<> pixel = lookup_table_pixel[p];
@@ -114,6 +117,7 @@ bool run_monte_carlo_kernel(int number_of_threads_per_block,
       monte_carlo_kernel << <blocks, threads>>> (i,
                                                  j,
                                                  n_emissions,
+                                                 n_detectors,
                                                  gpu_prng_seed,
                                                  gpu_MatrixElement,
                                                  number_of_threads_per_block,

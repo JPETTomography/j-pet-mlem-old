@@ -108,8 +108,8 @@ __device__ int intersections(float x,
   float p1_x = ring.detector_list[detector_id].points[3].x;
   float p1_y = ring.detector_list[detector_id].points[3].y;
 
-  float a = std::sin(angle);
-  float b = -std::cos(angle);
+  float a = __sinf(angle);
+  float b = -__cosf(angle);
   float c = a * x + b * y;
 
   float v1 = a * p1_x + b * p1_y - c;
@@ -155,6 +155,16 @@ __device__ int intersections(float x,
 
 __device__ float SecantAngles(float x1, float y1) { return atan2(y1, x1); }
 
+__device__ float length(Point& p1, Point& p2) {
+
+  return sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+}
+
+__device__ float nearest_distance(Point& p1, Point& p2, Point& center) {
+
+  return min(length(p1, center), length(p2, center));
+}
+
 __device__ bool check_for_hits(int inner,
                                int outer,
                                float x,
@@ -163,7 +173,9 @@ __device__ bool check_for_hits(int inner,
                                int n_detectors,
                                DetectorRing& ring,
                                int& detector,
-                               Hits& hit,unsigned int *seed) {
+                               Hits& hit,
+                               unsigned int* seed,
+                               float& depth) {
 
   int points;
 
@@ -179,26 +191,30 @@ __device__ bool check_for_hits(int inner,
 
       detector = i;
 
+      depth = -__logf(HybridTaus(seed[0], seed[1], seed[2], seed[3])) * 0.1f;
 
-//      if (-log(HybridTaus(seed[0], seed[1], seed[2], seed[3])) * inv_unit_prob_ <
-//          (sqrt((hit.p[1].x - hit.p[0].x) * (hit.p[1].x - hit.p[0].x) +
-//                (hit.p[1].y - hit.p[0].y) * (hit.p[1].y - hit.p[0].y)))) {
-//      }
+      //      if (depth <
+      //          (sqrt((hit.p[1].x - hit.p[0].x) * (hit.p[1].x - hit.p[0].x) +
+      //                (hit.p[1].y - hit.p[0].y) * (hit.p[1].y - hit.p[0].y))))
+      // {
+      //        return true;
+      //      }
 
-
-      return true;
+      if (depth < length(hit.p[0], hit.p[1])) {
+        return true;
+      }
     }
-
-    // check if we got 2 point intersection
-    // then test the model against these points distance
-    // if (points.size() == 2) {
-    //   auto deposition_depth = model.deposition_depth(gen);
-    //   if (deposition_depth < (points[1] - points[0]).length()) {
-    //    detector = i;
-    //    depth = deposition_depth;
-    //    return true;
-    //  }
   }
 
   return false;
+}
+
+__device__ int quantize_position(float& position,
+                                 float& step_size,
+                                 float& n_positions) {
+  if (position < 0)
+    return n_positions / 2.0f - 1.0f -
+           static_cast<int>(floor(-position / step_size));
+  else
+    return static_cast<int>(floor(position / step_size)) + n_positions / 2.0f;
 }

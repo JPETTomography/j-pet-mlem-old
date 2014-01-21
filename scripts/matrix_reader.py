@@ -11,7 +11,9 @@ import matplotlib.image as mpimg
 import numpy as np
 
 
+
 import petmatrix as pet
+
 
 if len(sys.argv)>1:
     file = open(sys.argv[1],"rb")
@@ -19,7 +21,7 @@ if len(sys.argv)>1:
 matrix = pet.SparseMatrix(file)
 matrix.show();
 matrix.body.Read()
-print matrix.body.stats()
+print matrix.body.stats()[0:3]
 
 
 def callback(event):

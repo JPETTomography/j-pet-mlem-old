@@ -60,7 +60,7 @@ class SparseMatrixTOFpBody(SparseMatrixBody):
         if len(data) < 4:
             return 0
         (a,b) =  struct.unpack("<HH",data) 
-        count =  struct.unpack("<I",file.read(4))[0]
+        count =  struct.unpack("<I",self.file.read(4))[0]
         
         for i in range(count):
             data = self.file.read(12);
@@ -107,8 +107,17 @@ class SparseMatrix:
         self.header.show();
         self.body.show();
             
+def FillOctantPixMap(matrix):
+    pixmap=np.zeros((matrix.header.n_pixels/2,matrix.header.n_pixels/2));
 
+    for item in matrix.items:
+               
+        (ix,iy)  = item[1]
+        count  = item[2] if ix!= iy else 2*item[2]
+        pixmap[iy,ix]+=count
+              
     
+    return pixmap    
         
 def FillPixMap(matrix):
     pixmap=np.zeros((matrix.header.n_pixels,matrix.header.n_pixels));
