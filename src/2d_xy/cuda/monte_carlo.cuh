@@ -58,6 +58,8 @@ __global__ void monte_carlo_kernel(int x,
   float depth1, depth2, position;
   Point center;
 
+  int tof_n_positions = n_positions(0.01f, 0, radius + h_detector);
+
 #pragma unroll
   for (int i = 0; i < iteration; ++i) {
 
@@ -130,10 +132,12 @@ __global__ void monte_carlo_kernel(int x,
   gpu_prng_seed[4 * tid + 3] = seed[3];
 }
 
-#ifdef CREATE_TEST_MAYBE
+#ifdef TOF_GPU_TEST
+
 __global__ void monte_carlo_kernel(int x,
                                    int y,
                                    int iteration,
+                                   int n_detector,
                                    unsigned int* gpu_prng_seed,
                                    MatrixElement* pixel_data,
                                    int threads,
@@ -168,23 +172,21 @@ __global__ void monte_carlo_kernel(int x,
 
   int detector1;
   int detector2;
+  float depth1, depth2;
+  float position;
+
+  int tof_n_positions = n_positions(0.01f, 0, radius + h_detector);
+
+  Point center;
 
 #pragma unroll
   for (int i = 0; i < iteration; ++i) {
 
-    //    float rx =
-    //        (x + HybridTaus(seed[0], seed[1], seed[2], seed[3])) * pixel_size;
-    //    float ry =
-    //        (y + HybridTaus(seed[0], seed[1], seed[2], seed[3])) * pixel_size;
-
-    //    float angle = HybridTaus(seed[0], seed[1], seed[2], seed[3]) * M_PI;
-
-    //    if (rx > ry) {
-    //      continue;
-    //    }
-
     float rx = x * pixel_size;
     float ry = y * pixel_size;
+
+    center.x = rx;
+    center.y = ry;
 
     if (tid == 0 && blockIdx.x == 0) {
       printf("PIXEL (%d,%d)\n", x, y);
@@ -216,7 +218,8 @@ __global__ void monte_carlo_kernel(int x,
                           ring,
                           detector1,
                           hit1,
-                          seed)) {
+                          seed,
+                          depth1)) {
         continue;
       }
 
@@ -229,20 +232,14 @@ __global__ void monte_carlo_kernel(int x,
                           ring,
                           detector2,
                           hit2,
-                          seed)) {
+                          seed,
+                          depth2)) {
         continue;
       }
       size++;
 
       if (tid == 0 && blockIdx.x == 0) {
 
-        //    printf("Detector: %d %d Angle: %f\n",detector1,detector2,angle);
-        //    printf("Hit1: %f %f %f
-        // %f\n",hit1.p[0].x,hit1.p[0].y,hit1.p[1].x,hit1.p[1].y);
-        //    printf("Hit2: %f %f %f
-        // %f\n",hit2.p[0].x,hit2.p[0].y,hit2.p[1].x,hit2.p[1].y);
-
-        // printf("Detector: %d %d Angle: %f\n",detector1,detector2,angle);
         printf("%d %d %f %f %f %f %f %f %f %f %f\n",
                detector1,
                detector2,
@@ -255,12 +252,24 @@ __global__ void monte_carlo_kernel(int x,
                hit2.p[1].x,
                hit2.p[1].y,
                angle);
+
+        float length1 = nearest_distance(hit1.p[0], hit1.p[1], center) + depth1;
+        float length2 = nearest_distance(hit2.p[0], hit2.p[1], center) + depth2;
+
+        if (detector1 > detector2) {
+          position = length1 - length2;
+        } else {
+          position = length2 - length1;
+        }
+
+        printf("Length1: %f Length2: %f \n",
+               nearest_distance(hit1.p[0], hit1.p[1], center),
+               nearest_distance(hit2.p[0], hit2.p[1], center));
+        printf("Tof: %d Position: %f \n",
+               quantize_position(position, 0.01f, tof_n_positions),
+               position);
       }
     }
-    //    if(tid == 0 && size > 0){
-    //    //printf("Pixel: (%d,%d) rx:= %f ry:= %f Data: %d\n",x,y,x *
-    // pixel_size,y * pixel_size,size);
-    //    }
 
     atomicAdd(&pixel_data[blockIdx.x].hit[lor_iterator(detector1, detector2)],
               1.0f);

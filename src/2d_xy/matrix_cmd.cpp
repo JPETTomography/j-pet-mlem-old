@@ -453,6 +453,10 @@ SparseMatrix<Pixel<>, LOR<>> run_cpu(cmdline::parser& cl,
       detector_ring, matrix, s_pixel, tof_step);
   monte_carlo(gen, model, n_emissions, verbose ? progress_callback : NULL);
 
+#ifdef GPU_TOF_TEST
+  monte_carlo.test(gen, model, n_emissions);
+#endif
+
 #ifdef __linux__
   if (verbose) {
     clock_gettime(CLOCK_REALTIME, &stop);

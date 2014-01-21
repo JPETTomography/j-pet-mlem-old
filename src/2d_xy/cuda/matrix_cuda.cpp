@@ -116,6 +116,7 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   auto iteration_per_thread =
       floor(n_emissions / (number_of_blocks * number_of_threads_per_block));
 
+  iteration_per_thread = n_emissions;
   // automatic pixel size
   if (!cl.exist("radius")) {
     if (!cl.exist("s-pixel")) {

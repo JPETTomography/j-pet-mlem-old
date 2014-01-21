@@ -203,18 +203,33 @@ __device__ bool check_for_hits(int inner,
       if (depth < length(hit.p[0], hit.p[1])) {
         return true;
       }
+      return true;
     }
   }
 
   return false;
 }
 
-__device__ int quantize_position(float& position,
-                                 float& step_size,
-                                 float& n_positions) {
+__device__ int quantize_position(float position,
+                                 float step_size,
+                                 float n_positions) {
   if (position < 0)
     return n_positions / 2.0f - 1.0f -
            static_cast<int>(floor(-position / step_size));
   else
     return static_cast<int>(floor(position / step_size)) + n_positions / 2.0f;
+}
+
+__device__ float max_dl(float max_bias_size, float c_outer_radius) {
+  return 2.0f * c_outer_radius + max_bias_size;
+}
+
+__device__ int n_positions(float step_size,
+                           float max_bias_size,
+                           float c_outer_radius) {
+  // since position needs to be symmetric against (0,0) number must be even
+  return ((int)(ceil(2.0f * max_dl(max_bias_size, c_outer_radius) /
+                     step_size)) +
+          1) /
+         2 * 2;
 }

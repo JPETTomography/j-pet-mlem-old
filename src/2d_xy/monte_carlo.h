@@ -133,6 +133,61 @@ class MonteCarlo {
     }
   }
 
+#ifdef GPU_TOF_TEST
+
+  template <typename RandomGenerator, typename AcceptanceModel>
+  void test(RandomGenerator& gen, AcceptanceModel model, S n_emissions) {
+    if (n_emissions <= 0)
+      return;
+
+    auto n_positions = detector_ring.n_positions(tof_step, model.max_bias());
+    bool tof = (tof_step > static_cast<F>(0));
+    uniform_real_distribution<> one_dis(0., 1.);
+    uniform_real_distribution<> phi_dis(0., M_PI);
+
+    matrix.add_emissions(n_emissions);
+
+    for (auto i_pixel = 0; i_pixel < matrix.total_n_pixels_in_triangle();
+         ++i_pixel) {
+
+      auto pixel = matrix.pixel_at_index(i_pixel);
+
+      printf("PIXEL(%d,%d)\n", pixel.x, pixel.y);
+      printf("N_POSITIONS: %d\n", n_positions);
+
+      if ((pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
+          detector_ring.fov_radius() * detector_ring.fov_radius())
+        continue;
+
+      for (auto n = 0; n < n_emissions; ++n) {
+
+        auto& l_gen = gen;
+
+        auto rx = pixel.x * pixel_size;
+        auto ry = pixel.y * pixel_size;
+
+        for (auto angle = 0.0; angle < 3.14; angle += 0.1) {
+          LOR lor;
+          F position = (F)0.0;
+          auto hits = detector_ring.emit_event(
+              l_gen, model, rx, ry, angle, lor, position);
+
+          S quantized_position = 0;
+          if (tof)
+            quantized_position = detector_ring.quantize_position(
+                position, tof_step, n_positions);
+
+          if (hits > 1) {
+            printf("TOF: %d Position: %f \n", quantized_position, position);
+          }
+          // matrix.hit_lor(lor, quantized_position, i_pixel, 1);
+        }
+      }  // loop over emmisions from pixel
+    }
+  }
+
+#endif
+
  private:
   DetectorRing& detector_ring;
   Matrix& matrix;
