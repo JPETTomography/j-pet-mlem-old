@@ -81,6 +81,10 @@ int main(int argc, char* argv[]) {
         cmdline::oneof<std::string>("square", "circle", "triangle", "hexagon"));
     cl.add<double>("w-detector", 'w', "detector width", false);
     cl.add<double>("h-detector", 'h', "detector height", false);
+    cl.add<double>("d-detector",
+                   0,
+                   "inscribe detector shape into circle of given diameter",
+                   false);
     cl.add<std::string>(
         "model",
         'm',
@@ -130,8 +134,85 @@ int main(int argc, char* argv[]) {
       model = "scintillator";
     }
 
-    // run simmulation on given detector model & shape
+    auto& n_pixels = cl.get<int>("n-pixels");
+    auto& n_detectors = cl.get<int>("n-detectors");
+    auto& radius = cl.get<double>("radius");
+    auto& s_pixel = cl.get<double>("s-pixel");
+    auto& w_detector = cl.get<double>("w-detector");
+    auto& d_detector = cl.get<double>("d-detector");
     auto& shape = cl.get<std::string>("shape");
+    auto verbose = cl.exist("verbose");
+
+    if (verbose) {
+      std::cerr << "assumed:" << std::endl;
+    }
+
+    // automatic radius size
+    if (!cl.exist("radius")) {
+      if (!cl.exist("s-pixel")) {
+        radius = M_SQRT2;  // exact result
+      } else {
+        radius = s_pixel * n_pixels / M_SQRT2;
+      }
+      std::cerr << "--radius=" << radius << std::endl;
+    }
+
+    // automatic pixel size
+    if (!cl.exist("s-pixel")) {
+      if (!cl.exist("radius")) {
+        s_pixel = 2. / n_pixels;  // exact result
+      } else {
+        s_pixel = M_SQRT2 * radius / n_pixels;
+      }
+      std::cerr << "--s-pixel=" << s_pixel << std::endl;
+    }
+
+    if (!cl.exist("w-detector")) {
+      if (cl.exist("n-detectors")) {
+        w_detector = 2 * M_PI * .9 * radius / n_detectors;
+      } else if (cl.exist("d-detector")) {
+        if (shape == "circle") {
+          w_detector = d_detector;
+        } else {
+          auto mult = 1.;
+          auto sides = 0.;
+          if (shape == "triangle") {
+            sides = 3.;
+          } else if (shape == "square") {
+            sides = 4.;
+          } else if (shape == "hexagon") {
+            sides = 6.;
+            mult = 2.;
+          } else {
+            throw("cannot determine detector width for given shape");
+          }
+          w_detector = d_detector * std::sin(M_PI / sides) * mult;
+        }
+      }
+      std::cerr << "--w-detector=" << w_detector << std::endl;
+    }
+
+    // automatic detector size
+    // NOTE: detector height will be determined per shape
+    if (!cl.exist("n-detectors")) {
+      if (cl.exist("d-detector")) {
+        n_detectors =
+            ((int)std::floor(
+                 M_PI / std::atan2(d_detector, 2. * radius + d_detector / 2.)) /
+             4) *
+            4;
+      } else {
+        n_detectors =
+            ((int)std::floor(M_PI / std::atan2(w_detector, 2. * radius)) / 4) *
+            4;
+      }
+      if (!n_detectors) {
+        throw("detector width is too big for given detector ring radius");
+      }
+      std::cerr << "--n-detectors=" << n_detectors << std::endl;
+    }
+
+    // run simmulation on given detector model & shape
     if (model == "always") {
       AlwaysAccept<> model;
       if (shape == "square") {
@@ -191,6 +272,7 @@ void run(cmdline::parser& cl, Model& model) {
   auto& w_detector = cl.get<double>("w-detector");
   auto& h_detector = cl.get<double>("h-detector");
   auto& tof_step = cl.get<double>("tof-step");
+  auto verbose = cl.exist("verbose");
 
   PointSources<> point_sources;
 
@@ -285,7 +367,6 @@ void run(cmdline::parser& cl, Model& model) {
     } while (!in.eof());
   }
 
-  auto verbose = cl.exist("verbose");
   time_t time_start = time(NULL);
 
   if (phantom.n_regions() > 0) {
