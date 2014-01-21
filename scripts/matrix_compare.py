@@ -19,33 +19,55 @@ import petmatrix as pet
 parser = argparse.ArgumentParser(description="Statistically compare two system matrices.")
 parser.add_argument('--a-file', '-a', help = 'first  matrix file')
 parser.add_argument('--b-file', '-b', help = 'second matrix file')
-parser.add_argument('--a-emissions', type = int, help = 'number of emissions per pixel in first  matrix')
-parser.add_argument('--b-emissions', type = int, help = 'number of emissions per pixel in second matrix')
-parser.add_argument('--silent', '-s', action = 'store_true', help = 'prints only the significance on stdout')  
+parser.add_argument('--a-emissions', 
+                    type = int, 
+                    help = 'number of emissions per pixel in first  matrix'
+                    )
+parser.add_argument('--b-emissions', 
+                    type = int, 
+                    help = 'number of emissions per pixel in second matrix'
+                    )
+parser.add_argument('--silent', '-s', 
+                    action = 'store_true', 
+                    help = 'prints only the significance on stdout'
+                    )  
 parser.add_argument('--verbose','-v', action = 'store_true') #not implemented
-parser.add_argument('--graph', '-g',  action = 'store_true', help = 'displays a graph of significance for every pixels') 
+parser.add_argument('--binned', action = 'store_true') 
+parser.add_argument('--graph', '-g',  
+                    action = 'store_true', 
+                    help = 'displays a graph of significance for every pixels'
+                    ) 
+
 args=parser.parse_args()
+
 if args.silent:
     args.graph   = False
     args.verbose = False
 
 if args.a_file:
     a_file = open(args.a_file,"rb")
-        
-    
+else: 
+    print "No a file given"
+    sys.exit()
+
 if args.b_file:
     b_file = open(args.b_file,"rb")
+else:
+    print "No b file given"
+    sys.exit()
+
 
 a_matrix = pet.SparseMatrix(a_file)
 if(args.a_emissions):
     a_matrix.header.n_emissions = args.a_emissions
 a_matrix.body.Read()
-
+a_matrix.body.sort_by_pixel()
 
 b_matrix = pet.SparseMatrix(b_file)
 if(args.b_emissions):
     b_matrix.header.n_emissions = args.b_emissions
 b_matrix.body.Read()
+b_matrix.body.sort_by_pixel()
 
 a_n = a_matrix.n_emissions();
 b_n = b_matrix.n_emissions();
@@ -73,7 +95,6 @@ if args.silent:
 else:
     print "chi^2  = ", chi2, ", n_dof = ", 2*n_df, ", p = ", 1-chi2dist.cdf(chi2)
 
-
 if args.graph:
     
     def callback(event):
@@ -86,3 +107,42 @@ if args.graph:
     imgplot.figure.canvas.mpl_connect('button_press_event',callback);
     plt.colorbar(imgplot);
     plt.show()
+
+
+n_d = a_matrix.header.n_detectors
+n_t = a_matrix.body.n_tof_positions
+n_bins = (n_d*(n_d-1))/2 * n_t
+print n_bins
+
+
+
+
+
+a_iterator = iter(a_matrix.body.items())
+a_first = next(a_iterator)
+b_iterator = iter(b_matrix.body.items())
+b_first = next(b_iterator)
+
+if args.binned:
+    while True:
+        a_bins = np.zeros(n_bins)
+        a_first = pet.fill_pixel_bins(n_d, n_t, a_first, a_iterator, a_bins)
+        a_total = a_bins.sum()
+
+        b_bins = np.zeros(n_bins)
+        b_first=pet.fill_pixel_bins(n_d, n_t, b_first, b_iterator, b_bins)
+        b_total = b_bins.sum()
+
+        ab_bins=a_bins+b_bins;
+        ab_masked_bins = np.ma.masked_equal(ab_bins, value=0)
+
+        a_over_b = float(a_total)/b_total
+    #print a_n, a_total, b_n,  b_total, a_over_b
+
+        diff =(a_bins/a_over_b - b_bins*a_over_b)
+
+        chi = diff/ab_masked_bins.filled(1.0);
+        n_dof = ab_masked_bins.count()
+        print "n dof = ", n_dof," chi = ", chi.sum();
+        if not a_first or  not b_first:
+            break
