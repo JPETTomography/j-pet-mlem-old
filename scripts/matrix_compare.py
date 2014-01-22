@@ -32,7 +32,7 @@ parser.add_argument('--silent', '-s',
                     help = 'prints only the significance on stdout'
                     )  
 parser.add_argument('--verbose','-v', action = 'store_true') #not implemented
-parser.add_argument('--binned', action = 'store_true') 
+parser.add_argument('--by-tors', action = 'store_true') 
 parser.add_argument('--graph', '-g',  
                     action = 'store_true', 
                     help = 'displays a graph of significance for every pixels'
@@ -122,27 +122,41 @@ a_iterator = iter(a_matrix.body.items())
 a_first = next(a_iterator)
 b_iterator = iter(b_matrix.body.items())
 b_first = next(b_iterator)
-
-if args.binned:
+pixel_stats = []
+if args.by_tors:
     while True:
+        a_pixel=a_first[1]
+        b_pixel=b_first[1]
         a_bins = np.zeros(n_bins)
         a_first = pet.fill_pixel_bins(n_d, n_t, a_first, a_iterator, a_bins)
         a_total = a_bins.sum()
 
         b_bins = np.zeros(n_bins)
-        b_first=pet.fill_pixel_bins(n_d, n_t, b_first, b_iterator, b_bins)
+        b_first = pet.fill_pixel_bins(n_d, n_t, b_first, b_iterator, b_bins)
         b_total = b_bins.sum()
 
         ab_bins=a_bins+b_bins;
         ab_masked_bins = np.ma.masked_equal(ab_bins, value=0)
 
-        a_over_b = float(a_total)/b_total
-    #print a_n, a_total, b_n,  b_total, a_over_b
+        a_over_b = math.sqrt(float(a_total)/b_total)
+        #print a_n, a_total, b_n,  b_total, a_over_b
 
         diff =(a_bins/a_over_b - b_bins*a_over_b)
 
-        chi = diff/ab_masked_bins.filled(1.0);
+        chi_bins = (diff*diff)/ab_masked_bins.filled(1.0);
         n_dof = ab_masked_bins.count()
-        print "n dof = ", n_dof," chi = ", chi.sum();
+        chi2 = chi_bins.sum()
+        chi2dist = stats.chi2(n_dof)
+        p = 1-chi2dist.cdf(chi2)
+        #print a_pixel, b_pixel, " n dof = ", n_dof," chi = ", chi2, " p = ", p
+        pixel_stats.append((a_pixel, n_dof, chi2,p))
         if not a_first or  not b_first:
             break
+    
+    ps=np.array( map(lambda item: item[3],pixel_stats)   )   
+    chi2 = -2*np.log(ps).sum();
+    n_dof = 2*len(ps)  
+    print n_dof, chi2, 1-stats.chi2.cdf(chi2, n_dof)        
+                            
+                            
+            
