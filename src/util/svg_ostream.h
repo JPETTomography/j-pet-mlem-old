@@ -16,6 +16,7 @@ template <typename FType = double> class svg_ostream : public std::ofstream {
     auto y_translate = y_max;
     auto scale = std::min((image_width - 4.) / x_max / 2.,
                           (image_height - 4.) / y_max / 2.);
+    auto stroke = 1. / scale;
     *this << "<?xml version=\"1.0\" standalone=\"no\"?>" << std::endl;
     *this << "<svg"
           << " width=\"" << image_width << "\""
@@ -33,6 +34,10 @@ template <typename FType = double> class svg_ostream : public std::ofstream {
           << " stroke-width: 0.5;"
           << " vector-effect: non-scaling-stroke;"
           << " }" << std::endl;
+    *this << "    @media print { polygon, circle {"
+          << " stroke-width: " << stroke << ";"
+          << " vector-effect: none;"
+          << " } }" << std::endl;
     *this << "    polygon, .detector {"
           << " fill: #f99;"
           << " stroke: red;"
