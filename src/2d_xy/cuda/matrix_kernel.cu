@@ -43,7 +43,8 @@ void mem_clean_lors(MatrixElement* cpu_matrix, int number_of_blocks) {
   }
 }
 
-bool run_monte_carlo_kernel(int number_of_threads_per_block,
+bool run_monte_carlo_kernel(int pixel_i,
+                            int number_of_threads_per_block,
                             int number_of_blocks,
                             int n_emissions,
                             int n_detectors,
@@ -82,91 +83,68 @@ bool run_monte_carlo_kernel(int number_of_threads_per_block,
       number_of_blocks * number_of_threads_per_block * 4 * sizeof(unsigned int),
       cudaMemcpyHostToDevice);
 
-  double timer = getwtime();
-
   float fov_radius = radius / M_SQRT2;
 
   unsigned int number_of_lors = (n_detectors * (n_detectors + 1)) / 2;
 
-  for (int p = 0; p < triangular_matrix_size; ++p) {
+  Pixel<> pixel = lookup_table_pixel[pixel_i];
 
-    Pixel<> pixel = lookup_table_pixel[p];
+  int i = pixel.x;
+  int j = pixel.y;
 
-    int i = pixel.x;
-    int j = pixel.y;
+  mem_clean_lors(cpu_matrix, number_of_blocks);
 
-    mem_clean_lors(cpu_matrix, number_of_blocks);
+  cuda(Memcpy,
+       gpu_MatrixElement,
+       cpu_matrix,
+       number_of_blocks * sizeof(MatrixElement),
+       cudaMemcpyHostToDevice);
 
-    cuda(Memcpy,
-         gpu_MatrixElement,
-         cpu_matrix,
-         number_of_blocks * sizeof(MatrixElement),
-         cudaMemcpyHostToDevice);
+  long total_emissions =
+      (long)n_emissions * number_of_blocks * number_of_threads_per_block;
 
-    long total_emissions =
-        (long)n_emissions * number_of_blocks * number_of_threads_per_block;
+  printf(
+      "Pixel(%d,%d) n_emissions: %d %ld\n", i, j, n_emissions, total_emissions);
 
-    printf("Pixel(%d,%d) n_emissions: %d %ld\n",
-           i,
-           j,
-           n_emissions,
-           total_emissions);
+  if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
 
-    if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
+    monte_carlo_kernel << <blocks, threads>>> (i,
+                                               j,
+                                               n_emissions,
+                                               n_detectors,
+                                               gpu_prng_seed,
+                                               gpu_MatrixElement,
+                                               number_of_threads_per_block,
+                                               pixels_in_row,
+                                               radius,
+                                               h_detector,
+                                               w_detector,
+                                               pixel_size);
 
-      monte_carlo_kernel << <blocks, threads>>> (i,
-                                                 j,
-                                                 n_emissions,
-                                                 n_detectors,
-                                                 gpu_prng_seed,
-                                                 gpu_MatrixElement,
-                                                 number_of_threads_per_block,
-                                                 pixels_in_row,
-                                                 radius,
-                                                 h_detector,
-                                                 w_detector,
-                                                 pixel_size);
+    cudaThreadSynchronize();
 
-      cudaThreadSynchronize();
-
-      if (cudaGetLastError() != cudaSuccess) {
-        return false;
-      }
-    }
-
-    cuda(Memcpy,
-         cpu_matrix,
-         gpu_MatrixElement,
-         number_of_blocks * sizeof(MatrixElement),
-         cudaMemcpyDeviceToHost);
-
-    for (int i = 0; i < LORS; i++) {
-      float temp = 0.f;
-      for (int j = 0; j < number_of_blocks; ++j) {
-
-        temp += cpu_matrix[j].hit[i];
-      }
-
-      if (temp > 0.0f) {
-        gpu_output[p].hit[lookup_table_lors[i].index()] = temp;
-
-#ifdef PRINT
-        if (p == 1) {
-          printf("GPU LOR(%d,%d) %f\n",
-                 lookup_table_lors[i].lor_a,
-                 lookup_table_lors[i].lor_b,
-                 gpu_output[p].hit[lookup_table_lors[i].index()]);
-        }
-#endif
-      }
+    if (cudaGetLastError() != cudaSuccess) {
+      return false;
     }
   }
-  double time = 0.0f;
 
-  time = getwtime() - time;
+  cuda(Memcpy,
+       cpu_matrix,
+       gpu_MatrixElement,
+       number_of_blocks * sizeof(MatrixElement),
+       cudaMemcpyDeviceToHost);
 
-  printf("time[s]: %f\n ", time);
-  printf("time per pixel: %f\n", time / triangular_matrix_size);
+  for (int i = 0; i < LORS; i++) {
+    float temp = 0.f;
+    for (int j = 0; j < number_of_blocks; ++j) {
+
+      temp += cpu_matrix[j].hit[i];
+    }
+
+    if (temp > 0.0f) {
+      gpu_output[0].hit[lookup_table_lors[i].index()] = temp;
+    }
+  }
 
   cuda(Free, gpu_prng_seed);
   cuda(Free, gpu_MatrixElement);

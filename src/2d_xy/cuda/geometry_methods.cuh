@@ -203,7 +203,6 @@ __device__ bool check_for_hits(int inner,
       if (depth < length(hit.p[0], hit.p[1])) {
         return true;
       }
-      return true;
     }
   }
 

@@ -32,7 +32,8 @@ void run_phantom_kernel(int number_of_threads_per_block,
                         std::vector<MatrixElement>& gpu_output);
 #endif
 
-void run_monte_carlo_kernel(int number_of_threads_per_block,
+void run_monte_carlo_kernel(int pixel_id,
+                            int number_of_threads_per_block,
                             int number_of_blocks,
                             int n_emissions,
                             int n_detectors,
@@ -160,7 +161,7 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   lookup_table_pixel.resize(triangle_pixel_size);
 
   std::vector<gpu::MatrixElement> gpu_vector_output;
-  gpu_vector_output.resize(triangle_pixel_size);
+  gpu_vector_output.resize(1);
 
   unsigned int* cpu_prng_seed;
 
@@ -175,58 +176,48 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
                 number_of_threads_per_block,
                 pixels_in_row);
 
-  for (int i = 0; i < triangle_pixel_size; ++i) {
-
-    for (int lor = 0; lor < LORS; ++lor) {
-
-      gpu_vector_output[i].hit[lor] = 0;
-    }
-  }
-
   std::vector<gpu::MatrixElement> cpu_matrix;
   cpu_matrix.resize(number_of_blocks);
 
-  run_monte_carlo_kernel(number_of_threads_per_block,
-                         number_of_blocks,
-                         iteration_per_thread,
-                         n_detectors,
-                         pixels_in_row,
-                         triangle_pixel_size,
-                         radius,
-                         h_detector,
-                         w_detector,
-                         s_pixel,
-                         lookup_table_lors.data(),
-                         lookup_table_pixel.data(),
-                         cpu_prng_seed,
-                         cpu_matrix.data(),
-                         gpu_vector_output.data());
-
   OutputMatrix output_matrix(pixels_in_row, n_detectors, n_tof_positions);
 
-  for (int id = 0; id < triangle_pixel_size; ++id) {
+  for (int pixel_i = 0; pixel_i < triangle_pixel_size; ++pixel_i) {
 
-    for (int i = 0; i < LORS; ++i) {
+    for (int lor = 0; lor < LORS; ++lor) {
 
-      if (gpu_vector_output[id].hit[i] > 0) {
+      gpu_vector_output[0].hit[lor] = 0;
+    }
 
-        OutputMatrix::LOR lor(lookup_table_lors[i].lor_a,
-                              lookup_table_lors[i].lor_b);
+    run_monte_carlo_kernel(pixel_i,
+                           number_of_threads_per_block,
+                           number_of_blocks,
+                           iteration_per_thread,
+                           n_detectors,
+                           pixels_in_row,
+                           triangle_pixel_size,
+                           radius,
+                           h_detector,
+                           w_detector,
+                           s_pixel,
+                           lookup_table_lors.data(),
+                           lookup_table_pixel.data(),
+                           cpu_prng_seed,
+                           cpu_matrix.data(),
+                           gpu_vector_output.data());
 
-        auto pixel = lookup_table_pixel[id];
-#ifdef PRINT
-        if (id == 1) {
-          printf("ID: %d LOR(%d,%d) %f\n",
-                 id,
-                 lor.first,
-                 lor.second,
-                 gpu_vector_output[id].hit[i]);
-        }
-#endif
+    for (int lor_i = 0; lor_i < LORS; ++lor_i) {
+
+      if (gpu_vector_output[0].hit[lor_i] > 0) {
+
+        OutputMatrix::LOR lor(lookup_table_lors[lor_i].lor_a,
+                              lookup_table_lors[lor_i].lor_b);
+
+        auto pixel = lookup_table_pixel[pixel_i];
+
         OutputMatrix::Element element;
         element.lor = lor;
         element.pixel = pixel;
-        element.hits = gpu_vector_output[id].hit[i];
+        element.hits = gpu_vector_output[0].hit[lor_i];
         element.position = 0;
 
         output_matrix.push_back(element);
