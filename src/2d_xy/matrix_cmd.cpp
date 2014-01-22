@@ -35,8 +35,8 @@
 #include "cuda/matrix.h"
 #endif
 
-
-#if _OPENMP /* both */ && HAVE_CUDA
+// detect build variant
+#if _OPENMP && HAVE_CUDA
 #define VARIANT "OpenMP/CUDA"
 #elif _OPENMP
 #define VARIANT "OpenMP"
