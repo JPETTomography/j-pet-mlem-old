@@ -33,17 +33,30 @@ double getwtime() {
   return (double)(tv.tv_sec - sec) + (double)tv.tv_usec / 1e6;
 }
 
-void mem_clean_lors(MatrixElement* cpu_matrix, int number_of_blocks) {
+void mem_clean_lors(MatrixElement* cpu_matrix,
+                    int& number_of_blocks,
+                    int& n_tof_positions) {
+#if NO_TOF > 0
 
-  for (int i = 0; i < number_of_blocks; ++i) {
-    for (int j = 0; j < LORS; ++j) {
+  for (int block_i = 0; block_i < number_of_blocks; ++block_i) {
+    for (int lor_i = 0; lor_i < LORS; ++lor_i) {
 
-      cpu_matrix[i].hit[j] = 0.f;
+      cpu_matrix[block_i].hit[lor_i] = 0.f;
     }
   }
-}
+#else
+  for (int tof_i = 0; tof_i < n_tof_positions; ++tof_i) {
+    for (int block_i = 0; block_i < number_of_blocks; ++block_i) {
+      for (int lor_i = 0; lor_i < LORS; ++lor_i) {
 
+        cpu_matrix[tof_i * block_i].hit[lor_i] = 0.f;
+      }
+    }
+  }
+#endif
+}
 bool run_monte_carlo_kernel(int pixel_i,
+                            int n_tof_positions,
                             int number_of_threads_per_block,
                             int number_of_blocks,
                             int n_emissions,
@@ -74,7 +87,7 @@ bool run_monte_carlo_kernel(int pixel_i,
            sizeof(unsigned int));
   cuda(Malloc,
        (void**)&gpu_MatrixElement,
-       number_of_blocks * sizeof(MatrixElement));
+       n_tof_positions * number_of_blocks * sizeof(MatrixElement));
 
   cuda(
       Memcpy,
@@ -92,7 +105,7 @@ bool run_monte_carlo_kernel(int pixel_i,
   int i = pixel.x;
   int j = pixel.y;
 
-  mem_clean_lors(cpu_matrix, number_of_blocks);
+  mem_clean_lors(cpu_matrix, number_of_blocks, n_tof_positions);
 
   cuda(Memcpy,
        gpu_MatrixElement,
@@ -131,21 +144,38 @@ bool run_monte_carlo_kernel(int pixel_i,
   cuda(Memcpy,
        cpu_matrix,
        gpu_MatrixElement,
-       number_of_blocks * sizeof(MatrixElement),
+       n_tof_positions * number_of_blocks * sizeof(MatrixElement),
        cudaMemcpyDeviceToHost);
 
-  for (int i = 0; i < LORS; i++) {
+#if NO_TOF > 0
+  for (int lor_i = 0; lor_i < LORS; ++lor_i) {
     float temp = 0.f;
-    for (int j = 0; j < number_of_blocks; ++j) {
+    for (int block_i = 0; block_i < number_of_blocks; ++block_i) {
 
-      temp += cpu_matrix[j].hit[i];
+      temp += cpu_matrix[block_i].hit[lor_i];
     }
 
     if (temp > 0.0f) {
-      gpu_output[0].hit[lookup_table_lors[i].index()] = temp;
+      gpu_output[0].hit[lookup_table_lors[lor_i].index()] = temp;
+    }
+  }
+#else
+
+  for (int tof_i = 0; tof_i < n_tof_positions; ++tof_i) {
+    for (int lor_i = 0; lor_i < LORS; ++lor_i) {
+      float temp_hits = 0.f;
+      for (int block_i = 0; block_i < number_of_blocks; ++block_i) {
+
+        temp_hits += cpu_matrix[tof_i * block_i].hit[lor_i];
+      }
+
+      if (temp_hits > 0.0f) {
+        gpu_output[tof_i].hit[lookup_table_lors[lor_i].index()] = temp_hits;
+      }
     }
   }
 
+#endif
   cuda(Free, gpu_prng_seed);
   cuda(Free, gpu_MatrixElement);
 

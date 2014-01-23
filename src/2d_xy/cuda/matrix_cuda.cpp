@@ -33,6 +33,7 @@ void run_phantom_kernel(int number_of_threads_per_block,
 #endif
 
 void run_monte_carlo_kernel(int pixel_id,
+                            int n_tof_positions,
                             int number_of_threads_per_block,
                             int number_of_blocks,
                             int n_emissions,
@@ -151,7 +152,13 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   std::cerr << radius << " " << s_pixel << " " << w_detector << " "
             << h_detector << std::endl;
 
+#if NO_TOF > 0
   int n_tof_positions = 1;
+#else
+  int n_tof_positions =
+      ((int)(ceil(2.0f * (2.0f * (radius + h_detector)) / 0.01f)) + 1) / 2 * 2;
+#endif
+
   int triangle_pixel_size = (pixels_in_row / 2 * (pixels_in_row / 2 + 1) / 2);
 
   std::vector<gpu::LOR> lookup_table_lors;
@@ -160,8 +167,23 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   std::vector<Pixel<>> lookup_table_pixel;
   lookup_table_pixel.resize(triangle_pixel_size);
 
+#if NO_TOF > 0
+
   std::vector<gpu::MatrixElement> gpu_vector_output;
   gpu_vector_output.resize(1);
+
+  std::vector<gpu::MatrixElement> cpu_matrix;
+  cpu_matrix.resize(number_of_blocks);
+
+#else
+
+  std::vector<gpu::MatrixElement> gpu_vector_output;
+  gpu_vector_output.resize(n_tof_positions);
+
+  std::vector<gpu::MatrixElement> cpu_matrix;
+  cpu_matrix.resize(n_tof_positions * number_of_blocks);
+
+#endif
 
   unsigned int* cpu_prng_seed;
 
@@ -176,9 +198,6 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
                 number_of_threads_per_block,
                 pixels_in_row);
 
-  std::vector<gpu::MatrixElement> cpu_matrix;
-  cpu_matrix.resize(number_of_blocks);
-
   OutputMatrix output_matrix(pixels_in_row, n_detectors, n_tof_positions);
 
   for (int pixel_i = 0; pixel_i < triangle_pixel_size; ++pixel_i) {
@@ -189,6 +208,7 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
     }
 
     run_monte_carlo_kernel(pixel_i,
+                           n_tof_positions,
                            number_of_threads_per_block,
                            number_of_blocks,
                            iteration_per_thread,
@@ -204,6 +224,8 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
                            cpu_prng_seed,
                            cpu_matrix.data(),
                            gpu_vector_output.data());
+
+#if NO_TOF > 0
 
     for (int lor_i = 0; lor_i < LORS; ++lor_i) {
 
@@ -223,6 +245,30 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
         output_matrix.push_back(element);
       }
     }
+#else
+
+    for (int tof_i = 0; tof_i < n_tof_positions; ++tof_i) {
+      for (int lor_i = 0; lor_i < LORS; ++lor_i) {
+
+        if (gpu_vector_output[tof_i].hit[lor_i] > 0) {
+
+          OutputMatrix::LOR lor(lookup_table_lors[lor_i].lor_a,
+                                lookup_table_lors[lor_i].lor_b);
+
+          auto pixel = lookup_table_pixel[pixel_i];
+
+          OutputMatrix::Element element;
+          element.lor = lor;
+          element.pixel = pixel;
+          element.hits = gpu_vector_output[tof_i].hit[lor_i];
+          element.position = tof_i;
+
+          output_matrix.push_back(element);
+        }
+      }
+    }
+
+#endif
   }
 
   free(cpu_prng_seed);

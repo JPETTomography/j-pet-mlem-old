@@ -122,14 +122,14 @@ __global__ void monte_carlo_kernel(int x,
       position = length2 - length1;
     }
 
+#if NO_TOF > 0
     atomicAdd(&pixel_data[blockIdx.x].hit[lor_iterator(detector1, detector2)],
               1.0f);
-
-    //    atomicAdd(&pixel_data[quantize_position(position, 0.01f,
-    // tof_n_positions) *
-    //                          blockIdx.x].hit[lor_iterator(detector1,
-    // detector2)],
-    //              1.0f);
+#else
+    atomicAdd(&pixel_data[quantize_position(position, 0.01f, tof_n_positions) *
+                          blockIdx.x].hit[lor_iterator(detector1, detector2)],
+              1.0f);
+#endif
   }
 
   gpu_prng_seed[4 * tid] = seed[0];
