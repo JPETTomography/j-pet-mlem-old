@@ -49,10 +49,11 @@ void mem_clean_lors(MatrixElement* cpu_matrix,
     for (int block_i = 0; block_i < number_of_blocks; ++block_i) {
       for (int lor_i = 0; lor_i < LORS; ++lor_i) {
 
-        cpu_matrix[tof_i * block_i].hit[lor_i] = 0.f;
+        cpu_matrix[tof_i + (block_i * n_tof_positions)].hit[lor_i] = 0.f;
       }
     }
   }
+
 #endif
 }
 bool run_monte_carlo_kernel(int pixel_i,
@@ -97,8 +98,6 @@ bool run_monte_carlo_kernel(int pixel_i,
       cudaMemcpyHostToDevice);
 
   float fov_radius = radius / M_SQRT2;
-
-  unsigned int number_of_lors = (n_detectors * (n_detectors + 1)) / 2;
 
   Pixel<> pixel = lookup_table_pixel[pixel_i];
 
@@ -160,13 +159,12 @@ bool run_monte_carlo_kernel(int pixel_i,
     }
   }
 #else
-
   for (int tof_i = 0; tof_i < n_tof_positions; ++tof_i) {
     for (int lor_i = 0; lor_i < LORS; ++lor_i) {
       float temp_hits = 0.f;
       for (int block_i = 0; block_i < number_of_blocks; ++block_i) {
 
-        temp_hits += cpu_matrix[tof_i * block_i].hit[lor_i];
+        temp_hits += cpu_matrix[tof_i + (block_i * n_tof_positions)].hit[lor_i];
       }
 
       if (temp_hits > 0.0f) {

@@ -112,8 +112,12 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -
   // each SMX can use 8 active blocks,
 
-  auto number_of_blocks = cl.get<int>("n-blocks") ?: 96;
+  auto number_of_blocks = cl.get<int>("n-blocks") ?: 4;
   auto number_of_threads_per_block = cl.get<int>("n-threads") ?: 512;
+
+  printf("Gpu grid config:\n");
+  printf("Number of blocks:= %d\n", number_of_blocks);
+  printf("Number of threads per block:= %d\n", number_of_threads_per_block);
 
   auto iteration_per_thread =
       floor(n_emissions / (number_of_blocks * number_of_threads_per_block));
@@ -202,9 +206,22 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
 
   for (int pixel_i = 0; pixel_i < triangle_pixel_size; ++pixel_i) {
 
-    for (int lor = 0; lor < LORS; ++lor) {
+    for (int tof_i = 0; tof_i < n_tof_positions; ++tof_i) {
+      for (int lor = 0; lor < LORS; ++lor) {
 
-      gpu_vector_output[0].hit[lor] = 0;
+        gpu_vector_output[tof_i].hit[lor] = 0.0f;
+      }
+    }
+
+    std::default_random_engine gen;
+    std::uniform_int_distribution<unsigned int> dis(1024, 1000000);
+    gen.seed(345555 + 10 * pixel_i);
+
+    for (int i = 0; i < 4 * number_of_blocks * number_of_threads_per_block;
+         ++i) {
+
+      // cpu_prng_seed[i] = 53445 + i; //dis(gen);
+      cpu_prng_seed[i] = dis(gen);
     }
 
     run_monte_carlo_kernel(pixel_i,

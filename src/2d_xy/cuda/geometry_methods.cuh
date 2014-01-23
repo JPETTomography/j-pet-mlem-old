@@ -193,13 +193,6 @@ __device__ bool check_for_hits(int inner,
 
       depth = -__logf(HybridTaus(seed[0], seed[1], seed[2], seed[3])) * 0.1f;
 
-      //      if (depth <
-      //          (sqrt((hit.p[1].x - hit.p[0].x) * (hit.p[1].x - hit.p[0].x) +
-      //                (hit.p[1].y - hit.p[0].y) * (hit.p[1].y - hit.p[0].y))))
-      // {
-      //        return true;
-      //      }
-
       if (depth < length(hit.p[0], hit.p[1])) {
         return true;
       }

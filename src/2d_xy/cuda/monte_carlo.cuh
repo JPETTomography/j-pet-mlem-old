@@ -126,9 +126,14 @@ __global__ void monte_carlo_kernel(int x,
     atomicAdd(&pixel_data[blockIdx.x].hit[lor_iterator(detector1, detector2)],
               1.0f);
 #else
-    atomicAdd(&pixel_data[quantize_position(position, 0.01f, tof_n_positions) *
-                          blockIdx.x].hit[lor_iterator(detector1, detector2)],
+    atomicAdd(&pixel_data[(blockIdx.x * tof_n_positions) +
+                          quantize_position(position, 0.01f, tof_n_positions)]
+                   .hit[lor_iterator(detector1, detector2)],
               1.0f);
+
+// if(tid == 0){printf("POS: %d \n TOF_LIMIT %d TOF_LIMIT
+// %d",quantize_position(position, 0.01f,
+// tof_n_positions),tof_n_positions,LORS);}
 #endif
   }
 
