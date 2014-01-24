@@ -131,9 +131,6 @@ __global__ void monte_carlo_kernel(int x,
                    .hit[lor_iterator(detector1, detector2)],
               1.0f);
 
-// if(tid == 0){printf("POS: %d \n TOF_LIMIT %d TOF_LIMIT
-// %d",quantize_position(position, 0.01f,
-// tof_n_positions),tof_n_positions,LORS);}
 #endif
   }
 

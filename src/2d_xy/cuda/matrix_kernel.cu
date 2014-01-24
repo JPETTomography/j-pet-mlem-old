@@ -109,7 +109,7 @@ bool run_monte_carlo_kernel(int pixel_i,
   cuda(Memcpy,
        gpu_MatrixElement,
        cpu_matrix,
-       number_of_blocks * sizeof(MatrixElement),
+       n_tof_positions * number_of_blocks * sizeof(MatrixElement),
        cudaMemcpyHostToDevice);
 
   long total_emissions =
@@ -165,9 +165,14 @@ bool run_monte_carlo_kernel(int pixel_i,
       for (int block_i = 0; block_i < number_of_blocks; ++block_i) {
 
         temp_hits += cpu_matrix[tof_i + (block_i * n_tof_positions)].hit[lor_i];
+        // printf("TOF: %d LOR: %d BLOCK: %d: DATA:
+        // %f\n",tof_i,lor_i,block_i,cpu_matrix[tof_i + (block_i *
+        // n_tof_positions)].hit[lor_i]);
       }
 
       if (temp_hits > 0.0f) {
+
+        // printf("TOF: %d, LOR_ID: %d temp_hits: %f\n",tof_i,lor_i,temp_hits);
         gpu_output[tof_i].hit[lookup_table_lors[lor_i].index()] = temp_hits;
       }
     }
