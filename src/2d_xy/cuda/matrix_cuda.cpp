@@ -4,6 +4,8 @@
 #include <ctime>
 #include <random>
 #include <vector>
+#include <exception>
+#include <sys/time.h>
 
 #include "config.h"
 #include "matrix.h"
@@ -15,22 +17,14 @@
 #include "2d_xy/model.h"
 #include "geometry/point.h"
 
-#if FIXME
-// reference stuff from kernel.cu file
-// TODO: Should go into a separate header file.
-
-void run_phantom_kernel(int number_of_threads_per_block,
-                        int blocks,
-                        int n_emissions,
-                        int pixels_in_row,
-                        float radius,
-                        float h_detector,
-                        float w_detector,
-                        float pixel_size,
-                        Pixel<>* lookup_table_pixel,
-                        Lor* lookup_table_lors,
-                        std::vector<MatrixElement>& gpu_output);
-#endif
+double getwtime() {
+  struct timeval tv;
+  static time_t sec = 0;
+  gettimeofday(&tv, NULL);
+  if (!sec)
+    sec = tv.tv_sec;
+  return (double)(tv.tv_sec - sec) + (double)tv.tv_usec / 1e6;
+}
 
 void run_monte_carlo_kernel(int pixel_id,
                             int n_tof_positions,
@@ -49,19 +43,6 @@ void run_monte_carlo_kernel(int pixel_id,
                             unsigned int* cpu_prng_seed,
                             gpu::MatrixElement* cpu_matrix,
                             gpu::MatrixElement* gpu_output);
-
-void run_detector_geometry_test_kernel(float radius,
-                                       float h_detector,
-                                       float w_detector,
-                                       float pixel_size,
-                                       gpu::DetectorRing& cpu_output);
-
-void run_detector_hits_test_kernel(float crx,
-                                   float cry,
-                                   float cangle,
-                                   float radius,
-                                   float h_detector,
-                                   float w_detector);
 
 void fill_gpu_data(gpu::LOR* lookup_table_lors,
                    Pixel<>* lookup_table_pixel,
@@ -112,7 +93,7 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -
   // each SMX can use 8 active blocks,
 
-  auto number_of_blocks = cl.get<int>("n-blocks") ?: 4;
+  auto number_of_blocks = cl.get<int>("n-blocks") ?: 64;
   auto number_of_threads_per_block = cl.get<int>("n-threads") ?: 512;
 
   printf("Gpu grid config:\n");
@@ -122,7 +103,6 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   auto iteration_per_thread =
       floor(n_emissions / (number_of_blocks * number_of_threads_per_block));
 
-  iteration_per_thread = n_emissions;
   // automatic pixel size
   if (!cl.exist("radius")) {
     if (!cl.exist("s-pixel")) {
@@ -171,6 +151,13 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   std::vector<Pixel<>> lookup_table_pixel;
   lookup_table_pixel.resize(triangle_pixel_size);
 
+  gpu::MatrixElement matrix_element;
+
+  for (int lor_i = 0; lor_i < LORS; ++lor_i) {
+
+    matrix_element.hit[lor_i] = 0.f;
+  }
+
 #if NO_TOF > 0
 
   std::vector<gpu::MatrixElement> gpu_vector_output;
@@ -204,25 +191,31 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
 
   OutputMatrix output_matrix(pixels_in_row, n_detectors, n_tof_positions);
 
+  double fulltime = double();
+
   for (int pixel_i = 0; pixel_i < triangle_pixel_size; ++pixel_i) {
 
-    for (int tof_i = 0; tof_i < n_tof_positions; ++tof_i) {
-      for (int lor = 0; lor < LORS; ++lor) {
+    try {
 
-        gpu_vector_output[tof_i].hit[lor] = 0.0f;
-      }
+      std::fill(
+          gpu_vector_output.begin(), gpu_vector_output.end(), matrix_element);
+      std::fill(cpu_matrix.begin(), cpu_matrix.end(), matrix_element);
+    }
+    catch (std::exception e) {
+      std::cout << "Fill error:" << e.what() << std::endl;
     }
 
     std::default_random_engine gen;
     std::uniform_int_distribution<unsigned int> dis(1024, 1000000);
-    gen.seed(345555 + 10 * pixel_i);
+    gen.seed(12344 + 10 * pixel_i);
 
     for (int i = 0; i < 4 * number_of_blocks * number_of_threads_per_block;
          ++i) {
 
-      // cpu_prng_seed[i] = 53445 + i; //dis(gen);
       cpu_prng_seed[i] = dis(gen);
     }
+
+    double t0 = getwtime();
 
     run_monte_carlo_kernel(pixel_i,
                            n_tof_positions,
@@ -241,6 +234,10 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
                            cpu_prng_seed,
                            cpu_matrix.data(),
                            gpu_vector_output.data());
+
+    double t1 = getwtime();
+
+    fulltime += (t1 - t0);
 
 #if NO_TOF > 0
 
@@ -287,6 +284,13 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
 
 #endif
   }
+
+  std::cout << "Numer of pixels: " << triangle_pixel_size << std::endl;
+  std::cout << "Time: " << fulltime << "s" << std::endl;
+  std::cout << "Time per pixel: " << fulltime / triangle_pixel_size << "s"
+            << std::endl;
+  std::cout << "Time per iteration: " << fulltime / triangle_pixel_size /
+                                             n_emissions << "s" << std::endl;
 
   free(cpu_prng_seed);
 

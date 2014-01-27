@@ -1,6 +1,5 @@
-#include <cuda_runtime.h>
 
-#include <sys/time.h>
+#include <cuda_runtime.h>
 
 #include "config.h"
 #include "prng.cuh"
@@ -24,38 +23,6 @@ static cudaError err;
   }
 #define cudathread_per_blockoSync(...) cuda(__VA_ARGS__)
 
-double getwtime() {
-  struct timeval tv;
-  static time_t sec = 0;
-  gettimeofday(&tv, NULL);
-  if (!sec)
-    sec = tv.tv_sec;
-  return (double)(tv.tv_sec - sec) + (double)tv.tv_usec / 1e6;
-}
-
-void mem_clean_lors(MatrixElement* cpu_matrix,
-                    int& number_of_blocks,
-                    int& n_tof_positions) {
-#if NO_TOF > 0
-
-  for (int block_i = 0; block_i < number_of_blocks; ++block_i) {
-    for (int lor_i = 0; lor_i < LORS; ++lor_i) {
-
-      cpu_matrix[block_i].hit[lor_i] = 0.f;
-    }
-  }
-#else
-  for (int tof_i = 0; tof_i < n_tof_positions; ++tof_i) {
-    for (int block_i = 0; block_i < number_of_blocks; ++block_i) {
-      for (int lor_i = 0; lor_i < LORS; ++lor_i) {
-
-        cpu_matrix[tof_i + (block_i * n_tof_positions)].hit[lor_i] = 0.f;
-      }
-    }
-  }
-
-#endif
-}
 bool run_monte_carlo_kernel(int pixel_i,
                             int n_tof_positions,
                             int number_of_threads_per_block,
@@ -104,7 +71,7 @@ bool run_monte_carlo_kernel(int pixel_i,
   int i = pixel.x;
   int j = pixel.y;
 
-  mem_clean_lors(cpu_matrix, number_of_blocks, n_tof_positions);
+  // mem_clean_lors(cpu_matrix, number_of_blocks, n_tof_positions);
 
   cuda(Memcpy,
        gpu_MatrixElement,
@@ -165,14 +132,10 @@ bool run_monte_carlo_kernel(int pixel_i,
       for (int block_i = 0; block_i < number_of_blocks; ++block_i) {
 
         temp_hits += cpu_matrix[tof_i + (block_i * n_tof_positions)].hit[lor_i];
-        // printf("TOF: %d LOR: %d BLOCK: %d: DATA:
-        // %f\n",tof_i,lor_i,block_i,cpu_matrix[tof_i + (block_i *
-        // n_tof_positions)].hit[lor_i]);
       }
 
       if (temp_hits > 0.0f) {
 
-        // printf("TOF: %d, LOR_ID: %d temp_hits: %f\n",tof_i,lor_i,temp_hits);
         gpu_output[tof_i].hit[lookup_table_lors[lor_i].index()] = temp_hits;
       }
     }
