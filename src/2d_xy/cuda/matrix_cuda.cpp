@@ -90,6 +90,10 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   auto w_detector = cl.get<double>("w-detector");
   auto h_detector = cl.get<double>("h-detector");
 
+  std::cout << "here: " << &cl.get<int>("n-emissions") << std::endl;
+
+  int* emission_adr = &cl.get<int>("n-emissions");
+
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -
   // each SMX can use 8 active blocks,
 
@@ -100,8 +104,11 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   printf("Number of blocks:= %d\n", number_of_blocks);
   printf("Number of threads per block:= %d\n", number_of_threads_per_block);
 
-  auto iteration_per_thread =
+  int iteration_per_thread =
       floor(n_emissions / (number_of_blocks * number_of_threads_per_block));
+
+  *emission_adr =
+      iteration_per_thread * number_of_blocks * number_of_threads_per_block;
 
   // automatic pixel size
   if (!cl.exist("radius")) {
@@ -189,7 +196,8 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
                 number_of_threads_per_block,
                 pixels_in_row);
 
-  OutputMatrix output_matrix(pixels_in_row, n_detectors, n_tof_positions);
+  OutputMatrix output_matrix(
+      pixels_in_row, n_detectors, *emission_adr, n_tof_positions);
 
   double fulltime = double();
 
