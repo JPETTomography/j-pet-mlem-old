@@ -5,8 +5,6 @@
 #include "prng.cuh"
 #include "geometry.h"
 #include "geometry_methods.cuh"
-#include "detector_geometry_test.cuh"
-#include "detector_hit_test.cuh"
 #include "monte_carlo.cuh"
 
 // FIXME: remove me

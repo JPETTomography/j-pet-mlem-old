@@ -72,6 +72,10 @@ b_matrix.body.sort_by_pixel()
 a_n = a_matrix.n_emissions();
 b_n = b_matrix.n_emissions();
 
+print a_n
+print b_n
+
+
 a_p = pet.FillOctantPixMap(a_matrix.body)/a_matrix.n_emissions();
 b_p = pet.FillOctantPixMap(b_matrix.body)/b_matrix.n_emissions();
 

@@ -30,8 +30,14 @@ __device__ void create_detector_ring(float& h_detector,
   test_ring.detector_list[threadIdx.x] = detector_base;
 
   float angle = 2.0f * M_PI * threadIdx.x / NUMBER_OF_DETECTORS;
+
+#if SINGLE_PRECISION_INTRINSIC > 0
   float sin_phi = __sinf(angle);
   float cos_phi = __cosf(angle);
+#else
+  float sin_phi = sin(angle);
+  float cos_phi = cos(angle);
+#endif
 
   for (int j = 0; j < 4; ++j) {
 

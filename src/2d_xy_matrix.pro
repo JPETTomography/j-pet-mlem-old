@@ -8,7 +8,7 @@ HEADERS += 2d_xy/*.h \
 
 cuda {
   NVCC_FLAGS         += -arch=compute_20 -code=sm_20,sm_30
-  NVCC_FLAGS_RELEASE += -Xptxas -O3
+  NVCC_FLAGS_RELEASE += -Xptxas -O3 --use_fast_math
 
   SOURCES      += 2d_xy/cuda/matrix_cuda.cpp
   CUDA_SOURCES += 2d_xy/cuda/matrix_kernel.cu
