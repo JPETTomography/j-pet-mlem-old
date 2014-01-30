@@ -32,7 +32,7 @@ class SparseMatrixBody(object):
         counter = 0
         total = 0
         max = 0
-        for item in self.items:
+        for item in self._items:
             counter = counter + 1
             total = total + item[2]
             if max < item[2]:
@@ -40,7 +40,7 @@ class SparseMatrixBody(object):
                 
             hist = [0]*(max+1)
             
-        for item in self.items:
+        for item in self._items:
             hist[item[2]]=hist[item[2]]+1
                                                    
         return (counter, total, max, hist)
