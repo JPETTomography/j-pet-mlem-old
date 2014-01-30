@@ -144,13 +144,26 @@ Cell[BoxData[
 
 Cell[BoxData[
  RowBox[{
-  RowBox[{"ImagePETMatrix", "[", "m_", "]"}], ":=", 
+  RowBox[{"ImagePETMatrix", "[", 
+   RowBox[{"m_", ",", "lors___"}], "]"}], ":=", 
   RowBox[{"Module", "[", 
    RowBox[{
     RowBox[{"{", 
      RowBox[{
       RowBox[{"data", "=", 
-       RowBox[{"\"\<Data\>\"", "/.", "\[VeryThinSpace]", "m"}]}], ",", 
+       RowBox[{"If", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"Length", "[", 
+           RowBox[{"{", "lors", "}"}], "]"}], ">", "0"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"FilterRules", "[", 
+          RowBox[{
+           RowBox[{"\"\<Data\>\"", "/.", "m"}], ",", 
+           RowBox[{"Alternatives", "[", "lors", "]"}]}], "]"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"\"\<Data\>\"", "/.", "\[VeryThinSpace]", "m"}]}], "]"}]}], 
+      ",", "\[IndentingNewLine]", 
       RowBox[{"size", "=", 
        RowBox[{"\"\<Pixels\>\"", "/.", "\[VeryThinSpace]", "m"}]}], ",", 
       "total"}], "}"}], ",", "\[IndentingNewLine]", 
@@ -161,33 +174,34 @@ Cell[BoxData[
         RowBox[{"\"\<TreatRepeatedEntries\>\"", "\[Rule]", "1"}], "}"}]}], 
       "]"}], ";", "\[IndentingNewLine]", 
      RowBox[{"total", "=", 
-      RowBox[{"Total", "[", "\[IndentingNewLine]", 
+      RowBox[{"Total", "[", 
        RowBox[{
         RowBox[{
          RowBox[{
-          RowBox[{"Normal", "@", 
-           RowBox[{"With", "[", 
-            RowBox[{
-             RowBox[{"{", 
-              RowBox[{"list", "=", 
-               RowBox[{"Last", "[", "#1", "]"}]}], "}"}], ",", 
-             "\[IndentingNewLine]", 
+          RowBox[{"With", "[", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"list", "=", 
+              RowBox[{"Last", "[", "#", "]"}]}], "}"}], ",", 
+            "\[IndentingNewLine]", 
+            RowBox[{"Normal", "@", 
              RowBox[{"SparseArray", "[", 
               RowBox[{
                RowBox[{
                 RowBox[{"(", 
                  RowBox[{
-                  RowBox[{"list", "\[LeftDoubleBracket]", 
-                   RowBox[{"All", ",", 
+                  RowBox[{"(", 
+                   RowBox[{"list", "\[LeftDoubleBracket]", 
+                    RowBox[{"All", ",", 
                     RowBox[{"2", ";;", "3"}]}], "\[RightDoubleBracket]"}], 
-                  "+", "1"}], ")"}], "\[Rule]", 
+                   ")"}], "+", "1"}], ")"}], "\[Rule]", 
                 RowBox[{"list", "\[LeftDoubleBracket]", 
                  RowBox[{"All", ",", "4"}], "\[RightDoubleBracket]"}]}], ",", 
                
                RowBox[{"{", 
-                RowBox[{"size", ",", "size"}], "}"}]}], "]"}]}], "]"}]}], 
-          "&"}], "\[IndentingNewLine]", "/@", "data"}], ",", "1"}], "]"}]}], 
-     ";", "\[IndentingNewLine]", 
+                RowBox[{"size", ",", "size"}], "}"}]}], "]"}]}]}], "]"}], 
+          "&"}], "/@", "data"}], ",", "1"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
      RowBox[{"SetSystemOptions", "[", 
       RowBox[{"\"\<SparseArrayOptions\>\"", "\[Rule]", 
        RowBox[{"{", 
@@ -204,7 +218,78 @@ Cell[BoxData[
      RowBox[{"If", "[", 
       RowBox[{
        RowBox[{"\"\<Full\>\"", "/.", "\[VeryThinSpace]", "m"}], ",", "m"}], 
-      "]"}], ";", "m"}]}], "]"}]}]], "Input"]
+      "]"}], ";", "m"}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"PlotPETMatrix", "[", 
+   RowBox[{"m_", ",", "opts___"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{"img", "=", 
+      RowBox[{"ImagePETMatrix", "[", 
+       RowBox[{"m", ",", 
+        RowBox[{"Sequence", "@@", 
+         RowBox[{"Cases", "[", 
+          RowBox[{
+           RowBox[{"{", "opts", "}"}], ",", 
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"\"\<LOR\>\"", "\[Rule]", "lor_"}], ")"}], "\[Rule]", 
+            "lor"}]}], "]"}]}]}], "]"}]}], "\[IndentingNewLine]", "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"If", "[", 
+      RowBox[{
+       RowBox[{"\"\<Triangular\>\"", "/.", "m"}], ",", 
+       RowBox[{"img", "+=", 
+        RowBox[{"Transpose", "[", "img", "]"}]}]}], "]"}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"ArrayPlot", "[", 
+      RowBox[{"img", ",", "\[IndentingNewLine]", 
+       RowBox[{"DataReversed", "\[Rule]", "True"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"ImageSize", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{"Large", ",", "Automatic"}], "}"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"PlotLegends", "\[Rule]", "Automatic"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"FrameTicks", "\[Rule]", "Automatic"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"CoordinatesToolOptions", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{"\"\<DisplayFunction\>\"", "\[Rule]", 
+          RowBox[{"Function", "[", 
+           RowBox[{"pt", ",", "\[IndentingNewLine]", 
+            RowBox[{"pt", "/.", 
+             RowBox[{
+              RowBox[{"{", 
+               RowBox[{"x_", ",", "y_"}], "}"}], "\[RuleDelayed]", 
+              RowBox[{"With", "[", 
+               RowBox[{
+                RowBox[{"{", 
+                 RowBox[{"pos", "=", 
+                  RowBox[{"Round", "@", 
+                   RowBox[{"Clip", "[", 
+                    RowBox[{
+                    RowBox[{"{", 
+                    RowBox[{"x", ",", "y"}], "}"}], ",", 
+                    RowBox[{"{", 
+                    RowBox[{"1", ",", "64"}], "}"}]}], "]"}]}]}], "}"}], ",", 
+                
+                RowBox[{"pos", "\[Rule]", 
+                 RowBox[{"img", "\[LeftDoubleBracket]", 
+                  RowBox[{"Sequence", "@@", "pos"}], 
+                  "\[RightDoubleBracket]"}]}]}], "]"}]}]}]}], "]"}]}], 
+         "}"}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{"Sequence", "@@", 
+        RowBox[{"DeleteCases", "[", 
+         RowBox[{
+          RowBox[{"{", "opts", "}"}], ",", 
+          RowBox[{"\"\<LOR\>\"", "\[Rule]", "_"}]}], "]"}]}]}], "]"}]}]}], 
+   "]"}]}]], "Input"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -223,74 +308,21 @@ Cell[BoxData[
   3.600001123105895*^9, 3.6000011242342854`*^9}, {3.6000011767149343`*^9, 
   3.600001196313262*^9}}],
 
-Cell[BoxData[
- RowBox[{"AbsoluteTiming", "[", 
-  RowBox[{
-   RowBox[{"m", "=", 
-    RowBox[{"ReadPETMatrix", "[", "\"\<m_14x14-200m\>\"", "]"}]}], ";"}], 
-  "]"}]], "Input"],
+Cell[TextData[{
+ "Right click and select ",
+ StyleBox["Get Coordinates",
+  FontWeight->"Bold"],
+ " from plot below."
+}], "Text"],
 
 Cell[BoxData[
- RowBox[{"ByteCount", "[", "m", "]"}]], "Input",
- CellChangeTimes->{{3.600069091882292*^9, 3.600069094824193*^9}, {
-  3.600070942033814*^9, 3.60007094221087*^9}, {3.600087955512488*^9, 
-  3.600087955701479*^9}}],
-
-Cell[BoxData[
- RowBox[{"AbsoluteTiming", "[", 
-  RowBox[{
-   RowBox[{"i", "=", 
-    RowBox[{"ImagePETMatrix", "[", "m", "]"}]}], ";"}], "]"}]], "Input",
- CellChangeTimes->{{3.6000882273716784`*^9, 3.600088229596692*^9}, {
-  3.6000883214584017`*^9, 3.6000883501003227`*^9}, {3.600088405914815*^9, 
-  3.600088410065588*^9}, {3.6000885723410273`*^9, 3.600088574092175*^9}, {
-  3.600088630421904*^9, 3.6000887702273808`*^9}, {3.6000888085080023`*^9, 
-  3.600088817744969*^9}, {3.6000889224185257`*^9, 3.600088926713866*^9}}],
-
-Cell[BoxData[
- RowBox[{"With", "[", 
-  RowBox[{
-   RowBox[{"{", 
-    RowBox[{"img", "=", 
-     RowBox[{"i", "+", 
-      RowBox[{"Transpose", "[", "i", "]"}]}]}], "}"}], ",", 
-   RowBox[{"Column", "[", 
-    RowBox[{"{", "\[IndentingNewLine]", 
-     RowBox[{
-      RowBox[{"ArrayPlot", "[", 
-       RowBox[{"img", ",", "\[IndentingNewLine]", 
-        RowBox[{"DataReversed", "\[Rule]", "True"}], ",", 
-        "\[IndentingNewLine]", 
-        RowBox[{"ImageSize", "\[Rule]", 
-         RowBox[{"{", 
-          RowBox[{"Large", ",", "Automatic"}], "}"}]}], ",", 
-        "\[IndentingNewLine]", 
-        RowBox[{"PlotLegends", "\[Rule]", "Automatic"}], ",", 
-        "\[IndentingNewLine]", 
-        RowBox[{"FrameTicks", "\[Rule]", "Automatic"}], ",", 
-        "\[IndentingNewLine]", 
-        RowBox[{"ColorFunction", "\[Rule]", 
-         RowBox[{"ColorData", "[", "\"\<DarkRainbow\>\"", "]"}]}]}], "]"}], 
-      ",", "\[IndentingNewLine]", 
-      RowBox[{"Dynamic", "[", 
-       RowBox[{
-        RowBox[{"MousePosition", "[", "\"\<Graphics\>\"", "]"}], 
-        "\[IndentingNewLine]", "/.", 
-        RowBox[{
-         RowBox[{"{", 
-          RowBox[{"x_", ",", "y_"}], "}"}], "\[RuleDelayed]", 
-         RowBox[{"img", "\[LeftDoubleBracket]", 
-          RowBox[{"Sequence", "@@", 
-           RowBox[{"Round", "@", 
-            RowBox[{"Clip", "[", 
-             RowBox[{
-              RowBox[{"{", 
-               RowBox[{"x", ",", "y"}], "}"}], ",", 
-              RowBox[{"{", 
-               RowBox[{"1", ",", 
-                RowBox[{"Length", "[", "img", "]"}]}], "}"}]}], "]"}]}]}], 
-          "\[RightDoubleBracket]"}]}]}], "]"}]}], "\[IndentingNewLine]", 
-     "}"}], "]"}]}], "]"}]], "Input"]
+ RowBox[{
+  RowBox[{"PlotPETMatrix", "[", 
+   RowBox[{
+    RowBox[{"ReadPETMatrix", "[", "\"\<m_14x14-200m\>\"", "]"}], ",", 
+    RowBox[{"ColorFunction", "\[Rule]", 
+     RowBox[{"ColorData", "[", "\"\<DarkRainbow\>\"", "]"}]}]}], "]"}], "//", 
+  "AbsoluteTiming"}]], "Input"]
 }, Open  ]]
 }, Open  ]]
 },
