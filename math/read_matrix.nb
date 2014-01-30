@@ -19,7 +19,7 @@ Cell[BoxData[
   RowBox[{"ReadPETMatrix", "[", "fileName_", "]"}], ":=", 
   RowBox[{"Module", "[", 
    RowBox[{
-    RowBox[{"{", 
+    RowBox[{"{", "\[IndentingNewLine]", 
      RowBox[{
       RowBox[{"f", "=", 
        RowBox[{"OpenRead", "[", 
@@ -62,7 +62,8 @@ Cell[BoxData[
         RowBox[{"\"\<Type\>\"", "\[Rule]", "type"}], ",", 
         RowBox[{"\"\<TOF\>\"", "\[Rule]", "tof"}], ",", 
         RowBox[{"\"\<Triangular\>\"", "\[Rule]", "triangular"}], ",", 
-        "\[IndentingNewLine]", 
+        RowBox[{"\"\<Full\>\"", "\[Rule]", 
+         RowBox[{"!", "triangular"}]}], ",", "\[IndentingNewLine]", 
         RowBox[{"\"\<Pixels\>\"", "\[Rule]", 
          RowBox[{"BinaryRead", "[", 
           RowBox[{"f", ",", "\"\<UnsignedInteger32\>\""}], "]"}]}], ",", 
@@ -146,14 +147,20 @@ Cell[BoxData[
   RowBox[{"ImagePETMatrix", "[", "m_", "]"}], ":=", 
   RowBox[{"Module", "[", 
    RowBox[{
-    RowBox[{"{", "t", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"data", "=", 
+       RowBox[{"\"\<Data\>\"", "/.", "\[VeryThinSpace]", "m"}]}], ",", 
+      RowBox[{"size", "=", 
+       RowBox[{"\"\<Pixels\>\"", "/.", "\[VeryThinSpace]", "m"}]}], ",", 
+      "total"}], "}"}], ",", "\[IndentingNewLine]", 
     RowBox[{
      RowBox[{"SetSystemOptions", "[", 
       RowBox[{"\"\<SparseArrayOptions\>\"", "\[Rule]", 
        RowBox[{"{", 
         RowBox[{"\"\<TreatRepeatedEntries\>\"", "\[Rule]", "1"}], "}"}]}], 
       "]"}], ";", "\[IndentingNewLine]", 
-     RowBox[{"t", "=", 
+     RowBox[{"total", "=", 
       RowBox[{"Total", "[", "\[IndentingNewLine]", 
        RowBox[{
         RowBox[{
@@ -162,41 +169,42 @@ Cell[BoxData[
            RowBox[{"With", "[", 
             RowBox[{
              RowBox[{"{", 
-              RowBox[{"l", "=", 
+              RowBox[{"list", "=", 
                RowBox[{"Last", "[", "#1", "]"}]}], "}"}], ",", 
+             "\[IndentingNewLine]", 
              RowBox[{"SparseArray", "[", 
               RowBox[{
                RowBox[{
                 RowBox[{"(", 
                  RowBox[{
-                  RowBox[{"l", "\[LeftDoubleBracket]", 
+                  RowBox[{"list", "\[LeftDoubleBracket]", 
                    RowBox[{"All", ",", 
                     RowBox[{"2", ";;", "3"}]}], "\[RightDoubleBracket]"}], 
                   "+", "1"}], ")"}], "\[Rule]", 
-                RowBox[{"l", "\[LeftDoubleBracket]", 
+                RowBox[{"list", "\[LeftDoubleBracket]", 
                  RowBox[{"All", ",", "4"}], "\[RightDoubleBracket]"}]}], ",", 
-               "\[IndentingNewLine]", 
+               
                RowBox[{"{", 
-                RowBox[{
-                 RowBox[{"(", 
-                  RowBox[{"\"\<Pixels\>\"", "/.", "\[VeryThinSpace]", "m"}], 
-                  ")"}], ",", 
-                 RowBox[{"(", 
-                  RowBox[{"\"\<Pixels\>\"", "/.", "\[VeryThinSpace]", "m"}], 
-                  ")"}]}], "}"}]}], "]"}]}], "]"}]}], "&"}], 
-         "\[IndentingNewLine]", "/@", 
-         RowBox[{"(", 
-          RowBox[{"\"\<Data\>\"", "/.", "\[VeryThinSpace]", "m"}], ")"}]}], 
-        ",", "1"}], "]"}]}], ";", "\[IndentingNewLine]", 
+                RowBox[{"size", ",", "size"}], "}"}]}], "]"}]}], "]"}]}], 
+          "&"}], "\[IndentingNewLine]", "/@", "data"}], ",", "1"}], "]"}]}], 
+     ";", "\[IndentingNewLine]", 
      RowBox[{"SetSystemOptions", "[", 
       RowBox[{"\"\<SparseArrayOptions\>\"", "\[Rule]", 
        RowBox[{"{", 
         RowBox[{"\"\<TreatRepeatedEntries\>\"", "\[Rule]", "0"}], "}"}]}], 
-      "]"}], ";", "\[IndentingNewLine]", "t"}]}], "]"}]}]], "Input",
- CellChangeTimes->{{3.6000888645103397`*^9, 3.60008890901651*^9}, {
-  3.6000891891027718`*^9, 3.6000892170912867`*^9}, {3.60008932556689*^9, 
-  3.6000893297513037`*^9}, {3.600089494452983*^9, 3.600089551569828*^9}, {
-  3.600090025737813*^9, 3.600090032753495*^9}}]
+      "]"}], ";", "\[IndentingNewLine]", "total"}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"FullPETMatrix", "[", "m_", "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "}"}], ",", 
+    RowBox[{
+     RowBox[{"If", "[", 
+      RowBox[{
+       RowBox[{"\"\<Full\>\"", "/.", "\[VeryThinSpace]", "m"}], ",", "m"}], 
+      "]"}], ";", "m"}]}], "]"}]}]], "Input"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -220,9 +228,7 @@ Cell[BoxData[
   RowBox[{
    RowBox[{"m", "=", 
     RowBox[{"ReadPETMatrix", "[", "\"\<m_14x14-200m\>\"", "]"}]}], ";"}], 
-  "]"}]], "Input",
- CellChangeTimes->{{3.600005628944016*^9, 3.600005644824772*^9}, 
-   3.6000065627464867`*^9, {3.600090182380694*^9, 3.60009018497506*^9}}],
+  "]"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{"ByteCount", "[", "m", "]"}]], "Input",
@@ -242,12 +248,53 @@ Cell[BoxData[
   3.600088817744969*^9}, {3.6000889224185257`*^9, 3.600088926713866*^9}}],
 
 Cell[BoxData[
- RowBox[{"ArrayPlot", "[", "i", "]"}]], "Input",
- CellChangeTimes->{{3.600070674800191*^9, 3.600070677481085*^9}}]
+ RowBox[{"With", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"img", "=", 
+     RowBox[{"i", "+", 
+      RowBox[{"Transpose", "[", "i", "]"}]}]}], "}"}], ",", 
+   RowBox[{"Column", "[", 
+    RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"ArrayPlot", "[", 
+       RowBox[{"img", ",", "\[IndentingNewLine]", 
+        RowBox[{"DataReversed", "\[Rule]", "True"}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"ImageSize", "\[Rule]", 
+         RowBox[{"{", 
+          RowBox[{"Large", ",", "Automatic"}], "}"}]}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"PlotLegends", "\[Rule]", "Automatic"}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"FrameTicks", "\[Rule]", "Automatic"}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"ColorFunction", "\[Rule]", 
+         RowBox[{"ColorData", "[", "\"\<DarkRainbow\>\"", "]"}]}]}], "]"}], 
+      ",", "\[IndentingNewLine]", 
+      RowBox[{"Dynamic", "[", 
+       RowBox[{
+        RowBox[{"MousePosition", "[", "\"\<Graphics\>\"", "]"}], 
+        "\[IndentingNewLine]", "/.", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"x_", ",", "y_"}], "}"}], "\[RuleDelayed]", 
+         RowBox[{"img", "\[LeftDoubleBracket]", 
+          RowBox[{"Sequence", "@@", 
+           RowBox[{"Round", "@", 
+            RowBox[{"Clip", "[", 
+             RowBox[{
+              RowBox[{"{", 
+               RowBox[{"x", ",", "y"}], "}"}], ",", 
+              RowBox[{"{", 
+               RowBox[{"1", ",", 
+                RowBox[{"Length", "[", "img", "]"}]}], "}"}]}], "]"}]}]}], 
+          "\[RightDoubleBracket]"}]}]}], "]"}]}], "\[IndentingNewLine]", 
+     "}"}], "]"}]}], "]"}]], "Input"]
 }, Open  ]]
 }, Open  ]]
 },
-WindowSize->{1864, 1036},
+WindowSize->{1300, 1036},
 WindowMargins->{{0, Automatic}, {Automatic, 0}},
 PrivateNotebookOptions->{"FileOutlineCache"->False},
 TrackCellChangeTimes->False,
