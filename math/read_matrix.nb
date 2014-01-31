@@ -1,0 +1,305 @@
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[TextData[{
+ "PET matrix ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ " reading functions"
+}], "Title",
+ CellChangeTimes->{{3.60009012081452*^9, 3.600090126529451*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Functions", "Section",
+ CellChangeTimes->{{3.600090136350934*^9, 3.600090137464615*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"ReadPETMatrix", "[", "fileName_", "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"f", "=", 
+       RowBox[{"OpenRead", "[", 
+        RowBox[{"fileName", ",", 
+         RowBox[{"BinaryFormat", "\[Rule]", "True"}]}], "]"}]}], ",", 
+      "\[IndentingNewLine]", "type", ",", "tof", ",", "triangular", ",", 
+      "output"}], "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"type", "=", 
+      RowBox[{"StringJoin", "@", 
+       RowBox[{"BinaryReadList", "[", 
+        RowBox[{"f", ",", "\"\<Character8\>\"", ",", "4"}], "]"}]}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"(*", " ", 
+      RowBox[{"ensure", " ", "we", " ", "have", " ", "proper", " ", "magic"}],
+       " ", "*)"}], "\[IndentingNewLine]", 
+     RowBox[{"If", "[", 
+      RowBox[{
+       RowBox[{"!", 
+        RowBox[{"MatchQ", "[", 
+         RowBox[{"type", ",", 
+          RowBox[{
+          "\"\<PETp\>\"", "|", "\"\<PETP\>\"", "|", "\"\<TOFp\>\"", "|", 
+           "\"\<TOFP\>\""}]}], "]"}]}], ",", 
+       RowBox[{"Return", "[", "Null", "]"}]}], "]"}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"tof", "=", 
+      RowBox[{"StringMatchQ", "[", 
+       RowBox[{"type", ",", 
+        RowBox[{"\"\<TOF\>\"", "~~", "_"}]}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"triangular", "=", 
+      RowBox[{"StringMatchQ", "[", 
+       RowBox[{"type", ",", 
+        RowBox[{"___", "~~", "\"\<p\>\""}]}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"output", "=", 
+      RowBox[{"{", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"\"\<Type\>\"", "\[Rule]", "type"}], ",", 
+        RowBox[{"\"\<TOF\>\"", "\[Rule]", "tof"}], ",", 
+        RowBox[{"\"\<Triangular\>\"", "\[Rule]", "triangular"}], ",", 
+        RowBox[{"\"\<Full\>\"", "\[Rule]", 
+         RowBox[{"!", "triangular"}]}], ",", "\[IndentingNewLine]", 
+        RowBox[{"\"\<Pixels\>\"", "\[Rule]", 
+         RowBox[{"BinaryRead", "[", 
+          RowBox[{"f", ",", "\"\<UnsignedInteger32\>\""}], "]"}]}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"\"\<Emissions\>\"", "\[Rule]", 
+         RowBox[{"BinaryRead", "[", 
+          RowBox[{"f", ",", "\"\<UnsignedInteger32\>\""}], "]"}]}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"\"\<Detectors\>\"", "\[Rule]", 
+         RowBox[{"BinaryRead", "[", 
+          RowBox[{"f", ",", "\"\<UnsignedInteger32\>\""}], "]"}]}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"\"\<Positions\>\"", "\[Rule]", 
+         RowBox[{"If", "[", 
+          RowBox[{"tof", ",", 
+           RowBox[{"BinaryRead", "[", 
+            RowBox[{"f", ",", "\"\<UnsignedInteger32\>\""}], "]"}], ",", 
+           "1"}], "]"}]}], ",", "\[IndentingNewLine]", 
+        RowBox[{"\"\<Data\>\"", "\[Rule]", 
+         RowBox[{"With", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{"format", "=", 
+             RowBox[{"If", "[", 
+              RowBox[{"tof", ",", "\[IndentingNewLine]", 
+               RowBox[{"(*", " ", 
+                RowBox[{
+                "TOF", " ", "has", " ", "position", " ", "information"}], " ",
+                 "*)"}], "\[IndentingNewLine]", 
+               RowBox[{"{", 
+                RowBox[{
+                "\"\<UnsignedInteger32\>\"", ",", "\"\<UnsignedInteger16\>\"",
+                  ",", "\"\<UnsignedInteger16\>\"", ",", 
+                 "\"\<UnsignedInteger32\>\""}], "}"}], ",", 
+               "\[IndentingNewLine]", 
+               RowBox[{"{", 
+                RowBox[{
+                "\"\<UnsignedInteger16\>\"", ",", "\"\<UnsignedInteger16\>\"",
+                  ",", "\"\<UnsignedInteger32\>\""}], "}"}]}], "]"}]}], "}"}],
+            ",", "\[IndentingNewLine]", 
+           RowBox[{"First", "@", 
+            RowBox[{"Last", "@", 
+             RowBox[{"Reap", "@", 
+              RowBox[{"While", "[", 
+               RowBox[{"True", ",", "\[IndentingNewLine]", 
+                RowBox[{"With", "[", 
+                 RowBox[{
+                  RowBox[{"{", "\[IndentingNewLine]", 
+                   RowBox[{
+                    RowBox[{"lor", "=", 
+                    RowBox[{"BinaryReadList", "[", 
+                    RowBox[{"f", ",", "\"\<UnsignedInteger16\>\"", ",", "2"}],
+                     "]"}]}], ",", "\[IndentingNewLine]", 
+                    RowBox[{"count", "=", 
+                    RowBox[{"BinaryRead", "[", 
+                    RowBox[{"f", ",", "\"\<UnsignedInteger32\>\""}], 
+                    "]"}]}]}], "\[IndentingNewLine]", "}"}], ",", 
+                  "\[IndentingNewLine]", 
+                  RowBox[{
+                   RowBox[{"If", "[", 
+                    RowBox[{
+                    RowBox[{"count", "\[Equal]", "EndOfFile"}], ",", 
+                    RowBox[{"Break", "[", "]"}]}], "]"}], ";", 
+                   "\[IndentingNewLine]", 
+                   RowBox[{"(*", " ", 
+                    RowBox[{
+                    "converting", " ", "to", " ", "packed", " ", "makes", " ",
+                     "it", " ", "more", " ", "memory", " ", "efficient"}], 
+                    " ", "*)"}], "\[IndentingNewLine]", 
+                   RowBox[{"Sow", "[", 
+                    RowBox[{"lor", "\[Rule]", 
+                    RowBox[{"Developer`ToPackedArray", "@", 
+                    RowBox[{"BinaryReadList", "[", 
+                    RowBox[{"f", ",", "format", ",", "count"}], "]"}]}]}], 
+                    "]"}]}]}], "]"}]}], "]"}]}]}]}]}], "]"}]}]}], "}"}]}], 
+     ";", "\[IndentingNewLine]", 
+     RowBox[{"Close", "[", "f", "]"}], ";", "output"}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"ImagePETMatrix", "[", "m_", "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"data", "=", 
+       RowBox[{"\"\<Data\>\"", "/.", "\[VeryThinSpace]", "m"}]}], ",", 
+      RowBox[{"size", "=", 
+       RowBox[{"\"\<Pixels\>\"", "/.", "\[VeryThinSpace]", "m"}]}], ",", 
+      "total"}], "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"SetSystemOptions", "[", 
+      RowBox[{"\"\<SparseArrayOptions\>\"", "\[Rule]", 
+       RowBox[{"{", 
+        RowBox[{"\"\<TreatRepeatedEntries\>\"", "\[Rule]", "1"}], "}"}]}], 
+      "]"}], ";", "\[IndentingNewLine]", 
+     RowBox[{"total", "=", 
+      RowBox[{"Total", "[", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         RowBox[{
+          RowBox[{"Normal", "@", 
+           RowBox[{"With", "[", 
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{"list", "=", 
+               RowBox[{"Last", "[", "#1", "]"}]}], "}"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"SparseArray", "[", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"(", 
+                 RowBox[{
+                  RowBox[{"list", "\[LeftDoubleBracket]", 
+                   RowBox[{"All", ",", 
+                    RowBox[{"2", ";;", "3"}]}], "\[RightDoubleBracket]"}], 
+                  "+", "1"}], ")"}], "\[Rule]", 
+                RowBox[{"list", "\[LeftDoubleBracket]", 
+                 RowBox[{"All", ",", "4"}], "\[RightDoubleBracket]"}]}], ",", 
+               
+               RowBox[{"{", 
+                RowBox[{"size", ",", "size"}], "}"}]}], "]"}]}], "]"}]}], 
+          "&"}], "\[IndentingNewLine]", "/@", "data"}], ",", "1"}], "]"}]}], 
+     ";", "\[IndentingNewLine]", 
+     RowBox[{"SetSystemOptions", "[", 
+      RowBox[{"\"\<SparseArrayOptions\>\"", "\[Rule]", 
+       RowBox[{"{", 
+        RowBox[{"\"\<TreatRepeatedEntries\>\"", "\[Rule]", "0"}], "}"}]}], 
+      "]"}], ";", "\[IndentingNewLine]", "total"}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"FullPETMatrix", "[", "m_", "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "}"}], ",", 
+    RowBox[{
+     RowBox[{"If", "[", 
+      RowBox[{
+       RowBox[{"\"\<Full\>\"", "/.", "\[VeryThinSpace]", "m"}], ",", "m"}], 
+      "]"}], ";", "m"}]}], "]"}]}]], "Input"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Testing", "Section",
+ CellChangeTimes->{{3.6000901554761467`*^9, 3.600090156241067*^9}}],
+
+Cell[BoxData[
+ RowBox[{"SetDirectory", "@", 
+  RowBox[{"FileNameJoin", "@", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], ",", "\"\<..\>\"", ",", 
+     "\"\<data\>\"", ",", "\"\<201401\>\""}], "}"}]}]}]], "Input",
+ CellChangeTimes->{{3.600001056773471*^9, 3.600001090410128*^9}, {
+  3.600001123105895*^9, 3.6000011242342854`*^9}, {3.6000011767149343`*^9, 
+  3.600001196313262*^9}}],
+
+Cell[BoxData[
+ RowBox[{"AbsoluteTiming", "[", 
+  RowBox[{
+   RowBox[{"m", "=", 
+    RowBox[{"ReadPETMatrix", "[", "\"\<m_14x14-200m\>\"", "]"}]}], ";"}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"ByteCount", "[", "m", "]"}]], "Input",
+ CellChangeTimes->{{3.600069091882292*^9, 3.600069094824193*^9}, {
+  3.600070942033814*^9, 3.60007094221087*^9}, {3.600087955512488*^9, 
+  3.600087955701479*^9}}],
+
+Cell[BoxData[
+ RowBox[{"AbsoluteTiming", "[", 
+  RowBox[{
+   RowBox[{"i", "=", 
+    RowBox[{"ImagePETMatrix", "[", "m", "]"}]}], ";"}], "]"}]], "Input",
+ CellChangeTimes->{{3.6000882273716784`*^9, 3.600088229596692*^9}, {
+  3.6000883214584017`*^9, 3.6000883501003227`*^9}, {3.600088405914815*^9, 
+  3.600088410065588*^9}, {3.6000885723410273`*^9, 3.600088574092175*^9}, {
+  3.600088630421904*^9, 3.6000887702273808`*^9}, {3.6000888085080023`*^9, 
+  3.600088817744969*^9}, {3.6000889224185257`*^9, 3.600088926713866*^9}}],
+
+Cell[BoxData[
+ RowBox[{"With", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"img", "=", 
+     RowBox[{"i", "+", 
+      RowBox[{"Transpose", "[", "i", "]"}]}]}], "}"}], ",", 
+   RowBox[{"Column", "[", 
+    RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"ArrayPlot", "[", 
+       RowBox[{"img", ",", "\[IndentingNewLine]", 
+        RowBox[{"DataReversed", "\[Rule]", "True"}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"ImageSize", "\[Rule]", 
+         RowBox[{"{", 
+          RowBox[{"Large", ",", "Automatic"}], "}"}]}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"PlotLegends", "\[Rule]", "Automatic"}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"FrameTicks", "\[Rule]", "Automatic"}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"ColorFunction", "\[Rule]", 
+         RowBox[{"ColorData", "[", "\"\<DarkRainbow\>\"", "]"}]}]}], "]"}], 
+      ",", "\[IndentingNewLine]", 
+      RowBox[{"Dynamic", "[", 
+       RowBox[{
+        RowBox[{"MousePosition", "[", "\"\<Graphics\>\"", "]"}], 
+        "\[IndentingNewLine]", "/.", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"x_", ",", "y_"}], "}"}], "\[RuleDelayed]", 
+         RowBox[{"img", "\[LeftDoubleBracket]", 
+          RowBox[{"Sequence", "@@", 
+           RowBox[{"Round", "@", 
+            RowBox[{"Clip", "[", 
+             RowBox[{
+              RowBox[{"{", 
+               RowBox[{"x", ",", "y"}], "}"}], ",", 
+              RowBox[{"{", 
+               RowBox[{"1", ",", 
+                RowBox[{"Length", "[", "img", "]"}]}], "}"}]}], "]"}]}]}], 
+          "\[RightDoubleBracket]"}]}]}], "]"}]}], "\[IndentingNewLine]", 
+     "}"}], "]"}]}], "]"}]], "Input"]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1300, 1036},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+TrackCellChangeTimes->False,
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (January 21, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+
