@@ -51,10 +51,21 @@ __device__ void create_detector_ring(float& h_detector,
   }
 }
 
-__device__ SecantPoints secant(float x, float y, float angle, float radius) {
+__device__ void secant(SecantPoints& s1,
+                       SecantPoints& s2,
+                       float& x,
+                       float& y,
+                       float& angle,
+                       float radius_s1,
+                       float radius_s2) {
 
+#if SINGLE_PRECISION_INTRINSIC > 0
+  float a = __sinf(angle);
+  float b = -__cosf(angle);
+#else
   float a = std::sin(angle);
   float b = -std::cos(angle);
+#endif
   float c = a * x + b * y;
 
   float b2 = b * b;
@@ -63,17 +74,21 @@ __device__ SecantPoints secant(float x, float y, float angle, float radius) {
   float a2_b2 = a * a + b2;
   float b_a2_b2 = b * a2_b2;
 
-  float sq = sqrt(b2 * (-(c * c) + a2_b2 * radius * radius));
-  float asq = a * sq;
+  float sq_s1 = sqrt(b2 * (-(c * c) + a2_b2 * radius_s1 * radius_s1));
+  float sq_s2 = sqrt(b2 * (-(c * c) + a2_b2 * radius_s2 * radius_s2));
 
-  SecantPoints secant_positions;
+  float asq_s1 = a * sq_s1;
+  float asq_s2 = a * sq_s2;
 
-  secant_positions.x1 = (ac - sq) / a2_b2;
-  secant_positions.y1 = ((b2c + asq) / b_a2_b2);
-  secant_positions.x2 = (ac + sq) / a2_b2;
-  secant_positions.y2 = ((b2c - asq) / b_a2_b2);
+  s1.x1 = (ac - sq_s1) / a2_b2;
+  s1.y1 = ((b2c + asq_s1) / b_a2_b2);
+  s1.x2 = (ac + sq_s1) / a2_b2;
+  s1.y2 = ((b2c - asq_s1) / b_a2_b2);
 
-  return secant_positions;
+  s2.x1 = (ac - sq_s2) / a2_b2;
+  s2.y1 = ((b2c + asq_s2) / b_a2_b2);
+  s2.x2 = (ac + sq_s2) / a2_b2;
+  s2.y2 = ((b2c - asq_s2) / b_a2_b2);
 }
 
 __device__ SecantAngles secant_angles(SecantPoints& e) {
@@ -85,7 +100,7 @@ __device__ SecantAngles secant_angles(SecantPoints& e) {
   return temp;
 }
 
-__device__ int section(float angle, int n_detectors) {
+__device__ int section(float& angle, int n_detectors) {
   // converting angles to [0,2 Pi) interval
   float normalised_angle = angle > 0 ? angle : (float)2.0 * M_PI + angle;
   return static_cast<int>(round(normalised_angle * n_detectors * 0.1591549f)) %
@@ -104,11 +119,11 @@ __device__ SecantSections secant_sections(SecantPoints& e, int n_detectors) {
   return temp;
 }
 
-__device__ int intersections(float x,
-                             float y,
-                             float angle,
+__device__ int intersections(float& x,
+                             float& y,
+                             float& angle,
                              DetectorRing& ring,
-                             int detector_id,
+                             int& detector_id,
                              Hits& hit) {
 
   float p1_x = ring.detector_list[detector_id].points[3].x;
@@ -159,7 +174,7 @@ __device__ int intersections(float x,
   return r;
 }
 
-__device__ float SecantAngles(float x1, float y1) { return atan2(y1, x1); }
+__device__ float SecantAngles(float& x1, float& y1) { return atan2(y1, x1); }
 
 __device__ float length(Point& p1, Point& p2) {
 
@@ -171,7 +186,8 @@ __device__ float nearest_distance(Point& p1, Point& p2, Point& center) {
   return min(length(p1, center), length(p2, center));
 }
 
-__device__ bool check_for_hits(int inner,
+__device__ bool check_for_hits(int flag,
+                               int inner,
                                int outer,
                                float x,
                                float y,
@@ -183,14 +199,19 @@ __device__ bool check_for_hits(int inner,
                                unsigned int* seed,
                                float& depth) {
 
+  if (!flag) {
+    return false;
+  }
+
   int points;
 
-  int step = ((n_detectors + inner - outer) % n_detectors >
-              (n_detectors + outer - inner) % n_detectors)
-                 ? 1
-                 : n_detectors - 1;
-  int end = (outer + step) % n_detectors;
-  for (int i = inner; i != end; i = (i + step) % n_detectors) {
+  int step =
+      ((n_detectors + inner - outer) &
+       (n_detectors - 1) > (n_detectors + outer - inner) & (n_detectors - 1))
+          ? 1
+          : n_detectors - 1;
+  int end = (outer + step) & (n_detectors - 1);
+  for (int i = inner; i != end; i = (i + step) & (n_detectors - 1)) {
     points = intersections(x, y, angle, ring, i, hit);
 
     if (points == 2) {

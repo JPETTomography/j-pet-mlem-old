@@ -42,7 +42,7 @@ bool run_monte_carlo_kernel(int pixel_i,
   dim3 blocks(number_of_blocks);
   dim3 threads(number_of_threads_per_block);
 
-  cudaSetDevice(1);
+  cudaSetDevice(0);
 
   unsigned int* gpu_prng_seed;
   MatrixElement* gpu_MatrixElement;
@@ -77,11 +77,12 @@ bool run_monte_carlo_kernel(int pixel_i,
        n_tof_positions * number_of_blocks * sizeof(MatrixElement),
        cudaMemcpyHostToDevice);
 
-  long total_emissions =
-      (long)n_emissions * number_of_blocks * number_of_threads_per_block;
+  //  long total_emissions =
+  //      (long)n_emissions * number_of_blocks * number_of_threads_per_block;
 
-  printf(
-      "Pixel(%d,%d) n_emissions: %d %ld\n", i, j, n_emissions, total_emissions);
+  //  printf(
+  //      "Pixel(%d,%d) n_emissions: %d %ld\n", i, j, n_emissions,
+  // total_emissions);
 
   if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
 
@@ -89,6 +90,7 @@ bool run_monte_carlo_kernel(int pixel_i,
                                                j,
                                                n_emissions,
                                                n_detectors,
+                                               n_tof_positions,
                                                gpu_prng_seed,
                                                gpu_MatrixElement,
                                                number_of_threads_per_block,

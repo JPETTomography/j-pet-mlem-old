@@ -17,7 +17,7 @@
 #include "2d_xy/model.h"
 #include "geometry/point.h"
 
-double getwtime() {
+double getwtime_cpu() {
   struct timeval tv;
   static time_t sec = 0;
   gettimeofday(&tv, NULL);
@@ -90,8 +90,6 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   auto w_detector = cl.get<double>("w-detector");
   auto h_detector = cl.get<double>("h-detector");
 
-  std::cout << "here: " << &cl.get<int>("n-emissions") << std::endl;
-
   int* emission_adr = &cl.get<int>("n-emissions");
 
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -
@@ -100,9 +98,9 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   auto number_of_blocks = cl.get<int>("n-blocks") ?: 64;
   auto number_of_threads_per_block = cl.get<int>("n-threads") ?: 512;
 
-  printf("Gpu grid config:\n");
-  printf("Number of blocks:= %d\n", number_of_blocks);
-  printf("Number of threads per block:= %d\n", number_of_threads_per_block);
+  //  printf("Gpu grid config:\n");
+  //  printf("Number of blocks:= %d\n", number_of_blocks);
+  //  printf("Number of threads per block:= %d\n", number_of_threads_per_block);
 
   int iteration_per_thread =
       floor(n_emissions / (number_of_blocks * number_of_threads_per_block));
@@ -223,7 +221,7 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
       cpu_prng_seed[i] = dis(gen);
     }
 
-    double t0 = getwtime();
+    double t0 = getwtime_cpu();
 
     run_monte_carlo_kernel(pixel_i,
                            n_tof_positions,
@@ -243,7 +241,7 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
                            cpu_matrix.data(),
                            gpu_vector_output.data());
 
-    double t1 = getwtime();
+    double t1 = getwtime_cpu();
 
     fulltime += (t1 - t0);
 
@@ -292,13 +290,17 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
 
 #endif
   }
+  //  std::cout << "Time: " << fulltime << "s" << std::endl;
+  //  std::cout << "Time per pixel: " << fulltime / triangle_pixel_size << "s"
+  //            << std::endl;
+  //  std::cout << "Time per iteration: " << fulltime / triangle_pixel_size /
+  //                                             n_emissions << "s" <<
+  // std::endl;
 
-  std::cout << "Numer of pixels: " << triangle_pixel_size << std::endl;
-  std::cout << "Time: " << fulltime << "s" << std::endl;
-  std::cout << "Time per pixel: " << fulltime / triangle_pixel_size << "s"
-            << std::endl;
-  std::cout << "Time per iteration: " << fulltime / triangle_pixel_size /
-                                             n_emissions << "s" << std::endl;
+  std::cout << fulltime << " " << fulltime / triangle_pixel_size << " "
+            << fulltime / triangle_pixel_size /
+                   (iteration_per_thread * number_of_blocks *
+                    number_of_threads_per_block) << std::endl;
 
   free(cpu_prng_seed);
 

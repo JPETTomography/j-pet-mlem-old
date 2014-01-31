@@ -9,10 +9,13 @@
 __device__ int lor_iterator(int& id1, int& id2) {
 
   if (id1 < id2) {
-    int temp;
-    temp = id2;
-    id2 = id1;
-    id1 = temp;
+    //    int temp;
+    //    temp = id2;
+    //    id2 = id1;
+    //    id1 = temp;
+    id1 ^= id2;
+    id2 ^= id1;
+    id1 ^= id2;
   }
 
   return ((id1 * (id1 + 1)) / 2) + id2;
@@ -22,6 +25,7 @@ __global__ void monte_carlo_kernel(int x,
                                    int y,
                                    int iteration,
                                    int n_detectors,
+                                   int tof_n_positions,
                                    unsigned int* gpu_prng_seed,
                                    MatrixElement* pixel_data,
                                    int threads,
@@ -57,8 +61,8 @@ __global__ void monte_carlo_kernel(int x,
   int detector1, detector2;
   float depth1, depth2, position;
   Point center;
-
-  int tof_n_positions = n_positions(0.01f, 0, radius + h_detector);
+  SecantPoints inner_secant;
+  SecantPoints outer_secant;
 
 #pragma unroll
   for (int i = 0; i < iteration; ++i) {
@@ -74,10 +78,15 @@ __global__ void monte_carlo_kernel(int x,
       continue;
     }
 
-    // innetr and outer secant for circles
-    SecantPoints inner_secant = secant(center.x, center.y, angle, radius);
-    SecantPoints outer_secant =
-        secant(center.x, center.y, angle, radius + h_detector);
+    // inner and outer secant for circles
+
+    secant(inner_secant,
+           outer_secant,
+           center.x,
+           center.y,
+           angle,
+           radius,
+           radius + h_detector);
 
     // hits per detector(if hits = 2 we got pair of detector, else generate
     // new random position and angle)
@@ -85,52 +94,56 @@ __global__ void monte_carlo_kernel(int x,
     SecantSections i_inner = secant_sections(inner_secant, NUMBER_OF_DETECTORS);
     SecantSections i_outer = secant_sections(outer_secant, NUMBER_OF_DETECTORS);
 
-    if (!check_for_hits(i_inner.ss1,
-                        i_outer.ss1,
-                        center.x,
-                        center.y,
-                        angle,
-                        NUMBER_OF_DETECTORS,
-                        ring,
-                        detector1,
-                        hit1,
-                        seed,
-                        depth1)) {
-      continue;
-    }
+    int intersection_flag = 1;
 
-    if (!check_for_hits(i_inner.ss2,
-                        i_outer.ss2,
-                        center.x,
-                        center.y,
-                        angle,
-                        NUMBER_OF_DETECTORS,
-                        ring,
-                        detector2,
-                        hit2,
-                        seed,
-                        depth2)) {
-      continue;
-    }
+    //    unsigned int t0 = clock();
 
-    float length1 = nearest_distance(hit1.p[0], hit1.p[1], center) + depth1;
-    float length2 = nearest_distance(hit2.p[0], hit2.p[1], center) + depth2;
+    intersection_flag = check_for_hits(intersection_flag,
+                                       i_inner.ss1,
+                                       i_outer.ss1,
+                                       center.x,
+                                       center.y,
+                                       angle,
+                                       NUMBER_OF_DETECTORS,
+                                       ring,
+                                       detector1,
+                                       hit1,
+                                       seed,
+                                       depth1);
 
-    if (detector1 > detector2) {
-      position = length1 - length2;
-    } else {
-      position = length2 - length1;
-    }
+    intersection_flag = check_for_hits(intersection_flag,
+                                       i_inner.ss2,
+                                       i_outer.ss2,
+                                       center.x,
+                                       center.y,
+                                       angle,
+                                       NUMBER_OF_DETECTORS,
+                                       ring,
+                                       detector2,
+                                       hit2,
+                                       seed,
+                                       depth2);
+
+    if (intersection_flag) {
+      float length1 = nearest_distance(hit1.p[0], hit1.p[1], center) + depth1;
+      float length2 = nearest_distance(hit2.p[0], hit2.p[1], center) + depth2;
+
+      if (detector1 > detector2) {
+        position = length1 - length2;
+      } else {
+        position = length2 - length1;
+      }
 #if NO_TOF > 0
-    atomicAdd(&pixel_data[blockIdx.x].hit[lor_iterator(detector1, detector2)],
-              1.0f);
+      atomicAdd(&pixel_data[blockIdx.x].hit[lor_iterator(detector1, detector2)],
+                1.0f);
 #else
-    atomicAdd(&pixel_data[(blockIdx.x * tof_n_positions) +
-                          quantize_position(position, 0.01f, tof_n_positions)]
-                   .hit[lor_iterator(detector1, detector2)],
-              1.0f);
+      atomicAdd(&pixel_data[(blockIdx.x * tof_n_positions) +
+                            quantize_position(position, 0.01f, tof_n_positions)]
+                     .hit[lor_iterator(detector1, detector2)],
+                1.0f);
 
 #endif
+    }
   }
 
   gpu_prng_seed[4 * tid] = seed[0];
