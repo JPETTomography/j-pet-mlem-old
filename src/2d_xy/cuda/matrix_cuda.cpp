@@ -98,12 +98,13 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   auto number_of_blocks = cl.get<int>("n-blocks") ?: 64;
   auto number_of_threads_per_block = cl.get<int>("n-threads") ?: 512;
 
-  //  printf("Gpu grid config:\n");
-  //  printf("Number of blocks:= %d\n", number_of_blocks);
-  //  printf("Number of threads per block:= %d\n", number_of_threads_per_block);
-
   int iteration_per_thread =
       floor(n_emissions / (number_of_blocks * number_of_threads_per_block));
+
+  printf("Gpu grid config:\n");
+  printf("Number of blocks:= %d\n", number_of_blocks);
+  printf("Number of threads per block:= %d\n", number_of_threads_per_block);
+  printf("Number of emissions per thread:= %d\n", iteration_per_thread);
 
   *emission_adr =
       iteration_per_thread * number_of_blocks * number_of_threads_per_block;

@@ -197,7 +197,8 @@ __device__ bool check_for_hits(int flag,
                                int& detector,
                                Hits& hit,
                                unsigned int* seed,
-                               float& depth) {
+                               float& depth,
+                               int& exec_inter) {
 
   if (!flag) {
     return false;
@@ -212,6 +213,7 @@ __device__ bool check_for_hits(int flag,
   int end = (outer + step) % (n_detectors);
   for (int i = inner; i != end; i = (i + step) % (n_detectors)) {
     points = intersections(x, y, angle, ring, i, hit);
+    exec_inter++;
 
     if (points == 2) {
 

@@ -64,6 +64,11 @@ __global__ void monte_carlo_kernel(int x,
   SecantPoints inner_secant;
   SecantPoints outer_secant;
 
+  int exec_inter1 = 0;
+  int exec_inter2 = 0;
+  int warp_hit1 = 0;
+  int warp_hit2 = 0;
+
 #pragma unroll
   for (int i = 0; i < iteration; ++i) {
 
@@ -74,11 +79,11 @@ __global__ void monte_carlo_kernel(int x,
 
     float angle = HybridTaus(seed[0], seed[1], seed[2], seed[3]) * M_PI;
 
+    // inner and outer secant for circles
+
     if (center.x > center.y) {
       continue;
     }
-
-    // inner and outer secant for circles
 
     secant(inner_secant,
            outer_secant,
@@ -109,7 +114,11 @@ __global__ void monte_carlo_kernel(int x,
                                        detector1,
                                        hit1,
                                        seed,
-                                       depth1);
+                                       depth1,
+                                       exec_inter1);
+    if (intersection_flag) {
+      warp_hit1++;
+    }
 
     intersection_flag = check_for_hits(intersection_flag,
                                        i_inner.ss2,
@@ -122,7 +131,12 @@ __global__ void monte_carlo_kernel(int x,
                                        detector2,
                                        hit2,
                                        seed,
-                                       depth2);
+                                       depth2,
+                                       exec_inter2);
+
+    if (intersection_flag) {
+      warp_hit2++;
+    }
 
     if (intersection_flag) {
       float length1 = nearest_distance(hit1.p[0], hit1.p[1], center) + depth1;
@@ -145,6 +159,10 @@ __global__ void monte_carlo_kernel(int x,
 #endif
     }
   }
+
+  // if(tid < 32){printf("Tid: %d Warp_up: %d Warp_down: %d Intersection_up: %d
+  // Intersection_down: %d \n
+  // ",tid,warp_hit1,warp_hit2,exec_inter1,exec_inter2);}
 
   gpu_prng_seed[4 * tid] = seed[0];
   gpu_prng_seed[4 * tid + 1] = seed[1];

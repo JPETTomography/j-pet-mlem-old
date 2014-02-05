@@ -71,16 +71,16 @@ bool run_monte_carlo_kernel(int pixel_i,
 
   // mem_clean_lors(cpu_matrix, number_of_blocks, n_tof_positions);
 
-  //    cuda(Memcpy,
-  //         gpu_MatrixElement,
-  //         cpu_matrix,
-  //         n_tof_positions * number_of_blocks * sizeof(MatrixElement),
-  //         cudaMemcpyHostToDevice);
-
-  cuda(Memset,
+  cuda(Memcpy,
        gpu_MatrixElement,
-       0,
-       n_tof_positions * number_of_blocks * sizeof(MatrixElement));
+       cpu_matrix,
+       n_tof_positions * number_of_blocks * sizeof(MatrixElement),
+       cudaMemcpyHostToDevice);
+
+  //  cuda(Memset,
+  //       gpu_MatrixElement,
+  //       0,
+  //       n_tof_positions * number_of_blocks * sizeof(MatrixElement));
 
   long total_emissions =
       (long)n_emissions * number_of_blocks * number_of_threads_per_block;
