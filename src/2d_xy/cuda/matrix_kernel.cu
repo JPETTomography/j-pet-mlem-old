@@ -42,9 +42,7 @@ bool run_monte_carlo_kernel(int pixel_i,
   dim3 blocks(number_of_blocks);
   dim3 threads(number_of_threads_per_block);
 
-  cudaSetDevice(1);
-
-  cudaDeviceReset();
+  cudaSetDevice(0);
 
   unsigned int* gpu_prng_seed;
   MatrixElement* gpu_MatrixElement;
@@ -73,11 +71,11 @@ bool run_monte_carlo_kernel(int pixel_i,
 
   // mem_clean_lors(cpu_matrix, number_of_blocks, n_tof_positions);
 
-  //  cuda(Memcpy,
-  //       gpu_MatrixElement,
-  //       cpu_matrix,
-  //       n_tof_positions * number_of_blocks * sizeof(MatrixElement),
-  //       cudaMemcpyHostToDevice);
+  //    cuda(Memcpy,
+  //         gpu_MatrixElement,
+  //         cpu_matrix,
+  //         n_tof_positions * number_of_blocks * sizeof(MatrixElement),
+  //         cudaMemcpyHostToDevice);
 
   cuda(Memset,
        gpu_MatrixElement,
