@@ -205,13 +205,12 @@ __device__ bool check_for_hits(int flag,
 
   int points;
 
-  int step =
-      ((n_detectors + inner - outer) &
-       (n_detectors - 1) > (n_detectors + outer - inner) & (n_detectors - 1))
-          ? 1
-          : n_detectors - 1;
-  int end = (outer + step) & (n_detectors - 1);
-  for (int i = inner; i != end; i = (i + step) & (n_detectors - 1)) {
+  int step = ((n_detectors + inner - outer) % (n_detectors) >
+              (n_detectors + outer - inner) % (n_detectors))
+                 ? 1
+                 : n_detectors - 1;
+  int end = (outer + step) % (n_detectors);
+  for (int i = inner; i != end; i = (i + step) % (n_detectors)) {
     points = intersections(x, y, angle, ring, i, hit);
 
     if (points == 2) {
