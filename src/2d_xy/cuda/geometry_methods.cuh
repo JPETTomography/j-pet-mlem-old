@@ -213,8 +213,10 @@ __device__ bool check_for_hits(int flag,
   int end = (outer + step) % (n_detectors);
   for (int i = inner; i != end; i = (i + step) % (n_detectors)) {
     points = intersections(x, y, angle, ring, i, hit);
-    exec_inter++;
 
+#if CLOCK_TEST
+    exec_inter++;
+#endif
     if (points == 2) {
 
       detector = i;

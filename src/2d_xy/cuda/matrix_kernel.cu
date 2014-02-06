@@ -1,5 +1,7 @@
 
 #include <cuda_runtime.h>
+#include <iostream>
+#include <fstream>
 
 #include "config.h"
 #include "prng.cuh"
@@ -7,7 +9,6 @@
 #include "geometry_methods.cuh"
 #include "monte_carlo.cuh"
 
-// FIXME: remove me
 #include "geometry/pixel.h"
 
 using namespace gpu;
@@ -26,9 +27,6 @@ bool run_monte_carlo_kernel(int pixel_i,
                             int number_of_threads_per_block,
                             int number_of_blocks,
                             int n_emissions,
-                            int n_detectors,
-                            int pixels_in_row,
-                            int triangular_matrix_size,
                             float radius,
                             float h_detector,
                             float w_detector,
@@ -46,6 +44,26 @@ bool run_monte_carlo_kernel(int pixel_i,
 
   unsigned int* gpu_prng_seed;
   MatrixElement* gpu_MatrixElement;
+
+#if WARP_DIVERGENCE_TEST
+  bool* warp_divergence_buffor;
+
+  const int warp_size = 32;
+
+  cuda(Malloc,
+       (void**)&warp_divergence_buffor,
+       warp_size * n_emissions * sizeof(bool));
+
+  cuda(Memset,
+       warp_divergence_buffor,
+       0,
+       warp_size * n_emissions * sizeof(bool));
+
+#else
+  bool* warp_divergence_buffor;
+  cuda(Malloc, (void**)&warp_divergence_buffor, 0 * sizeof(bool));
+
+#endif
 
   cuda(Malloc,
        (void**)&gpu_prng_seed,
@@ -69,18 +87,10 @@ bool run_monte_carlo_kernel(int pixel_i,
   int i = pixel.x;
   int j = pixel.y;
 
-  // mem_clean_lors(cpu_matrix, number_of_blocks, n_tof_positions);
-
-  cuda(Memcpy,
+  cuda(Memset,
        gpu_MatrixElement,
-       cpu_matrix,
-       n_tof_positions * number_of_blocks * sizeof(MatrixElement),
-       cudaMemcpyHostToDevice);
-
-  //  cuda(Memset,
-  //       gpu_MatrixElement,
-  //       0,
-  //       n_tof_positions * number_of_blocks * sizeof(MatrixElement));
+       0,
+       n_tof_positions * number_of_blocks * sizeof(MatrixElement));
 
   long total_emissions =
       (long)n_emissions * number_of_blocks * number_of_threads_per_block;
@@ -88,21 +98,25 @@ bool run_monte_carlo_kernel(int pixel_i,
   printf(
       "Pixel(%d,%d) n_emissions: %d %ld\n", i, j, n_emissions, total_emissions);
 
+  cudaEvent_t start, stop;
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+
+  cudaEventRecord(start);
+
   if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
 
     monte_carlo_kernel << <blocks, threads>>> (i,
                                                j,
                                                n_emissions,
-                                               n_detectors,
                                                n_tof_positions,
                                                gpu_prng_seed,
                                                gpu_MatrixElement,
-                                               number_of_threads_per_block,
-                                               pixels_in_row,
                                                radius,
                                                h_detector,
                                                w_detector,
-                                               pixel_size);
+                                               pixel_size,
+                                               warp_divergence_buffor);
 
     cudaThreadSynchronize();
 
@@ -110,6 +124,39 @@ bool run_monte_carlo_kernel(int pixel_i,
       return false;
     }
   }
+
+  cudaEventRecord(stop);
+
+  cudaEventSynchronize(stop);
+  float milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
+
+  printf("Direct kernel time without memcpy %f ms\n", milliseconds);
+
+#if WARP_DIVERGENCE_TEST
+
+  bool* cpu_warp_divergence_buffor = new bool[warp_size * n_emissions];
+
+  cuda(Memcpy,
+       cpu_warp_divergence_buffor,
+       warp_divergence_buffor,
+       warp_size * n_emissions * sizeof(bool),
+       cudaMemcpyDeviceToHost);
+
+  std::ofstream output;
+  output.open("warp_info");
+
+  for (int i = 0; i < warp_size * n_emissions; ++i) {
+
+    output << int(cpu_warp_divergence_buffor[i]);
+    if (i % warp_size == 0 && i != 0) {
+      output << std::endl;
+    }
+  }
+
+  delete cpu_warp_divergence_buffor;
+
+#endif
 
   cuda(Memcpy,
        cpu_matrix,

@@ -24,16 +24,14 @@ __device__ int lor_iterator(int& id1, int& id2) {
 __global__ void monte_carlo_kernel(int x,
                                    int y,
                                    int iteration,
-                                   int n_detectors,
                                    int tof_n_positions,
                                    unsigned int* gpu_prng_seed,
                                    MatrixElement* pixel_data,
-                                   int threads,
-                                   int pixels_in_row,
                                    float radius,
                                    float h_detector,
                                    float w_detector,
-                                   float pixel_size) {
+                                   float pixel_size,
+                                   bool* warp_divergence_buffor) {
 
   int tid = ((blockIdx.x * blockDim.x) + threadIdx.x);
 
@@ -66,11 +64,24 @@ __global__ void monte_carlo_kernel(int x,
 
   int exec_inter1 = 0;
   int exec_inter2 = 0;
+
+#if CLOCK_TEST
+
+  unsigned int timer = 0;
+  int exec_inter1 = 0;
+  int exec_inter2 = 0;
   int warp_hit1 = 0;
   int warp_hit2 = 0;
+  float test = 0.0;
+
+#endif
 
 #pragma unroll
   for (int i = 0; i < iteration; ++i) {
+
+#if CLOCK_TEST
+    unsigned int t0 = clock();
+#endif
 
     center.x =
         (x + HybridTaus(seed[0], seed[1], seed[2], seed[3])) * pixel_size;
@@ -79,6 +90,10 @@ __global__ void monte_carlo_kernel(int x,
 
     float angle = HybridTaus(seed[0], seed[1], seed[2], seed[3]) * M_PI;
 
+#if CLOCK_TEST
+    unsigned int t1 = clock();
+    timer += (t1 - t0);
+#endif
     // inner and outer secant for circles
 
     if (center.x > center.y) {
@@ -99,6 +114,10 @@ __global__ void monte_carlo_kernel(int x,
     SecantSections i_inner = secant_sections(inner_secant, NUMBER_OF_DETECTORS);
     SecantSections i_outer = secant_sections(outer_secant, NUMBER_OF_DETECTORS);
 
+    // warp_hit1+= inner_secant.x1 + inner_secant.x2 + inner_secant.y1 +
+    // inner_secant.y2 + outer_secant.x1 + outer_secant.x2 + outer_secant.y1 +
+    // outer_secant.y2 + i_inner.ss1 + i_inner.ss2 + i_outer.ss1 + i_outer.ss2;
+
     int intersection_flag = 1;
 
     //    unsigned int t0 = clock();
@@ -116,9 +135,21 @@ __global__ void monte_carlo_kernel(int x,
                                        seed,
                                        depth1,
                                        exec_inter1);
+#if WARP_DIVERGENCE_TEST
     if (intersection_flag) {
+
+      if (tid < 32) {
+        warp_divergence_buffor[(32 * i) + tid] = true;
+      }
+    }
+#endif
+
+#if CLOCK_TEST
+    if (intersection_flag) {
+
       warp_hit1++;
     }
+#endif
 
     intersection_flag = check_for_hits(intersection_flag,
                                        i_inner.ss2,
@@ -134,9 +165,11 @@ __global__ void monte_carlo_kernel(int x,
                                        depth2,
                                        exec_inter2);
 
+#if CLOCK_TEST
     if (intersection_flag) {
       warp_hit2++;
     }
+#endif
 
     if (intersection_flag) {
       float length1 = nearest_distance(hit1.p[0], hit1.p[1], center) + depth1;
@@ -155,16 +188,25 @@ __global__ void monte_carlo_kernel(int x,
                             quantize_position(position, 0.01f, tof_n_positions)]
                      .hit[lor_iterator(detector1, detector2)],
                 1.0f);
-
 #endif
     }
   }
+#if CLOCK_TEST
+  if (tid < 32) {
+    printf(
+        "Tid: %d Warp_up: %d Warp_down: %d Intersection_up: %d "
+        "Intersection_down: %d %f CLOCKS: %d \n",
+        tid,
+        warp_hit1,
+        warp_hit2,
+        exec_inter1,
+        exec_inter2,
+        test,
+        timer);
+  }
+#endif
 
-  // if(tid < 32){printf("Tid: %d Warp_up: %d Warp_down: %d Intersection_up: %d
-  // Intersection_down: %d \n
-  // ",tid,warp_hit1,warp_hit2,exec_inter1,exec_inter2);}
-
-  gpu_prng_seed[4 * tid] = seed[0];
+  // gpu_prng_seed[4 * tid] = seed[0];
   gpu_prng_seed[4 * tid + 1] = seed[1];
   gpu_prng_seed[4 * tid + 2] = seed[2];
   gpu_prng_seed[4 * tid + 3] = seed[3];

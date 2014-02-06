@@ -31,9 +31,6 @@ void run_monte_carlo_kernel(int pixel_id,
                             int number_of_threads_per_block,
                             int number_of_blocks,
                             int n_emissions,
-                            int n_detectors,
-                            int pixels_in_row,
-                            int triangle_pixel_size,
                             float radius,
                             float h_detector,
                             float w_detector,
@@ -149,6 +146,18 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
       ((int)(ceil(2.0f * (2.0f * (radius + h_detector)) / 0.01f)) + 1) / 2 * 2;
 #endif
 
+  //  gpu_kernel_parameters kernel_parameters;
+
+  //  kernel_parameters.x = 0;
+  //  kernel_parameters.y = 0;
+  //  kernel_parameters.iteration = iteration_per_thread;
+  //  kernel_parameters.tof_n_positions = n_tof_positions;
+
+  //  kernel_parameters.radius = radius;
+  //  kernel_parameters.h_detector = h_detector;
+  //  kernel_parameters.w_detector = w_detector;
+  //  kernel_parameters.pixel_size = s_pixel;
+
   int triangle_pixel_size = (pixels_in_row / 2 * (pixels_in_row / 2 + 1) / 2);
 
   std::vector<gpu::LOR> lookup_table_lors;
@@ -229,9 +238,6 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
                            number_of_threads_per_block,
                            number_of_blocks,
                            iteration_per_thread,
-                           n_detectors,
-                           pixels_in_row,
-                           triangle_pixel_size,
                            radius,
                            h_detector,
                            w_detector,
@@ -291,12 +297,6 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
 
 #endif
   }
-  //  std::cout << "Time: " << fulltime << "s" << std::endl;
-  //  std::cout << "Time per pixel: " << fulltime / triangle_pixel_size << "s"
-  //            << std::endl;
-  //  std::cout << "Time per iteration: " << fulltime / triangle_pixel_size /
-  //                                             n_emissions << "s" <<
-  // std::endl;
 
   std::cout << fulltime << " " << fulltime / triangle_pixel_size << " "
             << fulltime / triangle_pixel_size /
