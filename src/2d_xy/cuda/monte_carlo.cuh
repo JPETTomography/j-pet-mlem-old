@@ -61,15 +61,12 @@ __global__ void monte_carlo_kernel(int x,
   Point center;
   SecantPoints inner_secant;
   SecantPoints outer_secant;
-
   int exec_inter1 = 0;
   int exec_inter2 = 0;
 
 #if CLOCK_TEST
 
   unsigned int timer = 0;
-  int exec_inter1 = 0;
-  int exec_inter2 = 0;
   int warp_hit1 = 0;
   int warp_hit2 = 0;
   float test = 0.0;
@@ -206,7 +203,7 @@ __global__ void monte_carlo_kernel(int x,
   }
 #endif
 
-  // gpu_prng_seed[4 * tid] = seed[0];
+  gpu_prng_seed[4 * tid] = seed[0];
   gpu_prng_seed[4 * tid + 1] = seed[1];
   gpu_prng_seed[4 * tid + 2] = seed[2];
   gpu_prng_seed[4 * tid + 3] = seed[3];
