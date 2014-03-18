@@ -202,7 +202,7 @@ class DetectorRing : public std::vector<DetectorType> {
 
     Point d1_p1, d1_p2;
     if (!check_for_hits(
-             gen, model, i_inner, i_outer, e, detector1, depth1, d1_p1, d1_p2))
+            gen, model, i_inner, i_outer, e, detector1, depth1, d1_p1, d1_p2))
       return 0;
 
     i_inner = c_inner.section(c_inner.angle(inner_secant[1]), n_detectors);
@@ -211,7 +211,7 @@ class DetectorRing : public std::vector<DetectorType> {
     F depth2;
     Point d2_p1, d2_p2;
     if (!check_for_hits(
-             gen, model, i_inner, i_outer, e, detector2, depth2, d2_p1, d2_p2))
+            gen, model, i_inner, i_outer, e, detector2, depth2, d2_p1, d2_p2))
       return 0;
 
     lor = LOR(detector1, detector2);
