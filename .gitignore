@@ -12,21 +12,20 @@
 /doc/html/
 
 # LaTeX output
-/pubs/*.pdf
-
-# in some subfolders too
-/pubs/201401_report/*.pdf
+/pubs/*/*.pdf
+!/pubs/*/*/*.pdf
+!/pubs/figures/*.pdf
 
 # LaTeX temporary files
-**/*-converted-to.*
-**/*.aux
-**/*.out
-**/*.log
-**/*.dvi
-**/*.synctex.gz
-**/*.toc
-**/*.nav
-**/*.snm
+/pubs/**/*-converted-to.*
+/pubs/**/*.aux
+/pubs/**/*.out
+/pubs/**/*.log
+/pubs/**/*.dvi
+/pubs/**/*.synctex.gz
+/pubs/**/*.toc
+/pubs/**/*.nav
+/pubs/**/*.snm
 
 # well known temporary files
 *~

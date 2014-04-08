@@ -3,5 +3,6 @@ BasedOnStyle: Chromium
 Standard: C++11
 Cpp11BracedListStyle: false
 AlwaysBreakTemplateDeclarations: false
+KeepEmptyLinesAtTheStartOfBlocks: true
 # AllowShortIfStatementsOnASingleLine: true
 ...
