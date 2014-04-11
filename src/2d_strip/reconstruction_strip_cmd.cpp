@@ -15,6 +15,10 @@
 #include "flags.h"
 #include "event.h"
 #include "reconstruction.h"
+#include "config.h"
+
+// GPU wrapper
+#include "gpu_kernel_wrapper.h"
 
 using namespace std;
 
@@ -30,6 +34,10 @@ int main(int argc, char* argv[]) {
 #if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
 #endif
+#if HAVE_CUDA
+    cl.add("gpu", 'g', "run on GPU (via CUDA)");
+#endif
+    cl.add("cpu", 'c', "run on cpu (via OPENMP)");
     cl.add<float>(
         "r-distance", 'r', "R distance between scientilators", false, 500.0f);
     cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
@@ -38,7 +46,7 @@ int main(int argc, char* argv[]) {
     cl.add<int>("iter", 'i', "number of iterations", false, 1);
     cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
     cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
-    cl.add<float>("gm", 'g', "Gamma error", false, 0.f);
+    cl.add<float>("gm", 'e', "Gamma error", false, 0.f);
 
     cl.parse_check(argc, argv);
 
@@ -48,33 +56,89 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    float R_distance = cl.get<float>("r-distance");
-    float Scentilator_length = cl.get<float>("s-length");
-    float pixel_size = cl.get<float>("p-size");
-    float n_pixels = Scentilator_length / pixel_size;
-    float sigma = cl.get<float>("s-z");
-    float dl = cl.get<float>("s-dl");
+    if (cl.exist("gpu")) {
 
-    int n_blocks = cl.get<int>("iter");
-    Reconstruction<float> reconstruction(n_blocks,
-                                         R_distance,
-                                         Scentilator_length,
-                                         n_pixels,
-                                         pixel_size,
-                                         sigma,
-                                         dl);
-    ibstream in("phantom.bin");
+      float R_distance = cl.get<float>("r-distance");
+      float Scentilator_length = cl.get<float>("s-length");
+      float pixel_size = cl.get<float>("p-size");
+      float n_pixels = Scentilator_length / pixel_size;
+      float sigma = cl.get<float>("s-z");
+      float dl = cl.get<float>("s-dl");
 
-    in >> reconstruction;
+      // debug version only
 
-    clock_t begin = clock();
+      ibstream in("phantom.bin");
 
-    reconstruction(n_blocks);
+      event<float> temp_event;
+      vector<event<float>> event_list;
 
-    clock_t end = clock();
+      int size;
+      in >> size;
 
-    std::cout << "Time:" << float(end - begin) / CLOCKS_PER_SEC / 4
-              << std::endl;
+      printf("event data list %d\n", size);
+
+      for (int it = 0; it < size; ++it) {
+
+        float z_u, z_d, dl;
+
+        in >> z_u >> z_d >> dl;
+
+        temp_event.z_u = z_u;
+        temp_event.z_d = z_d;
+        temp_event.dl = dl;
+
+        event_list.push_back(temp_event);
+      }
+
+      std::cout << "VECTOR SIZE: " << event_list.size() << std::endl;
+
+      gpu_config::GPU_parameters cfg;
+      cfg.R_distance = R_distance;
+      cfg.Scentilator_length = Scentilator_length;
+      cfg.pixel_size = pixel_size;
+      cfg.n_pixels = n_pixels;
+      cfg.sigma = sigma;
+      cfg.dl = dl;
+      cfg.number_of_blocks = 16;
+      cfg.number_of_threads_per_block = 128;
+      cfg.number_of_events = 1;
+      cfg.inv_pow_sigma_dl = 1.0f / (dl * dl);
+      cfg.inv_pow_sigma_z = 1.0f / (sigma * sigma);
+      cfg.grid_size_y_ = n_pixels * pixel_size;
+      cfg.grid_size_z_ = n_pixels * pixel_size;
+
+      execute_kernel_reconstruction(cfg, event_list.data());
+    }
+
+    if (cl.exist("cpu")) {
+      float R_distance = cl.get<float>("r-distance");
+      float Scentilator_length = cl.get<float>("s-length");
+      float pixel_size = cl.get<float>("p-size");
+      float n_pixels = Scentilator_length / pixel_size;
+      float sigma = cl.get<float>("s-z");
+      float dl = cl.get<float>("s-dl");
+
+      int n_blocks = cl.get<int>("iter");
+      Reconstruction<float> reconstruction(n_blocks,
+                                           R_distance,
+                                           Scentilator_length,
+                                           n_pixels,
+                                           pixel_size,
+                                           sigma,
+                                           dl);
+      ibstream in("phantom.bin");
+
+      in >> reconstruction;
+
+      clock_t begin = clock();
+
+      reconstruction(n_blocks);
+
+      clock_t end = clock();
+
+      std::cout << "Time:" << float(end - begin) / CLOCKS_PER_SEC / 4
+                << std::endl;
+    }
   }
   catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
