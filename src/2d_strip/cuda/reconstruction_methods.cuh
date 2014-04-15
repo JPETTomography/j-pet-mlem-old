@@ -38,13 +38,13 @@ __device__ inline float multiply_elements(float* vec_a,
 }
 
 __device__ float calculate_kernel(float& y,
-                       float& _tan,
-                       float& inv_cos,
-                       float& pow_inv_cos,
-                       float2& pixel_center,
-                       float* inv_c,
-                       gpu_config::GPU_parameters& cfg,
-                       float& sqrt_det_correlation_matrix) {
+                                  float& _tan,
+                                  float& inv_cos,
+                                  float& pow_inv_cos,
+                                  float2& pixel_center,
+                                  float* inv_c,
+                                  gpu_config::GPU_parameters& cfg,
+                                  float& sqrt_det_correlation_matrix) {
 
   float vec_o[3];
   float vec_a[3];
@@ -52,8 +52,7 @@ __device__ float calculate_kernel(float& y,
 
   vec_o[0] = -(pixel_center.x + y - cfg.R_distance) * _tan * pow_inv_cos;
   vec_o[1] = -(pixel_center.x + y + cfg.R_distance) * _tan * pow_inv_cos;
-  vec_o[2] =
-      -(pixel_center.x + y) * inv_cos * (1.0f + 2.0f * (_tan * _tan));
+  vec_o[2] = -(pixel_center.x + y) * inv_cos * (1.0f + 2.0f * (_tan * _tan));
 
   vec_a[0] = -(pixel_center.x + y - cfg.R_distance) * pow_inv_cos;
   vec_a[1] = -(pixel_center.x + y + cfg.R_distance) * pow_inv_cos;
@@ -68,55 +67,48 @@ __device__ float calculate_kernel(float& y,
   float b_ic_b = multiply_elements(vec_b, inv_c, vec_b);
   float o_ic_b = multiply_elements(vec_o, inv_c, vec_b);
 
-
   float norm = a_ic_a + (2.f * o_ic_b);
 
+#if TEST
+  if (threadIdx.x == 0 && blockIdx.x == 0) {
 
-  if(threadIdx.x ==0 && blockIdx.x == 0){
+    printf("vec_o[0]: %f\n", vec_o[0]);
+    printf("vec_o[1]: %f\n", vec_o[1]);
+    printf("vec_o[2]: %f\n", vec_o[2]);
 
-    printf("vec_o[0]: %f\n",vec_o[0]);
-    printf("vec_o[1]: %f\n",vec_o[1]);
-    printf("vec_o[2]: %f\n",vec_o[2]);
+    printf("vec_a[0]: %f\n", vec_a[0]);
+    printf("vec_a[1]: %f\n", vec_a[1]);
+    printf("vec_a[2]: %f\n", vec_a[2]);
 
-    printf("vec_a[0]: %f\n",vec_a[0]);
-    printf("vec_a[1]: %f\n",vec_a[1]);
-    printf("vec_a[2]: %f\n",vec_a[2]);
+    printf("vec_b[0]: %f\n", vec_b[0]);
+    printf("vec_b[1]: %f\n", vec_b[1]);
+    printf("vec_b[2]: %f\n", vec_b[2]);
 
-    printf("vec_b[0]: %f\n",vec_b[0]);
-    printf("vec_b[1]: %f\n",vec_b[1]);
-    printf("vec_b[2]: %f\n",vec_b[2]);
+    printf("inv_c[0]: %f\n", inv_c[0]);
+    printf("inv_c[1]: %f\n", inv_c[1]);
+    printf("inv_c[2]: %f\n", inv_c[2]);
 
-    printf("inv_c[0]: %f\n",inv_c[0]);
-    printf("inv_c[1]: %f\n",inv_c[1]);
-    printf("inv_c[2]: %f\n",inv_c[2]);
+    printf("a_ic_a: %f\n", a_ic_a);
+    printf("b_ic_a: %f\n", b_ic_a);
+    printf("b_ic_b: %f\n", b_ic_b);
+    printf("o_ic_b: %f\n", o_ic_b);
+    printf("norm: %f\n", norm);
 
-
-    printf("a_ic_a: %f\n",a_ic_a);
-    printf("b_ic_a: %f\n",b_ic_a);
-    printf("b_ic_b: %f\n",b_ic_b);
-    printf("o_ic_b: %f\n",o_ic_b);
-    printf("norm: %f\n",norm);
-
-    float element_before_exp =
-        SINGLE_INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / std::sqrt(norm));
-
-    printf("/------------------------------------------/\n");
-
-    printf("SINGLE_INVERSE_POW_TWO_PI: %f\n",SINGLE_INVERSE_POW_TWO_PI);
-    printf("sqrt_det_correlation_matrix: %f\n",sqrt_det_correlation_matrix);
-
+    float element_before_exp = SINGLE_INVERSE_POW_TWO_PI *
+                               (sqrt_det_correlation_matrix / std::sqrt(norm));
 
     printf("/------------------------------------------/\n");
 
-    printf("Element before exp: %ef\n",element_before_exp);
-    printf("Exp: %ef \n",exp(-(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm))));
+    printf("SINGLE_INVERSE_POW_TWO_PI: %f\n", SINGLE_INVERSE_POW_TWO_PI);
+    printf("sqrt_det_correlation_matrix: %f\n", sqrt_det_correlation_matrix);
 
+    printf("/------------------------------------------/\n");
 
+    printf("Element before exp: %ef\n", element_before_exp);
+    printf("Exp: %ef \n", exp(-(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm))));
   }
 
-
-
-
+#endif
   return (SINGLE_INVERSE_POW_TWO_PI *
           (sqrt_det_correlation_matrix / sqrt(norm)) *
           exp(-(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm))));
