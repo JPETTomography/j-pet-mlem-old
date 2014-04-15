@@ -28,9 +28,9 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
   inv_c[1] = cfg.inv_pow_sigma_z;
   inv_c[2] = cfg.inv_pow_sigma_dl;
 
-  __shared__ float sqrt_det_correlation_matrix;
+  float temp = sqrt(cfg.inv_pow_sigma_z * cfg.inv_pow_sigma_z * cfg.inv_pow_sigma_dl);
 
-  if(threadIdx.x == 0){sqrt_det_correlation_matrix = cfg.inv_pow_sigma_z * cfg.inv_pow_sigma_z * cfg.inv_pow_sigma_dl;}
+  float sqrt_det_correlation_matrix = sqrt(cfg.inv_pow_sigma_z * cfg.inv_pow_sigma_z * cfg.inv_pow_sigma_dl);
 
   // angle space transformation
   float tn = event_tan(z_u, z_d, cfg.R_distance);
@@ -105,12 +105,14 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
   sec_ = 1.0f / cos(0.0f);
   sec_sq_ = sec_ * sec_;
 
-  float2 pp = pixel_center(iy,
-                           iz,
-                           cfg.pixel_size,
-                           cfg.pixel_size,
-                           cfg.grid_size_y_,
-                           cfg.grid_size_z_);
+//  float2 pp = pixel_center(iy,
+//                           iz,
+//                           cfg.pixel_size,
+//                           cfg.pixel_size,
+//                           cfg.grid_size_y_,
+//                           cfg.grid_size_z_);
+
+    float2 pp =  make_float2(10.0f,13.0f);
 
 
   float event_kernel = calculate_kernel(
@@ -121,7 +123,7 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 
 
     printf("PP: %f %f\n",pp.x, pp.y);
-    printf("KERNEL: %f\n",event_kernel);}
+    printf("KERNEL: %ef\n",event_kernel);}
 
 //#endif
       for (int iz = dl.y; iz < ur.y; ++iz) {

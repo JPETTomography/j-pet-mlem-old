@@ -97,8 +97,24 @@ __device__ float calculate_kernel(float& y,
     printf("o_ic_b: %f\n",o_ic_b);
     printf("norm: %f\n",norm);
 
+    float element_before_exp =
+        SINGLE_INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / std::sqrt(norm));
+
+    printf("/------------------------------------------/\n");
+
+    printf("SINGLE_INVERSE_POW_TWO_PI: %f\n",SINGLE_INVERSE_POW_TWO_PI);
+    printf("sqrt_det_correlation_matrix: %f\n",sqrt_det_correlation_matrix);
+
+
+    printf("/------------------------------------------/\n");
+
+    printf("Element before exp: %ef\n",element_before_exp);
+    printf("Exp: %ef \n",exp(-(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm))));
+
 
   }
+
+
 
 
   return (SINGLE_INVERSE_POW_TWO_PI *
