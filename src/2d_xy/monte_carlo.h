@@ -23,11 +23,13 @@ class MonteCarlo {
   MonteCarlo(DetectorRing& detector_ring,
              Matrix& matrix,
              F pixel_size,
-             F tof_step)
+             F tof_step,
+             S start_pixel = static_cast<S>(0))
       : detector_ring(detector_ring),
         matrix(matrix),
         pixel_size(pixel_size),
-        tof_step(tof_step) {}
+        tof_step(tof_step),
+        start_pixel(start_pixel) {}
 
   /// Executes Monte-Carlo system matrix generation for given detector ring
   /// @param gen   random number generator
@@ -79,8 +81,9 @@ class MonteCarlo {
 
       auto pixel = matrix.pixel_at_index(i_pixel);
 
-      if ((pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
-          detector_ring.fov_radius() * detector_ring.fov_radius())
+      if (pixel.x < start_pixel || pixel.y < start_pixel ||
+          (pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
+              detector_ring.fov_radius() * detector_ring.fov_radius())
         continue;
 
       int pixel_hit_count = 0;
@@ -193,4 +196,5 @@ class MonteCarlo {
   Matrix& matrix;
   F pixel_size;
   F tof_step;
+  S start_pixel;
 };

@@ -93,6 +93,7 @@ int main(int argc, char* argv[]) {
 #endif
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
+    cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
     cl.add<int>("n-detectors", 'd', "number of detectors in ring", false);
     cl.add<int>("n-emissions",
                 'e',
@@ -358,6 +359,7 @@ SparseMatrix<Pixel<>, LOR<>> run_cpu(cmdline::parser& cl,
                                      Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
+  auto& m_pixel = cl.get<int>("m-pixel");
   auto& s_pixel = cl.get<double>("s-pixel");
   auto& n_detectors = cl.get<int>("n-detectors");
   auto& n_emissions = cl.get<int>("n-emissions");
@@ -450,7 +452,7 @@ SparseMatrix<Pixel<>, LOR<>> run_cpu(cmdline::parser& cl,
 #endif
 
   MonteCarlo<DetectorRing, ComputeMatrix> monte_carlo(
-      detector_ring, matrix, s_pixel, tof_step);
+      detector_ring, matrix, s_pixel, tof_step, m_pixel);
   monte_carlo(gen, model, n_emissions, verbose ? progress_callback : NULL);
 
 #ifdef GPU_TOF_TEST
