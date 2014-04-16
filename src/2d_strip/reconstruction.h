@@ -342,13 +342,4 @@ class Reconstruction {
 
     return *this;
   }
-
-// FIXME: this confuses ICC
-#ifndef __ICC
-  template <typename StreamType>
-  friend StreamType& operator>>(StreamType& in, Reconstruction& r) {
-    r << in;
-    return in;
-  }
-#endif
 };

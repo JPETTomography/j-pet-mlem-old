@@ -1,6 +1,6 @@
 #include <cuda_runtime.h>
-#include <iostream>
-#include <fstream>
+#include <stdio.h>
+
 #include "reconstruction.cuh"
 
 static cudaError err;

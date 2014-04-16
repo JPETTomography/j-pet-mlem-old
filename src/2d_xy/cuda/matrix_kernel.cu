@@ -1,7 +1,5 @@
-
 #include <cuda_runtime.h>
-#include <iostream>
-#include <fstream>
+#include <stdio.h>
 
 #include "config.h"
 #include "prng.cuh"
