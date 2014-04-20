@@ -5,4 +5,5 @@ Cpp11BracedListStyle: false
 AlwaysBreakTemplateDeclarations: false
 KeepEmptyLinesAtTheStartOfBlocks: true
 # AllowShortIfStatementsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: true
 ...
