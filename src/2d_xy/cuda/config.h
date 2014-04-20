@@ -22,7 +22,7 @@ struct gpu_kernel_parameters {
 
 // FIXME: this must be dynamic!
 #define NUMBER_OF_DETECTORS 204
-#define LORS (NUMBER_OF_DETECTORS*(NUMBER_OF_DETECTORS + 1)) / 2
+#define LORS (NUMBER_OF_DETECTORS * (NUMBER_OF_DETECTORS + 1)) / 2
 
 #define TP 6.28318530f
 #define ITP 0.15915494f

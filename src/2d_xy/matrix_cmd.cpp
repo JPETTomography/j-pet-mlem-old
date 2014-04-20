@@ -460,9 +460,10 @@ SparseMatrix<Pixel<>, LOR<>> run_cpu(cmdline::parser& cl,
 #ifdef __linux__
   if (verbose) {
     clock_gettime(CLOCK_REALTIME, &stop);
-    std::cerr << "time : " << ((1.0e9 * stop.tv_sec + stop.tv_nsec) -
-                               (1.0e9 * start.tv_sec + start.tv_nsec)) /
-                                  1.0e9 << std::endl;
+    std::cerr << "time : "
+              << ((1.0e9 * stop.tv_sec + stop.tv_nsec) -
+                  (1.0e9 * start.tv_sec + start.tv_nsec)) /
+                     1.0e9 << std::endl;
   }
 #endif
 
