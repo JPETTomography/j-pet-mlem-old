@@ -17,8 +17,9 @@
 #include "reconstruction.h"
 #include "config.h"
 
-// GPU wrapper
+#if HAVE_CUDA
 #include "gpu_kernel_wrapper.h"
+#endif
 
 using namespace std;
 
@@ -56,6 +57,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
+#if HAVE_CUDA
     if (cl.exist("gpu")) {
 
       float R_distance = cl.get<float>("r-distance");
@@ -109,6 +111,7 @@ int main(int argc, char* argv[]) {
 
       execute_kernel_reconstruction(cfg, event_list.data());
     }
+#endif
 
     if (cl.exist("cpu")) {
       float R_distance = cl.get<float>("r-distance");
