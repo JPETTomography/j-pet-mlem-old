@@ -33,7 +33,8 @@ TEST_CASE("square_detector/intersection") {
   }
 
   SECTION("detector/rotated", "rotated") {
-    auto dr = d.rotated(M_PI_4);
+    auto dr = d;
+    dr.rotate(M_PI_4);
     auto s = std::sin(M_PI_4);
     auto c = std::sin(M_PI_4);
 
@@ -43,7 +44,8 @@ TEST_CASE("square_detector/intersection") {
 #if DONT_TEST
   SECTION("detector/translated+rotated", "translated and rotated") {
     Detector<>::Point p(2., 3.);
-    auto dtr = (d + p).rotated(M_PI_4);
+    auto dtr = (d + p);
+    dtr.rotate(M_PI_4);
     auto s = std::sin(M_PI_4);
     auto c = std::sin(M_PI_4);
 

@@ -12,7 +12,7 @@ template <typename F> class ToR {
         w_{ w1, w2 },
         h_{ h1, h2 } {
     for (int i = 0; i < 2; i++) {
-      d_[i].rotated(angle_[i]);
+      d_[i].rotate(angle_[i]);
       d_[i] += c_[i];
     }
   }

@@ -20,7 +20,10 @@ TEST_CASE("circle_detector/move", "[ctor]") {
   CHECK(circle.center.x == 0.5);
   CHECK(circle.center.y == 0.7);
   auto phi = M_PI / 6.0;
-  CircleDetector<> rcircle = circle.rotated(phi);
+
+  CircleDetector<> rcircle = circle;
+  rcircle.rotate(phi);
+
   auto x = circle.center.x;
   auto y = circle.center.y;
   auto s = std::sin(phi);
