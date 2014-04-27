@@ -64,8 +64,6 @@ void post_process(cmdline::parser& cl,
                   DetectorRing& detector_ring,
                   SparseMatrix<Pixel<>, LOR<>>& sparse_matrix);
 
-void progress_callback(int pixel, int n_pixels);
-
 int main(int argc, char* argv[]) {
 
   try {
@@ -453,7 +451,8 @@ SparseMatrix<Pixel<>, LOR<>> run_cpu(cmdline::parser& cl,
 
   MonteCarlo<DetectorRing, ComputeMatrix> monte_carlo(
       detector_ring, matrix, s_pixel, tof_step, m_pixel);
-  monte_carlo(gen, model, n_emissions, verbose ? progress_callback : NULL);
+  Progress progress(verbose, matrix.total_n_pixels_in_triangle());
+  monte_carlo(gen, model, n_emissions, progress);
 
 #ifdef GPU_TOF_TEST
   monte_carlo.test(gen, model, n_emissions);
@@ -575,11 +574,4 @@ void post_process(cmdline::parser& cl,
                    s_pixel * n_pixels,
                    s_pixel * n_pixels);
   }
-}
-
-void progress_callback(int pixel, int n_pixels) {
-  static time_t start_time = 0;
-  if (!start_time)
-    start_time = time(NULL);
-  report_progress(start_time, pixel, n_pixels);
 }

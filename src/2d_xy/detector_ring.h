@@ -90,13 +90,6 @@ class DetectorRing : public std::vector<DetectorType> {
   S detectors() const { return n_detectors; }
   F fov_radius() const { return fov_radius_; }
 
-  Pixel pixel(F x, F y, F pixel_size) {
-    F rx = x + fov_radius();
-    F ry = y + fov_radius();
-    return Pixel(static_cast<S>(floor(rx / pixel_size)),
-                 static_cast<S>(floor(ry / pixel_size)));
-  }
-
   F max_dl(F max_bias_size) const {
     return 2.0 * c_outer.radius() + max_bias_size;
   }

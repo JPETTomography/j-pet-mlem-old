@@ -2,28 +2,64 @@
 
 #include <cstdio>
 
-static inline const char* report_time(int sec) {
-  static char out[64];
-  int min = sec / 60;
-  sec = sec % 60;
-  int hour = min / 60;
-  min = min % 60;
-  std::sprintf(out, "%2d:%02d:%02d", hour, min, sec);
-  return out;
-}
+#if _OPENMP
+#include <omp.h>
+#endif
 
-inline void report_progress(time_t start_time, int completed, int total) {
-
-  double persec = (double)completed / (double)(time(NULL) - start_time);
-
-  std::cerr << " " << std::round((double)completed / (double)total * 100.0)
-            << "% " << completed << "/" << total;
-
-  if (!std::isnan(persec)) {
-    std::cerr << " "
-              << report_time(std::round((double)(total - completed) / persec))
-              << " left, ";
-    std::cerr << report_time(std::round((double)total / persec)) << " total";
+class Progress {
+ public:
+  Progress(bool enable, unsigned long total)
+      : enable(enable),
+        total(total),
+        start_time(time(NULL)),
+        mask(1),
+        last_completed(std::numeric_limits<unsigned long>::max()) {
+    // computes mask that shows percentage only ~ once per thousand of total
+    while (mask < total / 1000) {
+      mask <<= 1;
+    }
+    --mask;
   }
-  std::cerr << "\r";
-}
+
+  void operator()(unsigned long completed) {
+
+    if (!enable || (completed & mask) != 0 || last_completed == completed)
+      return;
+#if _OPENMP
+    if (omp_get_thread_num() != 0)
+      return;
+#endif
+
+    last_completed = completed;
+
+    double persec = (double)completed / (double)(time(NULL) - start_time);
+
+    std::cerr << " " << std::round((double)completed / (double)total * 100.0)
+              << "% " << completed << "/" << total;
+
+    if (!std::isnan(persec)) {
+      std::cerr << " "
+                << timetostr(std::round((double)(total - completed) / persec))
+                << " left, ";
+      std::cerr << timetostr(std::round((double)total / persec)) << " total";
+    }
+    std::cerr << "\r";
+  }
+
+ private:
+  static const char* timetostr(int sec) {
+    static char out[64];
+    int min = sec / 60;
+    sec = sec % 60;
+    int hour = min / 60;
+    min = min % 60;
+    std::sprintf(out, "%2d:%02d:%02d", hour, min, sec);
+    return out;
+  }
+
+  bool enable;
+  unsigned long total;
+  time_t start_time;
+  unsigned long mask;
+  unsigned long last_completed;
+};

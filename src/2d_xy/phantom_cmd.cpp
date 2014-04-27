@@ -324,13 +324,7 @@ void run(cmdline::parser& cl, Model& model) {
   if (cl.exist("detected"))
     only_detected = true;
 
-  uniform_real_distribution<> one_dis(0., 1.);
-  uniform_real_distribution<> fov_dis(-dr.fov_radius(), dr.fov_radius());
-  uniform_real_distribution<> phi_dis(0., M_PI);
-
-  double fov_r2 = dr.fov_radius() * dr.fov_radius();
-
-  Phantom phantom;
+  Phantom<> phantom;
 
   for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
     std::ifstream in(*fn);
@@ -351,14 +345,9 @@ void run(cmdline::parser& cl, Model& model) {
       std::string type;
       is >> type;
       if (type == "point") {
-        double x, y, intensity;
-        is >> x >> y >> intensity;
-        point_sources.add(x, y, intensity);
+        point_sources.push_back(PointSource<>(is));
       } else if (type == "ellipse") {
-        double x, y, a, b, angle, acceptance;
-        is >> x >> y >> a >> b >> angle >> acceptance;
-
-        phantom.add_region(x, y, a, b, angle, acceptance);
+        phantom.push_back(EllipticalRegion<>(is));
       } else {
         std::ostringstream msg;
         msg << *fn << ":" << n_line << " unhandled type of shape: " << type;
@@ -367,59 +356,62 @@ void run(cmdline::parser& cl, Model& model) {
     } while (!in.eof());
   }
 
-  time_t time_start = time(NULL);
+  uniform_real_distribution<> one_dis(0., 1.);
+  uniform_real_distribution<> point_dis(-n_pixels * s_pixel / 2.,
+                                        +n_pixels * s_pixel / 2.);
+  uniform_real_distribution<> phi_dis(0., M_PI);
+
+  Progress progress(verbose, n_emissions);
 
   if (phantom.n_regions() > 0) {
     while (n_emitted < n_emissions) {
-      if (verbose && !(n_emitted % (only_detected ? 10000 : 1000000))) {
-        report_progress(time_start, n_emitted, n_emissions);
-      }
+      if (verbose)
+        progress(n_emitted);
 
-      double x = fov_dis(gen);
-      double y = fov_dis(gen);
+      Point<> p(point_dis(gen), point_dis(gen));
 #if DEBUG
       std::cerr << n_emitted << " (" << x << "," << y << ")" << std::endl;
 #endif
-      if (x * x + y * y < fov_r2) {
-        if (phantom.test_emit(x, y, one_dis(gen))) {
-          auto pixel = dr.pixel(x, y, s_pixel);
-          typename DetectorRing::LOR lor;
-          pixels[pixel.y][pixel.x]++;
-          double angle = phi_dis(gen);
-          double position;
-          auto hits = dr.emit_event(gen, model, x, y, angle, lor, position);
-          if (hits == 2) {
-            if (lor.first > lor.second)
-              std::swap(lor.first, lor.second);
-            int quantized_position = 0;
-            if (n_tof_positions > 1) {
-              quantized_position =
-                  dr.quantize_position(position, tof_step, n_tof_positions);
-            }
-            tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
-                  quantized_position]++;
-            pixels_detected[pixel.y][pixel.x]++;
-            if (only_detected)
-              n_emitted++;
+      if (phantom.test_emit(p, one_dis(gen))) {
+        auto pixel = p.pixel(s_pixel, n_pixels / 2);
+        typename DetectorRing::LOR lor;
+        pixels[pixel.y][pixel.x]++;
+        double angle = phi_dis(gen);
+        double position;
+        auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor, position);
+        if (hits == 2) {
+          if (lor.first > lor.second)
+            std::swap(lor.first, lor.second);
+          int quantized_position = 0;
+          if (n_tof_positions > 1) {
+            quantized_position =
+                dr.quantize_position(position, tof_step, n_tof_positions);
           }
-          if (!only_detected)
+          tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
+                quantized_position]++;
+          pixels_detected[pixel.y][pixel.x]++;
+          if (only_detected)
             n_emitted++;
         }
+        if (!only_detected)
+          n_emitted++;
       }
     }
   }
-  if (verbose) {
-    report_progress(time_start, n_emitted, n_emissions);
-  }
+  if (verbose)
+    progress(n_emitted);
 
   if (point_sources.n_sources() > 0) {
     point_sources.normalize();
     n_emitted = 0;
     while (n_emitted < n_emissions) {
-      double rng = one_dis(gen);
-      Point<> p = point_sources.draw(rng);
+      if (verbose)
+        progress(n_emitted);
 
-      auto pixel = dr.pixel(p.x, p.y, s_pixel);
+      double rng = one_dis(gen);
+      auto p = point_sources.draw(rng);
+
+      auto pixel = p.pixel(s_pixel, n_pixels / 2);
 
       pixels[pixel.y][pixel.x]++;
       double angle = phi_dis(gen);

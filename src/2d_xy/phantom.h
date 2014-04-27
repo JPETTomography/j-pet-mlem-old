@@ -4,55 +4,58 @@
 #include <vector>
 #include "geometry/point.h"
 
-class EllipticalRegion {
- public:
-  EllipticalRegion(double x,
-                   double y,
-                   double a,
-                   double b,
-                   double phi,
-                   double act)
-      : x_(x), y_(y), a_(a), b_(b), phi_(phi), activity_(act) {
-    sincos(phi, &sin_, &cos_);
-    inv_a2 = 1.0 / (a_ * a_);
-    inv_b2 = 1.0 / (b_ * b_);
+template <typename FType = double> struct EllipticalRegion {
+  typedef FType F;
+  typedef ::Point<F> Point;
+
+  EllipticalRegion(Point center, F a, F b, F phi, F activity)
+      : center_(center), a_(a), b_(b), phi_(phi), activity_(activity) {
+    init();
   }
 
-  double activity() const { return activity_; }
-
-  bool in(double x, double y) const {
-
-    double dx = x - x_;
-    double dy = y - y_;
-
-    double r_x = dx * cos_ + dy * sin_;
-    double r_y = -dx * sin_ + dy * cos_;
-
-    double r2 = r_x * r_x * inv_a2 + r_y * r_y * inv_b2;
-
-    return r2 < 1.0;
+  EllipticalRegion(std::istream& in) {
+    in >> center_.x >> center_.y >> a_ >> b_ >> phi_ >> activity_;
+    init();
   }
 
-  double x() const { return x_; }
-  double y() const { return y_; }
-  double a() const { return a_; }
-  double b() const { return b_; }
-  double phi() const { return phi_; }
+  F activity() const { return activity_; }
+
+  bool operator()(Point p) const {
+
+    auto d = p - center_;
+
+    auto r_x = d.x * cos_ + d.y * sin_;
+    auto r_y = -d.x * sin_ + d.y * cos_;
+
+    auto r2 = r_x * r_x * inv_a2 + r_y * r_y * inv_b2;
+
+    return r2 < static_cast<F>(1);
+  }
+
+  F center() const { return center_; }
+  F a() const { return a_; }
+  F b() const { return b_; }
+  F phi() const { return phi_; }
 
  private:
-  double x_;
-  double y_;
-  double a_;
-  double b_;
+  void init() {
+    sincos(phi_, &sin_, &cos_);
+    inv_a2 = static_cast<F>(1) / (a_ * a_);
+    inv_b2 = static_cast<F>(1) / (b_ * b_);
+  }
 
-  double phi_;
-  double activity_;
+  Point center_;
+  F a_;
+  F b_;
 
-  double inv_a2;
-  double inv_b2;
+  F phi_;
+  F activity_;
 
-  double sin_;
-  double cos_;
+  F inv_a2;
+  F inv_b2;
+
+  F sin_;
+  F cos_;
 
 #ifdef __APPLE__
   template <typename T> static inline void sincos(T a, T* s, T* c) {
@@ -62,39 +65,34 @@ class EllipticalRegion {
 #endif
 };
 
-class Phantom : public std::vector<EllipticalRegion> {
-
+template <typename FType = double>
+class Phantom : public std::vector<EllipticalRegion<FType>> {
  public:
-  size_t n_regions() const { return size(); }
+  typedef FType F;
+  typedef ::Point<F> Point;
 
-  void add_region(double x,
-                  double y,
-                  double a,
-                  double b,
-                  double phi,
-                  double act) {
-    this->push_back(EllipticalRegion(x, y, a, b, phi, act));
-  }
+  size_t n_regions() const { return this->size(); }
 
-  double activity(double x, double y) const {
-    for (auto rit = this->rbegin(); rit != this->rend(); ++rit) {
-      if (rit->in(x, y)) {
-        return rit->activity();
-      }
+  F activity(Point p) const {
+    for (auto& region : *this) {
+      if (region(p))
+        return region.activity();
     }
-    return 0.0;
+    return static_cast<F>(0);
   }
 
-  bool test_emit(double x, double y, double rnd) const {
-    return activity(x, y) > rnd;
-  }
+  bool test_emit(Point p, F rnd) const { return activity(p) > rnd; }
 };
 
 template <typename FType = double> struct PointSource {
   typedef FType F;
+  typedef ::Point<F> Point;
 
-  PointSource(F x, F y, F intensity_a) : p(x, y), intensity(intensity_a) {}
-  Point<F> p;
+  PointSource(Point p, F intensity) : p(p), intensity(intensity) {}
+
+  PointSource(std::istream& in) { in >> p.x >> p.y >> intensity; }
+
+  Point p;
   F intensity;
 };
 
@@ -105,17 +103,13 @@ class PointSources : public std::vector<PointSource<FType>> {
 
   size_t n_sources() const { return this->size(); }
 
-  void add(F x, F y, F intensity) {
-    this->push_back(PointSource<F>(x, y, intensity));
-  }
-
   void normalize() {
-    total = 0.0;
+    total = static_cast<F>(0);
     for (auto& source : *this) {
       total += source.intensity;
     }
 
-    F cumulant = 0.0;
+    F cumulant = static_cast<F>(0);
     cumulants.clear();
     for (auto& source : *this) {
       cumulant += source.intensity /= total;
