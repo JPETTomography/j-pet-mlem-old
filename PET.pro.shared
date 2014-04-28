@@ -9,6 +9,8 @@
    <value type="bool" key="EditorConfiguration.AutoSpacesForTabs">false</value>
    <value type="int" key="EditorConfiguration.TabSize">8</value>
    <value type="int" key="EditorConfiguration.IndentSize">2</value>
+   <value type="bool" key="EditorConfiguration.ShowMargin">true</value>
+   <value type="int" key="EditorConfiguration.MarginColumn">80</value>
   </valuemap>
  </data>
  <data>
