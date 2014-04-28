@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
 #endif
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
+    cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
     cl.add<int>("n-detectors", 'd', "number of ring detectors", false, 64);
     cl.add<int>("n-emissions",
                 'e',
@@ -265,6 +266,7 @@ template <typename DetectorRing, typename Model>
 void run(cmdline::parser& cl, Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
+  auto& m_pixel = cl.get<int>("m-pixel");
   auto& n_detectors = cl.get<int>("n-detectors");
   auto& n_emissions = cl.get<int>("n-emissions");
   auto& radius = cl.get<double>("radius");
@@ -326,10 +328,10 @@ void run(cmdline::parser& cl, Model& model) {
 
   Phantom<> phantom;
 
-  for (auto fn = cl.rest().begin(); fn != cl.rest().end(); ++fn) {
-    std::ifstream in(*fn);
+  for (auto& fn : cl.rest()) {
+    std::ifstream in(fn);
     if (!in.is_open()) {
-      throw("cannot open input file: " + *fn);
+      throw("cannot open input file: " + fn);
     }
 
     int n_line = 0;
@@ -350,7 +352,7 @@ void run(cmdline::parser& cl, Model& model) {
         phantom.push_back(EllipticalRegion<>(is));
       } else {
         std::ostringstream msg;
-        msg << *fn << ":" << n_line << " unhandled type of shape: " << type;
+        msg << fn << ":" << n_line << " unhandled type of shape: " << type;
         throw(msg.str());
       }
     } while (!in.eof());
@@ -363,20 +365,27 @@ void run(cmdline::parser& cl, Model& model) {
 
   Progress progress(verbose, n_emissions, only_detected ? 10000 : 1000000);
 
+  auto fov_radius2 = dr.fov_radius() * dr.fov_radius();
+
   if (phantom.n_regions() > 0) {
     while (n_emitted < n_emissions) {
-      if (verbose)
-        progress(n_emitted);
+      progress(n_emitted);
 
       Point<> p(point_dis(gen), point_dis(gen));
-#if DEBUG
-      std::cerr << n_emitted << " (" << x << "," << y << ")" << std::endl;
-#endif
+
+      if (p.length2() >= fov_radius2)
+        continue;
+
       if (phantom.test_emit(p, one_dis(gen))) {
         auto pixel = p.pixel(s_pixel, n_pixels / 2);
+        // ensure we are inside pixel matrix
+        if (pixel.x >= n_pixels || pixel.y >= n_pixels || pixel.x <= m_pixel ||
+            pixel.y <= m_pixel)
+          continue;
+
         typename DetectorRing::LOR lor;
         pixels[pixel.y][pixel.x]++;
-        double angle = phi_dis(gen);
+        auto angle = phi_dis(gen);
         double position;
         auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor, position);
         if (hits == 2) {
@@ -398,23 +407,28 @@ void run(cmdline::parser& cl, Model& model) {
       }
     }
   }
-  if (verbose)
-    progress(n_emitted);
+  progress(n_emitted);
 
   if (point_sources.n_sources() > 0) {
     point_sources.normalize();
     n_emitted = 0;
     while (n_emitted < n_emissions) {
-      if (verbose)
-        progress(n_emitted);
+      progress(n_emitted);
 
-      double rng = one_dis(gen);
+      auto rng = one_dis(gen);
       auto p = point_sources.draw(rng);
 
+      if (p.length2() >= fov_radius2)
+        continue;
+
       auto pixel = p.pixel(s_pixel, n_pixels / 2);
+      // ensure we are inside pixel matrix
+      if (pixel.x >= n_pixels || pixel.y >= n_pixels || pixel.x <= m_pixel ||
+          pixel.y <= m_pixel)
+        continue;
 
       pixels[pixel.y][pixel.x]++;
-      double angle = phi_dis(gen);
+      auto angle = phi_dis(gen);
       typename DetectorRing::LOR lor;
       double position;
       auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor, position);
