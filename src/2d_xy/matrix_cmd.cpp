@@ -451,7 +451,7 @@ SparseMatrix<Pixel<>, LOR<>> run_cpu(cmdline::parser& cl,
 
   MonteCarlo<DetectorRing, ComputeMatrix> monte_carlo(
       detector_ring, matrix, s_pixel, tof_step, m_pixel);
-  Progress progress(verbose, matrix.total_n_pixels_in_triangle());
+  Progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
   monte_carlo(gen, model, n_emissions, progress);
 
 #ifdef GPU_TOF_TEST

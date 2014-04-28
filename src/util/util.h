@@ -8,14 +8,18 @@
 
 class Progress {
  public:
-  Progress(bool enable, unsigned long total)
+  Progress(bool enable,
+           unsigned long total,
+           unsigned long reasonable_update =
+               std::numeric_limits<unsigned long>::max())
       : enable(enable),
         total(total),
         start_time(time(NULL)),
         mask(1),
         last_completed(std::numeric_limits<unsigned long>::max()) {
     // computes mask that shows percentage only ~ once per thousand of total
-    while (mask < total / 1000) {
+    auto total_resonable_update = total / 1000;
+    while (mask < total_resonable_update && mask < reasonable_update) {
       mask <<= 1;
     }
     --mask;
@@ -23,6 +27,7 @@ class Progress {
 
   void operator()(unsigned long completed) {
 
+    // limit updates so they are not too often
     if (!enable || (completed & mask) != 0 || last_completed == completed)
       return;
 #if _OPENMP

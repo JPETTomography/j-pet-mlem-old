@@ -361,7 +361,7 @@ void run(cmdline::parser& cl, Model& model) {
                                         +n_pixels * s_pixel / 2.);
   uniform_real_distribution<> phi_dis(0., M_PI);
 
-  Progress progress(verbose, n_emissions);
+  Progress progress(verbose, n_emissions, only_detected ? 10000 : 1000000);
 
   if (phantom.n_regions() > 0) {
     while (n_emitted < n_emissions) {
