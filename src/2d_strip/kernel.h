@@ -58,13 +58,14 @@ template <typename T> class Kernel {
 
     T norm = a_ic_a + (T(2.f) * o_ic_b);
 
-    T element_before_exp =
-        INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / std::sqrt(norm));
+    printf(
+        "|---------------------------------------------------------------|\n");
 
-    T exp_element = -T(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
+    printf("Y:= %f\n", y);
+    printf("TAN:= %f\n", _tan);
+    printf("INV_COS:= %f\n", inv_cos);
+    printf("POW_INV_COS:= %f\n", pow_inv_cos);
 
-    T _exp = std::exp(exp_element);
-#if GPU_KERNEL_TEST
     printf("vec_o[0]: %f\n", vec_o[0]);
     printf("vec_o[1]: %f\n", vec_o[1]);
     printf("vec_o[2]: %f\n", vec_o[2]);
@@ -77,28 +78,21 @@ template <typename T> class Kernel {
     printf("vec_b[1]: %f\n", vec_b[1]);
     printf("vec_b[2]: %f\n", vec_b[2]);
 
-    printf("inv_c[0]: %f\n", detector.inv_c(0, 0));
-    printf("inv_c[1]: %f\n", detector.inv_c(1, 1));
-    printf("inv_c[2]: %f\n", detector.inv_c(2, 2));
-
     printf("a_ic_a: %f\n", a_ic_a);
     printf("b_ic_a: %f\n", b_ic_a);
     printf("b_ic_b: %f\n", b_ic_b);
     printf("o_ic_b: %f\n", o_ic_b);
     printf("norm: %f\n", norm);
 
-    printf("/------------------------------------------/\n");
+    printf(
+        "|---------------------------------------------------------------|\n");
 
-    printf("INVERSE_POW_TWO_PI: %f\n", INVERSE_POW_TWO_PI);
-    printf("sqrt_det_correlation_matrix: %f\n", sqrt_det_correlation_matrix);
+    T element_before_exp =
+        INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / std::sqrt(norm));
 
-    printf("/------------------------------------------/\n");
+    T exp_element = -T(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
-    printf("element_before_exp: %ef \n", element_before_exp);
-    printf("exp_element: %ef \n", _exp);
-    printf("PP: %f %f \n", pixel_center.first, pixel_center.second);
-    printf("kernel: %ef\n", (element_before_exp * _exp));
-#endif
+    T _exp = std::exp(exp_element);
 
     return (element_before_exp * _exp);
   }

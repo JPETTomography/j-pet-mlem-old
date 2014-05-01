@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
     float dl = cl.get<float>("s-dl");
     float emmisions = cl.get<float>("emmisions");
 
-    std::ifstream infile("phantom");
+    std::ifstream infile("s_shepp");
 
     std::vector<ellipse_parameters<float>> ellipse_list;
     ellipse_parameters<float> el;
@@ -82,6 +82,9 @@ int main(int argc, char* argv[]) {
       el.b = b;
       el.angle = angle;
       el.iter = int(acc * emmisions);
+
+      std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
+                << el.angle << " " << el.iter << std::endl;
 
       ellipse_list.push_back(el);
     }

@@ -21,22 +21,17 @@ static cudaError err;
 
 void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
                                  event<float>* event_list,
+                                 int event_size,
                                  int iteration_chunk) {
 
   cudaSetDevice(0);
+
+  printf("Data Size: %d \n", event_size);
 
   dim3 blocks(cfg.number_of_blocks);
   dim3 threads(cfg.number_of_threads_per_block);
 
   cuda_kernel_config(cfg.number_of_blocks, cfg.number_of_threads_per_block);
-
-  int event_list_size = 1000;
-
-  int* cpu_example_data;
-
-  cpu_example_data = (int*)malloc(1000 * sizeof(int));
-
-  int* gpu_example_data;
 
   float* cpu_image_buffor =
       (float*)malloc(cfg.n_pixels * cfg.n_pixels * cfg.number_of_blocks);
@@ -45,9 +40,10 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
 
   float* gpu_image_buffor;
   float* gpu_image_rho;
+
   event<float>* gpu_event_list;
 
-  cuda(Malloc, (void**)&gpu_example_data, 1000 * sizeof(int));
+  cuda(Malloc, (void**)&gpu_event_list, event_size * sizeof(event<float>));
 
   cuda(Malloc,
        (void**)&gpu_image_buffor,
@@ -57,12 +53,10 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
        (void**)&gpu_image_rho,
        cfg.n_pixels * cfg.n_pixels * sizeof(float));
 
-  cuda(Malloc, (void**)&gpu_event_list, event_list_size * sizeof(event<float>));
-
   cuda(Memcpy,
-       gpu_example_data,
-       cpu_example_data,
-       1000 * sizeof(int),
+       gpu_event_list,
+       event_list,
+       event_size * sizeof(event<float>),
        cudaMemcpyHostToDevice);
 
   cuda(Memcpy,
@@ -77,11 +71,8 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
        cfg.n_pixels * cfg.n_pixels * sizeof(float),
        cudaMemcpyHostToDevice);
 
-  cuda(Memcpy,
-       gpu_event_list,
-       event_list,
-       event_list_size * sizeof(event<float>),
-       cudaMemcpyHostToDevice);
+  cuda(
+      Memset, gpu_image_rho, 1.0f, cfg.n_pixels * cfg.n_pixels * sizeof(float));
 
   cudaEvent_t start, stop;
   cudaEventCreate(&start);
@@ -90,7 +81,7 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
   cudaEventRecord(start);
 
   reconstruction_2d_strip_cuda<float> << <blocks, threads>>>
-      (cfg, event_list, event_list_size, gpu_image_buffor, gpu_image_rho);
+      (cfg, gpu_event_list, event_size, gpu_image_buffor, gpu_image_rho);
 
   cudaThreadSynchronize();
 
@@ -102,10 +93,8 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
 
   printf("Direct kernel time without memcpy %f ms\n", milliseconds);
 
-  cuda(Free, gpu_example_data);
   cuda(Free, gpu_image_buffor);
   cuda(Free, gpu_image_rho);
-  free(cpu_example_data);
   free(cpu_image_buffor);
   free(cpu_image_rho);
 }

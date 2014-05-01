@@ -8,7 +8,7 @@ HEADERS += 2d_strip/*.h
 
 cuda {
   NVCC_FLAGS         += -arch=compute_30 -code=sm_30
-  NVCC_FLAGS_RELEASE += -Xptxas -v -O3 --use_fast_math
+  NVCC_FLAGS_RELEASE += -Xptxas -v -O3
 
   SOURCES      +=
   CUDA_SOURCES += 2d_strip/cuda/reconstruction_strip_gpu.cu

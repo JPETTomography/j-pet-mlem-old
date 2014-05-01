@@ -41,13 +41,13 @@ int main(int argc, char* argv[]) {
     cl.add("cpu", 'c', "run on cpu (via OPENMP)");
     cl.add<float>(
         "r-distance", 'r', "R distance between scientilators", false, 500.0f);
-    cl.add<float>("s-length", 'l', "Scentilator_length", false, 100.0f);
+    cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
     cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
     cl.add<int>("iter", 'i', "number of iterations", false, 1);
     cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
     cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
-    cl.add<float>("gm", 'e', "Gamma error", false, 0.f);
+    cl.add<float>("gm", 'u', "Gamma error", false, 0.f);
 
     cl.parse_check(argc, argv);
 
@@ -67,32 +67,15 @@ int main(int argc, char* argv[]) {
       float sigma = cl.get<float>("s-z");
       float dl = cl.get<float>("s-dl");
 
-      // debug version only
-
+      Reconstruction<float> reconstruction(
+          10, R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
       ibstream in("phantom.bin");
 
-      event<float> temp_event;
-      vector<event<float>> event_list;
+      in >> reconstruction;
 
-      int size;
-      in >> size;
+      std::vector<event<float>>* event_data = reconstruction.get_data();
 
-      printf("event data list %d\n", size);
-
-      for (int it = 0; it < size; ++it) {
-
-        float z_u, z_d, dl;
-
-        in >> z_u >> z_d >> dl;
-
-        temp_event.z_u = z_u;
-        temp_event.z_d = z_d;
-        temp_event.dl = dl;
-
-        event_list.push_back(temp_event);
-      }
-
-      std::cout << "VECTOR SIZE: " << event_list.size() << std::endl;
+      std::cout << "VECTOR SIZE: " << event_data->size() << std::endl;
 
       gpu_config::GPU_parameters cfg;
       cfg.R_distance = R_distance;
@@ -109,7 +92,8 @@ int main(int argc, char* argv[]) {
       cfg.grid_size_y_ = n_pixels * pixel_size;
       cfg.grid_size_z_ = n_pixels * pixel_size;
 
-      execute_kernel_reconstruction(cfg, event_list.data());
+      execute_kernel_reconstruction(
+          cfg, event_data->data(), event_data->size());
     }
 #endif
 

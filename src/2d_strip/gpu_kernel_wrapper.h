@@ -11,10 +11,12 @@
 
 void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
                                  event<float>* event_list,
+                                 int event_size,
                                  int iteration_chunk);
 
 void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
-                                   event<float>* event_list) {
+                                   event<float>* event_list,
+                                   int event_size) {
 
   printf("Wrapper\n");
 
@@ -24,7 +26,7 @@ void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
   for (int i = 0; i < 1; i++) {
     std::cout << "ITERATION BLOCK: " << i << std::endl;
 
-    gpu_reconstruction_strip_2d(cfg, event_list, 10);
+    gpu_reconstruction_strip_2d(cfg, event_list, event_size, 10);
 
     // output reconstruction PNG
 

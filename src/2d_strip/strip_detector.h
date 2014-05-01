@@ -89,6 +89,7 @@ template <typename F> class StripDetector {
         grid_ul_y_ - i * pixel_height_ - 0.5 * pixel_height_,
         grid_ul_z_ + j * pixel_width_ + 0.5 * pixel_width_);
   }
+
   Point pixel_center(Pixel pix) { return pixel_center(pix.first, pix.second); }
 
   Pixel pixel_location(F y, F z) {
@@ -103,6 +104,7 @@ template <typename F> class StripDetector {
     F L_minus = (half_scintilator_length() - z);
     F R_plus = radius() + y;
     F R_minus = radius() - y;
+
     return INVERSE_PI *
            (std::atan(std::min(L_minus / R_minus, L_plus / R_plus)) -
             std::atan(std::max(-L_plus / R_minus, -L_minus / R_plus)));
