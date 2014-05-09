@@ -57,7 +57,7 @@ template <typename T> class Kernel {
     T o_ic_b = multiply_elements(vec_o, detector, vec_b);
 
     T norm = a_ic_a + (T(2.f) * o_ic_b);
-
+#if 0
     printf(
         "|---------------------------------------------------------------|\n");
 
@@ -86,7 +86,7 @@ template <typename T> class Kernel {
 
     printf(
         "|---------------------------------------------------------------|\n");
-
+#endif
     T element_before_exp =
         INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / std::sqrt(norm));
 

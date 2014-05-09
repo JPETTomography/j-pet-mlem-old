@@ -136,7 +136,7 @@ class Reconstruction {
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-      for (int id = 0; id < 1; ++id) {
+      for (int id = 0; id < size; ++id) {
 
         int tid = omp_get_thread_num();
 
@@ -159,6 +159,10 @@ class Reconstruction {
           for (int k = 0; k < omp_get_max_threads(); ++k) {
 
             rho[i][j] += thread_rho[k][i + j * n_pixels];
+
+            if (rho[i][j] > 0) {
+              // std::cout << i << " " << j << " " << rho[i][j] << std::endl;
+            }
           }
         }
       }
@@ -229,7 +233,7 @@ class Reconstruction {
                         T& tg,
                         int& tid) {
 
-    std::cout << "0 " << tg << " " << y << std::endl;
+    // std::cout << "0 " << tg << " " << y << std::endl;
 
     T cos_ = std::cos((angle));
 
@@ -241,22 +245,23 @@ class Reconstruction {
     T B = -T(4.0) * tg * inv_pow_sigma_z;
     T C = T(2.0) * inv_pow_sigma_z;
     T B_2 = (B / T(2.0)) * (B / T(2.0));
-
+#if 0
     printf("A:= %f B:= %f c:= %f B_2:= %f\n", A, B, C, B_2);
-
+#endif
     T bb_y = bby(A, C, B_2);
 
     T bb_z = bbz(A, C, B_2);
-
+#if 0
     printf("bb_y:= %f bb_z:= %f\n", bb_y, bb_z);
-
+#endif
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);
-
+#if 0
     printf("Center_Pixel y:= %d z:= %d\n",
            center_pixel.first,
            center_pixel.second);
 
+#endif
     Pixel ur = Pixel(center_pixel.first - pixels_in_line(bb_y),
                      center_pixel.second + pixels_in_line(bb_z));
     Pixel dl = Pixel(center_pixel.first + pixels_in_line(bb_y),
@@ -264,10 +269,10 @@ class Reconstruction {
 
     std::vector<std::pair<Pixel, T>> ellipse_kernels;
     ellipse_kernels.reserve(2000);
-
+#if 0
     printf("iz:= %d Limit:= %d \n", dl.second, ur.first);
     printf("iy:= %d Limit:= %d \n", ur.first, dl.first);
-
+#endif
     T acc = T(0.0);
     for (int iz = dl.second; iz < ur.second; ++iz) {
       for (int iy = ur.first; iy < dl.first; ++iy) {
@@ -275,14 +280,14 @@ class Reconstruction {
         Point pp = pixel_center(iy, iz);
 
         if (in_ellipse(A, B, C, ellipse_center, pp)) {
-
+#if 0
           printf("Pixel(%d,%d): %f %f\n", iy, iz, pp.first, pp.second);
-
+#endif
           pp.first -= ellipse_center.first;
           pp.second -= ellipse_center.second;
-
+#if 0
           printf("Pixel(%d,%d): SUB: %f %f\n", iy, iz, pp.first, pp.second);
-
+#endif
           T event_kernel =
               kernel_.calculate_kernel(y,
                                        tg,
@@ -293,18 +298,12 @@ class Reconstruction {
                                        sqrt_det_correlation_matrix) /
               lookup_table[iy][iz];
 
-          printf("KERNEL: %e SENS: %f\n", event_kernel, lookup_table[iz][iy]);
-
           ellipse_kernels.push_back(
               std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
           acc += event_kernel * lookup_table[iy][iz] * rho[iy][iz];
         }
       }
     }
-
-    printf("ACC: %e\n", acc);
-    printf("TN %f\n",angle);
-    printf("COS: %f\n",std::cos(angle));
 
     for (auto& e : ellipse_kernels) {
 

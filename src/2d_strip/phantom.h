@@ -126,7 +126,7 @@ template <typename T = double> class Phantom {
 
         ry = uniform_y(rng_list[omp_get_thread_num()]);
         rz = uniform_z(rng_list[omp_get_thread_num()]);
-        rangle = (M_PI_4) * uniform_angle(rng_list[omp_get_thread_num()]);
+        rangle = (M_PI_4)*uniform_angle(rng_list[omp_get_thread_num()]);
 
         if (in(ry, rz, el) && (std::abs(rangle) != M_PI_2)) {
 

@@ -12,7 +12,8 @@
 void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
                                  event<float>* event_list,
                                  int event_size,
-                                 int iteration_chunk);
+                                 int iteration_chunk,
+                                 float* image_output);
 
 void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
                                    event<float>* event_list,
@@ -20,17 +21,34 @@ void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
 
   printf("Wrapper\n");
 
-  std::vector<std::vector<float>> rho;
-  rho.assign(cfg.n_pixels, std::vector<float>(cfg.n_pixels, float(100)));
+  std::vector<std::vector<float>> image_output;
+  image_output.assign(cfg.n_pixels, std::vector<float>(cfg.n_pixels, float(0)));
+
+  std::vector<float> gpu_output_image;
+  gpu_output_image.resize(cfg.n_pixels * cfg.n_pixels);
 
   for (int i = 0; i < 1; i++) {
     std::cout << "ITERATION BLOCK: " << i << std::endl;
 
-    gpu_reconstruction_strip_2d(cfg, event_list, event_size, 10);
+    gpu_reconstruction_strip_2d(
+        cfg, event_list, event_size, 1, gpu_output_image.data());
+
+    for (int i = 0; i < cfg.n_pixels; ++i) {
+      for (int j = 0; j < cfg.n_pixels; ++j) {
+
+        image_output[i][j] = gpu_output_image[i * cfg.n_pixels + j];
+
+        if (image_output[i][j] > 0) {
+
+          // std::cout << i << " " << j << " " << image_output[i][j] <<
+          // std::endl;
+        }
+      }
+    }
 
     // output reconstruction PNG
 
-    std::string file = std::string("rec_iteration_");
+    std::string file = std::string("gpu_rec_iteration_");
 
     file.append(std::to_string(i + 1));
     file.append(".png");
@@ -39,7 +57,7 @@ void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
     png.write_header<>(cfg.n_pixels, cfg.n_pixels);
 
     float output_max = 0.0;
-    for (auto& col : rho) {
+    for (auto& col : image_output) {
       for (auto& row : col) {
         output_max = std::max(output_max, row);
       }
@@ -51,7 +69,8 @@ void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
     for (int y = 0; y < cfg.n_pixels; ++y) {
       uint8_t row[cfg.n_pixels];
       for (auto x = 0; x < cfg.n_pixels; ++x) {
-        row[x] = std::numeric_limits<uint8_t>::max() - output_gain * rho[y][x];
+        row[x] = std::numeric_limits<uint8_t>::max() -
+                 output_gain * image_output[y][x];
       }
       png.write_row(row);
     }
@@ -62,11 +81,11 @@ void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
   for (int x = 0; x < cfg.n_pixels; ++x) {
     for (int y = 0; y < cfg.n_pixels; ++y) {
 
-      if (rho[x][y] == 100) {
-        rho[x][y] = 1;
+      if (image_output[x][y] == 100) {
+        image_output[x][y] = 1;
       }
 
-      file << x << " " << y << " " << rho[x][y] << std::endl;
+      file << x << " " << y << " " << image_output[x][y] << std::endl;
     }
   }
 }

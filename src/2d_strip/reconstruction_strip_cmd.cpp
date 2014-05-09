@@ -37,6 +37,10 @@ int main(int argc, char* argv[]) {
 #endif
 #if HAVE_CUDA
     cl.add("gpu", 'g', "run on GPU (via CUDA)");
+    cl.add<int>("cuda-blocks", 'b', "number of CUDA blocks", false, 1);
+    cl.add<int>(
+        "cuda-threads", 'w', "number of CUDA threads per block", false, 512);
+
 #endif
     cl.add("cpu", 'c', "run on cpu (via OPENMP)");
     cl.add<float>(
@@ -84,8 +88,8 @@ int main(int argc, char* argv[]) {
       cfg.n_pixels = n_pixels;
       cfg.sigma = sigma;
       cfg.dl = dl;
-      cfg.number_of_blocks = 16;
-      cfg.number_of_threads_per_block = 128;
+      cfg.number_of_blocks = cl.get<int>("cuda-blocks");
+      cfg.number_of_threads_per_block = cl.get<int>("cuda-threads");
       cfg.number_of_events = 1;
       cfg.inv_pow_sigma_dl = 1.0f / (dl * dl);
       cfg.inv_pow_sigma_z = 1.0f / (sigma * sigma);
