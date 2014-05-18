@@ -338,13 +338,14 @@ class Reconstruction {
   }
 
  public:
-  template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
+  template <typename StreamType>Reconstruction& operator<<(StreamType& in) {
 
     event<T> temp_event;
 
     int size;
     in >> size;
-#if DEBUG_OUTPUT_SAVE
+     std::cout << "VECTOR SIZE: " << size << std::endl;
+#if ___DEBUG_OUTPUT_SAVE
     std::cout << number_of_pixels << " " << pixel_s << " " << iter << " "
               << number_of_event_in_file << std::endl;
     std::cout << "VECTOR SIZE: " << event_list.size() << std::endl;
@@ -363,6 +364,8 @@ class Reconstruction {
       event_list.push_back(temp_event);
     }
 
+   std::cout << "WIELKOSC! " << event_list.size() << std::endl;
+
     return *this;
   }
 
@@ -370,10 +373,10 @@ class Reconstruction {
 
 // FIXME: this confuses ICC
 #ifndef __ICC
-  template <typename StreamType>
-  friend StreamType& operator>>(StreamType& in, Reconstruction& r) {
-    r << in;
-    return in;
-  }
+  //template <typename StreamType>
+  //friend StreamType& operator>>(StreamType& in, Reconstruction& r) {
+  //  r << in;
+  //  return in;
+ // }
 #endif
 };

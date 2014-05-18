@@ -11,6 +11,7 @@
 
 template <typename T>
 __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
+                                             soa_event<float>* soa_data,
                                              event<T>* event_list,
                                              int event_list_size,
                                              float* image_buffor,
@@ -34,11 +35,17 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 
   __syncthreads();
 
+  float sqrt_det_correlation_matrix = sqrt(
+      cfg.inv_pow_sigma_z * cfg.inv_pow_sigma_z * cfg.inv_pow_sigma_dl);
+
   for (int i = 0; i < block_chunk; ++i) {
 
     if ((i * cfg.number_of_blocks * cfg.number_of_threads_per_block) + tid <
         event_list_size) {
 
+      for(int j = 0; j < 1; ++j){
+
+#ifdef AOS_ACCESS
       float z_u = event_list[(i * cfg.number_of_blocks *
                               cfg.number_of_threads_per_block) +
                              tid].z_u;
@@ -48,17 +55,27 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
       float delta_l = event_list[(i * cfg.number_of_blocks *
                                   cfg.number_of_threads_per_block) +
                                  tid].dl;
-      float acc = 0.f;
+#else
+      float z_u = soa_data->z_u[(i * cfg.number_of_blocks *
+                                      cfg.number_of_threads_per_block) +
+                                     tid];
+      float z_d = soa_data->z_d[(i * cfg.number_of_blocks *
+                                      cfg.number_of_threads_per_block) +
+                                     tid];
+      float delta_l = soa_data->dl[(i * cfg.number_of_blocks *
+                                          cfg.number_of_threads_per_block) +
+                                         tid];
+#endif
 
-      float sqrt_det_correlation_matrix = sqrt(
-          cfg.inv_pow_sigma_z * cfg.inv_pow_sigma_z * cfg.inv_pow_sigma_dl);
+
+      float acc = 0.f;
 
       // angle space transformation
       float tn = event_tan(z_u, z_d, cfg.R_distance);
       float y = event_y(delta_l, tn);
       float z = event_z(z_u, z_d, y, tn);
 
-      float angle = atan(tn);
+      float angle = atanf(tn);
 
       float cos_ = __cosf(angle);
 
@@ -90,6 +107,8 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
           make_int2(center_pixel.x + pixels_in_line(bb_y, cfg.pixel_size),
                     center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
       float2 pp;
+
+
 
       for (int iz = dl.y; iz < ur.y; ++iz) {
         for (int iy = ur.x; iy < dl.x; ++iy) {
@@ -152,7 +171,9 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
                 (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)]) / acc);
           }
         }
-      }
     }
+
+    }
+   }
   }
 }

@@ -5,6 +5,7 @@
 
 static cudaError err;
 
+
 #define cuda_kernel_config(blocks, threads)                      \
   {                                                              \
     printf("Cuda kernel config\n");                              \
@@ -28,7 +29,6 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
   cudaSetDevice(0);
 
   printf("Data Size: %d \n", event_size);
-
   dim3 blocks(cfg.number_of_blocks);
   dim3 threads(cfg.number_of_threads_per_block);
 
@@ -75,9 +75,15 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
 
   float* gpu_image_buffor;
   float* gpu_image_rho;
-
   event<float>* gpu_event_list;
+  soa_event<float>* gpu_soa_event_list;
 
+  soa_event<float>* cpu_soa_event_list;
+
+  cpu_soa_event_list = (soa_event<float>*)malloc(sizeof(soa_event<float>));
+
+  cpu_soa_event_list->set_data(event_list,event_size);
+  printf("%f %f %f\n",cpu_soa_event_list->z_u[0],cpu_soa_event_list->z_d[0],cpu_soa_event_list->dl[0]);
   // declare and allocate memory
   float* texture_sensitivity_buffer;
 
@@ -87,7 +93,6 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
                   sizeof(float) * cfg.n_pixels,
                   cfg.n_pixels);
 
-  printf("pitch = %d \n", pitch);
   cudaMemcpy2D(texture_sensitivity_buffer,
                pitch,
                &cpu_image_sensitivity,
@@ -95,12 +100,6 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
                sizeof(float) * cfg.n_pixels,
                cfg.n_pixels,
                cudaMemcpyHostToDevice);
-
-  //  cuda(Memcpy,
-  //       texture_sensitivity_buffer,
-  //       cpu_image_sensitivity,
-  //       image_sz,
-  //       cudaMemcpyHostToDevice);
 
   // create texture object
   cudaResourceDesc resDesc;
@@ -122,20 +121,20 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
   cudaTextureObject_t tex;
   cudaCreateTextureObject(&tex, &resDesc, &texDesc, NULL);
 
-  //  cudaResourceDesc resDesc;
-  //  memset(&resDesc, 0, sizeof(resDesc));
-  //  resDesc.resType = cudaResourceTypeLinear;
-  //  resDesc.res.linear.devPtr = texture_sensitivity_buffer;
-  //  resDesc.res.linear.desc.f = cudaChannelFormatKindFloat;
-  //  resDesc.res.linear.desc.x = 32;  // bits per channel
-  //  resDesc.res.linear.sizeInBytes = image_sz;
-
   // other mallocs and allocations
   cuda(Malloc, (void**)&gpu_event_list, event_size * sizeof(event<float>));
 
   cuda(Malloc, (void**)&gpu_image_buffor, image_sz * cfg.number_of_blocks);
 
   cuda(Malloc, (void**)&gpu_image_rho, image_sz);
+  cuda(Malloc, (void**)&gpu_soa_event_list, sizeof(soa_event<float>));
+
+
+  cuda(Memcpy,
+       gpu_soa_event_list,
+       cpu_soa_event_list,
+       sizeof(soa_event<float>),
+       cudaMemcpyHostToDevice);
 
   cuda(Memcpy,
        gpu_event_list,
@@ -158,25 +157,38 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
   cudaEventRecord(start);
 
   reconstruction_2d_strip_cuda<float> << <blocks, threads>>>
-      (cfg, gpu_event_list, event_size, gpu_image_buffor, gpu_image_rho, tex);
+      (cfg,gpu_soa_event_list, gpu_event_list, event_size, gpu_image_buffor, gpu_image_rho, tex);
 
   cudaThreadSynchronize();
 
   cudaEventRecord(stop);
 
   cudaEventSynchronize(stop);
+
   float milliseconds = 0;
   cudaEventElapsedTime(&milliseconds, start, stop);
 
+
+  //33383*,16902+,1686/
+
+  unsigned int number_of_ops_per_kernel = 51971;
+
   printf("Direct kernel time without memcpy %f ms\n", milliseconds);
+  printf("Event list size: %d \n",event_size);
+  printf("OPS per event: %d\n",number_of_ops_per_kernel);
+  printf("OPS per event list: %u\n",number_of_ops_per_kernel * event_size);
+
+  unsigned int flops_per_second = (number_of_ops_per_kernel * event_size)/(milliseconds/1000.0);
+
+  printf("Flops_per_second: %f\n",flops_per_second/1e9);
+  printf("Time in seconds: %f\n",(milliseconds/1000.0));
+  printf("GFLOPS per Kernel: %f\n",(event_size * number_of_ops_per_kernel)/(milliseconds/1000.0)/1e9);
 
   cuda(Memcpy,
        cpu_image_buffor,
        gpu_image_buffor,
        image_sz * cfg.number_of_blocks,
        cudaMemcpyDeviceToHost);
-
-  printf("HERE\n");
 
   for (int block_id = 0; block_id < cfg.number_of_blocks; ++block_id) {
     for (int index = 0; index < cfg.n_pixels * cfg.n_pixels; ++index) {
@@ -194,7 +206,9 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
   cuda(Free, gpu_image_buffor);
   cuda(Free, gpu_image_rho);
   cuda(Free, texture_sensitivity_buffer);
+  cuda(Free, gpu_soa_event_list);
   // free(cpu_image_sensitivity);
   free(cpu_image_buffor);
   free(cpu_image_rho);
+  free(cpu_soa_event_list);
 }

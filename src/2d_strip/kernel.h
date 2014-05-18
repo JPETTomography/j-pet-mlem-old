@@ -57,36 +57,7 @@ template <typename T> class Kernel {
     T o_ic_b = multiply_elements(vec_o, detector, vec_b);
 
     T norm = a_ic_a + (T(2.f) * o_ic_b);
-#if 0
-    printf(
-        "|---------------------------------------------------------------|\n");
 
-    printf("Y:= %f\n", y);
-    printf("TAN:= %f\n", _tan);
-    printf("INV_COS:= %f\n", inv_cos);
-    printf("POW_INV_COS:= %f\n", pow_inv_cos);
-
-    printf("vec_o[0]: %f\n", vec_o[0]);
-    printf("vec_o[1]: %f\n", vec_o[1]);
-    printf("vec_o[2]: %f\n", vec_o[2]);
-
-    printf("vec_a[0]: %f\n", vec_a[0]);
-    printf("vec_a[1]: %f\n", vec_a[1]);
-    printf("vec_a[2]: %f\n", vec_a[2]);
-
-    printf("vec_b[0]: %f\n", vec_b[0]);
-    printf("vec_b[1]: %f\n", vec_b[1]);
-    printf("vec_b[2]: %f\n", vec_b[2]);
-
-    printf("a_ic_a: %f\n", a_ic_a);
-    printf("b_ic_a: %f\n", b_ic_a);
-    printf("b_ic_b: %f\n", b_ic_b);
-    printf("o_ic_b: %f\n", o_ic_b);
-    printf("norm: %f\n", norm);
-
-    printf(
-        "|---------------------------------------------------------------|\n");
-#endif
     T element_before_exp =
         INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / std::sqrt(norm));
 

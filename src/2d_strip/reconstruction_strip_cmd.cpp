@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
           10, R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
       ibstream in("phantom.bin");
 
-      in >> reconstruction;
+      reconstruction << in;
 
       std::vector<event<float>>* event_data = reconstruction.get_data();
 
@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
                                            dl);
       ibstream in("phantom.bin");
 
-      in >> reconstruction;
+      reconstruction << in;
 
       clock_t begin = clock();
 
