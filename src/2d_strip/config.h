@@ -2,7 +2,6 @@
 
 #pragma once
 
-
 namespace gpu_config {
 
 struct GPU_parameters {
@@ -21,62 +20,59 @@ struct GPU_parameters {
 };
 }
 
+#define SOA_SIZE 180000000
 
-#define SOA_SIZE 1600000
+template <typename T> struct soa_event {
 
-template<typename T>
-struct soa_event{
+  T z_u[SOA_SIZE];
+  T z_d[SOA_SIZE];
+  T dl[SOA_SIZE];
 
-    T z_u[SOA_SIZE];
-    T z_d[SOA_SIZE];
-    T dl[SOA_SIZE];
+  void set_data(event<float>* aos_data, int aos_data_size) {
 
-    void set_data(event<float>* aos_data,int aos_data_size){
+    // data_size = aos_data_size;
 
-        //data_size = aos_data_size;
+    for (int i = 0; i < aos_data_size; ++i) {
 
-        for(int i = 0; i < aos_data_size;++i){
-
-            z_u[i] = aos_data[i].z_u;
-            z_d[i] = aos_data[i].z_d;
-            dl[i] = aos_data[i].dl;
-
-        }
+      z_u[i] = aos_data[i].z_u;
+      z_d[i] = aos_data[i].z_d;
+      dl[i] = aos_data[i].dl;
     }
+  }
 
-//    T* z_u;
-//    T* z_d;
-//    T* dl;
-//    int malloc_size;
-//    int data_size;
-/*
-    soa_event(){
+  //    T* z_u;
+  //    T* z_d;
+  //    T* dl;
+  //    int malloc_size;
+  //    int data_size;
+  /*
+      soa_event(){
 
-        printf("Allocate the SOA representation for event_list\n");
-        z_u = (T*)malloc(N * sizeof(float));
-        z_d = (T*)malloc(N * sizeof(float));
-        dl = (T*)malloc(N * sizeof(float));
-        malloc_size = N;
-    }
+          printf("Allocate the SOA representation for event_list\n");
+          z_u = (T*)malloc(N * sizeof(float));
+          z_d = (T*)malloc(N * sizeof(float));
+          dl = (T*)malloc(N * sizeof(float));
+          malloc_size = N;
+      }
 
-    void set_data(event<float>* aos_data,int aos_data_size){
+      void set_data(event<float>* aos_data,int aos_data_size){
 
-        data_size = aos_data_size;
+          data_size = aos_data_size;
 
-        for(int i = 0; i < aos_data_size;++i){
+          for(int i = 0; i < aos_data_size;++i){
 
-            z_u[i] = aos_data[i].z_u;
-            z_d[i] = aos_data[i].z_d;
-            dl[i] = aos_data[i].dl;
+              z_u[i] = aos_data[i].z_u;
+              z_d[i] = aos_data[i].z_d;
+              dl[i] = aos_data[i].dl;
 
-        }
-    }
+          }
+      }
 
-    ~soa_event(){
-        free(z_u);
-        free(z_d);
-        free(dl);
-        printf("Free memory of SOA representation for event_list\n");
-    }
-*/
+      ~soa_event(){
+          free(z_u);
+          free(z_d);
+          free(dl);
+          printf("Free memory of SOA representation for event_list\n");
+      }
+  */
 };

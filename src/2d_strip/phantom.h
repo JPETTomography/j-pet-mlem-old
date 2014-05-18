@@ -187,7 +187,7 @@ template <typename T = double> class Phantom {
     T output_max = 0.0;
     for (auto& col : output) {
       for (auto& row : col)
-       output_max = std::max(output_max, row);
+        output_max = std::max(output_max, row);
     }
 
     auto output_gain =

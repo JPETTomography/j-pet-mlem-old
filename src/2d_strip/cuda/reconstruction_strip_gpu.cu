@@ -5,7 +5,6 @@
 
 static cudaError err;
 
-
 #define cuda_kernel_config(blocks, threads)                      \
   {                                                              \
     printf("Cuda kernel config\n");                              \
@@ -52,6 +51,9 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
     cpu_image_buffor[i] = 0.f;
   }
 
+  float half_pixel_size = 0.5 * cfg.pixel_size;
+  float half_grid_size = 0.5f * cfg.grid_size_y_;
+
   for (int px = 0; px < cfg.n_pixels; ++px) {
     for (int py = 0; py < cfg.n_pixels; ++py) {
 
@@ -60,7 +62,9 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
                                               cfg.pixel_size,
                                               cfg.pixel_size,
                                               cfg.grid_size_y_,
-                                              cfg.grid_size_z_);
+                                              cfg.grid_size_z_,
+                                              half_grid_size,
+                                              half_pixel_size);
 
       cpu_image_sensitivity[px * cfg.n_pixels + py] =
           sensitivity(pixel_coordiantes.x,
@@ -82,8 +86,8 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
 
   cpu_soa_event_list = (soa_event<float>*)malloc(sizeof(soa_event<float>));
 
-  cpu_soa_event_list->set_data(event_list,event_size);
-  printf("%f %f %f\n",cpu_soa_event_list->z_u[0],cpu_soa_event_list->z_d[0],cpu_soa_event_list->dl[0]);
+  cpu_soa_event_list->set_data(event_list, event_size);
+
   // declare and allocate memory
   float* texture_sensitivity_buffer;
 
@@ -129,7 +133,6 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
   cuda(Malloc, (void**)&gpu_image_rho, image_sz);
   cuda(Malloc, (void**)&gpu_soa_event_list, sizeof(soa_event<float>));
 
-
   cuda(Memcpy,
        gpu_soa_event_list,
        cpu_soa_event_list,
@@ -157,7 +160,13 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
   cudaEventRecord(start);
 
   reconstruction_2d_strip_cuda<float> << <blocks, threads>>>
-      (cfg,gpu_soa_event_list, gpu_event_list, event_size, gpu_image_buffor, gpu_image_rho, tex);
+      (cfg,
+       gpu_soa_event_list,
+       gpu_event_list,
+       event_size,
+       gpu_image_buffor,
+       gpu_image_rho,
+       tex);
 
   cudaThreadSynchronize();
 
@@ -168,21 +177,23 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
   float milliseconds = 0;
   cudaEventElapsedTime(&milliseconds, start, stop);
 
+  // 33383*,16902+,1686/
 
-  //33383*,16902+,1686/
-
-  unsigned int number_of_ops_per_kernel = 51971;
+  unsigned int number_of_ops_per_kernel = 44921;
 
   printf("Direct kernel time without memcpy %f ms\n", milliseconds);
-  printf("Event list size: %d \n",event_size);
-  printf("OPS per event: %d\n",number_of_ops_per_kernel);
-  printf("OPS per event list: %u\n",number_of_ops_per_kernel * event_size);
+  printf("Event list size: %d \n", event_size);
+  printf("OPS per event: %d\n", number_of_ops_per_kernel);
+  printf("OPS per event list: %u\n", number_of_ops_per_kernel * event_size);
 
-  unsigned int flops_per_second = (number_of_ops_per_kernel * event_size)/(milliseconds/1000.0);
+  unsigned int flops_per_second =
+      (number_of_ops_per_kernel * event_size) / (milliseconds / 1000.0);
 
-  printf("Flops_per_second: %f\n",flops_per_second/1e9);
-  printf("Time in seconds: %f\n",(milliseconds/1000.0));
-  printf("GFLOPS per Kernel: %f\n",(event_size * number_of_ops_per_kernel)/(milliseconds/1000.0)/1e9);
+  printf("Flops_per_second: %f\n", flops_per_second / 1e9);
+  printf("Time in seconds: %f\n", (milliseconds / 1000.0));
+  printf(
+      "GFLOPS per Kernel: %f\n",
+      (event_size * number_of_ops_per_kernel) / (milliseconds / 1000.0) / 1e9);
 
   cuda(Memcpy,
        cpu_image_buffor,

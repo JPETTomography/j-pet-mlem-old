@@ -5,11 +5,10 @@
 
 #define DEBUG_KERNEL 0
 
-__device__ inline float multiply_elements(float* vec_a,
-                                          volatile float* inv_c,
-                                          float* vec_b) {
+template <typename T>
+__device__ float multiply_elements(T* vec_a, volatile T* inv_c, T* vec_b) {
 
-  float output = 0.0f;
+  T output = 0.0f;
 
   output += vec_a[0] * inv_c[0] * vec_b[0];
   output += vec_a[1] * inv_c[1] * vec_b[1];
@@ -18,18 +17,19 @@ __device__ inline float multiply_elements(float* vec_a,
   return output;
 }
 
-__device__ float calculate_kernel(float& y,
-                                  float& _tan,
-                                  float& inv_cos,
-                                  float& pow_inv_cos,
+template <typename T>
+__device__ float calculate_kernel(T& y,
+                                  T& _tan,
+                                  T& inv_cos,
+                                  T& pow_inv_cos,
                                   float2& pixel_center,
-                                  float* inv_c,
+                                  T* inv_c,
                                   gpu_config::GPU_parameters& cfg,
-                                  float& sqrt_det_correlation_matrix) {
+                                  T& sqrt_det_correlation_matrix) {
 
-  float vec_o[3];
-  float vec_a[3];
-  float vec_b[3];
+  T vec_o[3];
+  T vec_a[3];
+  T vec_b[3];
 
   vec_o[0] = -(pixel_center.x + y - cfg.R_distance) * _tan * pow_inv_cos;
   vec_o[1] = -(pixel_center.x + y + cfg.R_distance) * _tan * pow_inv_cos;
@@ -43,12 +43,12 @@ __device__ float calculate_kernel(float& y,
   vec_b[1] = pixel_center.y - (pixel_center.x * _tan);
   vec_b[2] = -2.0f * pixel_center.x * inv_cos;
 
-  float a_ic_a = multiply_elements(vec_a, inv_c, vec_a);
-  float b_ic_a = multiply_elements(vec_b, inv_c, vec_a);
-  float b_ic_b = multiply_elements(vec_b, inv_c, vec_b);
-  float o_ic_b = multiply_elements(vec_o, inv_c, vec_b);
+  T a_ic_a = multiply_elements<T>(vec_a, inv_c, vec_a);
+  T b_ic_a = multiply_elements<T>(vec_b, inv_c, vec_a);
+  T b_ic_b = multiply_elements<T>(vec_b, inv_c, vec_b);
+  T o_ic_b = multiply_elements<T>(vec_o, inv_c, vec_b);
 
-  float norm = a_ic_a + (2.f * o_ic_b);
+  T norm = a_ic_a + (2.f * o_ic_b);
 
   return (SINGLE_INVERSE_POW_TWO_PI *
           (sqrt_det_correlation_matrix / sqrt(norm)) *
@@ -60,11 +60,12 @@ __host__ __device__ float2 pixel_center(int& i,
                                         float& pixel_height_,
                                         float& pixel_width_,
                                         float& grid_size_y_,
-                                        float& grid_size_z_) {
+                                        float& grid_size_z_,
+                                        float& half_grid_size,
+                                        float& half_pixel_size) {
 
-  return make_float2(
-      0.5f * grid_size_y_ - i * pixel_height_ - 0.5f * pixel_height_,
-      -0.5f * grid_size_z_ + j * pixel_width_ + 0.5f * pixel_width_);
+  return make_float2(half_grid_size - i * pixel_height_ - half_pixel_size,
+                     -half_grid_size + j * pixel_width_ + half_pixel_size);
 }
 
 __device__ int2 pixel_location(float& y,
