@@ -239,8 +239,7 @@ int main(int argc, char* argv[]) {
     }
 
     return 0;
-  }
-  catch (cmdline::exception& ex) {
+  } catch (cmdline::exception& ex) {
     if (ex.help()) {
       std::cerr << ex.usage();
     }
@@ -252,11 +251,9 @@ int main(int argc, char* argv[]) {
         std::cerr << "error: " << msg << std::endl;
       }
     }
-  }
-  catch (std::string& ex) {
+  } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
-  }
-  catch (const char* ex) {
+  } catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
   }
   return 1;

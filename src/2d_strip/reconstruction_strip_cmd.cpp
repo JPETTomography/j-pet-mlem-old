@@ -130,11 +130,9 @@ int main(int argc, char* argv[]) {
       std::cout << "Time:" << float(end - begin) / CLOCKS_PER_SEC / 4
                 << std::endl;
     }
-  }
-  catch (std::string& ex) {
+  } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
-  }
-  catch (const char* ex) {
+  } catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
   }
 

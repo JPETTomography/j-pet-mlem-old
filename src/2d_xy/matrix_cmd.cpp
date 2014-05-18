@@ -328,8 +328,7 @@ int main(int argc, char* argv[]) {
     }
 
     return 0;
-  }
-  catch (cmdline::exception& ex) {
+  } catch (cmdline::exception& ex) {
     if (ex.help()) {
       std::cerr << ex.usage();
     }
@@ -341,11 +340,9 @@ int main(int argc, char* argv[]) {
         std::cerr << "error: " << msg << std::endl;
       }
     }
-  }
-  catch (std::string& ex) {
+  } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
-  }
-  catch (const char* ex) {
+  } catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
   }
   return 1;
@@ -414,12 +411,9 @@ SparseMatrix<Pixel<>, LOR<>> run_cpu(cmdline::parser& cl,
         // join with previous matrix
         sparse_matrix << in_sparse_matrix;
       }
-    }
-
-    catch (std::string& ex) {
+    } catch (std::string& ex) {
       throw(ex + ": " + fn);
-    }
-    catch (const char* ex) {
+    } catch (const char* ex) {
       throw(std::string(ex) + ": " + fn);
     }
   }
@@ -509,8 +503,7 @@ void post_process(cmdline::parser& cl,
     try {
       png_writer png(fn_wo_ext + ".png");
       sparse_matrix.output_bitmap(png);
-    }
-    catch (const char* ex) {
+    } catch (const char* ex) {
       // don't bail out just produce warning
       std::cerr << "warning: " << ex << std::endl;
     }

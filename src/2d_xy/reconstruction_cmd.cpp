@@ -189,11 +189,9 @@ int main(int argc, char* argv[]) {
     }
 
     return 0;
-  }
-  catch (std::string& ex) {
+  } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
-  }
-  catch (const char* ex) {
+  } catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
   }
   return 1;

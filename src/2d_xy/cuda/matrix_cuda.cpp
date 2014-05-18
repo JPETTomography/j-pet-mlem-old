@@ -216,8 +216,7 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
       std::fill(
           gpu_vector_output.begin(), gpu_vector_output.end(), matrix_element);
       std::fill(cpu_matrix.begin(), cpu_matrix.end(), matrix_element);
-    }
-    catch (std::exception e) {
+    } catch (std::exception e) {
       std::cout << "Fill error:" << e.what() << std::endl;
     }
 
