@@ -34,13 +34,9 @@ template <typename FType = double, typename SType = int> struct Point {
     return tmp.rotate(phi);
   }
 
-  Point operator+(const Point& p) const {
-    return { x + p.x, y + p.y };
-  }
+  Point operator+(const Point& p) const { return { x + p.x, y + p.y }; }
 
-  Point operator-(const Point& p) const {
-    return { x - p.x, y - p.y };
-  }
+  Point operator-(const Point& p) const { return { x - p.x, y - p.y }; }
 
   Point& operator+=(const Point& p) {
     x += p.x;
