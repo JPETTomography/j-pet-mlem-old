@@ -47,7 +47,9 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
   for (int i = 0; i < block_chunk; ++i) {
 
     // calculate offset in event memory location for warp
-    int warp_id = (i * (cfg.number_of_blocks * cfg.number_of_threads_per_block/WARP_SIZE) + thread_warp_index;
+    int warp_id = (i * (cfg.number_of_blocks * cfg.number_of_threads_per_block /
+                        WARP_SIZE) +
+                   thread_warp_index);
 
     if ((warp_id < event_list_size)) {
 
@@ -157,7 +159,7 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
                               cfg.grid_size_z_,
                               half_grid_size,
                               half_pixel_size);
-
+            // in_ellipse(A, B, C, y, z, pp)
             if (in_ellipse(A, B, C, y, z, pp)) {
 
               pp.x -= y;
@@ -194,7 +196,8 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
                                              int event_list_size,
                                              float* image_buffor,
                                              float* rho,
-                                             cudaTextureObject_t tex) {
+                                             cudaTextureObject_t tex,
+                                             bool* data) {
 
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -288,6 +291,8 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
                       center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
         float2 pp;
 
+        int iter = 0;
+
         for (int iz = dl.y; iz < ur.y; ++iz) {
           for (int iy = ur.x; iy < dl.x; ++iy) {
 
@@ -301,6 +306,11 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
                               half_pixel_size);
 
             if (in_ellipse(A, B, C, y, z, pp)) {
+
+              if (i == 0 && tid < 64) {
+
+                data[tid * 800 + iter] = 1;
+              }
 
               pp.x -= y;
               pp.y -= z;

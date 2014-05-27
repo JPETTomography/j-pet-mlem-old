@@ -13,13 +13,14 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
                                  event<float>* event_list,
                                  int event_size,
                                  int iteration_chunk,
-                                 float* image_output);
+                                 float* image_output,
+                                 int off);
 
 void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
                                    event<float>* event_list,
-                                   int event_size) {
-
-  printf("Wrapper\n");
+                                   int event_size,
+                                   int warp_offset,
+                                   int n_blocks) {
 
   std::vector<std::vector<float>> image_output;
   image_output.assign(cfg.n_pixels, std::vector<float>(cfg.n_pixels, float(0)));
@@ -28,27 +29,19 @@ void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
   gpu_output_image.resize(cfg.n_pixels * cfg.n_pixels);
 
   for (int i = 0; i < 1; i++) {
-    std::cout << "ITERATION BLOCK: " << i << std::endl;
 
     gpu_reconstruction_strip_2d(
-        cfg, event_list, event_size, 1, gpu_output_image.data());
+        cfg, event_list, event_size, n_blocks, gpu_output_image.data(), warp_offset);
 
     for (int i = 0; i < cfg.n_pixels; ++i) {
       for (int j = 0; j < cfg.n_pixels; ++j) {
 
         image_output[i][j] = gpu_output_image[i * cfg.n_pixels + j];
 
-        if (image_output[i][j] > 0) {
-
-          // std::cout << i << " " << j << " " << image_output[i][j] <<
-          // std::endl;
-        }
       }
     }
 
-    // output reconstruction PNG
-
-    std::string file = std::string("gpu_rec_iteration_");
+    std::string file = std::string("gpu_rec_i_");
 
     file.append(std::to_string(i + 1));
     file.append(".png");

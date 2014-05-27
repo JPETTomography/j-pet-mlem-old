@@ -7,7 +7,7 @@ HEADERS += 2d_strip/*.h
 
 
 cuda {
-  NVCC_FLAGS         += -Xptxas -v -arch=compute_30 -code=sm_30 -ftz=true -prec-div=false -prec-sqrt=false
+  NVCC_FLAGS         += -Xptxas -v -arch=compute_30 -code=sm_30 -ftz=true -prec-div=false
   NVCC_FLAGS_RELEASE +=  -O3
 
   SOURCES      +=

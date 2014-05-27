@@ -22,8 +22,6 @@
 #include <omp.h>
 #endif
 
-using namespace std;
-
 int main(int argc, char* argv[]) {
 
 #if SSE_FLUSH
@@ -36,6 +34,10 @@ int main(int argc, char* argv[]) {
 #if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
 #endif
+    cl.add<std::string>(
+        "input_fn", 'f', "phantom file", false,"s_shepp");
+    cl.add<std::string>(
+        "output_fn", 'o', "events file", false,"phantom.bin");
     cl.add<float>(
         "r-distance", 'r', "R distance between scientilators", false, 500.0f);
     cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
@@ -63,7 +65,7 @@ int main(int argc, char* argv[]) {
     float dl = cl.get<float>("s-dl");
     float emmisions = cl.get<float>("emmisions");
 
-    std::ifstream infile("s_shepp");
+    std::ifstream infile(cl.get<std::string>("input_fn"));
 
     std::vector<ellipse_parameters<float>> ellipse_list;
     ellipse_parameters<float> el;
@@ -99,7 +101,7 @@ int main(int argc, char* argv[]) {
 
     test.emit_event();
 
-    obstream out("phantom.bin");
+    obstream out(cl.get<std::string>("output_fn"));
     test >> out;
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;

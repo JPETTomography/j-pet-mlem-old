@@ -344,7 +344,6 @@ class Reconstruction {
 
     int size;
     in >> size;
-    std::cout << "VECTOR SIZE: " << size << std::endl;
 #if ___DEBUG_OUTPUT_SAVE
     std::cout << number_of_pixels << " " << pixel_s << " " << iter << " "
               << number_of_event_in_file << std::endl;
@@ -363,9 +362,6 @@ class Reconstruction {
 
       event_list.push_back(temp_event);
     }
-
-    std::cout << "WIELKOSC! " << event_list.size() << std::endl;
-
     return *this;
   }
 

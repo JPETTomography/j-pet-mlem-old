@@ -40,11 +40,14 @@ int main(int argc, char* argv[]) {
     cl.add<int>("cuda-blocks", 'b', "number of CUDA blocks", false, 1);
     cl.add<int>(
         "cuda-threads", 'w', "number of CUDA threads per block", false, 512);
+    cl.add<int>("warp-offset", 'o', "warp offset for test only", false, 1);
 
 #endif
     cl.add("cpu", 'c', "run on cpu (via OPENMP)");
     cl.add<float>(
         "r-distance", 'r', "R distance between scientilators", false, 500.0f);
+    cl.add<std::string>(
+        "file", 'f', "events file name", false,"phantom.bin");
     cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
     cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
@@ -70,16 +73,17 @@ int main(int argc, char* argv[]) {
       float n_pixels = Scentilator_length / pixel_size;
       float sigma = cl.get<float>("s-z");
       float dl = cl.get<float>("s-dl");
+      int warp_offset = cl.get<int>("warp-offset");
+      int n_blocks = cl.get<int>("iter");
 
       Reconstruction<float> reconstruction(
           10, R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
-      ibstream in("phantom.bin");
+
+      ibstream in(cl.get<string>("file"));
 
       reconstruction << in;
 
       std::vector<event<float>>* event_data = reconstruction.get_data();
-
-      std::cout << "VECTOR SIZE: " << event_data->size() << std::endl;
 
       gpu_config::GPU_parameters cfg;
       cfg.R_distance = R_distance;
@@ -97,7 +101,7 @@ int main(int argc, char* argv[]) {
       cfg.grid_size_z_ = n_pixels * pixel_size;
 
       execute_kernel_reconstruction(
-          cfg, event_data->data(), event_data->size());
+          cfg, event_data->data(), event_data->size(), warp_offset,n_blocks);
     }
 #endif
 
@@ -117,7 +121,7 @@ int main(int argc, char* argv[]) {
                                            pixel_size,
                                            sigma,
                                            dl);
-      ibstream in("phantom.bin");
+      ibstream in(cl.get<string>("file"));
 
       reconstruction << in;
 
