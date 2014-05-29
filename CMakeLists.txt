@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
+project(PET CXX)
+
 add_definitions(-std=c++11)
 
 include_directories(src lib/cmdline)
@@ -10,6 +12,8 @@ file(GLOB COMMON
   std/util/*.h
   src/util/png_writer.cpp
   src/util/cmdline_hooks.cpp)
+
+find_package(OpenMP)
 
 # add libpng
 find_package(PNG)
@@ -32,7 +36,7 @@ endif()
 macro(pet_target TYPE CMD)
   # handle CUDA wrappers
   if(CUDA_FOUND AND EXISTS src/${TYPE}/cuda/${CMD}_kernel.cu)
-    # append cuda headers
+    # append CUDA specific headers
     file(GLOB ${TYPE}_CUDA_HEADERS src/${TYPE}/cuda/*.cuh)
     # compile kernel sources
     cuda_compile(${TYPE}_${CMD}_CUDA src/${TYPE}/cuda/${CMD}_kernel.cu)
