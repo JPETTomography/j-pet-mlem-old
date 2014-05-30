@@ -10,7 +10,7 @@ __device__ float multiply_elements(T* vec_a, volatile T* inv_c, T* vec_b) {
 
   T output = 0.0f;
 
-  output += vec_a[0] * inv_c[0] * vec_b[0];
+  output +=  vec_a[0] * inv_c[0] * vec_b[0];
   output += vec_a[1] * inv_c[1] * vec_b[1];
   output += vec_a[2] * inv_c[2] * vec_b[2];
 

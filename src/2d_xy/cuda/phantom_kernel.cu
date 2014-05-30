@@ -6,8 +6,6 @@
 #include "prng.cuh"
 #include "geometry.h"
 #include "geometry_methods.cuh"
-#include "detector_geometry_test.cuh"
-#include "detector_hit_test.cuh"
 #include "monte_carlo.cuh"
 
 // FIXME: remove me
@@ -34,14 +32,13 @@ void phantom_kernel(int number_of_threads_per_block,
                     float w_detector,
                     float pixel_size,
                     Pixel<>* lookup_table_pixel,
-                    LOR* lookup_table_lors,
+                    gpu::LOR* lookup_table_lors,
                     MatrixElement* gpu_output) {
 
   dim3 blocks(number_of_blocks);
   dim3 threads(number_of_threads_per_block);
 
   unsigned int* cpu_prng_seed;
-  float fov_radius = radius / M_SQRT2;
   cudaSetDevice(1);
 
   cpu_prng_seed =
@@ -88,17 +85,15 @@ void phantom_kernel(int number_of_threads_per_block,
   printf("GPU kernel start\n");
   printf("DETECTORS %d LORS: %d\n", NUMBER_OF_DETECTORS, LORS);
 
-  double timer = getwtime();
-
   for (int p = 0; p < triangular_matrix_size; ++p) {
 
     Pixel<> pixel = lookup_table_pixel[p];
 
     int i = pixel.x;
     int j = pixel.y;
-
+#if BROKEN
     mem_clean_lors(cpu_matrix, number_of_blocks);
-
+#endif
     cuda(Memcpy,
          gpu_MatrixElement,
          cpu_matrix,
@@ -114,6 +109,8 @@ void phantom_kernel(int number_of_threads_per_block,
            n_emissions,
            total_emissions);
 
+#if BROKEN
+    float fov_radius = radius / M_SQRT2;
     if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
       gpu_phantom_generation << <blocks, threads>>>
           (i,
@@ -136,7 +133,7 @@ void phantom_kernel(int number_of_threads_per_block,
         return false;
       }
     }
-
+#endif
     cuda(Memcpy,
          cpu_matrix,
          gpu_MatrixElement,
@@ -150,25 +147,15 @@ void phantom_kernel(int number_of_threads_per_block,
 
           temp += cpu_matrix[j].hit[i];
         }
-
+#if BROKEN
         if (temp > 0.0f) {
-          LOR<> lor(lookup_table_lors[i].lor_a, lookup_table_lors[i].lor_b);
+          gpu::LOR lor(lookup_table_lors[i].lor_a, lookup_table_lors[i].lor_b);
           gpu_output[p].hit[lor.index()] = temp;
-
-          //        printf("LOR(%d,%d) %f\n",
-          //               lor.first,
-          //               lor.second,
-          //               gpu_output[p].hit[lor.index()]);
         }
+#endif
       }
     }
   }
-  double time = 0.0f;
-
-  time = getwtime() - time;
-
-  printf("time[s]: %f\n ", time);
-  printf("time per pixel: %f\n", time / triangular_matrix_size);
 
   cuda(Free, gpu_prng_seed);
   cuda(Free, gpu_MatrixElement);

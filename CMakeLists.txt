@@ -65,7 +65,7 @@ function(pet_target TYPE CMD)
 endfunction()
 
 pet_target(2d_xy matrix)
-pet_target(2d_xy phantom NO_CUDA)
+pet_target(2d_xy phantom)
 pet_target(2d_xy reconstruction)
 pet_target(2d_strip phantom_strip)
 pet_target(2d_strip reconstruction_strip)
