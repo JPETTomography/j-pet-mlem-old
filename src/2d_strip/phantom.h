@@ -119,6 +119,8 @@ template <typename T = double> class Phantom {
       _inv_b2 = T(1) / (el.b * el.b);
       iteration = el.iter;
 
+      int start = 0;
+
 #if _OPENMP
 #pragma omp for schedule(static) private(ry, rz, rangle, z_u, z_d, dl)
 #endif
@@ -155,21 +157,22 @@ template <typename T = double> class Phantom {
             temp_event.z_u = z_u;
             temp_event.z_d = z_d;
             temp_event.dl = dl;
+            start++;
 
             event_list_per_thread[omp_get_thread_num()].push_back(temp_event);
           }
         }
       }
-
-      for (signed i = 0; i < omp_get_max_threads(); ++i) {
-
-        event_list.insert(event_list.end(),
-                          event_list_per_thread[i].begin(),
-                          event_list_per_thread[i].end());
-      }
-
-      std::cout << "VECTOR: " << event_list.size() << std::endl;
     }
+
+    for (signed i = 0; i < omp_get_max_threads(); ++i) {
+
+      event_list.insert(event_list.end(),
+                        event_list_per_thread[i].begin(),
+                        event_list_per_thread[i].end());
+    }
+
+    std::cout << "VECTOR: " << event_list.size() << std::endl;
 
     // here
 

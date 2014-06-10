@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cuda_runtime.h>
 
 #define SINGLE_INVERSE_PI 0.3183098861f
@@ -5,12 +7,39 @@
 
 #define DEBUG_KERNEL 0
 
+__device__ void warp_space_pixel(int2& tid_pixel,
+                                 int& offset,
+                                 int2& start_warp,
+                                 int2& ul,
+                                 int2& ur,
+                                 int2& dl,
+                                 int& tid) {
+
+  offset = ur.y - start_warp.y;
+
+  int index = threadIdx.x & 31;
+
+  if ((index) < offset) {
+
+    tid_pixel = make_int2(start_warp.x, start_warp.y + index);
+
+  } else {
+
+    tid_pixel = make_int2(
+        start_warp.x + (int)(__fdividef(tid - offset, ur.y - dl.y)) + 1,
+        dl.y + ((tid - offset) % (ur.y - dl.y)));
+  }
+
+  start_warp.y = ul.y + (32 - offset) % (ur.y - ul.y);
+  start_warp.x += int(__fdividef(32 - offset, ur.y - ul.y)) + 1;
+}
+
 template <typename T>
 __device__ float multiply_elements(T* vec_a, volatile T* inv_c, T* vec_b) {
 
   T output = 0.0f;
 
-  output +=  vec_a[0] * inv_c[0] * vec_b[0];
+  output += vec_a[0] * inv_c[0] * vec_b[0];
   output += vec_a[1] * inv_c[1] * vec_b[1];
   output += vec_a[2] * inv_c[2] * vec_b[2];
 
@@ -55,8 +84,8 @@ __device__ float calculate_kernel(T& y,
           exp(-(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm))));
 }
 
-__host__ __device__ float2 pixel_center(int& i,
-                                        int& j,
+__host__ __device__ float2 pixel_center(int i,
+                                        int j,
                                         float& pixel_height_,
                                         float& pixel_width_,
                                         float& grid_size_y_,
