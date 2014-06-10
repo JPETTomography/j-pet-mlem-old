@@ -14,6 +14,9 @@ file(GLOB COMMON
   src/util/cmdline_hooks.cpp)
 
 find_package(OpenMP)
+if(OPENMP_FOUND)
+  list(APPEND CMAKE_CXX_FLAGS ${OpenMP_CXX_FLAGS})
+endif()
 
 # add libpng
 find_package(PNG)
