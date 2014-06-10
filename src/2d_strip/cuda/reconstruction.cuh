@@ -34,8 +34,6 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 
   int offset;
 
-  short index[30];
-
   int number_of_blocks = int(
       ceilf(event_list_size / (cfg.number_of_blocks *
                                (cfg.number_of_threads_per_block / WARP_SIZE))));
