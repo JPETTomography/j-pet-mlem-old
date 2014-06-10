@@ -5,7 +5,7 @@ const double Degree = M_PI / 180.0;
 
 template <typename F> class EventImageAngle {
  public:
-  EventImageAngle(F y, F z, F theta) : y_(y), z_(z), theta_(theta) {};
+  EventImageAngle(F y, F z, F theta) : y_(y), z_(z), theta_(theta) {}
 
   F y() const { return y_; }
   F z() const { return z_; }
@@ -17,7 +17,7 @@ template <typename F> class EventImageAngle {
 
 template <typename F> class EventImageTan {
  public:
-  EventImageTan(F y, F z, F tangent_) : y_(y), z_(z), tangent_(tangent_) {};
+  EventImageTan(F y, F z, F tangent_) : y_(y), z_(z), tangent_(tangent_) {}
 
   F y() const { return y_; }
   F z() const { return z_; }
@@ -39,7 +39,7 @@ EventImageTan<F> EventImageAngleToTan(EventImageAngle<F> event) {
 
 template <typename F> class EventDetector {
  public:
-  EventDetector(F z_up, F z_dn, F dl) : z_up_(z_up), z_dn_(z_dn), dl_(dl) {};
+  EventDetector(F z_up, F z_dn, F dl) : z_up_(z_up), z_dn_(z_dn), dl_(dl) {}
 
   F z_up() const { return z_up_; }
   F z_dn() const { return z_dn_; }
@@ -51,7 +51,7 @@ template <typename F> class EventDetector {
 
 template <typename F> class Detector {
  public:
-  Detector(F R, F L) : R_(R), L_(L) {};
+  Detector(F R, F L) : R_(R), L_(L) {}
 
   F R() const { return R_; }
   F L() const { return L_; }

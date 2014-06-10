@@ -8,7 +8,7 @@ class Kernel {
   typedef Detector<F> DetectorType;
   typedef ErrorsModel<F> ErrorsModelType;
   Kernel(Detector<F> detector, ErrorsModel<F> errors_model)
-      : detector_(detector), errors_model_(errors_model) {};
+      : detector_(detector), errors_model_(errors_model) {}
 
   class EventKernel {
    public:

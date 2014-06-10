@@ -78,7 +78,7 @@ template <int N, typename F> class Point {
 };
 
 template <int N, typename F = double>
-Point<N, F> operator+(const Vector<N, F>& v, const Point<N, F>& p) {};
+Point<N, F> operator+(const Vector<N, F>& v, const Point<N, F>& p) {}
 
 template <int N, typename F = double>
 Point<N, F> operator-(const Vector<N, F>& v, const Point<N, F>& p);
@@ -103,16 +103,16 @@ Vector<N, F> operator+(F s, const Vector<N, F>& v1);
 
 template <int N, typename F = double> class Vector : public Base::Vector<N, F> {
  public:
-  Vector(F v[N]) : Base::Vector<N, F>(v) {};
+  Vector(F v[N]) : Base::Vector<N, F>(v) {}
 };
 template <int N, typename F = double> class Point : public Base::Point<N, F> {
  public:
-  Point(F v[N]) : Base::Point<N, F>(v) {};
+  Point(F v[N]) : Base::Point<N, F>(v) {}
 };
 
 template <typename F> class Vector<2, F> : public Base::Vector<2, F> {
  public:
-  Vector(F v[2]) : Base::Vector<2, F>(v) {};
+  Vector(F v[2]) : Base::Vector<2, F>(v) {}
 
   Vector& rotate(F angle) {
     F s = sin(angle);
@@ -127,7 +127,7 @@ template <typename F> class Vector<2, F> : public Base::Vector<2, F> {
 
 template <typename F> class Point<2, F> : public Base::Point<2, F> {
  public:
-  Point(F v[2]) : Base::Point<2, F>(v) {};
+  Point(F v[2]) : Base::Point<2, F>(v) {}
 
   Point& rotate(F angle, Point center) {
     Vector<2, F> v = (*this) - center;
