@@ -7,9 +7,9 @@ add_definitions(-std=c++11)
 include_directories(src lib/cmdline)
 
 file(GLOB COMMON
-  std/geometry/*.h
-  std/math/*.h
-  std/util/*.h
+  src/geometry/*.h
+  src/math/*.h
+  src/util/*.h
   src/util/png_writer.cpp
   src/util/cmdline_hooks.cpp)
 
