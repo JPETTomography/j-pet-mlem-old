@@ -34,10 +34,8 @@ int main(int argc, char* argv[]) {
 #if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
 #endif
-    cl.add<std::string>(
-        "input_fn", 'f', "phantom file", false,"s_shepp");
-    cl.add<std::string>(
-        "output_fn", 'o', "events file", false,"phantom.bin");
+    cl.add<std::string>("input_fn", 'f', "phantom file", false, "s_shepp");
+    cl.add<std::string>("output_fn", 'o', "events file", false, "phantom.bin");
     cl.add<float>(
         "r-distance", 'r', "R distance between scientilators", false, 500.0f);
     cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
@@ -70,6 +68,8 @@ int main(int argc, char* argv[]) {
     std::vector<ellipse_parameters<float>> ellipse_list;
     ellipse_parameters<float> el;
 
+    float normalized_acc = 0.0f;
+
     std::string line;
     while (std::getline(infile, line)) {
       std::istringstream iss(line);
@@ -83,12 +83,21 @@ int main(int argc, char* argv[]) {
       el.a = a;
       el.b = b;
       el.angle = angle;
-      el.iter = int(acc * emmisions);
+      el.iter = acc;
+
+      normalized_acc += acc;
 
       std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
                 << el.angle << " " << el.iter << std::endl;
 
       ellipse_list.push_back(el);
+    }
+
+    for (auto& e : ellipse_list) {
+
+      e.iter = e.iter * (emmisions / normalized_acc);
+
+      std::cout << e.iter << std::endl;
     }
 
     Phantom<float> test(ellipse_list,

@@ -16,7 +16,7 @@ template <typename F> class Slice {
 
 template <int N, typename F> class Vector {
  public:
-  Vector() {};
+  Vector() {}
   Vector(F* rep) {
     for (int i = 0; i < N; i++)
       rep_[i] = rep[i];
@@ -37,7 +37,7 @@ template <int N, typename F> class Vector {
 
 template <int N, int M, typename F = double> class Matrix {
  public:
-  Matrix() {};
+  Matrix() {}
   Matrix(F* rep) {
     for (int i = 0; i < N * M; ++i) {
       rep_[i] = rep[i];

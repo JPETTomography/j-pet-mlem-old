@@ -21,80 +21,6 @@ static cudaError err;
 
 #define cudathread_per_blockoSync(...) cuda(__VA_ARGS__)
 
-template <typename T>
-void calculate_bb_ellipse_block(gpu_config::GPU_parameters cfg,
-                                event<float>* event_list,
-                                int event_list_size,
-                                int iteration_chunk,
-                                int block_size) {
-
-  for (int i = iteration_chunk * block_size;
-       i < (iteration_chunk + 1) * block_size;
-       ++i) {
-
-    if (i < event_list_size) {
-
-      T z_u = event_list[i].z_u;
-      T z_d = event_list[i].z_d;
-      T delta_l = event_list[i].dl;
-
-      T half_grid_size = 0.5f * cfg.grid_size_y_;
-      T half_pixel_size = 0.5f * cfg.pixel_size;
-
-      // angle space transformation
-      T tn = event_tan(z_u, z_d, cfg.R_distance);
-      T y = event_y(delta_l, tn);
-      T z = event_z(z_u, z_d, y, tn);
-
-      T angle = atanf(tn);
-
-      T cos_ = __cosf(angle);
-
-      T A = (((T(4.0f) / (cos_ * cos_)) * cfg.inv_pow_sigma_dl) +
-             (T(2.0f) * tn * tn * cfg.inv_pow_sigma_z));
-      T B = -T(4.0f) * tn * cfg.inv_pow_sigma_z;
-      T C = T(2.0f) * cfg.inv_pow_sigma_z;
-      T B_2 = (B / T(2.0f)) * (B / T(2.0f));
-
-      T bb_y = bby(A, C, B_2);
-
-      T bb_z = bbz(A, C, B_2);
-
-      int2 center_pixel = pixel_location(y,
-                                         z,
-                                         cfg.pixel_size,
-                                         cfg.pixel_size,
-                                         cfg.grid_size_y_,
-                                         cfg.grid_size_z_);
-
-      int2 ur =
-          make_int2(center_pixel.x - pixels_in_line(bb_y, cfg.pixel_size),
-                    center_pixel.y + pixels_in_line(bb_z, cfg.pixel_size));
-      int2 dl =
-          make_int2(center_pixel.x + pixels_in_line(bb_y, cfg.pixel_size),
-                    center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
-      float2 pp;
-
-      for (int iz = dl.y; iz < ur.y; ++iz) {
-        for (int iy = ur.x; iy < dl.x; ++iy) {
-
-          pp = pixel_center(iy,
-                            iz,
-                            cfg.pixel_size,
-                            cfg.pixel_size,
-                            cfg.grid_size_y_,
-                            cfg.grid_size_z_,
-                            half_grid_size,
-                            half_pixel_size);
-
-          if (in_ellipse(A, B, C, y, z, pp)) {
-          }
-        }
-      }
-    }
-  }
-}
-
 void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
                                  event<float>* event_list,
                                  int event_size,
@@ -222,23 +148,6 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
   cuda(Malloc, (void**)&gpu_image_rho, image_sz);
   cuda(Malloc, (void**)&gpu_soa_event_list, sizeof(soa_event<float>));
 
-  bool* cpu_loops = (bool*)malloc(64 * 800 * sizeof(bool));
-  bool* gpu_loops;
-
-  for (int i = 0; i < 64; ++i) {
-    for (int j = 0; j < 800; ++j) {
-
-      cpu_loops[i * 800 + j] = 0;
-    }
-  }
-
-  cuda(Malloc, (void**)&gpu_loops, 64 * 800 * sizeof(bool));
-  cuda(Memcpy,
-       gpu_loops,
-       cpu_loops,
-       64 * 800 * sizeof(bool),
-       cudaMemcpyHostToDevice);
-
   cuda(Memcpy,
        gpu_soa_event_list,
        cpu_soa_event_list,
@@ -274,8 +183,7 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
          event_size,
          gpu_image_buffor,
          gpu_image_rho,
-         tex,
-         gpu_loops);
+         tex);
 
     cudaThreadSynchronize();
 
@@ -286,7 +194,9 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
     float milliseconds = 0;
     cudaEventElapsedTime(&milliseconds, start, stop);
 
-//    unsigned int number_of_ops_per_kernel = 44921;
+    printf("Time: %f\n", milliseconds / 1000);
+
+    //    unsigned int number_of_ops_per_kernel = 44921;
 
     cuda(Memcpy,
          cpu_image_buffor,
@@ -294,34 +204,23 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
          image_sz * cfg.number_of_blocks,
          cudaMemcpyDeviceToHost);
 
-    cuda(Memcpy,
-         cpu_loops,
-         gpu_loops,
-         64 * 800 * sizeof(bool),
-         cudaMemcpyDeviceToHost);
-
     for (int block_id = 0; block_id < cfg.number_of_blocks; ++block_id) {
       for (int index = 0; index < cfg.n_pixels * cfg.n_pixels; ++index) {
 
-        image_output[index] +=
+        image_output[(i * cfg.n_pixels * cfg.n_pixels) + index] +=
             cpu_image_buffor[block_id * cfg.n_pixels * cfg.n_pixels + index];
-
-        if (image_output[index] > 0) {
-        }
       }
     }
 
     cuda(Memcpy, gpu_image_rho, image_output, image_sz, cudaMemcpyHostToDevice);
-
   }
 
-  //clean heap
+  // clean heap
   cuda(DestroyTextureObject, tex);
   cuda(Free, gpu_image_buffor);
   cuda(Free, gpu_image_rho);
   cuda(Free, texture_sensitivity_buffer);
   cuda(Free, gpu_soa_event_list);
-  cuda(Free, gpu_loops);
   free(cpu_image_buffor);
   free(cpu_image_rho);
   free(cpu_soa_event_list);

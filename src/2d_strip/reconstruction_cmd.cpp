@@ -46,8 +46,7 @@ int main(int argc, char* argv[]) {
     cl.add("cpu", 'c', "run on cpu (via OPENMP)");
     cl.add<float>(
         "r-distance", 'r', "R distance between scientilators", false, 500.0f);
-    cl.add<std::string>(
-        "file", 'f', "events file name", false,"phantom.bin");
+    cl.add<std::string>("file", 'f', "events file name", false, "phantom.bin");
     cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
     cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
@@ -101,7 +100,7 @@ int main(int argc, char* argv[]) {
       cfg.grid_size_z_ = n_pixels * pixel_size;
 
       execute_kernel_reconstruction(
-          cfg, event_data->data(), event_data->size(), warp_offset,n_blocks);
+          cfg, event_data->data(), event_data->size(), warp_offset, n_blocks);
     }
 #endif
 
