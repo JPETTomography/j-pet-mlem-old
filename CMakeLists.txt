@@ -67,6 +67,15 @@ function(pet_target TYPE CMD)
     ${CUDA})
   # add CUDA objects to the target
   target_link_libraries(${TYPE}_${CMD} ${CUDA_LIBRARIES})
+  # fix Intel OpenMP runtime location
+  if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+    add_custom_command(TARGET ${TYPE}_${CMD}
+      POST_BUILD
+      COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+        -add_rpath /opt/intel/lib
+        -change    libiomp5.dylib @rpath/libiomp5.dylib
+        ${TYPE}_${CMD})
+  endif()
 endfunction()
 
 pet_target(2d_xy matrix)
