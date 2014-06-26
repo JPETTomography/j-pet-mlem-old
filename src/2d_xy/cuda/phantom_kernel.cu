@@ -1,4 +1,5 @@
 #include <cuda_runtime.h>
+#include <cstdio>
 
 #include <sys/time.h>
 
@@ -10,7 +11,6 @@
 
 // FIXME: remove me
 #include "geometry/pixel.h"
-#include "2d_xy/lor.h"
 
 using namespace gpu;
 

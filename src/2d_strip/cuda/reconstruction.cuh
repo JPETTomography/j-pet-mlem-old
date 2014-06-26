@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cuda_runtime.h>
+#include <stdint.h>
 #include "../config.h"
 #include "../event.h"
 #include "reconstruction_methods.cuh"
@@ -15,10 +16,15 @@
 #define IMAGE_SPACE_LINEAR_INDEX(Y, Z) (Y * cfg.n_pixels) + Z
 #define BUFFOR_LINEAR_INDEX(Y, Z) \
   (blockIdx.x * cfg.n_pixels * cfg.n_pixels) + (Y * cfg.n_pixels) + Z
+#define SH_MEM_INDEX(ID, N, I) (ID * 10 + (2 * N + I))
 
 #define WARP_SIZE 32
 
 #ifdef WARP_GRANULARITY
+
+__device__ uint8_t sh_mem_pixel_buffor[10 * 512];
+//__device__ float inv_c[3];
+
 template <typename T>
 __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
                                              soa_event<float>* soa_data,
@@ -32,6 +38,13 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 
   float inv_c[3];
 
+  inv_c[0] = cfg.inv_pow_sigma_z;
+  inv_c[1] = cfg.inv_pow_sigma_z;
+  inv_c[2] = cfg.inv_pow_sigma_dl;
+
+  float half_grid_size = 0.5f * cfg.grid_size_y_;
+  float half_pixel_size = 0.5f * cfg.pixel_size;
+
   int offset;
 
   int number_of_blocks = int(
@@ -42,10 +55,6 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
       (cfg.number_of_blocks * (cfg.number_of_threads_per_block / WARP_SIZE));
 
   int thread_warp_index = floorf(threadIdx.x / WARP_SIZE);
-
-  inv_c[0] = cfg.inv_pow_sigma_z;
-  inv_c[1] = cfg.inv_pow_sigma_z;
-  inv_c[2] = cfg.inv_pow_sigma_dl;
 
   float sqrt_det_correlation_matrix =
       sqrt(cfg.inv_pow_sigma_z * cfg.inv_pow_sigma_z * cfg.inv_pow_sigma_dl);
@@ -65,9 +74,6 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
       float delta_l = soa_data->dl[warp_id];
 
       float acc = 0.f;
-
-      float half_grid_size = 0.5f * cfg.grid_size_y_;
-      float half_pixel_size = 0.5f * cfg.pixel_size;
 
       // angle space transformation
       float tn = event_tan(z_u, z_d, cfg.R_distance);
@@ -112,6 +118,8 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 
       int bb_size = ceilf(((ur.y - ul.y) * (dl.x - ur.x)) / WARP_SIZE);
 
+      int loop_index = 0;
+
       int2 start_warp = ul;
       int2 tid_pixel;
 
@@ -145,6 +153,12 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 
           acc += event_kernel * tex2D<float>(tex, tid_pixel.x, tid_pixel.y) *
                  rho[IMAGE_SPACE_LINEAR_INDEX(tid_pixel.x, tid_pixel.y)];
+
+          sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, loop_index, 0)] =
+              tid_pixel.x;
+          sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, loop_index, 1)] =
+              tid_pixel.y;
+          loop_index++;
         }
       }
 
@@ -154,11 +168,12 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 
       float inv_acc = 1.0f / acc;
 
-      start_warp = ul;
+      for (int k = 0; k < loop_index; ++k) {
 
-      for (int k = 0; k < bb_size; ++k) {
-
-        warp_space_pixel(tid_pixel, offset, start_warp, ul, ur, dl, tid);
+        tid_pixel.x =
+            sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, loop_index, 0)];
+        tid_pixel.y =
+            sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, loop_index, 1)];
 
         pp = pixel_center(tid_pixel.x,
                           tid_pixel.y,
@@ -169,27 +184,23 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
                           half_grid_size,
                           half_pixel_size);
 
-        if (in_ellipse(A, B, C, y, z, pp)) {
+        pp.x -= y;
+        pp.y -= z;
 
-          pp.x -= y;
-          pp.y -= z;
+        T event_kernel = calculate_kernel<T>(y,
+                                             tn,
+                                             sec_,
+                                             sec_sq_,
+                                             pp,
+                                             inv_c,
+                                             cfg,
+                                             sqrt_det_correlation_matrix) /
+                         tex2D<float>(tex, tid_pixel.x, tid_pixel.y);
 
-          T event_kernel = calculate_kernel<T>(y,
-                                               tn,
-                                               sec_,
-                                               sec_sq_,
-                                               pp,
-                                               inv_c,
-                                               cfg,
-                                               sqrt_det_correlation_matrix) /
-                           tex2D<float>(tex, tid_pixel.x, tid_pixel.y);
-
-          atomicAdd(
-              &image_buffor[BUFFOR_LINEAR_INDEX(tid_pixel.x, tid_pixel.y)],
-              (event_kernel *
-               rho[IMAGE_SPACE_LINEAR_INDEX(tid_pixel.x, tid_pixel.y)]) *
-                  inv_acc * sec_sq_);
-        }
+        atomicAdd(&image_buffor[BUFFOR_LINEAR_INDEX(tid_pixel.x, tid_pixel.y)],
+                  (event_kernel *
+                   rho[IMAGE_SPACE_LINEAR_INDEX(tid_pixel.x, tid_pixel.y)]) *
+                      inv_acc * sec_sq_);
       }
     }
   }
