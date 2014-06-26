@@ -28,14 +28,14 @@ endif()
 find_package(CUDA)
 if(CUDA_FOUND)
   add_definitions(-DHAVE_CUDA=1)
+  list(APPEND CUDA_NVCC_FLAGS         -arch=compute_30 -code=sm_30)
+  list(APPEND CUDA_NVCC_FLAGS_RELEASE -Xptxas -O3 --use_fast_math)
+  # don't add host flags to CUDA
+  set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+  # workaround FindCUDA bug
+  include(CMakeDetermineCCompiler)
+  get_filename_component(CUDA_HOST_COMPILER "${CMAKE_C_COMPILER}" REALPATH)
 endif()
-if(APPLE)
-  set(CUDA_HOST_COMPILER /usr/bin/clang)
-else()
-  set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-endif()
-list(APPEND CUDA_NVCC_FLAGS         -arch=compute_30 -code=sm_30)
-list(APPEND CUDA_NVCC_FLAGS_RELEASE -Xptxas -O3 --use_fast_math)
 
 # creates executable for specific PET command
 function(pet_target TYPE CMD)
