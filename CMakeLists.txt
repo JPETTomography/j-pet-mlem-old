@@ -22,6 +22,8 @@ endif()
 find_package(PNG)
 if(PNG_FOUND)
   add_definitions(-DHAVE_LIBPNG=1)
+  include_directories(${PNG_INCLUDE_DIRS})
+  link_libraries(${PNG_LIBRARIES})
 endif()
 
 # add CUDA specific flags
@@ -64,7 +66,7 @@ function(pet_target TYPE CMD)
     ${COMMON}
     ${CUDA})
   # add CUDA objects to the target
-  target_link_libraries(${TYPE}_${CMD} ${PNG_LIBRARIES} ${CUDA_LIBRARIES})
+  target_link_libraries(${TYPE}_${CMD} ${CUDA_LIBRARIES})
 endfunction()
 
 pet_target(2d_xy matrix)
