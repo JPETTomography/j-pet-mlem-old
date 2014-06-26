@@ -20,7 +20,7 @@ endif()
 
 # add libpng
 find_package(PNG)
-if(PNG)
+if(PNG_FOUND)
   add_definitions(-DHAVE_LIBPNG=1)
 endif()
 
