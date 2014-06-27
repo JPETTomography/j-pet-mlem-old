@@ -7,9 +7,9 @@ add_definitions(-std=c++11)
 include_directories(src lib/cmdline)
 
 file(GLOB COMMON
-  std/geometry/*.h
-  std/math/*.h
-  std/util/*.h
+  src/geometry/*.h
+  src/math/*.h
+  src/util/*.h
   src/util/png_writer.cpp
   src/util/cmdline_hooks.cpp)
 
@@ -20,22 +20,24 @@ endif()
 
 # add libpng
 find_package(PNG)
-if(PNG)
+if(PNG_FOUND)
   add_definitions(-DHAVE_LIBPNG=1)
+  include_directories(${PNG_INCLUDE_DIRS})
+  link_libraries(${PNG_LIBRARIES})
 endif()
 
 # add CUDA specific flags
 find_package(CUDA)
 if(CUDA_FOUND)
   add_definitions(-DHAVE_CUDA=1)
+  list(APPEND CUDA_NVCC_FLAGS         -arch=compute_30 -code=sm_30)
+  list(APPEND CUDA_NVCC_FLAGS_RELEASE -Xptxas -O3 --use_fast_math)
+  # don't add host flags to CUDA
+  set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+  # workaround FindCUDA bug
+  include(CMakeDetermineCCompiler)
+  get_filename_component(CUDA_HOST_COMPILER "${CMAKE_C_COMPILER}" REALPATH)
 endif()
-if(APPLE)
-  set(CUDA_HOST_COMPILER /usr/bin/clang)
-else()
-  set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-endif()
-list(APPEND CUDA_NVCC_FLAGS         -arch=compute_30 -code=sm_30)
-list(APPEND CUDA_NVCC_FLAGS_RELEASE -Xptxas -O3 --use_fast_math)
 
 # creates executable for specific PET command
 function(pet_target TYPE CMD)
@@ -64,7 +66,16 @@ function(pet_target TYPE CMD)
     ${COMMON}
     ${CUDA})
   # add CUDA objects to the target
-  target_link_libraries(${TYPE}_${CMD} ${PNG_LIBRARIES} ${CUDA_LIBRARIES})
+  target_link_libraries(${TYPE}_${CMD} ${CUDA_LIBRARIES})
+  # fix Intel OpenMP runtime location
+  if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+    add_custom_command(TARGET ${TYPE}_${CMD}
+      POST_BUILD
+      COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+        -add_rpath /opt/intel/lib
+        -change    libiomp5.dylib @rpath/libiomp5.dylib
+        ${TYPE}_${CMD})
+  endif()
 endfunction()
 
 pet_target(2d_xy matrix)
