@@ -42,6 +42,8 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
 
   float* cpu_image_rho = (float*)malloc(image_sz);
 
+  float* cpu_temp_rho = (float*)malloc(image_sz);
+
   float cpu_image_sensitivity[image_sz];
 
   for (int i = 0; i < cfg.n_pixels * cfg.n_pixels; ++i) {
@@ -212,7 +214,26 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
       }
     }
 
-    cuda(Memcpy, gpu_image_rho, image_output, image_sz, cudaMemcpyHostToDevice);
+    for (int pixel = 0;
+         pixel < cfg.number_of_blocks * cfg.n_pixels * cfg.n_pixels;
+         ++pixel) {
+
+      cpu_image_buffor[pixel] = 0.f;
+    }
+
+    for (int pixel = 0; pixel < cfg.n_pixels * cfg.n_pixels; ++pixel) {
+
+      cpu_temp_rho[pixel] =
+          image_output[(i * cfg.n_pixels * cfg.n_pixels) + pixel];
+    }
+
+    cuda(Memcpy,
+         gpu_image_buffor,
+         cpu_image_buffor,
+         image_sz * cfg.number_of_blocks,
+         cudaMemcpyHostToDevice);
+
+    cuda(Memcpy, gpu_image_rho, cpu_temp_rho, image_sz, cudaMemcpyHostToDevice);
   }
 
   // clean heap
@@ -221,6 +242,7 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
   cuda(Free, gpu_image_rho);
   cuda(Free, texture_sensitivity_buffer);
   cuda(Free, gpu_soa_event_list);
+  free(cpu_temp_rho);
   free(cpu_image_buffor);
   free(cpu_image_rho);
   free(cpu_soa_event_list);

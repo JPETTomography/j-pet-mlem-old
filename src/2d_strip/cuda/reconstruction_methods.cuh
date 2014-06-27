@@ -3,9 +3,22 @@
 #include <cuda_runtime.h>
 
 #define SINGLE_INVERSE_PI 0.3183098861f
-#define SINGLE_INVERSE_POW_TWO_PI (1.0f / (2.0f * 3.141592f * 3.141592f))
+//#define SINGLE_INVERSE_POW_TWO_PI (1.0f / (2.0f * 3.141592f * 3.141592f))
+#define SINGLE_INVERSE_POW_TWO_PI .0506606f
 
-#define DEBUG_KERNEL 0
+//__device__ void warp_space_pixel(int2& pixel,
+//                                 int offset,
+//                                 int2& ul,
+//                                 int width,
+//                                 int height,
+//                                 int &index) {
+
+//  index = threadIdx.x & 31 + offset;
+//  pixel.y = index / width;
+//  pixel.x = index - width * pixel.y;
+//  pixel.y += ul.y;
+//  pixel.x += ul.x;
+//}
 
 __device__ void warp_space_pixel(int2& tid_pixel,
                                  int& offset,
@@ -47,14 +60,14 @@ __device__ float multiply_elements(T* vec_a, volatile T* inv_c, T* vec_b) {
 }
 
 template <typename T>
-__device__ float calculate_kernel(T& y,
-                                  T& _tan,
-                                  T& inv_cos,
-                                  T& pow_inv_cos,
-                                  float2& pixel_center,
-                                  T* inv_c,
-                                  gpu_config::GPU_parameters& cfg,
-                                  T& sqrt_det_correlation_matrix) {
+__device__ float main_kernel(T& y,
+                             T& _tan,
+                             T& inv_cos,
+                             T& pow_inv_cos,
+                             float2& pixel_center,
+                             T* inv_c,
+                             gpu_config::GPU_parameters& cfg,
+                             T& sqrt_det_correlation_matrix) {
 
   T vec_o[3];
   T vec_a[3];
@@ -82,6 +95,17 @@ __device__ float calculate_kernel(T& y,
   return (SINGLE_INVERSE_POW_TWO_PI *
           (sqrt_det_correlation_matrix / sqrt(norm)) *
           exp(-(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm))));
+}
+
+template <typename T>
+__device__ float test_kernel(T& y,
+                             T& z,
+                             float2& pixel_center,
+                             gpu_config::GPU_parameters& cfg) {
+
+  return (SINGLE_INVERSE_POW_TWO_PI * (1 / (cfg.sigma * cfg.dl))) *
+         exp(-0.5f * (pow((pixel_center.x - y) / cfg.dl, 2) +
+                      pow((pixel_center.y - z) / cfg.sigma, 2)));
 }
 
 __host__ __device__ float2 pixel_center(int i,

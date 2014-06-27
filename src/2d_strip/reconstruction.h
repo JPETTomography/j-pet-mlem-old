@@ -21,6 +21,8 @@
 #define omp_get_thread_num() 0
 #endif
 
+#define RECONSTRUCTION_OLD_KERNEL 1
+
 template <typename T = float, typename D = StripDetector<T>>
 class Reconstruction {
  public:
@@ -107,14 +109,12 @@ class Reconstruction {
       unsigned int i;
     } cvt;
 
-    /* exp(x) = 2^i * 2^f; i = floor (log2(e) * x), 0 <= f <= 1 */
     T t = x * 1.442695041;
     T fi = floorf(t);
     T f = t - fi;
     int i = (int)fi;
-    cvt.f =
-        (0.3371894346f * f + 0.657636276f) * f + 1.00172476f; /* compute 2^f */
-    cvt.i += (i << 23);                                       /* scale by 2^i */
+    cvt.f = (0.3371894346f * f + 0.657636276f) * f + 1.00172476f;
+    cvt.i += (i << 23);
     return cvt.f;
   }
 
@@ -140,6 +140,8 @@ class Reconstruction {
 
         int tid = omp_get_thread_num();
 
+#if RECONSTRUCTION_OLD_KERNEL > 0
+
         T tan = event_tan(
             event_list[id].z_u, event_list[id].z_d, detector_.radius());
         T y = event_y(event_list[id].dl, tan);
@@ -150,6 +152,22 @@ class Reconstruction {
         Point ellipse_center = Point(y, z);
 
         bb_pixel_updates(ellipse_center, angle, y, tan, tid);
+
+#else
+
+        T y = event_list[id].z_u;
+        T z = event_list[id].z_d;
+
+        if (id == 0) {
+
+          std::cout << y << " " << z << std::endl;
+        }
+
+        Point ellipse_center = Point(y, z);
+
+        simple_update(ellipse_center, y, z, tid, id);
+
+#endif
       }
 
       rho.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
@@ -185,7 +203,7 @@ class Reconstruction {
       iterate(n_iterations_in_block);
       // output reconstruction PNG
 
-      std::string file = std::string("rec_iteration_");
+      std::string file = std::string("cpu_rec_iteration_");
 
       file.append(std::to_string(i + 1));
       file.append(".png");
@@ -224,6 +242,63 @@ class Reconstruction {
 
         file << x << " " << y << " " << rho[x][y] << std::endl;
       }
+    }
+  }
+
+  void simple_update(Point& ellipse_center, T& y, T& z, int& tid, int& iter) {
+
+    Pixel center_pixel =
+        pixel_location(ellipse_center.first, ellipse_center.second);
+
+    int y_line = 3 * (detector_.s_z() / pixel_size);
+    int z_line = 3 * (detector_.s_dl() / pixel_size);
+
+    if (iter == 0) {
+
+      std::cout << "Pixel Limit: " << center_pixel.first << " "
+                << center_pixel.second << " " << y_line << " " << z_line
+                << std::endl;
+      std::cout << "Limit min Limit max: " << center_pixel.first - y_line << " "
+                << center_pixel.first + y_line << " "
+                << center_pixel.second - z_line << " "
+                << center_pixel.second + z_line << std::endl;
+    }
+
+    std::vector<std::pair<Pixel, T>> ellipse_kernels;
+    ellipse_kernels.reserve(2000);
+
+    T acc = T(0.0);
+
+    for (int iz = center_pixel.first - y_line; iz < center_pixel.first + y_line;
+         ++iz) {
+      for (int iy = center_pixel.second - z_line;
+           iy < center_pixel.second + z_line;
+           ++iy) {
+
+        Point pp = pixel_center(iy, iz);
+
+        T event_kernel =
+            kernel_.test_kernel(y, z, pp, detector_.s_z(), detector_.s_dl());
+
+        ellipse_kernels.push_back(
+            std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
+
+        if (iter == 0) {
+
+          std::cout << "PP:: " << iz << " " << iy << " " << pp.first << " "
+                    << pp.second << " EVENT: " << event_kernel << std::endl;
+
+          std::cout << "LOCATION: " << iy + (iz * n_pixels) << std::endl;
+        }
+
+        acc += event_kernel * rho[iy][iz];
+      }
+    }
+
+    for (auto& e : ellipse_kernels) {
+
+      thread_rho[tid][e.first.first + (e.first.second * n_pixels)] +=
+          e.second * rho[e.first.first][e.first.second] / acc;
     }
   }
 

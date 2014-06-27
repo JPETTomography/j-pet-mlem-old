@@ -6,24 +6,22 @@
 #include "../event.h"
 #include "reconstruction_methods.cuh"
 
-#define WARP_GRANULARITY
+//#define WARP_GRANULARITY
 
-//#define EVENT_GRANULARITY
+#define EVENT_GRANULARITY
 
-// test flag for first event kernel calcualtions
-//#define CHECK_KERNEL
+#define NORMAL_PHANTOM 0
 
 #define IMAGE_SPACE_LINEAR_INDEX(Y, Z) (Y * cfg.n_pixels) + Z
 #define BUFFOR_LINEAR_INDEX(Y, Z) \
   (blockIdx.x * cfg.n_pixels * cfg.n_pixels) + (Y * cfg.n_pixels) + Z
-#define SH_MEM_INDEX(ID, N, I) (ID * 10 + (2 * N + I))
+#define SH_MEM_INDEX(ID, N, I) (ID * 20 + (2 * N + I))
 
 #define WARP_SIZE 32
 
 #ifdef WARP_GRANULARITY
 
-__device__ uint8_t sh_mem_pixel_buffor[10 * 512];
-//__device__ float inv_c[3];
+__device__ short sh_mem_pixel_buffor[20 * 512];
 
 template <typename T>
 __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
@@ -97,6 +95,14 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 
       float bb_z = bbz(A, C, B_2);
 
+      //      if(tid == 0 && i==0){
+      //      printf("A: %f B: %f C: %f B_2: %f\n",A,B,C,B_2);
+      //      }
+
+      //      if(tid == 0 && i==0){
+      //      printf("bb_y: %f bb_z: %f \n",bb_y,bb_z);
+      //      }
+
       int2 center_pixel = pixel_location(y,
                                          z,
                                          cfg.pixel_size,
@@ -115,6 +121,13 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
       int2 ul =
           make_int2(center_pixel.x - pixels_in_line(bb_y, cfg.pixel_size),
                     center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
+
+      //      if(tid == 0 && i==0){
+      //        printf("UR:= %d Limit:= %d \n", ur.x, ur.y);
+      //        printf("DL:= %d Limit:= %d \n", dl.x, dl.y);
+      //        printf("iz:= %d Limit:= %d \n", dl.y, ur.y);
+      //        printf("iy:= %d Limit:= %d \n", ur.x, dl.x);
+      //      }
 
       int bb_size = ceilf(((ur.y - ul.y) * (dl.x - ur.x)) / WARP_SIZE);
 
@@ -141,15 +154,21 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
           pp.x -= y;
           pp.y -= z;
 
-          T event_kernel = calculate_kernel<T>(y,
-                                               tn,
-                                               sec_,
-                                               sec_sq_,
-                                               pp,
-                                               inv_c,
-                                               cfg,
-                                               sqrt_det_correlation_matrix) /
+          T event_kernel = main_kernel<T>(y,
+                                          tn,
+                                          sec_,
+                                          sec_sq_,
+                                          pp,
+                                          inv_c,
+                                          cfg,
+                                          sqrt_det_correlation_matrix) /
                            tex2D<float>(tex, tid_pixel.x, tid_pixel.y);
+
+          //          if(tid <32 && i == 0){
+          //              printf("TID: %d KERNEL: %e PIXEL: %d %d
+          //              K:%d\n",tid,event_kernel,tid_pixel.x,tid_pixel.y,k);
+
+          //          }
 
           acc += event_kernel * tex2D<float>(tex, tid_pixel.x, tid_pixel.y) *
                  rho[IMAGE_SPACE_LINEAR_INDEX(tid_pixel.x, tid_pixel.y)];
@@ -166,14 +185,16 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
         acc += __shfl_xor(acc, xor_iter, WARP_SIZE);
       }
 
+      //      if(tid == 0 && i==0){
+      //       printf("KERNEL: %e\n",acc);
+      //      }
+
       float inv_acc = 1.0f / acc;
 
       for (int k = 0; k < loop_index; ++k) {
 
-        tid_pixel.x =
-            sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, loop_index, 0)];
-        tid_pixel.y =
-            sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, loop_index, 1)];
+        tid_pixel.x = sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, k, 0)];
+        tid_pixel.y = sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, k, 1)];
 
         pp = pixel_center(tid_pixel.x,
                           tid_pixel.y,
@@ -187,15 +208,21 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
         pp.x -= y;
         pp.y -= z;
 
-        T event_kernel = calculate_kernel<T>(y,
-                                             tn,
-                                             sec_,
-                                             sec_sq_,
-                                             pp,
-                                             inv_c,
-                                             cfg,
-                                             sqrt_det_correlation_matrix) /
+        T event_kernel = main_kernel<T>(y,
+                                        tn,
+                                        sec_,
+                                        sec_sq_,
+                                        pp,
+                                        inv_c,
+                                        cfg,
+                                        sqrt_det_correlation_matrix) /
                          tex2D<float>(tex, tid_pixel.x, tid_pixel.y);
+
+        //        if(tid <32 && i == 0 && k < loop_index){
+        //            printf("TID: %d KERNEL: %e PIXEL: %d %d
+        //            K:%d\n",tid,event_kernel,tid_pixel.x,tid_pixel.y,k);
+
+        //        }
 
         atomicAdd(&image_buffor[BUFFOR_LINEAR_INDEX(tid_pixel.x, tid_pixel.y)],
                   (event_kernel *
@@ -222,8 +249,9 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 
   __shared__ float inv_c[3];
 
-  int block_ = int(ceilf(event_list_size / (cfg.number_of_blocks *
-                                            cfg.number_of_threads_per_block)));
+  int block_chunk =
+      int(ceilf(event_list_size /
+                (cfg.number_of_blocks * cfg.number_of_threads_per_block)));
 
   if (threadIdx.x == 0) {
 
@@ -266,14 +294,6 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
                                  tid];
 #endif
 
-#ifdef CHECK_KERNEL
-        if (tid == 0 && i == 0) {
-
-          printf("THREAD\n");
-          printf("Z_U: %f Z_D: %f DL: %f\n", z_u, z_d, delta_l);
-        }
-#endif
-
         T acc = 0.f;
 
         T half_grid_size = 0.5f * cfg.grid_size_y_;
@@ -297,9 +317,16 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
         T C = T(2.0f) * cfg.inv_pow_sigma_z;
         T B_2 = (B / T(2.0f)) * (B / T(2.0f));
 
+        //        if(tid == 0 && i==0){
+        //        printf("A: %f B: %f C: %f B_2: %f\n",A,B,C,B_2);
+        //        }
         T bb_y = bby(A, C, B_2);
 
         T bb_z = bbz(A, C, B_2);
+
+        //        if(tid == 0 && i==0){
+        //        printf("bb_y: %f bb_z: %f \n",bb_y,bb_z);
+        //        }
 
         int2 center_pixel = pixel_location(y,
                                            z,
@@ -315,12 +342,20 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
         int2 dl =
             make_int2(center_pixel.x + pixels_in_line(bb_y, cfg.pixel_size),
                       center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
+
+        //        if(tid == 0 && i==0){
+        //            printf("UR:= %d Limit:= %d \n", ur.x, ur.y);
+        //            printf("DL:= %d Limit:= %d \n", dl.x, dl.y);
+        //            printf("iz:= %d Limit:= %d \n", dl.y, ur.y);
+        //            printf("iy:= %d Limit:= %d \n", ur.x, dl.x);
+        //        }
+
         float2 pp;
 
         int iter = 0;
 
-        for (int iz = dl.y; iz < ur.y; ++iz) {
-          for (int iy = ur.x; iy < dl.x; ++iy) {
+        for (int iy = ur.x; iy < dl.x; ++iy) {
+          for (int iz = dl.y; iz < ur.y; ++iz) {
 
             pp = pixel_center(iy,
                               iz,
@@ -331,53 +366,55 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
                               half_grid_size,
                               half_pixel_size);
 
-            //            if (tid == 0 && i == 0) {
-            //              printf("Pixel[%d,%d]\n", iy, iz);
-            //            }
-
             if (in_ellipse(A, B, C, y, z, pp)) {
+
+              //                if(tid == 0 && i==0){
+              //                   printf("Pixel(%d,%d): SUB: %f %f ITER: %d\n",
+              //                   iy, iz, pp.x, pp.y,iter);
+
+              //                }
 
               ++iter;
 
               pp.x -= y;
               pp.y -= z;
 
-              T event_kernel =
-                  calculate_kernel<T>(y,
-                                      tn,
-                                      sec_,
-                                      sec_sq_,
-                                      pp,
-                                      inv_c,
-                                      cfg,
-                                      sqrt_det_correlation_matrix) /
-                  tex2D<float>(tex, iy, iz);
+              T event_kernel = main_kernel<T>(y,
+                                              tn,
+                                              sec_,
+                                              sec_sq_,
+                                              pp,
+                                              inv_c,
+                                              cfg,
+                                              sqrt_det_correlation_matrix) /
+                               tex2D<float>(tex, iy, iz);
 
               acc += event_kernel * tex2D<float>(tex, iy, iz) *
                      rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)];
 
-#ifdef CHECK_KERNEL
               if (tid == 0 && i == 0) {
-
-                printf("PIXEL:[%d,%d] PP:[%f,%f] KERNEL: %e\n",
+                printf("TID: %d KERNEL: %e PIXEL: %d %d\n",
+                       tid,
+                       event_kernel,
                        iy,
-                       iz,
-                       pp.x,
-                       pp.y,
-                       event_kernel);
+                       iz);
               }
-#endif
+
+              //                      if(tid == 0){
+              //              printf("Pixel(%d,%d): SUB: %f %f\n", iy, iz, pp.x,
+              //              pp.y);
+              //              printf("KERNEL: %e\n",event_kernel);
+              //                      }
             }
           }
         }
 
-        float inv_acc = 1.0f / acc;
-
         if (tid == 0 && i == 0) {
-          printf("ACC: %f\n", acc);
-          // printf("Z_s: %d Z_e: %d\n", dl.y, ur.y);
-          // printf("Y_s: %d Y_e: %d\n", ur.x, dl.x);
+
+          printf("ACC: %e\n", acc);
         }
+
+        float inv_acc = 1.0f / acc;
 
         for (int iz = dl.y; iz < ur.y; ++iz) {
           for (int iy = ur.x; iy < dl.x; ++iy) {
@@ -393,49 +430,141 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 
             if (in_ellipse(A, B, C, y, z, pp)) {
 
-              // if(tid == 0 && i == 0){printf("Pixel[%d,%d]\n",iy,iz);}
-
               pp.x -= y;
               pp.y -= z;
 
-              T event_kernel =
-                  calculate_kernel<T>(y,
-                                      tn,
-                                      sec_,
-                                      sec_sq_,
-                                      pp,
-                                      inv_c,
-                                      cfg,
-                                      sqrt_det_correlation_matrix) /
-                  tex2D<float>(tex, iy, iz);
+              T event_kernel = main_kernel<T>(y,
+                                              tn,
+                                              sec_,
+                                              sec_sq_,
+                                              pp,
+                                              inv_c,
+                                              cfg,
+                                              sqrt_det_correlation_matrix) /
+                               tex2D<float>(tex, iy, iz);
 
               atomicAdd(&image_buffor[BUFFOR_LINEAR_INDEX(iy, iz)],
                         (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)]) *
-                            inv_acc * sec_sq_);
-
-              //              if (tid == 0 && i == 0) {
-
-              //                printf("PIXEL[%d,%d], LOCATION: %d DATA: %f\n",
-              //                       iy,
-              //                       iz,
-              //                       BUFFOR_LINEAR_INDEX(iy, iz),
-              //                       (event_kernel *
-              //                       rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)]) *
-              //                           inv_acc * sec_sq_);
-              //              }
+                            inv_acc);
             }
           }
         }
-#ifdef CHECK_KERNEL
-        if (tid == 0 && i == 0) {
-          printf("ACC: %e\n", acc);
-          // printf("Z_s: %d Z_e: %d\n", dl.y, ur.y);
-          // printf("Y_s: %d Y_e: %d\n", ur.x, dl.x);
-        }
-#endif
       }
     }
   }
 }
-
 #endif
+
+template <typename T>
+__global__ void reconstruction_2d_strip_cuda_simple(
+    gpu_config::GPU_parameters cfg,
+    soa_event<float>* soa_data,
+    event<T>* event_list,
+    int event_list_size,
+    float* image_buffor,
+    float* rho,
+    cudaTextureObject_t tex) {
+
+  int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+
+  int block_chunk =
+      int(ceilf(event_list_size /
+                (cfg.number_of_blocks * cfg.number_of_threads_per_block)));
+
+  for (int i = 0; i < block_chunk; ++i) {
+
+    if ((i * cfg.number_of_blocks * cfg.number_of_threads_per_block) + tid <
+        event_list_size) {
+
+      for (int j = 0; j < 1; ++j) {
+
+        T y = soa_data->z_u[(i * cfg.number_of_blocks *
+                             cfg.number_of_threads_per_block) +
+                            tid];
+        T z = soa_data->z_d[(i * cfg.number_of_blocks *
+                             cfg.number_of_threads_per_block) +
+                            tid];
+        T acc = 0.f;
+
+        if (tid == 0 && i == 0) {
+
+          printf("%f %f\n", y, z);
+        }
+
+        T half_grid_size = 0.5f * cfg.grid_size_y_;
+        T half_pixel_size = 0.5f * cfg.pixel_size;
+
+        int y_step = 3 * (cfg.dl / cfg.pixel_size);
+        int z_step = 3 * (cfg.sigma / cfg.pixel_size);
+
+        int2 center_pixel = pixel_location(y,
+                                           z,
+                                           cfg.pixel_size,
+                                           cfg.pixel_size,
+                                           cfg.grid_size_y_,
+                                           cfg.grid_size_z_);
+        float2 pp;
+        //        if (tid == 0 && i == 0) {
+        //          printf("TID: %d %f %f LIMIT: %d%d\n", tid, y, z, y_step,
+        //          z_step);
+        //          printf("TID: %d %d %d %d %d\n",
+        //                 tid,
+        //                 center_pixel.x - z_step,
+        //                 center_pixel.x + z_step,
+        //                 center_pixel.y - y_step,
+        //                 center_pixel.y + y_step);
+        //        }
+        for (int iy = center_pixel.x - y_step; iy < center_pixel.x + y_step;
+             ++iy) {
+          for (int iz = center_pixel.y - z_step; iz < center_pixel.y + z_step;
+               ++iz) {
+
+            pp = pixel_center(iy,
+                              iz,
+                              cfg.pixel_size,
+                              cfg.pixel_size,
+                              cfg.grid_size_y_,
+                              cfg.grid_size_z_,
+                              half_grid_size,
+                              half_pixel_size);
+
+            T event_kernel = test_kernel<T>(y, z, pp, cfg);
+
+            acc += event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)];
+
+            //            if (tid == 0 && i == 0) {
+            //              printf("PP: %f %f %e EVENT:  ", pp.x, pp.y,
+            //              event_kernel);
+            //              printf("TID: %d %d %d \n", tid, iy, iz);
+            //              printf("INDEX: %d\n", BUFFOR_LINEAR_INDEX(iy, iz));
+            //            }
+          }
+        }
+
+        float inv_acc = 1.0f / acc;
+
+        for (int iz = center_pixel.y - z_step; iz < center_pixel.y + z_step;
+             ++iz) {
+          for (int iy = center_pixel.x - y_step; iy < center_pixel.x + y_step;
+               ++iy) {
+
+            pp = pixel_center(iy,
+                              iz,
+                              cfg.pixel_size,
+                              cfg.pixel_size,
+                              cfg.grid_size_y_,
+                              cfg.grid_size_z_,
+                              half_grid_size,
+                              half_pixel_size);
+
+            T event_kernel = test_kernel<T>(y, z, pp, cfg);
+
+            atomicAdd(&image_buffor[BUFFOR_LINEAR_INDEX(iy, iz)],
+                      (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)]) *
+                          inv_acc);
+          }
+        }
+      }
+    }
+  }
+}

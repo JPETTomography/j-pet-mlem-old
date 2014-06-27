@@ -8,6 +8,8 @@
 #include <utility>
 #include "strip_detector.h"
 
+#define SINGLE_INVERSE_POW_TWO_PI (1.0f / (2.0f * 3.141592f * 3.141592f))
+
 template <typename T> class Kernel {
  public:
   static constexpr const T INVERSE_PI = T(1.0 / M_PI);
@@ -23,6 +25,13 @@ template <typename T> class Kernel {
     output += vec_a[2] * detector.inv_c(2, 2) * vec_b[2];
 
     return output;
+  }
+
+  T test_kernel(T& y, T& z, Point& pixel_center, T dl, T sigma) {
+
+    return (SINGLE_INVERSE_POW_TWO_PI * (1 / (sigma * dl))) *
+           exp(-0.5f * (pow((pixel_center.first - y) / dl, 2) +
+                        pow((pixel_center.second - z) / sigma, 2)));
   }
 
   T calculate_kernel(T& y,
