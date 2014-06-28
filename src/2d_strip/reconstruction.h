@@ -23,7 +23,7 @@
 
 #define RECONSTRUCTION_OLD_KERNEL 1
 
-template <typename T = float, typename D = StripDetector<T>>
+template <typename T = float, typename D = StripDetector<T> >
 class Reconstruction {
  public:
   typedef typename D::Pixel Pixel;
@@ -41,16 +41,16 @@ class Reconstruction {
   T inv_pow_sigma_z;
   T inv_pow_sigma_dl;
 
-  std::vector<event<T>> event_list;
-  std::vector<std::vector<T>> rho;
-  std::vector<std::vector<T>> rho_temp;
+  std::vector<event<T> > event_list;
+  std::vector<std::vector<T> > rho;
+  std::vector<std::vector<T> > rho_temp;
   std::vector<T> acc_log;
-  std::vector<std::vector<T>> thread_rho;
-  std::vector<std::vector<T>> lookup_table;
+  std::vector<std::vector<T> > thread_rho;
+  std::vector<std::vector<T> > lookup_table;
 
   D detector_;
   Kernel<T> kernel_;
-
+  std::string output_;
  public:
   Reconstruction(int iteration, const D& detector)
       : iteration(iteration), detector_(detector) {
@@ -98,6 +98,7 @@ class Reconstruction {
 
         Point pp = pixel_center(y, z);
         lookup_table[y][z] = detector_.sensitivity(pp.first, pp.second);
+        //lookup_table[y][z] = 1.0;
       }
     }
   }
@@ -203,8 +204,8 @@ class Reconstruction {
       iterate(n_iterations_in_block);
       // output reconstruction PNG
 
-      std::string file = std::string("cpu_rec_iteration_");
-
+      std::string file = output_;
+      file.append("_");
       file.append(std::to_string(i + 1));
       file.append(".png");
 
@@ -440,7 +441,7 @@ class Reconstruction {
     return *this;
   }
 
-  std::vector<event<T>>* get_data() { return &event_list; }
+  std::vector<event<T> >* get_data() { return &event_list; }
 
 // FIXME: this confuses ICC
 #ifndef __ICC
@@ -450,4 +451,8 @@ class Reconstruction {
 //  return in;
 // }
 #endif
+
+  void set_output_name(std::string output) {
+    output_= output;
+  }
 };

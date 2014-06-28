@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     cl.add<int>("cuda-blocks", 'b', "number of CUDA blocks", false, 1);
     cl.add<int>(
         "cuda-threads", 'w', "number of CUDA threads per block", false, 512);
-    cl.add<int>("warp-offset", 'o', "warp offset for test only", false, 1);
+    cl.add<int>("warp-offset", 0, "warp offset for test only", false, 1);
 
 #endif
     cl.add("cpu", 'c', "run on cpu (via OPENMP)");
@@ -54,8 +54,9 @@ int main(int argc, char* argv[]) {
     cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
     cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
     cl.add<float>("gm", 'u', "Gamma error", false, 0.f);
-
+    cl.add<std::string>("output", 'o', "output files (png)", false, "cpu_rec_iteration");
     cl.parse_check(argc, argv);
+
 
 #if _OPENMP
     if (cl.exist("n-threads")) {
@@ -79,7 +80,7 @@ int main(int argc, char* argv[]) {
           10, R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
 
       ibstream in(cl.get<string>("file"));
-
+      reconstruction.set_output_name(cl.get<std::string>("output"));
       reconstruction << in;
 
       std::vector<event<float>>* event_data = reconstruction.get_data();
@@ -121,7 +122,7 @@ int main(int argc, char* argv[]) {
                                            sigma,
                                            dl);
       ibstream in(cl.get<string>("file"));
-
+      reconstruction.set_output_name(cl.get<std::string>("output"));
       reconstruction << in;
 
       clock_t begin = clock();
