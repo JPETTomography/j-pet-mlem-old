@@ -48,12 +48,7 @@ void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
       }
     }
 
-    std::string file = std::string("gpu_rec_i_");
-
-    file.append(std::to_string(iteration + 1));
-    file.append(".png");
-
-    png_writer png(file);
+    png_writer png("gpu_rec_i_" + std::to_string(iteration + 1) + ".png");
     png.write_header<>(cfg.n_pixels, cfg.n_pixels);
 
     float output_max = 0.0;
@@ -63,8 +58,9 @@ void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
       }
     }
 
-    std::ofstream data_output;
-    data_output.open("pixels_output.txt");
+    std::ofstream data_output("pixels_output_i_" +
+                              std::to_string(iteration + 1) + ".txt");
+
     for (int x = 0; x < cfg.n_pixels; ++x) {
       for (int y = 0; y < cfg.n_pixels; ++y) {
 
