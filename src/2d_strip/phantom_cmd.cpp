@@ -49,6 +49,12 @@ int main(int argc, char* argv[]) {
 
     cl.parse_check(argc, argv);
 
+    if (!cl.rest().size()) {
+      throw(
+          "at least one input phantom description file expected, "
+          "consult --help");
+    }
+
 #if _OPENMP
     if (cl.exist("n-threads")) {
       omp_set_num_threads(cl.get<int>("n-threads"));

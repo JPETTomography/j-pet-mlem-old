@@ -60,6 +60,10 @@ int main(int argc, char* argv[]) {
         "output", 'o', "output files prefix (png)", false, "cpu_rec_iteration");
     cl.parse_check(argc, argv);
 
+    if (!cl.rest().size()) {
+      throw("at least one events input file expected, consult --help");
+    }
+
 #if _OPENMP
     if (cl.exist("n-threads")) {
       omp_set_num_threads(cl.get<int>("n-threads"));
