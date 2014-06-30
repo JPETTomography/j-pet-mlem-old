@@ -44,8 +44,12 @@ template <typename F> struct ImageSpaceEventTan {
   }
 };
 
-template <typename T> struct EllipseParameters {
-  T x, y, a, b;
-  T angle;
-  T iter;
+template <typename FType> struct EllipseParameters {
+  typedef FType F;
+  F x, y, a, b;
+  F angle;
+  F iter;
+
+  EllipseParameters(F x, F y, F a, F b, F angle, F iter)
+      : x(x), y(y), a(a), b(b), angle(angle), iter(iter) {}
 };

@@ -35,16 +35,16 @@ int main(int argc, char* argv[]) {
 #endif
     cl.add<std::string>("input_fn", 'f', "phantom file", false, "s_shepp");
     cl.add<std::string>("output_fn", 'o', "events file", false, "phantom.bin");
-    cl.add<float>(
+    cl.add<double>(
         "r-distance", 'r', "R distance between scientilators", false, 500.0f);
-    cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
-    cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
+    cl.add<double>("s-length", 'l', "Scentilator_length", false, 1000.0f);
+    cl.add<double>("p-size", 'p', "Pixel size", false, 5.0f);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
     cl.add<int>("iter", 'i', "number of iterations", false, 1);
-    cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
-    cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
-    cl.add<float>("gm", 'g', "Gamma error", false, 0.f);
-    cl.add<float>("emmisions", 'e', "number of emissions", false, 500000);
+    cl.add<double>("s-z", 's', "Sigma z error", false, 10.0f);
+    cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63.0f);
+    cl.add<double>("gm", 'g', "Gamma error", false, 0.f);
+    cl.add<double>("emmisions", 'e', "number of emissions", false, 500000);
 
     cl.parse_check(argc, argv);
 
@@ -54,35 +54,30 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    float R_distance = cl.get<float>("r-distance");
-    float Scentilator_length = cl.get<float>("s-length");
-    float pixel_size = cl.get<float>("p-size");
-    float n_pixels = Scentilator_length / pixel_size;
-    float sigma = cl.get<float>("s-z");
-    float dl = cl.get<float>("s-dl");
-    float emmisions = cl.get<float>("emmisions");
+    double R_distance = cl.get<double>("r-distance");
+    double Scentilator_length = cl.get<double>("s-length");
+    double pixel_size = cl.get<double>("p-size");
+    double n_pixels = Scentilator_length / pixel_size;
+    double sigma = cl.get<double>("s-z");
+    double dl = cl.get<double>("s-dl");
+    double emmisions = cl.get<double>("emmisions");
 
     std::ifstream infile(cl.get<std::string>("input_fn"));
 
-    std::vector<EllipseParameters<float>> ellipse_list;
-    EllipseParameters<float> el;
+    typedef EllipseParameters<double> Ellipse;
+    std::vector<Ellipse> ellipse_list;
 
-    float normalized_acc = 0.0f;
+    double normalized_acc = 0.0f;
 
     std::string line;
     while (std::getline(infile, line)) {
       std::istringstream iss(line);
-      float x, y, a, b, angle, acc;
+      double x, y, a, b, angle, acc;
       if (!(iss >> x >> y >> a >> b >> angle >> acc)) {
         break;
       }  // error
 
-      el.x = x;
-      el.y = y;
-      el.a = a;
-      el.b = b;
-      el.angle = angle;
-      el.iter = acc;
+      Ellipse el(x, y, a, b, angle, acc);
 
       normalized_acc += acc;
 
@@ -99,13 +94,13 @@ int main(int argc, char* argv[]) {
       std::cout << e.iter << std::endl;
     }
 
-    Phantom<float> test(ellipse_list,
-                        n_pixels,
-                        pixel_size,
-                        R_distance,
-                        Scentilator_length,
-                        sigma,
-                        dl);
+    Phantom<Ellipse::F> test(ellipse_list,
+                             n_pixels,
+                             pixel_size,
+                             R_distance,
+                             Scentilator_length,
+                             sigma,
+                             dl);
 
     test.emit_event();
 

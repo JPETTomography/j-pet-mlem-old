@@ -17,8 +17,7 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
                                  int off);
 
 void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
-                                   Event<float>* event_list,
-                                   int event_size,
+                                   std::vector<Event<float>>& event_list,
                                    int warp_offset,
                                    int n_blocks) {
 
@@ -31,8 +30,8 @@ void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
                       std::vector<float>(cfg.n_pixels, float(0)));
 
   gpu_reconstruction_strip_2d(cfg,
-                              event_list,
-                              event_size,
+                              event_list.data(),
+                              event_list.size(),
                               n_blocks,
                               gpu_output_image.data(),
                               warp_offset);
@@ -85,4 +84,16 @@ void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
       png.write_row(row);
     }
   }
+}
+
+void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
+                                   std::vector<Event<double>>& event_list,
+                                   int warp_offset,
+                                   int n_blocks) {
+  std::vector<Event<float>> sp_event_list;
+  for (auto& event : event_list) {
+    Event<float> sp_event(event.z_u, event.z_d, event.dl);
+    sp_event_list.push_back(sp_event);
+  }
+  execute_kernel_reconstruction(cfg, sp_event_list, warp_offset, n_blocks);
 }

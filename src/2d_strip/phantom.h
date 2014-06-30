@@ -20,42 +20,41 @@
 #include "event.h"
 #include "util/bstream.h"
 
-typedef std::minstd_rand0 rng;
+template <typename F> int sgn(F val) { return (F(0) < val) - (val < F(0)); }
 
-template <typename T> int sgn(T val) { return (T(0) < val) - (val < T(0)); }
-
-template <typename T = double> class Phantom {
-
+template <typename FType = double> class Phantom {
+  typedef FType F;
   typedef std::pair<int, int> Pixel;
-  typedef std::pair<T, T> Point;
+  typedef std::pair<F, F> Point;
+  typedef std::minstd_rand0 rng;
 
  private:
   int iteration;
   int n_pixels;
-  T pixel_size;
-  T R_distance;
-  T Scentilator_length;
-  T sin;
-  T cos;
-  T inv_a2;
-  T inv_b2;
-  T sigma_z;
-  T sigma_dl;
-  std::vector<EllipseParameters<T>> ellipse_list;
-  std::vector<Event<T>> event_list;
-  std::vector<std::vector<T>> output;
-  std::vector<std::vector<T>> output_without_errors;
-  static constexpr const T PI_2 = T(1.5707963);
-  static constexpr const T radian = T(M_PI / 180);
+  F pixel_size;
+  F R_distance;
+  F Scentilator_length;
+  F sin;
+  F cos;
+  F inv_a2;
+  F inv_b2;
+  F sigma_z;
+  F sigma_dl;
+  std::vector<EllipseParameters<F>> ellipse_list;
+  std::vector<Event<F>> event_list;
+  std::vector<std::vector<F>> output;
+  std::vector<std::vector<F>> output_without_errors;
+  static constexpr const F PI_2 = F(M_PI_2);
+  static constexpr const F radian = F(M_PI / 180);
 
  public:
-  Phantom(std::vector<EllipseParameters<T>>& el,
+  Phantom(std::vector<EllipseParameters<F>>& el,
           int n_pixels,
-          T& pixel_size,
-          T& R_distance,
-          T& Scentilator_length,
-          T sigma_z,
-          T sigma_dl)
+          F pixel_size,
+          F R_distance,
+          F Scentilator_length,
+          F sigma_z,
+          F sigma_dl)
       : n_pixels(n_pixels),
         pixel_size(pixel_size),
         R_distance(R_distance),
@@ -63,42 +62,40 @@ template <typename T = double> class Phantom {
         sigma_z(sigma_z),
         sigma_dl(sigma_dl) {
     ellipse_list = el;
-    output.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
-    output_without_errors.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
+    output.assign(n_pixels, std::vector<F>(n_pixels, 0));
+    output_without_errors.assign(n_pixels, std::vector<F>(n_pixels, 0));
   }
 
-  bool in(T y, T z, EllipseParameters<T> el) const {
+  bool in(F y, F z, EllipseParameters<F> el) const {
 
-    T dy = (y - el.y);
-    T dz = (z - el.x);
-    T d1 = (sin * dy + cos * dz);  // y
-    T d2 = (sin * dz - cos * dy);  // z
+    F dy = (y - el.y);
+    F dz = (z - el.x);
+    F d1 = (sin * dy + cos * dz);  // y
+    F d2 = (sin * dz - cos * dy);  // z
 
-    return ((d1 * d1 / (el.a * el.a)) + (d2 * d2 / (el.b * el.b))) <= T(1)
-               ? true
-               : false;
+    return (d1 * d1 / (el.a * el.a)) + (d2 * d2 / (el.b * el.b)) <= F(1);
   }
 
   void emit_event() {
 
-    std::vector<std::vector<Event<T>>> event_list_per_thread;
+    std::vector<std::vector<Event<F>>> event_list_per_thread;
 
     event_list_per_thread.resize(omp_get_max_threads());
 
     for (auto& el : ellipse_list) {
 
-      T max = std::max(el.a, el.b);
+      F max = std::max(el.a, el.b);
 
       std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
                 << el.angle << std::endl;
 
-      std::uniform_real_distribution<T> uniform_dist(0, 1);
-      std::uniform_real_distribution<T> uniform_angle(-1, 1);
+      std::uniform_real_distribution<F> uniform_dist(0, 1);
+      std::uniform_real_distribution<F> uniform_angle(-1, 1);
 
-      std::uniform_real_distribution<T> uniform_y(el.y - max, el.y + max);
-      std::uniform_real_distribution<T> uniform_z(el.x - max, el.x + max);
-      std::normal_distribution<T> normal_dist_dz(0, sigma_z);
-      std::normal_distribution<T> normal_dist_dl(0, sigma_dl);
+      std::uniform_real_distribution<F> uniform_y(el.y - max, el.y + max);
+      std::uniform_real_distribution<F> uniform_z(el.x - max, el.x + max);
+      std::normal_distribution<F> normal_dist_dz(0, sigma_z);
+      std::normal_distribution<F> normal_dist_dl(0, sigma_dl);
       rng rd;
 
       std::vector<rng> rng_list;
@@ -111,10 +108,10 @@ template <typename T = double> class Phantom {
         // Turn on leapfrogging with an offset that depends on the task id
       }
 
-      sin = std::sin(T(el.angle * radian));
-      cos = std::cos(T(el.angle * radian));
-      inv_a2 = T(1) / (el.a * el.a);
-      inv_b2 = T(1) / (el.b * el.b);
+      sin = std::sin(F(el.angle * radian));
+      cos = std::cos(F(el.angle * radian));
+      inv_a2 = F(1) / (el.a * el.a);
+      inv_b2 = F(1) / (el.b * el.b);
       iteration = el.iter;
 
 #if _OPENMP
@@ -124,14 +121,14 @@ template <typename T = double> class Phantom {
 
 #if MAIN_PHANTOM
 
-        T ry, rz, rangle;
+        F ry, rz, rangle;
 
         ry = uniform_y(rng_list[omp_get_thread_num()]);
         rz = uniform_z(rng_list[omp_get_thread_num()]);
         rangle = M_PI_4 * uniform_angle(rng_list[omp_get_thread_num()]);
 
         if (in(ry, rz, el) && (std::abs(rangle) != M_PI_2)) {
-          T z_u, z_d, dl;
+          F z_u, z_d, dl;
 
           z_u = rz + (R_distance - ry) * std::tan(rangle);
           z_d = rz - (R_distance + ry) * std::tan(rangle);
@@ -141,14 +138,14 @@ template <typename T = double> class Phantom {
           z_d += normal_dist_dz(rng_list[omp_get_thread_num()]);
           dl += normal_dist_dl(rng_list[omp_get_thread_num()]);
 
-          if (std::abs(z_u) < (Scentilator_length / T(2)) &&
-              std::abs(z_d) < (Scentilator_length / T(2))) {
+          if (std::abs(z_u) < (Scentilator_length / F(2)) &&
+              std::abs(z_d) < (Scentilator_length / F(2))) {
 
-            Event<T> event(z_u, z_d, dl);
+            Event<F> event(z_u, z_d, dl);
 
-            T tan = event.tan(R_distance);
-            T y = event.y(tan);
-            T z = event.z(y, tan);
+            F tan = event.tan(R_distance);
+            F y = event.y(tan);
+            F z = event.z(y, tan);
 
             Pixel p = pixel_location(y, z);
             Pixel pp = pixel_location(ry, rz);
@@ -165,8 +162,8 @@ template <typename T = double> class Phantom {
         ry = el.y + normal_dist_dl(rng_list[omp_get_thread_num()]);
         rz = el.x + normal_dist_dz(rng_list[omp_get_thread_num()]);
 
-        T y = ry;
-        T z = rz;
+        F y = ry;
+        F z = rz;
 
         Pixel p = pixel_location(x, y);
         Pixel pp = pixel_location(0, 0);
@@ -184,7 +181,7 @@ template <typename T = double> class Phantom {
 #endif
       }
 
-      for (signed i = 0; i < omp_get_max_threads(); ++i) {
+      for (int i = 0; i < omp_get_max_threads(); ++i) {
 
         event_list.insert(event_list.end(),
                           event_list_per_thread[i].begin(),
@@ -193,8 +190,6 @@ template <typename T = double> class Phantom {
 
       std::cout << "VECTOR: " << event_list.size() << std::endl;
     }
-
-    // here
 
     // output reconstruction PNG
 
@@ -207,7 +202,7 @@ template <typename T = double> class Phantom {
     png_writer png(file);
     png.write_header<>(n_pixels, n_pixels);
 
-    T output_max = 0;
+    F output_max = 0;
     for (auto& col : output) {
       for (auto& row : col)
         output_max = std::max(output_max, row);
@@ -248,22 +243,18 @@ template <typename T = double> class Phantom {
   }
 
   // coord Plane
-  Pixel pixel_location(T y, T z) {
+  Pixel pixel_location(F y, F z) {
     return Pixel(std::floor((R_distance - y) / pixel_size),
                  std::floor((R_distance + z) / pixel_size));
   }
 
   template <typename StreamType> Phantom& operator>>(StreamType& out) {
 
-    typename std::vector<Event<T>>::iterator it;
     int size = event_list.size();
-    int i = 0;
     out << size;
-    for (it = event_list.begin(); it != event_list.end(); ++it) {
-      ++i;
-      out << it->z_u << it->z_d << it->dl;
+    for (auto& event : event_list) {
+      out << event.z_u << event.z_d << event.dl;
     }
-    std::cout << "i: " << i << std::endl;
     return *this;
   }
 

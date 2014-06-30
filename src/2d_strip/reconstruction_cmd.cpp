@@ -43,16 +43,16 @@ int main(int argc, char* argv[]) {
 
 #endif
     cl.add("cpu", 'c', "run on cpu (via OPENMP)");
-    cl.add<float>(
+    cl.add<double>(
         "r-distance", 'r', "R distance between scientilators", false, 500.0f);
     cl.add<std::string>("file", 'f', "events file name", false, "phantom.bin");
-    cl.add<float>("s-length", 'l', "Scentilator_length", false, 1000.0f);
-    cl.add<float>("p-size", 'p', "Pixel size", false, 5.0f);
+    cl.add<double>("s-length", 'l', "Scentilator_length", false, 1000.0f);
+    cl.add<double>("p-size", 'p', "Pixel size", false, 5.0f);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
     cl.add<int>("iter", 'i', "number of iterations", false, 1);
-    cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
-    cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
-    cl.add<float>("gm", 'u', "Gamma error", false, 0.f);
+    cl.add<double>("s-z", 's', "Sigma z error", false, 10.0f);
+    cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63.0f);
+    cl.add<double>("gm", 'u', "Gamma error", false, 0.f);
     cl.add<std::string>(
         "output", 'o', "output files (png)", false, "cpu_rec_iteration");
     cl.parse_check(argc, argv);
@@ -66,23 +66,14 @@ int main(int argc, char* argv[]) {
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
 
-      float R_distance = cl.get<float>("r-distance");
-      float Scentilator_length = cl.get<float>("s-length");
-      float pixel_size = cl.get<float>("p-size");
-      float n_pixels = Scentilator_length / pixel_size;
-      float sigma = cl.get<float>("s-z");
-      float dl = cl.get<float>("s-dl");
+      double R_distance = cl.get<double>("r-distance");
+      double Scentilator_length = cl.get<double>("s-length");
+      double pixel_size = cl.get<double>("p-size");
+      double n_pixels = Scentilator_length / pixel_size;
+      double sigma = cl.get<double>("s-z");
+      double dl = cl.get<double>("s-dl");
       int warp_offset = cl.get<int>("warp-offset");
       int n_blocks = cl.get<int>("iter");
-
-      Reconstruction<float> reconstruction(
-          10, R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
-
-      ibstream in(cl.get<string>("file"));
-      reconstruction.set_output_name(cl.get<std::string>("output"));
-      reconstruction << in;
-
-      std::vector<Event<float>>* event_data = reconstruction.get_data();
 
       gpu_config::GPU_parameters cfg;
       cfg.R_distance = R_distance;
@@ -99,27 +90,33 @@ int main(int argc, char* argv[]) {
       cfg.grid_size_y_ = n_pixels * pixel_size;
       cfg.grid_size_z_ = n_pixels * pixel_size;
 
+      Reconstruction<double> reconstruction(
+          10, R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
+      ibstream in(cl.get<string>("file"));
+      reconstruction.set_output_name(cl.get<std::string>("output"));
+      reconstruction << in;
+
       execute_kernel_reconstruction(
-          cfg, event_data->data(), event_data->size(), warp_offset, n_blocks);
+          cfg, reconstruction.get_event_list(), warp_offset, n_blocks);
     }
 #endif
 
     if (cl.exist("cpu")) {
-      float R_distance = cl.get<float>("r-distance");
-      float Scentilator_length = cl.get<float>("s-length");
-      float pixel_size = cl.get<float>("p-size");
-      float n_pixels = Scentilator_length / pixel_size;
-      float sigma = cl.get<float>("s-z");
-      float dl = cl.get<float>("s-dl");
+      double R_distance = cl.get<double>("r-distance");
+      double Scentilator_length = cl.get<double>("s-length");
+      double pixel_size = cl.get<double>("p-size");
+      double n_pixels = Scentilator_length / pixel_size;
+      double sigma = cl.get<double>("s-z");
+      double dl = cl.get<double>("s-dl");
 
       int n_blocks = cl.get<int>("iter");
-      Reconstruction<float> reconstruction(n_blocks,
-                                           R_distance,
-                                           Scentilator_length,
-                                           n_pixels,
-                                           pixel_size,
-                                           sigma,
-                                           dl);
+      Reconstruction<double> reconstruction(n_blocks,
+                                            R_distance,
+                                            Scentilator_length,
+                                            n_pixels,
+                                            pixel_size,
+                                            sigma,
+                                            dl);
       ibstream in(cl.get<string>("file"));
       reconstruction.set_output_name(cl.get<std::string>("output"));
       reconstruction << in;
@@ -130,7 +127,7 @@ int main(int argc, char* argv[]) {
 
       clock_t end = clock();
 
-      std::cout << "Time:" << float(end - begin) / CLOCKS_PER_SEC / 4
+      std::cout << "Time:" << double(end - begin) / CLOCKS_PER_SEC / 4
                 << std::endl;
     }
   } catch (std::string& ex) {

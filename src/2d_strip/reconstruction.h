@@ -23,33 +23,34 @@
 
 #define RECONSTRUCTION_OLD_KERNEL 1
 
-template <typename T = float, typename D = StripDetector<T>>
+template <typename FType = double, typename D = StripDetector<FType>>
 class Reconstruction {
  public:
+  typedef FType F;
   typedef typename D::Pixel Pixel;
   typedef typename D::Point Point;
-  T sqrt_det_correlation_matrix;
+  F sqrt_det_correlation_matrix;
 
  private:
-  static constexpr const T INVERSE_PI = Kernel<T>::INVERSE_PI;
-  static constexpr const T INVERSE_POW_TWO_PI = Kernel<T>::INVERSE_POW_TWO_PI;
+  static constexpr const F INVERSE_PI = Kernel<F>::INVERSE_PI;
+  static constexpr const F INVERSE_POW_TWO_PI = Kernel<F>::INVERSE_POW_TWO_PI;
 
   int iteration;
   int n_pixels;
-  T pixel_size;
-  T pow_sigma_z, pow_sigma_dl;
-  T inv_pow_sigma_z;
-  T inv_pow_sigma_dl;
+  F pixel_size;
+  F pow_sigma_z, pow_sigma_dl;
+  F inv_pow_sigma_z;
+  F inv_pow_sigma_dl;
 
-  std::vector<Event<T>> event_list;
-  std::vector<std::vector<T>> rho;
-  std::vector<std::vector<T>> rho_temp;
-  std::vector<T> acc_log;
-  std::vector<std::vector<T>> thread_rho;
-  std::vector<std::vector<T>> lookup_table;
+  std::vector<Event<F>> event_list;
+  std::vector<std::vector<F>> rho;
+  std::vector<std::vector<F>> rho_temp;
+  std::vector<F> acc_log;
+  std::vector<std::vector<F>> thread_rho;
+  std::vector<std::vector<F>> lookup_table;
 
   D detector_;
-  Kernel<T> kernel_;
+  Kernel<F> kernel_;
   std::string output_;
 
  public:
@@ -58,12 +59,12 @@ class Reconstruction {
     init();
   };
   Reconstruction(int iteration,
-                 T R_distance_a,
-                 T scintilator_length,
+                 F R_distance_a,
+                 F scintilator_length,
                  int n_pixels,
-                 T pixel_size,
-                 T sigma_z,
-                 T sigma_dl)
+                 F pixel_size,
+                 F sigma_z,
+                 F sigma_dl)
       : iteration(iteration),
         n_pixels(n_pixels),
         pixel_size(pixel_size),
@@ -80,26 +81,24 @@ class Reconstruction {
 
  private:
   void init() {
-    kernel_ = Kernel<T>();
-    rho.assign(n_pixels, std::vector<T>(n_pixels, T(100)));
-    rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(10)));
+    kernel_ = Kernel<F>();
+    rho.assign(n_pixels, std::vector<F>(n_pixels, F(100)));
+    rho_temp.assign(n_pixels, std::vector<F>(n_pixels, F(10)));
     pow_sigma_z = detector_.sigma_z * detector_.sigma_z;
     pow_sigma_dl = detector_.sigma_dl * detector_.sigma_dl;
 
     sqrt_det_correlation_matrix = std::sqrt(
         detector_.inv_c(0, 0) * detector_.inv_c(1, 1) * detector_.inv_c(2, 2));
 
-    inv_pow_sigma_z = T(1.0) / pow_sigma_z;
-    inv_pow_sigma_dl = T(1.0) / pow_sigma_dl;
+    inv_pow_sigma_z = F(1.0) / pow_sigma_z;
+    inv_pow_sigma_dl = F(1.0) / pow_sigma_dl;
 
-    lookup_table.assign(n_pixels, std::vector<T>(n_pixels));
+    lookup_table.assign(n_pixels, std::vector<F>(n_pixels));
 
     for (int y = 0; y < n_pixels; ++y) {
       for (int z = 0; z < n_pixels; ++z) {
-
         Point pp = pixel_center(y, z);
         lookup_table[y][z] = detector_.sensitivity(pp.first, pp.second);
-        // lookup_table[y][z] = 1.0;
       }
     }
   }
@@ -111,7 +110,7 @@ class Reconstruction {
     for (int i = 0; i < n_iterations; i++) {
 
       thread_rho.assign(omp_get_max_threads(),
-                        std::vector<T>(n_pixels * n_pixels, T(0.0f)));
+                        std::vector<F>(n_pixels * n_pixels, F(0.0f)));
 
       std::cout << "ITERATION: " << i << std::endl;
 
@@ -127,11 +126,11 @@ class Reconstruction {
 #if RECONSTRUCTION_OLD_KERNEL
 
         auto event = event_list[id];
-        T tan = event.tan(detector_.radius);
-        T y = event.y(tan);
-        T z = event.z(y, tan);
+        F tan = event.tan(detector_.radius);
+        F y = event.y(tan);
+        F z = event.z(y, tan);
 
-        T angle = std::atan(tan);
+        F angle = std::atan(tan);
 
         Point ellipse_center = Point(y, z);
 
@@ -139,8 +138,8 @@ class Reconstruction {
 
 #else
 
-        T y = event_list[id].z_u;
-        T z = event_list[id].z_d;
+        F y = event_list[id].z_u;
+        F z = event_list[id].z_d;
 
         if (id == 0) {
 
@@ -154,7 +153,7 @@ class Reconstruction {
 #endif
       }
 
-      rho.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
+      rho.assign(n_pixels, std::vector<F>(n_pixels, F(0)));
 
       for (int i = 0; i < n_pixels; ++i) {
         for (int j = 0; j < n_pixels; ++j) {
@@ -175,7 +174,7 @@ class Reconstruction {
 
   void operator()(int n_blocks, int n_iterations_in_block) {
 
-    // T tan, y, z, angle;
+    // F tan, y, z, angle;
     // Point ellipse_center;
     // Pixel pp;
     // int tid;
@@ -196,7 +195,7 @@ class Reconstruction {
       png_writer png(file);
       png.write_header<>(n_pixels, n_pixels);
 
-      T output_max = 0.0;
+      F output_max = 0.0;
       for (auto& col : rho) {
         for (auto& row : col) {
           output_max = std::max(output_max, row);
@@ -230,7 +229,7 @@ class Reconstruction {
     }
   }
 
-  void simple_update(Point& ellipse_center, T& y, T& z, int& tid, int& iter) {
+  void simple_update(Point& ellipse_center, F& y, F& z, int& tid, int& iter) {
 
     Pixel center_pixel =
         pixel_location(ellipse_center.first, ellipse_center.second);
@@ -249,10 +248,10 @@ class Reconstruction {
                 << center_pixel.second + z_line << std::endl;
     }
 
-    std::vector<std::pair<Pixel, T>> ellipse_kernels;
+    std::vector<std::pair<Pixel, F>> ellipse_kernels;
     ellipse_kernels.reserve(2000);
 
-    T acc = T(0.0);
+    F acc = F(0.0);
 
     for (int iz = center_pixel.first - y_line; iz < center_pixel.first + y_line;
          ++iz) {
@@ -262,11 +261,11 @@ class Reconstruction {
 
         Point pp = pixel_center(iy, iz);
 
-        T event_kernel =
+        F event_kernel =
             kernel_.test_kernel(y, z, pp, detector_.s_z(), detector_.s_dl());
 
         ellipse_kernels.push_back(
-            std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
+            std::pair<Pixel, F>(Pixel(iy, iz), event_kernel));
 
         if (iter == 0) {
 
@@ -288,29 +287,29 @@ class Reconstruction {
   }
 
   void bb_pixel_updates(Point& ellipse_center,
-                        T& angle,
-                        T& y,
-                        T& tg,
+                        F& angle,
+                        F& y,
+                        F& tg,
                         int& tid) {
 
     // std::cout << "0 " << tg << " " << y << std::endl;
 
-    T cos_ = std::cos((angle));
+    F cos_ = std::cos((angle));
 
-    T sec_ = T(1.0) / cos_;
-    T sec_sq_ = sec_ * sec_;
+    F sec_ = F(1.0) / cos_;
+    F sec_sq_ = sec_ * sec_;
 
-    T A = (((T(4.0) / (cos_ * cos_)) * inv_pow_sigma_dl) +
-           (T(2.0) * tg * tg * inv_pow_sigma_z));
-    T B = -T(4.0) * tg * inv_pow_sigma_z;
-    T C = T(2.0) * inv_pow_sigma_z;
-    T B_2 = (B / T(2.0)) * (B / T(2.0));
+    F A = (((F(4.0) / (cos_ * cos_)) * inv_pow_sigma_dl) +
+           (F(2.0) * tg * tg * inv_pow_sigma_z));
+    F B = -F(4.0) * tg * inv_pow_sigma_z;
+    F C = F(2.0) * inv_pow_sigma_z;
+    F B_2 = (B / F(2.0)) * (B / F(2.0));
 #if 0
     printf("A:= %f B:= %f c:= %f B_2:= %f\n", A, B, C, B_2);
 #endif
-    T bb_y = bby(A, C, B_2);
+    F bb_y = bby(A, C, B_2);
 
-    T bb_z = bbz(A, C, B_2);
+    F bb_z = bbz(A, C, B_2);
 #if 0
     printf("bb_y:= %f bb_z:= %f\n", bb_y, bb_z);
 #endif
@@ -327,13 +326,13 @@ class Reconstruction {
     Pixel dl = Pixel(center_pixel.first + pixels_in_line(bb_y),
                      center_pixel.second - pixels_in_line(bb_z));
 
-    std::vector<std::pair<Pixel, T>> ellipse_kernels;
+    std::vector<std::pair<Pixel, F>> ellipse_kernels;
     ellipse_kernels.reserve(2000);
 #if 0
     printf("iz:= %d Limit:= %d \n", dl.second, ur.first);
     printf("iy:= %d Limit:= %d \n", ur.first, dl.first);
 #endif
-    T acc = T(0.0);
+    F acc = F(0.0);
     for (int iz = dl.second; iz < ur.second; ++iz) {
       for (int iy = ur.first; iy < dl.first; ++iy) {
 
@@ -348,7 +347,7 @@ class Reconstruction {
 #if 0
           printf("Pixel(%d,%d): SUB: %f %f\n", iy, iz, pp.first, pp.second);
 #endif
-          T event_kernel =
+          F event_kernel =
               kernel_.calculate_kernel(y,
                                        tg,
                                        sec_,
@@ -359,7 +358,7 @@ class Reconstruction {
               lookup_table[iy][iz];
 
           ellipse_kernels.push_back(
-              std::pair<Pixel, T>(Pixel(iy, iz), event_kernel));
+              std::pair<Pixel, F>(Pixel(iy, iz), event_kernel));
           acc += event_kernel * lookup_table[iy][iz] * rho[iy][iz];
         }
       }
@@ -372,28 +371,28 @@ class Reconstruction {
     }
   }
 
-  bool in_ellipse(T& A, T& B, T& C, Point ellipse_center, Point p) {
+  bool in_ellipse(F& A, F& B, F& C, Point ellipse_center, Point p) {
 
-    T dy = (p.first - ellipse_center.first);
-    T dz = (p.second - ellipse_center.second);
+    F dy = (p.first - ellipse_center.first);
+    F dz = (p.second - ellipse_center.second);
 
-    return (((A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)))) <= T(9.0)
+    return (((A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)))) <= F(9.0)
                ? true
                : false;
   }
 
-  T bbz(T& A, T& C, T& B_2) { return T(3.0) / std::sqrt(C - (B_2 / A)); }
+  F bbz(F& A, F& C, F& B_2) { return F(3.0) / std::sqrt(C - (B_2 / A)); }
 
-  T bby(T& A, T& C, T& B_2) { return T(3.0) / std::sqrt(A - (B_2 / C)); }
+  F bby(F& A, F& C, F& B_2) { return F(3.0) / std::sqrt(A - (B_2 / C)); }
 
   // coord Plane
-  Pixel pixel_location(T y, T z) { return detector_.pixel_location(y, z); }
+  Pixel pixel_location(F y, F z) { return detector_.pixel_location(y, z); }
 
   // pixel Plane
-  Point pixel_center(T y, T z) { return detector_.pixel_center(y, z); }
+  Point pixel_center(F y, F z) { return detector_.pixel_center(y, z); }
 
-  int pixels_in_line(T length) {
-    T d = (length + 0.5) / pixel_size;
+  int pixels_in_line(F length) {
+    F d = (length + 0.5) / pixel_size;
     return int(d);
   }
 
@@ -410,17 +409,17 @@ class Reconstruction {
 #endif
     for (int it = 0; it < size; ++it) {
 
-      T z_u, z_d, dl;
+      F z_u, z_d, dl;
 
       in >> z_u >> z_d >> dl;
 
-      Event<T> temp_event(z_u, z_d, dl);
+      Event<F> temp_event(z_u, z_d, dl);
       event_list.push_back(temp_event);
     }
     return *this;
   }
 
-  std::vector<Event<T>>* get_data() { return &event_list; }
+  std::vector<Event<F>>& get_event_list() { return event_list; }
 
 // FIXME: this confuses ICC
 #ifndef __ICC
