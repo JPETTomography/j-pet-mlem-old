@@ -33,8 +33,7 @@ int main(int argc, char* argv[]) {
 #if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
 #endif
-    cl.add<std::string>("input_fn", 'f', "phantom file", false, "s_shepp");
-    cl.add<std::string>("output_fn", 'o', "events file", false, "phantom.bin");
+    cl.add<cmdline::string>("output", 'o', "events file", false, "phantom.bin");
     cl.add<double>(
         "r-distance", 'r', "R distance between scientilators", false, 500);
     cl.add<double>("s-length", 'l', "Scentilator_length", false, 1000);
@@ -62,30 +61,31 @@ int main(int argc, char* argv[]) {
     double dl = cl.get<double>("s-dl");
     double emmisions = cl.get<double>("emmisions");
 
-    std::ifstream infile(cl.get<std::string>("input_fn"));
-
     typedef EllipseParameters<double> Ellipse;
     std::vector<Ellipse> ellipse_list;
 
     double normalized_acc = 0;
 
-    std::string line;
-    while (std::getline(infile, line)) {
-      std::istringstream iss(line);
-      double x, y, a, b, angle, acc;
+    for (auto& fn : cl.rest()) {
+      std::ifstream infile(fn);
+      std::string line;
+      while (std::getline(infile, line)) {
+        std::istringstream iss(line);
+        double x, y, a, b, angle, acc;
 
-      // on error
-      if (!(iss >> x >> y >> a >> b >> angle >> acc))
-        break;
+        // on error
+        if (!(iss >> x >> y >> a >> b >> angle >> acc))
+          break;
 
-      Ellipse el(x, y, a, b, angle, acc);
+        Ellipse el(x, y, a, b, angle, acc);
 
-      normalized_acc += acc;
+        normalized_acc += acc;
 
-      std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
-                << el.angle << " " << el.iter << std::endl;
+        std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
+                  << el.angle << " " << el.iter << std::endl;
 
-      ellipse_list.push_back(el);
+        ellipse_list.push_back(el);
+      }
     }
 
     for (auto& e : ellipse_list) {
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
 
     test.emit_event();
 
-    obstream out(cl.get<std::string>("output_fn"));
+    obstream out(cl.get<cmdline::string>("output"));
     test >> out;
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;

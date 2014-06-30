@@ -42,10 +42,8 @@ int main(int argc, char* argv[]) {
     cl.add<int>("warp-offset", 0, "warp offset for test only", false, 1);
 
 #endif
-    cl.add("cpu", 'c', "run on cpu (via OPENMP)");
     cl.add<double>(
         "r-distance", 'r', "R distance between scientilators", false, 500);
-    cl.add<std::string>("file", 'f', "events file name", false, "phantom.bin");
     cl.add<double>("s-length", 'l', "Scentilator_length", false, 1000);
     cl.add<double>("p-size", 'p', "Pixel size", false, 5);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
@@ -53,7 +51,7 @@ int main(int argc, char* argv[]) {
     cl.add<double>("s-z", 's', "Sigma z error", false, 10);
     cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
     cl.add<double>("gm", 'u', "Gamma error", false, 0);
-    cl.add<std::string>(
+    cl.add<cmdline::string>(
         "output", 'o', "output files (png)", false, "cpu_rec_iteration");
     cl.parse_check(argc, argv);
 
@@ -63,18 +61,23 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
+    double R_distance = cl.get<double>("r-distance");
+    double Scentilator_length = cl.get<double>("s-length");
+    double pixel_size = cl.get<double>("p-size");
+    double n_pixels = Scentilator_length / pixel_size;
+    double sigma = cl.get<double>("s-z");
+    double dl = cl.get<double>("s-dl");
+
+    Reconstruction<double> reconstruction(
+        R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
+
+    for (auto& fn : cl.rest()) {
+      ibstream in(fn);
+      reconstruction << in;
+    }
+
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-
-      double R_distance = cl.get<double>("r-distance");
-      double Scentilator_length = cl.get<double>("s-length");
-      double pixel_size = cl.get<double>("p-size");
-      double n_pixels = Scentilator_length / pixel_size;
-      double sigma = cl.get<double>("s-z");
-      double dl = cl.get<double>("s-dl");
-      int warp_offset = cl.get<int>("warp-offset");
-      int n_blocks = cl.get<int>("iter");
-
       gpu_config::GPU_parameters cfg;
       cfg.R_distance = R_distance;
       cfg.Scentilator_length = Scentilator_length;
@@ -90,36 +93,15 @@ int main(int argc, char* argv[]) {
       cfg.grid_size_y_ = n_pixels * pixel_size;
       cfg.grid_size_z_ = n_pixels * pixel_size;
 
-      Reconstruction<double> reconstruction(
-          R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
-      ibstream in(cl.get<string>("file"));
-      reconstruction << in;
-
-      execute_kernel_reconstruction(
-          cfg, reconstruction.get_event_list(), warp_offset, n_blocks);
-    }
+      execute_kernel_reconstruction(cfg,
+                                    reconstruction.get_event_list(),
+                                    cl.get<int>("warp-offset"),
+                                    cl.get<int>("iter"));
+    } else
 #endif
-
-    if (cl.exist("cpu")) {
-      double R_distance = cl.get<double>("r-distance");
-      double Scentilator_length = cl.get<double>("s-length");
-      double pixel_size = cl.get<double>("p-size");
-      double n_pixels = Scentilator_length / pixel_size;
-      double sigma = cl.get<double>("s-z");
-      double dl = cl.get<double>("s-dl");
-
-      int n_blocks = cl.get<int>("iter");
-      Reconstruction<double> reconstruction(R_distance,
-                                            Scentilator_length,
-                                            n_pixels,
-                                            pixel_size,
-                                            sigma,
-                                            dl);
-      ibstream in(cl.get<string>("file"));
-      reconstruction << in;
-
+    {
       clock_t begin = clock();
-      reconstruction(n_blocks, 1, cl.get<std::string>("output"));
+      reconstruction(cl.get<int>("iter"), 1, cl.get<cmdline::string>("output"));
       clock_t end = clock();
 
       std::cout << "Time: " << double(end - begin) / CLOCKS_PER_SEC / 4
