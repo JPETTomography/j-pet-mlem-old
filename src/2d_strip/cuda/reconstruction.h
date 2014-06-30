@@ -1,22 +1,27 @@
+#pragma once
+
 #include <cmath>
 #include <vector>
 #include <algorithm>
 #include <assert.h>
 #include <unordered_map>
-#include "event.h"
 
 #include "util/png_writer.h"
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
 
-void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
+#include "../event.h"
+
+#include "config.h"
+
+void gpu_reconstruction_strip_2d(CUDA::Config cfg,
                                  Event<float>* event_list,
                                  int event_size,
                                  int iteration_chunk,
                                  float* image_output,
                                  int off);
 
-void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
+void execute_kernel_reconstruction(CUDA::Config cfg,
                                    std::vector<Event<float>>& event_list,
                                    int warp_offset,
                                    int n_blocks) {
@@ -82,7 +87,7 @@ void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
   }
 }
 
-void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
+void execute_kernel_reconstruction(CUDA::Config cfg,
                                    std::vector<Event<double>>& event_list,
                                    int warp_offset,
                                    int n_blocks) {

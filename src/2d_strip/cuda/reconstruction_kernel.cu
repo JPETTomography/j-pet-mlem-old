@@ -21,7 +21,7 @@ static cudaError err;
 
 #define cudathread_per_blockoSync(...) cuda(__VA_ARGS__)
 
-void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
+void gpu_reconstruction_strip_2d(CUDA::Config cfg,
                                  Event<float>* event_list,
                                  int event_size,
                                  int iteration_chunk,

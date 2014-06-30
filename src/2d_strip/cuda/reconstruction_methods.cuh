@@ -66,7 +66,7 @@ __device__ float main_kernel(T& y,
                              T& pow_inv_cos,
                              float2& pixel_center,
                              T* inv_c,
-                             gpu_config::GPU_parameters& cfg,
+                             CUDA::Config& cfg,
                              T& sqrt_det_correlation_matrix) {
 
   T vec_o[3];
@@ -101,7 +101,7 @@ template <typename T>
 __device__ float test_kernel(T& y,
                              T& z,
                              float2& pixel_center,
-                             gpu_config::GPU_parameters& cfg) {
+                             CUDA::Config& cfg) {
 
   return (SINGLE_INVERSE_POW_TWO_PI * (1 / (cfg.sigma * cfg.dl))) *
          exp(-0.5f * (pow((pixel_center.x - y) / cfg.dl, 2) +

@@ -14,10 +14,9 @@
 
 #include "event.h"
 #include "reconstruction.h"
-#include "config.h"
 
 #if HAVE_CUDA
-#include "gpu_kernel_wrapper.h"
+#include "cuda/reconstruction.h"
 #endif
 
 using namespace std;
@@ -78,7 +77,7 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-      gpu_config::GPU_parameters cfg;
+      CUDA::Config cfg;
       cfg.R_distance = R_distance;
       cfg.Scentilator_length = Scentilator_length;
       cfg.pixel_size = pixel_size;

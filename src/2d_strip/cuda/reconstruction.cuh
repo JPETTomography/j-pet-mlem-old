@@ -2,22 +2,17 @@
 
 #include <cuda_runtime.h>
 #include <stdint.h>
-#include "../config.h"
+
 #include "../event.h"
+
+#include "config.h"
+#include "event.cuh"
 #include "reconstruction_methods.cuh"
-
-//#define WARP_GRANULARITY
-
-#define EVENT_GRANULARITY
-
-#define NORMAL_PHANTOM 0
 
 #define IMAGE_SPACE_LINEAR_INDEX(Y, Z) (Y * cfg.n_pixels) + Z
 #define BUFFOR_LINEAR_INDEX(Y, Z) \
   (blockIdx.x * cfg.n_pixels * cfg.n_pixels) + (Y * cfg.n_pixels) + Z
 #define SH_MEM_INDEX(ID, N, I) (ID * 20 + (2 * N + I))
-
-#define WARP_SIZE 32
 
 #ifdef WARP_GRANULARITY
 
@@ -237,7 +232,7 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 #ifdef EVENT_GRANULARITY
 
 template <typename T>
-__global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
+__global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
                                              soa_event<float>* soa_data,
                                              Event<T>* event_list,
                                              int event_list_size,
@@ -442,14 +437,13 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 #endif
 
 template <typename T>
-__global__ void reconstruction_2d_strip_cuda_simple(
-    gpu_config::GPU_parameters cfg,
-    soa_event<float>* soa_data,
-    Event<T>* event_list,
-    int event_list_size,
-    float* image_buffor,
-    float* rho,
-    cudaTextureObject_t tex) {
+__global__ void reconstruction_2d_strip_cuda_simple(CUDA::Config cfg,
+                                                    soa_event<float>* soa_data,
+                                                    Event<T>* event_list,
+                                                    int event_list_size,
+                                                    float* image_buffor,
+                                                    float* rho,
+                                                    cudaTextureObject_t tex) {
 
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
