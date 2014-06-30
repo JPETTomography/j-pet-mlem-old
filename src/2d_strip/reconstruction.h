@@ -214,6 +214,94 @@ class Reconstruction {
     }
   }
 
+  void kernel_image(F& angle) {
+
+    F y = 500.0;
+    F z = 500.0;
+
+    F tg = 0.0;
+
+    F cos_ = std::cos((angle));
+
+    F sec_ = F(1.0) / cos_;
+    F sec_sq_ = sec_ * sec_;
+
+    F A = (((F(4.0) / (cos_ * cos_)) * inv_pow_sigma_dl) +
+           (F(2.0) * tg * tg * inv_pow_sigma_z));
+    F B = -F(4.0) * tg * inv_pow_sigma_z;
+    F C = F(2.0) * inv_pow_sigma_z;
+    F B_2 = (B / F(2.0)) * (B / F(2.0));
+
+    F bb_y = bby(A, C, B_2);
+
+    F bb_z = bbz(A, C, B_2);
+
+    Point emision_center = Point(0.0, 0.0);
+
+    Pixel center_pixel =
+        pixel_location(emision_center.first, emision_center.second);
+
+    Pixel ur = Pixel(center_pixel.first - pixels_in_line(bb_y),
+                     center_pixel.second + pixels_in_line(bb_z));
+    Pixel dl = Pixel(center_pixel.first + pixels_in_line(bb_y),
+                     center_pixel.second - pixels_in_line(bb_z));
+
+    std::vector<std::pair<Pixel, F>> ellipse_kernels;
+    ellipse_kernels.reserve(2000);
+
+    std::vector<std::vector<F>> kernel_space;
+    kernel_space.assign(bb_y, std::vector<F>(bb_z, F(0)));
+
+    for (int iz = dl.second; iz < ur.second; ++iz) {
+      for (int iy = ur.first; iy < dl.first; ++iy) {
+
+        Point pp = pixel_center(iy, iz);
+
+        if (in_ellipse(A, B, C, emision_center, pp)) {
+
+          pp.first -= emision_center.first;
+          pp.second -= emision_center.second;
+
+          F event_kernel =
+              kernel_.calculate_kernel(y,
+                                       tg,
+                                       sec_,
+                                       sec_sq_,
+                                       pp,
+                                       detector_,
+                                       sqrt_det_correlation_matrix) /
+              lookup_table[iy][iz];
+        }
+      }
+    }
+
+    std::string file = std::string("kernel_space");
+
+    file.append(".png");
+
+    png_writer png(file);
+    png.write_header<>(bb_y, bb_z);
+
+    F output_max = 0.0;
+    for (auto& col : kernel_space) {
+      for (auto& row : col) {
+        output_max = std::max(output_max, row);
+      }
+    }
+
+    auto output_gain =
+        static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
+
+    for (int y = 0; y < n_pixels; ++y) {
+      uint8_t row[n_pixels];
+      for (auto x = 0; x < n_pixels; ++x) {
+        row[x] = std::numeric_limits<uint8_t>::max() -
+                 output_gain * kernel_space[y][x];
+      }
+      png.write_row(row);
+    }
+  }
+
   void simple_update(Point& ellipse_center, F& y, F& z, int& tid, int& iter) {
 
     Pixel center_pixel =
