@@ -54,9 +54,9 @@ int main(int argc, char* argv[]) {
     cl.add<float>("s-z", 's', "Sigma z error", false, 10.0f);
     cl.add<float>("s-dl", 'd', "Sigma dl error", false, 63.0f);
     cl.add<float>("gm", 'u', "Gamma error", false, 0.f);
-    cl.add<std::string>("output", 'o', "output files (png)", false, "cpu_rec_iteration");
+    cl.add<std::string>(
+        "output", 'o', "output files (png)", false, "cpu_rec_iteration");
     cl.parse_check(argc, argv);
-
 
 #if _OPENMP
     if (cl.exist("n-threads")) {

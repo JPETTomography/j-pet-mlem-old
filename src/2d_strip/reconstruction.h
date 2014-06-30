@@ -23,7 +23,7 @@
 
 #define RECONSTRUCTION_OLD_KERNEL 1
 
-template <typename T = float, typename D = StripDetector<T> >
+template <typename T = float, typename D = StripDetector<T>>
 class Reconstruction {
  public:
   typedef typename D::Pixel Pixel;
@@ -31,8 +31,8 @@ class Reconstruction {
   T sqrt_det_correlation_matrix;
 
  private:
-  static constexpr const T INVERSE_PI = T(1.0 / M_PI);
-  static constexpr const T INVERSE_POW_TWO_PI = T(1.0 / (2.0 * M_PI * M_PI));
+  static constexpr const T INVERSE_PI = Kernel<T>::INVERSE_PI;
+  static constexpr const T INVERSE_POW_TWO_PI = Kernel<T>::INVERSE_POW_TWO_PI;
 
   int iteration;
   int n_pixels;
@@ -41,20 +41,21 @@ class Reconstruction {
   T inv_pow_sigma_z;
   T inv_pow_sigma_dl;
 
-  std::vector<event<T> > event_list;
-  std::vector<std::vector<T> > rho;
-  std::vector<std::vector<T> > rho_temp;
+  std::vector<event<T>> event_list;
+  std::vector<std::vector<T>> rho;
+  std::vector<std::vector<T>> rho_temp;
   std::vector<T> acc_log;
-  std::vector<std::vector<T> > thread_rho;
-  std::vector<std::vector<T> > lookup_table;
+  std::vector<std::vector<T>> thread_rho;
+  std::vector<std::vector<T>> lookup_table;
 
   D detector_;
   Kernel<T> kernel_;
   std::string output_;
+
  public:
   Reconstruction(int iteration, const D& detector)
       : iteration(iteration), detector_(detector) {
-    init(detector_);
+    init();
   };
   Reconstruction(int iteration,
                  T R_distance_a,
@@ -74,16 +75,16 @@ class Reconstruction {
                   pixel_size,
                   sigma_z,
                   sigma_dl) {
-    init(detector_);
+    init();
   }
 
  private:
-  void init(const D& detector) {
+  void init() {
     kernel_ = Kernel<T>();
     rho.assign(n_pixels, std::vector<T>(n_pixels, T(100)));
     rho_temp.assign(n_pixels, std::vector<T>(n_pixels, T(10)));
-    pow_sigma_z = detector_.s_z() * detector.s_z();
-    pow_sigma_dl = detector_.s_dl() * detector.s_dl();
+    pow_sigma_z = detector_.sigma_z * detector_.sigma_z;
+    pow_sigma_dl = detector_.sigma_dl * detector_.sigma_dl;
 
     sqrt_det_correlation_matrix = std::sqrt(
         detector_.inv_c(0, 0) * detector_.inv_c(1, 1) * detector_.inv_c(2, 2));
@@ -98,31 +99,13 @@ class Reconstruction {
 
         Point pp = pixel_center(y, z);
         lookup_table[y][z] = detector_.sensitivity(pp.first, pp.second);
-        //lookup_table[y][z] = 1.0;
+        // lookup_table[y][z] = 1.0;
       }
     }
   }
 
  public:
-  float fexp(float& x) {
-    volatile union {
-      T f;
-      unsigned int i;
-    } cvt;
-
-    T t = x * 1.442695041;
-    T fi = floorf(t);
-    T f = t - fi;
-    int i = (int)fi;
-    cvt.f = (0.3371894346f * f + 0.657636276f) * f + 1.00172476f;
-    cvt.i += (i << 23);
-    return cvt.f;
-  }
-
-  double fexp(double& x) { return std::exp(x); }
-
-  /** Performs n_iterations of the list mode MEML algorithm
-   */
+  /// Performs n_iterations of the list mode MEML algorithm
   void iterate(int n_iterations) {
 
     for (int i = 0; i < n_iterations; i++) {
@@ -141,10 +124,10 @@ class Reconstruction {
 
         int tid = omp_get_thread_num();
 
-#if RECONSTRUCTION_OLD_KERNEL > 0
+#if RECONSTRUCTION_OLD_KERNEL
 
-        T tan = event_tan(
-            event_list[id].z_u, event_list[id].z_d, detector_.radius());
+        T tan =
+            event_tan(event_list[id].z_u, event_list[id].z_d, detector_.radius);
         T y = event_y(event_list[id].dl, tan);
         T z = event_z(event_list[id].z_u, event_list[id].z_d, y, tan);
 
@@ -441,7 +424,7 @@ class Reconstruction {
     return *this;
   }
 
-  std::vector<event<T> >* get_data() { return &event_list; }
+  std::vector<event<T>>* get_data() { return &event_list; }
 
 // FIXME: this confuses ICC
 #ifndef __ICC
@@ -452,7 +435,5 @@ class Reconstruction {
 // }
 #endif
 
-  void set_output_name(std::string output) {
-    output_= output;
-  }
+  void set_output_name(std::string output) { output_ = output; }
 };
