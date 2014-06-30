@@ -11,9 +11,7 @@ template <typename F> struct Event {
 
   F tan(const F R) const { return (z_u - z_d) / (2 * R); }
 
-  F y(const F tan) const {
-    return -F(0.5) * (dl / std::sqrt(1 + tan * tan));
-  }
+  F y(const F tan) const { return -F(0.5) * (dl / std::sqrt(1 + tan * tan)); }
 
   F z(const F y, const F tan) const {
     return F(0.5) * (z_u + z_d + (2 * y * tan));
