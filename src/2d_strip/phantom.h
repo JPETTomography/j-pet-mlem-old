@@ -35,10 +35,10 @@ template <typename T = double> class Phantom {
   T pixel_size;
   T R_distance;
   T Scentilator_length;
-  T _sin;
-  T _cos;
-  T _inv_a2;
-  T _inv_b2;
+  T sin;
+  T cos;
+  T inv_a2;
+  T inv_b2;
   T sigma_z;
   T sigma_dl;
   std::vector<EllipseParameters<T>> ellipse_list;
@@ -71,8 +71,8 @@ template <typename T = double> class Phantom {
 
     T dy = (y - el.y);
     T dz = (z - el.x);
-    T d1 = (_sin * dy + _cos * dz);  // y
-    T d2 = (_sin * dz - _cos * dy);  // z
+    T d1 = (sin * dy + cos * dz);  // y
+    T d2 = (sin * dz - cos * dy);  // z
 
     return ((d1 * d1 / (el.a * el.a)) + (d2 * d2 / (el.b * el.b))) <= T(1)
                ? true
@@ -82,9 +82,6 @@ template <typename T = double> class Phantom {
   void emit_event() {
 
     std::vector<std::vector<Event<T>>> event_list_per_thread;
-
-    T ry, rz, rangle;
-    T z_u, z_d, dl;
 
     event_list_per_thread.resize(omp_get_max_threads());
 
@@ -114,28 +111,31 @@ template <typename T = double> class Phantom {
         // Turn on leapfrogging with an offset that depends on the task id
       }
 
-      _sin = std::sin(T(el.angle * radian));
-      _cos = std::cos(T(el.angle * radian));
-      _inv_a2 = T(1) / (el.a * el.a);
-      _inv_b2 = T(1) / (el.b * el.b);
+      sin = std::sin(T(el.angle * radian));
+      cos = std::cos(T(el.angle * radian));
+      inv_a2 = T(1) / (el.a * el.a);
+      inv_b2 = T(1) / (el.b * el.b);
       iteration = el.iter;
 
 #if _OPENMP
-#pragma omp for schedule(static) private(ry, rz, rangle, z_u, z_d, dl)
+#pragma omp for schedule(static)
 #endif
       for (int i = 0; i < iteration; ++i) {
 
 #if MAIN_PHANTOM
 
+        T ry, rz, rangle;
+
         ry = uniform_y(rng_list[omp_get_thread_num()]);
         rz = uniform_z(rng_list[omp_get_thread_num()]);
-        rangle = (M_PI_4)*uniform_angle(rng_list[omp_get_thread_num()]);
+        rangle = M_PI_4 * uniform_angle(rng_list[omp_get_thread_num()]);
 
         if (in(ry, rz, el) && (std::abs(rangle) != M_PI_2)) {
+          T z_u, z_d, dl;
 
-          z_u = rz + (R_distance - ry) * tan(rangle);
-          z_d = rz - (R_distance + ry) * tan(rangle);
-          dl = -T(2) * ry * sqrt(T(1) + (tan(rangle) * tan(rangle)));
+          z_u = rz + (R_distance - ry) * std::tan(rangle);
+          z_d = rz - (R_distance + ry) * std::tan(rangle);
+          dl = -2 * ry * std::sqrt(1 + (std::tan(rangle) * std::tan(rangle)));
 
           z_u += normal_dist_dz(rng_list[omp_get_thread_num()]);
           z_d += normal_dist_dz(rng_list[omp_get_thread_num()]);
@@ -144,9 +144,11 @@ template <typename T = double> class Phantom {
           if (std::abs(z_u) < (Scentilator_length / T(2)) &&
               std::abs(z_d) < (Scentilator_length / T(2))) {
 
-            T t = event_tan(z_u, z_d);
-            T y = event_y(dl, t);
-            T z = event_z(z_u, z_d, y, t);
+            Event<T> event(z_u, z_d, dl);
+
+            T tan = event.tan(R_distance);
+            T y = event.y(tan);
+            T z = event.z(y, tan);
 
             Pixel p = pixel_location(y, z);
             Pixel pp = pixel_location(ry, rz);
@@ -154,8 +156,7 @@ template <typename T = double> class Phantom {
             output[p.first][p.second]++;
             output_without_errors[pp.first][pp.second]++;
 
-            Event<T> temp_event(z_u, z_d, dl);
-            event_list_per_thread[omp_get_thread_num()].push_back(temp_event);
+            event_list_per_thread[omp_get_thread_num()].push_back(event);
           }
         }
 
@@ -206,7 +207,7 @@ template <typename T = double> class Phantom {
     png_writer png(file);
     png.write_header<>(n_pixels, n_pixels);
 
-    T output_max = 0.0;
+    T output_max = 0;
     for (auto& col : output) {
       for (auto& row : col)
         output_max = std::max(output_max, row);
@@ -224,10 +225,10 @@ template <typename T = double> class Phantom {
       png.write_row(row);
     }
 
-    png_writer png2("phantom_true.png");
-    png2.write_header<>(n_pixels, n_pixels);
+    png_writer png_true("phantom_true.png");
+    png_true.write_header<>(n_pixels, n_pixels);
 
-    output_max = 0.0;
+    output_max = 0;
     for (auto& col : output_without_errors) {
       for (auto& row : col)
         output_max = std::max(output_max, row);
@@ -242,16 +243,8 @@ template <typename T = double> class Phantom {
         row[x] = std::numeric_limits<uint8_t>::max() -
                  output_gain * output_without_errors[y][x];
       }
-      png2.write_row(row);
+      png_true.write_row(row);
     }
-  }
-
-  T event_tan(T z_u, T z_d) const { return (z_u - z_d) / (T(2) * R_distance); }
-  T event_y(T dl, T tan_event) const {
-    return -T(0.5) * (dl / sqrt(T(1) + (tan_event * tan_event)));
-  }
-  T event_z(T z_u, T z_d, T y, T tan_event) const {
-    return T(0.5) * (z_u + z_d + (T(2.0) * y * tan_event));
   }
 
   // coord Plane

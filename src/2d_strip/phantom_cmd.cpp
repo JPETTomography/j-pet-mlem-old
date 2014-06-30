@@ -15,7 +15,6 @@
 #include "util/cmdline_types.h"
 #include "util/png_writer.h"
 
-#include "flags.h"
 #include "phantom.h"
 
 #if _OPENMP

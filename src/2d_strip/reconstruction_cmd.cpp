@@ -12,7 +12,6 @@
 #include "util/cmdline_types.h"
 #include "util/png_writer.h"
 
-#include "flags.h"
 #include "event.h"
 #include "reconstruction.h"
 #include "config.h"
