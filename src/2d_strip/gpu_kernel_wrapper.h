@@ -10,14 +10,14 @@
 #include "util/svg_ostream.h"
 
 void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
-                                 event<float>* event_list,
+                                 Event<float>* event_list,
                                  int event_size,
                                  int iteration_chunk,
                                  float* image_output,
                                  int off);
 
 void execute_kernel_reconstruction(gpu_config::GPU_parameters cfg,
-                                   event<float>* event_list,
+                                   Event<float>* event_list,
                                    int event_size,
                                    int warp_offset,
                                    int n_blocks) {

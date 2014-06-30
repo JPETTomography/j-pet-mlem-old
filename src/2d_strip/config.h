@@ -28,7 +28,7 @@ template <typename T> struct soa_event {
   T z_d[SOA_SIZE];
   T dl[SOA_SIZE];
 
-  void set_data_chunk(event<float>* data_chunk, int offset, int aos_data_size) {
+  void set_data_chunk(Event<float>* data_chunk, int offset, int aos_data_size) {
 
     for (int i = 0; i < aos_data_size; i += offset) {
 
@@ -44,7 +44,7 @@ template <typename T> struct soa_event {
     }
   }
 
-  void set_data(event<float>* aos_data, int aos_data_size) {
+  void set_data(Event<float>* aos_data, int aos_data_size) {
 
     // data_size = aos_data_size;
 

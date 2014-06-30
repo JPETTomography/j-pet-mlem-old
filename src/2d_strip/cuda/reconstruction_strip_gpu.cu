@@ -22,7 +22,7 @@ static cudaError err;
 #define cudathread_per_blockoSync(...) cuda(__VA_ARGS__)
 
 void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
-                                 event<float>* event_list,
+                                 Event<float>* event_list,
                                  int event_size,
                                  int iteration_chunk,
                                  float* image_output,
@@ -81,7 +81,7 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
 
   float* gpu_image_buffor;
   float* gpu_image_rho;
-  event<float>* gpu_event_list;
+  Event<float>* gpu_event_list;
   soa_event<float>* gpu_soa_event_list;
 
   soa_event<float>* cpu_soa_event_list;
@@ -145,7 +145,7 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
 
   // other mallocs and allocations
 
-  cuda(Malloc, (void**)&gpu_event_list, event_size * sizeof(event<float>));
+  cuda(Malloc, (void**)&gpu_event_list, event_size * sizeof(Event<float>));
   cuda(Malloc, (void**)&gpu_image_buffor, image_sz * cfg.number_of_blocks);
   cuda(Malloc, (void**)&gpu_image_rho, image_sz);
   cuda(Malloc, (void**)&gpu_soa_event_list, sizeof(soa_event<float>));
@@ -159,7 +159,7 @@ void gpu_reconstruction_strip_2d(gpu_config::GPU_parameters cfg,
   cuda(Memcpy,
        gpu_event_list,
        event_list,
-       event_size * sizeof(event<float>),
+       event_size * sizeof(Event<float>),
        cudaMemcpyHostToDevice);
 
   cuda(Memcpy,

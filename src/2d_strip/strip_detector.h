@@ -58,25 +58,25 @@ template <typename F> class StripDetector {
 
   F inv_c(int i, int j) const { return inverse_correlation_matrix_[i][j]; }
 
-  event<F> to_projection_space_tan(const ImageSpaceEventTan<F>& ev) {
+  Event<F> to_projection_space_tan(const ImageSpaceEventTan<F>& ev) {
     F z_u = ev.z + (radius - ev.y) * ev.tan;
     F z_d = ev.z - (radius + ev.y) * ev.tan;
     F dl = -F(2.0) * ev.y * sqrt(ev.tan * ev.tan + F(1.0));
-    return event<F>(z_u, z_d, dl);
+    return Event<F>(z_u, z_d, dl);
   }
 
-  event<F> to_projection_space_angle(const ImageSpaceEventAngle<F>& img_event) {
+  Event<F> to_projection_space_angle(const ImageSpaceEventAngle<F>& img_event) {
     return to_angle(to_projection_space_angle(img_event));
   }
 
-  ImageSpaceEventTan<F> from_projection_space_tan(const event<F>& ev) {
+  ImageSpaceEventTan<F> from_projection_space_tan(const Event<F>& ev) {
     F t = event_tan(ev.z_u, ev.z_d, radius);
     F y = event_y(ev.dl, t);
     F z = event_z(ev.z_u, ev.z_d, y, t);
     return ImageSpaceEventTan<F>(y, z, t);
   }
 
-  ImageSpaceEventAngle<F> from_projection_space_angle(const event<F>& ev) {
+  ImageSpaceEventAngle<F> from_projection_space_angle(const Event<F>& ev) {
     return to_angle(from_projection_space_tan(ev));
   }
 

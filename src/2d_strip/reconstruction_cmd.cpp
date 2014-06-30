@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
       reconstruction.set_output_name(cl.get<std::string>("output"));
       reconstruction << in;
 
-      std::vector<event<float>>* event_data = reconstruction.get_data();
+      std::vector<Event<float>>* event_data = reconstruction.get_data();
 
       gpu_config::GPU_parameters cfg;
       cfg.R_distance = R_distance;

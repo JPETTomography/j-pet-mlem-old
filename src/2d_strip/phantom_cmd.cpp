@@ -65,8 +65,8 @@ int main(int argc, char* argv[]) {
 
     std::ifstream infile(cl.get<std::string>("input_fn"));
 
-    std::vector<ellipse_parameters<float>> ellipse_list;
-    ellipse_parameters<float> el;
+    std::vector<EllipseParameters<float>> ellipse_list;
+    EllipseParameters<float> el;
 
     float normalized_acc = 0.0f;
 

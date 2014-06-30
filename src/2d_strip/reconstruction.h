@@ -41,7 +41,7 @@ class Reconstruction {
   T inv_pow_sigma_z;
   T inv_pow_sigma_dl;
 
-  std::vector<event<T>> event_list;
+  std::vector<Event<T>> event_list;
   std::vector<std::vector<T>> rho;
   std::vector<std::vector<T>> rho_temp;
   std::vector<T> acc_log;
@@ -126,10 +126,10 @@ class Reconstruction {
 
 #if RECONSTRUCTION_OLD_KERNEL
 
-        T tan =
-            event_tan(event_list[id].z_u, event_list[id].z_d, detector_.radius);
-        T y = event_y(event_list[id].dl, tan);
-        T z = event_z(event_list[id].z_u, event_list[id].z_d, y, tan);
+        auto event = event_list[id];
+        T tan = event.tan(detector_.radius);
+        T y = event.y(tan);
+        T z = event.z(y, tan);
 
         T angle = std::atan(tan);
 
@@ -172,6 +172,7 @@ class Reconstruction {
   }
 
   void operator()(int n_blocks) { operator()(n_blocks, 1); }
+
   void operator()(int n_blocks, int n_iterations_in_block) {
 
     // T tan, y, z, angle;
@@ -399,8 +400,6 @@ class Reconstruction {
  public:
   template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
 
-    event<T> temp_event;
-
     int size;
     in >> size;
 #if ___DEBUG_OUTPUT_SAVE
@@ -415,16 +414,13 @@ class Reconstruction {
 
       in >> z_u >> z_d >> dl;
 
-      temp_event.z_u = z_u;
-      temp_event.z_d = z_d;
-      temp_event.dl = dl;
-
+      Event<T> temp_event(z_u, z_d, dl);
       event_list.push_back(temp_event);
     }
     return *this;
   }
 
-  std::vector<event<T>>* get_data() { return &event_list; }
+  std::vector<Event<T>>* get_data() { return &event_list; }
 
 // FIXME: this confuses ICC
 #ifndef __ICC

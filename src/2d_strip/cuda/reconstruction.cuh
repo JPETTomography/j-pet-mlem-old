@@ -239,7 +239,7 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 template <typename T>
 __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
                                              soa_event<float>* soa_data,
-                                             event<T>* event_list,
+                                             Event<T>* event_list,
                                              int event_list_size,
                                              float* image_buffor,
                                              float* rho,
@@ -459,7 +459,7 @@ template <typename T>
 __global__ void reconstruction_2d_strip_cuda_simple(
     gpu_config::GPU_parameters cfg,
     soa_event<float>* soa_data,
-    event<T>* event_list,
+    Event<T>* event_list,
     int event_list_size,
     float* image_buffor,
     float* rho,

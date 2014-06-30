@@ -41,15 +41,15 @@ template <typename T = double> class Phantom {
   T _inv_b2;
   T sigma_z;
   T sigma_dl;
-  std::vector<ellipse_parameters<T>> ellipse_list;
-  std::vector<event<T>> event_list;
+  std::vector<EllipseParameters<T>> ellipse_list;
+  std::vector<Event<T>> event_list;
   std::vector<std::vector<T>> output;
   std::vector<std::vector<T>> output_without_errors;
   static constexpr const T PI_2 = T(1.5707963);
   static constexpr const T radian = T(M_PI / 180);
 
  public:
-  Phantom(std::vector<ellipse_parameters<T>>& el,
+  Phantom(std::vector<EllipseParameters<T>>& el,
           int n_pixels,
           T& pixel_size,
           T& R_distance,
@@ -67,7 +67,7 @@ template <typename T = double> class Phantom {
     output_without_errors.assign(n_pixels, std::vector<T>(n_pixels, T(0)));
   }
 
-  bool in(T y, T z, ellipse_parameters<T> el) const {
+  bool in(T y, T z, EllipseParameters<T> el) const {
 
     T dy = (y - el.y);
     T dz = (z - el.x);
@@ -81,8 +81,7 @@ template <typename T = double> class Phantom {
 
   void emit_event() {
 
-    std::vector<std::vector<event<T>>> event_list_per_thread;
-    event<T> temp_event;
+    std::vector<std::vector<Event<T>>> event_list_per_thread;
 
     T ry, rz, rangle;
     T z_u, z_d, dl;
@@ -155,10 +154,7 @@ template <typename T = double> class Phantom {
             output[p.first][p.second]++;
             output_without_errors[pp.first][pp.second]++;
 
-            temp_event.z_u = z_u;
-            temp_event.z_d = z_d;
-            temp_event.dl = dl;
-
+            Event<T> temp_event(z_u, z_d, dl);
             event_list_per_thread[omp_get_thread_num()].push_back(temp_event);
           }
         }
@@ -266,7 +262,7 @@ template <typename T = double> class Phantom {
 
   template <typename StreamType> Phantom& operator>>(StreamType& out) {
 
-    typename std::vector<event<T>>::iterator it;
+    typename std::vector<Event<T>>::iterator it;
     int size = event_list.size();
     int i = 0;
     out << size;
