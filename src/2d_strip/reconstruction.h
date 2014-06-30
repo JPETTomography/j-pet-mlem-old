@@ -36,7 +36,6 @@ class Reconstruction {
   static constexpr const F INVERSE_PI = Kernel<F>::INVERSE_PI;
   static constexpr const F INVERSE_POW_TWO_PI = Kernel<F>::INVERSE_POW_TWO_PI;
 
-  int iteration;
   int n_pixels;
   F pixel_size;
   F pow_sigma_z, pow_sigma_dl;
@@ -54,20 +53,15 @@ class Reconstruction {
   Kernel<F> kernel;
 
  public:
-  Reconstruction(int iteration, const Detector& detector)
-      : iteration(iteration), detector(detector) {
-    init();
-  }
+  Reconstruction(const Detector& detector) : detector(detector) { init(); }
 
-  Reconstruction(int iteration,
-                 F R_distance,
+  Reconstruction(F R_distance,
                  F scintilator_length,
                  int n_pixels,
                  F pixel_size,
                  F sigma_z,
                  F sigma_dl)
-      : iteration(iteration),
-        n_pixels(n_pixels),
+      : n_pixels(n_pixels),
         pixel_size(pixel_size),
         detector(R_distance,
                  scintilator_length,

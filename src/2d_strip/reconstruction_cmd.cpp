@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
       cfg.grid_size_z_ = n_pixels * pixel_size;
 
       Reconstruction<double> reconstruction(
-          10, R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
+          R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
       ibstream in(cl.get<string>("file"));
       reconstruction << in;
 
@@ -109,8 +109,7 @@ int main(int argc, char* argv[]) {
       double dl = cl.get<double>("s-dl");
 
       int n_blocks = cl.get<int>("iter");
-      Reconstruction<double> reconstruction(n_blocks,
-                                            R_distance,
+      Reconstruction<double> reconstruction(R_distance,
                                             Scentilator_length,
                                             n_pixels,
                                             pixel_size,
