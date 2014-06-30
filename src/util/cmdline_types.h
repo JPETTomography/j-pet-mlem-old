@@ -4,7 +4,11 @@
 // redefine help formatting for greater readibility
 namespace cmdline {
 
-class string : public std::string {};
+class string : public std::string {
+ public:
+  string() : std::string() {}
+  string(const char* s) : std::string(s) {}
+};
 namespace detail {
 template <> inline std::string readable_typename<int>() { return "size"; }
 template <> inline std::string readable_typename<long>() { return "seed"; }
