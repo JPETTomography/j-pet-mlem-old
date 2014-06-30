@@ -21,12 +21,12 @@ static cudaError err;
 
 #define cudathread_per_blockoSync(...) cuda(__VA_ARGS__)
 
-void gpu_reconstruction_strip_2d(CUDA::Config cfg,
-                                 Event<float>* event_list,
-                                 int event_size,
-                                 int iteration_chunk,
-                                 float* image_output,
-                                 int off) {
+void run_reconstruction_kernel(CUDA::Config cfg,
+                               Event<float>* event_list,
+                               int event_size,
+                               int iteration_chunk,
+                               float* image_output,
+                               int warp_offset) {
 
   cudaSetDevice(0);
 

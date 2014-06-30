@@ -3,16 +3,14 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
-#include <assert.h>
-#include <unordered_map>
-#include "event.h"
 
 #include "util/png_writer.h"
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
 
-#include "strip_detector.h"
+#include "event.h"
 #include "kernel.h"
+#include "strip_detector.h"
 
 #if _OPENMP
 #include <omp.h>

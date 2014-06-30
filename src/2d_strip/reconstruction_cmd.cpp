@@ -92,10 +92,10 @@ int main(int argc, char* argv[]) {
       cfg.grid_size_y_ = n_pixels * pixel_size;
       cfg.grid_size_z_ = n_pixels * pixel_size;
 
-      execute_kernel_reconstruction(cfg,
-                                    reconstruction.get_event_list(),
-                                    cl.get<int>("warp-offset"),
-                                    cl.get<int>("iter"));
+      run_gpu_reconstruction(cfg,
+                             reconstruction.get_event_list(),
+                             cl.get<int>("warp-offset"),
+                             cl.get<int>("iter"));
     } else
 #endif
     {

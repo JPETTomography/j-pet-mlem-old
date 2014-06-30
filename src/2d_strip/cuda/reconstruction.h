@@ -1,10 +1,6 @@
 #pragma once
 
-#include <cmath>
 #include <vector>
-#include <algorithm>
-#include <assert.h>
-#include <unordered_map>
 
 #include "util/png_writer.h"
 #include "util/bstream.h"
@@ -14,17 +10,17 @@
 
 #include "config.h"
 
-void gpu_reconstruction_strip_2d(CUDA::Config cfg,
-                                 Event<float>* event_list,
-                                 int event_size,
-                                 int iteration_chunk,
-                                 float* image_output,
-                                 int off);
+void run_reconstruction_kernel(CUDA::Config cfg,
+                               Event<float>* event_list,
+                               int event_size,
+                               int iteration_chunk,
+                               float* image_output,
+                               int warp_offset);
 
-void execute_kernel_reconstruction(CUDA::Config cfg,
-                                   std::vector<Event<float>>& event_list,
-                                   int warp_offset,
-                                   int n_blocks) {
+void run_gpu_reconstruction(CUDA::Config cfg,
+                            std::vector<Event<float>>& event_list,
+                            int warp_offset,
+                            int n_blocks) {
 
   std::vector<std::vector<float>> image_output;
   image_output.assign(cfg.n_pixels, std::vector<float>(cfg.n_pixels, float(0)));
@@ -34,12 +30,12 @@ void execute_kernel_reconstruction(CUDA::Config cfg,
   image_output.assign(n_blocks * cfg.n_pixels,
                       std::vector<float>(cfg.n_pixels, float(0)));
 
-  gpu_reconstruction_strip_2d(cfg,
-                              event_list.data(),
-                              event_list.size(),
-                              n_blocks,
-                              gpu_output_image.data(),
-                              warp_offset);
+  run_reconstruction_kernel(cfg,
+                            event_list.data(),
+                            event_list.size(),
+                            n_blocks,
+                            gpu_output_image.data(),
+                            warp_offset);
 
   for (int iteration = 0; iteration < n_blocks; ++iteration) {
 
@@ -87,14 +83,14 @@ void execute_kernel_reconstruction(CUDA::Config cfg,
   }
 }
 
-void execute_kernel_reconstruction(CUDA::Config cfg,
-                                   std::vector<Event<double>>& event_list,
-                                   int warp_offset,
-                                   int n_blocks) {
+void run_gpu_reconstruction(CUDA::Config cfg,
+                            std::vector<Event<double>>& event_list,
+                            int warp_offset,
+                            int n_blocks) {
   std::vector<Event<float>> sp_event_list;
   for (auto& event : event_list) {
     Event<float> sp_event(event.z_u, event.z_d, event.dl);
     sp_event_list.push_back(sp_event);
   }
-  execute_kernel_reconstruction(cfg, sp_event_list, warp_offset, n_blocks);
+  run_gpu_reconstruction(cfg, sp_event_list, warp_offset, n_blocks);
 }
