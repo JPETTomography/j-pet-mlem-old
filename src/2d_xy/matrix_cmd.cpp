@@ -35,17 +35,6 @@
 #include "cuda/matrix.h"
 #endif
 
-// detect build variant
-#if _OPENMP && HAVE_CUDA
-#define VARIANT "OpenMP/CUDA"
-#elif _OPENMP
-#define VARIANT "OpenMP"
-#elif HAVE_CUDA
-#define VARIANT "CUDA"
-#else
-#define VARIANT "single-threaded CPU"
-#endif
-
 // all available detector shapes
 typedef DetectorRing<double, int, SquareDetector<double>> SquareDetectorRing;
 typedef DetectorRing<double, int, CircleDetector<double>> CircleDetectorRing;

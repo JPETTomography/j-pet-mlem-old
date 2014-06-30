@@ -29,16 +29,18 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
+    cl.footer("phantom_description");
 
 #if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
 #endif
-    cl.add<cmdline::string>("output", 'o', "events file", false, "phantom.bin");
+    cl.add<cmdline::string>(
+        "output", 'o', "output events file", false, "phantom.bin");
     cl.add<double>(
         "r-distance", 'r', "R distance between scientilators", false, 500);
-    cl.add<double>("s-length", 'l', "Scentilator_length", false, 1000);
-    cl.add<double>("p-size", 'p', "Pixel size", false, 5);
-    cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
+    cl.add<double>("s-length", 'l', "scentilator length", false, 1000);
+    cl.add<double>("p-size", 'p', "pixel size", false, 5);
+    cl.add<int>("n-pixels", 'n', "number of pixels", false, 200);
     cl.add<int>("iter", 'i', "number of iterations", false, 1);
     cl.add<double>("s-z", 's', "Sigma z error", false, 10);
     cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);

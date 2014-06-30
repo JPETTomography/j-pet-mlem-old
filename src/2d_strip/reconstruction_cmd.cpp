@@ -11,6 +11,7 @@
 #include "util/svg_ostream.h"
 #include "util/cmdline_types.h"
 #include "util/png_writer.h"
+#include "util/util.h"
 
 #include "event.h"
 #include "reconstruction.h"
@@ -29,6 +30,11 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
+    std::ostringstream msg;
+    msg << "events_file ..." << std::endl;
+    msg << "build: " << VARIANT << std::endl;
+    msg << "note: All length options below should be expressed in meters.";
+    cl.footer(msg.str());
 
 #if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
@@ -43,15 +49,15 @@ int main(int argc, char* argv[]) {
 #endif
     cl.add<double>(
         "r-distance", 'r', "R distance between scientilators", false, 500);
-    cl.add<double>("s-length", 'l', "Scentilator_length", false, 1000);
-    cl.add<double>("p-size", 'p', "Pixel size", false, 5);
-    cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
+    cl.add<double>("s-length", 'l', "scentilator length", false, 1000);
+    cl.add<double>("p-size", 'p', "pixel size", false, 5);
+    cl.add<int>("n-pixels", 'n', "number of pixels", false, 200);
     cl.add<int>("iter", 'i', "number of iterations", false, 1);
     cl.add<double>("s-z", 's', "Sigma z error", false, 10);
     cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
     cl.add<double>("gm", 'u', "Gamma error", false, 0);
     cl.add<cmdline::string>(
-        "output", 'o', "output files (png)", false, "cpu_rec_iteration");
+        "output", 'o', "output files prefix (png)", false, "cpu_rec_iteration");
     cl.parse_check(argc, argv);
 
 #if _OPENMP
