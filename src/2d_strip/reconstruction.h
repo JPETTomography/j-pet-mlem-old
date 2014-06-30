@@ -216,27 +216,26 @@ class Reconstruction {
 
   void kernel_image(F& angle) {
 
-    F y = 500.0;
-    F z = 500.0;
+    F y = 500;
+    F z = 500;
 
-    F tg = 0.0;
+    F tg = 0;
 
-    F cos_ = std::cos((angle));
+    F cos = std::cos((angle));
 
-    F sec_ = F(1.0) / cos_;
-    F sec_sq_ = sec_ * sec_;
+    F sec = 1 / cos;
+    F sec_sq = sec * sec;
 
-    F A = (((F(4.0) / (cos_ * cos_)) * inv_pow_sigma_dl) +
-           (F(2.0) * tg * tg * inv_pow_sigma_z));
-    F B = -F(4.0) * tg * inv_pow_sigma_z;
-    F C = F(2.0) * inv_pow_sigma_z;
-    F B_2 = (B / F(2.0)) * (B / F(2.0));
+    F A = (4 / (cos * cos)) * inv_pow_sigma_dl + 2 * tg * tg * inv_pow_sigma_z;
+    F B = -4 * tg * inv_pow_sigma_z;
+    F C = 2 * inv_pow_sigma_z;
+    F B_2 = (B / 2) * (B / 2);
 
     F bb_y = bby(A, C, B_2);
 
     F bb_z = bbz(A, C, B_2);
 
-    Point emision_center = Point(0.0, 0.0);
+    Point emision_center = Point(0, 0);
 
     Pixel center_pixel =
         pixel_location(emision_center.first, emision_center.second);
@@ -250,7 +249,7 @@ class Reconstruction {
     ellipse_kernels.reserve(2000);
 
     std::vector<std::vector<F>> kernel_space;
-    kernel_space.assign(bb_y, std::vector<F>(bb_z, F(0)));
+    kernel_space.assign(bb_y, std::vector<F>(bb_z, 0));
 
     for (int iz = dl.second; iz < ur.second; ++iz) {
       for (int iy = ur.first; iy < dl.first; ++iy) {
@@ -263,26 +262,22 @@ class Reconstruction {
           pp.second -= emision_center.second;
 
           F event_kernel =
-              kernel_.calculate_kernel(y,
-                                       tg,
-                                       sec_,
-                                       sec_sq_,
-                                       pp,
-                                       detector_,
-                                       sqrt_det_correlation_matrix) /
+              kernel.calculate_kernel(y,
+                                      tg,
+                                      sec,
+                                      sec_sq,
+                                      pp,
+                                      detector,
+                                      sqrt_det_correlation_matrix) /
               lookup_table[iy][iz];
         }
       }
     }
 
-    std::string file = std::string("kernel_space");
-
-    file.append(".png");
-
-    png_writer png(file);
+    png_writer png("kernel_space.png");
     png.write_header<>(bb_y, bb_z);
 
-    F output_max = 0.0;
+    F output_max = 0;
     for (auto& col : kernel_space) {
       for (auto& row : col) {
         output_max = std::max(output_max, row);
