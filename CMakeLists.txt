@@ -52,7 +52,9 @@ function(pet_target TYPE CMD)
     # compile kernel sources
     cuda_compile(CUDA ${CUDA})
     # append CUDA specific headers
-    file(GLOB CUDA_HEADERS src/${TYPE}/cuda/*.cuh)
+    file(GLOB CUDA_HEADERS
+      src/${TYPE}/cuda/*.h
+      src/${TYPE}/cuda/*.cuh)
     list(APPEND CUDA ${CUDA_HEADERS})
     # add runner wrapper
     if(EXISTS src/${TYPE}/cuda/${CMD}_cuda.cpp)
