@@ -35,8 +35,10 @@ if(CUDA_FOUND)
   # don't add host flags to CUDA
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
   # workaround FindCUDA bug
-  include(CMakeDetermineCCompiler)
-  get_filename_component(CUDA_HOST_COMPILER "${CMAKE_C_COMPILER}" REALPATH)
+  if(NOT CMAKE_C_COMPILER)
+    include(CMakeDetermineCCompiler)
+    get_filename_component(CUDA_HOST_COMPILER "${CMAKE_C_COMPILER}" REALPATH)
+  endif()
 endif()
 
 # creates executable for specific PET command
