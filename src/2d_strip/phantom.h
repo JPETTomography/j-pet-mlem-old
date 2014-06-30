@@ -20,7 +20,7 @@
 #include "event.h"
 #include "util/bstream.h"
 
-template <typename F> int sgn(F val) { return (F(0) < val) - (val < F(0)); }
+template <typename F> int sgn(F val) { return (0 < val) - (val < 0); }
 
 template <typename FType = double> class Phantom {
   typedef FType F;
@@ -73,7 +73,7 @@ template <typename FType = double> class Phantom {
     F d1 = (sin * dy + cos * dz);  // y
     F d2 = (sin * dz - cos * dy);  // z
 
-    return (d1 * d1 / (el.a * el.a)) + (d2 * d2 / (el.b * el.b)) <= F(1);
+    return (d1 * d1 / (el.a * el.a)) + (d2 * d2 / (el.b * el.b)) <= 1;
   }
 
   void emit_event() {
@@ -108,10 +108,10 @@ template <typename FType = double> class Phantom {
         // Turn on leapfrogging with an offset that depends on the task id
       }
 
-      sin = std::sin(F(el.angle * radian));
-      cos = std::cos(F(el.angle * radian));
-      inv_a2 = F(1) / (el.a * el.a);
-      inv_b2 = F(1) / (el.b * el.b);
+      sin = std::sin(el.angle * radian);
+      cos = std::cos(el.angle * radian);
+      inv_a2 = 1 / (el.a * el.a);
+      inv_b2 = 1 / (el.b * el.b);
       iteration = el.iter;
 
 #if _OPENMP
@@ -135,8 +135,8 @@ template <typename FType = double> class Phantom {
           z_d += normal_dist_dz(rng_list[omp_get_thread_num()]);
           dl += normal_dist_dl(rng_list[omp_get_thread_num()]);
 
-          if (std::abs(z_u) < (Scentilator_length / F(2)) &&
-              std::abs(z_d) < (Scentilator_length / F(2))) {
+          if (std::abs(z_u) < (Scentilator_length / 2) &&
+              std::abs(z_d) < (Scentilator_length / 2)) {
 
             Event<F> event(z_u, z_d, dl);
 

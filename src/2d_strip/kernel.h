@@ -11,12 +11,12 @@ template <typename FType = double> class Kernel {
  public:
   typedef FType F;
   static constexpr const F INVERSE_PI = F(M_1_PI);
-  static constexpr const F INVERSE_POW_TWO_PI = F(1.0 / (2.0 * M_PI * M_PI));
+  static constexpr const F INVERSE_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
   typedef std::pair<F, F> Point;
 
   F multiply_elements(F* vec_a, StripDetector<F>& detector, F* vec_b) {
 
-    F output = F(0.0);
+    F output = 0;
 
     output += vec_a[0] * detector.inv_c(0, 0) * vec_b[0];
     output += vec_a[1] * detector.inv_c(1, 1) * vec_b[1];

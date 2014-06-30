@@ -1,10 +1,9 @@
 #pragma once
-#include "event.h"
-/**
- * Class  responsible for the Strip detector together with
- * the pixel grid inside.
- */
 
+#include "event.h"
+
+/// Class responsible for the Strip detector together with the pixel grid
+/// inside.
 template <typename F> class StripDetector {
   static constexpr const F INVERSE_PI = F(M_1_PI);
 
@@ -20,8 +19,8 @@ template <typename F> class StripDetector {
                 F pixel_width,   // z direction
                 F sigma_z,
                 F sigma_dl,
-                F grid_center_y = 0.0,
-                F grid_center_z = 0.0)
+                F grid_center_y = 0,
+                F grid_center_z = 0)
       : radius(radius),
         scintilator_length(scintilator_length),
         n_y_pixels(n_y_pixels),
@@ -32,36 +31,36 @@ template <typename F> class StripDetector {
         sigma_dl(sigma_dl),
         grid_center_y(grid_center_y),
         grid_center_z(grid_center_z),
-        grid_size_y_(n_y_pixels * pixel_height),
-        grid_size_z_(n_z_pixels * pixel_width),
-        grid_ul_y_(grid_center_y + 0.5 * grid_size_y_),
-        grid_ul_z_(grid_center_z - 0.5 * grid_size_z_) {
+        grid_size_y(n_y_pixels * pixel_height),
+        grid_size_z(n_z_pixels * pixel_width),
+        grid_ul_y(grid_center_y + F(0.5) * grid_size_y),
+        grid_ul_z(grid_center_z - F(0.5) * grid_size_z) {
     F s_z_sq = sigma_z * sigma_z;
     F s_dl_sq = sigma_dl * sigma_dl;
 
-    F inv_s_z_sq = 1.0 / s_z_sq;
-    F inv_s_dl_sq = 1.0 / s_dl_sq;
-    inverse_correlation_matrix_[0][0] = inv_s_z_sq;
-    inverse_correlation_matrix_[0][1] = F(0.0f);
-    inverse_correlation_matrix_[0][2] = F(0.0f);
+    F inv_s_z_sq = 1 / s_z_sq;
+    F inv_s_dl_sq = 1 / s_dl_sq;
+    inverse_correlation_matrix[0][0] = inv_s_z_sq;
+    inverse_correlation_matrix[0][1] = 0;
+    inverse_correlation_matrix[0][2] = 0;
 
-    inverse_correlation_matrix_[1][0] = F(0.0f);
-    inverse_correlation_matrix_[1][1] = inv_s_z_sq;
-    inverse_correlation_matrix_[1][2] = F(0.0f);
+    inverse_correlation_matrix[1][0] = 0;
+    inverse_correlation_matrix[1][1] = inv_s_z_sq;
+    inverse_correlation_matrix[1][2] = 0;
 
-    inverse_correlation_matrix_[2][0] = F(0.0f);
-    inverse_correlation_matrix_[2][1] = F(0.0f);
-    inverse_correlation_matrix_[2][2] = inv_s_dl_sq;
+    inverse_correlation_matrix[2][0] = 0;
+    inverse_correlation_matrix[2][1] = 0;
+    inverse_correlation_matrix[2][2] = inv_s_dl_sq;
   }
 
   F half_scintilator_length() const { return F(0.5) * scintilator_length; }
 
-  F inv_c(int i, int j) const { return inverse_correlation_matrix_[i][j]; }
+  F inv_c(int i, int j) const { return inverse_correlation_matrix[i][j]; }
 
   Event<F> to_projection_space_tan(const ImageSpaceEventTan<F>& ev) {
     F z_u = ev.z + (radius - ev.y) * ev.tan;
     F z_d = ev.z - (radius + ev.y) * ev.tan;
-    F dl = -F(2.0) * ev.y * sqrt(ev.tan * ev.tan + F(1.0));
+    F dl = -2 * ev.y * sqrt(ev.tan * ev.tan + 1);
     return Event<F>(z_u, z_d, dl);
   }
 
@@ -81,15 +80,16 @@ template <typename F> class StripDetector {
   }
 
   Point pixel_center(int i, int j) {
-    return std::make_pair<F>(grid_ul_y_ - i * pixel_height - 0.5 * pixel_height,
-                             grid_ul_z_ + j * pixel_width + 0.5 * pixel_width);
+    return std::make_pair<F>(
+        grid_ul_y - i * pixel_height - F(0.5) * pixel_height,
+        grid_ul_z + j * pixel_width + F(0.5) * pixel_width);
   }
 
   Point pixel_center(Pixel pix) { return pixel_center(pix.first, pix.second); }
 
   Pixel pixel_location(F y, F z) {
-    return std::make_pair<int>(floor((grid_ul_y_ - y) / pixel_height),
-                               floor((z - grid_ul_z_) / pixel_width));
+    return std::make_pair<int>(floor((grid_ul_y - y) / pixel_height),
+                               floor((z - grid_ul_z) / pixel_width));
   }
 
   Pixel pixel_location(Point p) { return pixel_location(p.first, p.second); }
@@ -116,11 +116,11 @@ template <typename F> class StripDetector {
   const F grid_center_y;
   const F grid_center_z;
 
- public:
-  F grid_size_y_;
-  F grid_size_z_;
-  F grid_ul_y_;
-  F grid_ul_z_;
+ private:
+  F grid_size_y;
+  F grid_size_z;
+  F grid_ul_y;
+  F grid_ul_z;
 
-  F inverse_correlation_matrix_[3][3];
+  F inverse_correlation_matrix[3][3];
 };

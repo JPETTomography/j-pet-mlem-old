@@ -85,15 +85,14 @@ int main(int argc, char* argv[]) {
       cfg.number_of_blocks = cl.get<int>("cuda-blocks");
       cfg.number_of_threads_per_block = cl.get<int>("cuda-threads");
       cfg.number_of_events = 1;
-      cfg.inv_pow_sigma_dl = 1.0f / (dl * dl);
-      cfg.inv_pow_sigma_z = 1.0f / (sigma * sigma);
+      cfg.inv_pow_sigma_dl = 1 / (dl * dl);
+      cfg.inv_pow_sigma_z = 1 / (sigma * sigma);
       cfg.grid_size_y_ = n_pixels * pixel_size;
       cfg.grid_size_z_ = n_pixels * pixel_size;
 
       Reconstruction<double> reconstruction(
           10, R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
       ibstream in(cl.get<string>("file"));
-      reconstruction.set_output_name(cl.get<std::string>("output"));
       reconstruction << in;
 
       execute_kernel_reconstruction(
@@ -118,16 +117,13 @@ int main(int argc, char* argv[]) {
                                             sigma,
                                             dl);
       ibstream in(cl.get<string>("file"));
-      reconstruction.set_output_name(cl.get<std::string>("output"));
       reconstruction << in;
 
       clock_t begin = clock();
-
-      reconstruction(n_blocks);
-
+      reconstruction(n_blocks, 1, cl.get<std::string>("output"));
       clock_t end = clock();
 
-      std::cout << "Time:" << double(end - begin) / CLOCKS_PER_SEC / 4
+      std::cout << "Time: " << double(end - begin) / CLOCKS_PER_SEC / 4
                 << std::endl;
     }
   } catch (std::string& ex) {
