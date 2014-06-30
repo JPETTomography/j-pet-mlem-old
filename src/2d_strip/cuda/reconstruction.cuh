@@ -391,20 +391,6 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 
               acc += event_kernel * tex2D<float>(tex, iy, iz) *
                      rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)];
-
-              if (tid == 0 && i == 0) {
-                printf("TID: %d KERNEL: %e PIXEL: %d %d\n",
-                       tid,
-                       event_kernel,
-                       iy,
-                       iz);
-              }
-
-              //                      if(tid == 0){
-              //              printf("Pixel(%d,%d): SUB: %f %f\n", iy, iz, pp.x,
-              //              pp.y);
-              //              printf("KERNEL: %e\n",event_kernel);
-              //                      }
             }
           }
         }

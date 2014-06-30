@@ -251,7 +251,7 @@ class Reconstruction {
 
         ellipse_kernels.push_back(
             std::pair<Pixel, F>(Pixel(iy, iz), event_kernel));
-
+#if DEBUG
         if (iter == 0) {
 
           std::cout << "PP:: " << iz << " " << iy << " " << pp.first << " "
@@ -259,7 +259,7 @@ class Reconstruction {
 
           std::cout << "LOCATION: " << iy + (iz * n_pixels) << std::endl;
         }
-
+#endif
         acc += event_kernel * rho[iy][iz];
       }
     }
