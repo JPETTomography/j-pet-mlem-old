@@ -120,14 +120,11 @@ template <typename FType = double> class Phantom {
       for (int i = 0; i < iteration; ++i) {
 
 #if MAIN_PHANTOM
+        F ry = uniform_y(rng_list[omp_get_thread_num()]);
+        F rz = uniform_z(rng_list[omp_get_thread_num()]);
+        F rangle = M_PI_4 * uniform_angle(rng_list[omp_get_thread_num()]);
 
-        F ry, rz, rangle;
-
-        ry = uniform_y(rng_list[omp_get_thread_num()]);
-        rz = uniform_z(rng_list[omp_get_thread_num()]);
-        rangle = M_PI_4 * uniform_angle(rng_list[omp_get_thread_num()]);
-
-        if (in(ry, rz, el) && (std::abs(rangle) != M_PI_2)) {
+        if (in(ry, rz, el) /* && std::abs(rangle) != M_PI_2 */) {
           F z_u, z_d, dl;
 
           z_u = rz + (R_distance - ry) * std::tan(rangle);
@@ -156,11 +153,9 @@ template <typename FType = double> class Phantom {
             event_list_per_thread[omp_get_thread_num()].push_back(event);
           }
         }
-
 #else
-
-        ry = el.y + normal_dist_dl(rng_list[omp_get_thread_num()]);
-        rz = el.x + normal_dist_dz(rng_list[omp_get_thread_num()]);
+        F ry = el.y + normal_dist_dl(rng_list[omp_get_thread_num()]);
+        F rz = el.x + normal_dist_dz(rng_list[omp_get_thread_num()]);
 
         F y = ry;
         F z = rz;
@@ -171,18 +166,12 @@ template <typename FType = double> class Phantom {
         output[p.first][p.second]++;
         output_without_errors[pp.first][pp.second]++;
 
-        temp_event.z_u = ry;
-        temp_event.z_d = rz;
-        temp_event.dl = 0;
-        start++;
-
-        event_list_per_thread[omp_get_thread_num()].push_back(temp_event);
-
+        Event<F> event(ry, rz, dl);
+        event_list_per_thread[omp_get_thread_num()].push_back(event);
 #endif
       }
 
       for (int i = 0; i < omp_get_max_threads(); ++i) {
-
         event_list.insert(event_list.end(),
                           event_list_per_thread[i].begin(),
                           event_list_per_thread[i].end());
@@ -191,15 +180,7 @@ template <typename FType = double> class Phantom {
       std::cout << "VECTOR: " << event_list.size() << std::endl;
     }
 
-    // output reconstruction PNG
-
-    std::ostringstream strs;
-    strs << ellipse_list[0].angle;
-    std::string str = strs.str();
-
-    std::string file = std::string("phantom.png");
-
-    png_writer png(file);
+    png_writer png("phantom.png");
     png.write_header<>(n_pixels, n_pixels);
 
     F output_max = 0;

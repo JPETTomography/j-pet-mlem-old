@@ -44,15 +44,15 @@ int main(int argc, char* argv[]) {
 #endif
     cl.add("cpu", 'c', "run on cpu (via OPENMP)");
     cl.add<double>(
-        "r-distance", 'r', "R distance between scientilators", false, 500.0f);
+        "r-distance", 'r', "R distance between scientilators", false, 500);
     cl.add<std::string>("file", 'f', "events file name", false, "phantom.bin");
-    cl.add<double>("s-length", 'l', "Scentilator_length", false, 1000.0f);
-    cl.add<double>("p-size", 'p', "Pixel size", false, 5.0f);
+    cl.add<double>("s-length", 'l', "Scentilator_length", false, 1000);
+    cl.add<double>("p-size", 'p', "Pixel size", false, 5);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
     cl.add<int>("iter", 'i', "number of iterations", false, 1);
-    cl.add<double>("s-z", 's', "Sigma z error", false, 10.0f);
-    cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63.0f);
-    cl.add<double>("gm", 'u', "Gamma error", false, 0.f);
+    cl.add<double>("s-z", 's', "Sigma z error", false, 10);
+    cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
+    cl.add<double>("gm", 'u', "Gamma error", false, 0);
     cl.add<std::string>(
         "output", 'o', "output files (png)", false, "cpu_rec_iteration");
     cl.parse_check(argc, argv);

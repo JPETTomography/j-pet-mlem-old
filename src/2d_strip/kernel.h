@@ -33,7 +33,7 @@ template <typename FType = double> class Kernel {
   }
 
   F calculate_kernel(F& y,
-                     F& _tan,
+                     F& tan,
                      F& inv_cos,
                      F& pow_inv_cos,
                      Point& pixel_center,
@@ -45,16 +45,16 @@ template <typename FType = double> class Kernel {
     F vec_a[3];
     F vec_b[3];
 
-    vec_o[0] = -(pixel_center.first + y - R_distance) * _tan * pow_inv_cos;
-    vec_o[1] = -(pixel_center.first + y + R_distance) * _tan * pow_inv_cos;
-    vec_o[2] = -(pixel_center.first + y) * inv_cos * (1 + 2 * (_tan * _tan));
+    vec_o[0] = -(pixel_center.first + y - R_distance) * tan * pow_inv_cos;
+    vec_o[1] = -(pixel_center.first + y + R_distance) * tan * pow_inv_cos;
+    vec_o[2] = -(pixel_center.first + y) * inv_cos * (1 + 2 * (tan * tan));
 
     vec_a[0] = -(pixel_center.first + y - R_distance) * pow_inv_cos;
     vec_a[1] = -(pixel_center.first + y + R_distance) * pow_inv_cos;
-    vec_a[2] = -2 * (pixel_center.first + y) * (inv_cos * _tan);
+    vec_a[2] = -2 * (pixel_center.first + y) * (inv_cos * tan);
 
-    vec_b[0] = pixel_center.second - (pixel_center.first * _tan);
-    vec_b[1] = pixel_center.second - (pixel_center.first * _tan);
+    vec_b[0] = pixel_center.second - (pixel_center.first * tan);
+    vec_b[1] = pixel_center.second - (pixel_center.first * tan);
     vec_b[2] = -2 * pixel_center.first * inv_cos;
 
     F a_ic_a = multiply_elements(vec_a, detector, vec_a);

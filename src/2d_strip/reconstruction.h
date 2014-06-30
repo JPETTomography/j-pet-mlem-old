@@ -408,11 +408,8 @@ class Reconstruction {
 
 #endif
     for (int it = 0; it < size; ++it) {
-
       F z_u, z_d, dl;
-
       in >> z_u >> z_d >> dl;
-
       Event<F> temp_event(z_u, z_d, dl);
       event_list.push_back(temp_event);
     }

@@ -36,14 +36,14 @@ int main(int argc, char* argv[]) {
     cl.add<std::string>("input_fn", 'f', "phantom file", false, "s_shepp");
     cl.add<std::string>("output_fn", 'o', "events file", false, "phantom.bin");
     cl.add<double>(
-        "r-distance", 'r', "R distance between scientilators", false, 500.0f);
-    cl.add<double>("s-length", 'l', "Scentilator_length", false, 1000.0f);
-    cl.add<double>("p-size", 'p', "Pixel size", false, 5.0f);
+        "r-distance", 'r', "R distance between scientilators", false, 500);
+    cl.add<double>("s-length", 'l', "Scentilator_length", false, 1000);
+    cl.add<double>("p-size", 'p', "Pixel size", false, 5);
     cl.add<int>("n-pixels", 'n', "Number of pixels", false, 200);
     cl.add<int>("iter", 'i', "number of iterations", false, 1);
-    cl.add<double>("s-z", 's', "Sigma z error", false, 10.0f);
-    cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63.0f);
-    cl.add<double>("gm", 'g', "Gamma error", false, 0.f);
+    cl.add<double>("s-z", 's', "Sigma z error", false, 10);
+    cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
+    cl.add<double>("gm", 'g', "Gamma error", false, 0);
     cl.add<double>("emmisions", 'e', "number of emissions", false, 500000);
 
     cl.parse_check(argc, argv);
@@ -67,15 +67,16 @@ int main(int argc, char* argv[]) {
     typedef EllipseParameters<double> Ellipse;
     std::vector<Ellipse> ellipse_list;
 
-    double normalized_acc = 0.0f;
+    double normalized_acc = 0;
 
     std::string line;
     while (std::getline(infile, line)) {
       std::istringstream iss(line);
       double x, y, a, b, angle, acc;
-      if (!(iss >> x >> y >> a >> b >> angle >> acc)) {
+
+      // on error
+      if (!(iss >> x >> y >> a >> b >> angle >> acc))
         break;
-      }  // error
 
       Ellipse el(x, y, a, b, angle, acc);
 
@@ -88,9 +89,7 @@ int main(int argc, char* argv[]) {
     }
 
     for (auto& e : ellipse_list) {
-
       e.iter = e.iter * (emmisions / normalized_acc);
-
       std::cout << e.iter << std::endl;
     }
 
