@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 project(PET CXX)
 
-add_definitions(-std=c++11)
+add_definitions(-std=c++11 -Wall -Wunused-parameter)
 
 include_directories(src lib/cmdline)
 
@@ -32,7 +32,9 @@ find_package(CUDA)
 if(CUDA_FOUND)
   add_definitions(-DHAVE_CUDA=1)
   include_directories(${CUDA_INCLUDE_DIRS})
-  list(APPEND CUDA_NVCC_FLAGS         -arch=compute_30 -code=sm_30)
+  list(APPEND CUDA_NVCC_FLAGS
+    -Xcompiler -Wall,-Wunused-parameter,-Wno-unused-function
+    -arch=compute_30 -code=sm_30)
   list(APPEND CUDA_NVCC_FLAGS_RELEASE -Xptxas -O3 --use_fast_math)
   # don't add host flags to CUDA
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
