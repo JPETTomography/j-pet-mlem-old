@@ -17,6 +17,12 @@ template <> float max<float>(const float a, const float b) $ {
   return fmaxf(a, b);
 }
 
+template <typename F> F ceil(const F a);
+template <> float ceil<float>(const float a) $ { return ceilf(a); }
+
+template <typename F> F floor(const F a);
+template <> float floor<float>(const float a) $ { return floorf(a); }
+
 template <typename F> F sqrt(const F a);
 template <> float sqrt<float>(const float a) $ { return sqrtf(a); }
 
@@ -46,6 +52,8 @@ template <> float exp<float>(const float a) $ { return expf(a); }
 
 template <typename F> F min(const F a, const F b) { return std::min(a, b); }
 template <typename F> F max(const F a, const F b) { return std::max(a, b); }
+template <typename F> F ceil(const F a) { return std::ceil(a); }
+template <typename F> F floor(const F a) { return std::floor(a); }
 template <typename F> F sqrt(const F a) { return std::sqrt(a); }
 template <typename F> F sin(const F a) { return std::sin(a); }
 template <typename F> F cos(const F a) { return std::cos(a); }

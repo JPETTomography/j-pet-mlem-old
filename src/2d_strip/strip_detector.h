@@ -4,6 +4,7 @@
 
 #include "geometry/pixel.h"
 #include "geometry/point.h"
+#include "util/compat.h"
 
 /// Class responsible for the Strip detector together with the pixel grid
 /// inside.
@@ -71,19 +72,18 @@ template <typename FType = double> class StripDetector {
   }
 
   Point pixel_center(int i, int j) {
-    return std::make_pair<F>(
-        grid_ul_y - i * pixel_height - F(0.5) * pixel_height,
-        grid_ul_z + j * pixel_width + F(0.5) * pixel_width);
+    return Point(grid_ul_y - i * pixel_height - F(0.5) * pixel_height,
+                 grid_ul_z + j * pixel_width + F(0.5) * pixel_width);
   }
 
-  Point pixel_center(Pixel pix) { return pixel_center(pix.first, pix.second); }
+  Point pixel_center(Pixel pixel) { return pixel_center(pixel.x, pixel.y); }
 
   Pixel pixel_location(F y, F z) {
-    return Pixel(std::floor((grid_ul_y - y) / pixel_height),
-                 std::floor((z - grid_ul_z) / pixel_width));
+    return Pixel(compat::floor((grid_ul_y - y) / pixel_height),
+                 compat::floor((z - grid_ul_z) / pixel_width));
   }
 
-  Pixel pixel_location(Point p) { return pixel_location(p.first, p.second); }
+  Pixel pixel_location(Point p) { return pixel_location(p.x, p.y); }
 
   F sensitivity(F y, F z) {
     F L_plus = (half_scintilator_length() + z);
@@ -92,8 +92,8 @@ template <typename FType = double> class StripDetector {
     F R_minus = radius - y;
 
     return INVERSE_PI *
-           (std::atan(std::min(L_minus / R_minus, L_plus / R_plus)) -
-            std::atan(std::max(-L_plus / R_minus, -L_minus / R_plus)));
+           (compat::atan(compat::min(L_minus / R_minus, L_plus / R_plus)) -
+            compat::atan(compat::max(-L_plus / R_minus, -L_minus / R_plus)));
   }
 
   const F radius;
