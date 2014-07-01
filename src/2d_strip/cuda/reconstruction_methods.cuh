@@ -6,19 +6,21 @@
 //#define SINGLE_INVERSE_POW_TWO_PI (1.0f / (2.0f * 3.141592f * 3.141592f))
 #define SINGLE_INVERSE_POW_TWO_PI .0506606f
 
-//__device__ void warp_space_pixel(int2& pixel,
-//                                 int offset,
-//                                 int2& ul,
-//                                 int width,
-//                                 int height,
-//                                 int &index) {
+#if OLD_WARP_SPACE_PIXEL
+__device__ void warp_space_pixel(int2& pixel,
+                                 int offset,
+                                 int2& ul,
+                                 int width,
+                                 int height,
+                                 int& index) {
 
-//  index = threadIdx.x & 31 + offset;
-//  pixel.y = index / width;
-//  pixel.x = index - width * pixel.y;
-//  pixel.y += ul.y;
-//  pixel.x += ul.x;
-//}
+  index = threadIdx.x & 31 + offset;
+  pixel.y = index / width;
+  pixel.x = index - width * pixel.y;
+  pixel.y += ul.y;
+  pixel.x += ul.x;
+}
+#endif
 
 __device__ void warp_space_pixel(int2& tid_pixel,
                                  int& offset,

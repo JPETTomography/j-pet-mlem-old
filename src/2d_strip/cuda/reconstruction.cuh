@@ -90,13 +90,15 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
 
       float bb_z = bbz(A, C, B_2);
 
-      //      if(tid == 0 && i==0){
-      //      printf("A: %f B: %f C: %f B_2: %f\n",A,B,C,B_2);
-      //      }
+#if DEBUG
+      if (tid == 0 && i == 0) {
+        printf("A: %f B: %f C: %f B_2: %f\n", A, B, C, B_2);
+      }
 
-      //      if(tid == 0 && i==0){
-      //      printf("bb_y: %f bb_z: %f \n",bb_y,bb_z);
-      //      }
+      if (tid == 0 && i == 0) {
+        printf("bb_y: %f bb_z: %f \n", bb_y, bb_z);
+      }
+#endif
 
       int2 center_pixel = pixel_location(y,
                                          z,
@@ -117,12 +119,14 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
           make_int2(center_pixel.x - pixels_in_line(bb_y, cfg.pixel_size),
                     center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
 
-      //      if(tid == 0 && i==0){
-      //        printf("UR:= %d Limit:= %d \n", ur.x, ur.y);
-      //        printf("DL:= %d Limit:= %d \n", dl.x, dl.y);
-      //        printf("iz:= %d Limit:= %d \n", dl.y, ur.y);
-      //        printf("iy:= %d Limit:= %d \n", ur.x, dl.x);
-      //      }
+#if DEBUG
+      if (tid == 0 && i == 0) {
+        printf("UR:= %d Limit:= %d \n", ur.x, ur.y);
+        printf("DL:= %d Limit:= %d \n", dl.x, dl.y);
+        printf("iz:= %d Limit:= %d \n", dl.y, ur.y);
+        printf("iy:= %d Limit:= %d \n", ur.x, dl.x);
+      }
+#endif
 
       int bb_size = ceilf(((ur.y - ul.y) * (dl.x - ur.x)) / WARP_SIZE);
 
@@ -158,13 +162,12 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
                                           cfg,
                                           sqrt_det_correlation_matrix) /
                            tex2D<float>(tex, tid_pixel.x, tid_pixel.y);
-
-          //          if(tid <32 && i == 0){
-          //              printf("TID: %d KERNEL: %e PIXEL: %d %d
-          //              K:%d\n",tid,event_kernel,tid_pixel.x,tid_pixel.y,k);
-
-          //          }
-
+#if DEBUG
+          if (tid < 32 && i == 0) {
+                        printf("TID: %d KERNEL: %e PIXEL: %d %d
+                        K:%d\n",tid,event_kernel,tid_pixel.x,tid_pixel.y,k);
+          }
+#endif
           acc += event_kernel * tex2D<float>(tex, tid_pixel.x, tid_pixel.y) *
                  rho[IMAGE_SPACE_LINEAR_INDEX(tid_pixel.x, tid_pixel.y)];
 
@@ -180,9 +183,11 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
         acc += __shfl_xor(acc, xor_iter, WARP_SIZE);
       }
 
-      //      if(tid == 0 && i==0){
-      //       printf("KERNEL: %e\n",acc);
-      //      }
+#if DEBUG
+      if (tid == 0 && i == 0) {
+        printf("KERNEL: %e\n", acc);
+      }
+#endif
 
       float inv_acc = 1.0f / acc;
 
@@ -213,11 +218,12 @@ __global__ void reconstruction_2d_strip_cuda(gpu_config::GPU_parameters cfg,
                                         sqrt_det_correlation_matrix) /
                          tex2D<float>(tex, tid_pixel.x, tid_pixel.y);
 
-        //        if(tid <32 && i == 0 && k < loop_index){
-        //            printf("TID: %d KERNEL: %e PIXEL: %d %d
-        //            K:%d\n",tid,event_kernel,tid_pixel.x,tid_pixel.y,k);
-
-        //        }
+#if DEBUG
+        if (tid < 32 && i == 0 && k < loop_index) {
+                    printf("TID: %d KERNEL: %e PIXEL: %d %d
+                    K:%d\n",tid,event_kernel,tid_pixel.x,tid_pixel.y,k);
+        }
+#endif
 
         atomicAdd(&image_buffor[BUFFOR_LINEAR_INDEX(tid_pixel.x, tid_pixel.y)],
                   (event_kernel *
@@ -311,18 +317,18 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
         T B = -T(4.0f) * tn * cfg.inv_pow_sigma_z;
         T C = T(2.0f) * cfg.inv_pow_sigma_z;
         T B_2 = (B / T(2.0f)) * (B / T(2.0f));
-
-        //        if(tid == 0 && i==0){
-        //        printf("A: %f B: %f C: %f B_2: %f\n",A,B,C,B_2);
-        //        }
+#if DEBUG
+        if (tid == 0 && i == 0) {
+          printf("A: %f B: %f C: %f B_2: %f\n", A, B, C, B_2);
+        }
+#endif
         T bb_y = bby(A, C, B_2);
-
         T bb_z = bbz(A, C, B_2);
-
-        //        if(tid == 0 && i==0){
-        //        printf("bb_y: %f bb_z: %f \n",bb_y,bb_z);
-        //        }
-
+#if DEBUG
+        if (tid == 0 && i == 0) {
+          printf("bb_y: %f bb_z: %f \n", bb_y, bb_z);
+        }
+#endif
         int2 center_pixel = pixel_location(y,
                                            z,
                                            cfg.pixel_size,
@@ -337,14 +343,14 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
         int2 dl =
             make_int2(center_pixel.x + pixels_in_line(bb_y, cfg.pixel_size),
                       center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
-
-        //        if(tid == 0 && i==0){
-        //            printf("UR:= %d Limit:= %d \n", ur.x, ur.y);
-        //            printf("DL:= %d Limit:= %d \n", dl.x, dl.y);
-        //            printf("iz:= %d Limit:= %d \n", dl.y, ur.y);
-        //            printf("iy:= %d Limit:= %d \n", ur.x, dl.x);
-        //        }
-
+#if DEBUG
+        if (tid == 0 && i == 0) {
+          printf("UR:= %d Limit:= %d \n", ur.x, ur.y);
+          printf("DL:= %d Limit:= %d \n", dl.x, dl.y);
+          printf("iz:= %d Limit:= %d \n", dl.y, ur.y);
+          printf("iy:= %d Limit:= %d \n", ur.x, dl.x);
+        }
+#endif
         float2 pp;
 
         int iter = 0;
@@ -362,13 +368,16 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
                               half_pixel_size);
 
             if (in_ellipse(A, B, C, y, z, pp)) {
-
-              //                if(tid == 0 && i==0){
-              //                   printf("Pixel(%d,%d): SUB: %f %f ITER: %d\n",
-              //                   iy, iz, pp.x, pp.y,iter);
-
-              //                }
-
+#if DEBUG
+              if (tid == 0 && i == 0) {
+                printf("Pixel(%d,%d): SUB: %f %f ITER: %d\n",
+                       iy,
+                       iz,
+                       pp.x,
+                       pp.y,
+                       iter);
+              }
+#endif
               ++iter;
 
               pp.x -= y;
@@ -484,16 +493,17 @@ __global__ void reconstruction_2d_strip_cuda_simple(CUDA::Config cfg,
                                            cfg.grid_size_y,
                                            cfg.grid_size_z);
         float2 pp;
-        //        if (tid == 0 && i == 0) {
-        //          printf("TID: %d %f %f LIMIT: %d%d\n", tid, y, z, y_step,
-        //          z_step);
-        //          printf("TID: %d %d %d %d %d\n",
-        //                 tid,
-        //                 center_pixel.x - z_step,
-        //                 center_pixel.x + z_step,
-        //                 center_pixel.y - y_step,
-        //                 center_pixel.y + y_step);
-        //        }
+#if DEBUG
+        if (tid == 0 && i == 0) {
+          printf("TID: %d %f %f LIMIT: %d%d\n", tid, y, z, y_step, z_step);
+          printf("TID: %d %d %d %d %d\n",
+                 tid,
+                 center_pixel.x - z_step,
+                 center_pixel.x + z_step,
+                 center_pixel.y - y_step,
+                 center_pixel.y + y_step);
+        }
+#endif
         for (int iy = center_pixel.x - y_step; iy < center_pixel.x + y_step;
              ++iy) {
           for (int iz = center_pixel.y - z_step; iz < center_pixel.y + z_step;
@@ -512,12 +522,13 @@ __global__ void reconstruction_2d_strip_cuda_simple(CUDA::Config cfg,
 
             acc += event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)];
 
-            //            if (tid == 0 && i == 0) {
-            //              printf("PP: %f %f %e EVENT:  ", pp.x, pp.y,
-            //              event_kernel);
-            //              printf("TID: %d %d %d \n", tid, iy, iz);
-            //              printf("INDEX: %d\n", BUFFOR_LINEAR_INDEX(iy, iz));
-            //            }
+#if DEBUG
+            if (tid == 0 && i == 0) {
+              printf("PP: %f %f %e EVENT:  ", pp.x, pp.y, event_kernel);
+              printf("TID: %d %d %d \n", tid, iy, iz);
+              printf("INDEX: %d\n", BUFFOR_LINEAR_INDEX(iy, iz));
+            }
+#endif
           }
         }
 
