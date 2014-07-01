@@ -2,7 +2,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "reconstruction.cuh"
+#include "../event.h"
+
+#include "config.h"
+#include "event.cuh"
+#include "reconstruction_methods.cuh"
+
+#define IMAGE_SPACE_LINEAR_INDEX(Y, Z) (Y * cfg.n_pixels) + Z
+#define BUFFOR_LINEAR_INDEX(Y, Z) \
+  (blockIdx.x * cfg.n_pixels * cfg.n_pixels) + (Y * cfg.n_pixels) + Z
+#define SH_MEM_INDEX(ID, N, I) (ID * 20 + (2 * N + I))
+
+#if EVENT_GRANULARITY
+#include "reconstruction_event_granularity.cuh"
+#elif WARP_GRANULARITY
+#include "reconstruction_warp_granularity.cuh"
+#else
+#include "reconstruction_simple.cuh"
+#endif
 
 static cudaError err;
 
@@ -26,7 +43,7 @@ void run_reconstruction_kernel(CUDA::Config cfg,
                                int event_size,
                                int iteration_chunk,
                                float* image_output,
-                               int warp_offset __unused) {
+                               int warp_offset) {
 
   cudaSetDevice(0);
 

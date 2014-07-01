@@ -1,8 +1,11 @@
 #pragma once
 
 #define WARP_SIZE 32
-//#define WARP_GRANULARITY
-#define EVENT_GRANULARITY
+
+// reconstruction mode
+#define EVENT_GRANULARITY 1
+#define WARP_GRANULARITY 0
+
 #define NORMAL_PHANTOM 0
 
 namespace CUDA {
