@@ -13,6 +13,7 @@ file(GLOB COMMON
   src/util/png_writer.cpp
   src/util/cmdline_hooks.cpp)
 
+# OpenMP support
 find_package(OpenMP)
 if(OPENMP_FOUND)
   list(APPEND CMAKE_CXX_FLAGS ${OpenMP_CXX_FLAGS})
