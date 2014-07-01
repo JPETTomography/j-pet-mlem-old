@@ -4,9 +4,6 @@
 #include <vector>
 #include <algorithm>
 
-#include "util/bstream.h"
-#include "util/svg_ostream.h"
-
 #include "event.h"
 #include "kernel.h"
 #include "strip_detector.h"

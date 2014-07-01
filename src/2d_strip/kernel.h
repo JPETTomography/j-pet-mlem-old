@@ -1,10 +1,7 @@
 #pragma once
 
 #include <cmath>
-#include <vector>
-#include <algorithm>
-#include <assert.h>
-#include <utility>
+
 #include "strip_detector.h"
 
 template <typename FType = double> class Kernel {

@@ -2,10 +2,11 @@
 
 #include <cmath>
 #include <vector>
-#include <fstream>
 #include <ctime>
 #include <random>
 #include <algorithm>
+
+#include "event.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -15,9 +16,6 @@
 #endif
 
 #define MAIN_PHANTOM 1
-
-#include "event.h"
-#include "util/bstream.h"
 
 template <typename F> int sgn(F val) { return (0 < val) - (val < 0); }
 
