@@ -17,11 +17,13 @@ void run_reconstruction_kernel(StripDetector<F>& detector,
                                int events_size,
                                int iteration_chunk,
                                F* image_output,
+                               int device,
                                int n_blocks,
                                int n_threads_per_block);
 
 void run_gpu_reconstruction(StripDetector<float>& detector,
                             std::vector<Event<float>>& events,
+                            int device,
                             int n_blocks,
                             int n_threads_per_block) {
 
@@ -39,6 +41,7 @@ void run_gpu_reconstruction(StripDetector<float>& detector,
                             events.size(),
                             n_blocks,
                             gpu_output_image.data(),
+                            device,
                             n_blocks,
                             n_threads_per_block);
 
@@ -86,6 +89,7 @@ void run_gpu_reconstruction(StripDetector<float>& detector,
 
 void run_gpu_reconstruction(StripDetector<float>& detector,
                             std::vector<Event<double>>& events,
+                            int device,
                             int n_blocks,
                             int n_threads_per_block) {
   std::vector<Event<float>> sp_event_list;
@@ -94,5 +98,5 @@ void run_gpu_reconstruction(StripDetector<float>& detector,
     sp_event_list.push_back(sp_event);
   }
   run_gpu_reconstruction(
-      detector, sp_event_list, n_blocks, n_threads_per_block);
+      detector, sp_event_list, device, n_blocks, n_threads_per_block);
 }

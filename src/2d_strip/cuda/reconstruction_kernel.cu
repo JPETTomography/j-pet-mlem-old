@@ -221,5 +221,6 @@ template void run_reconstruction_kernel<float>(StripDetector<float>& detector,
                                                int n_events,
                                                int iteration_chunk,
                                                float* image_output,
+                                               int device,
                                                int n_blocks,
                                                int n_threads_per_block);
