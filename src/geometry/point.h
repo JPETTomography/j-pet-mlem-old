@@ -58,5 +58,5 @@ template <typename FType = double, typename SType = int> struct Point {
   }
 };
 
-template <typename F> F deg(F rad) { return rad * 180 / M_PI; }
-template <typename F> F rad(F deg) { return deg * M_PI / 180; }
+template <typename F> F deg(F rad) { return rad * 180 / F(M_PI); }
+template <typename F> F rad(F deg) { return deg * F(M_PI) / 180; }

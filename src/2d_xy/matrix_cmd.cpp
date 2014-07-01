@@ -258,12 +258,12 @@ int main(int argc, char* argv[]) {
       if (cl.exist("d-detector")) {
         n_detectors =
             ((int)std::floor(
-                 M_PI / std::atan2(d_detector, 2. * radius + d_detector / 2.)) /
+                 M_PI / std::atan2(d_detector, 2 * radius + d_detector / 2)) /
              4) *
             4;
       } else {
         n_detectors =
-            ((int)std::floor(M_PI / std::atan2(w_detector, 2. * radius)) / 4) *
+            ((int)std::floor(M_PI / std::atan2(w_detector, 2 * radius)) / 4) *
             4;
       }
       if (!n_detectors) {
@@ -489,8 +489,8 @@ void post_process(cmdline::parser& cl,
     svg << detector_ring;
 
     svg.link_image(fn_wo_path + ".png",
-                   -(s_pixel * n_pixels) / 2.,
-                   -(s_pixel * n_pixels) / 2.,
+                   -(s_pixel * n_pixels) / 2,
+                   -(s_pixel * n_pixels) / 2,
                    s_pixel * n_pixels,
                    s_pixel * n_pixels);
   }
@@ -527,8 +527,8 @@ void post_process(cmdline::parser& cl,
     svg << detector_ring;
 
     svg.link_image(fn_wo_path + ".png",
-                   -(s_pixel * n_pixels) / 2.,
-                   -(s_pixel * n_pixels) / 2.,
+                   -(s_pixel * n_pixels) / 2,
+                   -(s_pixel * n_pixels) / 2,
                    s_pixel * n_pixels,
                    s_pixel * n_pixels);
   }

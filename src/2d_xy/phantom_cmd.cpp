@@ -199,12 +199,12 @@ int main(int argc, char* argv[]) {
       if (cl.exist("d-detector")) {
         n_detectors =
             ((int)std::floor(
-                 M_PI / std::atan2(d_detector, 2. * radius + d_detector / 2.)) /
+                 M_PI / std::atan2(d_detector, 2 * radius + d_detector / 2)) /
              4) *
             4;
       } else {
         n_detectors =
-            ((int)std::floor(M_PI / std::atan2(w_detector, 2. * radius)) / 4) *
+            ((int)std::floor(M_PI / std::atan2(w_detector, 2 * radius)) / 4) *
             4;
       }
       if (!n_detectors) {
@@ -355,10 +355,10 @@ void run(cmdline::parser& cl, Model& model) {
     } while (!in.eof());
   }
 
-  uniform_real_distribution<> one_dis(0., 1.);
-  uniform_real_distribution<> point_dis(-n_pixels * s_pixel / 2.,
-                                        +n_pixels * s_pixel / 2.);
-  uniform_real_distribution<> phi_dis(0., M_PI);
+  uniform_real_distribution<> one_dis(0, 1);
+  uniform_real_distribution<> point_dis(-n_pixels * s_pixel / 2,
+                                        +n_pixels * s_pixel / 2);
+  uniform_real_distribution<> phi_dis(0, M_PI);
 
   Progress progress(verbose, n_emissions, only_detected ? 10000 : 1000000);
 

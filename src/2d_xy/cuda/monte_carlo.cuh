@@ -85,7 +85,7 @@ __global__ void monte_carlo_kernel(int x,
     center.y =
         (y + HybridTaus(seed[0], seed[1], seed[2], seed[3])) * pixel_size;
 
-    float angle = HybridTaus(seed[0], seed[1], seed[2], seed[3]) * M_PI;
+    float angle = HybridTaus(seed[0], seed[1], seed[2], seed[3]) * (float)M_PI;
 
 #if CLOCK_TEST
     unsigned int t1 = clock();

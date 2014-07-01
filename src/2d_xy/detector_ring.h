@@ -42,13 +42,13 @@ class DetectorRing : public std::vector<DetectorType> {
         n_detectors(n_detectors),
         n_lors(n_detectors * (n_detectors + 1) / 2),
         radius_diff(c_outer.radius() - c_inner.radius()) {
-    if (radius <= 0.)
+    if (radius <= 0)
       throw("invalid radius");
-    if (w_detector > 0. && h_detector == 0.)
+    if (w_detector > 0 && h_detector == 0)
       h_detector = Detector::default_height_for_width(w_detector);
     // NOTE: detector may return 0 for default height, which means we need to
     // have height given explicitely
-    if (w_detector <= 0. || h_detector <= 0.)
+    if (w_detector <= 0 || h_detector <= 0)
       throw("invalid detector size");
     if (n_detectors % 4)
       throw("number of detectors must be multiple of 4");
@@ -56,15 +56,15 @@ class DetectorRing : public std::vector<DetectorType> {
     fov_radius_ = radius / M_SQRT2;
 
     Detector detector_base(w_detector, h_detector, d_detector);
-    auto r_detector = d_detector / 2.;
+    auto r_detector = d_detector / 2;
     CircleDetector<F> circle_detector_base(r_detector);
     circle_detector_base.svg_class = "circle_detector";
 
     // move detector to the right edge of inner ring
     // along zero angle polar coordinate
     detector_base +=
-        Point(0., radius + (d_detector > F() ? d_detector : h_detector) / 2.);
-    circle_detector_base += Point(0., radius + r_detector);
+        Point(0, radius + (d_detector > F() ? d_detector : h_detector) / 2);
+    circle_detector_base += Point(0, radius + r_detector);
 
     // fix up outer circle
     if (d_detector == F()) {
@@ -74,11 +74,11 @@ class DetectorRing : public std::vector<DetectorType> {
     // produce detector ring rotating base detector n times
     for (auto n = 0; n < n_detectors; ++n) {
       auto detector = detector_base;
-      detector.rotate(2. * M_PI * n / n_detectors - M_PI_2);
+      detector.rotate(2 * F(M_PI) * n / n_detectors - F(M_PI_2));
       this->push_back(detector);
       if (d_detector > F()) {
         auto circle_detector = circle_detector_base;
-        circle_detector.rotate(2. * M_PI * n / n_detectors - M_PI_2);
+        circle_detector.rotate(2 * F(M_PI) * n / n_detectors - F(M_PI_2));
         c_detectors.push_back(circle_detector);
       }
     }

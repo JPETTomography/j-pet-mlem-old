@@ -29,7 +29,7 @@ __device__ void create_detector_ring(float h_detector,
 
   test_ring.detector_list[threadIdx.x] = detector_base;
 
-  float angle = 2.0f * M_PI * threadIdx.x / NUMBER_OF_DETECTORS;
+  float angle = 2.0f * (float)M_PI * threadIdx.x / NUMBER_OF_DETECTORS;
 
 #if SINGLE_PRECISION_INTRINSIC > 0
   float sin_phi = __sinf(angle);
@@ -102,7 +102,7 @@ __device__ SecantAngles secant_angles(SecantPoints& e) {
 
 __device__ int section(float angle, int n_detectors) {
   // converting angles to [0,2 Pi) interval
-  float normalised_angle = angle > 0 ? angle : (float)2.0 * M_PI + angle;
+  float normalised_angle = angle > 0 ? angle : 2.0f * (float)M_PI + angle;
   return static_cast<int>(round(normalised_angle * n_detectors * 0.1591549f)) %
          (n_detectors);
 }

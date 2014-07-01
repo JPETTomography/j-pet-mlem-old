@@ -11,18 +11,18 @@ class TriangleDetector : public Polygon<3, FType> {
 
   TriangleDetector(F w, F h, F d = F()) {
     if (d > F()) {
-      this->push_back(Point(w / 2., d / 2. - h));
-      this->push_back(Point(-w / 2., d / 2. - h));
-      this->push_back(Point(0., d / 2.));
+      this->push_back(Point(w / 2, d / 2 - h));
+      this->push_back(Point(-w / 2, d / 2 - h));
+      this->push_back(Point(0, d / 2));
     } else {
-      this->push_back(Point(w / 2., -h / 2.));
-      this->push_back(Point(-w / 2., -h / 2.));
-      this->push_back(Point(0., h / 2.));
+      this->push_back(Point(w / 2, -h / 2));
+      this->push_back(Point(-w / 2, -h / 2));
+      this->push_back(Point(0, h / 2));
     }
   }
 
-  static F default_height_for_width(const F w) {
-    return w * (std::sqrt(3) / 2.0);
+  static constexpr F default_height_for_width(const F w) {
+    return w * std::sqrt(static_cast<F>(3)) / 2;
   }
 
   TriangleDetector& rotate(Angle phi) {

@@ -14,8 +14,8 @@ template <typename FType = double> class svg_ostream : public std::ofstream {
       : std::ofstream(fn) {
     auto x_translate = x_max;
     auto y_translate = y_max;
-    auto scale = std::min((image_width - 4.) / x_max / 2.,
-                          (image_height - 4.) / y_max / 2.);
+    auto scale = std::min(static_cast<F>(image_width - 4) / x_max / 2,
+                          static_cast<F>(image_height - 4) / y_max / 2);
     auto stroke = 1. / scale;
     *this << "<?xml version=\"1.0\" standalone=\"no\"?>" << std::endl;
     *this << "<svg"

@@ -37,7 +37,7 @@ class Polygon : public Array<NumPoints, Point<FType>> {
     auto v1 = e(p1);
     for (auto& p2 : *this) {
       auto v2 = e(p2);
-      if (v1 * v2 <= 0.)
+      if (v1 * v2 <= 0)
         return true;
       v1 = v2;
     }
@@ -58,10 +58,10 @@ class Polygon : public Array<NumPoints, Point<FType>> {
     Intersections intersections;
     for (auto& p2 : *this) {
       auto v2 = e(p2);
-      if (v2 == 0.) {
+      if (v2 == 0) {
         // v2 is crossing point
         intersections.push_back(p2);
-      } else if (v1 * v2 < 0.) {
+      } else if (v1 * v2 < 0) {
         // calculate intersection
         auto m = e.a * (p1.x - p2.x) + e.b * (p1.y - p2.y);
         intersections.push_back(Point(
