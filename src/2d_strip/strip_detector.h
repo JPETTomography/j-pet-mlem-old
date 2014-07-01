@@ -2,15 +2,22 @@
 
 #include "event.h"
 
+#include "geometry/pixel.h"
+#include "geometry/point.h"
+
 /// Class responsible for the Strip detector together with the pixel grid
 /// inside.
-template <typename F> class StripDetector {
+template <typename FType = double> class StripDetector {
+ public:
+  typedef FType F;
+  typedef FType FVec[3];
+  typedef ::Pixel<> Pixel;
+  typedef ::Point<F> Point;
+
+ private:
   static constexpr const F INVERSE_PI = F(M_1_PI);
 
  public:
-  typedef std::pair<int, int> Pixel;
-  typedef std::pair<F, F> Point;
-
   StripDetector(F radius,
                 F scintilator_length,
                 int n_y_pixels,
@@ -34,28 +41,12 @@ template <typename F> class StripDetector {
         grid_size_y(n_y_pixels * pixel_height),
         grid_size_z(n_z_pixels * pixel_width),
         grid_ul_y(grid_center_y + F(0.5) * grid_size_y),
-        grid_ul_z(grid_center_z - F(0.5) * grid_size_z) {
-    F s_z_sq = sigma_z * sigma_z;
-    F s_dl_sq = sigma_dl * sigma_dl;
-
-    F inv_s_z_sq = 1 / s_z_sq;
-    F inv_s_dl_sq = 1 / s_dl_sq;
-    inverse_correlation_matrix[0][0] = inv_s_z_sq;
-    inverse_correlation_matrix[0][1] = 0;
-    inverse_correlation_matrix[0][2] = 0;
-
-    inverse_correlation_matrix[1][0] = 0;
-    inverse_correlation_matrix[1][1] = inv_s_z_sq;
-    inverse_correlation_matrix[1][2] = 0;
-
-    inverse_correlation_matrix[2][0] = 0;
-    inverse_correlation_matrix[2][1] = 0;
-    inverse_correlation_matrix[2][2] = inv_s_dl_sq;
-  }
+        grid_ul_z(grid_center_z - F(0.5) * grid_size_z),
+        inverse_correlation_matrix_diag{ 1 / (sigma_z * sigma_z),
+                                         1 / (sigma_z * sigma_z),
+                                         1 / (sigma_dl * sigma_dl) } {}
 
   F half_scintilator_length() const { return F(0.5) * scintilator_length; }
-
-  F inv_c(int i, int j) const { return inverse_correlation_matrix[i][j]; }
 
   Event<F> to_projection_space_tan(const ImageSpaceEventTan<F>& ev) {
     F z_u = ev.z + (radius - ev.y) * ev.tan;
@@ -88,8 +79,8 @@ template <typename F> class StripDetector {
   Point pixel_center(Pixel pix) { return pixel_center(pix.first, pix.second); }
 
   Pixel pixel_location(F y, F z) {
-    return std::make_pair<int>(floor((grid_ul_y - y) / pixel_height),
-                               floor((z - grid_ul_z) / pixel_width));
+    return Pixel(std::floor((grid_ul_y - y) / pixel_height),
+                 std::floor((z - grid_ul_z) / pixel_width));
   }
 
   Pixel pixel_location(Point p) { return pixel_location(p.first, p.second); }
@@ -115,12 +106,11 @@ template <typename F> class StripDetector {
   const F sigma_dl;
   const F grid_center_y;
   const F grid_center_z;
+  const FVec inverse_correlation_matrix_diag;
 
  private:
   F grid_size_y;
   F grid_size_z;
   F grid_ul_y;
   F grid_ul_z;
-
-  F inverse_correlation_matrix[3][3];
 };

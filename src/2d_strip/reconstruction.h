@@ -41,7 +41,7 @@ class Reconstruction {
   std::vector<std::vector<F>> rho_temp;
   std::vector<F> acc_log;
   std::vector<std::vector<F>> thread_rho;
-  std::vector<std::vector<F>> lookup_table;
+  std::vector<std::vector<F>> sensitivity;
 
   Detector detector;
   Kernel<F> kernel;
@@ -76,18 +76,20 @@ class Reconstruction {
     pow_sigma_z = detector.sigma_z * detector.sigma_z;
     pow_sigma_dl = detector.sigma_dl * detector.sigma_dl;
 
-    sqrt_det_correlation_matrix = std::sqrt(
-        detector.inv_c(0, 0) * detector.inv_c(1, 1) * detector.inv_c(2, 2));
+    sqrt_det_correlation_matrix =
+        std::sqrt(detector.inverse_correlation_matrix_diag[0] *
+                  detector.inverse_correlation_matrix_diag[1] *
+                  detector.inverse_correlation_matrix_diag[2]);
 
     inv_pow_sigma_z = 1 / pow_sigma_z;
     inv_pow_sigma_dl = 1 / pow_sigma_dl;
 
-    lookup_table.assign(n_pixels, std::vector<F>(n_pixels));
+    sensitivity.assign(n_pixels, std::vector<F>(n_pixels));
 
     for (int y = 0; y < n_pixels; ++y) {
       for (int z = 0; z < n_pixels; ++z) {
-        Point pp = pixel_center(y, z);
-        lookup_table[y][z] = detector.sensitivity(pp.first, pp.second);
+        Point point = pixel_center(y, z);
+        sensitivity[y][z] = detector.sensitivity(point.x, point.y);
       }
     }
   }
@@ -213,7 +215,7 @@ class Reconstruction {
                                       pp,
                                       detector,
                                       sqrt_det_correlation_matrix) /
-              lookup_table[iy][iz];
+              sensitivity[iy][iz];
         }
       }
     }
@@ -327,8 +329,7 @@ class Reconstruction {
     printf("bb_y:= %f bb_z:= %f\n", bb_y, bb_z);
 #endif
 
-    Pixel center_pixel =
-        pixel_location(ellipse_center.first, ellipse_center.second);
+    Pixel center_pixel = pixel_location(ellipse_center.x, ellipse_center.y);
 
 #if DEBUG
     printf("Center_Pixel y:= %d z:= %d\n",
@@ -336,10 +337,10 @@ class Reconstruction {
            center_pixel.second);
 #endif
 
-    Pixel ur = Pixel(center_pixel.first - pixels_in_line(bb_y),
-                     center_pixel.second + pixels_in_line(bb_z));
-    Pixel dl = Pixel(center_pixel.first + pixels_in_line(bb_y),
-                     center_pixel.second - pixels_in_line(bb_z));
+    Pixel ur = Pixel(center_pixel.x - pixels_in_line(bb_y),
+                     center_pixel.y + pixels_in_line(bb_z));
+    Pixel dl = Pixel(center_pixel.x + pixels_in_line(bb_y),
+                     center_pixel.y - pixels_in_line(bb_z));
 
     std::vector<std::pair<Pixel, F>> ellipse_kernels;
     ellipse_kernels.reserve(2000);
@@ -350,47 +351,42 @@ class Reconstruction {
 #endif
 
     F acc = 0;
-    for (int iz = dl.second; iz < ur.second; ++iz) {
-      for (int iy = ur.first; iy < dl.first; ++iy) {
+    for (int iz = dl.y; iz < ur.y; ++iz) {
+      for (int iy = ur.x; iy < dl.x; ++iy) {
 
-        Point pp = pixel_center(iy, iz);
+        Point point = pixel_center(iy, iz);
 
-        if (in_ellipse(A, B, C, ellipse_center, pp)) {
-#if DEBUG
-          printf("Pixel(%d,%d): %f %f\n", iy, iz, pp.first, pp.second);
-#endif
-          pp.first -= ellipse_center.first;
-          pp.second -= ellipse_center.second;
-#if DEBUG
-          printf("Pixel(%d,%d): SUB: %f %f\n", iy, iz, pp.first, pp.second);
-#endif
-          F event_kernel =
-              kernel.calculate_kernel(y,
-                                      tg,
-                                      sec,
-                                      sec_sq,
-                                      pp,
-                                      detector,
-                                      sqrt_det_correlation_matrix) /
-              lookup_table[iy][iz];
+        if (in_ellipse(A, B, C, ellipse_center, point)) {
+          point.x -= ellipse_center.x;
+          point.y -= ellipse_center.y;
+
+          F event_kernel = kernel(y,
+                                  tg,
+                                  sec,
+                                  sec_sq,
+                                  detector.radius,
+                                  point,
+                                  detector.inverse_correlation_matrix_diag,
+                                  sqrt_det_correlation_matrix) /
+                           sensitivity[iy][iz];
 
           ellipse_kernels.push_back(
               std::pair<Pixel, F>(Pixel(iy, iz), event_kernel));
-          acc += event_kernel * lookup_table[iy][iz] * rho[iy][iz];
+          acc += event_kernel * sensitivity[iy][iz] * rho[iy][iz];
         }
       }
     }
 
     for (auto& e : ellipse_kernels) {
-      thread_rho[tid][e.first.first + (e.first.second * n_pixels)] +=
-          e.second * rho[e.first.first][e.first.second] / acc;
+      thread_rho[tid][e.first.x + (e.first.y * n_pixels)] +=
+          e.second * rho[e.first.x][e.first.y] / acc;
     }
   }
 
   bool in_ellipse(F& A, F& B, F& C, Point ellipse_center, Point p) {
 
-    F dy = (p.first - ellipse_center.first);
-    F dz = (p.second - ellipse_center.second);
+    F dy = p.x - ellipse_center.x;
+    F dz = p.y - ellipse_center.y;
 
     return (((A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)))) <= 9;
   }
