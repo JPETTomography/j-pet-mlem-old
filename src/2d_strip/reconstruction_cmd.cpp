@@ -98,8 +98,8 @@ int main(int argc, char* argv[]) {
       cfg.n_pixels = n_pixels;
       cfg.sigma = sigma;
       cfg.dl = dl;
-      cfg.number_of_blocks = cl.get<int>("cuda-blocks");
-      cfg.number_of_threads_per_block = cl.get<int>("cuda-threads");
+      cfg.n_blocks = cl.get<int>("cuda-blocks");
+      cfg.n_threads_per_block = cl.get<int>("cuda-threads");
       cfg.number_of_events = 1;
       cfg.inv_pow_sigma_dl = 1 / (dl * dl);
       cfg.inv_pow_sigma_z = 1 / (sigma * sigma);

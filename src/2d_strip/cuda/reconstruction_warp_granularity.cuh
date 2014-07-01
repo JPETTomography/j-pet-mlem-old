@@ -24,17 +24,16 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
   inv_c[1] = cfg.inv_pow_sigma_z;
   inv_c[2] = cfg.inv_pow_sigma_dl;
 
-  float half_grid_size = 0.5f * cfg.grid_size_y;
-  float half_pixel_size = 0.5f * cfg.pixel_size;
+  float half_grid_size = T(0.5) * cfg.grid_size_y;
+  float half_pixel_size = T(0.5) * cfg.pixel_size;
 
   int offset;
 
-  int number_of_blocks = int(
-      ceilf(event_list_size / (cfg.number_of_blocks *
-                               (cfg.number_of_threads_per_block / WARP_SIZE))));
+  int number_of_blocks =
+      int(ceilf(event_list_size /
+                (cfg.n_blocks * (cfg.n_threads_per_block / WARP_SIZE))));
 
-  int block_size =
-      (cfg.number_of_blocks * (cfg.number_of_threads_per_block / WARP_SIZE));
+  int block_size = (cfg.n_blocks * (cfg.n_threads_per_block / WARP_SIZE));
 
   int thread_warp_index = floorf(threadIdx.x / WARP_SIZE);
 
@@ -45,8 +44,7 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
 
     // calculate offset in event memory location for warp
     int warp_id =
-        (i * block_size +
-         (blockIdx.x * (cfg.number_of_threads_per_block / WARP_SIZE)) +
+        (i * block_size + (blockIdx.x * (cfg.n_threads_per_block / WARP_SIZE)) +
          thread_warp_index);
 
     if ((warp_id < event_list_size)) {
@@ -55,7 +53,7 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
       float z_d = soa_data->z_d[warp_id];
       float delta_l = soa_data->dl[warp_id];
 
-      float acc = 0.f;
+      float acc = 0;
 
       // angle space transformation
       float tn = event_tan(z_u, z_d, cfg.R_distance);
@@ -66,14 +64,14 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
 
       float cos_ = __cosf(angle);
 
-      float sec_ = float(1.0f) / cos_;
+      float sec_ = 1 / cos_;
       float sec_sq_ = sec_ * sec_;
 
-      float A = (((T(4.0f) / (cos_ * cos_)) * cfg.inv_pow_sigma_dl) +
-                 (T(2.0f) * tn * tn * cfg.inv_pow_sigma_z));
-      float B = -T(4.0f) * tn * cfg.inv_pow_sigma_z;
-      float C = T(2.0f) * cfg.inv_pow_sigma_z;
-      float B_2 = (B / T(2.0f)) * (B / T(2.0f));
+      float A = (((4 / (cos_ * cos_)) * cfg.inv_pow_sigma_dl) +
+                 (2 * tn * tn * cfg.inv_pow_sigma_z));
+      float B = -4 * tn * cfg.inv_pow_sigma_z;
+      float C = 2 * cfg.inv_pow_sigma_z;
+      float B_2 = (B / 2) * (B / 2);
 
       float bb_y = bby(A, C, B_2);
 
@@ -178,7 +176,7 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
       }
 #endif
 
-      float inv_acc = 1.0f / acc;
+      float inv_acc = 1 / acc;
 
       for (int k = 0; k < loop_index; ++k) {
 

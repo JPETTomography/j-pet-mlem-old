@@ -38,22 +38,22 @@ void run_reconstruction_kernel(CUDA::Config cfg,
 
   cudaSetDevice(0);
 
-  dim3 blocks(cfg.number_of_blocks);
-  dim3 threads(cfg.number_of_threads_per_block);
+  dim3 blocks(cfg.n_blocks);
+  dim3 threads(cfg.n_threads_per_block);
 
   size_t image_sz = cfg.n_pixels * cfg.n_pixels * sizeof(float);
 
-  float* cpu_image_buffor = (float*)malloc(image_sz * cfg.number_of_blocks);
+  float* cpu_image_buffor = (float*)malloc(image_sz * cfg.n_blocks);
   float* cpu_image_rho = (float*)malloc(image_sz);
   float* cpu_temp_rho = (float*)malloc(image_sz);
   float cpu_image_sensitivity[image_sz];
 
   for (int i = 0; i < cfg.n_pixels * cfg.n_pixels; ++i) {
-    cpu_image_rho[i] = 100.0f;
+    cpu_image_rho[i] = 100;
   }
 
-  for (int i = 0; i < cfg.number_of_blocks * cfg.n_pixels * cfg.n_pixels; ++i) {
-    cpu_image_buffor[i] = 0.f;
+  for (int i = 0; i < cfg.n_blocks * cfg.n_pixels * cfg.n_pixels; ++i) {
+    cpu_image_buffor[i] = 0;
   }
 
   float half_pixel_size = 0.5f * cfg.pixel_size;
@@ -75,7 +75,7 @@ void run_reconstruction_kernel(CUDA::Config cfg,
           sensitivity(pixel_coordiantes.x,
                       pixel_coordiantes.y,
                       cfg.R_distance,
-                      cfg.Scentilator_length / 2.0f);
+                      cfg.Scentilator_length / 2);
     }
   }
 
@@ -140,7 +140,7 @@ void run_reconstruction_kernel(CUDA::Config cfg,
   // other mallocs and allocations
 
   cuda(Malloc, (void**)&gpu_event_list, event_size * sizeof(Event<float>));
-  cuda(Malloc, (void**)&gpu_image_buffor, image_sz * cfg.number_of_blocks);
+  cuda(Malloc, (void**)&gpu_image_buffor, image_sz * cfg.n_blocks);
   cuda(Malloc, (void**)&gpu_image_rho, image_sz);
   cuda(Malloc, (void**)&gpu_soa_event_list, sizeof(soa_event<float>));
 
@@ -159,7 +159,7 @@ void run_reconstruction_kernel(CUDA::Config cfg,
   cuda(Memcpy,
        gpu_image_buffor,
        cpu_image_buffor,
-       image_sz * cfg.number_of_blocks,
+       image_sz * cfg.n_blocks,
        cudaMemcpyHostToDevice);
 
   cuda(Memcpy, gpu_image_rho, cpu_image_rho, image_sz, cudaMemcpyHostToDevice);
@@ -195,10 +195,10 @@ void run_reconstruction_kernel(CUDA::Config cfg,
     cuda(Memcpy,
          cpu_image_buffor,
          gpu_image_buffor,
-         image_sz * cfg.number_of_blocks,
+         image_sz * cfg.n_blocks,
          cudaMemcpyDeviceToHost);
 
-    for (int block_id = 0; block_id < cfg.number_of_blocks; ++block_id) {
+    for (int block_id = 0; block_id < cfg.n_blocks; ++block_id) {
       for (int index = 0; index < cfg.n_pixels * cfg.n_pixels; ++index) {
 
         image_output[(i * cfg.n_pixels * cfg.n_pixels) + index] +=
@@ -206,10 +206,9 @@ void run_reconstruction_kernel(CUDA::Config cfg,
       }
     }
 
-    for (int pixel = 0;
-         pixel < cfg.number_of_blocks * cfg.n_pixels * cfg.n_pixels;
+    for (int pixel = 0; pixel < cfg.n_blocks * cfg.n_pixels * cfg.n_pixels;
          ++pixel) {
-      cpu_image_buffor[pixel] = 0.f;
+      cpu_image_buffor[pixel] = 0;
     }
 
     for (int pixel = 0; pixel < cfg.n_pixels * cfg.n_pixels; ++pixel) {
@@ -220,7 +219,7 @@ void run_reconstruction_kernel(CUDA::Config cfg,
     cuda(Memcpy,
          gpu_image_buffor,
          cpu_image_buffor,
-         image_sz * cfg.number_of_blocks,
+         image_sz * cfg.n_blocks,
          cudaMemcpyHostToDevice);
 
     cuda(Memcpy, gpu_image_rho, cpu_temp_rho, image_sz, cudaMemcpyHostToDevice);

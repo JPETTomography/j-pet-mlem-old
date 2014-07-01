@@ -17,23 +17,17 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
   int block_chunk =
-      int(ceilf(event_list_size /
-                (cfg.number_of_blocks * cfg.number_of_threads_per_block)));
+      int(ceilf(event_list_size / (cfg.n_blocks * cfg.n_threads_per_block)));
 
   for (int i = 0; i < block_chunk; ++i) {
 
-    if ((i * cfg.number_of_blocks * cfg.number_of_threads_per_block) + tid <
-        event_list_size) {
+    if ((i * cfg.n_blocks * cfg.n_threads_per_block) + tid < event_list_size) {
 
       for (int j = 0; j < 1; ++j) {
 
-        T y = soa_data->z_u[(i * cfg.number_of_blocks *
-                             cfg.number_of_threads_per_block) +
-                            tid];
-        T z = soa_data->z_d[(i * cfg.number_of_blocks *
-                             cfg.number_of_threads_per_block) +
-                            tid];
-        T acc = 0.f;
+        T y = soa_data->z_u[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
+        T z = soa_data->z_d[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
+        T acc = 0;
 
         if (tid == 0 && i == 0) {
 
@@ -92,7 +86,7 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
           }
         }
 
-        float inv_acc = 1.0f / acc;
+        float inv_acc = 1 / acc;
 
         for (int iz = center_pixel.y - z_step; iz < center_pixel.y + z_step;
              ++iz) {

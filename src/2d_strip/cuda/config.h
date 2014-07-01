@@ -14,8 +14,8 @@ struct Config {
   int n_pixels;
   float sigma;
   float dl;
-  int number_of_blocks;
-  int number_of_threads_per_block;
+  int n_blocks;
+  int n_threads_per_block;
   int number_of_events;
   float inv_pow_sigma_dl;
   float inv_pow_sigma_z;

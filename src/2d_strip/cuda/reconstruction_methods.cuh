@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 
 #define SINGLE_INVERSE_PI 0.3183098861f
-//#define SINGLE_INVERSE_POW_TWO_PI (1.0f / (2.0f * 3.141592f * 3.141592f))
+//#define SINGLE_INVERSE_POW_TWO_PI (1 / (2 * 3.141592f * 3.141592f))
 #define SINGLE_INVERSE_POW_TWO_PI .0506606f
 
 #if OLD_WARP_SPACE_PIXEL
@@ -52,7 +52,7 @@ __device__ void warp_space_pixel(int2& tid_pixel,
 template <typename T>
 __device__ float multiply_elements(T* vec_a, volatile T* inv_c, T* vec_b) {
 
-  T output = 0.0f;
+  T output = 0;
 
   output += vec_a[0] * inv_c[0] * vec_b[0];
   output += vec_a[1] * inv_c[1] * vec_b[1];
@@ -62,30 +62,30 @@ __device__ float multiply_elements(T* vec_a, volatile T* inv_c, T* vec_b) {
 }
 
 template <typename T>
-__device__ float main_kernel(T& y,
-                             T& _tan,
-                             T& inv_cos,
-                             T& pow_inv_cos,
-                             float2& pixel_center,
+__device__ float main_kernel(T y,
+                             T tan,
+                             T inv_cos,
+                             T pow_inv_cos,
+                             float2 pixel_center,
                              T* inv_c,
                              CUDA::Config& cfg,
-                             T& sqrt_det_correlation_matrix) {
+                             T sqrt_det_correlation_matrix) {
 
   T vec_o[3];
   T vec_a[3];
   T vec_b[3];
 
-  vec_o[0] = -(pixel_center.x + y - cfg.R_distance) * _tan * pow_inv_cos;
-  vec_o[1] = -(pixel_center.x + y + cfg.R_distance) * _tan * pow_inv_cos;
-  vec_o[2] = -(pixel_center.x + y) * inv_cos * (1.0f + 2.0f * (_tan * _tan));
+  vec_o[0] = -(pixel_center.x + y - cfg.R_distance) * tan * pow_inv_cos;
+  vec_o[1] = -(pixel_center.x + y + cfg.R_distance) * tan * pow_inv_cos;
+  vec_o[2] = -(pixel_center.x + y) * inv_cos * (1 + 2 * (tan * tan));
 
   vec_a[0] = -(pixel_center.x + y - cfg.R_distance) * pow_inv_cos;
   vec_a[1] = -(pixel_center.x + y + cfg.R_distance) * pow_inv_cos;
-  vec_a[2] = -2.0f * (pixel_center.x + y) * (inv_cos * _tan);
+  vec_a[2] = -2 * (pixel_center.x + y) * (inv_cos * tan);
 
-  vec_b[0] = pixel_center.y - (pixel_center.x * _tan);
-  vec_b[1] = pixel_center.y - (pixel_center.x * _tan);
-  vec_b[2] = -2.0f * pixel_center.x * inv_cos;
+  vec_b[0] = pixel_center.y - (pixel_center.x * tan);
+  vec_b[1] = pixel_center.y - (pixel_center.x * tan);
+  vec_b[2] = -2 * pixel_center.x * inv_cos;
 
   T a_ic_a = multiply_elements<T>(vec_a, inv_c, vec_a);
   T b_ic_a = multiply_elements<T>(vec_b, inv_c, vec_a);
@@ -99,12 +99,12 @@ __device__ float main_kernel(T& y,
           exp(-(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm))));
 }
 
-template <typename T>
-__device__ float test_kernel(T y, T z, float2 pixel_center, CUDA::Config& cfg) {
+template <typename F>
+__device__ float test_kernel(F y, F z, float2 pixel_center, CUDA::Config& cfg) {
 
   return (SINGLE_INVERSE_POW_TWO_PI * (1 / (cfg.sigma * cfg.dl))) *
-         exp(-0.5f * (pow((pixel_center.x - y) / cfg.dl, 2) +
-                      pow((pixel_center.y - z) / cfg.sigma, 2)));
+         exp(F(-0.5) * (pow((pixel_center.x - y) / cfg.dl, 2) +
+                        pow((pixel_center.y - z) / cfg.sigma, 2)));
 }
 
 __host__ __device__ float2 pixel_center(int i,
@@ -146,11 +146,11 @@ __host__ __device__ float sensitivity(float y,
 }
 
 __device__ float bbz(float A, float C, float B_2) {
-  return 3.0f / sqrtf(C - (B_2 / A));
+  return 3 / sqrtf(C - (B_2 / A));
 }
 
 __device__ float bby(float A, float C, float B_2) {
-  return 3.0f / sqrtf(A - (B_2 / C));
+  return 3 / sqrtf(A - (B_2 / C));
 }
 
 __device__ int pixels_in_line(float length, float pixel_size) {
@@ -158,13 +158,13 @@ __device__ int pixels_in_line(float length, float pixel_size) {
 }
 
 __device__ float event_tan(float z_u, float z_d, float R) {
-  return (z_u - z_d) / (2.0f * R);
+  return (z_u - z_d) / (2 * R);
 }
 __device__ float event_y(float dl, float tan_event) {
-  return -0.5f * (dl / sqrt(1.0f + (tan_event * tan_event)));
+  return -0.5f * (dl / sqrt(1 + (tan_event * tan_event)));
 }
 __device__ float event_z(float z_u, float z_d, float y, float tan_event) {
-  return 0.5f * (z_u + z_d + (2.0f * y * tan_event));
+  return 0.5f * (z_u + z_d + (2 * y * tan_event));
 }
 
 __device__ bool in_ellipse(float A,
@@ -178,5 +178,5 @@ __device__ bool in_ellipse(float A,
   float dz = (point.y - z);
 
   // quadratic ellipse equation check
-  return (A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)) <= 9.0f;
+  return (A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)) <= 9;
 }
