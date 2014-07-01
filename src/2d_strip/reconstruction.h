@@ -24,18 +24,11 @@ class Reconstruction {
   typedef DetectorType Detector;
   typedef typename Detector::Pixel Pixel;
   typedef typename Detector::Point Point;
-  F sqrt_det_correlation_matrix;
+
+  F sqrt_det_cor_mat;
+  Detector detector;
 
  private:
-  static constexpr const F INVERSE_PI = Kernel<F>::INVERSE_PI;
-  static constexpr const F INVERSE_POW_TWO_PI = Kernel<F>::INVERSE_POW_TWO_PI;
-
-  int n_pixels;
-  F pixel_size;
-  F pow_sigma_z, pow_sigma_dl;
-  F inv_pow_sigma_z;
-  F inv_pow_sigma_dl;
-
   std::vector<Event<F>> events;
   std::vector<std::vector<F>> rho;
   std::vector<std::vector<F>> rho_temp;
@@ -43,8 +36,10 @@ class Reconstruction {
   std::vector<std::vector<F>> thread_rho;
   std::vector<std::vector<F>> sensitivity;
 
-  Detector detector;
   Kernel<F> kernel;
+
+  const int n_pixels;
+  const int pixel_size;
 
  public:
   Reconstruction(const Detector& detector) : detector(detector) { init(); }
@@ -73,16 +68,10 @@ class Reconstruction {
     kernel = Kernel<F>();
     rho.assign(n_pixels, std::vector<F>(n_pixels, 100));
     rho_temp.assign(n_pixels, std::vector<F>(n_pixels, 10));
-    pow_sigma_z = detector.sigma_z * detector.sigma_z;
-    pow_sigma_dl = detector.sigma_dl * detector.sigma_dl;
 
-    sqrt_det_correlation_matrix =
-        std::sqrt(detector.inverse_correlation_matrix_diag[0] *
-                  detector.inverse_correlation_matrix_diag[1] *
-                  detector.inverse_correlation_matrix_diag[2]);
-
-    inv_pow_sigma_z = 1 / pow_sigma_z;
-    inv_pow_sigma_dl = 1 / pow_sigma_dl;
+    sqrt_det_cor_mat =
+        std::sqrt(detector.inv_cor_mat_diag[0] * detector.inv_cor_mat_diag[1] *
+                  detector.inv_cor_mat_diag[2]);
 
     sensitivity.assign(n_pixels, std::vector<F>(n_pixels));
 
@@ -178,7 +167,6 @@ class Reconstruction {
     F B_2 = (B / 2) * (B / 2);
 
     F bb_y = bby(A, C, B_2);
-
     F bb_z = bbz(A, C, B_2);
 
     Point emision_center = Point(0, 0);
@@ -208,13 +196,8 @@ class Reconstruction {
           pp.second -= emision_center.second;
 
           F event_kernel =
-              kernel.calculate_kernel(y,
-                                      tg,
-                                      sec,
-                                      sec_sq,
-                                      pp,
-                                      detector,
-                                      sqrt_det_correlation_matrix) /
+              kernel.calculate_kernel(
+                  y, tg, sec, sec_sq, pp, detector, sqrt_det_cor_mat) /
               sensitivity[iy][iz];
         }
       }
@@ -313,9 +296,10 @@ class Reconstruction {
     F sec = 1 / cos;
     F sec_sq = sec * sec;
 
-    F A = (4 / (cos * cos)) * inv_pow_sigma_dl + 2 * tg * tg * inv_pow_sigma_z;
-    F B = -4 * tg * inv_pow_sigma_z;
-    F C = 2 * inv_pow_sigma_z;
+    F A = (4 / (cos * cos)) * detector.inv_pow_sigma_dl +
+          2 * tg * tg * detector.inv_pow_sigma_z;
+    F B = -4 * tg * detector.inv_pow_sigma_z;
+    F C = 2 * detector.inv_pow_sigma_z;
     F B_2 = (B / 2) * (B / 2);
 
 #if DEBUG
@@ -366,8 +350,8 @@ class Reconstruction {
                                   sec_sq,
                                   detector.radius,
                                   point,
-                                  detector.inverse_correlation_matrix_diag,
-                                  sqrt_det_correlation_matrix) /
+                                  detector.inv_cor_mat_diag,
+                                  sqrt_det_cor_mat) /
                            sensitivity[iy][iz];
 
           ellipse_kernels.push_back(

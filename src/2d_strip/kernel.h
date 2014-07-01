@@ -16,11 +16,11 @@ template <typename FType = double> class Kernel {
 
  private:
   static F multiply(const FVec vec_a,
-                    const FVec inverse_correlation_matrix_diag,
+                    const FVec inv_cor_mat_diag,
                     const FVec vec_b) $ {
-    return vec_a[0] * inverse_correlation_matrix_diag[0] * vec_b[0] +
-           vec_a[1] * inverse_correlation_matrix_diag[1] * vec_b[1] +
-           vec_a[2] * inverse_correlation_matrix_diag[2] * vec_b[2];
+    return vec_a[0] * inv_cor_mat_diag[0] * vec_b[0] +
+           vec_a[1] * inv_cor_mat_diag[1] * vec_b[1] +
+           vec_a[2] * inv_cor_mat_diag[2] * vec_b[2];
   }
 
  public:
@@ -42,8 +42,8 @@ template <typename FType = double> class Kernel {
                const F pow_inv_cos,
                const F R,
                const Point pixel_center,
-               const FVec inverse_correlation_matrix_diag,
-               const F sqrt_det_correlation_matrix) const $ {
+               const FVec inv_cor_mat_diag,
+               const F sqrt_det_cor_mat) const $ {
 
     FVec vec_o;
     FVec vec_a;
@@ -61,15 +61,15 @@ template <typename FType = double> class Kernel {
     vec_b[1] = pixel_center.y - (pixel_center.x * tan);
     vec_b[2] = -2 * pixel_center.x * inv_cos;
 
-    F a_ic_a = multiply(vec_a, inverse_correlation_matrix_diag, vec_a);
-    F b_ic_a = multiply(vec_b, inverse_correlation_matrix_diag, vec_a);
-    F b_ic_b = multiply(vec_b, inverse_correlation_matrix_diag, vec_b);
-    F o_ic_b = multiply(vec_o, inverse_correlation_matrix_diag, vec_b);
+    F a_ic_a = multiply(vec_a, inv_cor_mat_diag, vec_a);
+    F b_ic_a = multiply(vec_b, inv_cor_mat_diag, vec_a);
+    F b_ic_b = multiply(vec_b, inv_cor_mat_diag, vec_b);
+    F o_ic_b = multiply(vec_o, inv_cor_mat_diag, vec_b);
 
     F norm = a_ic_a + (2 * o_ic_b);
 
     F element_before_exp =
-        INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / compat::sqrt(norm));
+        INVERSE_POW_TWO_PI * (sqrt_det_cor_mat / compat::sqrt(norm));
 
     F exp_element = -F(0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 

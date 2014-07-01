@@ -4,7 +4,6 @@ namespace compat {
 
 #if __CUDACC__
 
-#define GPU 1
 #define $ __device__ __host__
 
 template <typename F> F min(const F a, const F b);

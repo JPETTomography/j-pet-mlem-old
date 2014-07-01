@@ -31,57 +31,46 @@ static cudaError err;
 #define cudathread_per_blockoSync(...) cuda(__VA_ARGS__)
 
 template <typename F>
-void run_reconstruction_kernel(CUDA::Config<F>& cfg,
+void run_reconstruction_kernel(StripDetector<F>& detector,
                                Event<F>* events,
-                               int events_size,
+                               int n_events,
                                int iteration_chunk,
                                F* image_output,
-                               int warp_offset) {
+                               int n_blocks,
+                               int n_threads_per_block) {
 
   cudaSetDevice(0);
 
-  dim3 blocks(cfg.n_blocks);
-  dim3 threads(cfg.n_threads_per_block);
+  dim3 blocks(n_blocks);
+  dim3 threads(n_threads_per_block);
 
-  size_t image_sz = cfg.n_pixels * cfg.n_pixels * sizeof(F);
+  size_t image_sz = detector.n_y_pixels * detector.n_z_pixels * sizeof(F);
 
-  F* cpu_image_buffor = (F*)malloc(image_sz * cfg.n_blocks);
-  F* cpu_image_rho = (F*)malloc(image_sz);
+  F* cpu_image = (F*)malloc(image_sz * n_blocks);
+  F* cpu_rho = (F*)malloc(image_sz);
   F* cpu_temp_rho = (F*)malloc(image_sz);
-  F cpu_image_sensitivity[image_sz];
+  F cpu_sensitivity[image_sz];
 
-  for (int i = 0; i < cfg.n_pixels * cfg.n_pixels; ++i) {
-    cpu_image_rho[i] = 100;
+  for (int i = 0; i < detector.n_y_pixels * detector.n_z_pixels; ++i) {
+    cpu_rho[i] = 100;
   }
 
-  for (int i = 0; i < cfg.n_blocks * cfg.n_pixels * cfg.n_pixels; ++i) {
-    cpu_image_buffor[i] = 0;
+  for (int i = 0; i < n_blocks * detector.n_y_pixels * detector.n_z_pixels;
+       ++i) {
+    cpu_image[i] = 0;
   }
 
-  F half_pixel_size = F(0.5) * cfg.pixel_size;
-  F half_grid_size = F(0.5) * cfg.grid_size_y;
-
-  for (int px = 0; px < cfg.n_pixels; ++px) {
-    for (int py = 0; py < cfg.n_pixels; ++py) {
-
-      Point<F> pixel_coordiantes = pixel_center(px,
-                                                py,
-                                                cfg.pixel_size,
-                                                cfg.pixel_size,
-                                                half_grid_size,
-                                                half_pixel_size);
-
-      cpu_image_sensitivity[px * cfg.n_pixels + py] =
-          sensitivity(pixel_coordiantes.x,
-                      pixel_coordiantes.y,
-                      cfg.R_distance,
-                      cfg.Scentilator_length / 2);
+  for (int px = 0; px < detector.n_y_pixels; ++px) {
+    for (int py = 0; py < detector.n_z_pixels; ++py) {
+      Point<F> point = detector.pixel_center(px, py);
+      cpu_sensitivity[px * detector.n_z_pixels + py] =
+          detector.sensitivity(point.x, point.y);
     }
   }
 
-  F* gpu_image_buffor;
-  F* gpu_image_rho;
-  Event<F>* gpu_event_list;
+  F* gpu_image;
+  F* gpu_rho;
+  Event<F>* gpu_events;
   SOA::Events<F>* gpu_soa_events;
   SOA::Events<F>* cpu_soa_events;
 
@@ -98,21 +87,23 @@ void run_reconstruction_kernel(CUDA::Config<F>& cfg,
 
   cpu_soa_event_list->set_data_chunk(data_chunk, offset, event_size);
 #else
-  cpu_soa_events->set_data(events, events_size);
+  cpu_soa_events->set_data(events, n_events);
 #endif
   // declare and allocate memory
   F* sensitivity_tex_buffer;
 
   size_t pitch;
-  cudaMallocPitch(
-      &sensitivity_tex_buffer, &pitch, sizeof(F) * cfg.n_pixels, cfg.n_pixels);
+  cudaMallocPitch(&sensitivity_tex_buffer,
+                  &pitch,
+                  sizeof(F) * detector.n_y_pixels,
+                  detector.n_z_pixels);
 
   cudaMemcpy2D(sensitivity_tex_buffer,
                pitch,
-               &cpu_image_sensitivity,
-               sizeof(F) * cfg.n_pixels,
-               sizeof(F) * cfg.n_pixels,
-               cfg.n_pixels,
+               &cpu_sensitivity,
+               sizeof(F) * detector.n_y_pixels,
+               sizeof(F) * detector.n_y_pixels,
+               detector.n_z_pixels,
                cudaMemcpyHostToDevice);
 
   // create texture object
@@ -121,8 +112,8 @@ void run_reconstruction_kernel(CUDA::Config<F>& cfg,
   resDesc.resType = cudaResourceTypePitch2D;
   resDesc.res.pitch2D.devPtr = sensitivity_tex_buffer;
   resDesc.res.pitch2D.pitchInBytes = pitch;
-  resDesc.res.pitch2D.width = cfg.n_pixels;
-  resDesc.res.pitch2D.height = cfg.n_pixels;
+  resDesc.res.pitch2D.width = detector.n_y_pixels;
+  resDesc.res.pitch2D.height = detector.n_z_pixels;
   // resDesc.res.pitch2D.desc = cudaCreateChannelDesc<F>();
   resDesc.res.pitch2D.desc.f = cudaChannelFormatKindFloat;
   resDesc.res.pitch2D.desc.x = 32;  // 32 bits per channel for float texture
@@ -137,9 +128,9 @@ void run_reconstruction_kernel(CUDA::Config<F>& cfg,
 
   // other mallocs and allocations
 
-  cuda(Malloc, (void**)&gpu_event_list, events_size * sizeof(Event<F>));
-  cuda(Malloc, (void**)&gpu_image_buffor, image_sz * cfg.n_blocks);
-  cuda(Malloc, (void**)&gpu_image_rho, image_sz);
+  cuda(Malloc, (void**)&gpu_events, n_events * sizeof(Event<F>));
+  cuda(Malloc, (void**)&gpu_image, image_sz * n_blocks);
+  cuda(Malloc, (void**)&gpu_rho, image_sz);
   cuda(Malloc, (void**)&gpu_soa_events, sizeof(SOA::Events<F>));
 
   cuda(Memcpy,
@@ -149,18 +140,18 @@ void run_reconstruction_kernel(CUDA::Config<F>& cfg,
        cudaMemcpyHostToDevice);
 
   cuda(Memcpy,
-       gpu_event_list,
+       gpu_events,
        events,
-       events_size * sizeof(Event<F>),
+       n_events * sizeof(Event<F>),
        cudaMemcpyHostToDevice);
 
   cuda(Memcpy,
-       gpu_image_buffor,
-       cpu_image_buffor,
-       image_sz * cfg.n_blocks,
+       gpu_image,
+       cpu_image,
+       image_sz * n_blocks,
        cudaMemcpyHostToDevice);
 
-  cuda(Memcpy, gpu_image_rho, cpu_image_rho, image_sz, cudaMemcpyHostToDevice);
+  cuda(Memcpy, gpu_rho, cpu_rho, image_sz, cudaMemcpyHostToDevice);
 
   cudaEvent_t start, stop;
   cudaEventCreate(&start);
@@ -170,12 +161,15 @@ void run_reconstruction_kernel(CUDA::Config<F>& cfg,
 
   for (int i = 0; i < iteration_chunk; ++i) {
 
-    reconstruction_2d_strip_cuda<F> << <blocks, threads>>> (cfg,
-                                                            gpu_soa_events,
-                                                            events_size,
-                                                            gpu_image_buffor,
-                                                            gpu_image_rho,
-                                                            sensitivity_tex);
+    reconstruction_2d_strip_cuda<F> << <blocks, threads>>>
+        (detector,
+         gpu_soa_events,
+         n_events,
+         gpu_image,
+         gpu_rho,
+         sensitivity_tex,
+         n_blocks,
+         n_threads_per_block);
 
     cudaThreadSynchronize();
 
@@ -189,53 +183,51 @@ void run_reconstruction_kernel(CUDA::Config<F>& cfg,
     printf("Time: %f\n", milliseconds / 1000);
 
     cuda(Memcpy,
-         cpu_image_buffor,
-         gpu_image_buffor,
-         image_sz * cfg.n_blocks,
+         cpu_image,
+         gpu_image,
+         image_sz * n_blocks,
          cudaMemcpyDeviceToHost);
 
-    for (int block_id = 0; block_id < cfg.n_blocks; ++block_id) {
-      for (int index = 0; index < cfg.n_pixels * cfg.n_pixels; ++index) {
-
-        image_output[(i * cfg.n_pixels * cfg.n_pixels) + index] +=
-            cpu_image_buffor[block_id * cfg.n_pixels * cfg.n_pixels + index];
+    for (int block_id = 0; block_id < n_blocks; ++block_id) {
+      for (int index = 0; index < detector.total_n_pixels; ++index) {
+        image_output[i * detector.total_n_pixels + index] +=
+            cpu_image[block_id * detector.total_n_pixels + index];
       }
     }
 
-    for (int pixel = 0; pixel < cfg.n_blocks * cfg.n_pixels * cfg.n_pixels;
-         ++pixel) {
-      cpu_image_buffor[pixel] = 0;
+    for (int pixel = 0; pixel < n_blocks * detector.total_n_pixels; ++pixel) {
+      cpu_image[pixel] = 0;
     }
 
-    for (int pixel = 0; pixel < cfg.n_pixels * cfg.n_pixels; ++pixel) {
-      cpu_temp_rho[pixel] =
-          image_output[(i * cfg.n_pixels * cfg.n_pixels) + pixel];
+    for (int pixel = 0; pixel < detector.total_n_pixels; ++pixel) {
+      cpu_temp_rho[pixel] = image_output[(i * detector.total_n_pixels) + pixel];
     }
 
     cuda(Memcpy,
-         gpu_image_buffor,
-         cpu_image_buffor,
-         image_sz * cfg.n_blocks,
+         gpu_image,
+         cpu_image,
+         image_sz * n_blocks,
          cudaMemcpyHostToDevice);
 
-    cuda(Memcpy, gpu_image_rho, cpu_temp_rho, image_sz, cudaMemcpyHostToDevice);
+    cuda(Memcpy, gpu_rho, cpu_temp_rho, image_sz, cudaMemcpyHostToDevice);
   }
 
   // clean heap
   cuda(DestroyTextureObject, sensitivity_tex);
-  cuda(Free, gpu_image_buffor);
-  cuda(Free, gpu_image_rho);
+  cuda(Free, gpu_image);
+  cuda(Free, gpu_rho);
   cuda(Free, sensitivity_tex_buffer);
   cuda(Free, gpu_soa_events);
   free(cpu_temp_rho);
-  free(cpu_image_buffor);
-  free(cpu_image_rho);
+  free(cpu_image);
+  free(cpu_rho);
   free(cpu_soa_events);
 }
 
-template void run_reconstruction_kernel<float>(CUDA::Config<float>& cfg,
+template void run_reconstruction_kernel<float>(StripDetector<float>& detector,
                                                Event<float>* events,
-                                               int events_size,
+                                               int n_events,
                                                int iteration_chunk,
                                                float* image_output,
-                                               int warp_offset);
+                                               int n_blocks,
+                                               int n_threads_per_block);

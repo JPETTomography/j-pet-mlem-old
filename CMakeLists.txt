@@ -33,7 +33,7 @@ if(CUDA_FOUND)
   add_definitions(-DHAVE_CUDA=1)
   include_directories(${CUDA_INCLUDE_DIRS})
   list(APPEND CUDA_NVCC_FLAGS
-    -Xcompiler -Wall,-Wunused-parameter,-Wno-unused-function
+    -Xcompiler -Wall,-Wno-unused-function
     -arch=compute_30 -code=sm_30)
   list(APPEND CUDA_NVCC_FLAGS_RELEASE -Xptxas -O3 --use_fast_math)
   # don't add host flags to CUDA

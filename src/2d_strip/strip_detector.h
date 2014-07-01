@@ -15,10 +15,6 @@ template <typename FType = double> class StripDetector {
   typedef ::Pixel<> Pixel;
   typedef ::Point<F> Point;
 
- private:
-  static constexpr const F INVERSE_PI = F(M_1_PI);
-
- public:
   StripDetector(F radius,
                 F scintilator_length,
                 int n_y_pixels,
@@ -33,6 +29,7 @@ template <typename FType = double> class StripDetector {
         scintilator_length(scintilator_length),
         n_y_pixels(n_y_pixels),
         n_z_pixels(n_z_pixels),
+        total_n_pixels(n_y_pixels * n_z_pixels),
         pixel_width(pixel_width),
         pixel_height(pixel_height),
         sigma_z(sigma_z),
@@ -43,11 +40,22 @@ template <typename FType = double> class StripDetector {
         grid_size_z(n_z_pixels * pixel_width),
         grid_ul_y(grid_center_y + F(0.5) * grid_size_y),
         grid_ul_z(grid_center_z - F(0.5) * grid_size_z),
-        inverse_correlation_matrix_diag{ 1 / (sigma_z * sigma_z),
-                                         1 / (sigma_z * sigma_z),
-                                         1 / (sigma_dl * sigma_dl) } {}
-
-  F half_scintilator_length() const { return F(0.5) * scintilator_length; }
+        inv_pow_sigma_z(1 / (sigma_z * sigma_z)),
+        inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
+#if !__CUDACC__
+        inv_cor_mat_diag{ 1 / (sigma_z * sigma_z),
+                          1 / (sigma_z * sigma_z),
+                          1 / (sigma_dl * sigma_dl) },
+#endif
+        half_scintilator_length_(F(0.5) * scintilator_length),
+        half_pixel_width_(F(0.5) * pixel_width),
+        half_pixel_height_(F(0.5) * pixel_height) {
+#if __CUDACC__
+    inv_cor_mat_diag[0] = inv_pow_sigma_z;
+    inv_cor_mat_diag[1] = inv_pow_sigma_z;
+    inv_cor_mat_diag[2] = inv_pow_sigma_dl;
+#endif
+  }
 
   Event<F> to_projection_space_tan(const ImageSpaceEventTan<F>& ev) {
     F z_u = ev.z + (radius - ev.y) * ev.tan;
@@ -71,46 +79,62 @@ template <typename FType = double> class StripDetector {
     return to_angle(from_projection_space_tan(ev));
   }
 
-  Point pixel_center(int i, int j) {
-    return Point(grid_ul_y - i * pixel_height - F(0.5) * pixel_height,
-                 grid_ul_z + j * pixel_width + F(0.5) * pixel_width);
+  Point pixel_center(int i, int j) const $ {
+    return Point(grid_ul_y - i * pixel_height - half_pixel_height_,
+                 grid_ul_z + j * pixel_width + half_pixel_width_);
   }
 
-  Point pixel_center(Pixel pixel) { return pixel_center(pixel.x, pixel.y); }
+  Point pixel_center(Pixel pixel) const $ {
+    return pixel_center(pixel.x, pixel.y);
+  }
 
-  Pixel pixel_location(F y, F z) {
+  Pixel pixel_location(F y, F z) const $ {
     return Pixel(compat::floor((grid_ul_y - y) / pixel_height),
                  compat::floor((z - grid_ul_z) / pixel_width));
   }
 
-  Pixel pixel_location(Point p) { return pixel_location(p.x, p.y); }
+  Pixel pixel_location(Point p) const $ { return pixel_location(p.x, p.y); }
 
-  F sensitivity(F y, F z) {
-    F L_plus = (half_scintilator_length() + z);
-    F L_minus = (half_scintilator_length() - z);
+  F sensitivity(F y, F z) const $ {
+    F L_plus = half_scintilator_length_ + z;
+    F L_minus = half_scintilator_length_ - z;
     F R_plus = radius + y;
     F R_minus = radius - y;
 
-    return INVERSE_PI *
+    return F(M_1_PI) *
            (compat::atan(compat::min(L_minus / R_minus, L_plus / R_plus)) -
             compat::atan(compat::max(-L_plus / R_minus, -L_minus / R_plus)));
   }
+
+  F sqrt_det_cor_mat() const $ {
+    return compat::sqrt(inv_cor_mat_diag[0] *  //
+                        inv_cor_mat_diag[1] *  //
+                        inv_cor_mat_diag[2]);
+  }
+
+  F sensitivity(Point p) const $ { return sensitivity(p.x, p.y); }
 
   const F radius;
   const F scintilator_length;
   const int n_y_pixels;
   const int n_z_pixels;
+  const int total_n_pixels;
   const F pixel_width;
   const F pixel_height;
   const F sigma_z;
   const F sigma_dl;
   const F grid_center_y;
   const F grid_center_z;
-  const FVec inverse_correlation_matrix_diag;
+  const F inv_pow_sigma_z;
+  const F inv_pow_sigma_dl;
+  const FVec inv_cor_mat_diag;
+  const F grid_size_y;
+  const F grid_size_z;
+  const F grid_ul_y;
+  const F grid_ul_z;
 
  private:
-  F grid_size_y;
-  F grid_size_z;
-  F grid_ul_y;
-  F grid_ul_z;
+  const F half_scintilator_length_;
+  const F half_pixel_width_;
+  const F half_pixel_height_;
 };

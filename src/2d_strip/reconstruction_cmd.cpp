@@ -75,14 +75,14 @@ int main(int argc, char* argv[]) {
 #endif
 
     double R_distance = cl.get<double>("r-distance");
-    double Scentilator_length = cl.get<double>("s-length");
+    double scintillator_length = cl.get<double>("s-length");
     double pixel_size = cl.get<double>("p-size");
-    double n_pixels = Scentilator_length / pixel_size;
+    double n_pixels = scintillator_length / pixel_size;
     double sigma = cl.get<double>("s-z");
     double dl = cl.get<double>("s-dl");
 
     Reconstruction<double> reconstruction(
-        R_distance, Scentilator_length, n_pixels, pixel_size, sigma, dl);
+        R_distance, scintillator_length, n_pixels, pixel_size, sigma, dl);
 
     for (auto& fn : cl.rest()) {
       ibstream in(fn);
@@ -91,25 +91,12 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-      CUDA::Config<float> cfg;
-      cfg.R_distance = R_distance;
-      cfg.Scentilator_length = Scentilator_length;
-      cfg.pixel_size = pixel_size;
-      cfg.n_pixels = n_pixels;
-      cfg.sigma = sigma;
-      cfg.dl = dl;
-      cfg.n_blocks = cl.get<int>("cuda-blocks");
-      cfg.n_threads_per_block = cl.get<int>("cuda-threads");
-      cfg.number_of_events = 1;
-      cfg.inv_pow_sigma_dl = 1 / (dl * dl);
-      cfg.inv_pow_sigma_z = 1 / (sigma * sigma);
-      cfg.grid_size_y = n_pixels * pixel_size;
-      cfg.grid_size_z = n_pixels * pixel_size;
-
-      run_gpu_reconstruction(cfg,
+      Reconstruction<float> sp_reconstruction(
+          R_distance, scintillator_length, n_pixels, pixel_size, sigma, dl);
+      run_gpu_reconstruction(sp_reconstruction.detector,
                              reconstruction.get_event_list(),
-                             cl.get<int>("warp-offset"),
-                             cl.get<int>("iter"));
+                             cl.get<int>("cuda-blocks"),
+                             cl.get<int>("cuda-threads"));
     } else
 #endif
     {

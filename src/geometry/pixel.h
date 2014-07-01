@@ -15,6 +15,8 @@ template <typename SType = int> class Pixel {
 
   const S index() const $ { return y * (y + 1) / 2 + x; }
 
+  const S index(S width) const $ { return y * width + x; }
+
   Pixel& operator++() $ {
     if (++x > y) {
       y++;
