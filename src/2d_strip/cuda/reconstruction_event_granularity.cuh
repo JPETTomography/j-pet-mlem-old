@@ -7,16 +7,17 @@
 #include "reconstruction_methods.cuh"
 
 template <typename F>
-__global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
-                                             soa_event<float>* soa,
-                                             Event<F>* event_list,
-                                             int event_list_size,
-                                             float* image_buffor,
-                                             float* rho,
-                                             cudaTextureObject_t tex) {
+__global__ void reconstruction_2d_strip_cuda(
+    CUDA::Config cfg,
+    soa_event<F>* soa,
+    Event<F>* event_list,
+    int event_list_size,
+    F* output_image,
+    F* rho,
+    cudaTextureObject_t sensitivity_tex) {
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
-  __shared__ float inv_c[3];
+  __shared__ F inv_c[3];
 
   int block_chunk =
       int(ceilf(event_list_size / (cfg.n_blocks * cfg.n_threads_per_block)));
@@ -78,18 +79,17 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
       F B = -4 * tn * cfg.inv_pow_sigma_z;
       F C = 2 * cfg.inv_pow_sigma_z;
       F B_2 = (B / 2) * (B / 2);
+
+      F bb_y = bby(A, C, B_2);
+      F bb_z = bbz(A, C, B_2);
+
 #if DEBUG
       if (tid == 0 && i == 0) {
         printf("A: %f B: %f C: %f B_2: %f\n", A, B, C, B_2);
-      }
-#endif
-      F bb_y = bby(A, C, B_2);
-      F bb_z = bbz(A, C, B_2);
-#if DEBUG
-      if (tid == 0 && i == 0) {
         printf("bb_y: %f bb_z: %f \n", bb_y, bb_z);
       }
 #endif
+
       int2 center_pixel = pixel_location(y,
                                          z,
                                          cfg.pixel_size,
@@ -112,35 +112,19 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
         printf("iy:= %d Limit:= %d \n", ur.x, dl.x);
       }
 #endif
-      float2 pp;
-
-      int iter = 0;
-
       for (int iy = ur.x; iy < dl.x; ++iy) {
         for (int iz = dl.y; iz < ur.y; ++iz) {
 
-          pp = pixel_center(iy,
-                            iz,
-                            cfg.pixel_size,
-                            cfg.pixel_size,
-                            cfg.grid_size_y,
-                            cfg.grid_size_z,
-                            half_grid_size,
-                            half_pixel_size);
+          float2 pp = pixel_center(iy,
+                                   iz,
+                                   cfg.pixel_size,
+                                   cfg.pixel_size,
+                                   cfg.grid_size_y,
+                                   cfg.grid_size_z,
+                                   half_grid_size,
+                                   half_pixel_size);
 
           if (in_ellipse(A, B, C, y, z, pp)) {
-#if DEBUG
-            if (tid == 0 && i == 0) {
-              printf("Pixel(%d,%d): SUB: %f %f ITER: %d\n",
-                     iy,
-                     iz,
-                     pp.x,
-                     pp.y,
-                     iter);
-            }
-#endif
-            ++iter;
-
             pp.x -= y;
             pp.y -= z;
 
@@ -152,9 +136,9 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
                                             inv_c,
                                             cfg,
                                             sqrt_det_correlation_matrix) /
-                             tex2D<float>(tex, iy, iz);
+                             tex2D<F>(sensitivity_tex, iy, iz);
 
-            acc += event_kernel * tex2D<float>(tex, iy, iz) *
+            acc += event_kernel * tex2D<F>(sensitivity_tex, iy, iz) *
                    rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)];
           }
         }
@@ -164,7 +148,7 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
         printf("ACC: %e\n", acc);
       }
 
-      float inv_acc = 1 / acc;
+      F inv_acc = 1 / acc;
 
       for (int iz = dl.y; iz < ur.y; ++iz) {
         for (int iy = ur.x; iy < dl.x; ++iy) {
@@ -191,9 +175,9 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
                                             inv_c,
                                             cfg,
                                             sqrt_det_correlation_matrix) /
-                             tex2D<float>(tex, iy, iz);
+                             tex2D<F>(sensitivity_tex, iy, iz);
 
-            atomicAdd(&image_buffor[BUFFOR_LINEAR_INDEX(iy, iz)],
+            atomicAdd(&output_image[BUFFER_LINEAR_INDEX(iy, iz)],
                       (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)]) *
                           inv_acc);
           }

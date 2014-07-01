@@ -101,15 +101,15 @@ void run_reconstruction_kernel(CUDA::Config cfg,
   cpu_soa_event_list->set_data(event_list, event_size);
 #endif
   // declare and allocate memory
-  float* texture_sensitivity_buffer;
+  float* sensitivity_tex_buffer;
 
   size_t pitch;
-  cudaMallocPitch(&texture_sensitivity_buffer,
+  cudaMallocPitch(&sensitivity_tex_buffer,
                   &pitch,
                   sizeof(float) * cfg.n_pixels,
                   cfg.n_pixels);
 
-  cudaMemcpy2D(texture_sensitivity_buffer,
+  cudaMemcpy2D(sensitivity_tex_buffer,
                pitch,
                &cpu_image_sensitivity,
                sizeof(float) * cfg.n_pixels,
@@ -121,7 +121,7 @@ void run_reconstruction_kernel(CUDA::Config cfg,
   cudaResourceDesc resDesc;
   memset(&resDesc, 0, sizeof(resDesc));
   resDesc.resType = cudaResourceTypePitch2D;
-  resDesc.res.pitch2D.devPtr = texture_sensitivity_buffer;
+  resDesc.res.pitch2D.devPtr = sensitivity_tex_buffer;
   resDesc.res.pitch2D.pitchInBytes = pitch;
   resDesc.res.pitch2D.width = cfg.n_pixels;
   resDesc.res.pitch2D.height = cfg.n_pixels;
@@ -134,8 +134,8 @@ void run_reconstruction_kernel(CUDA::Config cfg,
   texDesc.readMode = cudaReadModeElementType;
 
   // create texture object: we only have to do this once!
-  cudaTextureObject_t tex;
-  cudaCreateTextureObject(&tex, &resDesc, &texDesc, NULL);
+  cudaTextureObject_t sensitivity_tex;
+  cudaCreateTextureObject(&sensitivity_tex, &resDesc, &texDesc, NULL);
 
   // other mallocs and allocations
 
@@ -179,7 +179,7 @@ void run_reconstruction_kernel(CUDA::Config cfg,
          event_size,
          gpu_image_buffor,
          gpu_image_rho,
-         tex);
+         sensitivity_tex);
 
     cudaThreadSynchronize();
 
@@ -226,10 +226,10 @@ void run_reconstruction_kernel(CUDA::Config cfg,
   }
 
   // clean heap
-  cuda(DestroyTextureObject, tex);
+  cuda(DestroyTextureObject, sensitivity_tex);
   cuda(Free, gpu_image_buffor);
   cuda(Free, gpu_image_rho);
-  cuda(Free, texture_sensitivity_buffer);
+  cuda(Free, sensitivity_tex_buffer);
   cuda(Free, gpu_soa_event_list);
   free(cpu_temp_rho);
   free(cpu_image_buffor);

@@ -7,13 +7,14 @@
 #include "reconstruction_methods.cuh"
 
 template <typename T>
-__global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
-                                             soa_event<float>* soa_data,
-                                             Event<T>* event_list,
-                                             int event_list_size,
-                                             float* image_buffor,
-                                             float* rho,
-                                             cudaTextureObject_t tex) {
+__global__ void reconstruction_2d_strip_cuda(
+    CUDA::Config cfg,
+    soa_event<float>* soa_data,
+    Event<T>* event_list,
+    int event_list_size,
+    float* output_image,
+    float* rho,
+    cudaTextureObject_t sensitivity_tex) {
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
   int block_chunk =
@@ -104,7 +105,7 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
 
             T event_kernel = test_kernel<T>(y, z, pp, cfg);
 
-            atomicAdd(&image_buffor[BUFFOR_LINEAR_INDEX(iy, iz)],
+            atomicAdd(&output_image[BUFFER_LINEAR_INDEX(iy, iz)],
                       (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)]) *
                           inv_acc);
           }
