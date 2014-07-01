@@ -36,6 +36,18 @@ int main(int argc, char* argv[]) {
     msg << "note: All length options below should be expressed in meters.";
     cl.footer(msg.str());
 
+    cl.add<int>("iterations", 'n', "number of iterations", false, 0);
+    cl.add<int>("i-blocks", 'i', "number of iteration blocks", false, 1);
+    cl.add<cmdline::string>(
+        "output", 'o', "output files prefix (png)", false, "cpu_rec_iteration");
+    cl.add<double>(
+        "r-distance", 'r', "R distance between scientilators", false, 500);
+    cl.add<double>("s-length", 'l', "scentilator length", false, 1000);
+    cl.add<double>("p-size", 'p', "pixel size", false, 5);
+    cl.add<int>("n-pixels", 'n', "number of pixels", false, 200);
+    cl.add<double>("s-z", 's', "Sigma z error", false, 10);
+    cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
+    cl.add<double>("gm", 'u', "Gamma error", false, 0);
 #if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
 #endif
@@ -47,17 +59,6 @@ int main(int argc, char* argv[]) {
     cl.add<int>("warp-offset", 0, "warp offset for test only", false, 1);
 
 #endif
-    cl.add<double>(
-        "r-distance", 'r', "R distance between scientilators", false, 500);
-    cl.add<double>("s-length", 'l', "scentilator length", false, 1000);
-    cl.add<double>("p-size", 'p', "pixel size", false, 5);
-    cl.add<int>("n-pixels", 'n', "number of pixels", false, 200);
-    cl.add<int>("iter", 'i', "number of iterations", false, 1);
-    cl.add<double>("s-z", 's', "Sigma z error", false, 10);
-    cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
-    cl.add<double>("gm", 'u', "Gamma error", false, 0);
-    cl.add<cmdline::string>(
-        "output", 'o', "output files prefix (png)", false, "cpu_rec_iteration");
     cl.parse_check(argc, argv);
 
     if (!cl.rest().size()) {
