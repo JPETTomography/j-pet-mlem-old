@@ -2,6 +2,8 @@
 
 #include <cuda_runtime.h>
 
+#include "../kernel.h"
+
 #include "config.h"
 #include "soa.cuh"
 #include "reconstruction_methods.cuh"
@@ -62,14 +64,15 @@ __global__ void reconstruction_2d_strip_cuda(
           for (int iz = center_pixel.y - z_step; iz < center_pixel.y + z_step;
                ++iz) {
 
-            Point<float> point = pixel_center(iy,
-                                              iz,
-                                              cfg.pixel_size,
-                                              cfg.pixel_size,
-                                              half_grid_size,
-                                              half_pixel_size);
+            Point<F> point = pixel_center(iy,
+                                          iz,
+                                          cfg.pixel_size,
+                                          cfg.pixel_size,
+                                          half_grid_size,
+                                          half_pixel_size);
 
-            float event_kernel = test_kernel<float>(y, z, point, cfg);
+            Kernel<F> kernel;
+            float event_kernel = kernel.test(y, z, point, cfg.dl, cfg.sigma);
 
             acc += event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)];
 
@@ -97,7 +100,8 @@ __global__ void reconstruction_2d_strip_cuda(
                                           half_grid_size,
                                           half_pixel_size);
 
-            F event_kernel = test_kernel<F>(y, z, point, cfg);
+            Kernel<F> kernel;
+            F event_kernel = kernel.test(y, z, point, cfg.dl, cfg.sigma);
 
             atomicAdd(&output_image[BUFFER_LINEAR_INDEX(iy, iz)],
                       (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)]) *

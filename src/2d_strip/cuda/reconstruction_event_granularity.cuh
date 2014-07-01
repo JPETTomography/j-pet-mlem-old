@@ -4,6 +4,7 @@
 
 #include "geometry/point.h"
 #include "../event.h"
+#include "../kernel.h"
 
 #include "config.h"
 #include "soa.cuh"
@@ -125,14 +126,15 @@ __global__ void reconstruction_2d_strip_cuda(
             point.x -= y;
             point.y -= z;
 
-            F event_kernel = main_kernel<F>(y,
-                                            tan,
-                                            sec,
-                                            sec_sq,
-                                            point,
-                                            inv_c,
-                                            cfg,
-                                            sqrt_det_correlation_matrix) /
+            Kernel<F> kernel;
+            F event_kernel = kernel(y,
+                                    tan,
+                                    sec,
+                                    sec_sq,
+                                    cfg.R_distance,
+                                    point,
+                                    inv_c,
+                                    sqrt_det_correlation_matrix) /
                              tex2D<F>(sensitivity_tex, iy, iz);
 
             acc += event_kernel * tex2D<F>(sensitivity_tex, iy, iz) *
@@ -162,14 +164,15 @@ __global__ void reconstruction_2d_strip_cuda(
             point.x -= y;
             point.y -= z;
 
-            F event_kernel = main_kernel<F>(y,
-                                            tan,
-                                            sec,
-                                            sec_sq,
-                                            point,
-                                            inv_c,
-                                            cfg,
-                                            sqrt_det_correlation_matrix) /
+            Kernel<F> kernel;
+            F event_kernel = kernel(y,
+                                    tan,
+                                    sec,
+                                    sec_sq,
+                                    cfg.R_distance,
+                                    point,
+                                    inv_c,
+                                    sqrt_det_correlation_matrix) /
                              tex2D<F>(sensitivity_tex, iy, iz);
 
             atomicAdd(&output_image[BUFFER_LINEAR_INDEX(iy, iz)],

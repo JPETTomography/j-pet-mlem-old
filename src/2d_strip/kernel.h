@@ -11,28 +11,29 @@ template <typename FType = double> class Kernel {
   typedef FType FVec[3];
   typedef ::Point<F> Point;
 
-  static constexpr const F INVERSE_PI = F(M_1_PI);
-  static constexpr const F INVERSE_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
+  static const F INVERSE_PI = F(M_1_PI);
+  static const F INVERSE_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
 
  private:
   static F multiply(const FVec vec_a,
                     const FVec inverse_correlation_matrix_diag,
-                    const FVec vec_b) {
+                    const FVec vec_b) $ {
     return vec_a[0] * inverse_correlation_matrix_diag[0] * vec_b[0] +
            vec_a[1] * inverse_correlation_matrix_diag[1] * vec_b[1] +
            vec_a[2] * inverse_correlation_matrix_diag[2] * vec_b[2];
   }
 
  public:
-  F test_kernel(const F y,
-                const F z,
-                const Point& pixel_center,
-                const F dl,
-                const F sigma) {
+  F test(const F y,
+         const F z,
+         const Point pixel_center,
+         const F dl,
+         const F sigma) $ {
 
     return (INVERSE_POW_TWO_PI * (1 / (sigma * dl))) *
-           std::exp(F(-0.5) * (std::pow((pixel_center.first - y) / dl, 2) +
-                               std::pow((pixel_center.second - z) / sigma, 2)));
+           compat::exp(F(-0.5) *
+                       (compat::pow((pixel_center.x - y) / dl, F(2)) +
+                        compat::pow((pixel_center.y - z) / sigma, F(2))));
   }
 
   F operator()(const F y,
@@ -42,7 +43,7 @@ template <typename FType = double> class Kernel {
                const F R,
                const Point pixel_center,
                const FVec inverse_correlation_matrix_diag,
-               const F sqrt_det_correlation_matrix) const {
+               const F sqrt_det_correlation_matrix) const $ {
 
     FVec vec_o;
     FVec vec_a;
@@ -72,7 +73,7 @@ template <typename FType = double> class Kernel {
 
     F exp_element = -F(0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
-    F exp = std::exp(exp_element);
+    F exp = compat::exp(exp_element);
 
     return element_before_exp * exp;
   }

@@ -2,6 +2,10 @@
 
 #include <cuda_runtime.h>
 
+#include "geometry/point.h"
+#include "../event.h"
+#include "../kernel.h"
+
 #include "config.h"
 #include "soa.cuh"
 #include "reconstruction_methods.cuh"
@@ -18,11 +22,9 @@ __global__ void reconstruction_2d_strip_cuda(
 
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
-  F inv_c[3];
-
-  inv_c[0] = cfg.inv_pow_sigma_z;
-  inv_c[1] = cfg.inv_pow_sigma_z;
-  inv_c[2] = cfg.inv_pow_sigma_dl;
+  F inv_c[3] = { cfg.inv_pow_sigma_z,
+                 cfg.inv_pow_sigma_z,
+                 cfg.inv_pow_sigma_dl };
 
   F half_grid_size = F(0.5) * cfg.grid_size_y;
   F half_pixel_size = F(0.5) * cfg.pixel_size;
@@ -49,27 +51,24 @@ __global__ void reconstruction_2d_strip_cuda(
 
     if ((warp_id < event_list_size)) {
 
-      F z_u = events->z_u[warp_id];
-      F z_d = events->z_d[warp_id];
-      F delta_l = events->dl[warp_id];
+      Event<F> event(
+          events->z_u[warp_id], events->z_d[warp_id], events->dl[warp_id]);
 
       F acc = 0;
 
       // angle space transformation
-      F tn = event_tan(z_u, z_d, cfg.R_distance);
-      F y = event_y(delta_l, tn);
-      F z = event_z(z_u, z_d, y, tn);
-
-      F angle = atanf(tn);
-
-      F cos = __cosf(angle);
+      F tan = event.tan(cfg.R_distance);
+      F y = event.y(tan);
+      F z = event.z(y, tan);
+      F angle = compat::atan(tan);
+      F cos = compat::cos(angle);
 
       F sec = 1 / cos;
       F sec_sq = sec * sec;
 
       F A = (((4 / (cos * cos)) * cfg.inv_pow_sigma_dl) +
-             (2 * tn * tn * cfg.inv_pow_sigma_z));
-      F B = -4 * tn * cfg.inv_pow_sigma_z;
+             (2 * tan * tan * cfg.inv_pow_sigma_z));
+      F B = -4 * tan * cfg.inv_pow_sigma_z;
       F C = 2 * cfg.inv_pow_sigma_z;
       F B_2 = (B / 2) * (B / 2);
 
@@ -95,8 +94,6 @@ __global__ void reconstruction_2d_strip_cuda(
                  center_pixel.y + pixels_in_line(bb_z, cfg.pixel_size));
       Pixel<> dl(center_pixel.x + pixels_in_line(bb_y, cfg.pixel_size),
                  center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
-      float2 pp;
-
       Pixel<> ul(center_pixel.x - pixels_in_line(bb_y, cfg.pixel_size),
                  center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
 
@@ -116,31 +113,27 @@ __global__ void reconstruction_2d_strip_cuda(
       Pixel<> first_pixel = ul;
 
       for (int k = 0; k < bb_size; ++k) {
-        Pixel<> pixel =
-            warp_space_pixel(pixel, offset, first_pixel, ul, ur, dl, tid);
+        Pixel<> pixel = warp_space_pixel(offset, first_pixel, ul, ur, dl, tid);
+        Point<F> point = pixel_center(pixel.x,
+                                      pixel.y,
+                                      cfg.pixel_size,
+                                      cfg.pixel_size,
+                                      half_grid_size,
+                                      half_pixel_size);
 
-        pp = pixel_center(pixel.x,
-                          pixel.y,
-                          cfg.pixel_size,
-                          cfg.pixel_size,
-                          cfg.grid_size_y,
-                          cfg.grid_size_z,
-                          half_grid_size,
-                          half_pixel_size);
+        if (in_ellipse(A, B, C, y, z, point)) {
+          point.x -= y;
+          point.y -= z;
 
-        if (in_ellipse(A, B, C, y, z, pp)) {
-
-          pp.x -= y;
-          pp.y -= z;
-
-          F event_kernel = main_kernel<F>(y,
-                                          tn,
-                                          sec,
-                                          sec_sq,
-                                          pp,
-                                          inv_c,
-                                          cfg,
-                                          sqrt_det_correlation_matrix) /
+          Kernel<F> kernel;
+          F event_kernel = kernel(y,
+                                  tan,
+                                  sec,
+                                  sec_sq,
+                                  cfg.R_distance,
+                                  point,
+                                  inv_c,
+                                  sqrt_det_correlation_matrix) /
                            tex2D<F>(sensitiviy_tex, pixel.x, pixel.y);
 #if DEBUG
           if (tid < 32 && i == 0) {
@@ -173,29 +166,26 @@ __global__ void reconstruction_2d_strip_cuda(
 
       for (int k = 0; k < pixel_count; ++k) {
 
-        pixel.x = sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, k, 0)];
-        pixel.y = sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, k, 1)];
+        Pixel<> pixel(sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, k, 0)],
+                      sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, k, 1)]);
+        Point<F> point = pixel_center(pixel.x,
+                                      pixel.y,
+                                      cfg.pixel_size,
+                                      cfg.pixel_size,
+                                      half_grid_size,
+                                      half_pixel_size);
+        point.x -= y;
+        point.y -= z;
 
-        pp = pixel_center(pixel.x,
-                          pixel.y,
-                          cfg.pixel_size,
-                          cfg.pixel_size,
-                          cfg.grid_size_y,
-                          cfg.grid_size_z,
-                          half_grid_size,
-                          half_pixel_size);
-
-        pp.x -= y;
-        pp.y -= z;
-
-        F event_kernel = main_kernel<F>(y,
-                                        tn,
-                                        sec,
-                                        sec_sq,
-                                        pp,
-                                        inv_c,
-                                        cfg,
-                                        sqrt_det_correlation_matrix) /
+        Kernel<F> kernel;
+        F event_kernel = kernel(y,
+                                tan,
+                                sec,
+                                sec_sq,
+                                cfg.R_distance,
+                                point,
+                                inv_c,
+                                sqrt_det_correlation_matrix) /
                          tex2D<F>(sensitiviy_tex, pixel.x, pixel.y);
 
 #if DEBUG

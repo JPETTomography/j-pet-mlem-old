@@ -8,9 +8,6 @@
 
 #include "config.h"
 
-static const float INVERSE_PI = (float)M_1_PI;
-static const float INVERSE_POW_TWO_PI = (float)(1 / (2 * M_PI * M_PI));
-
 #if OLD_WARP_SPACE_PIXEL
 __device__ void warp_space_pixel(Pixel<>& pixel,
                                  int offset,
@@ -52,61 +49,6 @@ __device__ Pixel<> warp_space_pixel(int& offset,
 #endif
 
 template <typename F>
-__device__ float multiply(F* vec_a, volatile F* inv_c, F* vec_b) {
-  return vec_a[0] * inv_c[0] * vec_b[0] +  //
-         vec_a[1] * inv_c[1] * vec_b[1] +  //
-         vec_a[2] * inv_c[2] * vec_b[2];
-}
-
-template <typename F>
-__device__ float main_kernel(F y,
-                             F tan,
-                             F inv_cos,
-                             F pow_inv_cos,
-                             Point<F> pixel_center,
-                             F* inv_c,
-                             CUDA::Config<F>& cfg,
-                             F sqrt_det_correlation_matrix) {
-
-  F vec_o[3];
-  F vec_a[3];
-  F vec_b[3];
-
-  vec_o[0] = -(pixel_center.x + y - cfg.R_distance) * tan * pow_inv_cos;
-  vec_o[1] = -(pixel_center.x + y + cfg.R_distance) * tan * pow_inv_cos;
-  vec_o[2] = -(pixel_center.x + y) * inv_cos * (1 + 2 * (tan * tan));
-
-  vec_a[0] = -(pixel_center.x + y - cfg.R_distance) * pow_inv_cos;
-  vec_a[1] = -(pixel_center.x + y + cfg.R_distance) * pow_inv_cos;
-  vec_a[2] = -2 * (pixel_center.x + y) * (inv_cos * tan);
-
-  vec_b[0] = pixel_center.y - (pixel_center.x * tan);
-  vec_b[1] = pixel_center.y - (pixel_center.x * tan);
-  vec_b[2] = -2 * pixel_center.x * inv_cos;
-
-  F a_ic_a = multiply<F>(vec_a, inv_c, vec_a);
-  F b_ic_a = multiply<F>(vec_b, inv_c, vec_a);
-  F b_ic_b = multiply<F>(vec_b, inv_c, vec_b);
-  F o_ic_b = multiply<F>(vec_o, inv_c, vec_b);
-
-  F norm = a_ic_a + (2.f * o_ic_b);
-
-  return INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / sqrt(norm)) *
-         exp(F(-0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm)));
-}
-
-template <typename F>
-__device__ float test_kernel(F y,
-                             F z,
-                             Point<F> pixel_center,
-                             CUDA::Config<F>& cfg) {
-
-  return INVERSE_POW_TWO_PI * (1 / (cfg.sigma * cfg.dl)) *
-         exp(F(-0.5) * (pow((pixel_center.x - y) / cfg.dl, 2) +
-                        pow((pixel_center.y - z) / cfg.sigma, 2)));
-}
-
-template <typename F>
 __host__ __device__ Point<F> pixel_center(int y,
                                           int z,
                                           F pixel_height,
@@ -139,8 +81,8 @@ __host__ __device__ float sensitivity(float y,
   float R_plus = radius + y;
   float R_minus = radius - y;
 
-  return INVERSE_PI * (atanf(min(L_minus / R_minus, L_plus / R_plus)) -
-                       atanf(max(-L_plus / R_minus, -L_minus / R_plus)));
+  return (float)M_1_PI * (atanf(min(L_minus / R_minus, L_plus / R_plus)) -
+                          atanf(max(-L_plus / R_minus, -L_minus / R_plus)));
 }
 
 __device__ float bbz(float A, float C, float B_2) {

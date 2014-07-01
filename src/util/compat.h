@@ -32,6 +32,14 @@ template <> float tan<float>(const float a) $ { return tanf(a); }
 template <typename F> F atan(const F a);
 template <> float atan<float>(const float a) $ { return atanf(a); }
 
+template <typename F> F pow(const F a, const F b);
+template <> float pow<float>(const float a, const float b) $ {
+  return powf(a, b);
+}
+
+template <typename F> F exp(const F a);
+template <> float exp<float>(const float a) $ { return expf(a); }
+
 #else
 
 #define $
@@ -43,6 +51,8 @@ template <typename F> F sin(const F a) { return std::sin(a); }
 template <typename F> F cos(const F a) { return std::cos(a); }
 template <typename F> F tan(const F a) { return std::tan(a); }
 template <typename F> F atan(const F a) { return std::atan(a); }
+template <typename F> F pow(const F a, const F b) { return std::pow(a); }
+template <typename F> F exp(const F a) { return std::exp(a); }
 
 #endif
 }
