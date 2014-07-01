@@ -14,11 +14,8 @@ template <typename F> struct Events {
   void set_data_chunk(Event<float>* data_chunk, int offset, int aos_data_size) {
 
     for (int i = 0; i < aos_data_size; i += offset) {
-
       for (int j = 0; j < offset; ++j) {
-
-        if ((i + j) < aos_data_size) {
-
+        if (i + j < aos_data_size) {
           z_u[i + j] = data_chunk[j].z_u;
           z_d[i + j] = data_chunk[j].z_d;
           dl[i + j] = data_chunk[j].dl;
@@ -27,12 +24,11 @@ template <typename F> struct Events {
     }
   }
 
-  void set_data(Event<float>* aos_data, int aos_data_size) {
+  void load(Event<float>* aos_data, int aos_data_size) {
 #if DISABLE
     data_size = aos_data_size;
 #endif
     for (int i = 0; i < aos_data_size; ++i) {
-
       z_u[i] = aos_data[i].z_u;
       z_d[i] = aos_data[i].z_d;
       dl[i] = aos_data[i].dl;

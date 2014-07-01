@@ -51,6 +51,7 @@ int main(int argc, char* argv[]) {
     cl.add<double>("gm", 'u', "Gamma error", false, 0);
 #if HAVE_CUDA
     cl.add("gpu", 'g', "run on GPU (via CUDA)");
+    cl.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
     cl.add<int>("cuda-blocks", 'b', "CUDA blocks", cmdline::dontsave, 1);
     cl.add<int>(
         "cuda-threads", 'w', "CUDA threads per block", cmdline::dontsave, 512);
@@ -95,6 +96,7 @@ int main(int argc, char* argv[]) {
           R_distance, scintillator_length, n_pixels, pixel_size, sigma, dl);
       run_gpu_reconstruction(sp_reconstruction.detector,
                              reconstruction.get_event_list(),
+                             cl.get<int>("cuda-device"),
                              cl.get<int>("cuda-blocks"),
                              cl.get<int>("cuda-threads"));
     } else

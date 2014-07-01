@@ -36,39 +36,35 @@ void run_reconstruction_kernel(StripDetector<F>& detector,
                                int n_events,
                                int iteration_chunk,
                                F* image_output,
+                               int device,
                                int n_blocks,
                                int n_threads_per_block) {
 
-  cudaSetDevice(0);
+  cudaSetDevice(device);
 
   dim3 blocks(n_blocks);
   dim3 threads(n_threads_per_block);
 
-  size_t image_sz = detector.n_y_pixels * detector.n_z_pixels * sizeof(F);
+  size_t image_size = detector.total_n_pixels * sizeof(F);
+  size_t output_size = detector.total_n_pixels * sizeof(F);
 
-  F* cpu_image = (F*)malloc(image_sz * n_blocks);
-  F* cpu_rho = (F*)malloc(image_sz);
-  F* cpu_temp_rho = (F*)malloc(image_sz);
-  F cpu_sensitivity[image_sz];
+  F* cpu_output = (F*)calloc(output_size, 1);
+  F* cpu_rho = (F*)malloc(image_size);
+  F* cpu_sensitivity = (F*)malloc(image_size);
 
-  for (int i = 0; i < detector.n_y_pixels * detector.n_z_pixels; ++i) {
+  for (int i = 0; i < detector.total_n_pixels; ++i) {
     cpu_rho[i] = 100;
   }
 
-  for (int i = 0; i < n_blocks * detector.n_y_pixels * detector.n_z_pixels;
-       ++i) {
-    cpu_image[i] = 0;
-  }
-
-  for (int px = 0; px < detector.n_y_pixels; ++px) {
-    for (int py = 0; py < detector.n_z_pixels; ++py) {
-      Point<F> point = detector.pixel_center(px, py);
-      cpu_sensitivity[px * detector.n_z_pixels + py] =
+  for (int x = 0; x < detector.n_y_pixels; ++x) {
+    for (int y = 0; y < detector.n_z_pixels; ++y) {
+      Point<F> point = detector.pixel_center(x, y);
+      cpu_sensitivity[x * detector.n_z_pixels + y] =
           detector.sensitivity(point.x, point.y);
     }
   }
 
-  F* gpu_image;
+  F* gpu_output;
   F* gpu_rho;
   Event<F>* gpu_events;
   SOA::Events<F>* gpu_soa_events;
@@ -77,7 +73,6 @@ void run_reconstruction_kernel(StripDetector<F>& detector,
   cpu_soa_events = (SOA::Events<F>*)malloc(sizeof(SOA::Events<F>));
 
 #ifdef OFFSET_WARP_TEST
-
   int offset = off;
   event<F> data_chunk[offset];
 
@@ -87,18 +82,18 @@ void run_reconstruction_kernel(StripDetector<F>& detector,
 
   cpu_soa_event_list->set_data_chunk(data_chunk, offset, event_size);
 #else
-  cpu_soa_events->set_data(events, n_events);
+  cpu_soa_events->load(events, n_events);
 #endif
   // declare and allocate memory
-  F* sensitivity_tex_buffer;
+  F* gpu_sensitivity;
 
   size_t pitch;
-  cudaMallocPitch(&sensitivity_tex_buffer,
+  cudaMallocPitch(&gpu_sensitivity,
                   &pitch,
                   sizeof(F) * detector.n_y_pixels,
                   detector.n_z_pixels);
 
-  cudaMemcpy2D(sensitivity_tex_buffer,
+  cudaMemcpy2D(gpu_sensitivity,
                pitch,
                &cpu_sensitivity,
                sizeof(F) * detector.n_y_pixels,
@@ -110,7 +105,7 @@ void run_reconstruction_kernel(StripDetector<F>& detector,
   cudaResourceDesc resDesc;
   memset(&resDesc, 0, sizeof(resDesc));
   resDesc.resType = cudaResourceTypePitch2D;
-  resDesc.res.pitch2D.devPtr = sensitivity_tex_buffer;
+  resDesc.res.pitch2D.devPtr = gpu_sensitivity;
   resDesc.res.pitch2D.pitchInBytes = pitch;
   resDesc.res.pitch2D.width = detector.n_y_pixels;
   resDesc.res.pitch2D.height = detector.n_z_pixels;
@@ -123,35 +118,32 @@ void run_reconstruction_kernel(StripDetector<F>& detector,
   texDesc.readMode = cudaReadModeElementType;
 
   // create texture object: we only have to do this once!
-  cudaTextureObject_t sensitivity_tex;
-  cudaCreateTextureObject(&sensitivity_tex, &resDesc, &texDesc, NULL);
+  cudaTextureObject_t tex_sensitivity;
+  cudaCreateTextureObject(&tex_sensitivity, &resDesc, &texDesc, NULL);
 
-  // other mallocs and allocations
-
-  cuda(Malloc, (void**)&gpu_events, n_events * sizeof(Event<F>));
-  cuda(Malloc, (void**)&gpu_image, image_sz * n_blocks);
-  cuda(Malloc, (void**)&gpu_rho, image_sz);
   cuda(Malloc, (void**)&gpu_soa_events, sizeof(SOA::Events<F>));
-
   cuda(Memcpy,
        gpu_soa_events,
        cpu_soa_events,
        sizeof(SOA::Events<F>),
        cudaMemcpyHostToDevice);
 
+  cuda(Malloc, (void**)&gpu_events, n_events * sizeof(Event<F>));
   cuda(Memcpy,
        gpu_events,
        events,
        n_events * sizeof(Event<F>),
        cudaMemcpyHostToDevice);
 
+  cuda(Malloc, (void**)&gpu_output, image_size * n_blocks);
   cuda(Memcpy,
-       gpu_image,
-       cpu_image,
-       image_sz * n_blocks,
+       gpu_output,
+       cpu_output,
+       image_size * n_blocks,
        cudaMemcpyHostToDevice);
 
-  cuda(Memcpy, gpu_rho, cpu_rho, image_sz, cudaMemcpyHostToDevice);
+  cuda(Malloc, (void**)&gpu_rho, image_size);
+  cuda(Memcpy, gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
 
   cudaEvent_t start, stop;
   cudaEventCreate(&start);
@@ -165,9 +157,9 @@ void run_reconstruction_kernel(StripDetector<F>& detector,
         (detector,
          gpu_soa_events,
          n_events,
-         gpu_image,
+         gpu_output,
          gpu_rho,
-         sensitivity_tex,
+         tex_sensitivity,
          n_blocks,
          n_threads_per_block);
 
@@ -183,45 +175,45 @@ void run_reconstruction_kernel(StripDetector<F>& detector,
     printf("Time: %f\n", milliseconds / 1000);
 
     cuda(Memcpy,
-         cpu_image,
-         gpu_image,
-         image_sz * n_blocks,
+         cpu_output,
+         gpu_output,
+         image_size * n_blocks,
          cudaMemcpyDeviceToHost);
 
     for (int block_id = 0; block_id < n_blocks; ++block_id) {
       for (int index = 0; index < detector.total_n_pixels; ++index) {
         image_output[i * detector.total_n_pixels + index] +=
-            cpu_image[block_id * detector.total_n_pixels + index];
+            cpu_output[block_id * detector.total_n_pixels + index];
       }
     }
 
     for (int pixel = 0; pixel < n_blocks * detector.total_n_pixels; ++pixel) {
-      cpu_image[pixel] = 0;
+      cpu_output[pixel] = 0;
     }
 
     for (int pixel = 0; pixel < detector.total_n_pixels; ++pixel) {
-      cpu_temp_rho[pixel] = image_output[(i * detector.total_n_pixels) + pixel];
+      cpu_rho[pixel] = image_output[(i * detector.total_n_pixels) + pixel];
     }
 
     cuda(Memcpy,
-         gpu_image,
-         cpu_image,
-         image_sz * n_blocks,
+         gpu_output,
+         cpu_output,
+         image_size * n_blocks,
          cudaMemcpyHostToDevice);
 
-    cuda(Memcpy, gpu_rho, cpu_temp_rho, image_sz, cudaMemcpyHostToDevice);
+    cuda(Memcpy, gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
   }
 
-  // clean heap
-  cuda(DestroyTextureObject, sensitivity_tex);
-  cuda(Free, gpu_image);
-  cuda(Free, gpu_rho);
-  cuda(Free, sensitivity_tex_buffer);
+  cuda(DestroyTextureObject, tex_sensitivity);
   cuda(Free, gpu_soa_events);
-  free(cpu_temp_rho);
-  free(cpu_image);
-  free(cpu_rho);
+  cuda(Free, gpu_events);
+  cuda(Free, gpu_output);
+  cuda(Free, gpu_rho);
+  cuda(Free, gpu_sensitivity);
   free(cpu_soa_events);
+  free(cpu_output);
+  free(cpu_rho);
+  free(cpu_sensitivity);
 }
 
 template void run_reconstruction_kernel<float>(StripDetector<float>& detector,
