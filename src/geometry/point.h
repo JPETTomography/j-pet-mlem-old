@@ -11,9 +11,8 @@ template <typename FType = double, typename SType = int> struct Point {
   typedef SType S;
   typedef ::Pixel<S> Pixel;
 
-  Point() $ : x(static_cast<F>(0)), y(static_cast<F>(0)) {}
+  Point() $ : x(0), y(0) {}
   Point(F x, F y) $ : x(x), y(y) {}
-  Point(std::pair<F, F> p) $ : x(p.first), y(p.second) {}
 
   F x, y;
 

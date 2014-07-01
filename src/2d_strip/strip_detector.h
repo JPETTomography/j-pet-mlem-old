@@ -125,13 +125,13 @@ template <typename FType = double> class StripDetector {
   const F sigma_dl;
   const F grid_center_y;
   const F grid_center_z;
-  const F inv_pow_sigma_z;
-  const F inv_pow_sigma_dl;
-  const FVec inv_cor_mat_diag;
   const F grid_size_y;
   const F grid_size_z;
   const F grid_ul_y;
   const F grid_ul_z;
+  const F inv_pow_sigma_z;
+  const F inv_pow_sigma_dl;
+  const FVec inv_cor_mat_diag;
 
  private:
   const F half_scintilator_length_;

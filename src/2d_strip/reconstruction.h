@@ -42,29 +42,22 @@ class Reconstruction {
   const int pixel_size;
 
  public:
-  Reconstruction(const Detector& detector) : detector(detector) { init(); }
-
   Reconstruction(F R_distance,
                  F scintilator_length,
                  int n_pixels,
                  F pixel_size,
                  F sigma_z,
                  F sigma_dl)
-      : n_pixels(n_pixels),
-        pixel_size(pixel_size),
-        detector(R_distance,
+      : detector(R_distance,
                  scintilator_length,
                  n_pixels,
                  n_pixels,
                  pixel_size,
                  pixel_size,
                  sigma_z,
-                 sigma_dl) {
-    init();
-  }
-
- private:
-  void init() {
+                 sigma_dl),
+        n_pixels(n_pixels),
+        pixel_size(pixel_size) {
     kernel = Kernel<F>();
     rho.assign(n_pixels, std::vector<F>(n_pixels, 100));
     rho_temp.assign(n_pixels, std::vector<F>(n_pixels, 10));
@@ -83,7 +76,6 @@ class Reconstruction {
     }
   }
 
- public:
   /// Performs n_iterations of the list mode MEML algorithm
   template <typename ProgressCallback>
   void operator()(ProgressCallback progress,
@@ -161,9 +153,10 @@ class Reconstruction {
     F sec = 1 / cos;
     F sec_sq = sec * sec;
 
-    F A = (4 / (cos * cos)) * inv_pow_sigma_dl + 2 * tg * tg * inv_pow_sigma_z;
-    F B = -4 * tg * inv_pow_sigma_z;
-    F C = 2 * inv_pow_sigma_z;
+    F A = (4 / (cos * cos)) * detector.inv_pow_sigma_dl +
+          2 * tg * tg * detector.inv_pow_sigma_z;
+    F B = -4 * tg * detector.inv_pow_sigma_z;
+    F C = 2 * detector.inv_pow_sigma_z;
     F B_2 = (B / 2) * (B / 2);
 
     F bb_y = bby(A, C, B_2);

@@ -5,6 +5,7 @@ namespace compat {
 #if __CUDACC__
 
 #define $ __device__ __host__
+#define constexpr
 
 template <typename F> F min(const F a, const F b);
 template <> float min<float>(const float a, const float b) $ {

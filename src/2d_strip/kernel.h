@@ -11,8 +11,8 @@ template <typename FType = double> class Kernel {
   typedef FType FVec[3];
   typedef ::Point<F> Point;
 
-  static const F INVERSE_PI = F(M_1_PI);
-  static const F INVERSE_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
+  static const constexpr F INVERSE_PI = F(M_1_PI);
+  static const constexpr F INVERSE_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
 
  private:
   static F multiply(const FVec vec_a,
