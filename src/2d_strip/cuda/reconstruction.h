@@ -10,15 +10,16 @@
 
 #include "config.h"
 
-void run_reconstruction_kernel(CUDA::Config cfg,
-                               Event<float>* event_list,
-                               int event_size,
+template <typename F>
+void run_reconstruction_kernel(CUDA::Config<F>& cfg,
+                               Event<F>* events,
+                               int events_size,
                                int iteration_chunk,
-                               float* image_output,
+                               F* image_output,
                                int warp_offset);
 
-void run_gpu_reconstruction(CUDA::Config cfg,
-                            std::vector<Event<float>>& event_list,
+void run_gpu_reconstruction(CUDA::Config<float>& cfg,
+                            std::vector<Event<float>>& events,
                             int warp_offset,
                             int n_blocks) {
 
@@ -31,8 +32,8 @@ void run_gpu_reconstruction(CUDA::Config cfg,
                       std::vector<float>(cfg.n_pixels, float(0)));
 
   run_reconstruction_kernel(cfg,
-                            event_list.data(),
-                            event_list.size(),
+                            events.data(),
+                            events.size(),
                             n_blocks,
                             gpu_output_image.data(),
                             warp_offset);
@@ -83,12 +84,12 @@ void run_gpu_reconstruction(CUDA::Config cfg,
   }
 }
 
-void run_gpu_reconstruction(CUDA::Config cfg,
-                            std::vector<Event<double>>& event_list,
+void run_gpu_reconstruction(CUDA::Config<float>& cfg,
+                            std::vector<Event<double>>& events,
                             int warp_offset,
                             int n_blocks) {
   std::vector<Event<float>> sp_event_list;
-  for (auto& event : event_list) {
+  for (auto& event : events) {
     Event<float> sp_event(event.z_u, event.z_d, event.dl);
     sp_event_list.push_back(sp_event);
   }

@@ -38,7 +38,7 @@ template <typename FType = double> class Phantom {
   F sigma_z;
   F sigma_dl;
   std::vector<EllipseParameters<F>> ellipse_list;
-  std::vector<Event<F>> event_list;
+  std::vector<Event<F>> events;
   std::vector<std::vector<F>> output;
   std::vector<std::vector<F>> output_without_errors;
   static constexpr const F PI_2 = F(M_PI_2);
@@ -169,12 +169,12 @@ template <typename FType = double> class Phantom {
       }
 
       for (int i = 0; i < omp_get_max_threads(); ++i) {
-        event_list.insert(event_list.end(),
-                          event_list_per_thread[i].begin(),
-                          event_list_per_thread[i].end());
+        events.insert(events.end(),
+                      event_list_per_thread[i].begin(),
+                      event_list_per_thread[i].end());
       }
 
-      std::cout << "VECTOR: " << event_list.size() << std::endl;
+      std::cout << "VECTOR: " << events.size() << std::endl;
     }
 
     png_writer png("phantom.png");
@@ -228,9 +228,9 @@ template <typename FType = double> class Phantom {
 
   template <typename StreamType> Phantom& operator>>(StreamType& out) {
 
-    int size = event_list.size();
+    int size = events.size();
     out << size;
-    for (auto& event : event_list) {
+    for (auto& event : events) {
       out << event.z_u << event.z_d << event.dl;
     }
     return *this;

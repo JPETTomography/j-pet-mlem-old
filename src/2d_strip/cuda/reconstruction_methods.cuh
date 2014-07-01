@@ -3,11 +3,16 @@
 #include <cuda_runtime.h>
 #include <cmath>
 
+#include "geometry/pixel.h"
+#include "geometry/point.h"
+
+#include "config.h"
+
 static const float INVERSE_PI = (float)M_1_PI;
 static const float INVERSE_POW_TWO_PI = (float)(1 / (2 * M_PI * M_PI));
 
 #if OLD_WARP_SPACE_PIXEL
-__device__ void warp_space_pixel(int2& pixel,
+__device__ void warp_space_pixel(Pixel<>& pixel,
                                  int offset,
                                  int ul,
                                  int width,
@@ -21,26 +26,28 @@ __device__ void warp_space_pixel(int2& pixel,
   pixel.x += ul.x;
 }
 #else
-__device__ void warp_space_pixel(int2& pixel,
-                                 int& offset,
-                                 int2& start_warp,
-                                 int2 ul,
-                                 int2 ur,
-                                 int2 dl,
-                                 int tid) {
-  offset = ur.y - start_warp.y;
-
+__device__ Pixel<> warp_space_pixel(int& offset,
+                                    Pixel<>& first_pixel,
+                                    Pixel<> ul,
+                                    Pixel<> ur,
+                                    Pixel<> dl,
+                                    int tid) {
+  offset = ur.y - first_pixel.y;
   int tid_in_warp = threadIdx.x & 31;
 
+  Pixel<> pixel;
   if (tid_in_warp < offset) {
-    pixel = make_int2(start_warp.x, start_warp.y + tid_in_warp);
+    pixel = Pixel<>(first_pixel.x, first_pixel.y + tid_in_warp);
   } else {
-    pixel = make_int2(
-        start_warp.x + (int)(__fdividef(tid - offset, ur.y - dl.y)) + 1,
+    pixel = Pixel<>(
+        first_pixel.x + (int)(__fdividef(tid - offset, ur.y - dl.y)) + 1,
         dl.y + ((tid - offset) % (ur.y - dl.y)));
   }
-  start_warp.y = ul.y + (32 - offset) % (ur.y - ul.y);
-  start_warp.x += int(__fdividef(32 - offset, ur.y - ul.y)) + 1;
+
+  first_pixel.y = ul.y + (32 - offset) % (ur.y - ul.y);
+  first_pixel.x += int(__fdividef(32 - offset, ur.y - ul.y)) + 1;
+
+  return pixel;
 }
 #endif
 
@@ -56,9 +63,9 @@ __device__ float main_kernel(F y,
                              F tan,
                              F inv_cos,
                              F pow_inv_cos,
-                             float2 pixel_center,
+                             Point<F> pixel_center,
                              F* inv_c,
-                             CUDA::Config& cfg,
+                             CUDA::Config<F>& cfg,
                              F sqrt_det_correlation_matrix) {
 
   F vec_o[3];
@@ -89,33 +96,37 @@ __device__ float main_kernel(F y,
 }
 
 template <typename F>
-__device__ float test_kernel(F y, F z, float2 pixel_center, CUDA::Config& cfg) {
+__device__ float test_kernel(F y,
+                             F z,
+                             Point<F> pixel_center,
+                             CUDA::Config<F>& cfg) {
 
   return INVERSE_POW_TWO_PI * (1 / (cfg.sigma * cfg.dl)) *
          exp(F(-0.5) * (pow((pixel_center.x - y) / cfg.dl, 2) +
                         pow((pixel_center.y - z) / cfg.sigma, 2)));
 }
 
-__host__ __device__ float2 pixel_center(int y,
-                                        int z,
-                                        float pixel_height,
-                                        float pixel_width,
-                                        float half_grid_size,
-                                        float half_pixel_size) {
+template <typename F>
+__host__ __device__ Point<F> pixel_center(int y,
+                                          int z,
+                                          F pixel_height,
+                                          F pixel_width,
+                                          F half_grid_size,
+                                          F half_pixel_size) {
 
-  return make_float2(half_grid_size - y * pixel_height - half_pixel_size,
-                     -half_grid_size + z * pixel_width + half_pixel_size);
+  return Point<F>(half_grid_size - y * pixel_height - half_pixel_size,
+                  -half_grid_size + z * pixel_width + half_pixel_size);
 }
 
-__device__ int2 pixel_location(float y,
-                               float z,
-                               float pixel_height,
-                               float pixel_width,
-                               float grid_size_y,
-                               float grid_size_z) {
+__device__ Pixel<> pixel_location(float y,
+                                  float z,
+                                  float pixel_height,
+                                  float pixel_width,
+                                  float grid_size_y,
+                                  float grid_size_z) {
 
-  return make_int2(floor(((0.5f * grid_size_y) - y) / pixel_height),
-                   floor((z - (-0.5f * grid_size_z)) / pixel_width));
+  return Pixel<>(floor(((0.5f * grid_size_y) - y) / pixel_height),
+                 floor((z - (-0.5f * grid_size_z)) / pixel_width));
 }
 
 __host__ __device__ float sensitivity(float y,
@@ -144,25 +155,11 @@ __device__ int pixels_in_line(float length, float pixel_size) {
   return int((length + 0.5f) / pixel_size);
 }
 
-__device__ float event_tan(float z_u, float z_d, float R) {
-  return (z_u - z_d) / (2 * R);
-}
-__device__ float event_y(float dl, float tan_event) {
-  return -0.5f * (dl / sqrt(1 + (tan_event * tan_event)));
-}
-__device__ float event_z(float z_u, float z_d, float y, float tan_event) {
-  return 0.5f * (z_u + z_d + (2 * y * tan_event));
-}
+template <typename F>
+__device__ bool in_ellipse(F A, F B, F C, F y, F z, Point<F> point) {
 
-__device__ bool in_ellipse(float A,
-                           float B,
-                           float C,
-                           float y,
-                           float z,
-                           float2 point) {
-
-  float dy = (point.x - y);
-  float dz = (point.y - z);
+  F dy = (point.x - y);
+  F dz = (point.y - z);
 
   // quadratic ellipse equation check
   return (A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)) <= 9;

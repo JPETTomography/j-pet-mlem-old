@@ -4,7 +4,8 @@
 
 #define SOA_SIZE 180000000
 
-template <typename F> struct soa_event {
+namespace SOA {
+template <typename F> struct Events {
 
   F z_u[SOA_SIZE];
   F z_d[SOA_SIZE];
@@ -46,7 +47,7 @@ template <typename F> struct soa_event {
 
   soa_event() {
 
-    printf("Allocate the SOA representation for event_list\n");
+    printf("Allocate the SOA representation for events\n");
     z_u = (T*)malloc(N * sizeof(float));
     z_d = (T*)malloc(N * sizeof(float));
     dl = (T*)malloc(N * sizeof(float));
@@ -69,7 +70,8 @@ template <typename F> struct soa_event {
     free(z_u);
     free(z_d);
     free(dl);
-    printf("Free memory of SOA representation for event_list\n");
+    printf("Free memory of SOA representation for events\n");
   }
 #endif
 };
+}

@@ -9,18 +9,18 @@
 #define NORMAL_PHANTOM 0
 
 namespace CUDA {
-struct Config {
-  float R_distance, Scentilator_length, pixel_size;
+template <typename F> struct Config {
+  F R_distance, Scentilator_length, pixel_size;
   int n_pixels;
-  float sigma;
-  float dl;
+  F sigma;
+  F dl;
   int n_blocks;
   int n_threads_per_block;
   int number_of_events;
-  float inv_pow_sigma_dl;
-  float inv_pow_sigma_z;
-  float grid_size_y;
-  float grid_size_z;
+  F inv_pow_sigma_dl;
+  F inv_pow_sigma_z;
+  F grid_size_y;
+  F grid_size_z;
 };
 }
 

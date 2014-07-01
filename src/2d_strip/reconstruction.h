@@ -36,7 +36,7 @@ class Reconstruction {
   F inv_pow_sigma_z;
   F inv_pow_sigma_dl;
 
-  std::vector<Event<F>> event_list;
+  std::vector<Event<F>> events;
   std::vector<std::vector<F>> rho;
   std::vector<std::vector<F>> rho_temp;
   std::vector<F> acc_log;
@@ -106,7 +106,7 @@ class Reconstruction {
 
       progress(i + n_iterations_so_far);
 
-      int size = event_list.size();
+      int size = events.size();
 
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
@@ -116,7 +116,7 @@ class Reconstruction {
         int tid = omp_get_thread_num();
 
 #if RECONSTRUCTION_OLD_KERNEL
-        auto event = event_list[id];
+        auto event = events[id];
         F tan = event.tan(detector.radius);
         F y = event.y(tan);
         F z = event.z(y, tan);
@@ -127,8 +127,8 @@ class Reconstruction {
 
         bb_pixel_updates(ellipse_center, angle, y, tan, tid);
 #else
-        F y = event_list[id].z_u;
-        F z = event_list[id].z_d;
+        F y = events[id].z_u;
+        F z = events[id].z_d;
 
         if (id == 0) {
           std::cout << y << " " << z << std::endl;
@@ -419,7 +419,7 @@ class Reconstruction {
       F z_u, z_d, dl;
       in >> z_u >> z_d >> dl;
       Event<F> temp_event(z_u, z_d, dl);
-      event_list.push_back(temp_event);
+      events.push_back(temp_event);
     }
     return *this;
   }
@@ -446,5 +446,5 @@ class Reconstruction {
     }
   }
 
-  std::vector<Event<F>>& get_event_list() { return event_list; }
+  std::vector<Event<F>>& get_event_list() { return events; }
 };

@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-      CUDA::Config cfg;
+      CUDA::Config<float> cfg;
       cfg.R_distance = R_distance;
       cfg.Scentilator_length = Scentilator_length;
       cfg.pixel_size = pixel_size;

@@ -2,15 +2,17 @@
 
 #include <cuda_runtime.h>
 
+#include "geometry/point.h"
+#include "../event.h"
+
 #include "config.h"
-#include "event.cuh"
+#include "soa.cuh"
 #include "reconstruction_methods.cuh"
 
 template <typename F>
 __global__ void reconstruction_2d_strip_cuda(
-    CUDA::Config cfg,
-    soa_event<F>* soa,
-    Event<F>* event_list,
+    CUDA::Config<F> cfg,
+    SOA::Events<F>* events,
     int event_list_size,
     F* output_image,
     F* rho,
@@ -42,19 +44,20 @@ __global__ void reconstruction_2d_strip_cuda(
     for (int j = 0; j < 1; ++j) {
 
 #ifdef AOS_ACCESS
-      T z_u = event_list[(i * cfg.number_of_blocks *
-                          cfg.number_of_threads_per_block) +
-                         tid].z_u;
-      T z_d = event_list[(i * cfg.number_of_blocks *
-                          cfg.number_of_threads_per_block) +
-                         tid].z_d;
-      T delta_l = event_list[(i * cfg.number_of_blocks *
-                              cfg.number_of_threads_per_block) +
-                             tid].dl;
+      T z_u =
+          events[(i * cfg.number_of_blocks * cfg.number_of_threads_per_block) +
+                 tid].z_u;
+      T z_d =
+          events[(i * cfg.number_of_blocks * cfg.number_of_threads_per_block) +
+                 tid].z_d;
+      T delta_l =
+          events[(i * cfg.number_of_blocks * cfg.number_of_threads_per_block) +
+                 tid].dl;
 #else
-      F z_u = soa->z_u[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
-      F z_d = soa->z_d[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
-      F delta_l = soa->dl[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
+      Event<F> event(
+          events->z_u[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid],
+          events->z_d[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid],
+          events->dl[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid]);
 #endif
 
       F acc = 0;
@@ -63,20 +66,18 @@ __global__ void reconstruction_2d_strip_cuda(
       F half_pixel_size = F(0.5) * cfg.pixel_size;
 
       // angle space transformation
-      F tn = event_tan(z_u, z_d, cfg.R_distance);
-      F y = event_y(delta_l, tn);
-      F z = event_z(z_u, z_d, y, tn);
-
-      F angle = atanf(tn);
-
-      F cos = __cosf(angle);
+      F tan = event.tan(cfg.R_distance);
+      F y = event.y(tan);
+      F z = event.z(y, tan);
+      F angle = compat::atan(tan);
+      F cos = compat::cos(angle);
 
       F sec = 1 / cos;
       F sec_sq = sec * sec;
 
       F A = (((4 / (cos * cos)) * cfg.inv_pow_sigma_dl) +
-             (2 * tn * tn * cfg.inv_pow_sigma_z));
-      F B = -4 * tn * cfg.inv_pow_sigma_z;
+             (2 * tan * tan * cfg.inv_pow_sigma_z));
+      F B = -4 * tan * cfg.inv_pow_sigma_z;
       F C = 2 * cfg.inv_pow_sigma_z;
       F B_2 = (B / 2) * (B / 2);
 
@@ -90,20 +91,18 @@ __global__ void reconstruction_2d_strip_cuda(
       }
 #endif
 
-      int2 center_pixel = pixel_location(y,
-                                         z,
-                                         cfg.pixel_size,
-                                         cfg.pixel_size,
-                                         cfg.grid_size_y,
-                                         cfg.grid_size_z);
+      Pixel<> center_pixel = pixel_location(y,
+                                            z,
+                                            cfg.pixel_size,
+                                            cfg.pixel_size,
+                                            cfg.grid_size_y,
+                                            cfg.grid_size_z);
 
       // bounding box limits for event
-      int2 ur =
-          make_int2(center_pixel.x - pixels_in_line(bb_y, cfg.pixel_size),
-                    center_pixel.y + pixels_in_line(bb_z, cfg.pixel_size));
-      int2 dl =
-          make_int2(center_pixel.x + pixels_in_line(bb_y, cfg.pixel_size),
-                    center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
+      Pixel<> ur(center_pixel.x - pixels_in_line(bb_y, cfg.pixel_size),
+                 center_pixel.y + pixels_in_line(bb_z, cfg.pixel_size));
+      Pixel<> dl(center_pixel.x + pixels_in_line(bb_y, cfg.pixel_size),
+                 center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
 #if DEBUG
       if (tid == 0 && i == 0) {
         printf("UR:= %d Limit:= %d \n", ur.x, ur.y);
@@ -115,24 +114,22 @@ __global__ void reconstruction_2d_strip_cuda(
       for (int iy = ur.x; iy < dl.x; ++iy) {
         for (int iz = dl.y; iz < ur.y; ++iz) {
 
-          float2 pp = pixel_center(iy,
-                                   iz,
-                                   cfg.pixel_size,
-                                   cfg.pixel_size,
-                                   cfg.grid_size_y,
-                                   cfg.grid_size_z,
-                                   half_grid_size,
-                                   half_pixel_size);
+          Point<F> point = pixel_center(iy,
+                                        iz,
+                                        cfg.pixel_size,
+                                        cfg.pixel_size,
+                                        half_grid_size,
+                                        half_pixel_size);
 
-          if (in_ellipse(A, B, C, y, z, pp)) {
-            pp.x -= y;
-            pp.y -= z;
+          if (in_ellipse(A, B, C, y, z, point)) {
+            point.x -= y;
+            point.y -= z;
 
             F event_kernel = main_kernel<F>(y,
-                                            tn,
+                                            tan,
                                             sec,
                                             sec_sq,
-                                            pp,
+                                            point,
                                             inv_c,
                                             cfg,
                                             sqrt_det_correlation_matrix) /
@@ -153,25 +150,23 @@ __global__ void reconstruction_2d_strip_cuda(
       for (int iz = dl.y; iz < ur.y; ++iz) {
         for (int iy = ur.x; iy < dl.x; ++iy) {
 
-          pp = pixel_center(iy,
-                            iz,
-                            cfg.pixel_size,
-                            cfg.pixel_size,
-                            cfg.grid_size_y,
-                            cfg.grid_size_z,
-                            half_grid_size,
-                            half_pixel_size);
+          Point<F> point = pixel_center(iy,
+                                        iz,
+                                        cfg.pixel_size,
+                                        cfg.pixel_size,
+                                        half_grid_size,
+                                        half_pixel_size);
 
-          if (in_ellipse(A, B, C, y, z, pp)) {
+          if (in_ellipse(A, B, C, y, z, point)) {
 
-            pp.x -= y;
-            pp.y -= z;
+            point.x -= y;
+            point.y -= z;
 
             F event_kernel = main_kernel<F>(y,
-                                            tn,
+                                            tan,
                                             sec,
                                             sec_sq,
-                                            pp,
+                                            point,
                                             inv_c,
                                             cfg,
                                             sqrt_det_correlation_matrix) /

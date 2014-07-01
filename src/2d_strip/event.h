@@ -2,18 +2,22 @@
 
 #include <cmath>
 
+#include "util/compat.h"
+
 template <typename F> struct Event {
   F z_u;
   F z_d;
   F dl;
 
-  Event(F z_u, F z_d, F dl) : z_u(z_u), z_d(z_d), dl(dl) {}
+  Event(F z_u, F z_d, F dl) $ : z_u(z_u), z_d(z_d), dl(dl) {}
 
-  F tan(const F R) const { return (z_u - z_d) / (2 * R); }
+  F tan(const F R) const $ { return (z_u - z_d) / (2 * R); }
 
-  F y(const F tan) const { return -F(0.5) * (dl / std::sqrt(1 + tan * tan)); }
+  F y(const F tan) const $ {
+    return -F(0.5) * (dl / compat::sqrt(1 + tan * tan));
+  }
 
-  F z(const F y, const F tan) const {
+  F z(const F y, const F tan) const $ {
     return F(0.5) * (z_u + z_d + (2 * y * tan));
   }
 };
@@ -25,10 +29,10 @@ template <typename F> struct ImageSpaceEventAngle {
   const F z;
   const F angle;
 
-  ImageSpaceEventAngle(F y, F z, F angle) : y(y), z(z), angle(angle) {}
+  ImageSpaceEventAngle(F y, F z, F angle) $ : y(y), z(z), angle(angle) {}
 
-  ImageSpaceEventTan<F> to_tan() const {
-    return ImageSpaceEventTan<F>(y, z, tan(angle));
+  ImageSpaceEventTan<F> to_tan() const $ {
+    return ImageSpaceEventTan<F>(y, z, compat::tan(angle));
   }
 };
 
@@ -39,8 +43,8 @@ template <typename F> struct ImageSpaceEventTan {
 
   ImageSpaceEventTan(F y, F z, F tan) : y(y), z(z), tan(tan) {}
 
-  ImageSpaceEventAngle<F> to_angle() const {
-    return ImageSpaceEventAngle<F>(y, z, atan(tan));
+  ImageSpaceEventAngle<F> to_angle() const $ {
+    return ImageSpaceEventAngle<F>(y, z, compat::atan(tan));
   }
 };
 
@@ -50,6 +54,10 @@ template <typename FType> struct EllipseParameters {
   F angle;
   F iter;
 
-  EllipseParameters(F x, F y, F a, F b, F angle, F iter)
-      : x(x), y(y), a(a), b(b), angle(angle), iter(iter) {}
+  EllipseParameters(F x, F y, F a, F b, F angle, F iter) $ : x(x),
+                                                             y(y),
+                                                             a(a),
+                                                             b(b),
+                                                             angle(angle),
+                                                             iter(iter) {}
 };

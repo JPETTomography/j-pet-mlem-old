@@ -24,13 +24,13 @@ template <typename FType = double> class Kernel {
                                std::pow((pixel_center.second - z) / sigma, 2)));
   }
 
-  F calculate_kernel(F& y,
-                     F& tan,
-                     F& inv_cos,
-                     F& pow_inv_cos,
-                     Point& pixel_center,
-                     StripDetector<F>& detector,
-                     F& sqrt_det_correlation_matrix) {
+  F operator()(F& y,
+               F& tan,
+               F& inv_cos,
+               F& pow_inv_cos,
+               Point& pixel_center,
+               StripDetector<F>& detector,
+               F& sqrt_det_correlation_matrix) const {
 
     F R_distance = detector.radius;
     F vec_o[3];

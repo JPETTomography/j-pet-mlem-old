@@ -3,17 +3,16 @@
 #include <cuda_runtime.h>
 
 #include "config.h"
-#include "event.cuh"
+#include "soa.cuh"
 #include "reconstruction_methods.cuh"
 
 template <typename F>
 __global__ void reconstruction_2d_strip_cuda(
-    CUDA::Config cfg,
-    soa_event<float>* soa_data,
-    Event<F>* event_list,
+    CUDA::Config<F> cfg,
+    SOA::Events<F>* events,
     int event_list_size,
-    float* output_image,
-    float* rho,
+    F* output_image,
+    F* rho,
     cudaTextureObject_t sensitivity_tex) {
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -26,8 +25,8 @@ __global__ void reconstruction_2d_strip_cuda(
 
       for (int j = 0; j < 1; ++j) {
 
-        F y = soa_data->z_u[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
-        F z = soa_data->z_d[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
+        F y = events->z_u[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
+        F z = events->z_d[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
         F acc = 0;
 
         if (tid == 0 && i == 0) {
@@ -41,13 +40,12 @@ __global__ void reconstruction_2d_strip_cuda(
         int y_step = 3 * (cfg.dl / cfg.pixel_size);
         int z_step = 3 * (cfg.sigma / cfg.pixel_size);
 
-        int2 center_pixel = pixel_location(y,
-                                           z,
-                                           cfg.pixel_size,
-                                           cfg.pixel_size,
-                                           cfg.grid_size_y,
-                                           cfg.grid_size_z);
-        float2 pp;
+        Pixel<> center_pixel = pixel_location(y,
+                                              z,
+                                              cfg.pixel_size,
+                                              cfg.pixel_size,
+                                              cfg.grid_size_y,
+                                              cfg.grid_size_z);
 #if DEBUG
         if (tid == 0 && i == 0) {
           printf("TID: %d %f %f LIMIT: %d%d\n", tid, y, z, y_step, z_step);
@@ -64,20 +62,20 @@ __global__ void reconstruction_2d_strip_cuda(
           for (int iz = center_pixel.y - z_step; iz < center_pixel.y + z_step;
                ++iz) {
 
-            pp = pixel_center(iy,
-                              iz,
-                              cfg.pixel_size,
-                              cfg.pixel_size,
-                              half_grid_size,
-                              half_pixel_size);
+            Point<float> point = pixel_center(iy,
+                                              iz,
+                                              cfg.pixel_size,
+                                              cfg.pixel_size,
+                                              half_grid_size,
+                                              half_pixel_size);
 
-            F event_kernel = test_kernel<F>(y, z, pp, cfg);
+            float event_kernel = test_kernel<float>(y, z, point, cfg);
 
             acc += event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)];
 
 #if DEBUG
             if (tid == 0 && i == 0) {
-              printf("PP: %f %f %e EVENT:  ", pp.x, pp.y, event_kernel);
+              printf("PP: %f %f %e EVENT:  ", point.x, point.y, event_kernel);
               printf("TID: %d %d %d \n", tid, iy, iz);
               printf("INDEX: %d\n", BUFFOR_LINEAR_INDEX(iy, iz));
             }
@@ -92,14 +90,14 @@ __global__ void reconstruction_2d_strip_cuda(
           for (int iy = center_pixel.x - y_step; iy < center_pixel.x + y_step;
                ++iy) {
 
-            pp = pixel_center(iy,
-                              iz,
-                              cfg.pixel_size,
-                              cfg.pixel_size,
-                              half_grid_size,
-                              half_pixel_size);
+            Point<F> point = pixel_center(iy,
+                                          iz,
+                                          cfg.pixel_size,
+                                          cfg.pixel_size,
+                                          half_grid_size,
+                                          half_pixel_size);
 
-            F event_kernel = test_kernel<F>(y, z, pp, cfg);
+            F event_kernel = test_kernel<F>(y, z, point, cfg);
 
             atomicAdd(&output_image[BUFFER_LINEAR_INDEX(iy, iz)],
                       (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)]) *

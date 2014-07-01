@@ -1,19 +1,21 @@
 #pragma once
 
+#include "util/compat.h"
+
 template <typename SType = int> class Pixel {
  public:
   typedef SType S;
 
-  Pixel(S x, S y) : x(x), y(y) {}
+  Pixel(S x, S y) $ : x(x), y(y) {}
 
   // default constructor
-  Pixel() : x(0), y(0) {}
+  Pixel() $ : x(0), y(0) {}
 
   S x, y;
 
-  const S index() const { return y * (y + 1) / 2 + x; }
+  const S index() const $ { return y * (y + 1) / 2 + x; }
 
-  Pixel& operator++() {
+  Pixel& operator++() $ {
     if (++x > y) {
       y++;
       x = 0;
@@ -25,11 +27,11 @@ template <typename SType = int> class Pixel {
     return Pixel(0, pixels_in_row);
   }
 
-  bool operator!=(const Pixel& p) const { return x != p.x || y != p.y; }
+  bool operator!=(const Pixel& p) const $ { return x != p.x || y != p.y; }
 
-  bool operator==(const Pixel& p) const { return x == p.x && y == p.y; }
+  bool operator==(const Pixel& p) const $ { return x == p.x && y == p.y; }
 
-  bool operator<(const Pixel& p) const {
+  bool operator<(const Pixel& p) const $ {
     return y < p.y || (y == p.y && x < p.x);
   }
 };

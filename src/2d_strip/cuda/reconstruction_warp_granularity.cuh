@@ -3,14 +3,13 @@
 #include <cuda_runtime.h>
 
 #include "config.h"
-#include "event.cuh"
+#include "soa.cuh"
 #include "reconstruction_methods.cuh"
 
 template <typename F>
 __global__ void reconstruction_2d_strip_cuda(
-    CUDA::Config cfg,
-    soa_event<F>* soa_data,
-    Event<F>* event_list,
+    CUDA::Config<F> cfg,
+    SOA::Events<F>* events,
     int event_list_size,
     F* output_image,
     F* rho,
@@ -50,9 +49,9 @@ __global__ void reconstruction_2d_strip_cuda(
 
     if ((warp_id < event_list_size)) {
 
-      F z_u = soa_data->z_u[warp_id];
-      F z_d = soa_data->z_d[warp_id];
-      F delta_l = soa_data->dl[warp_id];
+      F z_u = events->z_u[warp_id];
+      F z_d = events->z_d[warp_id];
+      F delta_l = events->dl[warp_id];
 
       F acc = 0;
 
@@ -84,25 +83,22 @@ __global__ void reconstruction_2d_strip_cuda(
       }
 #endif
 
-      int2 center_pixel = pixel_location(y,
-                                         z,
-                                         cfg.pixel_size,
-                                         cfg.pixel_size,
-                                         cfg.grid_size_y,
-                                         cfg.grid_size_z);
+      Pixel<> center_pixel = pixel_location(y,
+                                            z,
+                                            cfg.pixel_size,
+                                            cfg.pixel_size,
+                                            cfg.grid_size_y,
+                                            cfg.grid_size_z);
 
       // bounding box limits for event
-      int2 ur =
-          make_int2(center_pixel.x - pixels_in_line(bb_y, cfg.pixel_size),
-                    center_pixel.y + pixels_in_line(bb_z, cfg.pixel_size));
-      int2 dl =
-          make_int2(center_pixel.x + pixels_in_line(bb_y, cfg.pixel_size),
-                    center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
+      Pixel<> ur(center_pixel.x - pixels_in_line(bb_y, cfg.pixel_size),
+                 center_pixel.y + pixels_in_line(bb_z, cfg.pixel_size));
+      Pixel<> dl(center_pixel.x + pixels_in_line(bb_y, cfg.pixel_size),
+                 center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
       float2 pp;
 
-      int2 ul =
-          make_int2(center_pixel.x - pixels_in_line(bb_y, cfg.pixel_size),
-                    center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
+      Pixel<> ul(center_pixel.x - pixels_in_line(bb_y, cfg.pixel_size),
+                 center_pixel.y - pixels_in_line(bb_z, cfg.pixel_size));
 
 #if DEBUG
       if (tid == 0 && i == 0) {
@@ -117,15 +113,14 @@ __global__ void reconstruction_2d_strip_cuda(
 
       int pixel_count = 0;
 
-      int2 start_warp = ul;
-      int2 tid_pixel;
+      Pixel<> first_pixel = ul;
 
       for (int k = 0; k < bb_size; ++k) {
+        Pixel<> pixel =
+            warp_space_pixel(pixel, offset, first_pixel, ul, ur, dl, tid);
 
-        warp_space_pixel(tid_pixel, offset, start_warp, ul, ur, dl, tid);
-
-        pp = pixel_center(tid_pixel.x,
-                          tid_pixel.y,
+        pp = pixel_center(pixel.x,
+                          pixel.y,
                           cfg.pixel_size,
                           cfg.pixel_size,
                           cfg.grid_size_y,
@@ -146,21 +141,20 @@ __global__ void reconstruction_2d_strip_cuda(
                                           inv_c,
                                           cfg,
                                           sqrt_det_correlation_matrix) /
-                           tex2D<F>(sensitiviy_tex, tid_pixel.x, tid_pixel.y);
+                           tex2D<F>(sensitiviy_tex, pixel.x, pixel.y);
 #if DEBUG
           if (tid < 32 && i == 0) {
                         printf("TID: %d KERNEL: %e PIXEL: %d %d
                         K:%d\n",tid,event_kernel,tid_pixel.x,tid_pixel.y,k);
           }
 #endif
-          acc += event_kernel *
-                 tex2D<F>(sensitiviy_tex, tid_pixel.x, tid_pixel.y) *
-                 rho[IMAGE_SPACE_LINEAR_INDEX(tid_pixel.x, tid_pixel.y)];
+          acc += event_kernel * tex2D<F>(sensitiviy_tex, pixel.x, pixel.y) *
+                 rho[IMAGE_SPACE_LINEAR_INDEX(pixel.x, pixel.y)];
 
           sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, pixel_count, 0)] =
-              tid_pixel.x;
+              pixel.x;
           sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, pixel_count, 1)] =
-              tid_pixel.y;
+              pixel.y;
           pixel_count++;
         }
       }
@@ -179,11 +173,11 @@ __global__ void reconstruction_2d_strip_cuda(
 
       for (int k = 0; k < pixel_count; ++k) {
 
-        tid_pixel.x = sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, k, 0)];
-        tid_pixel.y = sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, k, 1)];
+        pixel.x = sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, k, 0)];
+        pixel.y = sh_mem_pixel_buffor[SH_MEM_INDEX(threadIdx.x, k, 1)];
 
-        pp = pixel_center(tid_pixel.x,
-                          tid_pixel.y,
+        pp = pixel_center(pixel.x,
+                          pixel.y,
                           cfg.pixel_size,
                           cfg.pixel_size,
                           cfg.grid_size_y,
@@ -202,7 +196,7 @@ __global__ void reconstruction_2d_strip_cuda(
                                         inv_c,
                                         cfg,
                                         sqrt_det_correlation_matrix) /
-                         tex2D<F>(sensitiviy_tex, tid_pixel.x, tid_pixel.y);
+                         tex2D<F>(sensitiviy_tex, pixel.x, pixel.y);
 
 #if DEBUG
         if (tid < 32 && i == 0 && k < loop_index) {
@@ -211,10 +205,10 @@ __global__ void reconstruction_2d_strip_cuda(
         }
 #endif
 
-        atomicAdd(&output_image[BUFFER_LINEAR_INDEX(tid_pixel.x, tid_pixel.y)],
-                  (event_kernel *
-                   rho[IMAGE_SPACE_LINEAR_INDEX(tid_pixel.x, tid_pixel.y)]) *
-                      inv_acc * sec_sq);
+        atomicAdd(
+            &output_image[BUFFER_LINEAR_INDEX(pixel.x, pixel.y)],
+            (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(pixel.x, pixel.y)]) *
+                inv_acc * sec_sq);
       }
     }
   }
