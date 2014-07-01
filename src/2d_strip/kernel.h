@@ -11,15 +11,10 @@ template <typename FType = double> class Kernel {
   static constexpr const F INVERSE_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
   typedef std::pair<F, F> Point;
 
-  F multiply_elements(F* vec_a, StripDetector<F>& detector, F* vec_b) {
-
-    F output = 0;
-
-    output += vec_a[0] * detector.inv_c(0, 0) * vec_b[0];
-    output += vec_a[1] * detector.inv_c(1, 1) * vec_b[1];
-    output += vec_a[2] * detector.inv_c(2, 2) * vec_b[2];
-
-    return output;
+  static F multiply(F* vec_a, StripDetector<F>& detector, F* vec_b) {
+    return vec_a[0] * detector.inv_c(0, 0) * vec_b[0] +  //
+           vec_a[1] * detector.inv_c(1, 1) * vec_b[1] +  //
+           vec_a[2] * detector.inv_c(2, 2) * vec_b[2];
   }
 
   F test_kernel(F& y, F& z, Point& pixel_center, F dl, F sigma) {
@@ -54,10 +49,10 @@ template <typename FType = double> class Kernel {
     vec_b[1] = pixel_center.second - (pixel_center.first * tan);
     vec_b[2] = -2 * pixel_center.first * inv_cos;
 
-    F a_ic_a = multiply_elements(vec_a, detector, vec_a);
-    F b_ic_a = multiply_elements(vec_b, detector, vec_a);
-    F b_ic_b = multiply_elements(vec_b, detector, vec_b);
-    F o_ic_b = multiply_elements(vec_o, detector, vec_b);
+    F a_ic_a = multiply(vec_a, detector, vec_a);
+    F b_ic_a = multiply(vec_b, detector, vec_a);
+    F b_ic_b = multiply(vec_b, detector, vec_b);
+    F o_ic_b = multiply(vec_o, detector, vec_b);
 
     F norm = a_ic_a + (2 * o_ic_b);
 

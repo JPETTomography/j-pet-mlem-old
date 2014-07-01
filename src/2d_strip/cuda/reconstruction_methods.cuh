@@ -1,15 +1,15 @@
 #pragma once
 
 #include <cuda_runtime.h>
+#include <cmath>
 
-#define SINGLE_INVERSE_PI 0.3183098861f
-//#define SINGLE_INVERSE_POW_TWO_PI (1 / (2 * 3.141592f * 3.141592f))
-#define SINGLE_INVERSE_POW_TWO_PI .0506606f
+static const float INVERSE_PI = (float)M_1_PI;
+static const float INVERSE_POW_TWO_PI = (float)(1 / (2 * M_PI * M_PI));
 
 #if OLD_WARP_SPACE_PIXEL
 __device__ void warp_space_pixel(int2& pixel,
                                  int offset,
-                                 int2& ul,
+                                 int ul,
                                  int width,
                                  int height,
                                  int& index) {
@@ -20,45 +20,35 @@ __device__ void warp_space_pixel(int2& pixel,
   pixel.y += ul.y;
   pixel.x += ul.x;
 }
-#endif
-
-__device__ void warp_space_pixel(int2& tid_pixel,
+#else
+__device__ void warp_space_pixel(int2& pixel,
                                  int& offset,
                                  int2& start_warp,
-                                 int2& ul,
-                                 int2& ur,
-                                 int2& dl,
-                                 int& tid) {
-
+                                 int2 ul,
+                                 int2 ur,
+                                 int2 dl,
+                                 int tid) {
   offset = ur.y - start_warp.y;
 
-  int index = threadIdx.x & 31;
+  int tid_in_warp = threadIdx.x & 31;
 
-  if ((index) < offset) {
-
-    tid_pixel = make_int2(start_warp.x, start_warp.y + index);
-
+  if (tid_in_warp < offset) {
+    pixel = make_int2(start_warp.x, start_warp.y + tid_in_warp);
   } else {
-
-    tid_pixel = make_int2(
+    pixel = make_int2(
         start_warp.x + (int)(__fdividef(tid - offset, ur.y - dl.y)) + 1,
         dl.y + ((tid - offset) % (ur.y - dl.y)));
   }
-
   start_warp.y = ul.y + (32 - offset) % (ur.y - ul.y);
   start_warp.x += int(__fdividef(32 - offset, ur.y - ul.y)) + 1;
 }
+#endif
 
 template <typename F>
-__device__ float multiply_elements(F* vec_a, volatile F* inv_c, F* vec_b) {
-
-  F output = 0;
-
-  output += vec_a[0] * inv_c[0] * vec_b[0];
-  output += vec_a[1] * inv_c[1] * vec_b[1];
-  output += vec_a[2] * inv_c[2] * vec_b[2];
-
-  return output;
+__device__ float multiply(F* vec_a, volatile F* inv_c, F* vec_b) {
+  return vec_a[0] * inv_c[0] * vec_b[0] +  //
+         vec_a[1] * inv_c[1] * vec_b[1] +  //
+         vec_a[2] * inv_c[2] * vec_b[2];
 }
 
 template <typename F>
@@ -87,22 +77,21 @@ __device__ float main_kernel(F y,
   vec_b[1] = pixel_center.y - (pixel_center.x * tan);
   vec_b[2] = -2 * pixel_center.x * inv_cos;
 
-  F a_ic_a = multiply_elements<F>(vec_a, inv_c, vec_a);
-  F b_ic_a = multiply_elements<F>(vec_b, inv_c, vec_a);
-  F b_ic_b = multiply_elements<F>(vec_b, inv_c, vec_b);
-  F o_ic_b = multiply_elements<F>(vec_o, inv_c, vec_b);
+  F a_ic_a = multiply<F>(vec_a, inv_c, vec_a);
+  F b_ic_a = multiply<F>(vec_b, inv_c, vec_a);
+  F b_ic_b = multiply<F>(vec_b, inv_c, vec_b);
+  F o_ic_b = multiply<F>(vec_o, inv_c, vec_b);
 
   F norm = a_ic_a + (2.f * o_ic_b);
 
-  return (SINGLE_INVERSE_POW_TWO_PI *
-          (sqrt_det_correlation_matrix / sqrt(norm)) *
-          exp(-(0.5f) * (b_ic_b - ((b_ic_a * b_ic_a) / norm))));
+  return INVERSE_POW_TWO_PI * (sqrt_det_correlation_matrix / sqrt(norm)) *
+         exp(F(-0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm)));
 }
 
 template <typename F>
 __device__ float test_kernel(F y, F z, float2 pixel_center, CUDA::Config& cfg) {
 
-  return (SINGLE_INVERSE_POW_TWO_PI * (1 / (cfg.sigma * cfg.dl))) *
+  return INVERSE_POW_TWO_PI * (1 / (cfg.sigma * cfg.dl)) *
          exp(F(-0.5) * (pow((pixel_center.x - y) / cfg.dl, 2) +
                         pow((pixel_center.y - z) / cfg.sigma, 2)));
 }
@@ -139,8 +128,8 @@ __host__ __device__ float sensitivity(float y,
   float R_plus = radius + y;
   float R_minus = radius - y;
 
-  return SINGLE_INVERSE_PI * (atanf(min(L_minus / R_minus, L_plus / R_plus)) -
-                              atanf(max(-L_plus / R_minus, -L_minus / R_plus)));
+  return INVERSE_PI * (atanf(min(L_minus / R_minus, L_plus / R_plus)) -
+                       atanf(max(-L_plus / R_minus, -L_minus / R_plus)));
 }
 
 __device__ float bbz(float A, float C, float B_2) {
