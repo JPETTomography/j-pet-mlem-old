@@ -23,3 +23,8 @@ struct Config {
   float grid_size_z;
 };
 }
+
+#define IMAGE_SPACE_LINEAR_INDEX(Y, Z) (Y * cfg.n_pixels) + Z
+#define BUFFOR_LINEAR_INDEX(Y, Z) \
+  (blockIdx.x * cfg.n_pixels * cfg.n_pixels) + (Y * cfg.n_pixels) + Z
+#define SH_MEM_INDEX(ID, N, I) (ID * 20 + (2 * N + I))

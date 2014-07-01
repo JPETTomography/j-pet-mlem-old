@@ -4,15 +4,6 @@
 
 #include "../event.h"
 
-#include "config.h"
-#include "event.cuh"
-#include "reconstruction_methods.cuh"
-
-#define IMAGE_SPACE_LINEAR_INDEX(Y, Z) (Y * cfg.n_pixels) + Z
-#define BUFFOR_LINEAR_INDEX(Y, Z) \
-  (blockIdx.x * cfg.n_pixels * cfg.n_pixels) + (Y * cfg.n_pixels) + Z
-#define SH_MEM_INDEX(ID, N, I) (ID * 20 + (2 * N + I))
-
 #if EVENT_GRANULARITY
 #include "reconstruction_event_granularity.cuh"
 #elif WARP_GRANULARITY

@@ -2,6 +2,10 @@
 
 #include <cuda_runtime.h>
 
+#include "config.h"
+#include "event.cuh"
+#include "reconstruction_methods.cuh"
+
 template <typename T>
 __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
                                              soa_event<float>* soa_data,
