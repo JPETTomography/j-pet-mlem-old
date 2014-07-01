@@ -291,7 +291,7 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
 
         T acc = 0.f;
 
-        T half_grid_size = 0.5f * cfg.grid_size_y_;
+        T half_grid_size = 0.5f * cfg.grid_size_y;
         T half_pixel_size = 0.5f * cfg.pixel_size;
 
         // angle space transformation
@@ -327,8 +327,8 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
                                            z,
                                            cfg.pixel_size,
                                            cfg.pixel_size,
-                                           cfg.grid_size_y_,
-                                           cfg.grid_size_z_);
+                                           cfg.grid_size_y,
+                                           cfg.grid_size_z);
 
         // bounding box limits for event
         int2 ur =
@@ -356,8 +356,8 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
                               iz,
                               cfg.pixel_size,
                               cfg.pixel_size,
-                              cfg.grid_size_y_,
-                              cfg.grid_size_z_,
+                              cfg.grid_size_y,
+                              cfg.grid_size_z,
                               half_grid_size,
                               half_pixel_size);
 
@@ -404,8 +404,8 @@ __global__ void reconstruction_2d_strip_cuda(CUDA::Config cfg,
                               iz,
                               cfg.pixel_size,
                               cfg.pixel_size,
-                              cfg.grid_size_y_,
-                              cfg.grid_size_z_,
+                              cfg.grid_size_y,
+                              cfg.grid_size_z,
                               half_grid_size,
                               half_pixel_size);
 
@@ -471,7 +471,7 @@ __global__ void reconstruction_2d_strip_cuda_simple(CUDA::Config cfg,
           printf("%f %f\n", y, z);
         }
 
-        T half_grid_size = 0.5f * cfg.grid_size_y_;
+        T half_grid_size = 0.5f * cfg.grid_size_y;
         T half_pixel_size = 0.5f * cfg.pixel_size;
 
         int y_step = 3 * (cfg.dl / cfg.pixel_size);
@@ -481,8 +481,8 @@ __global__ void reconstruction_2d_strip_cuda_simple(CUDA::Config cfg,
                                            z,
                                            cfg.pixel_size,
                                            cfg.pixel_size,
-                                           cfg.grid_size_y_,
-                                           cfg.grid_size_z_);
+                                           cfg.grid_size_y,
+                                           cfg.grid_size_z);
         float2 pp;
         //        if (tid == 0 && i == 0) {
         //          printf("TID: %d %f %f LIMIT: %d%d\n", tid, y, z, y_step,
@@ -503,8 +503,8 @@ __global__ void reconstruction_2d_strip_cuda_simple(CUDA::Config cfg,
                               iz,
                               cfg.pixel_size,
                               cfg.pixel_size,
-                              cfg.grid_size_y_,
-                              cfg.grid_size_z_,
+                              cfg.grid_size_y,
+                              cfg.grid_size_z,
                               half_grid_size,
                               half_pixel_size);
 
@@ -532,8 +532,8 @@ __global__ void reconstruction_2d_strip_cuda_simple(CUDA::Config cfg,
                               iz,
                               cfg.pixel_size,
                               cfg.pixel_size,
-                              cfg.grid_size_y_,
-                              cfg.grid_size_z_,
+                              cfg.grid_size_y,
+                              cfg.grid_size_z,
                               half_grid_size,
                               half_pixel_size);
 

@@ -16,7 +16,7 @@ struct Config {
   int number_of_events;
   float inv_pow_sigma_dl;
   float inv_pow_sigma_z;
-  float grid_size_y_;
-  float grid_size_z_;
+  float grid_size_y;
+  float grid_size_z;
 };
 }

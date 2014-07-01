@@ -99,8 +99,8 @@ int main(int argc, char* argv[]) {
       cfg.number_of_events = 1;
       cfg.inv_pow_sigma_dl = 1 / (dl * dl);
       cfg.inv_pow_sigma_z = 1 / (sigma * sigma);
-      cfg.grid_size_y_ = n_pixels * pixel_size;
-      cfg.grid_size_z_ = n_pixels * pixel_size;
+      cfg.grid_size_y = n_pixels * pixel_size;
+      cfg.grid_size_z = n_pixels * pixel_size;
 
       run_gpu_reconstruction(cfg,
                              reconstruction.get_event_list(),
