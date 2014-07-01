@@ -8,7 +8,7 @@ namespace cmdline {
 std::vector<std::string> dir_stack;
 
 bool load(cmdline::parser& parser,
-          string& value __attribute__((unused)),
+          path& value __attribute__((unused)),
           const std::string& arg) {
   std::string path = arg;
   if (!dir_stack.empty() && path.substr(0, 1) != "/") {

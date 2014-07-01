@@ -63,13 +63,13 @@ int main(int argc, char* argv[]) {
     msg << "note: All length options below should be expressed in meters.";
     cl.footer(msg.str());
 
-    cl.add<cmdline::string>("config",
-                            'c',
-                            "load config file",
-                            cmdline::dontsave,
-                            cmdline::string(),
-                            cmdline::default_reader<cmdline::string>(),
-                            cmdline::load);
+    cl.add<cmdline::path>("config",
+                          'c',
+                          "load config file",
+                          cmdline::dontsave,
+                          cmdline::path(),
+                          cmdline::default_reader<cmdline::path>(),
+                          cmdline::load);
 #if HAVE_CUDA
     cl.add("gpu", 'g', "run on GPU (via CUDA)");
     cl.add<int>("n-blocks", 0, "number of CUDA blocks", cmdline::dontsave, 64);
@@ -127,15 +127,14 @@ int main(int argc, char* argv[]) {
                    0.1);
     cl.add<tausworthe::seed_type>(
         "seed", 's', "random number generator seed", cmdline::dontsave);
-    cl.add<cmdline::string>(
-        "output",
-        'o',
-        "output binary triangular/full sparse system matrix",
-        cmdline::dontsave);
+    cl.add<cmdline::path>("output",
+                          'o',
+                          "output binary triangular/full sparse system matrix",
+                          cmdline::dontsave);
     cl.add("full", 'f', "output full non-triangular sparse system matrix");
 
     // visual debugging params
-    cl.add<cmdline::string>("png", 0, "output lor to png", cmdline::dontsave);
+    cl.add<cmdline::path>("png", 0, "output lor to png", cmdline::dontsave);
     cl.add<int>(
         "from", 0, "lor start detector to output", cmdline::dontsave, -1);
     cl.add<int>("to", 0, "lor end detector to output", cmdline::dontsave, -1);
@@ -185,7 +184,7 @@ int main(int argc, char* argv[]) {
     }
 
     // load config files accompanying matrix files
-    for (cmdline::string fn : cl.rest()) {
+    for (cmdline::path fn : cl.rest()) {
       std::ifstream in(fn.wo_ext() + ".cfg");
       if (!in.is_open())
         continue;
@@ -457,7 +456,7 @@ void post_process(cmdline::parser& cl,
 
   // generate output
   if (cl.exist("output")) {
-    auto fn = cl.get<cmdline::string>("output");
+    auto fn = cl.get<cmdline::path>("output");
     auto fn_wo_ext = fn.wo_ext();
     auto fn_wo_path = fn_wo_ext.wo_path();
     bool full = cl.exist("full");
@@ -506,7 +505,7 @@ void post_process(cmdline::parser& cl,
     if (lor.first < lor.second)
       std::swap(lor.first, lor.second);
 
-    auto fn = cl.get<cmdline::string>("png");
+    auto fn = cl.get<cmdline::path>("png");
     auto fn_wo_ext = fn.wo_ext();
     auto fn_wo_path = fn_wo_ext.wo_path();
 

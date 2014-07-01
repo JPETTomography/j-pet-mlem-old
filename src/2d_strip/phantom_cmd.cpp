@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
 #if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
 #endif
-    cl.add<cmdline::string>(
+    cl.add<cmdline::path>(
         "output", 'o', "output events file", false, "phantom.bin");
     cl.add<double>(
         "r-distance", 'r', "R distance between scientilators", false, 500);
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 
     test.emit_event();
 
-    obstream out(cl.get<cmdline::string>("output"));
+    obstream out(cl.get<cmdline::path>("output"));
     test >> out;
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;

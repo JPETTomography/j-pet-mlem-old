@@ -56,11 +56,11 @@ int main(int argc, char* argv[]) {
 #if _OPENMP
     cl.add<int>("n-threads", 't', "number of OpenMP threads", false);
 #endif
-    cl.add<cmdline::string>("system", 's', "system matrix file", true);
-    cl.add<cmdline::string>("mean", 'm', "mean file", true);
+    cl.add<cmdline::path>("system", 's', "system matrix file", true);
+    cl.add<cmdline::path>("mean", 'm', "mean file", true);
     cl.add<int>("iterations", 'n', "number of iterations", false, 0);
     cl.add<int>("i-blocks", 'i', "number of iteration blocks", false, 1);
-    cl.add<cmdline::string>("output", 'o', "output reconstruction", false);
+    cl.add<cmdline::path>("output", 'o', "output reconstruction", false);
     cl.add<double>("threshold", 0, "discretisation treshold", false, 0.0);
 
     // additional options
@@ -76,15 +76,15 @@ int main(int argc, char* argv[]) {
 
     auto verbose = cl.exist("verbose");
 
-    ibstream in_matrix(cl.get<cmdline::string>("system"));
+    ibstream in_matrix(cl.get<cmdline::path>("system"));
     if (!in_matrix.is_open())
-      throw("cannot open input file: " + cl.get<cmdline::string>("system"));
+      throw("cannot open input file: " + cl.get<cmdline::path>("system"));
     Reconstruction<>::Matrix matrix(in_matrix);
     matrix = matrix.to_full();
 
-    std::ifstream in_means(cl.get<cmdline::string>("mean"));
+    std::ifstream in_means(cl.get<cmdline::path>("mean"));
     if (!in_means.is_open())
-      throw("cannot open input file: " + cl.get<cmdline::string>("mean"));
+      throw("cannot open input file: " + cl.get<cmdline::path>("mean"));
 
     int n_i_blocks = cl.get<int>("i-blocks");
     Reconstruction<> reconstruction(cl.get<int>("iterations"),
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
-    auto output = cl.get<cmdline::string>("output");
+    auto output = cl.get<cmdline::path>("output");
 
     std::ofstream out;
     std::ofstream out_detected;

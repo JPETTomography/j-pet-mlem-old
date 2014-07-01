@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 
     cl.add<int>("iterations", 'n', "number of iterations", false, 0);
     cl.add<int>("i-blocks", 'i', "number of iteration blocks", false, 1);
-    cl.add<cmdline::string>(
+    cl.add<cmdline::path>(
         "output", 'o', "output files prefix (png)", false, "cpu_rec_iteration");
     cl.add<double>(
         "r-distance", 'r', "R distance between scientilators", false, 500);
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
       auto n_iterations = cl.get<int>("iterations");
 
       Progress progress(true, n_blocks * n_iterations, 1);
-      auto output_wo_ext = cl.get<cmdline::string>("output").wo_ext();
+      auto output_wo_ext = cl.get<cmdline::path>("output").wo_ext();
 
       clock_t begin = clock();
 

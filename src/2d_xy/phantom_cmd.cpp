@@ -47,13 +47,13 @@ int main(int argc, char* argv[]) {
     cmdline::parser cl;
     cl.footer("phantom_description");
 
-    cl.add<cmdline::string>("config",
-                            'c',
-                            "load config file",
-                            cmdline::dontsave,
-                            cmdline::string(),
-                            cmdline::default_reader<cmdline::string>(),
-                            cmdline::load);
+    cl.add<cmdline::path>("config",
+                          'c',
+                          "load config file",
+                          cmdline::dontsave,
+                          cmdline::path(),
+                          cmdline::default_reader<cmdline::path>(),
+                          cmdline::load);
 #if _OPENMP
     cl.add<int>(
         "n-threads", 't', "number of OpenMP threads", cmdline::dontsave);
@@ -107,10 +107,10 @@ int main(int argc, char* argv[]) {
                    0.1);
     cl.add<std::mt19937::result_type>(
         "seed", 's', "random number generator seed", cmdline::dontsave);
-    cl.add<cmdline::string>("output",
-                            'o',
-                            "output lor hits for supplied phantom",
-                            cmdline::dontsave);
+    cl.add<cmdline::path>("output",
+                          'o',
+                          "output lor hits for supplied phantom",
+                          cmdline::dontsave);
     cl.add("detected", 0, "collects detected emissions");
 
     // printing & stats params
@@ -448,7 +448,7 @@ void run(cmdline::parser& cl, Model& model) {
     }
   }
 
-  auto fn = cl.get<cmdline::string>("output");
+  auto fn = cl.get<cmdline::path>("output");
   auto fn_wo_ext = fn.wo_ext();
   std::ofstream n_stream(fn);
 
