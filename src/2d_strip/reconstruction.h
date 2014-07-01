@@ -4,7 +4,6 @@
 #include <vector>
 #include <algorithm>
 
-#include "util/png_writer.h"
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
 
@@ -98,14 +97,17 @@ class Reconstruction {
 
  public:
   /// Performs n_iterations of the list mode MEML algorithm
-  void iterate(int n_iterations) {
+  template <typename ProgressCallback>
+  void operator()(ProgressCallback progress,
+                  int n_iterations,
+                  int n_iterations_so_far) {
 
     for (int i = 0; i < n_iterations; i++) {
 
       thread_rho.assign(omp_get_max_threads(),
                         std::vector<F>(n_pixels * n_pixels, 0));
 
-      std::cout << "ITERATION: " << i << std::endl;
+      progress(i + n_iterations_so_far);
 
       int size = event_list.size();
 
@@ -155,59 +157,6 @@ class Reconstruction {
 #endif
           }
         }
-      }
-    }
-  }
-
-  void operator()(int n_blocks,
-                  int n_iterations_in_block = 1,
-                  std::string output = std::string()) {
-
-#if DISABLE
-    F tan, y, z, angle;
-    Point ellipse_center;
-    Pixel pp;
-    int tid;
-#endif
-    std::cout << "Number of threads: " << omp_get_max_threads() << std::endl;
-
-    for (int i = 0; i < n_blocks; i++) {
-      std::cout << "ITERATION BLOCK: " << i << std::endl;
-
-      iterate(n_iterations_in_block);
-
-      png_writer png(output + "_" + std::to_string(i + 1) + ".png");
-      png.write_header<>(n_pixels, n_pixels);
-
-      F output_max = 0.0;
-      for (auto& col : rho) {
-        for (auto& row : col) {
-          output_max = std::max(output_max, row);
-        }
-      }
-
-      auto output_gain =
-          static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
-
-      for (int y = 0; y < n_pixels; ++y) {
-        uint8_t row[n_pixels];
-        for (auto x = 0; x < n_pixels; ++x) {
-          row[x] =
-              std::numeric_limits<uint8_t>::max() - output_gain * rho[y][x];
-        }
-        png.write_row(row);
-      }
-    }
-
-    std::ofstream file("pixels_output.txt");
-    for (int x = 0; x < n_pixels; ++x) {
-      for (int y = 0; y < n_pixels; ++y) {
-
-        if (rho[x][y] == 100) {
-          rho[x][y] = 1;
-        }
-
-        file << x << " " << y << " " << rho[x][y] << std::endl;
       }
     }
   }
@@ -466,14 +415,9 @@ class Reconstruction {
 
  public:
   template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
-
     int size;
     in >> size;
-#if DEBUG_OUTPUT_SAVE
-    std::cout << number_of_pixels << " " << pixel_s << " " << iter << " "
-              << number_of_event_in_file << std::endl;
-    std::cout << "VECTOR SIZE: " << event_list.size() << std::endl;
-#endif
+
     for (int it = 0; it < size; ++it) {
       F z_u, z_d, dl;
       in >> z_u >> z_d >> dl;
@@ -481,6 +425,28 @@ class Reconstruction {
       event_list.push_back(temp_event);
     }
     return *this;
+  }
+
+  template <class FileWriter> void output_bitmap(FileWriter& fw) {
+    fw.template write_header<>(n_pixels, n_pixels);
+
+    F output_max = 0;
+    for (auto& col : rho) {
+      for (auto& row : col) {
+        output_max = std::max(output_max, row);
+      }
+    }
+
+    auto output_gain =
+        static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
+
+    for (int y = 0; y < n_pixels; ++y) {
+      uint8_t row[n_pixels];
+      for (auto x = 0; x < n_pixels; ++x) {
+        row[x] = std::numeric_limits<uint8_t>::max() - output_gain * rho[y][x];
+      }
+      fw.write_row(row);
+    }
   }
 
   std::vector<Event<F>>& get_event_list() { return event_list; }
