@@ -117,27 +117,13 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
-    std::string fn;
-    std::string fn_ext;
-    std::string fn_wo_ext;
-
-    fn = cl.get<cmdline::string>("output");
-    auto it_fn_sep = fn.find_last_of("\\/");
-    auto it_fn_ext = fn.find_last_of(".");
-    fn_wo_ext = fn.substr(
-        0,
-        it_fn_ext != std::string::npos &&
-                (it_fn_sep == std::string::npos || it_fn_sep < it_fn_ext)
-            ? it_fn_ext
-            : std::string::npos);
-    fn_ext = fn.substr(it_fn_ext != std::string::npos ? it_fn_ext : fn.size(),
-                       fn.size());
+    auto output = cl.get<cmdline::string>("output");
 
     std::ofstream out;
     std::ofstream out_detected;
 
-    out.open(fn);
-    out_detected.open(fn_wo_ext + "_detected" + fn_ext);
+    out.open(output);
+    out_detected.open(output.wo_ext() + "_detected" + output.ext());
 
     double sec = 0.0;
     auto n_iterations = cl.get<int>("iterations");
@@ -168,7 +154,7 @@ int main(int argc, char* argv[]) {
     out_detected.close();
 
     // output reconstruction PNG
-    png_writer png(fn_wo_ext + ".png");
+    png_writer png(output.wo_ext() + ".png");
     png.write_header<>(n_pixels_in_row, n_pixels_in_row);
 
     double output_max = 0.0;

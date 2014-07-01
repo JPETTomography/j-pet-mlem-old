@@ -109,8 +109,22 @@ int main(int argc, char* argv[]) {
     } else
 #endif
     {
+      auto n_blocks = cl.get<int>("i-blocks");
+      auto n_iterations = cl.get<int>("iterations");
+
+      Progress progress(true, n_blocks * n_iterations, 1);
+      auto output_wo_ext = cl.get<cmdline::string>("output").wo_ext();
+
       clock_t begin = clock();
-      reconstruction(cl.get<int>("iter"), 1, cl.get<cmdline::string>("output"));
+
+      for (int block = 0; block < n_blocks; block++) {
+        reconstruction(progress, n_iterations, block * n_iterations);
+
+        png_writer png(output_wo_ext + "_" + std::to_string(block + 1) +
+                       ".png");
+        reconstruction.output_bitmap(png);
+      }
+
       clock_t end = clock();
 
       std::cout << "Time: " << double(end - begin) / CLOCKS_PER_SEC / 4

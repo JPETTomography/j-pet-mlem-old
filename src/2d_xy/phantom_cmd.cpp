@@ -449,16 +449,9 @@ void run(cmdline::parser& cl, Model& model) {
   }
 
   auto fn = cl.get<cmdline::string>("output");
-  auto fn_sep = fn.find_last_of("\\/");
-  auto fn_ext = fn.find_last_of(".");
-  auto fn_wo_ext =
-      fn.substr(0,
-                fn_ext != std::string::npos &&
-                        (fn_sep == std::string::npos || fn_sep < fn_ext)
-                    ? fn_ext
-                    : std::string::npos);
-
+  auto fn_wo_ext = fn.wo_ext();
   std::ofstream n_stream(fn);
+
   if (n_tof_positions <= 1) {
     for (int i = 0; i < n_detectors; i++) {
       for (int j = i + 1; j < n_detectors; j++) {

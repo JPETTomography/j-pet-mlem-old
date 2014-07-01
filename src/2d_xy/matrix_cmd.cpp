@@ -185,16 +185,8 @@ int main(int argc, char* argv[]) {
     }
 
     // load config files accompanying matrix files
-    for (auto& fn : cl.rest()) {
-      auto fn_sep = fn.find_last_of("\\/");
-      auto fn_ext = fn.find_last_of(".");
-      auto fn_wo_ext =
-          fn.substr(0,
-                    fn_ext != std::string::npos &&
-                            (fn_sep == std::string::npos || fn_sep < fn_ext)
-                        ? fn_ext
-                        : std::string::npos);
-      std::ifstream in(fn_wo_ext + ".cfg");
+    for (cmdline::string fn : cl.rest()) {
+      std::ifstream in(fn.wo_ext() + ".cfg");
       if (!in.is_open())
         continue;
       // load except n-emissions
@@ -466,17 +458,8 @@ void post_process(cmdline::parser& cl,
   // generate output
   if (cl.exist("output")) {
     auto fn = cl.get<cmdline::string>("output");
-    auto fn_sep = fn.find_last_of("\\/");
-    auto fn_ext = fn.find_last_of(".");
-    auto fn_wo_ext =
-        fn.substr(0,
-                  fn_ext != std::string::npos &&
-                          (fn_sep == std::string::npos || fn_sep < fn_ext)
-                      ? fn_ext
-                      : std::string::npos);
-    auto fn_wo_path =
-        fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
-
+    auto fn_wo_ext = fn.wo_ext();
+    auto fn_wo_path = fn_wo_ext.wo_path();
     bool full = cl.exist("full");
     obstream out(fn, std::ios::binary | std::ios::trunc);
     if (full) {
@@ -524,16 +507,8 @@ void post_process(cmdline::parser& cl,
       std::swap(lor.first, lor.second);
 
     auto fn = cl.get<cmdline::string>("png");
-    auto fn_sep = fn.find_last_of("\\/");
-    auto fn_ext = fn.find_last_of(".");
-    auto fn_wo_ext =
-        fn.substr(0,
-                  fn_ext != std::string::npos &&
-                          (fn_sep == std::string::npos || fn_sep < fn_ext)
-                      ? fn_ext
-                      : std::string::npos);
-    auto fn_wo_path =
-        fn_wo_ext.substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
+    auto fn_wo_ext = fn.wo_ext();
+    auto fn_wo_path = fn_wo_ext.wo_path();
 
     png_writer png(fn);
     auto position = cl.get<int>("pos");

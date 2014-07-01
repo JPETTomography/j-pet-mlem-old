@@ -6,9 +6,39 @@ namespace cmdline {
 
 class string : public std::string {
  public:
-  string() : std::string() {}
-  string(const char* s) : std::string(s) {}
+  string() : std::string(), fn_ext(string::npos), fn_sep(string::npos) {}
+
+  string(const char* s)
+      : std::string(s),
+        fn_ext(find_last_of(".")),
+        fn_sep(find_last_of("\\/")) {}
+
+  string(const std::string str)
+      : std::string(str),
+        fn_ext(find_last_of(".")),
+        fn_sep(find_last_of("\\/")) {}
+
+  string wo_ext() const {
+    return substr(0,
+                  fn_ext != std::string::npos &&
+                          (fn_sep == std::string::npos || fn_sep < fn_ext)
+                      ? fn_ext
+                      : std::string::npos);
+  }
+
+  string wo_path() const {
+    return substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
+  }
+
+  string ext() const {
+    return substr(fn_ext != std::string::npos ? fn_ext : size(), size());
+  }
+
+ private:
+  size_t fn_ext;
+  size_t fn_sep;
 };
+
 namespace detail {
 template <> inline std::string readable_typename<int>() { return "size"; }
 template <> inline std::string readable_typename<long>() { return "seed"; }
