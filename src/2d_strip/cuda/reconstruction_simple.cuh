@@ -34,11 +34,6 @@ __global__ void reconstruction_2d_strip_cuda(
         F z = events->z_d[(i * n_blocks * n_threads_per_block) + tid];
         F acc = 0;
 
-        if (tid == 0 && i == 0) {
-
-          printf("%f %f\n", y, z);
-        }
-
         int y_step = 3 * (detector.sigma_dl / detector.pixel_height);
         int z_step = 3 * (detector.sigma_z / detector.pixel_width);
 

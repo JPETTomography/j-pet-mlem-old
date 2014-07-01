@@ -31,14 +31,21 @@ static cudaError err;
 #define cudathread_per_blockoSync(...) cuda(__VA_ARGS__)
 
 template <typename F>
-void run_reconstruction_kernel(StripDetector<F>& detector,
-                               Event<F>* events,
-                               int n_events,
-                               int iteration_chunk,
-                               F* image_output,
-                               int device,
-                               int n_blocks,
-                               int n_threads_per_block) {
+void run_reconstruction_kernel(
+    StripDetector<F>& detector,
+    Event<F>* events,
+    int n_events,
+    int n_iteration_blocks,
+    int n_iterations_in_block,
+    void (*output_callback)(StripDetector<F>& detector,
+                            int iteration,
+                            F* image,
+                            void* context),
+    void (*progress_callback)(int iteration, void* context),
+    void* context,
+    int device,
+    int n_blocks,
+    int n_threads_per_block) {
 
   cudaSetDevice(device);
 
@@ -46,9 +53,9 @@ void run_reconstruction_kernel(StripDetector<F>& detector,
   dim3 threads(n_threads_per_block);
 
   size_t image_size = detector.total_n_pixels * sizeof(F);
-  size_t output_size = detector.total_n_pixels * sizeof(F);
+  size_t output_size = image_size * n_blocks;
 
-  F* cpu_output = (F*)calloc(output_size, 1);
+  F* cpu_output = (F*)calloc(image_size, 1);  // zeroing
   F* cpu_rho = (F*)malloc(image_size);
   F* cpu_sensitivity = (F*)malloc(image_size);
 
@@ -135,74 +142,60 @@ void run_reconstruction_kernel(StripDetector<F>& detector,
        n_events * sizeof(Event<F>),
        cudaMemcpyHostToDevice);
 
-  cuda(Malloc, (void**)&gpu_output, image_size * n_blocks);
-  cuda(Memcpy,
-       gpu_output,
-       cpu_output,
-       image_size * n_blocks,
-       cudaMemcpyHostToDevice);
-
+  cuda(Malloc, (void**)&gpu_output, output_size);
   cuda(Malloc, (void**)&gpu_rho, image_size);
-  cuda(Memcpy, gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
 
   cudaEvent_t start, stop;
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
-
   cudaEventRecord(start);
 
-  for (int i = 0; i < iteration_chunk; ++i) {
+  for (int ib = 0; ib < n_iteration_blocks; ++ib) {
+    for (int it = 0; it < n_iterations_in_block; ++it) {
+      progress_callback(ib * n_iterations_in_block + it, context);
 
-    reconstruction_2d_strip_cuda<F> << <blocks, threads>>>
-        (detector,
-         gpu_soa_events,
-         n_events,
-         gpu_output,
-         gpu_rho,
-         tex_sensitivity,
-         n_blocks,
-         n_threads_per_block);
+      cuda(Memset, gpu_output, 0, output_size);
+      cuda(Memcpy, gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
 
-    cudaThreadSynchronize();
+      reconstruction_2d_strip_cuda<F> << <blocks, threads>>>
+          (detector,
+           gpu_soa_events,
+           n_events,
+           gpu_output,
+           gpu_rho,
+           tex_sensitivity,
+           n_blocks,
+           n_threads_per_block);
 
-    cudaEventRecord(stop);
+      cudaThreadSynchronize();
+      cudaEventRecord(stop);
+      cudaEventSynchronize(stop);
 
-    cudaEventSynchronize(stop);
+      F milliseconds = 0;
+      cudaEventElapsedTime(&milliseconds, start, stop);
 
-    F milliseconds = 0;
-    cudaEventElapsedTime(&milliseconds, start, stop);
+      printf("Time: %f\n", milliseconds / 1000);
 
-    printf("Time: %f\n", milliseconds / 1000);
+      // grab output
+      cuda(Memcpy,
+           cpu_output,
+           gpu_output,
+           image_size * n_blocks,
+           cudaMemcpyDeviceToHost);
 
-    cuda(Memcpy,
-         cpu_output,
-         gpu_output,
-         image_size * n_blocks,
-         cudaMemcpyDeviceToHost);
-
-    for (int block_id = 0; block_id < n_blocks; ++block_id) {
-      for (int index = 0; index < detector.total_n_pixels; ++index) {
-        image_output[i * detector.total_n_pixels + index] +=
-            cpu_output[block_id * detector.total_n_pixels + index];
+      // merge image output from all blocks
+      for (int block = 0; block < n_blocks; ++block) {
+        for (int p = 0; p < detector.total_n_pixels; ++p) {
+          cpu_rho[p] += cpu_output[block * detector.total_n_pixels + p];
+        }
       }
     }
 
-    for (int pixel = 0; pixel < n_blocks * detector.total_n_pixels; ++pixel) {
-      cpu_output[pixel] = 0;
-    }
-
-    for (int pixel = 0; pixel < detector.total_n_pixels; ++pixel) {
-      cpu_rho[pixel] = image_output[(i * detector.total_n_pixels) + pixel];
-    }
-
-    cuda(Memcpy,
-         gpu_output,
-         cpu_output,
-         image_size * n_blocks,
-         cudaMemcpyHostToDevice);
-
-    cuda(Memcpy, gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
+    output_callback(
+        detector, ib * n_iterations_in_block, cpu_rho, context);
   }
+
+  progress_callback(n_iteration_blocks * n_iterations_in_block, context);
 
   cuda(DestroyTextureObject, tex_sensitivity);
   cuda(Free, gpu_soa_events);
@@ -216,11 +209,18 @@ void run_reconstruction_kernel(StripDetector<F>& detector,
   free(cpu_sensitivity);
 }
 
-template void run_reconstruction_kernel<float>(StripDetector<float>& detector,
-                                               Event<float>* events,
-                                               int n_events,
-                                               int iteration_chunk,
-                                               float* image_output,
-                                               int device,
-                                               int n_blocks,
-                                               int n_threads_per_block);
+template void run_reconstruction_kernel<float>(
+    StripDetector<float>& detector,
+    Event<float>* events,
+    int n_events,
+    int n_iteration_blocks,
+    int n_iterations_in_block,
+    void (*output_callback)(StripDetector<float>& detector,
+                            int iteration,
+                            float* image,
+                            void* context),
+    void (*progress_callback)(int iteration, void* context),
+    void* context,
+    int device,
+    int n_blocks,
+    int n_threads_per_block);

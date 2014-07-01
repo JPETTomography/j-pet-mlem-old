@@ -75,12 +75,12 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    double R_distance = cl.get<double>("r-distance");
-    double scintillator_length = cl.get<double>("s-length");
-    double pixel_size = cl.get<double>("p-size");
-    double n_pixels = scintillator_length / pixel_size;
-    double sigma = cl.get<double>("s-z");
-    double dl = cl.get<double>("s-dl");
+    auto R_distance = cl.get<double>("r-distance");
+    auto scintillator_length = cl.get<double>("s-length");
+    auto pixel_size = cl.get<double>("p-size");
+    auto n_pixels = scintillator_length / pixel_size;
+    auto sigma = cl.get<double>("s-z");
+    auto dl = cl.get<double>("s-dl");
 
     Reconstruction<double> reconstruction(
         R_distance, scintillator_length, n_pixels, pixel_size, sigma, dl);
@@ -90,24 +90,28 @@ int main(int argc, char* argv[]) {
       reconstruction << in;
     }
 
+    auto n_blocks = cl.get<int>("i-blocks");
+    auto n_iterations = cl.get<int>("iterations");
+    auto output_wo_ext = cl.get<cmdline::path>("output").wo_ext();
+
+    Progress progress(true, n_blocks * n_iterations, 1);
+
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
       Reconstruction<float> sp_reconstruction(
           R_distance, scintillator_length, n_pixels, pixel_size, sigma, dl);
       run_gpu_reconstruction(sp_reconstruction.detector,
                              reconstruction.get_event_list(),
+                             n_blocks,
+                             n_iterations,
                              cl.get<int>("cuda-device"),
                              cl.get<int>("cuda-blocks"),
-                             cl.get<int>("cuda-threads"));
+                             cl.get<int>("cuda-threads"),
+                             progress,
+                             output_wo_ext);
     } else
 #endif
     {
-      auto n_blocks = cl.get<int>("i-blocks");
-      auto n_iterations = cl.get<int>("iterations");
-
-      Progress progress(true, n_blocks * n_iterations, 1);
-      auto output_wo_ext = cl.get<cmdline::path>("output").wo_ext();
-
       for (int block = 0; block < n_blocks; block++) {
         reconstruction(progress, n_iterations, block * n_iterations);
 
