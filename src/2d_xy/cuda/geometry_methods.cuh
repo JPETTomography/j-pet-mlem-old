@@ -7,9 +7,9 @@
 
 using namespace gpu;
 
-__device__ void create_detector_ring(float& h_detector,
-                                     float& w_detector,
-                                     float& radius,
+__device__ void create_detector_ring(float h_detector,
+                                     float w_detector,
+                                     float radius,
                                      DetectorRing& test_ring) {
 
   Detector detector_base;
@@ -53,9 +53,9 @@ __device__ void create_detector_ring(float& h_detector,
 
 __device__ void secant(SecantPoints& s1,
                        SecantPoints& s2,
-                       float& x,
-                       float& y,
-                       float& angle,
+                       float x,
+                       float y,
+                       float angle,
                        float radius_s1,
                        float radius_s2) {
 
@@ -100,7 +100,7 @@ __device__ SecantAngles secant_angles(SecantPoints& e) {
   return temp;
 }
 
-__device__ int section(float& angle, int n_detectors) {
+__device__ int section(float angle, int n_detectors) {
   // converting angles to [0,2 Pi) interval
   float normalised_angle = angle > 0 ? angle : (float)2.0 * M_PI + angle;
   return static_cast<int>(round(normalised_angle * n_detectors * 0.1591549f)) %
@@ -119,9 +119,9 @@ __device__ SecantSections secant_sections(SecantPoints& e, int n_detectors) {
   return temp;
 }
 
-__device__ int intersections(float& x,
-                             float& y,
-                             float& angle,
+__device__ int intersections(float x,
+                             float y,
+                             float angle,
                              DetectorRing& ring,
                              int& detector_id,
                              Hits& hit) {
@@ -174,14 +174,14 @@ __device__ int intersections(float& x,
   return r;
 }
 
-__device__ float SecantAngles(float& x1, float& y1) { return atan2(y1, x1); }
+__device__ float SecantAngles(float x1, float y1) { return atan2(y1, x1); }
 
-__device__ float length(Point& p1, Point& p2) {
+__device__ float length(Point p1, Point p2) {
 
   return sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
 }
 
-__device__ float nearest_distance(Point& p1, Point& p2, Point& center) {
+__device__ float nearest_distance(Point p1, Point p2, Point center) {
 
   return min(length(p1, center), length(p2, center));
 }

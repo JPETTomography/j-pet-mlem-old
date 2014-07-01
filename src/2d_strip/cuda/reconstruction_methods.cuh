@@ -98,10 +98,7 @@ __device__ float main_kernel(T& y,
 }
 
 template <typename T>
-__device__ float test_kernel(T& y,
-                             T& z,
-                             float2& pixel_center,
-                             CUDA::Config& cfg) {
+__device__ float test_kernel(T y, T z, float2 pixel_center, CUDA::Config& cfg) {
 
   return (SINGLE_INVERSE_POW_TWO_PI * (1 / (cfg.sigma * cfg.dl))) *
          exp(-0.5f * (pow((pixel_center.x - y) / cfg.dl, 2) +
@@ -110,26 +107,26 @@ __device__ float test_kernel(T& y,
 
 __host__ __device__ float2 pixel_center(int i,
                                         int j,
-                                        float& pixel_height_,
-                                        float& pixel_width_,
-                                        float& grid_size_y_,
-                                        float& grid_size_z_,
-                                        float& half_grid_size,
-                                        float& half_pixel_size) {
+                                        float pixel_height,
+                                        float pixel_width,
+                                        float grid_size_y,
+                                        float grid_size_z,
+                                        float half_grid_size,
+                                        float half_pixel_size) {
 
-  return make_float2(half_grid_size - i * pixel_height_ - half_pixel_size,
-                     -half_grid_size + j * pixel_width_ + half_pixel_size);
+  return make_float2(half_grid_size - i * pixel_height - half_pixel_size,
+                     -half_grid_size + j * pixel_width + half_pixel_size);
 }
 
-__device__ int2 pixel_location(float& y,
-                               float& z,
-                               float& pixel_height_,
-                               float& pixel_width_,
-                               float& grid_size_y_,
-                               float& grid_size_z_) {
+__device__ int2 pixel_location(float y,
+                               float z,
+                               float pixel_height,
+                               float pixel_width,
+                               float grid_size_y,
+                               float grid_size_z) {
 
-  return make_int2(floor(((0.5f * grid_size_y_) - y) / pixel_height_),
-                   floor((z - (-0.5f * grid_size_z_)) / pixel_width_));
+  return make_int2(floor(((0.5f * grid_size_y) - y) / pixel_height),
+                   floor((z - (-0.5f * grid_size_z)) / pixel_width));
 }
 
 __host__ __device__ float sensitivity(float y,
@@ -146,40 +143,38 @@ __host__ __device__ float sensitivity(float y,
                               atanf(max(-L_plus / R_minus, -L_minus / R_plus)));
 }
 
-__device__ float bbz(float& A, float& C, float& B_2) {
-  return (3.0f) / sqrtf(C - (B_2 / A));
+__device__ float bbz(float A, float C, float B_2) {
+  return 3.0f / sqrtf(C - (B_2 / A));
 }
 
-__device__ float bby(float& A, float& C, float& B_2) {
-  return (3.0f) / sqrtf(A - (B_2 / C));
+__device__ float bby(float A, float C, float B_2) {
+  return 3.0f / sqrtf(A - (B_2 / C));
 }
 
-__device__ int pixels_in_line(float& length, float& pixel_size) {
+__device__ int pixels_in_line(float length, float pixel_size) {
   return int((length + 0.5f) / pixel_size);
 }
 
-__device__ float event_tan(float& z_u, float& z_d, float& R) {
-  return (z_u - z_d) / ((2.0f) * R);
+__device__ float event_tan(float z_u, float z_d, float R) {
+  return (z_u - z_d) / (2.0f * R);
 }
-__device__ float event_y(float& dl, float& tan_event) {
-  return -(0.5f) * (dl / sqrt((1.0f) + (tan_event * tan_event)));
+__device__ float event_y(float dl, float tan_event) {
+  return -0.5f * (dl / sqrt(1.0f + (tan_event * tan_event)));
 }
-__device__ float event_z(float& z_u, float& z_d, float& y, float& tan_event) {
-  return (0.5f) * (z_u + z_d + ((2.0f) * y * tan_event));
+__device__ float event_z(float z_u, float z_d, float y, float tan_event) {
+  return 0.5f * (z_u + z_d + (2.0f * y * tan_event));
 }
 
-__device__ bool in_ellipse(float& A,
-                           float& B,
-                           float& C,
-                           float& y,
-                           float& z,
+__device__ bool in_ellipse(float A,
+                           float B,
+                           float C,
+                           float y,
+                           float z,
                            float2 point) {
 
   float dy = (point.x - y);
   float dz = (point.y - z);
 
   // quadratic ellipse equation check
-  return (((A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)))) <= (9.0f)
-             ? true
-             : false;
+  return (A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)) <= 9.0f;
 }
