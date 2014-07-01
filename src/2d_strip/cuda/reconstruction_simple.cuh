@@ -6,11 +6,11 @@
 #include "event.cuh"
 #include "reconstruction_methods.cuh"
 
-template <typename T>
+template <typename F>
 __global__ void reconstruction_2d_strip_cuda(
     CUDA::Config cfg,
     soa_event<float>* soa_data,
-    Event<T>* event_list,
+    Event<F>* event_list,
     int event_list_size,
     float* output_image,
     float* rho,
@@ -26,17 +26,17 @@ __global__ void reconstruction_2d_strip_cuda(
 
       for (int j = 0; j < 1; ++j) {
 
-        T y = soa_data->z_u[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
-        T z = soa_data->z_d[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
-        T acc = 0;
+        F y = soa_data->z_u[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
+        F z = soa_data->z_d[(i * cfg.n_blocks * cfg.n_threads_per_block) + tid];
+        F acc = 0;
 
         if (tid == 0 && i == 0) {
 
           printf("%f %f\n", y, z);
         }
 
-        T half_grid_size = 0.5f * cfg.grid_size_y;
-        T half_pixel_size = 0.5f * cfg.pixel_size;
+        F half_grid_size = 0.5f * cfg.grid_size_y;
+        F half_pixel_size = 0.5f * cfg.pixel_size;
 
         int y_step = 3 * (cfg.dl / cfg.pixel_size);
         int z_step = 3 * (cfg.sigma / cfg.pixel_size);
@@ -68,12 +68,10 @@ __global__ void reconstruction_2d_strip_cuda(
                               iz,
                               cfg.pixel_size,
                               cfg.pixel_size,
-                              cfg.grid_size_y,
-                              cfg.grid_size_z,
                               half_grid_size,
                               half_pixel_size);
 
-            T event_kernel = test_kernel<T>(y, z, pp, cfg);
+            F event_kernel = test_kernel<F>(y, z, pp, cfg);
 
             acc += event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)];
 
@@ -98,12 +96,10 @@ __global__ void reconstruction_2d_strip_cuda(
                               iz,
                               cfg.pixel_size,
                               cfg.pixel_size,
-                              cfg.grid_size_y,
-                              cfg.grid_size_z,
                               half_grid_size,
                               half_pixel_size);
 
-            T event_kernel = test_kernel<T>(y, z, pp, cfg);
+            F event_kernel = test_kernel<F>(y, z, pp, cfg);
 
             atomicAdd(&output_image[BUFFER_LINEAR_INDEX(iy, iz)],
                       (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)]) *

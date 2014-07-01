@@ -66,8 +66,6 @@ void run_reconstruction_kernel(CUDA::Config cfg,
                                               py,
                                               cfg.pixel_size,
                                               cfg.pixel_size,
-                                              cfg.grid_size_y,
-                                              cfg.grid_size_z,
                                               half_grid_size,
                                               half_pixel_size);
 

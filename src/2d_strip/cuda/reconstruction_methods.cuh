@@ -49,10 +49,10 @@ __device__ void warp_space_pixel(int2& tid_pixel,
   start_warp.x += int(__fdividef(32 - offset, ur.y - ul.y)) + 1;
 }
 
-template <typename T>
-__device__ float multiply_elements(T* vec_a, volatile T* inv_c, T* vec_b) {
+template <typename F>
+__device__ float multiply_elements(F* vec_a, volatile F* inv_c, F* vec_b) {
 
-  T output = 0;
+  F output = 0;
 
   output += vec_a[0] * inv_c[0] * vec_b[0];
   output += vec_a[1] * inv_c[1] * vec_b[1];
@@ -61,19 +61,19 @@ __device__ float multiply_elements(T* vec_a, volatile T* inv_c, T* vec_b) {
   return output;
 }
 
-template <typename T>
-__device__ float main_kernel(T y,
-                             T tan,
-                             T inv_cos,
-                             T pow_inv_cos,
+template <typename F>
+__device__ float main_kernel(F y,
+                             F tan,
+                             F inv_cos,
+                             F pow_inv_cos,
                              float2 pixel_center,
-                             T* inv_c,
+                             F* inv_c,
                              CUDA::Config& cfg,
-                             T sqrt_det_correlation_matrix) {
+                             F sqrt_det_correlation_matrix) {
 
-  T vec_o[3];
-  T vec_a[3];
-  T vec_b[3];
+  F vec_o[3];
+  F vec_a[3];
+  F vec_b[3];
 
   vec_o[0] = -(pixel_center.x + y - cfg.R_distance) * tan * pow_inv_cos;
   vec_o[1] = -(pixel_center.x + y + cfg.R_distance) * tan * pow_inv_cos;
@@ -87,12 +87,12 @@ __device__ float main_kernel(T y,
   vec_b[1] = pixel_center.y - (pixel_center.x * tan);
   vec_b[2] = -2 * pixel_center.x * inv_cos;
 
-  T a_ic_a = multiply_elements<T>(vec_a, inv_c, vec_a);
-  T b_ic_a = multiply_elements<T>(vec_b, inv_c, vec_a);
-  T b_ic_b = multiply_elements<T>(vec_b, inv_c, vec_b);
-  T o_ic_b = multiply_elements<T>(vec_o, inv_c, vec_b);
+  F a_ic_a = multiply_elements<F>(vec_a, inv_c, vec_a);
+  F b_ic_a = multiply_elements<F>(vec_b, inv_c, vec_a);
+  F b_ic_b = multiply_elements<F>(vec_b, inv_c, vec_b);
+  F o_ic_b = multiply_elements<F>(vec_o, inv_c, vec_b);
 
-  T norm = a_ic_a + (2.f * o_ic_b);
+  F norm = a_ic_a + (2.f * o_ic_b);
 
   return (SINGLE_INVERSE_POW_TWO_PI *
           (sqrt_det_correlation_matrix / sqrt(norm)) *
@@ -107,17 +107,15 @@ __device__ float test_kernel(F y, F z, float2 pixel_center, CUDA::Config& cfg) {
                         pow((pixel_center.y - z) / cfg.sigma, 2)));
 }
 
-__host__ __device__ float2 pixel_center(int i,
-                                        int j,
+__host__ __device__ float2 pixel_center(int y,
+                                        int z,
                                         float pixel_height,
                                         float pixel_width,
-                                        float grid_size_y,
-                                        float grid_size_z,
                                         float half_grid_size,
                                         float half_pixel_size) {
 
-  return make_float2(half_grid_size - i * pixel_height - half_pixel_size,
-                     -half_grid_size + j * pixel_width + half_pixel_size);
+  return make_float2(half_grid_size - y * pixel_height - half_pixel_size,
+                     -half_grid_size + z * pixel_width + half_pixel_size);
 }
 
 __device__ int2 pixel_location(float y,

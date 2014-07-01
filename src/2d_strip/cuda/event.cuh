@@ -4,11 +4,11 @@
 
 #define SOA_SIZE 180000000
 
-template <typename T> struct soa_event {
+template <typename F> struct soa_event {
 
-  T z_u[SOA_SIZE];
-  T z_d[SOA_SIZE];
-  T dl[SOA_SIZE];
+  F z_u[SOA_SIZE];
+  F z_d[SOA_SIZE];
+  F dl[SOA_SIZE];
 
   void set_data_chunk(Event<float>* data_chunk, int offset, int aos_data_size) {
 
