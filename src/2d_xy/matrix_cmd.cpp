@@ -70,14 +70,6 @@ int main(int argc, char* argv[]) {
                           cmdline::path(),
                           cmdline::default_reader<cmdline::path>(),
                           cmdline::load);
-#if HAVE_CUDA
-    cl.add("gpu", 'g', "run on GPU (via CUDA)");
-    cl.add<int>("n-blocks", 0, "number of CUDA blocks", cmdline::dontsave, 64);
-#endif
-#if _OPENMP || HAVE_CUDA
-    cl.add<int>(
-        "n-threads", 't', "number of " VARIANT " threads", cmdline::dontsave);
-#endif
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
     cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
@@ -145,8 +137,24 @@ int main(int argc, char* argv[]) {
     cl.add("stats", 0, "show stats");
     cl.add("wait", 0, "wait before exit");
     cl.add("verbose", 'v', "prints the iterations information on std::out");
+#if HAVE_CUDA
+    cl.add("gpu", 'g', "run on GPU (via CUDA)");
+    cl.add<int>("cuda-blocks", 'b', "CUDA blocks", cmdline::dontsave, 64);
+    cl.add<int>(
+        "cuda-threads", 'w', "CUDA threads per block", cmdline::dontsave, 512);
+#endif
+#if _OPENMP
+    cl.add<int>(
+        "n-threads", 't', "number of " VARIANT " threads", cmdline::dontsave);
+#endif
 
     cl.try_parse(argc, argv);
+
+#if _OPENMP
+    if (cl.exist("n-threads")) {
+      omp_set_num_threads(cl.get<int>("n-threads"));
+    }
+#endif
 
     // convert obsolete acceptance option to length scale
     auto& length_scale = cl.get<double>("base-length");
@@ -194,12 +202,6 @@ int main(int argc, char* argv[]) {
       n_emissions = n_prev_emissions;
       break;  // only one config file allowed!
     }
-
-#if _OPENMP
-    if (cl.exist("n-threads")) {
-      omp_set_num_threads(cl.get<int>("n-threads"));
-    }
-#endif
 
     if (verbose) {
       std::cerr << "assumed:" << std::endl;

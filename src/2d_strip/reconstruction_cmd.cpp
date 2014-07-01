@@ -36,8 +36,9 @@ int main(int argc, char* argv[]) {
     msg << "note: All length options below should be expressed in meters.";
     cl.footer(msg.str());
 
-    cl.add<int>("iterations", 'n', "number of iterations", false, 0);
-    cl.add<int>("i-blocks", 'i', "number of iteration blocks", false, 1);
+    cl.add<int>("i-blocks", 'i', "number of iteration blocks", false, 0);
+    cl.add<int>(
+        "iterations", 'I', "number of iterations (per block)", false, 1);
     cl.add<cmdline::path>(
         "output", 'o', "output files prefix (png)", false, "cpu_rec_iteration");
     cl.add<double>(
@@ -48,17 +49,19 @@ int main(int argc, char* argv[]) {
     cl.add<double>("s-z", 's', "Sigma z error", false, 10);
     cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
     cl.add<double>("gm", 'u', "Gamma error", false, 0);
-#if _OPENMP
-    cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
-#endif
 #if HAVE_CUDA
     cl.add("gpu", 'g', "run on GPU (via CUDA)");
-    cl.add<int>("cuda-blocks", 'b', "number of CUDA blocks", false, 1);
+    cl.add<int>("cuda-blocks", 'b', "CUDA blocks", cmdline::dontsave, 1);
     cl.add<int>(
-        "cuda-threads", 'w', "number of CUDA threads per block", false, 512);
-    cl.add<int>("warp-offset", 0, "warp offset for test only", false, 1);
-
+        "cuda-threads", 'w', "CUDA threads per block", cmdline::dontsave, 512);
+    cl.add<int>(
+        "warp-offset", 0, "warp offset [test only]", cmdline::dontsave, 1);
 #endif
+#if _OPENMP
+    cl.add<int>(
+        "n-threads", 't', "number of OpenMP threads", cmdline::dontsave);
+#endif
+
     cl.parse_check(argc, argv);
 
     if (!cl.rest().size()) {

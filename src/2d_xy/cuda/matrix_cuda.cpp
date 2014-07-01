@@ -92,8 +92,8 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -
   // each SMX can use 8 active blocks,
 
-  auto number_of_blocks = cl.get<int>("n-blocks") ?: 64;
-  auto number_of_threads_per_block = cl.get<int>("n-threads") ?: 512;
+  auto number_of_blocks = cl.get<int>("cuda-blocks") ?: 64;
+  auto number_of_threads_per_block = cl.get<int>("cuda-threads") ?: 512;
 
   int iteration_per_thread =
       floor(n_emissions / (number_of_blocks * number_of_threads_per_block));
