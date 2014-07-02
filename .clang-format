@@ -6,4 +6,5 @@ AlwaysBreakTemplateDeclarations: false
 KeepEmptyLinesAtTheStartOfBlocks: true
 # AllowShortIfStatementsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: true
+NamespaceIndentation: All
 ...

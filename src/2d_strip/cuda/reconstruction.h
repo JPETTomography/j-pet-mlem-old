@@ -32,54 +32,55 @@ void run_reconstruction_kernel(
     int n_threads_per_block);
 
 namespace GPU {
-struct Context {
-  Context(Progress& progress, std::string& output_file_name)
-      : progress(progress), output_file_name(output_file_name) {}
-  Progress& progress;
-  std::string& output_file_name;
-};
 
-void output(StripDetector<float>& detector,
-            int iteration,
-            float* output,
-            void* ptr) {
-  Context* context = static_cast<Context*>(ptr);
+  struct Context {
+    Context(Progress& progress, std::string& output_file_name)
+        : progress(progress), output_file_name(output_file_name) {}
+    Progress& progress;
+    std::string& output_file_name;
+  };
 
-  std::stringstream fn;
-  fn << context->output_file_name << "_";  // phantom_
-  if (iteration >= 0) {
-    fn << std::setw(3) << std::setfill('0')  //
-       << iteration << std::setw(0);         // 001
-  } else {
-    fn << "sensitivity";
-  }
-  fn << ".png";
+  void output(StripDetector<float>& detector,
+              int iteration,
+              float* output,
+              void* ptr) {
+    Context* context = static_cast<Context*>(ptr);
 
-  png_writer png(fn.str());
-  png.write_header<>(detector.n_y_pixels, detector.n_z_pixels);
-
-  float output_max = 0;
-  for (int i = 0; i < detector.total_n_pixels; ++i) {
-    output_max = std::max(output_max, output[i]);
-  }
-
-  auto output_gain =
-      static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
-
-  for (int y = 0; y < detector.n_y_pixels; ++y) {
-    uint8_t row[detector.n_z_pixels];
-    for (auto x = 0; x < detector.n_z_pixels; ++x) {
-      row[x] = std::numeric_limits<uint8_t>::max() -
-               output_gain * output[y * detector.n_z_pixels + x];
+    std::stringstream fn;
+    fn << context->output_file_name << "_";  // phantom_
+    if (iteration >= 0) {
+      fn << std::setw(3) << std::setfill('0')  //
+         << iteration << std::setw(0);         // 001
+    } else {
+      fn << "sensitivity";
     }
-    png.write_row(row);
-  }
-}
+    fn << ".png";
 
-void progress(int iteration, void* ptr) {
-  Context* context = static_cast<Context*>(ptr);
-  context->progress(iteration);
-}
+    png_writer png(fn.str());
+    png.write_header<>(detector.n_y_pixels, detector.n_z_pixels);
+
+    float output_max = 0;
+    for (int i = 0; i < detector.total_n_pixels; ++i) {
+      output_max = std::max(output_max, output[i]);
+    }
+
+    auto output_gain =
+        static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
+
+    for (int y = 0; y < detector.n_y_pixels; ++y) {
+      uint8_t row[detector.n_z_pixels];
+      for (auto x = 0; x < detector.n_z_pixels; ++x) {
+        row[x] = std::numeric_limits<uint8_t>::max() -
+                 output_gain * output[y * detector.n_z_pixels + x];
+      }
+      png.write_row(row);
+    }
+  }
+
+  void progress(int iteration, void* ptr) {
+    Context* context = static_cast<Context*>(ptr);
+    context->progress(iteration);
+  }
 }
 
 void run_gpu_reconstruction(StripDetector<float>& detector,

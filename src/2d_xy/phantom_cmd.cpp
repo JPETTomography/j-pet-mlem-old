@@ -92,8 +92,9 @@ int main(int argc, char* argv[]) {
         "acceptance model",
         false,
         "scintillator",
-        cmdline::oneof<std::string>(
-            "always", "scintillator", /* obsolete */ "scintilator"));
+        cmdline::oneof<std::string>("always",
+                                    "scintillator",
+                                    /* obsolete */ "scintilator"));
     // NOTE: this options is obsolete (use base-length instead)
     cl.add<double>("acceptance",
                    'a',
