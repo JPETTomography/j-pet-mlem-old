@@ -11,6 +11,13 @@ template <typename F> struct Event {
 
   Event(F z_u, F z_d, F dl) $ : z_u(z_u), z_d(z_d), dl(dl) {}
 
+  void transform(F R, F& tan, F& y, F& z) const $ {
+    tan = this->tan(R);
+    y = this->y(tan);
+    z = this->z(y, tan);
+  }
+
+ private:
   F tan(const F R) const $ { return (z_u - z_d) / (2 * R); }
 
   F y(const F tan) const $ {

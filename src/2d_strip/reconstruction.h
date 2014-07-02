@@ -99,9 +99,8 @@ class Reconstruction {
 
 #if BB_UPDATE
         auto event = events[id];
-        F tan = event.tan(detector.radius);
-        F y = event.y(tan);
-        F z = event.z(y, tan);
+        F tan, y, z;
+        event.transform(detector.radius, tan, y, z);
         F angle = std::atan(tan);
 
         Point ellipse_center = Point(y, z);

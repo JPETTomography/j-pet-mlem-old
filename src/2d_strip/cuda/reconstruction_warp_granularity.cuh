@@ -57,11 +57,10 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
 
     F acc = 0;
 
-    // angle space transformation
-    F tan = event.tan(detector.radius);
-    F y = event.y(tan);
-    F z = event.z(y, tan);
-    F angle = compat::atan(tan);
+    F tan, y, z;
+    event.transform(detector.radius, tan, y, z);
+    F angle = std::atan(tan);
+
     Point<F> ellipse_center(y, z);
 
     F sec, sec_sq, A, B, C, bb_y, bb_z;

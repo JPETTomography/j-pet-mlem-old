@@ -134,9 +134,8 @@ template <typename FType = double> class Phantom {
 
             Event<F> event(z_u, z_d, dl);
 
-            F tan = event.tan(R_distance);
-            F y = event.y(tan);
-            F z = event.z(y, tan);
+            F tan, y, z;
+            event.transform(R_distance, tan, y, z);
 
             Pixel p = pixel_location(y, z);
             Pixel pp = pixel_location(ry, rz);
