@@ -89,3 +89,6 @@ pet_target(2d_xy phantom)
 pet_target(2d_xy reconstruction)
 pet_target(2d_strip phantom)
 pet_target(2d_strip reconstruction)
+
+# custom documentation and config files
+add_custom_target(extra SOURCES README.md .clang-format)
