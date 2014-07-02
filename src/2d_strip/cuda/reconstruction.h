@@ -33,10 +33,10 @@ void run_reconstruction_kernel(
 
 namespace GPU {
 struct Context {
-  Context(Progress& progress, std::string& output)
-      : progress(progress), output(output) {}
+  Context(Progress& progress, std::string& output_file_name)
+      : progress(progress), output_file_name(output_file_name) {}
   Progress& progress;
-  std::string& output;
+  std::string& output_file_name;
 };
 
 void output(StripDetector<float>& detector,
@@ -46,7 +46,7 @@ void output(StripDetector<float>& detector,
   Context* context = static_cast<Context*>(ptr);
 
   std::stringstream fn;
-  fn << context->output << "_";  // phantom_
+  fn << context->output_file_name << "_";  // phantom_
   if (iteration >= 0) {
     fn << std::setw(3) << std::setfill('0')  //
        << iteration << std::setw(0);         // 001
@@ -114,7 +114,7 @@ void run_gpu_reconstruction(StripDetector<float>& detector,
                             int n_blocks,
                             int n_threads_per_block,
                             Progress& progress,
-                            std::string output) {
+                            std::string output_file_name) {
   std::vector<Event<float>> sp_event_list;
   for (auto& event : events) {
     Event<float> sp_event(event.z_u, event.z_d, event.dl);
@@ -128,5 +128,5 @@ void run_gpu_reconstruction(StripDetector<float>& detector,
                          n_blocks,
                          n_threads_per_block,
                          progress,
-                         output);
+                         output_file_name);
 }
