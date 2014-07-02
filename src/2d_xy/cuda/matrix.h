@@ -6,4 +6,4 @@
 #include "2d_xy/sparse_matrix.h"
 
 typedef SparseMatrix<Pixel<>, LOR<>> OutputMatrix;
-OutputMatrix run_gpu(cmdline::parser& cl);
+OutputMatrix run_gpu_matrix(cmdline::parser& cl);

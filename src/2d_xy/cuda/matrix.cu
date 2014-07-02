@@ -1,7 +1,7 @@
 #include <cuda_runtime.h>
 #include <stdio.h>
 
-#include "util/cuda/debug.h" // catches all CUDA errors
+#include "util/cuda/debug.h"  // catches all CUDA errors
 
 #include "config.h"
 #include "prng.cuh"
@@ -11,20 +11,20 @@
 
 #include "geometry/pixel.h"
 
-bool run_monte_carlo_kernel(int pixel_i,
-                            int n_tof_positions,
-                            int number_of_threads_per_block,
-                            int number_of_blocks,
-                            int n_emissions,
-                            float radius,
-                            float h_detector,
-                            float w_detector,
-                            float pixel_size,
-                            gpu::LOR* lookup_table_lors,
-                            Pixel<>* lookup_table_pixel,
-                            unsigned int* cpu_prng_seed,
-                            MatrixElement* cpu_matrix,
-                            MatrixElement* gpu_output) {
+bool run_gpu_matrix(int pixel_i,
+                    int n_tof_positions,
+                    int number_of_threads_per_block,
+                    int number_of_blocks,
+                    int n_emissions,
+                    float radius,
+                    float h_detector,
+                    float w_detector,
+                    float pixel_size,
+                    gpu::LOR* lookup_table_lors,
+                    Pixel<>* lookup_table_pixel,
+                    unsigned int* cpu_prng_seed,
+                    MatrixElement* cpu_matrix,
+                    MatrixElement* gpu_output) {
 
   dim3 blocks(number_of_blocks);
   dim3 threads(number_of_threads_per_block);

@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <sys/time.h>
 
-#include "util/cuda/debug.h" // catches all CUDA errors
+#include "util/cuda/debug.h"  // catches all CUDA errors
 
 #include "config.h"
 #include "prng.cuh"
@@ -13,17 +13,17 @@
 // FIXME: remove me
 #include "geometry/pixel.h"
 
-void phantom_kernel(int number_of_threads_per_block,
-                    int number_of_blocks,
-                    int n_emissions,
-                    int pixels_in_row,
-                    float radius,
-                    float h_detector,
-                    float w_detector,
-                    float pixel_size,
-                    Pixel<>* lookup_table_pixel,
-                    gpu::LOR* lookup_table_lors,
-                    MatrixElement* gpu_output) {
+void run_gpu_phantom(int number_of_threads_per_block,
+                     int number_of_blocks,
+                     int n_emissions,
+                     int pixels_in_row,
+                     float radius,
+                     float h_detector,
+                     float w_detector,
+                     float pixel_size,
+                     Pixel<>* lookup_table_pixel,
+                     gpu::LOR* lookup_table_lors,
+                     MatrixElement* gpu_output) {
 
   dim3 blocks(number_of_blocks);
   dim3 threads(number_of_threads_per_block);

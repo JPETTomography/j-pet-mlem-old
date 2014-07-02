@@ -44,9 +44,9 @@ typedef DetectorRing<double, int, PolygonalDetector<6, double>>
     HexagonalDetectorRing;
 
 template <typename DetectorRing, typename Model>
-SparseMatrix<Pixel<>, LOR<>> run_cpu(cmdline::parser& cl,
-                                     DetectorRing& detector_ring,
-                                     Model& model);
+SparseMatrix<Pixel<>, LOR<>> run_cpu_matrix(cmdline::parser& cl,
+                                            DetectorRing& detector_ring,
+                                            Model& model);
 
 template <typename DetectorRing>
 void post_process(cmdline::parser& cl,
@@ -276,7 +276,8 @@ int main(int argc, char* argv[]) {
 // these are wrappers running actual simulation
 #if HAVE_CUDA
 #define _RUN(cl, detector_ring, model) \
-  cl.exist("gpu") ? run_gpu(cl) : run_cpu(cl, detector_ring, model)
+  cl.exist("gpu") ? run_gpu_matrix(cl) \
+                  : run_cpu_matrix(cl, detector_ring, model)
 #else
 #define _RUN(cl, detector_ring, model) run_cpu(cl, detector_ring, model)
 #endif
@@ -332,9 +333,9 @@ int main(int argc, char* argv[]) {
 }
 
 template <typename DetectorRing, typename Model>
-SparseMatrix<Pixel<>, LOR<>> run_cpu(cmdline::parser& cl,
-                                     DetectorRing& detector_ring,
-                                     Model& model) {
+SparseMatrix<Pixel<>, LOR<>> run_cpu_matrix(cmdline::parser& cl,
+                                            DetectorRing& detector_ring,
+                                            Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");

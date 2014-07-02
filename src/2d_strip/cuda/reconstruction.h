@@ -84,6 +84,7 @@ namespace GPU {
   }
 }
 
+// wraps progress and output into abstract context ptr and run CUDA code
 void run_gpu_reconstruction(StripDetector<float>& detector,
                             std::vector<Event<float>>& events,
                             int n_iteration_blocks,
@@ -108,6 +109,7 @@ void run_gpu_reconstruction(StripDetector<float>& detector,
                          n_threads_per_block);
 }
 
+// convert double (DP) events into float (SP) events and run SP kernel
 void run_gpu_reconstruction(StripDetector<float>& detector,
                             std::vector<Event<double>>& events,
                             int n_iteration_blocks,

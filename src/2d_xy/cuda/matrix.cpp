@@ -26,20 +26,20 @@ double getwtime_cpu() {
   return (double)(tv.tv_sec - sec) + (double)tv.tv_usec / 1e6;
 }
 
-void run_monte_carlo_kernel(int pixel_id,
-                            int n_tof_positions,
-                            int number_of_threads_per_block,
-                            int number_of_blocks,
-                            int n_emissions,
-                            float radius,
-                            float h_detector,
-                            float w_detector,
-                            float pixel_size,
-                            gpu::LOR* lookup_table_lors,
-                            Pixel<>* lookup_table_pixels,
-                            unsigned int* cpu_prng_seed,
-                            gpu::MatrixElement* cpu_matrix,
-                            gpu::MatrixElement* gpu_output);
+void run_gpu_matrix(int pixel_id,
+                    int n_tof_positions,
+                    int number_of_threads_per_block,
+                    int number_of_blocks,
+                    int n_emissions,
+                    float radius,
+                    float h_detector,
+                    float w_detector,
+                    float pixel_size,
+                    gpu::LOR* lookup_table_lors,
+                    Pixel<>* lookup_table_pixels,
+                    unsigned int* cpu_prng_seed,
+                    gpu::MatrixElement* cpu_matrix,
+                    gpu::MatrixElement* gpu_output);
 
 void fill_gpu_data(gpu::LOR* lookup_table_lors,
                    Pixel<>* lookup_table_pixel,
@@ -77,7 +77,7 @@ void fill_gpu_data(gpu::LOR* lookup_table_lors,
   }
 }
 
-OutputMatrix run_gpu(cmdline::parser& cl) {
+OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
 
   auto pixels_in_row = cl.get<int>("n-pixels");
   auto n_detectors = cl.get<int>("n-detectors");
@@ -232,20 +232,20 @@ OutputMatrix run_gpu(cmdline::parser& cl) {
 
     double t0 = getwtime_cpu();
 
-    run_monte_carlo_kernel(pixel_i,
-                           n_tof_positions,
-                           number_of_threads_per_block,
-                           number_of_blocks,
-                           iteration_per_thread,
-                           radius,
-                           h_detector,
-                           w_detector,
-                           s_pixel,
-                           lookup_table_lors.data(),
-                           lookup_table_pixel.data(),
-                           cpu_prng_seed,
-                           cpu_matrix.data(),
-                           gpu_vector_output.data());
+    run_gpu_matrix(pixel_i,
+                   n_tof_positions,
+                   number_of_threads_per_block,
+                   number_of_blocks,
+                   iteration_per_thread,
+                   radius,
+                   h_detector,
+                   w_detector,
+                   s_pixel,
+                   lookup_table_lors.data(),
+                   lookup_table_pixel.data(),
+                   cpu_prng_seed,
+                   cpu_matrix.data(),
+                   gpu_vector_output.data());
 
     double t1 = getwtime_cpu();
 
