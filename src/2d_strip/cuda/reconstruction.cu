@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "util/cuda/debug.h" // catches all CUDA errors
+#include "util/cuda/debug.h"  // catches all CUDA errors
 #include "../event.h"
 
 #include "config.h"
@@ -16,21 +16,21 @@
 #endif
 
 template <typename F>
-void run_reconstruction_kernel(
-    StripDetector<F>& detector,
-    Event<F>* events,
-    int n_events,
-    int n_iteration_blocks,
-    int n_iterations_in_block,
-    void (*output_callback)(StripDetector<F>& detector,
-                            int iteration,
-                            F* image,
-                            void* context),
-    void (*progress_callback)(int iteration, void* context),
-    void* context,
-    int device,
-    int n_blocks,
-    int n_threads_per_block) {
+void run_gpu_reconstruction(StripDetector<F>& detector,
+                            Event<F>* events,
+                            int n_events,
+                            int n_iteration_blocks,
+                            int n_iterations_in_block,
+                            void (*output_callback)(StripDetector<F>& detector,
+                                                    int iteration,
+                                                    F* image,
+                                                    void* context),
+                            void (*progress_callback)(int iteration,
+                                                      void* context),
+                            void* context,
+                            int device,
+                            int n_blocks,
+                            int n_threads_per_block) {
 
   cudaSetDevice(device);
 
@@ -169,7 +169,7 @@ void run_reconstruction_kernel(
   free(cpu_sensitivity);
 }
 
-template void run_reconstruction_kernel<float>(
+template void run_gpu_reconstruction<float>(
     StripDetector<float>& detector,
     Event<float>* events,
     int n_events,

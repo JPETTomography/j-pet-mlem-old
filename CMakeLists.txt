@@ -55,16 +55,13 @@ function(pet_target TYPE CMD)
   if(CUDA_FOUND AND CUDA AND NO_CUDA EQUAL -1)
     # compile kernel sources
     cuda_compile(CUDA ${CUDA})
-    # append CUDA specific headers
+    # append CUDA specific headers & wrappers
     file(GLOB CUDA_HEADERS
       src/${TYPE}/cuda/*.h
       src/util/cuda/*.h
-      src/${TYPE}/cuda/*.cuh)
+      src/${TYPE}/cuda/*.cuh
+      src/${TYPE}/cuda/${CMD}*.cpp)
     list(APPEND CUDA ${CUDA_HEADERS})
-    # add runner wrapper
-    if(EXISTS src/${TYPE}/cuda/${CMD}_cuda.cpp)
-      list(APPEND CUDA src/${TYPE}/cuda/${CMD}_cuda.cpp)
-    endif()
   endif()
   # add target specific headers
   file(GLOB HEADERS src/${TYPE}/*.h)

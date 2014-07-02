@@ -14,22 +14,23 @@
 
 #include "config.h"
 
+// this is forward declaration of CUDA side entry-point function
 template <typename F>
-void run_reconstruction_kernel(
-    StripDetector<F>& detector,
-    Event<F>* events,
-    int n_events,
-    int n_iteration_blocks,
-    int n_iterations_in_block,
-    void (*output_callback)(StripDetector<F>& detector,
-                            int iteration,
-                            F* image,
-                            void* context),
-    void (*progress_callback)(int iteration, void* context),
-    void* context,
-    int device,
-    int n_blocks,
-    int n_threads_per_block);
+void run_gpu_reconstruction(StripDetector<F>& detector,
+                            Event<F>* events,
+                            int n_events,
+                            int n_iteration_blocks,
+                            int n_iterations_in_block,
+                            void (*output_callback)(StripDetector<F>& detector,
+                                                    int iteration,
+                                                    F* image,
+                                                    void* context),
+                            void (*progress_callback)(int iteration,
+                                                      void* context),
+                            void* context,
+                            int device,
+                            int n_blocks,
+                            int n_threads_per_block);
 
 namespace GPU {
 
@@ -94,17 +95,17 @@ void run_gpu_reconstruction(StripDetector<float>& detector,
                             std::string output) {
 
   GPU::Context context(progress, output);
-  run_reconstruction_kernel(detector,
-                            events.data(),
-                            events.size(),
-                            n_iteration_blocks,
-                            n_iterations_per_block,
-                            GPU::output,
-                            GPU::progress,
-                            &context,
-                            device,
-                            n_blocks,
-                            n_threads_per_block);
+  run_gpu_reconstruction(detector,
+                         events.data(),
+                         events.size(),
+                         n_iteration_blocks,
+                         n_iterations_per_block,
+                         GPU::output,
+                         GPU::progress,
+                         &context,
+                         device,
+                         n_blocks,
+                         n_threads_per_block);
 }
 
 void run_gpu_reconstruction(StripDetector<float>& detector,
