@@ -10,7 +10,7 @@
 #include "config.h"
 
 template <typename F> int n_pixels_in_line(F length, F pixel_size) $ {
-  return int((length + 0.5f) / pixel_size);
+  return (length + F(0.5)) / pixel_size;
 }
 
 Pixel<> warp_space_pixel(int& offset,
