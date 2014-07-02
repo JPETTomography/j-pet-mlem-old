@@ -59,7 +59,7 @@ template <typename F> F sin(const F a) { return std::sin(a); }
 template <typename F> F cos(const F a) { return std::cos(a); }
 template <typename F> F tan(const F a) { return std::tan(a); }
 template <typename F> F atan(const F a) { return std::atan(a); }
-template <typename F> F pow(const F a, const F b) { return std::pow(a); }
+template <typename F> F pow(const F a, const F b) { return std::pow(a, b); }
 template <typename F> F exp(const F a) { return std::exp(a); }
 
 #endif

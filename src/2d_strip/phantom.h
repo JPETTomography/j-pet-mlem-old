@@ -26,7 +26,6 @@ template <typename FType = double> class Phantom {
   typedef std::minstd_rand0 rng;
 
  private:
-  int iteration;
   int n_pixels;
   F pixel_size;
   F R_distance;
@@ -73,7 +72,7 @@ template <typename FType = double> class Phantom {
     return (d1 * d1 / (el.a * el.a)) + (d2 * d2 / (el.b * el.b)) <= 1;
   }
 
-  void emit_event() {
+  void operator()() {
 
     std::vector<std::vector<Event<F>>> event_list_per_thread;
 
@@ -86,9 +85,7 @@ template <typename FType = double> class Phantom {
       std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
                 << el.angle << std::endl;
 
-      std::uniform_real_distribution<F> uniform_dist(0, 1);
       std::uniform_real_distribution<F> uniform_angle(-1, 1);
-
       std::uniform_real_distribution<F> uniform_y(el.y - max, el.y + max);
       std::uniform_real_distribution<F> uniform_z(el.x - max, el.x + max);
       std::normal_distribution<F> normal_dist_dz(0, sigma_z);
@@ -109,12 +106,11 @@ template <typename FType = double> class Phantom {
       cos = std::cos(el.angle * radian);
       inv_a2 = 1 / (el.a * el.a);
       inv_b2 = 1 / (el.b * el.b);
-      iteration = el.iter;
 
 #if _OPENMP
 #pragma omp for schedule(static)
 #endif
-      for (int i = 0; i < iteration; ++i) {
+      for (int emission = 0; emission < el.emissions; ++emission) {
 
 #if MAIN_PHANTOM
         F ry = uniform_y(rng_list[omp_get_thread_num()]);
@@ -173,15 +169,16 @@ template <typename FType = double> class Phantom {
                       event_list_per_thread[i].begin(),
                       event_list_per_thread[i].end());
       }
-
-      std::cout << "VECTOR: " << events.size() << std::endl;
     }
+  }
 
-    png_writer png("phantom.png");
-    png.write_header<>(n_pixels, n_pixels);
+  template <class FileWriter>
+  void output_bitmap(FileWriter& fw, bool wo_errors = false) {
+    fw.template write_header<>(n_pixels, n_pixels);
 
+    auto& target_output = wo_errors ? output_without_errors : output;
     F output_max = 0;
-    for (auto& col : output) {
+    for (auto& col : target_output) {
       for (auto& row : col)
         output_max = std::max(output_max, row);
     }
@@ -192,31 +189,10 @@ template <typename FType = double> class Phantom {
     for (int y = 0; y < n_pixels; ++y) {
       uint8_t row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
-        row[x] =
-            std::numeric_limits<uint8_t>::max() - output_gain * output[y][x];
-      }
-      png.write_row(row);
-    }
-
-    png_writer png_true("phantom_true.png");
-    png_true.write_header<>(n_pixels, n_pixels);
-
-    output_max = 0;
-    for (auto& col : output_without_errors) {
-      for (auto& row : col)
-        output_max = std::max(output_max, row);
-    }
-
-    output_gain =
-        static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
-
-    for (int y = 0; y < n_pixels; ++y) {
-      uint8_t row[n_pixels];
-      for (auto x = 0; x < n_pixels; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -
-                 output_gain * output_without_errors[y][x];
+                 output_gain * target_output[y][x];
       }
-      png_true.write_row(row);
+      fw.write_row(row);
     }
   }
 

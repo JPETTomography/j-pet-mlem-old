@@ -33,7 +33,7 @@ void run_reconstruction_kernel(
 
 namespace GPU {
 struct Context {
-  Context(Progress& progress, std::string output)
+  Context(Progress& progress, std::string& output)
       : progress(progress), output(output) {}
   Progress& progress;
   std::string& output;

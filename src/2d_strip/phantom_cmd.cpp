@@ -31,21 +31,19 @@ int main(int argc, char* argv[]) {
     cmdline::parser cl;
     cl.footer("phantom_description");
 
-#if _OPENMP
-    cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
-#endif
     cl.add<cmdline::path>(
         "output", 'o', "output events file", false, "phantom.bin");
     cl.add<double>(
         "r-distance", 'r', "R distance between scientilators", false, 500);
-    cl.add<double>("s-length", 'l', "scentilator length", false, 1000);
+    cl.add<double>("s-length", 'l', "scintillator length", false, 1000);
     cl.add<double>("p-size", 'p', "pixel size", false, 5);
     cl.add<int>("n-pixels", 'n', "number of pixels", false, 200);
-    cl.add<int>("iter", 'i', "number of iterations", false, 1);
     cl.add<double>("s-z", 's', "Sigma z error", false, 10);
     cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
-    cl.add<double>("gm", 'g', "Gamma error", false, 0);
-    cl.add<double>("emmisions", 'e', "number of emissions", false, 500000);
+    cl.add<double>("emissions", 'e', "number of emissions", false, 500000);
+#if _OPENMP
+    cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
+#endif
 
     cl.parse_check(argc, argv);
 
@@ -62,57 +60,65 @@ int main(int argc, char* argv[]) {
 #endif
 
     double R_distance = cl.get<double>("r-distance");
-    double Scentilator_length = cl.get<double>("s-length");
+    double scintillator_length = cl.get<double>("s-length");
     double pixel_size = cl.get<double>("p-size");
-    double n_pixels = Scentilator_length / pixel_size;
-    double sigma = cl.get<double>("s-z");
-    double dl = cl.get<double>("s-dl");
-    double emmisions = cl.get<double>("emmisions");
+    double n_pixels = scintillator_length / pixel_size;
+    double sigma_z = cl.get<double>("s-z");
+    double sigma_dl = cl.get<double>("s-dl");
+    double emissions = cl.get<double>("emissions");
 
     typedef EllipseParameters<double> Ellipse;
     std::vector<Ellipse> ellipse_list;
 
-    double normalized_acc = 0;
+    double normalized_acceptance = 0;
 
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);
       std::string line;
       while (std::getline(infile, line)) {
         std::istringstream iss(line);
-        double x, y, a, b, angle, acc;
+        double x, y, a, b, angle, acceptance;
 
         // on error
-        if (!(iss >> x >> y >> a >> b >> angle >> acc))
+        if (!(iss >> x >> y >> a >> b >> angle >> acceptance))
           break;
 
-        Ellipse el(x, y, a, b, angle, acc);
+        Ellipse el(x, y, a, b, angle, acceptance);
 
-        normalized_acc += acc;
+        normalized_acceptance += acceptance;
 
         std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
-                  << el.angle << " " << el.iter << std::endl;
+                  << el.angle << " " << el.emissions << std::endl;
 
         ellipse_list.push_back(el);
       }
     }
 
-    for (auto& e : ellipse_list) {
-      e.iter = e.iter * (emmisions / normalized_acc);
-      std::cout << e.iter << std::endl;
+    for (auto& el : ellipse_list) {
+      el.emissions *= emissions / normalized_acceptance;
+      std::cout << el.emissions << std::endl;
     }
 
-    Phantom<Ellipse::F> test(ellipse_list,
-                             n_pixels,
-                             pixel_size,
-                             R_distance,
-                             Scentilator_length,
-                             sigma,
-                             dl);
+    Phantom<Ellipse::F> phantom(ellipse_list,
+                                n_pixels,
+                                pixel_size,
+                                R_distance,
+                                scintillator_length,
+                                sigma_z,
+                                sigma_dl);
 
-    test.emit_event();
+    phantom();
 
-    obstream out(cl.get<cmdline::path>("output"));
-    test >> out;
+    auto output = cl.get<cmdline::path>("output");
+    obstream out(output);
+    phantom >> out;
+
+    png_writer png(output.wo_ext() + ".png");
+    phantom.output_bitmap(png);
+
+    png_writer png_true(output.wo_ext() + "_true.png");
+    phantom.output_bitmap(png_true, true);
+
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
   } catch (const char* ex) {

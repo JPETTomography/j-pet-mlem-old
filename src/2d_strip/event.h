@@ -52,12 +52,13 @@ template <typename FType> struct EllipseParameters {
   typedef FType F;
   F x, y, a, b;
   F angle;
-  F iter;
+  F emissions;
 
-  EllipseParameters(F x, F y, F a, F b, F angle, F iter) $ : x(x),
-                                                             y(y),
-                                                             a(a),
-                                                             b(b),
-                                                             angle(angle),
-                                                             iter(iter) {}
+  EllipseParameters(F x, F y, F a, F b, F angle, F emissions) $
+      : x(x),
+        y(y),
+        a(a),
+        b(b),
+        angle(angle),
+        emissions(emissions) {}
 };
