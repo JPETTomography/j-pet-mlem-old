@@ -52,19 +52,10 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
       F y = event.y(tan);
       F z = event.z(y, tan);
       F angle = compat::atan(tan);
-      F cos = compat::cos(angle);
+      Point<F> ellipse_center(y, z);
 
-      F sec = 1 / cos;
-      F sec_sq = sec * sec;
-
-      F A = (((4 / (cos * cos)) * detector.inv_pow_sigma_dl) +
-             (2 * tan * tan * detector.inv_pow_sigma_z));
-      F B = -4 * tan * detector.inv_pow_sigma_z;
-      F C = 2 * detector.inv_pow_sigma_z;
-      F B_2 = (B / 2) * (B / 2);
-
-      F bb_y = bby(A, C, B_2);
-      F bb_z = bbz(A, C, B_2);
+      F sec, sec_sq, A, B, C, bb_y, bb_z;
+      detector.ellipse_bb(angle, tan, sec, sec_sq, A, B, C, bb_y, bb_z);
 
       Pixel<> center_pixel = detector.pixel_location(y, z);
 
@@ -76,12 +67,10 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
 
       for (int iy = ur.x; iy < dl.x; ++iy) {
         for (int iz = dl.y; iz < ur.y; ++iz) {
-
           Point<F> point = detector.pixel_center(iy, iz);
 
-          if (in_ellipse(A, B, C, y, z, point)) {
-            point.x -= y;
-            point.y -= z;
+          if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
+            point -= ellipse_center;
 
             F event_kernel = kernel(y,
                                     tan,
@@ -103,12 +92,10 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
 
       for (int iz = dl.y; iz < ur.y; ++iz) {
         for (int iy = ur.x; iy < dl.x; ++iy) {
-
           Point<F> point = detector.pixel_center(iy, iz);
 
-          if (in_ellipse(A, B, C, y, z, point)) {
-            point.x -= y;
-            point.y -= z;
+          if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
+            point -= ellipse_center;
 
             F event_kernel = kernel(y,
                                     tan,

@@ -26,6 +26,12 @@ template <typename FType = double, typename SType = int> struct Point {
     return *this;
   }
 
+  Point& operator-=(const Point& p) $ {
+    x -= p.x;
+    y -= p.y;
+    return *this;
+  }
+
   F length2() const { return x * x + y * y; }
 
   F length() const { return compat::sqrt(x * x + y * y); }

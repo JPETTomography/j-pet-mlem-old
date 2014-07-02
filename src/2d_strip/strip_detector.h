@@ -114,6 +114,38 @@ template <typename FType = double> class StripDetector {
 
   F sensitivity(Point p) const $ { return sensitivity(p.x, p.y); }
 
+  void ellipse_bb(F angle,
+                  F tan,
+                  F& sec,     // out
+                  F& sec_sq,  // out
+                  F& A,       // out
+                  F& B,       // out
+                  F& C,       // out
+                  F& bb_y,    // out
+                  F& bb_z     // out
+                  ) const $ {
+
+    F cos = compat::cos(angle);
+    sec = 1 / cos;
+    sec_sq = sec * sec;
+
+    A = (4 / (cos * cos)) * inv_pow_sigma_dl + 2 * tan * tan * inv_pow_sigma_z;
+    B = -4 * tan * inv_pow_sigma_z;
+    C = 2 * inv_pow_sigma_z;
+    F B_2 = (B / 2) * (B / 2);
+
+    bb_y = bby(A, C, B_2);
+    bb_z = bbz(A, C, B_2);
+  }
+
+  bool in_ellipse(F A, F B, F C, Point ellipse_center, Point p) const $ {
+
+    F dy = p.x - ellipse_center.x;
+    F dz = p.y - ellipse_center.y;
+
+    return (((A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)))) <= 9;
+  }
+
   const F radius;
   const F scintilator_length;
   const int n_y_pixels;
@@ -137,4 +169,7 @@ template <typename FType = double> class StripDetector {
   const F half_scintilator_length_;
   const F half_pixel_width_;
   const F half_pixel_height_;
+
+  F bbz(F A, F C, F B_2) const $ { return 3 / compat::sqrt(C - (B_2 / A)); }
+  F bby(F A, F C, F B_2) const $ { return 3 / compat::sqrt(A - (B_2 / C)); }
 };
