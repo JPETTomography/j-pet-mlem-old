@@ -2,7 +2,8 @@
 
 #include <cuda_runtime.h>
 
-#define SOA_SIZE 180000000
+// #define SOA_SIZE 180000000
+#define SOA_SIZE 1000000
 
 namespace SOA {
 template <typename F> struct Events {

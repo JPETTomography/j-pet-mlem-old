@@ -22,10 +22,15 @@ static cudaError err;
     printf("Number of threads|block per kernel: %d\n", threads); \
   }
 
-#define cuda(f, ...)                                        \
-  if ((err = cuda##f(__VA_ARGS__)) != cudaSuccess) {        \
-    fprintf(stderr, #f "() %s\n", cudaGetErrorString(err)); \
-    exit(-1);                                               \
+#define cuda(f, ...)                                 \
+  if ((err = cuda##f(__VA_ARGS__)) != cudaSuccess) { \
+    fprintf(stderr,                                  \
+            "%s:%d %s() %s\n",                       \
+            __FILE__,                                \
+            __LINE__,                                \
+            #f,                                      \
+            cudaGetErrorString(err));                \
+    exit(-1);                                        \
   }
 
 #define cudathread_per_blockoSync(...) cuda(__VA_ARGS__)
@@ -55,7 +60,7 @@ void run_reconstruction_kernel(
   size_t image_size = detector.total_n_pixels * sizeof(F);
   size_t output_size = image_size * n_blocks;
 
-  F* cpu_output = (F*)calloc(image_size, 1);  // zeroing
+  F* cpu_output = (F*)malloc(image_size);
   F* cpu_rho = (F*)malloc(image_size);
   F* cpu_sensitivity = (F*)malloc(image_size);
 
@@ -102,7 +107,7 @@ void run_reconstruction_kernel(
 
   cudaMemcpy2D(gpu_sensitivity,
                pitch,
-               &cpu_sensitivity,
+               cpu_sensitivity,
                sizeof(F) * detector.n_y_pixels,
                sizeof(F) * detector.n_y_pixels,
                detector.n_z_pixels,
@@ -145,10 +150,7 @@ void run_reconstruction_kernel(
   cuda(Malloc, (void**)&gpu_output, output_size);
   cuda(Malloc, (void**)&gpu_rho, image_size);
 
-  cudaEvent_t start, stop;
-  cudaEventCreate(&start);
-  cudaEventCreate(&stop);
-  cudaEventRecord(start);
+  output_callback(detector, -1, cpu_sensitivity, context);
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {
@@ -168,13 +170,6 @@ void run_reconstruction_kernel(
            n_threads_per_block);
 
       cudaThreadSynchronize();
-      cudaEventRecord(stop);
-      cudaEventSynchronize(stop);
-
-      F milliseconds = 0;
-      cudaEventElapsedTime(&milliseconds, start, stop);
-
-      printf("Time: %f\n", milliseconds / 1000);
 
       // grab output
       cuda(Memcpy,
@@ -191,8 +186,7 @@ void run_reconstruction_kernel(
       }
     }
 
-    output_callback(
-        detector, ib * n_iterations_in_block, cpu_rho, context);
+    output_callback(detector, ib * n_iterations_in_block, cpu_rho, context);
   }
 
   progress_callback(n_iteration_blocks * n_iterations_in_block, context);

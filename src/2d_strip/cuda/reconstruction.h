@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <sstream>
+#include <iomanip>
 
 #include "util/png_writer.h"
 #include "util/bstream.h"
@@ -42,7 +44,15 @@ void output(StripDetector<float>& detector,
             float* output,
             void* ptr) {
   Context* context = static_cast<Context*>(ptr);
-  png_writer png(context->output + std::to_string(iteration) + ".png");
+  std::stringstream fn;
+  fn << context->output << "_";
+  if (iteration >= 0) {
+    fn << std::setw(3) << std::setfill('0') << iteration << std::setw(0)
+       << ".png";
+  } else {
+    fn << "sensitivity.png";
+  }
+  png_writer png(fn.str());
   png.write_header<>(detector.n_y_pixels, detector.n_z_pixels);
 
   float output_max = 0;

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <sstream>
+#include <iomanip>
 
 #if SSE_FLUSH
 #include <xmmintrin.h>
@@ -40,7 +42,7 @@ int main(int argc, char* argv[]) {
     cl.add<int>(
         "iterations", 'I', "number of iterations (per block)", false, 1);
     cl.add<cmdline::path>(
-        "output", 'o', "output files prefix (png)", false, "cpu_rec_iteration");
+        "output", 'o', "output files prefix (png)", false, "rec");
     cl.add<double>(
         "r-distance", 'r', "R distance between scientilators", false, 500);
     cl.add<double>("s-length", 'l', "scentilator length", false, 1000);
@@ -114,9 +116,10 @@ int main(int argc, char* argv[]) {
     {
       for (int block = 0; block < n_blocks; block++) {
         reconstruction(progress, n_iterations, block * n_iterations);
-
-        png_writer png(output_wo_ext + "_" + std::to_string(block + 1) +
-                       ".png");
+        std::stringstream fn;
+        fn << output_wo_ext << "_" << std::setw(3) << std::setfill('0')
+           << block * n_iterations + 1 << std::setw(0) << ".png";
+        png_writer png(fn.str());
         reconstruction.output_bitmap(png);
       }
     }
