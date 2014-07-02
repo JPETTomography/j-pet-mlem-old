@@ -44,14 +44,17 @@ void output(StripDetector<float>& detector,
             float* output,
             void* ptr) {
   Context* context = static_cast<Context*>(ptr);
+
   std::stringstream fn;
-  fn << context->output << "_";
+  fn << context->output << "_";  // phantom_
   if (iteration >= 0) {
-    fn << std::setw(3) << std::setfill('0') << iteration << std::setw(0)
-       << ".png";
+    fn << std::setw(3) << std::setfill('0')  //
+       << iteration << std::setw(0);         // 001
   } else {
-    fn << "sensitivity.png";
+    fn << "sensitivity";
   }
+  fn << ".png";
+
   png_writer png(fn.str());
   png.write_header<>(detector.n_y_pixels, detector.n_z_pixels);
 

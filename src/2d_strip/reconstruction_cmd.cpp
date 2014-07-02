@@ -116,9 +116,13 @@ int main(int argc, char* argv[]) {
     {
       for (int block = 0; block < n_blocks; block++) {
         reconstruction(progress, n_iterations, block * n_iterations);
+
         std::stringstream fn;
-        fn << output_wo_ext << "_" << std::setw(3) << std::setfill('0')
-           << block * n_iterations + 1 << std::setw(0) << ".png";
+        fn << output_wo_ext << "_"               // phantom_
+           << std::setw(3) << std::setfill('0')  //
+           << block * n_iterations + 1           // 001
+           << std::setw(0) << ".png";            // .png
+
         png_writer png(fn.str());
         reconstruction.output_bitmap(png);
       }
