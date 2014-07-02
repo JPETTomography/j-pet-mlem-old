@@ -107,10 +107,11 @@ template <typename FType = double> class Phantom {
       inv_a2 = 1 / (el.a * el.a);
       inv_b2 = 1 / (el.b * el.b);
 
+      int n_emissions = el.n_emissions;  // FIXME: el.n_emission is float
 #if _OPENMP
 #pragma omp for schedule(static)
 #endif
-      for (int emission = 0; emission < el.emissions; ++emission) {
+      for (int emission = 0; emission < n_emissions; ++emission) {
 
 #if MAIN_PHANTOM
         F ry = uniform_y(rng_list[omp_get_thread_num()]);

@@ -88,15 +88,15 @@ int main(int argc, char* argv[]) {
         normalized_acceptance += acceptance;
 
         std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
-                  << el.angle << " " << el.emissions << std::endl;
+                  << el.angle << " " << el.n_emissions << std::endl;
 
         ellipse_list.push_back(el);
       }
     }
 
     for (auto& el : ellipse_list) {
-      el.emissions *= emissions / normalized_acceptance;
-      std::cout << el.emissions << std::endl;
+      el.n_emissions *= emissions / normalized_acceptance;
+      std::cout << el.n_emissions << std::endl;
     }
 
     Phantom<Ellipse::F> phantom(ellipse_list,
