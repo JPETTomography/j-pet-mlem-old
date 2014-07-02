@@ -18,7 +18,7 @@ template <typename F>
 __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
                                              SOA::Events<F>* events,
                                              int n_events,
-                                             F* output_image,
+                                             F* output,
                                              F* rho,
                                              cudaTextureObject_t sensitivity,
                                              int n_blocks,
@@ -110,9 +110,9 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
                                     sqrt_det_cor_mat) /
                              tex2D<F>(sensitivity, iy, iz);
 
-            atomicAdd(&output_image[BUFFER_LINEAR_INDEX(iy, iz)],
-                      (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)]) *
-                          inv_acc);
+            atomicAdd(
+                &output[BUFFER_LINEAR_INDEX(iy, iz)],
+                event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)] * inv_acc);
           }
         }
       }

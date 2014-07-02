@@ -9,15 +9,14 @@
 #include "soa.cuh"
 
 template <typename F>
-__global__ void reconstruction_2d_strip_cuda(
-    StripDetector<F> detector,
-    SOA::Events<F>* events,
-    int event_list_size,
-    F* output_image,
-    F* rho,
-    cudaTextureObject_t sensitivity_tex,
-    int n_blocks,
-    int n_threads_per_block) {
+__global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
+                                             SOA::Events<F>* events,
+                                             int event_list_size,
+                                             F* output,
+                                             F* rho,
+                                             cudaTextureObject_t sensitivity,
+                                             int n_blocks,
+                                             int n_threads_per_block) {
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
   int block_chunk =
@@ -65,7 +64,7 @@ __global__ void reconstruction_2d_strip_cuda(
             F event_kernel =
                 kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
 
-            atomicAdd(&output_image[BUFFER_LINEAR_INDEX(iy, iz)],
+            atomicAdd(&output[BUFFER_LINEAR_INDEX(iy, iz)],
                       (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)]) *
                           inv_acc);
           }
