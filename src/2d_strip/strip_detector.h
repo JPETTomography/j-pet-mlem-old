@@ -89,8 +89,7 @@ template <typename FType = double> class StripDetector {
   }
 
   Pixel pixel_location(F y, F z) const $ {
-    return Pixel(compat::floor((grid_ul_y - y) / pixel_height),
-                 compat::floor((z - grid_ul_z) / pixel_width));
+    return Pixel((grid_ul_y - y) / pixel_height, (z - grid_ul_z) / pixel_width);
   }
 
   Pixel pixel_location(Point p) const $ { return pixel_location(p.x, p.y); }

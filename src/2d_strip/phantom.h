@@ -199,8 +199,7 @@ template <typename FType = double> class Phantom {
 
   // coord Plane
   Pixel pixel_location(F y, F z) {
-    return Pixel(std::floor((R_distance - y) / pixel_size),
-                 std::floor((R_distance + z) / pixel_size));
+    return Pixel((R_distance - y) / pixel_size, (R_distance + z) / pixel_size);
   }
 
   template <typename StreamType> Phantom& operator>>(StreamType& out) {
