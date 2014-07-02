@@ -29,7 +29,7 @@ template <typename FType = double> class Phantom {
   int n_pixels;
   F pixel_size;
   F R_distance;
-  F Scentilator_length;
+  F scintillator_length;
   F sin;
   F cos;
   F inv_a2;
@@ -54,7 +54,7 @@ template <typename FType = double> class Phantom {
       : n_pixels(n_pixels),
         pixel_size(pixel_size),
         R_distance(R_distance),
-        Scentilator_length(Scentilator_length),
+        scintillator_length(Scentilator_length),
         sigma_z(sigma_z),
         sigma_dl(sigma_dl) {
     ellipse_list = el;
@@ -129,8 +129,8 @@ template <typename FType = double> class Phantom {
           z_d += normal_dist_dz(rng_list[omp_get_thread_num()]);
           dl += normal_dist_dl(rng_list[omp_get_thread_num()]);
 
-          if (std::abs(z_u) < (Scentilator_length / 2) &&
-              std::abs(z_d) < (Scentilator_length / 2)) {
+          if (std::abs(z_u) < scintillator_length / 2 &&
+              std::abs(z_d) < scintillator_length / 2) {
 
             Event<F> event(z_u, z_d, dl);
 
