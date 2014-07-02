@@ -58,6 +58,7 @@ function(pet_target TYPE CMD)
     # append CUDA specific headers
     file(GLOB CUDA_HEADERS
       src/${TYPE}/cuda/*.h
+      src/util/cuda/*.h
       src/${TYPE}/cuda/*.cuh)
     list(APPEND CUDA ${CUDA_HEADERS})
     # add runner wrapper

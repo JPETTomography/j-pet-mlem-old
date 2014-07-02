@@ -1,6 +1,8 @@
 #include <cuda_runtime.h>
 #include <stdio.h>
 
+#include "util/cuda/debug.h" // catches all CUDA errors
+
 #include "config.h"
 #include "prng.cuh"
 #include "geometry.h"
@@ -8,17 +10,6 @@
 #include "monte_carlo.cuh"
 
 #include "geometry/pixel.h"
-
-using namespace gpu;
-
-static cudaError err;
-
-#define cuda(f, ...)                                        \
-  if ((err = cuda##f(__VA_ARGS__)) != cudaSuccess) {        \
-    fprintf(stderr, #f "() %s\n", cudaGetErrorString(err)); \
-    exit(-1);                                               \
-  }
-#define cudathread_per_blockoSync(...) cuda(__VA_ARGS__)
 
 bool run_monte_carlo_kernel(int pixel_i,
                             int n_tof_positions,
@@ -48,31 +39,24 @@ bool run_monte_carlo_kernel(int pixel_i,
 
   const int warp_size = 32;
 
-  cuda(Malloc,
-       (void**)&warp_divergence_buffor,
-       warp_size * n_emissions * sizeof(bool));
+  cudaMalloc((void**)&warp_divergence_buffor,
+             warp_size * n_emissions * sizeof(bool));
 
-  cuda(Memset,
-       warp_divergence_buffor,
-       0,
-       warp_size * n_emissions * sizeof(bool));
+  cudaMemset(warp_divergence_buffor, 0, warp_size * n_emissions * sizeof(bool));
 
 #else
   bool* warp_divergence_buffor;
-  cuda(Malloc, (void**)&warp_divergence_buffor, 0 * sizeof(bool));
+  cudaMalloc((void**)&warp_divergence_buffor, 0 * sizeof(bool));
 
 #endif
 
-  cuda(Malloc,
-       (void**)&gpu_prng_seed,
-       number_of_blocks * number_of_threads_per_block * 4 *
-           sizeof(unsigned int));
-  cuda(Malloc,
-       (void**)&gpu_MatrixElement,
-       n_tof_positions * number_of_blocks * sizeof(MatrixElement));
+  cudaMalloc((void**)&gpu_prng_seed,
+             number_of_blocks * number_of_threads_per_block * 4 *
+                 sizeof(unsigned int));
+  cudaMalloc((void**)&gpu_MatrixElement,
+             n_tof_positions * number_of_blocks * sizeof(MatrixElement));
 
-  cuda(
-      Memcpy,
+  cudaMemcpy(
       gpu_prng_seed,
       cpu_prng_seed,
       number_of_blocks * number_of_threads_per_block * 4 * sizeof(unsigned int),
@@ -85,10 +69,9 @@ bool run_monte_carlo_kernel(int pixel_i,
   int i = pixel.x;
   int j = pixel.y;
 
-  cuda(Memset,
-       gpu_MatrixElement,
-       0,
-       n_tof_positions * number_of_blocks * sizeof(MatrixElement));
+  cudaMemset(gpu_MatrixElement,
+             0,
+             n_tof_positions * number_of_blocks * sizeof(MatrixElement));
 
   long total_emissions =
       (long)n_emissions * number_of_blocks * number_of_threads_per_block;
@@ -156,11 +139,10 @@ bool run_monte_carlo_kernel(int pixel_i,
 
 #endif
 
-  cuda(Memcpy,
-       cpu_matrix,
-       gpu_MatrixElement,
-       n_tof_positions * number_of_blocks * sizeof(MatrixElement),
-       cudaMemcpyDeviceToHost);
+  cudaMemcpy(cpu_matrix,
+             gpu_MatrixElement,
+             n_tof_positions * number_of_blocks * sizeof(MatrixElement),
+             cudaMemcpyDeviceToHost);
 
 #if NO_TOF > 0
   for (int lor_i = 0; lor_i < LORS; ++lor_i) {
@@ -191,8 +173,8 @@ bool run_monte_carlo_kernel(int pixel_i,
   }
 
 #endif
-  cuda(Free, gpu_prng_seed);
-  cuda(Free, gpu_MatrixElement);
+  cudaFree(gpu_prng_seed);
+  cudaFree(gpu_MatrixElement);
 
   return 0;
 }

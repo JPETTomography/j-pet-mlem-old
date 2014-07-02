@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "util/cuda/debug.h" // catches all CUDA errors
 #include "../event.h"
+
 #include "config.h"
 
 #if EVENT_GRANULARITY
@@ -12,28 +14,6 @@
 #else
 #include "reconstruction_simple.cuh"
 #endif
-
-static cudaError err;
-
-#define cuda_kernel_config(blocks, threads)                      \
-  {                                                              \
-    printf("Cuda kernel config\n");                              \
-    printf("Number of  blocks per kernel: %d\n", blocks);        \
-    printf("Number of threads|block per kernel: %d\n", threads); \
-  }
-
-#define cuda(f, ...)                                 \
-  if ((err = cuda##f(__VA_ARGS__)) != cudaSuccess) { \
-    fprintf(stderr,                                  \
-            "%s:%d %s() %s\n",                       \
-            __FILE__,                                \
-            __LINE__,                                \
-            #f,                                      \
-            cudaGetErrorString(err));                \
-    exit(-1);                                        \
-  }
-
-#define cudathread_per_blockoSync(...) cuda(__VA_ARGS__)
 
 template <typename F>
 void run_reconstruction_kernel(
@@ -127,18 +107,15 @@ void run_reconstruction_kernel(
   cudaTextureObject_t tex_sensitivity;
   cudaCreateTextureObject(&tex_sensitivity, &resDesc, &texDesc, NULL);
 
-  cuda(Malloc, (void**)&gpu_soa_events, events_size);
-  cuda(Memcpy,
-       gpu_soa_events,
-       cpu_soa_events,
-       events_size,
-       cudaMemcpyHostToDevice);
+  cudaMalloc((void**)&gpu_soa_events, events_size);
+  cudaMemcpy(
+      gpu_soa_events, cpu_soa_events, events_size, cudaMemcpyHostToDevice);
 
-  cuda(Malloc, (void**)&gpu_events, events_size);
-  cuda(Memcpy, gpu_events, events, events_size, cudaMemcpyHostToDevice);
+  cudaMalloc((void**)&gpu_events, events_size);
+  cudaMemcpy(gpu_events, events, events_size, cudaMemcpyHostToDevice);
 
-  cuda(Malloc, (void**)&gpu_output, output_size);
-  cuda(Malloc, (void**)&gpu_rho, image_size);
+  cudaMalloc((void**)&gpu_output, output_size);
+  cudaMalloc((void**)&gpu_rho, image_size);
 
   output_callback(detector, -1, cpu_sensitivity, context);
 
@@ -146,8 +123,8 @@ void run_reconstruction_kernel(
     for (int it = 0; it < n_iterations_in_block; ++it) {
       progress_callback(ib * n_iterations_in_block + it, context);
 
-      cuda(Memset, gpu_output, 0, output_size);
-      cuda(Memcpy, gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
+      cudaMemset(gpu_output, 0, output_size);
+      cudaMemcpy(gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
 
       reconstruction_2d_strip_cuda<F> << <blocks, threads>>>
           (detector,
@@ -162,11 +139,10 @@ void run_reconstruction_kernel(
       cudaThreadSynchronize();
 
       // grab output
-      cuda(Memcpy,
-           cpu_output,
-           gpu_output,
-           image_size * n_blocks,
-           cudaMemcpyDeviceToHost);
+      cudaMemcpy(cpu_output,
+                 gpu_output,
+                 image_size * n_blocks,
+                 cudaMemcpyDeviceToHost);
 
       // merge image output from all blocks
       for (int block = 0; block < n_blocks; ++block) {
@@ -181,12 +157,12 @@ void run_reconstruction_kernel(
 
   progress_callback(n_iteration_blocks * n_iterations_in_block, context);
 
-  cuda(DestroyTextureObject, tex_sensitivity);
-  cuda(Free, gpu_soa_events);
-  cuda(Free, gpu_events);
-  cuda(Free, gpu_output);
-  cuda(Free, gpu_rho);
-  cuda(Free, gpu_sensitivity);
+  cudaDestroyTextureObject(tex_sensitivity);
+  cudaFree(gpu_soa_events);
+  cudaFree(gpu_events);
+  cudaFree(gpu_output);
+  cudaFree(gpu_rho);
+  cudaFree(gpu_sensitivity);
   free(cpu_soa_events);
   free(cpu_output);
   free(cpu_rho);

@@ -1,7 +1,8 @@
 #include <cuda_runtime.h>
 #include <cstdio>
-
 #include <sys/time.h>
+
+#include "util/cuda/debug.h" // catches all CUDA errors
 
 #include "config.h"
 #include "prng.cuh"
@@ -11,17 +12,6 @@
 
 // FIXME: remove me
 #include "geometry/pixel.h"
-
-using namespace gpu;
-
-static cudaError err;
-
-#define cuda(f, ...)                                        \
-  if ((err = cuda##f(__VA_ARGS__)) != cudaSuccess) {        \
-    fprintf(stderr, #f "() %s\n", cudaGetErrorString(err)); \
-    exit(-1);                                               \
-  }
-#define cudathread_per_blockoSync(...) cuda(__VA_ARGS__)
 
 void phantom_kernel(int number_of_threads_per_block,
                     int number_of_blocks,
@@ -67,16 +57,13 @@ void phantom_kernel(int number_of_threads_per_block,
   unsigned int* gpu_prng_seed;
   MatrixElement* gpu_MatrixElement;
 
-  cuda(Malloc,
-       (void**)&gpu_prng_seed,
-       number_of_blocks * number_of_threads_per_block * 4 *
-           sizeof(unsigned int));
-  cuda(Malloc,
-       (void**)&gpu_MatrixElement,
-       number_of_blocks * sizeof(MatrixElement));
+  cudaMalloc((void**)&gpu_prng_seed,
+             number_of_blocks * number_of_threads_per_block * 4 *
+                 sizeof(unsigned int));
+  cudaMalloc((void**)&gpu_MatrixElement,
+             number_of_blocks * sizeof(MatrixElement));
 
-  cuda(
-      Memcpy,
+  cudaMemcpy(
       gpu_prng_seed,
       cpu_prng_seed,
       number_of_blocks * number_of_threads_per_block * 4 * sizeof(unsigned int),
@@ -94,11 +81,10 @@ void phantom_kernel(int number_of_threads_per_block,
 #if BROKEN
     mem_clean_lors(cpu_matrix, number_of_blocks);
 #endif
-    cuda(Memcpy,
-         gpu_MatrixElement,
-         cpu_matrix,
-         number_of_blocks * sizeof(MatrixElement),
-         cudaMemcpyHostToDevice);
+    cudaMemcpy(gpu_MatrixElement,
+               cpu_matrix,
+               number_of_blocks * sizeof(MatrixElement),
+               cudaMemcpyHostToDevice);
 
     long total_emissions =
         (long)n_emissions * number_of_blocks * number_of_threads_per_block;
@@ -134,11 +120,10 @@ void phantom_kernel(int number_of_threads_per_block,
       }
     }
 #endif
-    cuda(Memcpy,
-         cpu_matrix,
-         gpu_MatrixElement,
-         number_of_blocks * sizeof(MatrixElement),
-         cudaMemcpyDeviceToHost);
+    cudaMemcpy(cpu_matrix,
+               gpu_MatrixElement,
+               number_of_blocks * sizeof(MatrixElement),
+               cudaMemcpyDeviceToHost);
 
     if (p == 0) {
       for (int i = 0; i < LORS; i++) {
@@ -157,6 +142,6 @@ void phantom_kernel(int number_of_threads_per_block,
     }
   }
 
-  cuda(Free, gpu_prng_seed);
-  cuda(Free, gpu_MatrixElement);
+  cudaFree(gpu_prng_seed);
+  cudaFree(gpu_MatrixElement);
 }
