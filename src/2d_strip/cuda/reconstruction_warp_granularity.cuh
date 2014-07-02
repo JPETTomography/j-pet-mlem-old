@@ -9,7 +9,17 @@
 
 #include "config.h"
 #include "soa.cuh"
-#include "reconstruction_methods.cuh"
+
+template <typename F> int n_pixels_in_line(F length, F pixel_size) $ {
+  return int((length + 0.5f) / pixel_size);
+}
+
+Pixel<> warp_space_pixel(int& offset,
+                         Pixel<>& first_pixel,
+                         Pixel<> ul,
+                         Pixel<> ur,
+                         Pixel<> dl,
+                         int tid) __device__;
 
 template <typename F>
 __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
@@ -133,3 +143,44 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
     }
   }
 }
+
+#if !SIMPLE_WARP_SPACE
+__device__ Pixel<> warp_space_pixel(int& offset,
+                                    Pixel<>& first_pixel,
+                                    Pixel<> ul,
+                                    Pixel<> ur,
+                                    Pixel<> dl,
+                                    int tid) {
+  offset = ur.y - first_pixel.y;
+  int tid_in_warp = threadIdx.x & 31;
+
+  Pixel<> pixel;
+  if (tid_in_warp < offset) {
+    pixel = Pixel<>(first_pixel.x, first_pixel.y + tid_in_warp);
+  } else {
+    pixel = Pixel<>(
+        first_pixel.x + (int)(__fdividef(tid - offset, ur.y - dl.y)) + 1,
+        dl.y + ((tid - offset) % (ur.y - dl.y)));
+  }
+
+  first_pixel.y = ul.y + (32 - offset) % (ur.y - ul.y);
+  first_pixel.x += int(__fdividef(32 - offset, ur.y - ul.y)) + 1;
+
+  return pixel;
+}
+#else
+__device__ Pixel<> warp_space_pixel(int offset,
+                                    Pixel<> ul,
+                                    int width,
+                                    int height,
+                                    int& index) {
+
+  index = threadIdx.x & 31 + offset;
+  Pixel<> pixel;
+  pixel.y = index / width;
+  pixel.x = index - width * pixel.y;
+  pixel.y += ul.y;
+  pixel.x += ul.x;
+  return pixel;
+}
+#endif

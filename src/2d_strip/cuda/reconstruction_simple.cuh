@@ -7,7 +7,6 @@
 
 #include "config.h"
 #include "soa.cuh"
-#include "reconstruction_methods.cuh"
 
 template <typename F>
 __global__ void reconstruction_2d_strip_cuda(

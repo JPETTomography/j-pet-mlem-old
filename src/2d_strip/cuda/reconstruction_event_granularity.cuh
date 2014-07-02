@@ -9,7 +9,10 @@
 
 #include "config.h"
 #include "soa.cuh"
-#include "reconstruction_methods.cuh"
+
+template <typename F> int n_pixels_in_line(F length, F pixel_size) $ {
+  return int((length + 0.5f) / pixel_size);
+}
 
 template <typename F>
 __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
