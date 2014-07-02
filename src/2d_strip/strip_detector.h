@@ -132,8 +132,8 @@ template <typename FType = double> class StripDetector {
     C = 2 * inv_pow_sigma_z;
     F B_2 = (B / 2) * (B / 2);
 
-    bb_y = bby(A, C, B_2);
-    bb_z = bbz(A, C, B_2);
+    bb_y = this->bb_y(A, C, B_2);
+    bb_z = this->bb_z(A, C, B_2);
   }
 
   bool in_ellipse(F A, F B, F C, Point ellipse_center, Point p) const $ {
@@ -141,7 +141,7 @@ template <typename FType = double> class StripDetector {
     F dy = p.x - ellipse_center.x;
     F dz = p.y - ellipse_center.y;
 
-    return (((A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)))) <= 9;
+    return (A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)) <= 9;
   }
 
   const F radius;
@@ -168,6 +168,6 @@ template <typename FType = double> class StripDetector {
   const F half_pixel_width_;
   const F half_pixel_height_;
 
-  F bbz(F A, F C, F B_2) const $ { return 3 / compat::sqrt(C - (B_2 / A)); }
-  F bby(F A, F C, F B_2) const $ { return 3 / compat::sqrt(A - (B_2 / C)); }
+  F bb_z(F A, F C, F B_2) const $ { return 3 / compat::sqrt(C - (B_2 / A)); }
+  F bb_y(F A, F C, F B_2) const $ { return 3 / compat::sqrt(A - (B_2 / C)); }
 };
