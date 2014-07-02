@@ -14,14 +14,16 @@ template <typename F> int n_pixels_in_line(F length, F pixel_size) $ {
 }
 
 template <typename F>
-__global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
-                                             F* events_soa,
-                                             int n_events,
-                                             F* output,
-                                             F* rho,
-                                             cudaTextureObject_t sensitivity,
-                                             int n_blocks,
-                                             int n_threads_per_block) {
+__global__ void reconstruction(StripDetector<F> detector,
+                               F* events_z_u,
+                               F* events_z_d,
+                               F* events_dl,
+                               int n_events,
+                               F* output,
+                               F* rho,
+                               cudaTextureObject_t sensitivity,
+                               int n_blocks,
+                               int n_threads_per_block) {
 
   Kernel<F> kernel;
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
@@ -40,10 +42,9 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
 #ifdef AOS_ACCESS
       Event<F> event = events[i * n_blocks * n_threads_per_block + tid];
 #else
-      Event<F> event(
-          events_soa[i * n_blocks * n_threads_per_block + tid + 0 * n_events],
-          events_soa[i * n_blocks * n_threads_per_block + tid + 1 * n_events],
-          events_soa[i * n_blocks * n_threads_per_block + tid + 2 * n_events]);
+      Event<F> event(events_z_u[i * n_blocks * n_threads_per_block + tid],
+                     events_z_d[i * n_blocks * n_threads_per_block + tid],
+                     events_dl[i * n_blocks * n_threads_per_block + tid]);
 #endif
 
       F acc = 0;

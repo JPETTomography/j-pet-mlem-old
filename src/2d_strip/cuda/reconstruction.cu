@@ -39,15 +39,11 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
   size_t image_size = detector.total_n_pixels * sizeof(F);
   size_t output_size = image_size * n_blocks;
-  size_t events_size = n_events * sizeof(Event<F>);
+  size_t events_size = n_events * sizeof(F);
 
+  F* cpu_sensitivity = (F*)malloc(image_size);
   F* cpu_output = (F*)malloc(image_size);
   F* cpu_rho = (F*)malloc(image_size);
-  F* cpu_sensitivity = (F*)malloc(image_size);
-
-  for (int i = 0; i < detector.total_n_pixels; ++i) {
-    cpu_rho[i] = 100;
-  }
 
   for (int x = 0; x < detector.n_y_pixels; ++x) {
     for (int y = 0; y < detector.n_z_pixels; ++y) {
@@ -57,21 +53,23 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
     }
   }
 
-  F* gpu_output;
-  F* gpu_rho;
-  Event<F>* gpu_events;
-  F* gpu_soa_events;
-  F* cpu_soa_events;
-
-  cpu_soa_events = (F*)malloc(events_size);
-  for (int i = 0; i < n_events; ++i) {
-    cpu_soa_events[i + 0 * n_events] = events[i].z_u;
-    cpu_soa_events[i + 1 * n_events] = events[i].z_d;
-    cpu_soa_events[i + 2 * n_events] = events[i].dl;
+  for (int i = 0; i < detector.total_n_pixels; ++i) {
+    cpu_rho[i] = 100;
   }
 
-  // declare and allocate memory
+  F* cpu_events_z_u = (F*)malloc(events_size);
+  F* cpu_events_z_d = (F*)malloc(events_size);
+  F* cpu_events_dl = (F*)malloc(events_size);
+
+  for (int i = 0; i < n_events; ++i) {
+    cpu_events_z_u[i] = events[i].z_u;
+    cpu_events_z_d[i] = events[i].z_d;
+    cpu_events_dl[i] = events[i].dl;
+  }
+
   F* gpu_sensitivity;
+  F* gpu_output;
+  F* gpu_rho;
 
   size_t pitch;
   cudaMallocPitch(&gpu_sensitivity,
@@ -86,6 +84,8 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                sizeof(F) * detector.n_y_pixels,
                detector.n_z_pixels,
                cudaMemcpyHostToDevice);
+
+  free(cpu_sensitivity);
 
   // create texture object
   cudaResourceDesc resDesc;
@@ -107,15 +107,26 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   cudaTextureObject_t tex_sensitivity;
   cudaCreateTextureObject(&tex_sensitivity, &resDesc, &texDesc, NULL);
 
-  cudaMalloc((void**)&gpu_soa_events, events_size);
-  cudaMemcpy(
-      gpu_soa_events, cpu_soa_events, events_size, cudaMemcpyHostToDevice);
-
-  cudaMalloc((void**)&gpu_events, events_size);
-  cudaMemcpy(gpu_events, events, events_size, cudaMemcpyHostToDevice);
-
   cudaMalloc((void**)&gpu_output, output_size);
   cudaMalloc((void**)&gpu_rho, image_size);
+
+  F* gpu_events_z_u;
+  F* gpu_events_z_d;
+  F* gpu_events_dl;
+
+  cudaMalloc((void**)&gpu_events_z_u, events_size);
+  cudaMalloc((void**)&gpu_events_z_d, events_size);
+  cudaMalloc((void**)&gpu_events_dl, events_size);
+
+  cudaMemcpy(
+      gpu_events_z_u, cpu_events_z_u, events_size, cudaMemcpyHostToDevice);
+  cudaMemcpy(
+      gpu_events_z_d, cpu_events_z_d, events_size, cudaMemcpyHostToDevice);
+  cudaMemcpy(gpu_events_dl, cpu_events_dl, events_size, cudaMemcpyHostToDevice);
+
+  free(cpu_events_z_u);
+  free(cpu_events_z_d);
+  free(cpu_events_dl);
 
   output_callback(detector, -1, cpu_sensitivity, context);
 
@@ -126,15 +137,16 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
       cudaMemset(gpu_output, 0, output_size);
       cudaMemcpy(gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
 
-      reconstruction_2d_strip_cuda<F> << <blocks, threads>>>
-          (detector,
-           gpu_soa_events,
-           n_events,
-           gpu_output,
-           gpu_rho,
-           tex_sensitivity,
-           n_blocks,
-           n_threads_per_block);
+      reconstruction<F> << <blocks, threads>>> (detector,
+                                                gpu_events_z_u,
+                                                gpu_events_z_d,
+                                                gpu_events_dl,
+                                                n_events,
+                                                gpu_output,
+                                                gpu_rho,
+                                                tex_sensitivity,
+                                                n_blocks,
+                                                n_threads_per_block);
 
       cudaThreadSynchronize();
 
@@ -158,15 +170,14 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   progress_callback(n_iteration_blocks * n_iterations_in_block, context);
 
   cudaDestroyTextureObject(tex_sensitivity);
-  cudaFree(gpu_soa_events);
-  cudaFree(gpu_events);
+  cudaFree(gpu_events_z_u);
+  cudaFree(gpu_events_z_d);
+  cudaFree(gpu_events_dl);
   cudaFree(gpu_output);
   cudaFree(gpu_rho);
   cudaFree(gpu_sensitivity);
-  free(cpu_soa_events);
   free(cpu_output);
   free(cpu_rho);
-  free(cpu_sensitivity);
 }
 
 template void run_gpu_reconstruction<float>(

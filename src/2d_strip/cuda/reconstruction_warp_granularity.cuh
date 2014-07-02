@@ -21,14 +21,16 @@ Pixel<> warp_space_pixel(int& offset,
                          int tid) __device__;
 
 template <typename F>
-__global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
-                                             F* events_soa,
-                                             int n_events,
-                                             F* output,
-                                             F* rho,
-                                             cudaTextureObject_t sensitivity,
-                                             int n_blocks,
-                                             int n_threads_per_block) {
+__global__ void reconstruction(StripDetector<F> detector,
+                               F* events_z_u,
+                               F* events_z_d,
+                               F* events_dl,
+                               int n_events,
+                               F* output,
+                               F* rho,
+                               cudaTextureObject_t sensitivity,
+                               int n_blocks,
+                               int n_threads_per_block) {
 
   Kernel<F> kernel;
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
@@ -51,9 +53,8 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
     if (warp_id >= n_events)
       break;
 
-    Event<F> event(events_soa[warp_id + 0 * n_events],
-                   events_soa[warp_id + 1 * n_events],
-                   events_soa[warp_id + 2 * n_events]);
+    Event<F> event(
+        events_z_u[warp_id], events_z_d[warp_id], events_dl[warp_id]);
 
     F acc = 0;
 
