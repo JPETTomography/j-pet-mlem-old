@@ -17,34 +17,21 @@ Prerequisites
 
 * UNIX compatible build environment such as *Linux* or *Mac OS X*
 * *C++11* compatible compiler i.e. *GCC* 4.6, *Clang* 3.2 or *ICC* 13
-* *CMake* 2.8 with *GNU Make* 3.8 or *Ninja* 1.4
+* *CMake* 2.8 for build script generation
+* *GNU Make* 3.8 for building using `Makefile`
 * `libpng` headers and libraries for PNG output
 
 ### Optional
 
 * *QtCreator* 3.1 for project editing via `CMakeLists.txt`
 * *CUDA* 6.0 (automatically detected by `cmake`)
+* *Ninja* 1.4 for faster re-builds (with `cmake -G Ninja`)
 
-Coding style
-------------
+Building
+--------
 
-[style]: http://dev.chromium.org/developers/coding-style
-[clang-format]: http://clang.llvm.org/docs/ClangFormat.html 
-
-This project follows *C++11* and [Chromium/Google source coding style][style].
-
-This coding style is enforced using [clang-format][clang-format] reformat via:
-
-	./scripts/format
-
-When using *Qt Creator* code style used in this project can be imported using
-*Settings > C++ > Code Style > Import* from `src/Google.xml` file.
-
-Build
------
-
-Use *Qt Creator* to build source code or build from command line using `cmake`
-with following commands:
+Project uses *CMake* to generate platform specific build scripts, to build with
+default settings run:
 
 	cmake . && make
 
@@ -54,8 +41,40 @@ Additional options:
 
 		cmake <path_to_project>
 
+2. To use *Ninja* build instead default (`make`) use:
+
+		cmake -G Ninja
+
 3. To use different than default compiler:
 
 		cmake -DCMAKE_CXX_COMPILER=icpc  # for Intel C++ compiler
 		cmake -DCMAKE_CXX_COMPILER=g++   # for GCC
 		cmake -DCMAKE_CXX_COMPILER=clang # for Clang
+
+Coding Style
+------------
+
+[style]: http://dev.chromium.org/developers/coding-style
+[clang-format]: http://clang.llvm.org/docs/ClangFormat.html
+
+This project follows *C++11* and [Chromium/Google source coding style][style]
+with custom settings described in `.clang-format`.
+
+Prior committing code should be formatted using [clang-format][clang-format]
+script calling:
+
+	./scripts/format
+
+When using *Qt Creator* code style used in this project can be imported using
+*Settings > C++ > Code Style > Import* from `src/Google.xml` file.
+
+*Qt Creator* 3.1 supports also *ClangFormat* beautifier, however *File* format
+should be selected in *Settings > Beautifier > Clang Format > Style*.
+
+Naming Convention
+-----------------
+
+1. Camel-case naming for classes and template names i.e. `SmallPotato`
+2. Lower case with underscores for class files, i.e.: `small_potato.h`
+3. Constants are upper case with underscores, i.e.: `BROWN_POTATO`
+4. Variables and instances using lower case, i.e.: `some_potato`
