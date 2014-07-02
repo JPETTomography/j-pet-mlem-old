@@ -8,7 +8,6 @@
 #include "../strip_detector.h"
 
 #include "config.h"
-#include "soa.cuh"
 
 template <typename F> int n_pixels_in_line(F length, F pixel_size) $ {
   return int((length + 0.5f) / pixel_size);
@@ -16,7 +15,7 @@ template <typename F> int n_pixels_in_line(F length, F pixel_size) $ {
 
 template <typename F>
 __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
-                                             SOA::Events<F>* events,
+                                             F* events_soa,
                                              int n_events,
                                              F* output,
                                              F* rho,
@@ -39,13 +38,12 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
     for (int j = 0; j < 1; ++j) {
 
 #ifdef AOS_ACCESS
-      Event<F> event =
-          events[(i * cfg.number_of_blocks * cfg.number_of_threads_per_block) +
-                 tid];
+      Event<F> event = events[i * n_blocks * n_threads_per_block + tid];
 #else
-      Event<F> event(events->z_u[(i * n_blocks * n_threads_per_block) + tid],
-                     events->z_d[(i * n_blocks * n_threads_per_block) + tid],
-                     events->dl[(i * n_blocks * n_threads_per_block) + tid]);
+      Event<F> event(
+          events_soa[i * n_blocks * n_threads_per_block + tid + 0 * n_events],
+          events_soa[i * n_blocks * n_threads_per_block + tid + 1 * n_events],
+          events_soa[i * n_blocks * n_threads_per_block + tid + 2 * n_events]);
 #endif
 
       F acc = 0;

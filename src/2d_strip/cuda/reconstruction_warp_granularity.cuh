@@ -8,7 +8,6 @@
 #include "../strip_detector.h"
 
 #include "config.h"
-#include "soa.cuh"
 
 template <typename F> int n_pixels_in_line(F length, F pixel_size) $ {
   return int((length + 0.5f) / pixel_size);
@@ -23,7 +22,7 @@ Pixel<> warp_space_pixel(int& offset,
 
 template <typename F>
 __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
-                                             SOA::Events<F>* events,
+                                             F* events_soa,
                                              int n_events,
                                              F* output,
                                              F* rho,
@@ -52,8 +51,9 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
     if (warp_id >= n_events)
       break;
 
-    Event<F> event(
-        events->z_u[warp_id], events->z_d[warp_id], events->dl[warp_id]);
+    Event<F> event(events_soa[warp_id + 0 * n_events],
+                   events_soa[warp_id + 1 * n_events],
+                   events_soa[warp_id + 2 * n_events]);
 
     F acc = 0;
 

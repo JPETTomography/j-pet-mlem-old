@@ -59,6 +59,7 @@ void run_reconstruction_kernel(
 
   size_t image_size = detector.total_n_pixels * sizeof(F);
   size_t output_size = image_size * n_blocks;
+  size_t events_size = n_events * sizeof(Event<F>);
 
   F* cpu_output = (F*)malloc(image_size);
   F* cpu_rho = (F*)malloc(image_size);
@@ -79,23 +80,16 @@ void run_reconstruction_kernel(
   F* gpu_output;
   F* gpu_rho;
   Event<F>* gpu_events;
-  SOA::Events<F>* gpu_soa_events;
-  SOA::Events<F>* cpu_soa_events;
+  F* gpu_soa_events;
+  F* cpu_soa_events;
 
-  cpu_soa_events = (SOA::Events<F>*)malloc(sizeof(SOA::Events<F>));
-
-#ifdef OFFSET_WARP_TEST
-  int offset = off;
-  event<F> data_chunk[offset];
-
-  for (int i = 0; i < offset; ++i) {
-    data_chunk[i] = events[i];
+  cpu_soa_events = (F*)malloc(events_size);
+  for (int i = 0; i < n_events; ++i) {
+    cpu_soa_events[i + 0 * n_events] = events[i].z_u;
+    cpu_soa_events[i + 1 * n_events] = events[i].z_d;
+    cpu_soa_events[i + 2 * n_events] = events[i].dl;
   }
 
-  cpu_soa_event_list->set_data_chunk(data_chunk, offset, event_size);
-#else
-  cpu_soa_events->load(events, n_events);
-#endif
   // declare and allocate memory
   F* gpu_sensitivity;
 
@@ -133,19 +127,15 @@ void run_reconstruction_kernel(
   cudaTextureObject_t tex_sensitivity;
   cudaCreateTextureObject(&tex_sensitivity, &resDesc, &texDesc, NULL);
 
-  cuda(Malloc, (void**)&gpu_soa_events, sizeof(SOA::Events<F>));
+  cuda(Malloc, (void**)&gpu_soa_events, events_size);
   cuda(Memcpy,
        gpu_soa_events,
        cpu_soa_events,
-       sizeof(SOA::Events<F>),
+       events_size,
        cudaMemcpyHostToDevice);
 
-  cuda(Malloc, (void**)&gpu_events, n_events * sizeof(Event<F>));
-  cuda(Memcpy,
-       gpu_events,
-       events,
-       n_events * sizeof(Event<F>),
-       cudaMemcpyHostToDevice);
+  cuda(Malloc, (void**)&gpu_events, events_size);
+  cuda(Memcpy, gpu_events, events, events_size, cudaMemcpyHostToDevice);
 
   cuda(Malloc, (void**)&gpu_output, output_size);
   cuda(Malloc, (void**)&gpu_rho, image_size);

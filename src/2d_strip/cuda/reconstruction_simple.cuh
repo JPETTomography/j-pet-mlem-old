@@ -6,12 +6,11 @@
 #include "../strip_detector.h"
 
 #include "config.h"
-#include "soa.cuh"
 
 template <typename F>
 __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
-                                             SOA::Events<F>* events,
-                                             int event_list_size,
+                                             F* events_soa,
+                                             int n_events,
                                              F* output,
                                              F* rho,
                                              cudaTextureObject_t sensitivity,
@@ -19,17 +18,16 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
                                              int n_threads_per_block) {
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
-  int block_chunk =
-      int(ceilf(event_list_size / (n_blocks * n_threads_per_block)));
+  int block_chunk = int(ceilf(n_events / (n_blocks * n_threads_per_block)));
 
   for (int i = 0; i < block_chunk; ++i) {
 
-    if ((i * n_blocks * n_threads_per_block) + tid < event_list_size) {
+    if ((i * n_blocks * n_threads_per_block) + tid < n_events) {
 
       for (int j = 0; j < 1; ++j) {
-
-        F y = events->z_u[(i * n_blocks * n_threads_per_block) + tid];
-        F z = events->z_d[(i * n_blocks * n_threads_per_block) + tid];
+        F y, z;
+        y = events_soa[i * n_blocks * n_threads_per_block + tid + 0 * n_events];
+        z = events_soa[i * n_blocks * n_threads_per_block + tid + 1 * n_events];
         F acc = 0;
 
         int y_step = 3 * (detector.sigma_dl / detector.pixel_height);
