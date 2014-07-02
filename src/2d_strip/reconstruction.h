@@ -15,7 +15,7 @@
 #define omp_get_thread_num() 0
 #endif
 
-#define RECONSTRUCTION_OLD_KERNEL 1
+#define BB_UPDATE 1
 
 template <typename FType = double, typename DetectorType = StripDetector<FType>>
 class Reconstruction {
@@ -62,9 +62,9 @@ class Reconstruction {
     rho.assign(n_pixels, std::vector<F>(n_pixels, 100));
     rho_temp.assign(n_pixels, std::vector<F>(n_pixels, 10));
 
-    sqrt_det_cor_mat =
-        std::sqrt(detector.inv_cor_mat_diag[0] * detector.inv_cor_mat_diag[1] *
-                  detector.inv_cor_mat_diag[2]);
+    sqrt_det_cor_mat = std::sqrt(detector.inv_cor_mat_diag[0] *  //
+                                 detector.inv_cor_mat_diag[1] *  //
+                                 detector.inv_cor_mat_diag[2]);
 
     sensitivity.assign(n_pixels, std::vector<F>(n_pixels));
 
@@ -76,11 +76,11 @@ class Reconstruction {
     }
   }
 
-  /// Performs n_iterations of the list mode MEML algorithm
+  /// Performs n_iterations of the list mode MLEM algorithm
   template <typename ProgressCallback>
   void operator()(ProgressCallback progress,
                   int n_iterations,
-                  int n_iterations_so_far) {
+                  int n_iterations_so_far = 0) {
 
     for (int i = 0; i < n_iterations; i++) {
 
@@ -95,30 +95,22 @@ class Reconstruction {
 #pragma omp parallel for schedule(dynamic)
 #endif
       for (int id = 0; id < size; ++id) {
-
         int tid = omp_get_thread_num();
 
-#if RECONSTRUCTION_OLD_KERNEL
+#if BB_UPDATE
         auto event = events[id];
         F tan = event.tan(detector.radius);
         F y = event.y(tan);
         F z = event.z(y, tan);
-
         F angle = std::atan(tan);
 
         Point ellipse_center = Point(y, z);
-
-        update_bb(ellipse_center, angle, y, tan, tid);
+        bb_update(ellipse_center, angle, y, tan, tid);
 #else
         F y = events[id].z_u;
         F z = events[id].z_d;
 
-        if (id == 0) {
-          std::cout << y << " " << z << std::endl;
-        }
-
         Point ellipse_center = Point(y, z);
-
         simple_update(ellipse_center, y, z, tid, id);
 #endif
       }
@@ -128,16 +120,48 @@ class Reconstruction {
       for (int i = 0; i < n_pixels; ++i) {
         for (int j = 0; j < n_pixels; ++j) {
           for (int k = 0; k < omp_get_max_threads(); ++k) {
-
             rho[i][j] += thread_rho[k][i + j * n_pixels];
-#if DEBUG
-            if (rho[i][j] > 0) {
-              std::cout << i << " " << j << " " << rho[i][j] << std::endl;
-            }
-#endif
           }
         }
       }
+    }
+  }
+
+  // accessor for CUDA compatibility
+  std::vector<Event<F>>& get_event_list() { return events; }
+
+  template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
+    int size;
+    in >> size;
+
+    for (int it = 0; it < size; ++it) {
+      F z_u, z_d, dl;
+      in >> z_u >> z_d >> dl;
+      Event<F> temp_event(z_u, z_d, dl);
+      events.push_back(temp_event);
+    }
+    return *this;
+  }
+
+  template <class FileWriter> void output_bitmap(FileWriter& fw) {
+    fw.template write_header<>(n_pixels, n_pixels);
+
+    F output_max = 0;
+    for (auto& col : rho) {
+      for (auto& row : col) {
+        output_max = std::max(output_max, row);
+      }
+    }
+
+    auto output_gain =
+        static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
+
+    for (int y = 0; y < n_pixels; ++y) {
+      uint8_t row[n_pixels];
+      for (auto x = 0; x < n_pixels; ++x) {
+        row[x] = std::numeric_limits<uint8_t>::max() - output_gain * rho[y][x];
+      }
+      fw.write_row(row);
     }
   }
 
@@ -201,63 +225,12 @@ class Reconstruction {
     }
   }
 
-  void simple_update(Point& ellipse_center, F& y, F& z, int& tid, int& iter) {
-
-    Pixel center_pixel =
-        pixel_location(ellipse_center.first, ellipse_center.second);
-
-    int y_line = 3 * (detector.s_z() / pixel_size);
-    int z_line = 3 * (detector.s_dl() / pixel_size);
-
-    if (iter == 0) {
-
-      std::cout << "Pixel Limit: " << center_pixel.first << " "
-                << center_pixel.second << " " << y_line << " " << z_line
-                << std::endl;
-      std::cout << "Limit min Limit max: " << center_pixel.first - y_line << " "
-                << center_pixel.first + y_line << " "
-                << center_pixel.second - z_line << " "
-                << center_pixel.second + z_line << std::endl;
-    }
-
-    std::vector<std::pair<Pixel, F>> ellipse_kernels;
-    ellipse_kernels.reserve(2000);
-
-    F acc = 0;
-
-    for (int iz = center_pixel.first - y_line; iz < center_pixel.first + y_line;
-         ++iz) {
-      for (int iy = center_pixel.second - z_line;
-           iy < center_pixel.second + z_line;
-           ++iy) {
-
-        Point point = detector.pixel_center(iy, iz);
-
-        F event_kernel =
-            kernel.test_kernel(y, z, point, detector.s_z(), detector.s_dl());
-
-        ellipse_kernels.push_back(
-            std::pair<Pixel, F>(Pixel(iy, iz), event_kernel));
-#if DEBUG
-        if (iter == 0) {
-
-          std::cout << "PP:: " << iz << " " << iy << " " << pp.first << " "
-                    << pp.second << " EVENT: " << event_kernel << std::endl;
-
-          std::cout << "LOCATION: " << iy + (iz * n_pixels) << std::endl;
-        }
-#endif
-        acc += event_kernel * rho[iy][iz];
-      }
-    }
-
-    for (auto& e : ellipse_kernels) {
-      thread_rho[tid][e.first.first + (e.first.second * n_pixels)] +=
-          e.second * rho[e.first.first][e.first.second] / acc;
-    }
+ private:
+  int n_pixels_in_line(F length) const {
+    return static_cast<int>((length + F(0.5)) / pixel_size);
   }
 
-  void update_bb(Point ellipse_center, F angle, F y, F tan, int tid) {
+  void bb_update(Point ellipse_center, F angle, F y, F tan, int tid) {
 
     F sec, sec_sq, A, B, C, bb_y, bb_z;
     detector.ellipse_bb(angle, tan, sec, sec_sq, A, B, C, bb_y, bb_z);
@@ -304,46 +277,34 @@ class Reconstruction {
     }
   }
 
-  int n_pixels_in_line(F length) {
-    F d = (length + F(0.5)) / pixel_size;
-    return int(d);
-  }
+  void simple_update(Point ellipse_center, F y, F z, int tid) {
 
- public:
-  template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
-    int size;
-    in >> size;
+    Pixel pixel = detector.pixel_location(ellipse_center);
 
-    for (int it = 0; it < size; ++it) {
-      F z_u, z_d, dl;
-      in >> z_u >> z_d >> dl;
-      Event<F> temp_event(z_u, z_d, dl);
-      events.push_back(temp_event);
-    }
-    return *this;
-  }
+    int y_line = 3 * (detector.sigma_z / pixel_size);
+    int z_line = 3 * (detector.sigma_dl / pixel_size);
 
-  template <class FileWriter> void output_bitmap(FileWriter& fw) {
-    fw.template write_header<>(n_pixels, n_pixels);
+    std::vector<std::pair<Pixel, F>> ellipse_kernels;
+    ellipse_kernels.reserve(2000);
 
-    F output_max = 0;
-    for (auto& col : rho) {
-      for (auto& row : col) {
-        output_max = std::max(output_max, row);
+    F acc = 0;
+
+    for (int iz = pixel.x - y_line; iz < pixel.y + y_line; ++iz) {
+      for (int iy = pixel.y - z_line; iy < pixel.z + z_line; ++iy) {
+
+        Point point = detector.pixel_center(iy, iz);
+
+        F event_kernel = kernel.test_kernel(
+            y, z, point, detector.sigma_z, detector.sigma_dl);
+
+        ellipse_kernels.push_back(std::make_pair(Pixel(iy, iz), event_kernel));
+        acc += event_kernel * rho[iy][iz];
       }
     }
 
-    auto output_gain =
-        static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
-
-    for (int y = 0; y < n_pixels; ++y) {
-      uint8_t row[n_pixels];
-      for (auto x = 0; x < n_pixels; ++x) {
-        row[x] = std::numeric_limits<uint8_t>::max() - output_gain * rho[y][x];
-      }
-      fw.write_row(row);
+    for (auto& e : ellipse_kernels) {
+      thread_rho[tid][e.first.first + (e.first.second * n_pixels)] +=
+          e.second * rho[e.first.first][e.first.second] / acc;
     }
   }
-
-  std::vector<Event<F>>& get_event_list() { return events; }
 };

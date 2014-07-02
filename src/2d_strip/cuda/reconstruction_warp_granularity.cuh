@@ -52,31 +52,22 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
     F y = event.y(tan);
     F z = event.z(y, tan);
     F angle = compat::atan(tan);
-    F cos = compat::cos(angle);
+    Point<F> ellipse_center(y, z);
 
-    F sec = 1 / cos;
-    F sec_sq = sec * sec;
-
-    F A = (((4 / (cos * cos)) * detector.inv_pow_sigma_dl) +
-           (2 * tan * tan * detector.inv_pow_sigma_z));
-    F B = -4 * tan * detector.inv_pow_sigma_z;
-    F C = 2 * detector.inv_pow_sigma_z;
-    F B_2 = (B / 2) * (B / 2);
-
-    F bb_y = bby(A, C, B_2);
-    F bb_z = bbz(A, C, B_2);
+    F sec, sec_sq, A, B, C, bb_y, bb_z;
+    detector.ellipse_bb(angle, tan, sec, sec_sq, A, B, C, bb_y, bb_z);
 
     Pixel<> center_pixel = detector.pixel_location(y, z);
 
     // bounding box limits for event
-    Pixel<> ur(center_pixel.x - pixels_in_line(bb_y, detector.pixel_height),
-               center_pixel.y + pixels_in_line(bb_z, detector.pixel_width));
-    Pixel<> dl(center_pixel.x + pixels_in_line(bb_y, detector.pixel_height),
-               center_pixel.y - pixels_in_line(bb_z, detector.pixel_width));
-    Pixel<> ul(center_pixel.x - pixels_in_line(bb_y, detector.pixel_height),
-               center_pixel.y - pixels_in_line(bb_z, detector.pixel_width));
+    Pixel<> ur(center_pixel.x - n_pixels_in_line(bb_y, detector.pixel_height),
+               center_pixel.y + n_pixels_in_line(bb_z, detector.pixel_width));
+    Pixel<> dl(center_pixel.x + n_pixels_in_line(bb_y, detector.pixel_height),
+               center_pixel.y - n_pixels_in_line(bb_z, detector.pixel_width));
+    Pixel<> ul(center_pixel.x - n_pixels_in_line(bb_y, detector.pixel_height),
+               center_pixel.y - n_pixels_in_line(bb_z, detector.pixel_width));
 
-    int bb_size = ceilf(((ur.y - ul.y) * (dl.x - ur.x)) / WARP_SIZE);
+    int bb_size = ((ur.y - ul.y) * (dl.x - ur.x) + WARP_SIZE - 1) / WARP_SIZE;
 
     int pixel_count = 0;
 
@@ -86,7 +77,7 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
       Pixel<> pixel = warp_space_pixel(offset, first_pixel, ul, ur, dl, tid);
       Point<F> point = detector.pixel_center(pixel);
 
-      if (in_ellipse(A, B, C, y, z, point)) {
+      if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
         point.x -= y;
         point.y -= z;
 

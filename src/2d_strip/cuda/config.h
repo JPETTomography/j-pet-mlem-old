@@ -2,9 +2,9 @@
 
 #define WARP_SIZE 32
 
-// reconstruction mode
-#define EVENT_GRANULARITY 1
-#define WARP_GRANULARITY 0
+// reconstruction mode (comment out both for simple kernel)
+//#define EVENT_GRANULARITY 1
+#define WARP_GRANULARITY 1
 
 #define NORMAL_PHANTOM 0
 

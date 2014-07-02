@@ -60,10 +60,10 @@ __global__ void reconstruction_2d_strip_cuda(StripDetector<F> detector,
       Pixel<> center_pixel = detector.pixel_location(y, z);
 
       // bounding box limits for event
-      Pixel<> ur(center_pixel.x - pixels_in_line(bb_y, detector.pixel_height),
-                 center_pixel.y + pixels_in_line(bb_z, detector.pixel_width));
-      Pixel<> dl(center_pixel.x + pixels_in_line(bb_y, detector.pixel_height),
-                 center_pixel.y - pixels_in_line(bb_z, detector.pixel_width));
+      Pixel<> ur(center_pixel.x - n_pixels_in_line(bb_y, detector.pixel_height),
+                 center_pixel.y + n_pixels_in_line(bb_z, detector.pixel_width));
+      Pixel<> dl(center_pixel.x + n_pixels_in_line(bb_y, detector.pixel_height),
+                 center_pixel.y - n_pixels_in_line(bb_z, detector.pixel_width));
 
       for (int iy = ur.x; iy < dl.x; ++iy) {
         for (int iz = dl.y; iz < ur.y; ++iz) {
