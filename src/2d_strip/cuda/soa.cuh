@@ -2,11 +2,11 @@
 
 #include <cuda_runtime.h>
 
-// #define SOA_SIZE 180000000
-#define SOA_SIZE 1000000
-
 namespace SOA {
-  template <typename F> struct Events {
+
+  template <typename F, int SOA_SIZE = 180000000> struct Events {
+
+#if !DYNAMIC_SOA
 
     F z_u[SOA_SIZE];
     F z_d[SOA_SIZE];
@@ -28,32 +28,29 @@ namespace SOA {
     }
 
     void load(Event<float>* aos_data, int aos_data_size) {
-#if DISABLE
-      data_size = aos_data_size;
-#endif
       for (int i = 0; i < aos_data_size; ++i) {
         z_u[i] = aos_data[i].z_u;
         z_d[i] = aos_data[i].z_d;
         dl[i] = aos_data[i].dl;
       }
     }
-#if DISABLE
+
+#else
+
     T* z_u;
     T* z_d;
     T* dl;
     int malloc_size;
-    int data_size;
+    int data_size = aos_data_size;
 
     soa_event() {
-
-      printf("Allocate the SOA representation for events\n");
       z_u = (T*)malloc(N * sizeof(float));
       z_d = (T*)malloc(N * sizeof(float));
       dl = (T*)malloc(N * sizeof(float));
       malloc_size = N;
     }
 
-    void set_data(event<float>* aos_data, int aos_data_size) {
+    void load(Event<float>* aos_data, int aos_data_size) {
 
       data_size = aos_data_size;
 
@@ -71,6 +68,7 @@ namespace SOA {
       free(dl);
       printf("Free memory of SOA representation for events\n");
     }
+
 #endif
   };
 }
