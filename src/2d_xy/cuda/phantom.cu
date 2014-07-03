@@ -95,31 +95,26 @@ void run_gpu_phantom(int number_of_threads_per_block,
            n_emissions,
            total_emissions);
 
-#if BROKEN
     float fov_radius = radius / M_SQRT2;
     if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
-      gpu_phantom_generation << <blocks, threads>>>
-          (i,
-           j,
-           n_emissions,
-           gpu_prng_seed,
-           gpu_MatrixElement,
-           number_of_threads_per_block,
-           pixels_in_row,
-           radius,
-           h_detector,
-           w_detector,
-           pixel_size);
-
-      cudaThreadSynchronize();
-
-      cudaError_t info = cudaGetLastError();
-
-      if (cudaGetLastError() != cudaSuccess) {
-        return false;
-      }
-    }
+#if __CUDACC__
+#define gpu_phantom_generation gpu_phantom_generation << <blocks, threads>>>
 #endif
+#if WHERE_IS_PHANTOM
+      gpu_phantom_generation(i,
+                             j,
+                             n_emissions,
+                             gpu_prng_seed,
+                             gpu_MatrixElement,
+                             number_of_threads_per_block,
+                             pixels_in_row,
+                             radius,
+                             h_detector,
+                             w_detector,
+                             pixel_size);
+#endif
+      cudaThreadSynchronize();
+    }
     cudaMemcpy(cpu_matrix,
                gpu_MatrixElement,
                number_of_blocks * sizeof(MatrixElement),

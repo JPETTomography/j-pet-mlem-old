@@ -146,17 +146,19 @@ OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
       ((int)(ceil(2.0f * (2.0f * (radius + h_detector)) / 0.01f)) + 1) / 2 * 2;
 #endif
 
-  //  gpu_kernel_parameters kernel_parameters;
+#if USE_GPU_KERNEL_PARAMETERS
+  gpu_kernel_parameters kernel_parameters;
 
-  //  kernel_parameters.x = 0;
-  //  kernel_parameters.y = 0;
-  //  kernel_parameters.iteration = iteration_per_thread;
-  //  kernel_parameters.tof_n_positions = n_tof_positions;
+  kernel_parameters.x = 0;
+  kernel_parameters.y = 0;
+  kernel_parameters.iteration = iteration_per_thread;
+  kernel_parameters.tof_n_positions = n_tof_positions;
 
-  //  kernel_parameters.radius = radius;
-  //  kernel_parameters.h_detector = h_detector;
-  //  kernel_parameters.w_detector = w_detector;
-  //  kernel_parameters.pixel_size = s_pixel;
+  kernel_parameters.radius = radius;
+  kernel_parameters.h_detector = h_detector;
+  kernel_parameters.w_detector = w_detector;
+  kernel_parameters.pixel_size = s_pixel;
+#endif
 
   int triangle_pixel_size = (pixels_in_row / 2 * (pixels_in_row / 2 + 1) / 2);
 

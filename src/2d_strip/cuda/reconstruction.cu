@@ -137,16 +137,19 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
       cudaMemset(gpu_output, 0, output_size);
       cudaMemcpy(gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
 
-      reconstruction<F> << <blocks, threads>>> (detector,
-                                                gpu_events_z_u,
-                                                gpu_events_z_d,
-                                                gpu_events_dl,
-                                                n_events,
-                                                gpu_output,
-                                                gpu_rho,
-                                                tex_sensitivity,
-                                                n_blocks,
-                                                n_threads_per_block);
+#if __CUDACC__
+#define reconstruction reconstruction << <blocks, threads>>>
+#endif
+      reconstruction(detector,
+                     gpu_events_z_u,
+                     gpu_events_z_d,
+                     gpu_events_dl,
+                     n_events,
+                     gpu_output,
+                     gpu_rho,
+                     tex_sensitivity,
+                     n_blocks,
+                     n_threads_per_block);
 
       cudaThreadSynchronize();
 

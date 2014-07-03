@@ -87,17 +87,20 @@ bool run_gpu_matrix(int pixel_i,
 
   if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
 
-    monte_carlo_kernel << <blocks, threads>>> (i,
-                                               j,
-                                               n_emissions,
-                                               n_tof_positions,
-                                               gpu_prng_seed,
-                                               gpu_MatrixElement,
-                                               radius,
-                                               h_detector,
-                                               w_detector,
-                                               pixel_size,
-                                               warp_divergence_buffor);
+#if __CUDACC__
+#define monte_carlo_kernel monte_carlo_kernel << <blocks, threads>>>
+#endif
+    monte_carlo_kernel(i,
+                       j,
+                       n_emissions,
+                       n_tof_positions,
+                       gpu_prng_seed,
+                       gpu_MatrixElement,
+                       radius,
+                       h_detector,
+                       w_detector,
+                       pixel_size,
+                       warp_divergence_buffor);
 
     cudaThreadSynchronize();
 
