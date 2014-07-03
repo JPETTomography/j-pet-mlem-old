@@ -7,7 +7,7 @@
 #include "util/png_writer.h"
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
-#include "util/util.h"
+#include "util/progress.h"
 
 #include "../event.h"
 #include "../strip_detector.h"

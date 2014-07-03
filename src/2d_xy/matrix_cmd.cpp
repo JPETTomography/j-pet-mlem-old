@@ -23,7 +23,8 @@
 #include "model.h"
 #include "util/png_writer.h"
 #include "util/svg_ostream.h"
-#include "util/util.h"
+#include "util/progress.h"
+#include "util/variant.h"
 
 #include "monte_carlo.h"
 

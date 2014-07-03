@@ -24,7 +24,7 @@
 #include "polygonal_detector.h"
 #include "model.h"
 #include "util/png_writer.h"
-#include "util/util.h"
+#include "util/progress.h"
 
 #if _OPENMP
 #include <omp.h>

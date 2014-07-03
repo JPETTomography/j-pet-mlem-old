@@ -13,7 +13,8 @@
 #include "util/svg_ostream.h"
 #include "util/cmdline_types.h"
 #include "util/png_writer.h"
-#include "util/util.h"
+#include "util/progress.h"
+#include "util/variant.h"
 
 #include "event.h"
 #include "reconstruction.h"
