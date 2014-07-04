@@ -111,7 +111,7 @@ class MonteCarlo {
           if (o_collect_mc_matrix) {
             if (lor.first == lor.second) {
               std::ostringstream msg;
-              msg << __PRETTY_FUNCTION__ << " invalid LOR in Monte-Carlo ("
+              msg << __FUNCTION__ << " invalid LOR in Monte-Carlo ("
                   << lor.first << ", " << lor.second << ")";
               throw(msg.str());
             }

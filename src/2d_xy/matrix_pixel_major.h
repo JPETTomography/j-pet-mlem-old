@@ -65,8 +65,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     }
     if (lor.first == lor.second) {
       std::ostringstream msg;
-      msg << __PRETTY_FUNCTION__ << " invalid LOR " << lor.index() << " ("
-          << lor.first << ", " << lor.second << ")";
+      msg << __FUNCTION__ << " invalid LOR " << lor.index() << " (" << lor.first
+          << ", " << lor.second << ")";
       throw(msg.str());
     }
     if (!pixel_lor_hits_ptr[i_pixel]) {
@@ -112,9 +112,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
           LOR lor = index_to_lor[i_lor];
           if (lor.first == lor.second) {
             std::ostringstream msg;
-            msg << __PRETTY_FUNCTION__ << " invalid LOR " << i_lor << " ("
-                << lor.first << ", " << lor.second << ") for pixel index "
-                << i_pixel;
+            msg << __FUNCTION__ << " invalid LOR " << i_lor << " (" << lor.first
+                << ", " << lor.second << ") for pixel index " << i_pixel;
             throw(msg.str());
           }
           pixel_lor_hits[i_pixel][lor_count++] = SparseElement(
