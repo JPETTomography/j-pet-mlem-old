@@ -58,7 +58,6 @@ class Reconstruction {
                  sigma_dl),
         n_pixels(n_pixels),
         pixel_size(pixel_size) {
-    kernel = Kernel<F>();
     rho.assign(n_pixels, std::vector<F>(n_pixels, 100));
     rho_temp.assign(n_pixels, std::vector<F>(n_pixels, 10));
 
