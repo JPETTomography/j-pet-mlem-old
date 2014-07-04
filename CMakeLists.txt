@@ -7,14 +7,15 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-project(PET CXX) # using only C++ language with C++11 standard
-set(CMAKE_CXX_STANDARD 11)
+project(PET CXX) # using only C++
 
-# enable warnings
-if(MSVC)
-  add_definitions(/D_USE_MATH_DEFINES /wd4244 /wd4800 /wd4267 /wd4996)
+# enable C++11 and warnings
+if(NOT MSVC)
+  add_definitions(-std=c++11 -Wall -Wunused-parameter)
 else()
-  add_definitions(-Wall -Wunused-parameter)
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+  add_definitions(/D_USE_MATH_DEFINES /wd4244 /wd4800 /wd4267 /wd4996)
 endif()
 
 include_directories(src lib/cmdline)
