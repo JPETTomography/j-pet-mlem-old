@@ -45,13 +45,15 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   F* cpu_output = (F*)malloc(image_size);
   F* cpu_rho = (F*)malloc(image_size);
 
-  for (int x = 0; x < detector.n_y_pixels; ++x) {
-    for (int y = 0; y < detector.n_z_pixels; ++y) {
+  for (int y = 0; y < detector.n_y_pixels; ++y) {
+    for (int x = 0; x < detector.n_z_pixels; ++x) {
       Point<F> point = detector.pixel_center(x, y);
-      cpu_sensitivity[x * detector.n_z_pixels + y] =
-          detector.sensitivity(point.x, point.y);
+      cpu_sensitivity[y * detector.n_z_pixels + x] =
+          detector.sensitivity(point);
     }
   }
+
+  output_callback(detector, -1, cpu_sensitivity, context);
 
   for (int i = 0; i < detector.total_n_pixels; ++i) {
     cpu_rho[i] = 100;
@@ -127,8 +129,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   free(cpu_events_z_u);
   free(cpu_events_z_d);
   free(cpu_events_dl);
-
-  output_callback(detector, -1, cpu_sensitivity, context);
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {
