@@ -47,7 +47,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
   for (int y = 0; y < detector.n_y_pixels; ++y) {
     for (int x = 0; x < detector.n_z_pixels; ++x) {
-      Point<F> point = detector.pixel_center(x, y);
+      Point<F> point = detector.pixel_center(y, x);
       cpu_sensitivity[y * detector.n_z_pixels + x] =
           detector.sensitivity(point);
     }
