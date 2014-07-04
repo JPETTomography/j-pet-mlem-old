@@ -40,8 +40,6 @@ template <typename FType = double> class Phantom {
   std::vector<Event<F>> events;
   std::vector<std::vector<F>> output;
   std::vector<std::vector<F>> output_without_errors;
-  static constexpr const F PI_2 = F(M_PI_2);
-  static constexpr const F radian = F(M_PI / 180);
 
  public:
   Phantom(std::vector<EllipseParameters<F>>& el,
@@ -74,6 +72,8 @@ template <typename FType = double> class Phantom {
 
   void operator()() {
 
+    static const F RADIAN = F(M_PI / 180);
+
     std::vector<std::vector<Event<F>>> event_list_per_thread;
 
     event_list_per_thread.resize(omp_get_max_threads());
@@ -102,8 +102,8 @@ template <typename FType = double> class Phantom {
         // Turn on leapfrogging with an offset that depends on the task id
       }
 
-      sin = std::sin(el.angle * radian);
-      cos = std::cos(el.angle * radian);
+      sin = std::sin(el.angle * RADIAN);
+      cos = std::cos(el.angle * RADIAN);
       inv_a2 = 1 / (el.a * el.a);
       inv_b2 = 1 / (el.b * el.b);
 
@@ -116,7 +116,7 @@ template <typename FType = double> class Phantom {
 #if MAIN_PHANTOM
         F ry = uniform_y(rng_list[omp_get_thread_num()]);
         F rz = uniform_z(rng_list[omp_get_thread_num()]);
-        F rangle = M_PI_4 * uniform_angle(rng_list[omp_get_thread_num()]);
+        F rangle = F(M_PI_4) * uniform_angle(rng_list[omp_get_thread_num()]);
 
         if (in(ry, rz, el) /* && std::abs(rangle) != M_PI_2 */) {
           F z_u, z_d, dl;

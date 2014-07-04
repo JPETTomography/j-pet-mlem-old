@@ -18,9 +18,6 @@ template <typename F = double, typename S = int> class Circle {
         radius2_(radius * radius)  // store precomputed square
   {}
 
-  static constexpr const F TWO_PI = F(2 * M_PI);
-  static constexpr const F INV_TWO_PI = F(1 / TWO_PI);
-
   typedef F Angle;
   typedef ::Point<F> Point;
   typedef ::Event<F> Event;
@@ -48,9 +45,12 @@ template <typename F = double, typename S = int> class Circle {
   }
 
   S section(F angle, S n_detectors) {
+    static const F TWO_PI = F(2 * M_PI);
+    static const F INV_TWO_PI = 1 / TWO_PI;
     // converting angles to [0,2 Pi) interval
     F normalised_angle = angle > 0 ? angle : TWO_PI + angle;
-    return static_cast<S>(round(normalised_angle * n_detectors * INV_TWO_PI)) %
+    return static_cast<S>(
+               std::round(normalised_angle * n_detectors * INV_TWO_PI)) %
            n_detectors;
   }
 

@@ -11,9 +11,6 @@ template <typename FType = double> class Kernel {
   typedef FType FVec[3];
   typedef ::Point<F> Point;
 
-  static const constexpr F INVERSE_PI = F(M_1_PI);
-  static const constexpr F INVERSE_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
-
  private:
   static F multiply(const FVec vec_a,
                     const FVec inv_cor_mat_diag,
@@ -30,7 +27,9 @@ template <typename FType = double> class Kernel {
          const F dl,
          const F sigma) $ {
 
-    return (INVERSE_POW_TWO_PI * (1 / (sigma * dl))) *
+    static const F INV_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
+
+    return (INV_POW_TWO_PI * (1 / (sigma * dl))) *
            compat::exp(F(-0.5) *
                        (compat::pow((pixel_center.x - y) / dl, F(2)) +
                         compat::pow((pixel_center.y - z) / sigma, F(2))));
@@ -68,8 +67,10 @@ template <typename FType = double> class Kernel {
 
     F norm = a_ic_a + (2 * o_ic_b);
 
+    static const F INV_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
+
     F element_before_exp =
-        INVERSE_POW_TWO_PI * (sqrt_det_cor_mat / compat::sqrt(norm));
+        INV_POW_TWO_PI * (sqrt_det_cor_mat / compat::sqrt(norm));
 
     F exp_element = -F(0.5) * (b_ic_b - ((b_ic_a * b_ic_a) / norm));
 
