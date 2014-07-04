@@ -7,9 +7,15 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-project(PET CXX) # using only C++ language
+project(PET CXX) # using only C++ language with C++11 standard
+set(CMAKE_CXX_STANDARD 11)
 
-add_definitions(-std=c++11 -Wall -Wunused-parameter)
+# enable warnings
+if(MSVC)
+  add_definitions(/D_USE_MATH_DEFINES /wd4244 /wd4800 /wd4267 /wd4996)
+else()
+  add_definitions(-Wall -Wunused-parameter)
+endif()
 
 include_directories(src lib/cmdline)
 
@@ -24,7 +30,7 @@ file(GLOB COMMON
 # OpenMP support
 find_package(OpenMP)
 if(OPENMP_FOUND)
-  list(APPEND CMAKE_CXX_FLAGS ${OpenMP_CXX_FLAGS})
+  add_definitions(${OpenMP_CXX_FLAGS})
 endif()
 
 # libpng for output image generation
@@ -81,7 +87,9 @@ function(pet_target TYPE CMD)
     ${COMMON}
     ${CUDA})
   # add CUDA objects to the target
-  target_link_libraries(${TYPE}_${CMD} ${CUDA_LIBRARIES})
+  if(CUDA_FOUND)
+    target_link_libraries(${TYPE}_${CMD} ${CUDA_LIBRARIES})
+  endif()
   # fix Intel OpenMP runtime location
   if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Intel")
     add_custom_command(TARGET ${TYPE}_${CMD}
