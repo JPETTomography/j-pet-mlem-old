@@ -1,6 +1,9 @@
 #pragma once
 
 #include <cmath>
+#if _MSC_VER
+#include <array>
+#endif
 
 #include "geometry/point.h"
 #include "util/compat.h"
@@ -8,7 +11,11 @@
 template <typename FType = double> class Kernel {
  public:
   typedef FType F;
+#if !_MSC_VER
   typedef FType FVec[3];
+#else
+  typedef std::array<F, 3> FVec;
+#endif
   typedef ::Point<F> Point;
 
  private:

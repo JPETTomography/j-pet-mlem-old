@@ -1,5 +1,9 @@
 #pragma once
 
+#if _MSC_VER
+#include <array>
+#endif
+
 #include "event.h"
 
 #include "geometry/pixel.h"
@@ -11,7 +15,11 @@
 template <typename FType = double> class StripDetector {
  public:
   typedef FType F;
+#if !_MSC_VER
   typedef FType FVec[3];
+#else
+  typedef std::array<F, 3> FVec;
+#endif
   typedef ::Pixel<> Pixel;
   typedef ::Point<F> Point;
 
@@ -42,10 +50,14 @@ template <typename FType = double> class StripDetector {
         grid_ul_z(grid_center_z - F(0.5) * grid_size_z),
         inv_pow_sigma_z(1 / (sigma_z * sigma_z)),
         inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
-#if !__CUDACC__
+#if !__CUDACC__ && !_MSC_VER
         inv_cor_mat_diag{ 1 / (sigma_z * sigma_z),
                           1 / (sigma_z * sigma_z),
                           1 / (sigma_dl * sigma_dl) },
+#elif _MSC_VER
+        inv_cor_mat_diag{ { 1 / (sigma_z * sigma_z),
+                            1 / (sigma_z * sigma_z),
+                            1 / (sigma_dl * sigma_dl) } },
 #endif
         half_scintilator_length_(F(0.5) * scintilator_length),
         half_pixel_width_(F(0.5) * pixel_width),
