@@ -8,7 +8,8 @@ class SquareDetector : public Polygon<4, FType> {
   typedef FType F;
   typedef typename Polygon<4, F>::Point Point;
 
-  SquareDetector(F w, F h, F d __attribute__((unused)) = F()) {
+  SquareDetector(F w, F h, F d) {
+    (void)d;  // unused
     this->push_back(Point(w / 2, h / 2));
     this->push_back(Point(w / 2, -h / 2));
     this->push_back(Point(-w / 2, -h / 2));

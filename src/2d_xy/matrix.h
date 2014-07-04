@@ -35,10 +35,8 @@ class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
   static LOR begin_lor() { return LOR(); }
   const LOR& end_lor() { return end_lor_; }
 
-  void hit_lor(const LOR& lor __attribute__((unused)),
-               S position __attribute__((unused)),
-               S i_pixel __attribute__((unused)),
-               S hits __attribute__((unused)) = 1) {
+  void hit_lor(const LOR& lor, S position, S i_pixel, S hits) {
+    (void)lor, (void)position, (void)i_pixel, (void)hits;  // unused
     throw(__PRETTY_FUNCTION__);
   }
 
@@ -51,9 +49,10 @@ class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
 
   S n_emissions() { return n_emissions_; }
 
-  void compact_pixel_index(S i_pixel __attribute__((unused))) {}
+  void compact_pixel_index(S i_pixel) { (void)i_pixel; }
 
-  Pixel pixel_at_index(S i_pixel __attribute__((unused))) {
+  Pixel pixel_at_index(S i_pixel) {
+    (void)i_pixel;  // unused
     throw(__PRETTY_FUNCTION__);
   }
 

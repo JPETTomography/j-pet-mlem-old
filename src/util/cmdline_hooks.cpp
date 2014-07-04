@@ -7,9 +7,8 @@ namespace cmdline {
 
   std::vector<std::string> dir_stack;
 
-  bool load(cmdline::parser& parser,
-            path& value __attribute__((unused)),
-            const std::string& arg) {
+  bool load(cmdline::parser& parser, path& value, const std::string& arg) {
+    (void)value;  // unused
     std::string path = arg;
     if (!dir_stack.empty() && path.substr(0, 1) != "/") {
       path = dir_stack.back() + path;
@@ -32,9 +31,10 @@ namespace cmdline {
     return true;
   }
 
-  bool not_from_file(cmdline::parser& parser __attribute__((unused)),
-                     int& value __attribute__((unused)),
-                     const std::string& arg __attribute__((unused))) {
+  bool not_from_file(cmdline::parser& parser,
+                     int& value,
+                     const std::string& arg) {
+    (void)parser, (void)value, (void)arg;  // unused
     return dir_stack.empty();
   }
 

@@ -18,8 +18,9 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
       : Circle<F>(radius), center(), svg_class("detector") {}
 
   // this is for compatibility with square detector
-  CircleDetector(F w, F h, F d __attribute__((unused)) = F())
+  CircleDetector(F w, F h, F d)
       : Super(w / 2), center(), svg_class("detector") {
+    (void)d;  // unused
     if (w != h)
       throw("circle detector height and width must be equal");
   }

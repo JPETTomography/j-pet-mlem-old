@@ -12,13 +12,7 @@ struct png_writer_private {
 
 #include "png_writer.h"
 
-#ifdef HAVE_LIBPNG
-#define USED
-#else
-#define USED __attribute__((unused))
-#endif
-
-png_writer::png_writer(std::string fn USED) {
+png_writer::png_writer(std::string fn) {
 #ifdef HAVE_LIBPNG
   priv = new png_writer_private;
   priv->fp = NULL;
@@ -44,13 +38,14 @@ png_writer::png_writer(std::string fn USED) {
 
   png_init_io(priv->png_ptr, priv->fp);
 #else
+  (void)fn;  // unused
   throw("PNG support is not available in this build");
 #endif
 }
 
-void png_writer::priv_write_header(unsigned int width USED,
-                                   unsigned int height USED,
-                                   unsigned int bpp USED) {
+void png_writer::priv_write_header(unsigned int width,
+                                   unsigned int height,
+                                   unsigned int bpp) {
 #ifdef HAVE_LIBPNG
   png_set_IHDR(priv->png_ptr,
                priv->info_ptr,
@@ -62,12 +57,16 @@ void png_writer::priv_write_header(unsigned int width USED,
                PNG_COMPRESSION_TYPE_BASE,
                PNG_FILTER_TYPE_BASE);
   png_write_info(priv->png_ptr, priv->info_ptr);
+#else
+  (void)width, (void)height, (void)bpp;  // unused
 #endif
 }
 
-void png_writer::priv_write_row(unsigned char* row USED) {
+void png_writer::priv_write_row(unsigned char* row) {
 #ifdef HAVE_LIBPNG
   png_write_row(priv->png_ptr, row);
+#else
+  (void)row;                             // unused
 #endif
 }
 
