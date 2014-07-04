@@ -310,14 +310,11 @@ void run(cmdline::parser& cl, Model& model) {
 
   int* tubes = new int[n_detectors * n_detectors * n_tof_positions]();
 
-  int pixels[n_pixels][n_pixels];
-  int pixels_detected[n_pixels][n_pixels];
-
-  for (auto i = 0; i < n_pixels; ++i)
-    for (auto j = 0; j < n_pixels; ++j) {
-      pixels[i][j] = 0;
-      pixels_detected[i][j] = 0;
-    }
+  int pixels_size = n_pixels * n_pixels * sizeof(int);
+  int* pixels = (int*)alloca(pixels_size);
+  int* pixels_detected = (int*)alloca(pixels_size);
+  memset(pixels, 0, pixels_size);
+  memset(pixels_detected, 0, pixels_size);
 
   int n_emitted = 0;
   bool only_detected = false;
@@ -382,7 +379,7 @@ void run(cmdline::parser& cl, Model& model) {
           continue;
 
         typename DetectorRing::LOR lor;
-        pixels[pixel.y][pixel.x]++;
+        pixels[pixel.y * n_pixels + pixel.x]++;
         auto angle = phi_dis(gen);
         double position;
         auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor, position);
@@ -396,7 +393,7 @@ void run(cmdline::parser& cl, Model& model) {
           }
           tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
                 quantized_position]++;
-          pixels_detected[pixel.y][pixel.x]++;
+          pixels_detected[pixel.y * n_pixels + pixel.x]++;
           if (only_detected)
             n_emitted++;
         }
@@ -425,7 +422,7 @@ void run(cmdline::parser& cl, Model& model) {
           pixel.y <= m_pixel)
         continue;
 
-      pixels[pixel.y][pixel.x]++;
+      pixels[pixel.y * n_pixels + pixel.x]++;
       auto angle = phi_dis(gen);
       typename DetectorRing::LOR lor;
       double position;
@@ -440,7 +437,7 @@ void run(cmdline::parser& cl, Model& model) {
         }
         tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
               quantized_position]++;
-        pixels_detected[pixel.y][pixel.x]++;
+        pixels_detected[pixel.y * n_pixels + pixel.x]++;
         if (only_detected)
           n_emitted++;
       }
@@ -490,19 +487,19 @@ void run(cmdline::parser& cl, Model& model) {
   pix.write_header<>(n_pixels, n_pixels);
   pix_detected.write_header<>(n_pixels, n_pixels);
 
-  for (auto i = 0; i < n_pixels; ++i) {
-    for (auto j = 0; j < n_pixels; ++j) {
-      pix_max = std::max(pix_max, pixels[i][j]);
-      pix_detected_max = std::max(pix_detected_max, pixels_detected[i][j]);
-    }
+  for (auto p = 0; p < n_pixels * n_pixels; ++p) {
+    pix_max = std::max(pix_max, pixels[p]);
+    pix_detected_max = std::max(pix_detected_max, pixels_detected[p]);
   }
+
+  uint8_t* row = (uint8_t*)alloca(n_pixels);
 
   auto pix_gain =
       static_cast<double>(std::numeric_limits<uint8_t>::max()) / pix_max;
   for (int y = n_pixels - 1; y >= 0; --y) {
-    uint8_t row[n_pixels];
     for (auto x = 0; x < n_pixels; ++x) {
-      row[x] = std::numeric_limits<uint8_t>::max() - pix_gain * pixels[y][x];
+      row[x] = std::numeric_limits<uint8_t>::max() -
+               pix_gain * pixels[y * n_pixels + x];
     }
     pix.write_row(row);
   }
@@ -511,17 +508,16 @@ void run(cmdline::parser& cl, Model& model) {
       static_cast<double>(std::numeric_limits<uint8_t>::max()) /
       pix_detected_max;
   for (int y = n_pixels - 1; y >= 0; --y) {
-    uint8_t row[n_pixels];
     for (auto x = 0; x < n_pixels; ++x) {
       row[x] = std::numeric_limits<uint8_t>::max() -
-               pix_detected_gain * pixels_detected[y][x];
+               pix_detected_gain * pixels_detected[y * n_pixels + x];
     }
     pix_detected.write_row(row);
   }
-  for (auto i = 0; i < n_pixels; ++i) {
-    for (auto j = 0; j < n_pixels; ++j) {
-      pixels_text_out << pixels[i][j] << " ";
-      pixels_detected_text_out << pixels_detected[i][j] << " ";
+  for (auto y = 0; y < n_pixels; ++y) {
+    for (auto x = 0; x < n_pixels; ++x) {
+      pixels_text_out << pixels[y * n_pixels + x] << " ";
+      pixels_detected_text_out << pixels_detected[y * n_pixels + x] << " ";
     }
     pixels_text_out << "\n";
     pixels_detected_text_out << "\n";

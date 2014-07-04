@@ -186,8 +186,8 @@ template <typename FType = double> class Phantom {
     auto output_gain =
         static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
+    uint8_t* row = (uint8_t*)alloca(n_pixels);
     for (int y = 0; y < n_pixels; ++y) {
-      uint8_t row[n_pixels];
       for (auto x = 0; x < n_pixels; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -
                  output_gain * target_output[y][x];

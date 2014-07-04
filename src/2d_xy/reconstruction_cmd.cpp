@@ -167,8 +167,8 @@ int main(int argc, char* argv[]) {
     auto output_gain =
         static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
+    uint8_t* row = (uint8_t*)alloca(n_pixels_in_row);
     for (int y = n_pixels_in_row - 1; y >= 0; --y) {
-      uint8_t row[n_pixels_in_row];
       for (auto x = 0; x < n_pixels_in_row; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -
                  output_gain * rho[y * n_pixels_in_row + x];

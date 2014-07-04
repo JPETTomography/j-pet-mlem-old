@@ -28,6 +28,7 @@
 #include "util/bstream.h"
 
 #include <vector>
+#include <cstdint>
 
 #define fourcc(str, sym) static const uint32_t sym = (*(int*)(str))
 
@@ -337,8 +338,9 @@ class SparseMatrix
             ? static_cast<double>(std::numeric_limits<BitmapPixel>::max()) /
                   pixel_max
             : 0.;
+    BitmapPixel* row =
+        (BitmapPixel*)alloca(n_pixels_in_row_ * sizeof(BitmapPixel));
     for (SS y = n_pixels_in_row_ - 1; y >= 0; --y) {
-      BitmapPixel row[n_pixels_in_row_];
       for (auto x = 0; x < n_pixels_in_row_; ++x) {
         row[x] = std::numeric_limits<BitmapPixel>::max() -
                  gain * pixels[n_pixels_in_row_ * y + x];

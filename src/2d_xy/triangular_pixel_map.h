@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 template <typename PixelType, typename SType = int, typename HitType = int>
 class TriangularPixelMap {
  public:

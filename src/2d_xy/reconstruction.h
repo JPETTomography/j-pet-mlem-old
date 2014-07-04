@@ -79,7 +79,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   }
 
   void emt(S n_iterations) {
-    F y[n_pixels_in_row_ * n_pixels_in_row_];
+    F* y = (F*)alloca(n_pixels_in_row_ * n_pixels_in_row_);
 
     for (S i = 0; i < n_iterations; ++i) {
       std::cout << ".", std::cout.flush();
