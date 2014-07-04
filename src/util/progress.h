@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <cmath>
+#include <ctime>
 
 #if _OPENMP
 #include <omp.h>
