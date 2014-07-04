@@ -110,4 +110,5 @@ pet_target(2d_strip phantom)
 pet_target(2d_strip reconstruction)
 
 # custom documentation and config files to be shown in project tree
-add_custom_target(extra SOURCES README.md .clang-format)
+file(GLOB SCRIPTS scripts/*)
+add_custom_target(extra SOURCES README.md .clang-format ${SCRIPTS})
