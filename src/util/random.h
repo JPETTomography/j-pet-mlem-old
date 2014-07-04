@@ -1,6 +1,9 @@
 #pragma once
 
 #include <cstdlib>
+#if _MSC_VER
+#include <ctime>
+#endif
 
 class tausworthe {
  public:
@@ -21,6 +24,7 @@ class tausworthe {
   }
 
   void seed(seed_type a_seed) {
+#if !_MSC_VER
     srand48(a_seed);
     for (int i = 0; i < 4; ++i) {
       result_type r;
@@ -28,6 +32,15 @@ class tausworthe {
         ;
       seeds[i] = r;
     }
+#else
+    srand(time(NULL));
+    for (int i = 0; i < 4; ++i) {
+      result_type r;
+      while ((r = static_cast<result_type>(rand())) < 128)
+        ;
+      seeds[i] = r;
+    }
+#endif
   }
 
  private:
@@ -62,7 +75,7 @@ template <typename FType = double> class uniform_real_distribution {
   }
 
   template <class Generator> static result_type scale() {
-    return static_cast<result_type>(1.0) / range<Generator>();
+    return static_cast<result_type>(1) / range<Generator>();
   }
 
  private:
