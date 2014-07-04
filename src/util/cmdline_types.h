@@ -52,11 +52,13 @@ namespace cmdline {
         return "auto";
       return detail::lexical_cast<std::string>(def);
     }
+#if __GNUC__
     template <> inline std::string default_value<ssize_t>(ssize_t def) {
       if (def < 0)
         return "all";
       return detail::lexical_cast<std::string>(def);
     }
+#endif
   }
 
 }  // cmdline
