@@ -51,7 +51,7 @@ namespace GPU {
     fn << context->output_file_name << "_";  // phantom_
     if (iteration >= 0) {
       fn << std::setw(3) << std::setfill('0')  //
-         << iteration << std::setw(0);         // 001
+         << iteration + 1 << std::setw(0);     // 001
     } else {
       fn << "sensitivity";
     }
