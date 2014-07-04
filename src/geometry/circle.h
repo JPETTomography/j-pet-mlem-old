@@ -11,8 +11,11 @@
 /// solution.
 /// @see /math/secant.nb
 /// @note This circle has only radius specified and center point lies in (0, 0).
-template <typename F = double, typename S = int> class Circle {
+template <typename FType = double, typename SType = int> class Circle {
  public:
+  typedef FType F;
+  typedef SType S;
+
   Circle(F radius)
       : radius_(radius),           // store radius
         radius2_(radius * radius)  // store precomputed square
