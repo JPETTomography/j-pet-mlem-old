@@ -33,7 +33,7 @@ file(GLOB COMMON
 # OpenMP support
 find_package(OpenMP)
 if(OPENMP_FOUND)
-  add_definitions(${OpenMP_CXX_FLAGS})
+  list(APPEND CMAKE_CXX_FLAGS ${OpenMP_CXX_FLAGS})
 endif()
 
 # CUDA specific flags
