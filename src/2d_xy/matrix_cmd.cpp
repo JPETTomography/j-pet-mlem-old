@@ -280,7 +280,7 @@ int main(int argc, char* argv[]) {
   cl.exist("gpu") ? run_gpu_matrix(cl) \
                   : run_cpu_matrix(cl, detector_ring, model)
 #else
-#define _RUN(cl, detector_ring, model) run_cpu(cl, detector_ring, model)
+#define _RUN(cl, detector_ring, model) run_cpu_matrix(cl, detector_ring, model)
 #endif
 #define RUN(detector_type, model_type, ...)                     \
   detector_type detector_ring(                                  \
