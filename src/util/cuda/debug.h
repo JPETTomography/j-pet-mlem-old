@@ -5,10 +5,11 @@ static cudaError cudbgLastError;
 #define CUDBG(f, ...)                                           \
   if ((cudbgLastError = cuda##f(__VA_ARGS__)) != cudaSuccess) { \
     fprintf(stderr,                                             \
-            "%s:%d %s() %s\n",                                  \
+            "%s:%d cuda%s() %d: %s\n",                          \
             __FILE__,                                           \
             __LINE__,                                           \
             #f,                                                 \
+            cudbgLastError,                                     \
             cudaGetErrorString(cudbgLastError));                \
     abort();                                                    \
   }
@@ -17,6 +18,7 @@ static cudaError cudbgLastError;
 
 #if __CUDACC__
 
+#define cudaCreateTextureObject(...) CUDBG(CreateTextureObject, __VA_ARGS__)
 #define cudaDestroyTextureObject(...) CUDBG(DestroyTextureObject, __VA_ARGS__)
 #define cudaFree(...) /* -------------> */ CUDBG(Free, __VA_ARGS__)
 #define cudaMalloc(...) /* -----------> */ CUDBG(Malloc, __VA_ARGS__)
