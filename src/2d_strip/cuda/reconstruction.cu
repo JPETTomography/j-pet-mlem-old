@@ -154,12 +154,10 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
       cudaThreadSynchronize();
 
       // grab output
-      cudaMemcpy(cpu_output,
-                 gpu_output,
-                 image_size * n_blocks,
-                 cudaMemcpyDeviceToHost);
+      cudaMemcpy(cpu_output, gpu_output, output_size, cudaMemcpyDeviceToHost);
 
       // merge image output from all blocks
+      memset(cpu_rho, 0, image_size);
       for (int block = 0; block < n_blocks; ++block) {
         for (int p = 0; p < detector.total_n_pixels; ++p) {
           cpu_rho[p] += cpu_output[block * detector.total_n_pixels + p];
