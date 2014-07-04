@@ -71,8 +71,7 @@ template <typename FType = double> class Phantom {
   }
 
   void operator()() {
-
-    static const F RADIAN = F(M_PI / 180);
+    const F RADIAN = F(M_PI / 180);
 
     std::vector<std::vector<Event<F>>> event_list_per_thread;
 

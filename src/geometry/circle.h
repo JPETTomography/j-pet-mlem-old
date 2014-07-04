@@ -48,8 +48,9 @@ template <typename FType = double, typename SType = int> class Circle {
   }
 
   S section(F angle, S n_detectors) {
-    static const F TWO_PI = F(2 * M_PI);
-    static const F INV_TWO_PI = 1 / TWO_PI;
+    const F TWO_PI = F(2 * M_PI);
+    const F INV_TWO_PI = 1 / TWO_PI;
+
     // converting angles to [0,2 Pi) interval
     F normalised_angle = angle > 0 ? angle : TWO_PI + angle;
     return static_cast<S>(

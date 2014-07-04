@@ -11,12 +11,12 @@
 template <typename FType = double> class Kernel {
  public:
   typedef FType F;
+  typedef ::Point<F> Point;
 #if !_MSC_VER
   typedef FType FVec[3];
 #else
   typedef std::array<F, 3> FVec;
 #endif
-  typedef ::Point<F> Point;
 
  private:
   static F multiply(const FVec vec_a,
@@ -34,7 +34,7 @@ template <typename FType = double> class Kernel {
          const F dl,
          const F sigma) $ {
 
-    static const F INV_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
+    const F INV_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
 
     return (INV_POW_TWO_PI * (1 / (sigma * dl))) *
            compat::exp(F(-0.5) *
@@ -74,7 +74,7 @@ template <typename FType = double> class Kernel {
 
     F norm = a_ic_a + (2 * o_ic_b);
 
-    static const F INV_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
+    const F INV_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
 
     F element_before_exp =
         INV_POW_TWO_PI * (sqrt_det_cor_mat / compat::sqrt(norm));
