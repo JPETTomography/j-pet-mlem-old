@@ -57,7 +57,7 @@ template <typename FType = double> struct EllipticalRegion {
   F sin_;
   F cos_;
 
-#ifdef __APPLE__
+#if __APPLE__ || _MSC_VER
   template <typename F> static inline void sincos(F a, F* s, F* c) {
     *s = std::sin(a);
     *c = std::cos(a);
