@@ -21,7 +21,7 @@ class TriangleDetector : public Polygon<3, FType> {
     }
   }
 
-  static constexpr F default_height_for_width(const F w) {
+  static F default_height_for_width(const F w) {
     return w * std::sqrt(static_cast<F>(3)) / 2;
   }
 
