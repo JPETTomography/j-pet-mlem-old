@@ -1,3 +1,12 @@
+# Automatically downloads and builds static libpng and zlib libraries
+#
+# Author: Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+#
+# Discussion:
+#   This script is mainly for Windows & MSVC compatibility which does not ship
+#   libpng by default, also there are no well known binary sources.
+
+# overridable settings
 set(PNG_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/libpng.ext.dir
   CACHE PATH   "Location on libpng internal installation folder")
 set(PNG_URL    "http://downloads.sourceforge.net/project/libpng/libpng15/1.5.18/libpng-1.5.18.tar.gz"
@@ -5,10 +14,13 @@ set(PNG_URL    "http://downloads.sourceforge.net/project/libpng/libpng15/1.5.18/
 set(ZLIB_URL   "http://zlib.net/zlib-1.2.8.tar.gz"
   CACHE STRING "URL of zlib source")
 
+# use function to now pollute global namespace
 function(ExtPNG)
 
+  # main dependency
   include(ExternalProject)
 
+  # determine final name for static library
   if(MSVC)
     set(ZLIB_NAME zlibstatic)
     set(PNG_NAME  libpng15_static)
@@ -21,6 +33,7 @@ function(ExtPNG)
     set(PNG_NAME  libpng)
   endif()
 
+  # build zlib externally
   ExternalProject_Add(zlib.ext
     URL ${ZLIB_URL}
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/zlib.ext.dir
@@ -33,6 +46,7 @@ function(ExtPNG)
     ${PNG_PREFIX}/lib/${ZLIB_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
   add_dependencies(zlib zlib.ext)
 
+  # build libpng externally
   ExternalProject_Add(libpng.ext DEPENDS zlib.ext
     URL ${PNG_URL}
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/libpng.ext.dir
@@ -46,6 +60,7 @@ function(ExtPNG)
     ${PNG_PREFIX}/lib/${PNG_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
   add_dependencies(libpng zlib libpng.ext)
 
+  # export libraries to parent scope
   set(PNG_LIBRARIES zlib libpng PARENT_SCOPE)
   set(PNG_INCLUDE_DIRS ${PNG_PREFIX}/include PARENT_SCOPE)
   set(PNG_FOUND YES PARENT_SCOPE)

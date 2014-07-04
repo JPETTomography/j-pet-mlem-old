@@ -57,7 +57,7 @@ endif()
 # libpng for output image generation
 find_package(PNG)
 if(NOT PNG_FOUND AND MSVC)
-  include(ExtPNG)
+  include(ExtPNG) # builds libpng automatically
 endif()
 if(PNG_FOUND)
   add_definitions(-DHAVE_LIBPNG=1 ${PNG_DEFINITIONS})
