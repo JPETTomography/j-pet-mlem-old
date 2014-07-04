@@ -99,9 +99,9 @@ __global__ void reconstruction(StripDetector<F> detector,
                                 point,
                                 detector.inv_cor_mat_diag,
                                 sqrt_det_cor_mat) /
-                         tex2D<F>(sensitivity, pixel.x, pixel.y);
+                         TEX_2D(F, sensitivity, pixel.x, pixel.y);
 
-        acc += event_kernel * tex2D<F>(sensitivity, pixel.x, pixel.y) *
+        acc += event_kernel * TEX_2D(F, sensitivity, pixel.x, pixel.y) *
                rho[IMAGE_SPACE_LINEAR_INDEX(pixel.x, pixel.y)];
 
         sh_mem_pixel_buffer[SH_MEM_INDEX(threadIdx.x, pixel_count, 0)] =
@@ -134,7 +134,7 @@ __global__ void reconstruction(StripDetector<F> detector,
                               point,
                               detector.inv_cor_mat_diag,
                               sqrt_det_cor_mat) /
-                       tex2D<F>(sensitivity, pixel.x, pixel.y);
+                       TEX_2D(F, sensitivity, pixel.x, pixel.y);
 
       atomicAdd(&output[BUFFER_LINEAR_INDEX(pixel.x, pixel.y)],
                 event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(pixel.x, pixel.y)] *
