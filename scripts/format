@@ -8,5 +8,5 @@ find "$dir" \( \
 		-iname '*.h' \)    \
 	\! -iname 'cmdline.h'  \
 	\! -ipath "$dir/lib/*" \
-	\! -ipath "$dir/doc/*" \
-	-exec clang-format -style=file -i {} +
+	\! -ipath "$dir/doc/*" | \
+xargs clang-format -style=file -i
