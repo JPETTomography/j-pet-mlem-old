@@ -7,6 +7,8 @@
 
 cmake_minimum_required(VERSION 2.6)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
 project(PET CXX) # using only C++
 
 # enable C++11 and warnings
@@ -34,14 +36,6 @@ if(OPENMP_FOUND)
   add_definitions(${OpenMP_CXX_FLAGS})
 endif()
 
-# libpng for output image generation
-find_package(PNG)
-if(PNG_FOUND)
-  add_definitions(-DHAVE_LIBPNG=1)
-  include_directories(${PNG_INCLUDE_DIRS})
-  link_libraries(${PNG_LIBRARIES})
-endif()
-
 # CUDA specific flags
 find_package(CUDA)
 if(CUDA_FOUND)
@@ -58,6 +52,17 @@ if(CUDA_FOUND)
     include(CMakeDetermineCCompiler)
     get_filename_component(CUDA_HOST_COMPILER "${CMAKE_C_COMPILER}" REALPATH)
   endif()
+endif()
+
+# libpng for output image generation
+find_package(PNG)
+if(NOT PNG_FOUND AND MSVC)
+  include(ExtPNG)
+endif()
+if(PNG_FOUND)
+  add_definitions(-DHAVE_LIBPNG=1 ${PNG_DEFINITIONS})
+  include_directories(${PNG_INCLUDE_DIRS})
+  link_libraries(${PNG_LIBRARIES})
 endif()
 
 # custom function that creates executable for specific PET command
@@ -111,5 +116,5 @@ pet_target(2d_strip phantom)
 pet_target(2d_strip reconstruction)
 
 # custom documentation and config files to be shown in project tree
-file(GLOB SCRIPTS scripts/*)
-add_custom_target(extra SOURCES README.md .clang-format ${SCRIPTS})
+file(GLOB EXTRA scripts/* cmake/*)
+add_custom_target(extra SOURCES README.md .clang-format ${EXTRA})
