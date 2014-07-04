@@ -27,6 +27,22 @@ Prerequisites
 * *CUDA* 6.0 (automatically detected by `cmake`)
 * *Ninja* 1.4 for faster re-builds (with `cmake -G Ninja`)
 
+### Windows build
+
+* *Visual Studio* 2013 (aka *MSVC* 12)
+* *CMake* 3.0 for build script generation
+
+#### Notes
+
+1. Although project now compiles on *Windows*, however our main build
+   environment is UNIX, so *Windows* compatibility may break any time.
+
+2. *Windows* build flavor automatically downloads and compiles `libpng` and
+   `zlib`, since these both does not come with *Windows* by default. Therefore
+   build requires Internet connection.
+
+3. *Ninja* currently does not work on *Windows* with our project.
+
 Building
 --------
 
