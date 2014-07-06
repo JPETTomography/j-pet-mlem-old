@@ -13,24 +13,48 @@ Members
 Prerequisites
 -------------
 
-### Minimum build requirements
+### UNIX build requirements
 
 * UNIX compatible build environment such as *Linux* or *Mac OS X*
 * *C++11* compatible compiler i.e. *GCC* 4.6, *Clang* 3.2 or *ICC* 13
-* *CMake* 2.8 for build script generation
+* [*CMake*][cmake] 2.8 for build script generation
 * *GNU Make* 3.8 for building using `Makefile`
+
+[cmake]: http://www.cmake.org
+
+##### Optional
+
+* [*QtCreator*][qtcreator] 3.1 for project editing via `CMakeLists.txt`
+* [*CUDA*][cuda] 6.0 (automatically detected by `cmake`)
+* [*Ninja*][ninja] 1.4 for faster re-builds (with `cmake -G Ninja`)
 * `libpng` headers and libraries for PNG output
 
-### Optional
+[qtcreator]: http://qt-project.org/downloads
+[cuda]: https://developer.nvidia.com/cuda-downloads
+[ninja]: http://martine.github.io/ninja/
+[libpng]: http://libpng.sourceforge.net
 
-* *QtCreator* 3.1 for project editing via `CMakeLists.txt`
-* *CUDA* 6.0 (automatically detected by `cmake`)
-* *Ninja* 1.4 for faster re-builds (with `cmake -G Ninja`)
+#### Notes
 
-### Windows build
+1. `libpng` is available on *Debian/Ubuntu GNU/Linux* via:
+
+		apt-get install libpng12-dev
+
+2. `libpng` is available on *Mac OS X* with [*XQuartz*][xquartz] X11 server
+
+[xquartz]: http://xquartz.macosforge.org
+
+### Windows build requirements
 
 * *Visual Studio* 2013 (aka *MSVC* 12)
 * *CMake* 3.0 for build script generation
+
+##### Optional
+
+* [*CUDA*][cuda] 6.5 (automatically detected by `cmake`)
+* [*CMake Tools*][cmaketools] for editing *CMake* in *Visual Studio*
+
+[cmaketools]: http://cmaketools.codeplex.com
 
 #### Notes
 
