@@ -53,13 +53,11 @@ int main(int argc, char* argv[]) {
     cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
     cl.add<double>("gm", 'u', "Gamma error", false, 0);
 #if HAVE_CUDA
-    cl.add("gpu", 'g', "run on GPU (via CUDA)");
+    cl.add("gpu", 'G', "run on GPU (via CUDA)");
     cl.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
-    cl.add<int>("cuda-blocks", 'b', "CUDA blocks", cmdline::dontsave, 1);
+    cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 1);
     cl.add<int>(
-        "cuda-threads", 'w', "CUDA threads per block", cmdline::dontsave, 512);
-    cl.add<int>(
-        "warp-offset", 0, "warp offset [test only]", cmdline::dontsave, 1);
+        "cuda-threads", 'W', "CUDA threads per block", cmdline::dontsave, 512);
 #endif
 #if _OPENMP
     cl.add<int>(

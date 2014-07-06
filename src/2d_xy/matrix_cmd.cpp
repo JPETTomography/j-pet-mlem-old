@@ -140,10 +140,10 @@ int main(int argc, char* argv[]) {
     cl.add("wait", 0, "wait before exit");
     cl.add("verbose", 'v', "prints the iterations information on std::out");
 #if HAVE_CUDA
-    cl.add("gpu", 'g', "run on GPU (via CUDA)");
-    cl.add<int>("cuda-blocks", 'b', "CUDA blocks", cmdline::dontsave, 64);
+    cl.add("gpu", 'G', "run on GPU (via CUDA)");
+    cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 64);
     cl.add<int>(
-        "cuda-threads", 'w', "CUDA threads per block", cmdline::dontsave, 512);
+        "cuda-threads", 'W', "CUDA threads per block", cmdline::dontsave, 512);
 #endif
 #if _OPENMP
     cl.add<int>(
