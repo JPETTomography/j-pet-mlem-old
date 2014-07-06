@@ -1,6 +1,6 @@
 #include <cuda_runtime.h>
 #include <cstdio>
-#include <sys/time.h>
+#include <ctime>
 
 #include "util/cuda/debug.h"  // catches all CUDA errors
 

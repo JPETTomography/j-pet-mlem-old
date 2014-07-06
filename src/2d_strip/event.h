@@ -9,22 +9,22 @@ template <typename F> struct Event {
   F z_d;
   F dl;
 
-  Event(F z_u, F z_d, F dl) $ : z_u(z_u), z_d(z_d), dl(dl) {}
+  _ Event(F z_u, F z_d, F dl) : z_u(z_u), z_d(z_d), dl(dl) {}
 
-  void transform(F R, F& tan, F& y, F& z) const $ {
+  _ void transform(F R, F& tan, F& y, F& z) const {
     tan = this->tan(R);
     y = this->y(tan);
     z = this->z(y, tan);
   }
 
  private:
-  F tan(const F R) const $ { return (z_u - z_d) / (2 * R); }
+  _ F tan(const F R) const { return (z_u - z_d) / (2 * R); }
 
-  F y(const F tan) const $ {
+  _ F y(const F tan) const {
     return -F(0.5) * (dl / compat::sqrt(1 + tan * tan));
   }
 
-  F z(const F y, const F tan) const $ {
+  _ F z(const F y, const F tan) const {
     return F(0.5) * (z_u + z_d + (2 * y * tan));
   }
 };
@@ -36,9 +36,9 @@ template <typename F> struct ImageSpaceEventAngle {
   const F z;
   const F angle;
 
-  ImageSpaceEventAngle(F y, F z, F angle) $ : y(y), z(z), angle(angle) {}
+  _ ImageSpaceEventAngle(F y, F z, F angle) : y(y), z(z), angle(angle) {}
 
-  ImageSpaceEventTan<F> to_tan() const $ {
+  _ ImageSpaceEventTan<F> to_tan() const {
     return ImageSpaceEventTan<F>(y, z, compat::tan(angle));
   }
 };
@@ -50,7 +50,7 @@ template <typename F> struct ImageSpaceEventTan {
 
   ImageSpaceEventTan(F y, F z, F tan) : y(y), z(z), tan(tan) {}
 
-  ImageSpaceEventAngle<F> to_angle() const $ {
+  _ ImageSpaceEventAngle<F> to_angle() const {
     return ImageSpaceEventAngle<F>(y, z, compat::atan(tan));
   }
 };
@@ -61,11 +61,6 @@ template <typename FType> struct EllipseParameters {
   F angle;
   F n_emissions;
 
-  EllipseParameters(F x, F y, F a, F b, F angle, F n_emissions) $
-      : x(x),
-        y(y),
-        a(a),
-        b(b),
-        angle(angle),
-        n_emissions(n_emissions) {}
+  _ EllipseParameters(F x, F y, F a, F b, F angle, F n_emissions)
+      : x(x), y(y), a(a), b(b), angle(angle), n_emissions(n_emissions) {}
 };

@@ -6,18 +6,18 @@ template <typename SType = int> class Pixel {
  public:
   typedef SType S;
 
-  Pixel(S x, S y) $ : x(x), y(y) {}
+  _ Pixel(S x, S y) : x(x), y(y) {}
 
   // default constructor
-  Pixel() $ : x(0), y(0) {}
+  _ Pixel() : x(0), y(0) {}
 
   S x, y;
 
-  const S index() const $ { return y * (y + 1) / 2 + x; }
+  _ const S index() const { return y * (y + 1) / 2 + x; }
 
-  const S index(S width) const $ { return y * width + x; }
+  _ const S index(S width) const { return y * width + x; }
 
-  Pixel& operator++() $ {
+  _ Pixel& operator++() {
     if (++x > y) {
       y++;
       x = 0;
@@ -29,11 +29,11 @@ template <typename SType = int> class Pixel {
     return Pixel(0, pixels_in_row);
   }
 
-  bool operator!=(const Pixel& p) const $ { return x != p.x || y != p.y; }
+  _ bool operator!=(const Pixel& p) const { return x != p.x || y != p.y; }
 
-  bool operator==(const Pixel& p) const $ { return x == p.x && y == p.y; }
+  _ bool operator==(const Pixel& p) const { return x == p.x && y == p.y; }
 
-  bool operator<(const Pixel& p) const $ {
+  _ bool operator<(const Pixel& p) const {
     return y < p.y || (y == p.y && x < p.x);
   }
 };

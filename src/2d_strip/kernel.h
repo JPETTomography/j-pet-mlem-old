@@ -19,20 +19,20 @@ template <typename FType = double> class Kernel {
 #endif
 
  private:
-  static F multiply(const FVec vec_a,
-                    const FVec inv_cor_mat_diag,
-                    const FVec vec_b) $ {
+  _ static F multiply(const FVec vec_a,
+                      const FVec inv_cor_mat_diag,
+                      const FVec vec_b) {
     return vec_a[0] * inv_cor_mat_diag[0] * vec_b[0] +
            vec_a[1] * inv_cor_mat_diag[1] * vec_b[1] +
            vec_a[2] * inv_cor_mat_diag[2] * vec_b[2];
   }
 
  public:
-  F test(const F y,
-         const F z,
-         const Point pixel_center,
-         const F dl,
-         const F sigma) $ {
+  _ F test(const F y,
+           const F z,
+           const Point pixel_center,
+           const F dl,
+           const F sigma) {
 
     const F INV_POW_TWO_PI = F(1 / (2 * M_PI * M_PI));
 
@@ -42,14 +42,14 @@ template <typename FType = double> class Kernel {
                         compat::pow((pixel_center.y - z) / sigma, F(2))));
   }
 
-  F operator()(const F y,
-               const F tan,
-               const F inv_cos,
-               const F pow_inv_cos,
-               const F R,
-               const Point pixel_center,
-               const FVec inv_cor_mat_diag,
-               const F sqrt_det_cor_mat) const $ {
+  _ F operator()(const F y,
+                 const F tan,
+                 const F inv_cos,
+                 const F pow_inv_cos,
+                 const F R,
+                 const Point pixel_center,
+                 const FVec inv_cor_mat_diag,
+                 const F sqrt_det_cor_mat) const {
 
     FVec vec_o;
     FVec vec_a;

@@ -4,54 +4,32 @@ namespace compat {
 
 #if __CUDA_ARCH__
 
-#define $ __device__ __host__
+#define _ __device__ __host__
 #define constexpr
 
-  template <typename F> F min(const F a, const F b);
-  template <> float min<float>(const float a, const float b) $ {
-    return fminf(a, b);
-  }
-
-  template <typename F> F max(const F a, const F b);
-  template <> float max<float>(const float a, const float b) $ {
-    return fmaxf(a, b);
-  }
-
-  template <typename F> F ceil(const F a);
-  template <> float ceil<float>(const float a) $ { return ceilf(a); }
-
-  template <typename F> F floor(const F a);
-  template <> float floor<float>(const float a) $ { return floorf(a); }
-
-  template <typename F> F sqrt(const F a);
-  template <> float sqrt<float>(const float a) $ { return sqrtf(a); }
-
-  template <typename F> F sin(const F a);
-  template <> float sin<float>(const float a) $ { return sinf(a); }
-
-  template <typename F> F cos(const F a);
-  template <> float cos<float>(const float a) $ { return cosf(a); }
-
-  template <typename F> F tan(const F a);
-  template <> float tan<float>(const float a) $ { return tanf(a); }
-
-  template <typename F> F atan(const F a);
-  template <> float atan<float>(const float a) $ { return atanf(a); }
-
-  template <typename F> F pow(const F a, const F b);
-  template <> float pow<float>(const float a, const float b) $ {
-    return powf(a, b);
-  }
-
-  template <typename F> F exp(const F a);
-  template <> float exp<float>(const float a) $ { return expf(a); }
+  _ float min(const float a, const float b) { return fminf(a, b); }
+  _ float max(const float a, const float b) { return fmaxf(a, b); }
+  _ float ceil(const float a) { return ceilf(a); }
+  _ float floor(const float a) { return floorf(a); }
+  _ float sqrt(const float a) { return sqrtf(a); }
+  _ float sin(const float a) { return sinf(a); }
+  _ float cos(const float a) { return cosf(a); }
+  _ float tan(const float a) { return tanf(a); }
+  _ float atan(const float a) { return atanf(a); }
+  _ float pow(const float a, const float b) { return powf(a, b); }
+  _ float exp(const float a) { return expf(a); }
 
 #else
 
-#define $
+#define _
 
+#if _MSC_VER
+  template <typename F> F min(const F a, const F b) { return (a < b) ? a : b; }
+  template <typename F> F max(const F a, const F b) { return (a > b) ? a : b; }
+#else
   template <typename F> F min(const F a, const F b) { return std::min(a, b); }
   template <typename F> F max(const F a, const F b) { return std::max(a, b); }
+#endif
   template <typename F> F ceil(const F a) { return std::ceil(a); }
   template <typename F> F floor(const F a) { return std::floor(a); }
   template <typename F> F sqrt(const F a) { return std::sqrt(a); }

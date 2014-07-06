@@ -11,22 +11,22 @@ template <typename FType = double, typename SType = int> struct Point {
   typedef SType S;
   typedef ::Pixel<S> Pixel;
 
-  Point() $ : x(0), y(0) {}
-  Point(F x, F y) $ : x(x), y(y) {}
+  _ Point() : x(0), y(0) {}
+  _ Point(F x, F y) : x(x), y(y) {}
 
   F x, y;
 
-  Point operator+(const Point& p) const $ { return Point(x + p.x, y + p.y); }
+  _ Point operator+(const Point& p) const { return Point(x + p.x, y + p.y); }
 
-  Point operator-(const Point& p) const $ { return Point(x - p.x, y - p.y); }
+  _ Point operator-(const Point& p) const { return Point(x - p.x, y - p.y); }
 
-  Point& operator+=(const Point& p) $ {
+  _ Point& operator+=(const Point& p) {
     x += p.x;
     y += p.y;
     return *this;
   }
 
-  Point& operator-=(const Point& p) $ {
+  _ Point& operator-=(const Point& p) {
     x -= p.x;
     y -= p.y;
     return *this;

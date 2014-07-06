@@ -90,22 +90,22 @@ template <typename FType = double> class StripDetector {
     return to_angle(from_projection_space_tan(event));
   }
 
-  Point pixel_center(int i, int j) const $ {
+  _ Point pixel_center(int i, int j) const {
     return Point(grid_ul_y - i * pixel_height - half_pixel_height_,
                  grid_ul_z + j * pixel_width + half_pixel_width_);
   }
 
-  Point pixel_center(Pixel pixel) const $ {
+  _ Point pixel_center(Pixel pixel) const {
     return pixel_center(pixel.x, pixel.y);
   }
 
-  Pixel pixel_location(F y, F z) const $ {
+  _ Pixel pixel_location(F y, F z) const {
     return Pixel((grid_ul_y - y) / pixel_height, (z - grid_ul_z) / pixel_width);
   }
 
-  Pixel pixel_location(Point p) const $ { return pixel_location(p.x, p.y); }
+  _ Pixel pixel_location(Point p) const { return pixel_location(p.x, p.y); }
 
-  F sensitivity(F y, F z) const $ {
+  _ F sensitivity(F y, F z) const {
     F L_plus = half_scintilator_length_ + z;
     F L_minus = half_scintilator_length_ - z;
     F R_plus = radius + y;
@@ -116,24 +116,24 @@ template <typename FType = double> class StripDetector {
             compat::atan(compat::max(-L_plus / R_minus, -L_minus / R_plus)));
   }
 
-  F sqrt_det_cor_mat() const $ {
+  _ F sqrt_det_cor_mat() const {
     return compat::sqrt(inv_cor_mat_diag[0] *  //
                         inv_cor_mat_diag[1] *  //
                         inv_cor_mat_diag[2]);
   }
 
-  F sensitivity(Point p) const $ { return sensitivity(p.x, p.y); }
+  _ F sensitivity(Point p) const { return sensitivity(p.x, p.y); }
 
-  void ellipse_bb(F angle,
-                  F tan,
-                  F& sec,     // out
-                  F& sec_sq,  // out
-                  F& A,       // out
-                  F& B,       // out
-                  F& C,       // out
-                  F& bb_y,    // out
-                  F& bb_z     // out
-                  ) const $ {
+  _ void ellipse_bb(F angle,
+                    F tan,
+                    F& sec,     // out
+                    F& sec_sq,  // out
+                    F& A,       // out
+                    F& B,       // out
+                    F& C,       // out
+                    F& bb_y,    // out
+                    F& bb_z     // out
+                    ) const {
 
     F cos = compat::cos(angle);
     sec = 1 / cos;
@@ -148,7 +148,7 @@ template <typename FType = double> class StripDetector {
     bb_z = this->bb_z(A, C, B_2);
   }
 
-  bool in_ellipse(F A, F B, F C, Point ellipse_center, Point p) const $ {
+  _ bool in_ellipse(F A, F B, F C, Point ellipse_center, Point p) const {
 
     F dy = p.x - ellipse_center.x;
     F dz = p.y - ellipse_center.y;
@@ -180,6 +180,6 @@ template <typename FType = double> class StripDetector {
   const F half_pixel_width_;
   const F half_pixel_height_;
 
-  F bb_z(F A, F C, F B_2) const $ { return 3 / compat::sqrt(C - (B_2 / A)); }
-  F bb_y(F A, F C, F B_2) const $ { return 3 / compat::sqrt(A - (B_2 / C)); }
+  _ F bb_z(F A, F C, F B_2) const { return 3 / compat::sqrt(C - (B_2 / A)); }
+  _ F bb_y(F A, F C, F B_2) const { return 3 / compat::sqrt(A - (B_2 / C)); }
 };
