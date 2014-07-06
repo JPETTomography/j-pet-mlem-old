@@ -1,3 +1,19 @@
+// CUDA generic code compatibility macros & functions
+//
+// Author:
+//   Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+//
+// Discussion:
+//   Purpose of this header is to provide maximum share-ability between generic
+//   CPU implementation and CUDA implementation. This is done using following:
+//
+//   (1) All mathematical function are exposed via compat:: namespace i.e.
+//       compat::cos which map to stdlib or CUDA depending on build context.
+//
+//   (2) Special underscore macro _ is used to mark functions and methods
+//       compatible with CUDA and it is replaced with __device__ __host__ when
+//       building using CUDA.
+
 #pragma once
 
 namespace compat {

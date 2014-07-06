@@ -1,3 +1,13 @@
+// CUDA functions debug automatic wrapper
+//
+// Author:
+//   Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+//
+// Discussion:
+//   This header wraps commonly used functions (listed below) that may generate
+//   errors into conditional checking for result printing error message and
+//   aborting execution when error code is returned.
+
 #pragma once
 
 static cudaError cudbgLastError;
