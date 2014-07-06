@@ -1,7 +1,7 @@
 #pragma once
 
 #include "geometry/point.h"
-#include "util/compat.h"
+#include "util/cuda/compat.h"
 
 template <typename FType = double> struct Event {
   typedef FType F;

@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "util/compat.h"
+#include "util/cuda/compat.h"
 
 template <typename F> struct Event {
   F z_u;

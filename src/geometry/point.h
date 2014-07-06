@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "util/compat.h"
+#include "util/cuda/compat.h"
 
 #include "pixel.h"
 

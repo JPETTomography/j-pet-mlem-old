@@ -6,7 +6,7 @@
 #endif
 
 #include "geometry/point.h"
-#include "util/compat.h"
+#include "util/cuda/compat.h"
 
 template <typename FType = double> class Kernel {
  public:

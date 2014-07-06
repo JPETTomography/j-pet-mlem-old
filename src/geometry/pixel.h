@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/compat.h"
+#include "util/cuda/compat.h"
 
 template <typename SType = int> class Pixel {
  public:
