@@ -12,7 +12,7 @@ template <typename FType = double> class Kernel {
  public:
   typedef FType F;
   typedef ::Point<F> Point;
-#if !_MSC_VER
+#if !_MSC_VER || __CUDACC__
   typedef FType FVec[3];
 #else
   typedef std::array<F, 3> FVec;

@@ -15,7 +15,7 @@
 template <typename FType = double> class StripDetector {
  public:
   typedef FType F;
-#if !_MSC_VER
+#if !_MSC_VER || __CUDACC__
   typedef FType FVec[3];
 #else
   typedef std::array<F, 3> FVec;

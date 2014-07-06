@@ -33,7 +33,7 @@ template <std::size_t MaxSize, typename T> class Array {
   typedef ptrdiff_t difference;
   typedef std::size_t size_type;
 
-#if !_MSC_VER
+#if !_MSC_VER || __CUDACC__
   typedef pointer iterator;
   typedef const_pointer const_iterator;
 

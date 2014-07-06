@@ -2,7 +2,7 @@
 
 namespace compat {
 
-#if __CUDA_ARCH__
+#if __CUDACC__
 
 #define _ __device__ __host__
 #define constexpr
