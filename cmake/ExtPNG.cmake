@@ -24,10 +24,6 @@ function(ExtPNG)
   if(MSVC)
     set(ZLIB_NAME zlibstatic)
     set(PNG_NAME  libpng15_static)
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-      set(ZLIB_NAME ${ZLIB_NAME}d)
-      set(PNG_NAME  ${PNG_NAME}d)
-    endif()
   else()
     set(ZLIB_NAME libz)
     set(PNG_NAME  libpng)
@@ -38,12 +34,18 @@ function(ExtPNG)
     URL ${ZLIB_URL}
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/zlib.ext.dir
     INSTALL_DIR ${PNG_PREFIX}
-    CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>)
 
   add_library(zlib UNKNOWN IMPORTED)
   set_property(TARGET zlib PROPERTY IMPORTED_LOCATION
     ${PNG_PREFIX}/lib/${ZLIB_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
+  if(MSVC)
+    set_property(TARGET zlib PROPERTY IMPORTED_LOCATION_RELEASE
+      ${PNG_PREFIX}/lib/${ZLIB_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
+    set_property(TARGET zlib PROPERTY IMPORTED_LOCATION_DEBUG
+      ${PNG_PREFIX}/lib/${ZLIB_NAME}d${CMAKE_STATIC_LIBRARY_SUFFIX})
+  endif()
   add_dependencies(zlib zlib.ext)
 
   # build libpng externally
@@ -51,13 +53,19 @@ function(ExtPNG)
     URL ${PNG_URL}
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/libpng.ext.dir
     INSTALL_DIR ${PNG_PREFIX}
-    CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
       -DPNG_STATIC:BOOL=ON -DPNG_SHARED:BOOL=OFF)
 
   add_library(libpng UNKNOWN IMPORTED)
   set_property(TARGET libpng PROPERTY IMPORTED_LOCATION
     ${PNG_PREFIX}/lib/${PNG_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
+  if(MSVC)
+    set_property(TARGET libpng PROPERTY IMPORTED_LOCATION_RELEASE
+      ${PNG_PREFIX}/lib/${PNG_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
+    set_property(TARGET libpng PROPERTY IMPORTED_LOCATION_DEBUG
+      ${PNG_PREFIX}/lib/${PNG_NAME}d${CMAKE_STATIC_LIBRARY_SUFFIX})
+  endif()
   add_dependencies(libpng zlib libpng.ext)
 
   # export libraries to parent scope
