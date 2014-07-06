@@ -33,10 +33,10 @@ file(GLOB COMMON
 # OpenMP support
 find_package(OpenMP)
 if(OPENMP_FOUND)
-  list(APPEND CMAKE_CXX_FLAGS ${OpenMP_CXX_FLAGS})
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-# CUDA specific flags
+# CUDA support
 find_package(CUDA)
 if(CUDA_FOUND)
   add_definitions(-DHAVE_CUDA=1)
