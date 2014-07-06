@@ -16,19 +16,6 @@
 #include "2d_xy/model.h"
 #include "geometry/point.h"
 
-double getwtime_cpu() {
-#if !_MSC_VER
-  struct timeval tv;
-  static time_t sec = 0;
-  gettimeofday(&tv, NULL);
-  if (!sec)
-    sec = tv.tv_sec;
-  return (double)(tv.tv_sec - sec) + (double)tv.tv_usec / 1e6;
-#else
-  return 0;
-#endif
-}
-
 bool run_gpu_matrix(int pixel_id,
                     int n_tof_positions,
                     int number_of_threads_per_block,
@@ -235,7 +222,7 @@ OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
       cpu_prng_seed[i] = dis(gen);
     }
 
-    double t0 = getwtime_cpu();
+    clock_t start = clock();
 
     run_gpu_matrix(pixel_i,
                    n_tof_positions,
@@ -252,9 +239,9 @@ OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
                    cpu_matrix.data(),
                    gpu_vector_output.data());
 
-    double t1 = getwtime_cpu();
+    clock_t stop = clock();
 
-    fulltime += (t1 - t0);
+    fulltime += static_cast<double>(stop - start) / CLOCKS_PER_SEC;
 
 #if NO_TOF > 0
 
