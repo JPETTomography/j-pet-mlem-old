@@ -54,10 +54,6 @@ int main(int argc, char* argv[]) {
                           cmdline::path(),
                           cmdline::default_reader<cmdline::path>(),
                           cmdline::load);
-#if _OPENMP
-    cl.add<int>(
-        "n-threads", 't', "number of OpenMP threads", cmdline::dontsave);
-#endif
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
     cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
@@ -72,10 +68,10 @@ int main(int argc, char* argv[]) {
     cl.add<double>("radius", 'r', "inner detector ring radius", false);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
     cl.add<double>(
-        "tof-step", 'T', "TOF quantisation step for distance delta", false);
+        "tof-step", 't', "TOF quantisation step for distance delta", false);
     cl.add<std::string>(
         "shape",
-        'S',
+        's',
         "detector (scintillator) shape (square, circle, triangle, hexagon)",
         false,
         "square",
@@ -106,8 +102,6 @@ int main(int argc, char* argv[]) {
                    "scintillator emission base length P(l)=1-e^(-1)",
                    false,
                    0.1);
-    cl.add<std::mt19937::result_type>(
-        "seed", 's', "random number generator seed", cmdline::dontsave);
     cl.add<cmdline::path>("output",
                           'o',
                           "output lor hits for supplied phantom",
@@ -116,6 +110,12 @@ int main(int argc, char* argv[]) {
 
     // printing & stats params
     cl.add("verbose", 'v', "prints the iterations information on std::out");
+    cl.add<std::mt19937::result_type>(
+        "seed", 'S', "random number generator seed", cmdline::dontsave);
+#if _OPENMP
+    cl.add<int>(
+        "n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
+#endif
 
     cl.try_parse(argc, argv);
 

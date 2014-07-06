@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
     msg << "note: All length options below should be expressed in meters.";
     cl.footer(msg.str());
 
-    cl.add<int>("i-blocks", 'i', "number of iteration blocks", false, 0);
+    cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
     cl.add<int>(
         "iterations", 'I', "number of iterations (per block)", false, 1);
     cl.add<cmdline::path>(
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 #endif
 #if _OPENMP
     cl.add<int>(
-        "n-threads", 't', "number of OpenMP threads", cmdline::dontsave);
+        "n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
 #endif
 
     cl.parse_check(argc, argv);
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
       reconstruction << in;
     }
 
-    auto n_blocks = cl.get<int>("i-blocks");
+    auto n_blocks = cl.get<int>("blocks");
     auto n_iterations = cl.get<int>("iterations");
     auto output_wo_ext = cl.get<cmdline::path>("output").wo_ext();
 

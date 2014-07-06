@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
     cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
     cl.add<double>("emissions", 'e', "number of emissions", false, 500000);
 #if _OPENMP
-    cl.add<int>("n-threads", 't', "number of OpenMP threads", false, 4);
+    cl.add<int>("n-threads", 'T', "number of OpenMP threads", false, 4);
 #endif
 
     cl.parse_check(argc, argv);

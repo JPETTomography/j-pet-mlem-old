@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
   try {
     cmdline::parser cl;
 
-    cl.add<int>("i-blocks", 'i', "number of iteration blocks", false, 0);
+    cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
     cl.add<int>(
         "iterations", 'I', "number of iterations (per block)", false, 1);
     cl.add<cmdline::path>("system", 's', "system matrix file", true);
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
     cl.add("verbose", 'v', "prints the iterations information on std::out");
 
 #if _OPENMP
-    cl.add<int>("n-threads", 't', "number of OpenMP threads", false);
+    cl.add<int>("n-threads", 'T', "number of OpenMP threads", false);
 #endif
 
     cl.parse_check(argc, argv);
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
     if (!in_means.is_open())
       throw("cannot open input file: " + cl.get<cmdline::path>("mean"));
 
-    int n_i_blocks = cl.get<int>("i-blocks");
+    int n_i_blocks = cl.get<int>("blocks");
     Reconstruction<> reconstruction(cl.get<int>("iterations"),
                                     matrix,
                                     in_means,
