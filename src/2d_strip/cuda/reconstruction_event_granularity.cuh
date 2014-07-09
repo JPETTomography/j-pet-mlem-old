@@ -21,7 +21,7 @@ __global__ void reconstruction(StripDetector<F> detector,
                                int n_events,
                                F* output,
                                F* rho,
-                               cudaTextureObject_t sensitivity,
+                               TEX_ARG(sensitivity),
                                int n_blocks,
                                int n_threads_per_block) {
   Kernel<F> kernel;

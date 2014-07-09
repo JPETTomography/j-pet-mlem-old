@@ -7,6 +7,10 @@
 
 #include "config.h"
 
+#if USE_TEXTURE
+texture<float, 2, cudaReadModeElementType> tex_sensitivity;
+#endif
+
 #if EVENT_GRANULARITY
 #include "reconstruction_event_granularity.cuh"
 #elif WARP_GRANULARITY
@@ -76,20 +80,20 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   size_t pitch;
   cudaMallocPitch(&gpu_sensitivity,
                   &pitch,
-                  sizeof(F) * detector.n_y_pixels,
-                  detector.n_z_pixels);
+                  sizeof(F) * detector.n_z_pixels,
+                  detector.n_y_pixels);
 
   cudaMemcpy2D(gpu_sensitivity,
                pitch,
                cpu_sensitivity,
-               sizeof(F) * detector.n_y_pixels,
-               sizeof(F) * detector.n_y_pixels,
-               detector.n_z_pixels,
+               sizeof(F) * detector.n_z_pixels,
+               sizeof(F) * detector.n_z_pixels,
+               detector.n_y_pixels,
                cudaMemcpyHostToDevice);
 
   free(cpu_sensitivity);
 
-#if SENSITIVITY_TEXTURE
+#if USE_TEXTURE_OBJECT
   // create texture description
   cudaResourceDesc resDesc;
   memset(&resDesc, 0, sizeof(resDesc));
@@ -107,8 +111,15 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   // create texture object
   cudaTextureObject_t tex_sensitivity;
   cudaCreateTextureObject(&tex_sensitivity, &resDesc, &texDesc, NULL);
-#else
-  cudaTextureObject_t tex_sensitivity = 0;
+#elif USE_TEXTURE
+  cudaChannelFormatDesc desc_sensitivity = cudaCreateChannelDesc<float>();
+  cudaBindTexture2D(NULL,
+                    &tex_sensitivity,
+                    gpu_sensitivity,
+                    &desc_sensitivity,
+                    detector.n_z_pixels,
+                    detector.n_y_pixels,
+                    pitch);
 #endif
 
   cudaMalloc((void**)&gpu_output, output_size);
@@ -149,7 +160,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                      n_events,
                      gpu_output,
                      gpu_rho,
-                     tex_sensitivity,
+                     TEX_VAL(tex_sensitivity),
                      n_blocks,
                      n_threads_per_block);
 
@@ -172,8 +183,10 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
   progress_callback(n_iteration_blocks * n_iterations_in_block, context);
 
-#if SENSITIVITY_TEXTURE
+#if USE_TEXTURE_OBJECT
   cudaDestroyTextureObject(tex_sensitivity);
+#elif USE_TEXTURE
+  cudaUnbindTexture(&tex_sensitivity);
 #endif
   cudaFree(gpu_events_z_u);
   cudaFree(gpu_events_z_d);
