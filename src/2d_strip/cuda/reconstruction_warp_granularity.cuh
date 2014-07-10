@@ -35,7 +35,7 @@ __global__ void reconstruction(StripDetector<F> detector,
   Kernel<F> kernel;
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
 
-  short sh_mem_pixel_buffer[20 * 512];
+  __shared__ short sh_mem_pixel_buffer[20 * 512];
 
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
   int offset;
