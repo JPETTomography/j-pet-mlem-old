@@ -46,7 +46,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   size_t events_size = n_events * sizeof(F);
 
   F* cpu_sensitivity = (F*)malloc(image_size);
-  F* cpu_output = (F*)malloc(image_size);
+  F* cpu_output = (F*)malloc(output_size);
   F* cpu_rho = (F*)malloc(image_size);
 
   for (int y = 0; y < detector.n_y_pixels; ++y) {
