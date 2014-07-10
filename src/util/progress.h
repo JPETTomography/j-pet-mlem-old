@@ -44,7 +44,7 @@ class Progress {
     std::cerr << " " << std::round((double)completed / (double)total * 100.0)
               << "% " << completed << "/" << total;
 
-    if (!std::isnan(persec)) {
+    if (!std::isnan(persec) && completed > 0) {
       std::cerr << " "
                 << timetostr(std::round((double)(total - completed) / persec))
                 << " left, ";
