@@ -10,9 +10,9 @@
 
 #define NORMAL_PHANTOM 0
 
-#define IMAGE_SPACE_LINEAR_INDEX(Y, Z) (Y * detector.n_z_pixels) + Z
-#define BUFFER_LINEAR_INDEX(Y, Z) \
-  (blockIdx.x * detector.total_n_pixels) + (Y * detector.n_z_pixels) + Z
+#define IMAGE_SPACE_LINEAR_INDEX(p) (p.x * detector.n_z_pixels) + p.y
+#define BUFFER_LINEAR_INDEX(p) \
+  (blockIdx.x * detector.total_n_pixels) + IMAGE_SPACE_LINEAR_INDEX(p)
 #define SH_MEM_INDEX(ID, N, I) (ID * 20 + (2 * N + I))
 
 #if USE_TEXTURE_OBJECT
@@ -24,9 +24,9 @@
 #endif
 
 #if USE_TEXTURE_OBJECT
-#define TEX_2D(F, t, y, z) tex2D<F>(t, y, z)
+#define TEX_2D(F, t, p) tex2D<F>(t, p.x, p.y)
 #elif USE_TEXTURE
-#define TEX_2D(F, t, y, z) tex2D(tex_##t, y, z)
+#define TEX_2D(F, t, p) tex2D(tex_##t, p.x, p.y)
 #else
-#define TEX_2D(F, t, y, z) 1
+#define TEX_2D(F, t, p) 1
 #endif

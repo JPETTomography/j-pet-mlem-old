@@ -64,7 +64,8 @@ __global__ void reconstruction(StripDetector<F> detector,
 
     for (int iy = tl.x; iy < br.x; ++iy) {
       for (int iz = tl.y; iz < br.y; ++iz) {
-        Point<F> point = detector.pixel_center(iy, iz);
+        Pixel<> pixel(iy, iz);
+        Point<F> point = detector.pixel_center(pixel);
 
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
@@ -77,10 +78,10 @@ __global__ void reconstruction(StripDetector<F> detector,
                                   point,
                                   detector.inv_cor_mat_diag,
                                   sqrt_det_cor_mat) /
-                           TEX_2D(F, sensitivity, iy, iz);
+                           TEX_2D(F, sensitivity, pixel);
 
-          acc += event_kernel * TEX_2D(F, sensitivity, iy, iz) *
-                 rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)];
+          acc += event_kernel * TEX_2D(F, sensitivity, pixel) *
+                 rho[IMAGE_SPACE_LINEAR_INDEX(pixel)];
         }
       }
     }
@@ -89,7 +90,8 @@ __global__ void reconstruction(StripDetector<F> detector,
 
     for (int iy = tl.x; iy < br.x; ++iy) {
       for (int iz = tl.y; iz < br.y; ++iz) {
-        Point<F> point = detector.pixel_center(iy, iz);
+        Pixel<> pixel(iy, iz);
+        Point<F> point = detector.pixel_center(pixel);
 
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
@@ -102,11 +104,11 @@ __global__ void reconstruction(StripDetector<F> detector,
                                   point,
                                   detector.inv_cor_mat_diag,
                                   sqrt_det_cor_mat) /
-                           TEX_2D(F, sensitivity, iy, iz);
+                           TEX_2D(F, sensitivity, pixel);
 
           atomicAdd(
-              &output[BUFFER_LINEAR_INDEX(iy, iz)],
-              event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)] * inv_acc);
+              &output[BUFFER_LINEAR_INDEX(pixel)],
+              event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(pixel)] * inv_acc);
         }
       }
     }

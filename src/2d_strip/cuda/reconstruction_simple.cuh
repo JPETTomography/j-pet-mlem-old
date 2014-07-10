@@ -41,13 +41,13 @@ __global__ void reconstruction(StripDetector<F> detector,
              ++iy) {
           for (int iz = center_pixel.y - z_step; iz < center_pixel.y + z_step;
                ++iz) {
-
-            Point<F> point = detector.pixel_center(iy, iz);
+            Pixel<> pixel(iy, iz);
+            Point<F> point = detector.pixel_center(pixel);
             Kernel<F> kernel;
             float event_kernel =
                 kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
 
-            acc += event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)];
+            acc += event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(pixel)];
           }
         }
 
@@ -57,15 +57,15 @@ __global__ void reconstruction(StripDetector<F> detector,
              ++iz) {
           for (int iy = center_pixel.x - y_step; iy < center_pixel.x + y_step;
                ++iy) {
-
-            Point<F> point = detector.pixel_center(iy, iz);
+            Pixel<> pixel(iy, iz);
+            Point<F> point = detector.pixel_center(pixel);
 
             Kernel<F> kernel;
             F event_kernel =
                 kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
 
-            atomicAdd(&output[BUFFER_LINEAR_INDEX(iy, iz)],
-                      (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(iy, iz)]) *
+            atomicAdd(&output[BUFFER_LINEAR_INDEX(pixel)],
+                      (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(pixel)]) *
                           inv_acc);
           }
         }
