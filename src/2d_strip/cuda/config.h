@@ -3,8 +3,8 @@
 #define WARP_SIZE 32
 
 // reconstruction mode (comment out both for simple kernel)
-#define EVENT_GRANULARITY 1
-//#define WARP_GRANULARITY 1
+//#define EVENT_GRANULARITY 1
+#define WARP_GRANULARITY 1
 #define USE_TEXTURE 1
 //#define USE_TEXTURE_OBJECT 1 // requires CC 3.0
 

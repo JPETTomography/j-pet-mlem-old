@@ -13,12 +13,10 @@ template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
   return (length + F(0.5)) / pixel_size;
 }
 
-Pixel<> warp_space_pixel(int& offset,
-                         Pixel<>& first_pixel,
-                         Pixel<> ul,
-                         Pixel<> ur,
-                         Pixel<> dl,
-                         int tid) __device__;
+__device__ Pixel<> warp_space_pixel(int offset,
+                                    Pixel<> ul,
+                                    int width,
+                                    int& index) __device__;
 
 template <typename F>
 __global__ void reconstruction(StripDetector<F> detector,
@@ -37,8 +35,6 @@ __global__ void reconstruction(StripDetector<F> detector,
 
   __shared__ short sh_mem_pixel_buffer[20 * 512];
 
-  int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
-  int offset;
   int block_size = (n_blocks * (n_threads_per_block / WARP_SIZE));
   int number_of_blocks = (n_events + block_size - 1) / block_size;
   int thread_warp_index = threadIdx.x / WARP_SIZE;
@@ -70,26 +66,28 @@ __global__ void reconstruction(StripDetector<F> detector,
     Pixel<> center_pixel = detector.pixel_location(y, z);
 
     // bounding box limits for event
-    Pixel<> ur(center_pixel.x - n_pixels_in_line(bb_y, detector.pixel_height),
+    Pixel<> tl(center_pixel.x - n_pixels_in_line(bb_y, detector.pixel_height),
+               center_pixel.y - n_pixels_in_line(bb_z, detector.pixel_width));
+    Pixel<> br(center_pixel.x + n_pixels_in_line(bb_y, detector.pixel_height),
                center_pixel.y + n_pixels_in_line(bb_z, detector.pixel_width));
-    Pixel<> dl(center_pixel.x + n_pixels_in_line(bb_y, detector.pixel_height),
-               center_pixel.y - n_pixels_in_line(bb_z, detector.pixel_width));
-    Pixel<> ul(center_pixel.x - n_pixels_in_line(bb_y, detector.pixel_height),
-               center_pixel.y - n_pixels_in_line(bb_z, detector.pixel_width));
 
-    int bb_size = ((ur.y - ul.y) * (dl.x - ur.x) + WARP_SIZE - 1) / WARP_SIZE;
+    int bb_width = br.y - tl.y;
+    int bb_height = br.x - tl.x;
+    int bb_size = bb_width * bb_height;
 
     int pixel_count = 0;
 
-    Pixel<> first_pixel = ul;
+    for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
+      int index;
+      Pixel<> pixel = warp_space_pixel(offset, tl, bb_width, index);
 
-    for (int k = 0; k < bb_size; ++k) {
-      Pixel<> pixel = warp_space_pixel(offset, first_pixel, ul, ur, dl, tid);
+      if (index >= bb_size)
+        break;
+
       Point<F> point = detector.pixel_center(pixel);
 
       if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
-        point.x -= y;
-        point.y -= z;
+        point -= ellipse_center;
 
         F event_kernel = kernel(y,
                                 tan,
@@ -143,43 +141,15 @@ __global__ void reconstruction(StripDetector<F> detector,
   }
 }
 
-#if !SIMPLE_WARP_SPACE
-__device__ Pixel<> warp_space_pixel(int& offset,
-                                    Pixel<>& first_pixel,
-                                    Pixel<> ul,
-                                    Pixel<> ur,
-                                    Pixel<> dl,
-                                    int tid) {
-  offset = ur.y - first_pixel.y;
-  int tid_in_warp = threadIdx.x & 31;
-
-  Pixel<> pixel;
-  if (tid_in_warp < offset) {
-    pixel = Pixel<>(first_pixel.x, first_pixel.y + tid_in_warp);
-  } else {
-    pixel = Pixel<>(
-        first_pixel.x + (int)(__fdividef(tid - offset, ur.y - dl.y)) + 1,
-        dl.y + ((tid - offset) % (ur.y - dl.y)));
-  }
-
-  first_pixel.y = ul.y + (32 - offset) % (ur.y - ul.y);
-  first_pixel.x += int(__fdividef(32 - offset, ur.y - ul.y)) + 1;
-
-  return pixel;
-}
-#else
 __device__ Pixel<> warp_space_pixel(int offset,
-                                    Pixel<> ul,
+                                    Pixel<> tl,
                                     int width,
-                                    int height,
                                     int& index) {
-
-  index = threadIdx.x & 31 + offset;
+  index = (threadIdx.x & (WARP_SIZE - 1)) + offset;
   Pixel<> pixel;
-  pixel.y = index / width;
-  pixel.x = index - width * pixel.y;
-  pixel.y += ul.y;
-  pixel.x += ul.x;
+  pixel.x = index / width;
+  pixel.y = index - width * pixel.x;
+  pixel.x += tl.x;
+  pixel.y += tl.y;
   return pixel;
 }
-#endif

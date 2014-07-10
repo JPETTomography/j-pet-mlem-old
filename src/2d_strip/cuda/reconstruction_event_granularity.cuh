@@ -55,15 +55,15 @@ __global__ void reconstruction(StripDetector<F> detector,
     Pixel<> center_pixel = detector.pixel_location(y, z);
 
     // bounding box limits for event
-    Pixel<> ur(center_pixel.x - n_pixels_in_line(bb_y, detector.pixel_height),
-               center_pixel.y + n_pixels_in_line(bb_z, detector.pixel_width));
-    Pixel<> dl(center_pixel.x + n_pixels_in_line(bb_y, detector.pixel_height),
+    Pixel<> tl(center_pixel.x - n_pixels_in_line(bb_y, detector.pixel_height),
                center_pixel.y - n_pixels_in_line(bb_z, detector.pixel_width));
+    Pixel<> br(center_pixel.x + n_pixels_in_line(bb_y, detector.pixel_height),
+               center_pixel.y + n_pixels_in_line(bb_z, detector.pixel_width));
 
     F acc = 0;
 
-    for (int iy = ur.x; iy < dl.x; ++iy) {
-      for (int iz = dl.y; iz < ur.y; ++iz) {
+    for (int iy = tl.x; iy < br.x; ++iy) {
+      for (int iz = tl.y; iz < br.y; ++iz) {
         Point<F> point = detector.pixel_center(iy, iz);
 
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
@@ -87,8 +87,8 @@ __global__ void reconstruction(StripDetector<F> detector,
 
     F inv_acc = 1 / acc;
 
-    for (int iz = dl.y; iz < ur.y; ++iz) {
-      for (int iy = ur.x; iy < dl.x; ++iy) {
+    for (int iy = tl.x; iy < br.x; ++iy) {
+      for (int iz = tl.y; iz < br.y; ++iz) {
         Point<F> point = detector.pixel_center(iy, iz);
 
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
