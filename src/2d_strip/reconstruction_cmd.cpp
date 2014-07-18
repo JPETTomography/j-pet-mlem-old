@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 #if HAVE_CUDA
     cl.add("gpu", 'G', "run on GPU (via CUDA)");
     cl.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
-    cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 64);
+    cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 32);
     cl.add<int>(
         "cuda-threads", 'W', "CUDA threads per block", cmdline::dontsave, 512);
 #endif
