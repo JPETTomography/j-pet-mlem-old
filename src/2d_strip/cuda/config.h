@@ -7,8 +7,8 @@
 //#define WARP_GRANULARITY 1
 #define USE_TEXTURE 1
 //#define USE_TEXTURE_OBJECT 1 // requires CC 3.0
-#define SHARED_REGISTER  // nearly 4x speedup
-//#define SHARED_BUFFOR // shared memory buffor for pixels detected in error ellipse
+#define SHARED_REGISTER 1  // nearly 4x speedup
+//#define SHARED_BUFFER 1 // shared memory pixel buffer in error ellipse
 
 #define NORMAL_PHANTOM 0
 

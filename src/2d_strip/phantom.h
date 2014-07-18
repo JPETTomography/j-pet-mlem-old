@@ -170,7 +170,6 @@ template <typename FType = double> class Phantom {
       }
 
       std::cout << "VECTOR SIZE: " << events.size() << std::endl;
-
     }
   }
 

@@ -39,7 +39,6 @@ __global__ void reconstruction(StripDetector<F> detector,
 
 #ifdef SHARED_REGISTER
   if (blockIdx.x == 0) {
-
     sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
     block_size = (n_blocks * (n_threads_per_block / WARP_SIZE));
     number_of_blocks = (n_events + block_size - 1) / block_size;
@@ -49,10 +48,9 @@ __global__ void reconstruction(StripDetector<F> detector,
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   int block_size = (n_blocks * (n_threads_per_block / WARP_SIZE));
   int number_of_blocks = (n_events + block_size - 1) / block_size;
-
 #endif
 
-#ifdef SHARED_BUFFOR
+#ifdef SHARED_BUFFER
   __shared__ short sh_mem_pixel_buffer[20 * 512];
 #endif
 
@@ -96,7 +94,7 @@ __global__ void reconstruction(StripDetector<F> detector,
 
     F inv_bb_width = F(1) / bb_width;
 
-#ifdef SHARED_BUFFOR
+#ifdef SHARED_BUFFER
     int pixel_count = 0;
 #endif
 
@@ -125,7 +123,7 @@ __global__ void reconstruction(StripDetector<F> detector,
 
         acc += event_kernel * TEX_2D(F, sensitivity, pixel) *
                rho[IMAGE_SPACE_LINEAR_INDEX(pixel)];
-#ifdef SHARED_BUFFOR
+#ifdef SHARED_BUFFER
         sh_mem_pixel_buffer[SH_MEM_INDEX(threadIdx.x, pixel_count, 0)] =
             pixel.x;
         sh_mem_pixel_buffer[SH_MEM_INDEX(threadIdx.x, pixel_count, 1)] =
@@ -141,8 +139,7 @@ __global__ void reconstruction(StripDetector<F> detector,
 
     F inv_acc = 1 / acc;
 
-
-#ifdef SHARED_BUFFOR
+#ifdef SHARED_BUFFER
     for (int k = 0; k < pixel_count; ++k) {
 
       Pixel<> pixel(sh_mem_pixel_buffer[SH_MEM_INDEX(threadIdx.x, k, 0)],
