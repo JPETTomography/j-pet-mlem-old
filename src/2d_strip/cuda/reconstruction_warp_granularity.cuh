@@ -75,11 +75,13 @@ __global__ void reconstruction(StripDetector<F> detector,
     int bb_height = br.x - tl.x;
     int bb_size = bb_width * bb_height;
 
+    F inv_bb_width = F(1)/bb_width;
+
     int pixel_count = 0;
 
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
       int index;
-      Pixel<> pixel = warp_space_pixel(offset, tl, bb_width, index);
+      Pixel<> pixel = warp_space_pixel(offset, tl, bb_width,inv_bb_width,index);
 
       if (index >= bb_size)
         break;
@@ -143,10 +145,11 @@ __global__ void reconstruction(StripDetector<F> detector,
 __device__ Pixel<> warp_space_pixel(int offset,
                                     Pixel<> tl,
                                     int width,
+                                    float inv_bb_width,
                                     int& index) {
   index = (threadIdx.x & (WARP_SIZE - 1)) + offset;
   Pixel<> pixel;
-  pixel.x = index / width;
+  pixel.x = index * inv_bb_width;
   pixel.y = index - width * pixel.x;
   pixel.x += tl.x;
   pixel.y += tl.y;

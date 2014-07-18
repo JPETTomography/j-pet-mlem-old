@@ -155,7 +155,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
       cudaMemset(gpu_output, 0, output_size);
       cudaMemcpy(gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
 
-
       cudaEventRecord(start);
 #if __CUDACC__
 #define reconstruction reconstruction << <blocks, threads>>>
@@ -176,7 +175,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
       cudaEventSynchronize(stop);
 
       cudaEventElapsedTime(&time, start, stop);
-      printf ("Time for the kernel: %f ms\n", time);
+      printf("Time for the kernel: %f ms\n", time);
 
       // grab output
       cudaMemcpy(cpu_output, gpu_output, output_size, cudaMemcpyDeviceToHost);
