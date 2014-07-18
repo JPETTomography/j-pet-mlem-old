@@ -168,6 +168,9 @@ template <typename FType = double> class Phantom {
                       event_list_per_thread[i].begin(),
                       event_list_per_thread[i].end());
       }
+
+      std::cout << "VECTOR SIZE: " << events.size() << std::endl;
+
     }
   }
 
