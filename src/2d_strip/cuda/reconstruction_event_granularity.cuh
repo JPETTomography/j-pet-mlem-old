@@ -13,6 +13,14 @@ template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
   return (length + F(0.5)) / pixel_size;
 }
 
+#ifdef SHARED_REGISTER
+
+__shared__ float sqrt_det_cor_mat;
+__shared__ int n_threads;
+__shared__ int n_chunks;
+
+#endif
+
 template <typename F>
 __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
@@ -25,11 +33,24 @@ __global__ void reconstruction(StripDetector<F> detector,
                                int n_blocks,
                                int n_threads_per_block) {
   Kernel<F> kernel;
-  F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
 
-  int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+#ifdef SHARED_REGISTER
+  if (threadIdx.x == 0) {
+
+    sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
+    n_threads = n_blocks * n_threads_per_block;
+    n_chunks = (n_events + n_threads - 1) / n_threads;
+
+    __syncthreads();
+  }
+#else
+
+  F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   int n_threads = n_blocks * n_threads_per_block;
   int n_chunks = (n_events + n_threads - 1) / n_threads;
+
+#endif
+  int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
   for (int chunk = 0; chunk < n_chunks; ++chunk) {
     int i = chunk * n_threads + tid;

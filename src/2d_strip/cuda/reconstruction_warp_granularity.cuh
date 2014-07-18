@@ -51,7 +51,10 @@ __global__ void reconstruction(StripDetector<F> detector,
   int number_of_blocks = (n_events + block_size - 1) / block_size;
 
 #endif
+
+#ifdef SHARED_BUFFOR
   __shared__ short sh_mem_pixel_buffer[20 * 512];
+#endif
 
   int thread_warp_index = threadIdx.x / WARP_SIZE;
 
@@ -93,7 +96,9 @@ __global__ void reconstruction(StripDetector<F> detector,
 
     F inv_bb_width = F(1) / bb_width;
 
+#ifdef SHARED_BUFFOR
     int pixel_count = 0;
+#endif
 
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
       int index;
@@ -120,12 +125,13 @@ __global__ void reconstruction(StripDetector<F> detector,
 
         acc += event_kernel * TEX_2D(F, sensitivity, pixel) *
                rho[IMAGE_SPACE_LINEAR_INDEX(pixel)];
-
+#ifdef SHARED_BUFFOR
         sh_mem_pixel_buffer[SH_MEM_INDEX(threadIdx.x, pixel_count, 0)] =
             pixel.x;
         sh_mem_pixel_buffer[SH_MEM_INDEX(threadIdx.x, pixel_count, 1)] =
             pixel.y;
         pixel_count++;
+#endif
       }
     }
 
@@ -135,6 +141,8 @@ __global__ void reconstruction(StripDetector<F> detector,
 
     F inv_acc = 1 / acc;
 
+
+#ifdef SHARED_BUFFOR
     for (int k = 0; k < pixel_count; ++k) {
 
       Pixel<> pixel(sh_mem_pixel_buffer[SH_MEM_INDEX(threadIdx.x, k, 0)],
@@ -156,6 +164,36 @@ __global__ void reconstruction(StripDetector<F> detector,
                 event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(pixel)] * inv_acc *
                     sec_sq);
     }
+#else
+    for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
+      int index;
+      Pixel<> pixel =
+          warp_space_pixel(offset, tl, bb_width, inv_bb_width, index);
+
+      if (index >= bb_size)
+        break;
+
+      Point<F> point = detector.pixel_center(pixel);
+
+      if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
+        point -= ellipse_center;
+
+        F event_kernel = kernel(y,
+                                tan,
+                                sec,
+                                sec_sq,
+                                detector.radius,
+                                point,
+                                detector.inv_cor_mat_diag,
+                                sqrt_det_cor_mat) /
+                         TEX_2D(F, sensitivity, pixel);
+
+        atomicAdd(
+            &output[BUFFER_LINEAR_INDEX(pixel)],
+            event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(pixel)] * inv_acc);
+      }
+    }
+#endif
   }
 }
 
