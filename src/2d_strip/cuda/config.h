@@ -7,6 +7,7 @@
 #define WARP_GRANULARITY 1
 #define USE_TEXTURE 1
 //#define USE_TEXTURE_OBJECT 1 // requires CC 3.0
+//#define SHARED_REGISTER//nearly 10x speedup, someone tell my why ? ;/
 
 #define NORMAL_PHANTOM 0
 

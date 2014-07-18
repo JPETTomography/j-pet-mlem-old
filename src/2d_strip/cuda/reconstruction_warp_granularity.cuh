@@ -17,6 +17,11 @@ __device__ Pixel<> warp_space_pixel(int offset,
                                     Pixel<> ul,
                                     int width,
                                     int& index) __device__;
+#ifdef SHARED_REGISTER
+__shared__ float sqrt_det_cor_mat;
+__shared__ int block_size;
+__shared__ int number_of_blocks;
+#endif
 
 template <typename F>
 __global__ void reconstruction(StripDetector<F> detector,
@@ -31,12 +36,23 @@ __global__ void reconstruction(StripDetector<F> detector,
                                int n_threads_per_block) {
 
   Kernel<F> kernel;
+
+#ifdef SHARED_REGISTER
+  if (blockIdx.x == 0) {
+
+    sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
+    block_size = (n_blocks * (n_threads_per_block / WARP_SIZE));
+    number_of_blocks = (n_events + block_size - 1) / block_size;
+    __syncthreads();
+  }
+#else
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
-
-  __shared__ short sh_mem_pixel_buffer[20 * 512];
-
   int block_size = (n_blocks * (n_threads_per_block / WARP_SIZE));
   int number_of_blocks = (n_events + block_size - 1) / block_size;
+
+#endif
+  __shared__ short sh_mem_pixel_buffer[20 * 512];
+
   int thread_warp_index = threadIdx.x / WARP_SIZE;
 
   for (int i = 0; i < number_of_blocks; ++i) {
