@@ -50,6 +50,10 @@ template <typename FType = double> class StripDetector {
         grid_ul_z(grid_center_z - F(0.5) * grid_size_z),
         inv_pow_sigma_z(1 / (sigma_z * sigma_z)),
         inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
+        grid_ul_y_half_h(grid_center_y + F(0.5) * grid_size_y -
+                         F(0.5) * pixel_height),
+        grid_ul_z_half_w(grid_center_z - F(0.5) * grid_size_z +
+                         F(0.5) * pixel_width),
 #if !__CUDACC__ && !_MSC_VER
         inv_cor_mat_diag{ 1 / (sigma_z * sigma_z),
                           1 / (sigma_z * sigma_z),
@@ -91,8 +95,8 @@ template <typename FType = double> class StripDetector {
   }
 
   _ Point pixel_center(int i, int j) const {
-    return Point(grid_ul_y - i * pixel_height - half_pixel_height_,
-                 grid_ul_z + j * pixel_width + half_pixel_width_);
+    return Point(grid_ul_y_half_h - i * pixel_height,
+                 grid_ul_z_half_w + j * pixel_width);
   }
 
   _ Point pixel_center(Pixel pixel) const {
@@ -173,6 +177,8 @@ template <typename FType = double> class StripDetector {
   const F grid_ul_z;
   const F inv_pow_sigma_z;
   const F inv_pow_sigma_dl;
+  const F grid_ul_y_half_h;
+  const F grid_ul_z_half_w;
   const FVec inv_cor_mat_diag;
 
  private:

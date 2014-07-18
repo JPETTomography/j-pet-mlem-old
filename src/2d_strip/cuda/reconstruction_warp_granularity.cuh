@@ -75,13 +75,14 @@ __global__ void reconstruction(StripDetector<F> detector,
     int bb_height = br.x - tl.x;
     int bb_size = bb_width * bb_height;
 
-    F inv_bb_width = F(1)/bb_width;
+    F inv_bb_width = F(1) / bb_width;
 
     int pixel_count = 0;
 
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
       int index;
-      Pixel<> pixel = warp_space_pixel(offset, tl, bb_width,inv_bb_width,index);
+      Pixel<> pixel =
+          warp_space_pixel(offset, tl, bb_width, inv_bb_width, index);
 
       if (index >= bb_size)
         break;
