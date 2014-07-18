@@ -147,15 +147,19 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
     for (int it = 0; it < n_iterations_in_block; ++it) {
       progress_callback(ib * n_iterations_in_block + it, context);
 
-      cudaEvent_t start, stop;
+      cudaEvent_t start, stop, start_mem_time, stop_mem_time;
       float time;
+      float time_all;
       cudaEventCreate(&start);
       cudaEventCreate(&stop);
+      cudaEventCreate(&start_mem_time);
+      cudaEventCreate(&stop_mem_time);
 
       cudaMemset(gpu_output, 0, output_size);
       cudaMemcpy(gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
 
       cudaEventRecord(start);
+      cudaEventRecord(start_mem_time);
 #if __CUDACC__
 #define reconstruction reconstruction << <blocks, threads>>>
 #endif
@@ -187,6 +191,12 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
           cpu_rho[p] += cpu_output[block * detector.total_n_pixels + p];
         }
       }
+
+      cudaEventRecord(stop_mem_time);
+      cudaEventSynchronize(stop_mem_time);
+      cudaEventElapsedTime(&time_all, start_mem_time, stop_mem_time);
+
+      printf("Time for the kernel + memory operations: %f ms\n", time_all);
     }
 
     output_callback(detector, ib * n_iterations_in_block, cpu_rho, context);
