@@ -31,7 +31,7 @@ __global__ void monte_carlo_kernel(int x,
                                    float h_detector,
                                    float w_detector,
                                    float pixel_size,
-                                   bool* warp_divergence_buffor) {
+                                   bool* warp_divergence_buffer) {
 
   int tid = ((blockIdx.x * blockDim.x) + threadIdx.x);
 
@@ -136,7 +136,7 @@ __global__ void monte_carlo_kernel(int x,
     if (intersection_flag) {
 
       if (tid < 32) {
-        warp_divergence_buffor[(32 * i) + tid] = true;
+        warp_divergence_buffer[(32 * i) + tid] = true;
       }
     }
 #endif

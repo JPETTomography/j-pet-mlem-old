@@ -35,18 +35,18 @@ bool run_gpu_matrix(int pixel_i,
   MatrixElement* gpu_MatrixElement;
 
 #if WARP_DIVERGENCE_TEST
-  bool* warp_divergence_buffor;
+  bool* warp_divergence_buffer;
 
   const int warp_size = 32;
 
-  cudaMalloc((void**)&warp_divergence_buffor,
+  cudaMalloc((void**)&warp_divergence_buffer,
              warp_size * n_emissions * sizeof(bool));
 
-  cudaMemset(warp_divergence_buffor, 0, warp_size * n_emissions * sizeof(bool));
+  cudaMemset(warp_divergence_buffer, 0, warp_size * n_emissions * sizeof(bool));
 
 #else
-  bool* warp_divergence_buffor;
-  cudaMalloc((void**)&warp_divergence_buffor, 0 * sizeof(bool));
+  bool* warp_divergence_buffer;
+  cudaMalloc((void**)&warp_divergence_buffer, 0 * sizeof(bool));
 
 #endif
 
@@ -100,7 +100,7 @@ bool run_gpu_matrix(int pixel_i,
                        h_detector,
                        w_detector,
                        pixel_size,
-                       warp_divergence_buffor);
+                       warp_divergence_buffer);
 
     cudaThreadSynchronize();
 
@@ -119,11 +119,11 @@ bool run_gpu_matrix(int pixel_i,
 
 #if WARP_DIVERGENCE_TEST
 
-  bool* cpu_warp_divergence_buffor = new bool[warp_size * n_emissions];
+  bool* cpu_warp_divergence_buffer = new bool[warp_size * n_emissions];
 
   cuda(Memcpy,
-       cpu_warp_divergence_buffor,
-       warp_divergence_buffor,
+       cpu_warp_divergence_buffer,
+       warp_divergence_buffer,
        warp_size * n_emissions * sizeof(bool),
        cudaMemcpyDeviceToHost);
 
@@ -132,13 +132,13 @@ bool run_gpu_matrix(int pixel_i,
 
   for (int i = 0; i < warp_size * n_emissions; ++i) {
 
-    output << int(cpu_warp_divergence_buffor[i]);
+    output << int(cpu_warp_divergence_buffer[i]);
     if (i % warp_size == 0 && i != 0) {
       output << std::endl;
     }
   }
 
-  delete cpu_warp_divergence_buffor;
+  delete cpu_warp_divergence_buffer;
 
 #endif
 
