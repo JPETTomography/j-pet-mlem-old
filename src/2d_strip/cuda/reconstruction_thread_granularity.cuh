@@ -26,7 +26,7 @@ __global__ void reconstruction(StripDetector<F> detector,
                                int n_threads_per_block) {
   Kernel<F> kernel;
 
-#ifdef SHARED_CONSTANTS
+#if SHARED_CONSTANTS
   __shared__ F sqrt_det_cor_mat;
   __shared__ int n_threads;
   __shared__ int n_chunks;
@@ -51,7 +51,7 @@ __global__ void reconstruction(StripDetector<F> detector,
       break;
     }
 
-#ifdef AOS_ACCESS
+#if AOS_ACCESS
     Event<F> event = events[i];
 #else
     Event<F> event(events_z_u[i], events_z_d[i], events_dl[i]);
