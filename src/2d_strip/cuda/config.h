@@ -12,7 +12,10 @@
 #define NORMAL_PHANTOM 0
 
 #define PIXEL_INDEX(p) ((p.x * detector.n_z_pixels) + p.y)
-#define SH_MEM_INDEX(ID, N, I) (ID * 20 + (2 * N + I))
+
+#define MAX_PIXELS_PER_THREAD 20  // this has been chosen arbitrarily
+#define ELLIPSE_PIXEL_INDEX(tid, index, dim) \
+  (MAX_PIXELS_PER_THREAD * (tid) + (2 * (index) + (dim)))
 
 #if USE_TEXTURE_OBJECT
 #define TEX_ARG(v) cudaTextureObject_t v

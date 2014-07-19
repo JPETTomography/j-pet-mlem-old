@@ -37,7 +37,7 @@ __global__ void reconstruction(StripDetector<F> detector,
   int number_of_blocks = (n_events + block_size - 1) / block_size;
 
 #if SHARED_BUFFER
-  __shared__ short sh_mem_pixel_buffer[20 * 512];
+  __shared__ short ellipse_pixels[MAX_PIXELS_PER_THREAD * 512];
 #endif
 
   int thread_warp_index = threadIdx.x / WARP_SIZE;
@@ -80,7 +80,7 @@ __global__ void reconstruction(StripDetector<F> detector,
     int bb_size = bb_width * bb_height;
 
 #if SHARED_BUFFER
-    int pixel_count = 0;
+    int n_ellipse_pixels = 0;
 #endif
 
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
@@ -109,11 +109,11 @@ __global__ void reconstruction(StripDetector<F> detector,
         acc += event_kernel * TEX_2D(F, sensitivity, pixel) *
                rho[PIXEL_INDEX(pixel)];
 #if SHARED_BUFFER
-        sh_mem_pixel_buffer[SH_MEM_INDEX(threadIdx.x, pixel_count, 0)] =
+        ellipse_pixels[ELLIPSE_PIXEL_INDEX(threadIdx.x, n_ellipse_pixels, 0)] =
             pixel.x;
-        sh_mem_pixel_buffer[SH_MEM_INDEX(threadIdx.x, pixel_count, 1)] =
+        ellipse_pixels[ELLIPSE_PIXEL_INDEX(threadIdx.x, n_ellipse_pixels, 1)] =
             pixel.y;
-        pixel_count++;
+        n_ellipse_pixels++;
 #endif
       }
     }
@@ -125,9 +125,9 @@ __global__ void reconstruction(StripDetector<F> detector,
     F inv_acc = 1 / acc;
 
 #if SHARED_BUFFER
-    for (int k = 0; k < pixel_count; ++k) {
-      Pixel<> pixel(sh_mem_pixel_buffer[SH_MEM_INDEX(threadIdx.x, k, 0)],
-                    sh_mem_pixel_buffer[SH_MEM_INDEX(threadIdx.x, k, 1)]);
+    for (int p = 0; p < n_ellipse_pixels; ++p) {
+      Pixel<> pixel(ellipse_pixels[ELLIPSE_PIXEL_INDEX(threadIdx.x, p, 0)],
+                    ellipse_pixels[ELLIPSE_PIXEL_INDEX(threadIdx.x, p, 1)]);
       Point<F> point = detector.pixel_center(pixel);
       point -= ellipse_center;
 
