@@ -41,6 +41,7 @@ __global__ void reconstruction(StripDetector<F> detector,
   int number_of_blocks = (n_events + block_size - 1) / block_size;
 
 #if SHARED_BUFFER
+  // gathers all pixels inside 3 sigma ellipse
   __shared__ short2
       ellipse_pixels[MAX_PIXELS_PER_THREAD * MAX_THREADS_PER_BLOCK];
 #endif
@@ -88,7 +89,7 @@ __global__ void reconstruction(StripDetector<F> detector,
     int n_ellipse_pixels = 0;
 #endif
 
-    F ellipse_kernels[MAX_PIXELS_PER_THREAD];
+    F ellipse_kernel_mul_rho[MAX_PIXELS_PER_THREAD];
 
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
       int index;
@@ -103,6 +104,7 @@ __global__ void reconstruction(StripDetector<F> detector,
       if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
         point -= ellipse_center;
 
+        F pixel_sensitivity = TEX_2D(F, sensitivity, pixel);
         F event_kernel = kernel(y,
                                 tan,
                                 sec,
@@ -111,14 +113,14 @@ __global__ void reconstruction(StripDetector<F> detector,
                                 point,
                                 detector.inv_cor_mat_diag,
                                 sqrt_det_cor_mat) /
-                         TEX_2D(F, sensitivity, pixel);
+                         pixel_sensitivity;
 
-        acc += event_kernel * TEX_2D(F, sensitivity, pixel) *
-               rho[PIXEL_INDEX(pixel)];
+        F event_kernel_mul_rho = event_kernel * rho[PIXEL_INDEX(pixel)];
+        acc += event_kernel_mul_rho * pixel_sensitivity;
 #if SHARED_BUFFER
         ellipse_pixels[MAX_PIXELS_PER_THREAD * threadIdx.x + n_ellipse_pixels] =
             make_short2(pixel.x, pixel.y);
-        ellipse_kernels[n_ellipse_pixels] = event_kernel;
+        ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
         ++n_ellipse_pixels;
 #endif
       }
@@ -136,9 +138,9 @@ __global__ void reconstruction(StripDetector<F> detector,
 #endif
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       short2 pixel = ellipse_pixels[MAX_PIXELS_PER_THREAD * threadIdx.x + p];
-      F event_kernel = ellipse_kernels[p];
+      F event_kernel_mul_rho = ellipse_kernel_mul_rho[p];
       atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
-                event_kernel * rho[PIXEL_INDEX(pixel)] * inv_acc * sec_sq);
+                event_kernel_mul_rho * inv_acc * sec_sq);
     }
 #else
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
