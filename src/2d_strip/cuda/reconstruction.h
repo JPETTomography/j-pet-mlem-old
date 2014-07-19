@@ -30,7 +30,8 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                             void* context,
                             int device,
                             int n_blocks,
-                            int n_threads_per_block);
+                            int n_threads_per_block,
+                            bool verbose);
 
 namespace GPU {
 
@@ -92,6 +93,7 @@ void run_gpu_reconstruction(StripDetector<float>& detector,
                             int device,
                             int n_blocks,
                             int n_threads_per_block,
+                            bool verbose,
                             Progress& progress,
                             std::string output) {
 
@@ -106,7 +108,8 @@ void run_gpu_reconstruction(StripDetector<float>& detector,
                          &context,
                          device,
                          n_blocks,
-                         n_threads_per_block);
+                         n_threads_per_block,
+                         verbose);
 }
 
 // convert double (DP) events into float (SP) events and run SP kernel
@@ -117,6 +120,7 @@ void run_gpu_reconstruction(StripDetector<float>& detector,
                             int device,
                             int n_blocks,
                             int n_threads_per_block,
+                            bool verbose,
                             Progress& progress,
                             std::string output_file_name) {
   std::vector<Event<float>> sp_event_list;
@@ -131,6 +135,7 @@ void run_gpu_reconstruction(StripDetector<float>& detector,
                          device,
                          n_blocks,
                          n_threads_per_block,
+                         verbose,
                          progress,
                          output_file_name);
 }

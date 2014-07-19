@@ -3,18 +3,23 @@
 #define WARP_SIZE 32
 
 // reconstruction mode (comment out both for simple kernel)
-#define EVENT_GRANULARITY 1
-//#define WARP_GRANULARITY 1
+//#define EVENT_GRANULARITY 1
+#define WARP_GRANULARITY 1
 #define USE_TEXTURE 1
 //#define USE_TEXTURE_OBJECT 1 // requires CC 3.0
 #define SHARED_REGISTER 1  // nearly 4x speedup
-//#define SHARED_BUFFER 1 // shared memory pixel buffer in error ellipse
+#define SHARED_BUFFER 1    // shared memory pixel buffer in error ellipse
+//#define SPLIT_BLOCKS 1   // split output into separate chunks pre block
 
 #define NORMAL_PHANTOM 0
 
 #define IMAGE_SPACE_LINEAR_INDEX(p) (p.x * detector.n_z_pixels) + p.y
+#if SPLIT_BLOCKS
 #define BUFFER_LINEAR_INDEX(p) \
   (blockIdx.x * detector.total_n_pixels) + IMAGE_SPACE_LINEAR_INDEX(p)
+#else
+#define BUFFER_LINEAR_INDEX(p) IMAGE_SPACE_LINEAR_INDEX(p)
+#endif
 #define SH_MEM_INDEX(ID, N, I) (ID * 20 + (2 * N + I))
 
 #if USE_TEXTURE_OBJECT

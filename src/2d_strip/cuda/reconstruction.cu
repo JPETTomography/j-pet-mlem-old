@@ -34,7 +34,8 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                             void* context,
                             int device,
                             int n_blocks,
-                            int n_threads_per_block) {
+                            int n_threads_per_block,
+                            bool verbose) {
 
   cudaSetDevice(device);
 
@@ -42,7 +43,11 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   dim3 threads(n_threads_per_block);
 
   size_t image_size = detector.total_n_pixels * sizeof(F);
+#if SPLIT_BLOCKS
   size_t output_size = image_size * n_blocks;
+#else
+  size_t output_size = image_size;
+#endif
   size_t events_size = n_events * sizeof(F);
 
   F* cpu_sensitivity = (F*)malloc(image_size);
@@ -145,21 +150,27 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {
-      progress_callback(ib * n_iterations_in_block + it, context);
 
       cudaEvent_t start, stop, start_mem_time, stop_mem_time;
       float time;
       float time_all;
-      cudaEventCreate(&start);
-      cudaEventCreate(&stop);
-      cudaEventCreate(&start_mem_time);
-      cudaEventCreate(&stop_mem_time);
+      if (verbose) {
+        cudaEventCreate(&start);
+        cudaEventCreate(&stop);
+        cudaEventCreate(&start_mem_time);
+        cudaEventCreate(&stop_mem_time);
+      } else {
+        progress_callback(ib * n_iterations_in_block + it, context);
+      }
 
       cudaMemset(gpu_output, 0, output_size);
       cudaMemcpy(gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
 
-      cudaEventRecord(start);
-      cudaEventRecord(start_mem_time);
+      if (verbose) {
+        cudaEventRecord(start);
+        cudaEventRecord(start_mem_time);
+      }
+
 #if __CUDACC__
 #define reconstruction reconstruction << <blocks, threads>>>
 #endif
@@ -175,12 +186,14 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                      n_threads_per_block);
 
       cudaThreadSynchronize();
-      cudaEventRecord(stop);
-      cudaEventSynchronize(stop);
 
-      cudaEventElapsedTime(&time, start, stop);
-      printf("Time for the kernel: %f ms\n", time);
+      if (verbose) {
+        cudaEventRecord(stop);
+        cudaEventSynchronize(stop);
+        cudaEventElapsedTime(&time, start, stop);
+      }
 
+#if SPLIT_BLOCKS
       // grab output
       cudaMemcpy(cpu_output, gpu_output, output_size, cudaMemcpyDeviceToHost);
 
@@ -191,18 +204,30 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
           cpu_rho[p] += cpu_output[block * detector.total_n_pixels + p];
         }
       }
+#else
+      // output is rho already
+      cudaMemcpy(cpu_rho, gpu_output, output_size, cudaMemcpyDeviceToHost);
+#endif
 
-      cudaEventRecord(stop_mem_time);
-      cudaEventSynchronize(stop_mem_time);
-      cudaEventElapsedTime(&time_all, start_mem_time, stop_mem_time);
-
-      printf("Time for the kernel + memory operations: %f ms\n", time_all);
+      if (verbose) {
+        cudaEventRecord(stop_mem_time);
+        cudaEventSynchronize(stop_mem_time);
+        cudaEventElapsedTime(&time_all, start_mem_time, stop_mem_time);
+        printf(
+            "[%02d] kernel       : %f ms\n"
+            "     kernel + mem : %f ms\n",
+            ib * n_iterations_in_block + it,
+            time,
+            time_all);
+      }
     }
 
     output_callback(detector, ib * n_iterations_in_block, cpu_rho, context);
   }
 
-  progress_callback(n_iteration_blocks * n_iterations_in_block, context);
+  if (!verbose) {
+    progress_callback(n_iteration_blocks * n_iterations_in_block, context);
+  }
 
 #if USE_TEXTURE_OBJECT
   cudaDestroyTextureObject(tex_sensitivity);
@@ -233,4 +258,5 @@ template void run_gpu_reconstruction<float>(
     void* context,
     int device,
     int n_blocks,
-    int n_threads_per_block);
+    int n_threads_per_block,
+    bool verbose);

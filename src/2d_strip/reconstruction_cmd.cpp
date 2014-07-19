@@ -52,6 +52,7 @@ int main(int argc, char* argv[]) {
     cl.add<double>("s-z", 's', "Sigma z error", false, 10);
     cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
     cl.add<double>("gm", 'u', "Gamma error", false, 0);
+    cl.add("verbose", 'v', "prints the iterations information on std::out");
 #if HAVE_CUDA
     cl.add("gpu", 'G', "run on GPU (via CUDA)");
     cl.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
@@ -108,6 +109,7 @@ int main(int argc, char* argv[]) {
                              cl.get<int>("cuda-device"),
                              cl.get<int>("cuda-blocks"),
                              cl.get<int>("cuda-threads"),
+                             cl.exist("verbose"),
                              progress,
                              output_wo_ext);
     } else
