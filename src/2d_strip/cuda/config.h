@@ -3,13 +3,13 @@
 #define WARP_SIZE 32
 
 // reconstruction mode (comment out both for simple kernel)
-//#define EVENT_GRANULARITY 1
-#define WARP_GRANULARITY 1
-#define USE_TEXTURE 1
-//#define USE_TEXTURE_OBJECT 1 // requires CC 3.0
-#define SHARED_REGISTER 1  // nearly 4x speedup
-#define SHARED_BUFFER 1    // shared memory pixel buffer in error ellipse
-//#define SPLIT_BLOCKS 1   // split output into separate chunks pre block
+#define THREAD_GRANULARITY 0  // single thread processes single event
+#define WARP_GRANULARITY 1    // whole warp processes single event
+#define USE_TEXTURE 1         // use regular CC 2.x compatible texture
+#define USE_TEXTURE_OBJECT 0  // requires CC 3.0
+#define SHARED_REGISTER 1     // nearly 4x speedup
+#define SHARED_BUFFER 1       // shared memory pixel buffer in error ellipse
+#define SPLIT_BLOCKS 0        // split output into separate chunks pre block
 
 #define NORMAL_PHANTOM 0
 

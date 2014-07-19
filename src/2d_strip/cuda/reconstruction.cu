@@ -11,8 +11,8 @@
 texture<float, 2, cudaReadModeElementType> tex_sensitivity;
 #endif
 
-#if EVENT_GRANULARITY
-#include "reconstruction_event_granularity.cuh"
+#if THREAD_GRANULARITY
+#include "reconstruction_thread_granularity.cuh"
 #elif WARP_GRANULARITY
 #include "reconstruction_warp_granularity.cuh"
 #else
