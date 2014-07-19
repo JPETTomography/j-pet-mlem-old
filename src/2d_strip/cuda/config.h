@@ -9,7 +9,7 @@
 #define USE_TEXTURE_OBJECT 0  // requires CC 3.0
 #define SHARED_CONSTANTS 1    // keep constants in shared memory
 #define SHARED_BUFFER 1       // shared memory pixel buffer in error ellipse
-#define SPLIT_BLOCKS 0        // split output into separate chunks pre block
+#define SPLIT_BLOCKS 0        // split output into separate chunks per block
 
 #define NORMAL_PHANTOM 0
 
