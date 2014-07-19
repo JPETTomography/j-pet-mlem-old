@@ -29,7 +29,11 @@ __global__ void reconstruction(StripDetector<F> detector,
                                F* rho,
                                TEX_ARG(sensitivity),
                                int n_blocks,
-                               int n_threads_per_block) {
+                               int n_threads_per_block,
+                               int* output_max_pixels_per_thread) {
+  // mark variable used
+  (void)(output_max_pixels_per_thread);
+
   Kernel<F> kernel;
 
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
@@ -37,7 +41,8 @@ __global__ void reconstruction(StripDetector<F> detector,
   int number_of_blocks = (n_events + block_size - 1) / block_size;
 
 #if SHARED_BUFFER
-  __shared__ short ellipse_pixels[MAX_PIXELS_PER_THREAD * 512];
+  __shared__ short2
+      ellipse_pixels[MAX_PIXELS_PER_THREAD * MAX_THREADS_PER_BLOCK];
 #endif
 
   int thread_warp_index = threadIdx.x / WARP_SIZE;
@@ -109,10 +114,8 @@ __global__ void reconstruction(StripDetector<F> detector,
         acc += event_kernel * TEX_2D(F, sensitivity, pixel) *
                rho[PIXEL_INDEX(pixel)];
 #if SHARED_BUFFER
-        ellipse_pixels[ELLIPSE_PIXEL_INDEX(threadIdx.x, n_ellipse_pixels, 0)] =
-            pixel.x;
-        ellipse_pixels[ELLIPSE_PIXEL_INDEX(threadIdx.x, n_ellipse_pixels, 1)] =
-            pixel.y;
+        ellipse_pixels[MAX_PIXELS_PER_THREAD * threadIdx.x + n_ellipse_pixels] =
+            make_short2(pixel.x, pixel.y);
         n_ellipse_pixels++;
 #endif
       }
@@ -125,9 +128,12 @@ __global__ void reconstruction(StripDetector<F> detector,
     F inv_acc = 1 / acc;
 
 #if SHARED_BUFFER
+#if COUNT_MAX_PIXELS_PER_THREAD
+    atomicMax(output_max_pixels_per_thread, n_ellipse_pixels);
+#endif
     for (int p = 0; p < n_ellipse_pixels; ++p) {
-      Pixel<> pixel(ellipse_pixels[ELLIPSE_PIXEL_INDEX(threadIdx.x, p, 0)],
-                    ellipse_pixels[ELLIPSE_PIXEL_INDEX(threadIdx.x, p, 1)]);
+      short2 p2 = ellipse_pixels[MAX_PIXELS_PER_THREAD * threadIdx.x + p];
+      Pixel<> pixel(p2.x, p2.y);
       Point<F> point = detector.pixel_center(pixel);
       point -= ellipse_center;
 

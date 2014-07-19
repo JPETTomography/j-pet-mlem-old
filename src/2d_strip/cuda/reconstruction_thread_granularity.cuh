@@ -23,7 +23,11 @@ __global__ void reconstruction(StripDetector<F> detector,
                                F* rho,
                                TEX_ARG(sensitivity),
                                int n_blocks,
-                               int n_threads_per_block) {
+                               int n_threads_per_block,
+                               int* output_max_pixels_per_thread) {
+  // mark variable used
+  (void)(output_max_pixels_per_thread);
+
   Kernel<F> kernel;
 
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();

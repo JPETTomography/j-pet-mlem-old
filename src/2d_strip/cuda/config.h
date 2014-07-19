@@ -8,14 +8,13 @@
 #define USE_TEXTURE 1         // use regular CC 2.x compatible texture
 #define USE_TEXTURE_OBJECT 0  // requires CC 3.0
 #define SHARED_BUFFER 1       // shared memory pixel buffer in error ellipse
-
 #define NORMAL_PHANTOM 0
 
 #define PIXEL_INDEX(p) ((p.x * detector.n_z_pixels) + p.y)
 
-#define MAX_PIXELS_PER_THREAD 20  // this has been chosen arbitrarily
-#define ELLIPSE_PIXEL_INDEX(tid, index, dim) \
-  (MAX_PIXELS_PER_THREAD * (tid) + (2 * (index) + (dim)))
+#define COUNT_MAX_PIXELS_PER_THREAD 0  // count max pixels in thread
+#define MAX_PIXELS_PER_THREAD 11       // this has been chosen based on above
+#define MAX_THREADS_PER_BLOCK 512      // this has been chosen arbitrarily
 
 #if USE_TEXTURE_OBJECT
 #define TEX_ARG(v) cudaTextureObject_t v
