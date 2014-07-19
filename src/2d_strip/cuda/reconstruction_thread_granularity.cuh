@@ -26,8 +26,8 @@ __global__ void reconstruction(StripDetector<F> detector,
                                int n_threads_per_block) {
   Kernel<F> kernel;
 
-#ifdef SHARED_REGISTER
-  __shared__ float sqrt_det_cor_mat;
+#ifdef SHARED_CONSTANTS
+  __shared__ F sqrt_det_cor_mat;
   __shared__ int n_threads;
   __shared__ int n_chunks;
   if (threadIdx.x == 0) {

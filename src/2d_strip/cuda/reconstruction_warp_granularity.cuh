@@ -32,7 +32,7 @@ __global__ void reconstruction(StripDetector<F> detector,
                                int n_threads_per_block) {
   Kernel<F> kernel;
 
-#ifdef SHARED_REGISTER
+#ifdef SHARED_CONSTANTS
   __shared__ F sqrt_det_cor_mat;
   __shared__ int block_size;
   __shared__ int number_of_blocks;

@@ -7,7 +7,7 @@
 #define WARP_GRANULARITY 1    // whole warp processes single event
 #define USE_TEXTURE 1         // use regular CC 2.x compatible texture
 #define USE_TEXTURE_OBJECT 0  // requires CC 3.0
-#define SHARED_REGISTER 1     // nearly 4x speedup
+#define SHARED_CONSTANTS 1    // keep constants in shared memory
 #define SHARED_BUFFER 1       // shared memory pixel buffer in error ellipse
 #define SPLIT_BLOCKS 0        // split output into separate chunks pre block
 
