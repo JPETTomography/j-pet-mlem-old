@@ -25,28 +25,16 @@ __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_d,
                                F* events_dl,
                                int n_events,
-                               F* output,
+                               F* output_rho,
                                F* rho,
                                TEX_ARG(sensitivity),
                                int n_blocks,
                                int n_threads_per_block) {
   Kernel<F> kernel;
 
-#if SHARED_CONSTANTS
-  __shared__ F sqrt_det_cor_mat;
-  __shared__ int block_size;
-  __shared__ int number_of_blocks;
-  if (threadIdx.x == 0) {
-    sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
-    block_size = (n_blocks * (n_threads_per_block / WARP_SIZE));
-    number_of_blocks = (n_events + block_size - 1) / block_size;
-    __syncthreads();
-  }
-#else
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   int block_size = (n_blocks * (n_threads_per_block / WARP_SIZE));
   int number_of_blocks = (n_events + block_size - 1) / block_size;
-#endif
 
 #if SHARED_BUFFER
   __shared__ short sh_mem_pixel_buffer[20 * 512];
@@ -119,7 +107,7 @@ __global__ void reconstruction(StripDetector<F> detector,
                          TEX_2D(F, sensitivity, pixel);
 
         acc += event_kernel * TEX_2D(F, sensitivity, pixel) *
-               rho[IMAGE_SPACE_LINEAR_INDEX(pixel)];
+               rho[PIXEL_INDEX(pixel)];
 #if SHARED_BUFFER
         sh_mem_pixel_buffer[SH_MEM_INDEX(threadIdx.x, pixel_count, 0)] =
             pixel.x;
@@ -153,9 +141,8 @@ __global__ void reconstruction(StripDetector<F> detector,
                               sqrt_det_cor_mat) /
                        TEX_2D(F, sensitivity, pixel);
 
-      atomicAdd(&output[BUFFER_LINEAR_INDEX(pixel)],
-                event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(pixel)] * inv_acc *
-                    sec_sq);
+      atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
+                event_kernel * rho[PIXEL_INDEX(pixel)] * inv_acc * sec_sq);
     }
 #else
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
@@ -181,9 +168,8 @@ __global__ void reconstruction(StripDetector<F> detector,
                                 sqrt_det_cor_mat) /
                          TEX_2D(F, sensitivity, pixel);
 
-        atomicAdd(
-            &output[BUFFER_LINEAR_INDEX(pixel)],
-            event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(pixel)] * inv_acc);
+        atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
+                  event_kernel * rho[PIXEL_INDEX(pixel)] * inv_acc);
       }
     }
 #endif

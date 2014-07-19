@@ -19,28 +19,16 @@ __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_d,
                                F* events_dl,
                                int n_events,
-                               F* output,
+                               F* output_rho,
                                F* rho,
                                TEX_ARG(sensitivity),
                                int n_blocks,
                                int n_threads_per_block) {
   Kernel<F> kernel;
 
-#if SHARED_CONSTANTS
-  __shared__ F sqrt_det_cor_mat;
-  __shared__ int n_threads;
-  __shared__ int n_chunks;
-  if (threadIdx.x == 0) {
-    sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
-    n_threads = n_blocks * n_threads_per_block;
-    n_chunks = (n_events + n_threads - 1) / n_threads;
-    __syncthreads();
-  }
-#else
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   int n_threads = n_blocks * n_threads_per_block;
   int n_chunks = (n_events + n_threads - 1) / n_threads;
-#endif
 
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -94,7 +82,7 @@ __global__ void reconstruction(StripDetector<F> detector,
                            TEX_2D(F, sensitivity, pixel);
 
           acc += event_kernel * TEX_2D(F, sensitivity, pixel) *
-                 rho[IMAGE_SPACE_LINEAR_INDEX(pixel)];
+                 rho[PIXEL_INDEX(pixel)];
         }
       }
     }
@@ -119,9 +107,8 @@ __global__ void reconstruction(StripDetector<F> detector,
                                   sqrt_det_cor_mat) /
                            TEX_2D(F, sensitivity, pixel);
 
-          atomicAdd(
-              &output[BUFFER_LINEAR_INDEX(pixel)],
-              event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(pixel)] * inv_acc);
+          atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
+                    event_kernel * rho[PIXEL_INDEX(pixel)] * inv_acc);
         }
       }
     }

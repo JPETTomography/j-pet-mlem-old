@@ -7,19 +7,11 @@
 #define WARP_GRANULARITY 1    // whole warp processes single event
 #define USE_TEXTURE 1         // use regular CC 2.x compatible texture
 #define USE_TEXTURE_OBJECT 0  // requires CC 3.0
-#define SHARED_CONSTANTS 1    // keep constants in shared memory
 #define SHARED_BUFFER 1       // shared memory pixel buffer in error ellipse
-#define SPLIT_BLOCKS 0        // split output into separate chunks per block
 
 #define NORMAL_PHANTOM 0
 
-#define IMAGE_SPACE_LINEAR_INDEX(p) (p.x * detector.n_z_pixels) + p.y
-#if SPLIT_BLOCKS
-#define BUFFER_LINEAR_INDEX(p) \
-  (blockIdx.x * detector.total_n_pixels) + IMAGE_SPACE_LINEAR_INDEX(p)
-#else
-#define BUFFER_LINEAR_INDEX(p) IMAGE_SPACE_LINEAR_INDEX(p)
-#endif
+#define PIXEL_INDEX(p) ((p.x * detector.n_z_pixels) + p.y)
 #define SH_MEM_INDEX(ID, N, I) (ID * 20 + (2 * N + I))
 
 #if USE_TEXTURE_OBJECT

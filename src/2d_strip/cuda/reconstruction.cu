@@ -43,15 +43,9 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   dim3 threads(n_threads_per_block);
 
   size_t image_size = detector.total_n_pixels * sizeof(F);
-#if SPLIT_BLOCKS
-  size_t output_size = image_size * n_blocks;
-#else
-  size_t output_size = image_size;
-#endif
   size_t events_size = n_events * sizeof(F);
 
   F* cpu_sensitivity = (F*)malloc(image_size);
-  F* cpu_output = (F*)malloc(output_size);
   F* cpu_rho = (F*)malloc(image_size);
 
   for (int y = 0; y < detector.n_y_pixels; ++y) {
@@ -79,7 +73,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   }
 
   F* gpu_sensitivity;
-  F* gpu_output;
+  F* gpu_output_rho;
   F* gpu_rho;
 
   size_t pitch;
@@ -127,7 +121,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                     pitch);
 #endif
 
-  cudaMalloc((void**)&gpu_output, output_size);
+  cudaMalloc((void**)&gpu_output_rho, image_size);
   cudaMalloc((void**)&gpu_rho, image_size);
 
   F* gpu_events_z_u;
@@ -163,7 +157,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
         progress_callback(ib * n_iterations_in_block + it, context);
       }
 
-      cudaMemset(gpu_output, 0, output_size);
+      cudaMemset(gpu_output_rho, 0, image_size);
       cudaMemcpy(gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
 
       if (verbose) {
@@ -179,7 +173,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                      gpu_events_z_d,
                      gpu_events_dl,
                      n_events,
-                     gpu_output,
+                     gpu_output_rho,
                      gpu_rho,
                      TEX_VAL(tex_sensitivity),
                      n_blocks,
@@ -193,21 +187,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
         cudaEventElapsedTime(&time, start, stop);
       }
 
-#if SPLIT_BLOCKS
-      // grab output
-      cudaMemcpy(cpu_output, gpu_output, output_size, cudaMemcpyDeviceToHost);
-
-      // merge image output from all blocks
-      memset(cpu_rho, 0, image_size);
-      for (int block = 0; block < n_blocks; ++block) {
-        for (int p = 0; p < detector.total_n_pixels; ++p) {
-          cpu_rho[p] += cpu_output[block * detector.total_n_pixels + p];
-        }
-      }
-#else
-      // output is rho already
-      cudaMemcpy(cpu_rho, gpu_output, output_size, cudaMemcpyDeviceToHost);
-#endif
+      cudaMemcpy(cpu_rho, gpu_output_rho, image_size, cudaMemcpyDeviceToHost);
 
       if (verbose) {
         cudaEventRecord(stop_mem_time);
@@ -237,10 +217,9 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   cudaFree(gpu_events_z_u);
   cudaFree(gpu_events_z_d);
   cudaFree(gpu_events_dl);
-  cudaFree(gpu_output);
+  cudaFree(gpu_output_rho);
   cudaFree(gpu_rho);
   cudaFree(gpu_sensitivity);
-  free(cpu_output);
   free(cpu_rho);
 }
 
