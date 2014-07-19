@@ -36,7 +36,7 @@ __global__ void reconstruction(StripDetector<F> detector,
   __shared__ F sqrt_det_cor_mat;
   __shared__ int block_size;
   __shared__ int number_of_blocks;
-  if (blockIdx.x == 0) {
+  if (threadIdx.x == 0) {
     sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
     block_size = (n_blocks * (n_threads_per_block / WARP_SIZE));
     number_of_blocks = (n_events + block_size - 1) / block_size;
