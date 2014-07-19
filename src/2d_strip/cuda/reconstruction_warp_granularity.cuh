@@ -13,9 +13,11 @@ template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
   return (length + F(0.5)) / pixel_size;
 }
 
+template <typename F>
 __device__ Pixel<> warp_space_pixel(int offset,
                                     Pixel<> ul,
                                     int width,
+                                    F inv_width,
                                     int& index) __device__;
 template <typename F>
 __global__ void reconstruction(StripDetector<F> detector,
@@ -31,7 +33,7 @@ __global__ void reconstruction(StripDetector<F> detector,
   Kernel<F> kernel;
 
 #ifdef SHARED_REGISTER
-  __shared__ float sqrt_det_cor_mat;
+  __shared__ F sqrt_det_cor_mat;
   __shared__ int block_size;
   __shared__ int number_of_blocks;
   if (blockIdx.x == 0) {
@@ -85,10 +87,9 @@ __global__ void reconstruction(StripDetector<F> detector,
                center_pixel.y + n_pixels_in_line(bb_z, detector.pixel_width));
 
     int bb_width = br.y - tl.y;
+    F inv_bb_width = F(1) / bb_width;
     int bb_height = br.x - tl.x;
     int bb_size = bb_width * bb_height;
-
-    F inv_bb_width = F(1) / bb_width;
 
 #ifdef SHARED_BUFFER
     int pixel_count = 0;
@@ -189,14 +190,15 @@ __global__ void reconstruction(StripDetector<F> detector,
   }
 }
 
+template <typename F>
 __device__ Pixel<> warp_space_pixel(int offset,
                                     Pixel<> tl,
                                     int width,
-                                    float inv_bb_width,
+                                    F inv_width,
                                     int& index) {
   index = (threadIdx.x & (WARP_SIZE - 1)) + offset;
   Pixel<> pixel;
-  pixel.x = index * inv_bb_width;
+  pixel.x = index * inv_width;
   pixel.y = index - width * pixel.x;
   pixel.x += tl.x;
   pixel.y += tl.y;
