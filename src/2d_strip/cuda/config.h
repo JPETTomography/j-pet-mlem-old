@@ -10,11 +10,14 @@
 #define SHARED_BUFFER 1       // shared memory pixel buffer in error ellipse
 #define NORMAL_PHANTOM 0
 
-#define PIXEL_INDEX(p) ((p.x * detector.n_z_pixels) + p.y)
+// warp granulaty specific
+#define MAX_PIXELS_PER_THREAD 12   // this has been chosen arbitrarily,
+                                   // however in current implementation we have
+                                   // no more than 11 pixels per thread.
+#define MAX_THREADS_PER_BLOCK 512  // more does not make sense anyway
 
-#define COUNT_MAX_PIXELS_PER_THREAD 0  // count max pixels in thread
-#define MAX_PIXELS_PER_THREAD 11       // this has been chosen based on above
-#define MAX_THREADS_PER_BLOCK 512      // this has been chosen arbitrarily
+// generic macro returning pixel location in linear memory
+#define PIXEL_INDEX(p) (((p).x * detector.n_z_pixels) + (p).y)
 
 #if USE_TEXTURE_OBJECT
 #define TEX_ARG(v) cudaTextureObject_t v

@@ -9,16 +9,6 @@
 
 #include "config.h"
 
-template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
-  return (length + F(0.5)) / pixel_size;
-}
-
-template <typename F>
-__device__ Pixel<> warp_space_pixel(int offset,
-                                    Pixel<> ul,
-                                    int width,
-                                    F inv_width,
-                                    int& index) __device__;
 template <typename F>
 __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
@@ -29,11 +19,7 @@ __global__ void reconstruction(StripDetector<F> detector,
                                F* rho,
                                TEX_ARG(sensitivity),
                                int n_blocks,
-                               int n_threads_per_block,
-                               int* output_max_pixels_per_thread) {
-  // mark variable used
-  (void)(output_max_pixels_per_thread);
-
+                               int n_threads_per_block) {
   Kernel<F> kernel;
 
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
@@ -41,9 +27,9 @@ __global__ void reconstruction(StripDetector<F> detector,
   int number_of_blocks = (n_events + block_size - 1) / block_size;
 
 #if SHARED_BUFFER
-  // gathers all pixels inside 3 sigma ellipse
+  // gathers all pixel coordinates inside 3 sigma ellipse
   __shared__ short2
-      ellipse_pixels[MAX_PIXELS_PER_THREAD * MAX_THREADS_PER_BLOCK];
+      ellipse_pixels[MAX_PIXELS_PER_THREAD][MAX_THREADS_PER_BLOCK];
 #endif
 
   int thread_warp_index = threadIdx.x / WARP_SIZE;
@@ -118,7 +104,7 @@ __global__ void reconstruction(StripDetector<F> detector,
         F event_kernel_mul_rho = event_kernel * rho[PIXEL_INDEX(pixel)];
         acc += event_kernel_mul_rho * pixel_sensitivity;
 #if SHARED_BUFFER
-        ellipse_pixels[MAX_PIXELS_PER_THREAD * threadIdx.x + n_ellipse_pixels] =
+        ellipse_pixels[n_ellipse_pixels][threadIdx.x] =
             make_short2(pixel.x, pixel.y);
         ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
         ++n_ellipse_pixels;
@@ -133,11 +119,8 @@ __global__ void reconstruction(StripDetector<F> detector,
     F inv_acc = 1 / acc;
 
 #if SHARED_BUFFER
-#if COUNT_MAX_PIXELS_PER_THREAD
-    atomicMax(output_max_pixels_per_thread, n_ellipse_pixels);
-#endif
     for (int p = 0; p < n_ellipse_pixels; ++p) {
-      short2 pixel = ellipse_pixels[MAX_PIXELS_PER_THREAD * threadIdx.x + p];
+      short2 pixel = ellipse_pixels[p][threadIdx.x];
       F event_kernel_mul_rho = ellipse_kernel_mul_rho[p];
       atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                 event_kernel_mul_rho * inv_acc * sec_sq);
@@ -187,4 +170,8 @@ __device__ Pixel<> warp_space_pixel(int offset,
   pixel.x += tl.x;
   pixel.y += tl.y;
   return pixel;
+}
+
+template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
+  return (length + F(0.5)) / pixel_size;
 }

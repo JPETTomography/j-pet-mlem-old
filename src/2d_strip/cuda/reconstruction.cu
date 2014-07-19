@@ -142,10 +142,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   free(cpu_events_z_d);
   free(cpu_events_dl);
 
-  int* gpu_max_pixels;
-  cudaMalloc((void**)&gpu_max_pixels, sizeof(int));
-  cudaMemset(gpu_max_pixels, 0, sizeof(int));
-
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {
 
@@ -181,8 +177,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                      gpu_rho,
                      TEX_VAL(tex_sensitivity),
                      n_blocks,
-                     n_threads_per_block,
-                     gpu_max_pixels);
+                     n_threads_per_block);
 
       cudaThreadSynchronize();
 
@@ -198,17 +193,12 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
         cudaEventRecord(stop_mem_time);
         cudaEventSynchronize(stop_mem_time);
         cudaEventElapsedTime(&time_all, start_mem_time, stop_mem_time);
-        int max_pixels;
-        cudaMemcpy(
-            &max_pixels, gpu_max_pixels, sizeof(int), cudaMemcpyDeviceToHost);
         printf(
             "[%02d] kernel       : %f ms\n"
-            "     kernel + mem : %f ms\n"
-            "       max pixels : %d\n",
+            "     kernel + mem : %f ms\n",
             ib * n_iterations_in_block + it,
             time,
-            time_all,
-            max_pixels);
+            time_all);
       }
     }
 
@@ -230,7 +220,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   cudaFree(gpu_output_rho);
   cudaFree(gpu_rho);
   cudaFree(gpu_sensitivity);
-  cudaFree(gpu_max_pixels);
   free(cpu_rho);
 }
 
