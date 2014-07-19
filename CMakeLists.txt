@@ -11,6 +11,12 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 project(PET CXX) # using only C++
 
+# use Release by default
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING
+    "Choose the type Debug or Release" FORCE)
+endif()
+
 # enable C++11 and warnings
 if(NOT MSVC)
   add_definitions(-std=c++11 -Wall -Wunused-parameter)
