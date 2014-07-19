@@ -14,17 +14,19 @@ __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
                                F* events_z_d,
                                F* events_dl,
-                               int n_events,
+                               const int n_events,
                                F* output_rho,
                                F* rho,
                                TEX_ARG(sensitivity),
-                               int n_blocks,
-                               int n_threads_per_block) {
+                               const int n_blocks,
+                               const int n_threads_per_block) {
   Kernel<F> kernel;
 
-  F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
-  int block_size = (n_blocks * (n_threads_per_block / WARP_SIZE));
-  int number_of_blocks = (n_events + block_size - 1) / block_size;
+  const F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
+  const int n_warps_per_block = n_threads_per_block / WARP_SIZE;
+  const int n_warps = n_blocks * n_warps_per_block;
+  const int max_events_per_warp = (n_events + n_warps - 1) / n_warps;
+  const int warp_index = threadIdx.x / WARP_SIZE;
 
 #if SHARED_BUFFER
   // gathers all pixel coordinates inside 3 sigma ellipse
@@ -32,20 +34,16 @@ __global__ void reconstruction(StripDetector<F> detector,
       ellipse_pixels[MAX_PIXELS_PER_THREAD][MAX_THREADS_PER_BLOCK];
 #endif
 
-  int thread_warp_index = threadIdx.x / WARP_SIZE;
+  for (int i = 0; i < max_events_per_warp; ++i) {
 
-  for (int i = 0; i < number_of_blocks; ++i) {
+    int event_index = i * n_warps + blockIdx.x * n_warps_per_block + warp_index;
 
-    // calculate offset in event memory location for warp
-    int warp_id =
-        (i * block_size + (blockIdx.x * (n_threads_per_block / WARP_SIZE)) +
-         thread_warp_index);
-
-    if (warp_id >= n_events)
+    if (event_index >= n_events)
       break;
 
-    Event<F> event(
-        events_z_u[warp_id], events_z_d[warp_id], events_dl[warp_id]);
+    Event<F> event(events_z_u[event_index],
+                   events_z_d[event_index],
+                   events_dl[event_index]);
 
     F acc = 0;
 
@@ -61,15 +59,15 @@ __global__ void reconstruction(StripDetector<F> detector,
     Pixel<> center_pixel = detector.pixel_location(y, z);
 
     // bounding box limits for event
-    Pixel<> tl(center_pixel.x - n_pixels_in_line(bb_y, detector.pixel_height),
-               center_pixel.y - n_pixels_in_line(bb_z, detector.pixel_width));
-    Pixel<> br(center_pixel.x + n_pixels_in_line(bb_y, detector.pixel_height),
-               center_pixel.y + n_pixels_in_line(bb_z, detector.pixel_width));
+    const int bb_half_width = n_pixels_in_line(bb_z, detector.pixel_width);
+    const int bb_half_height = n_pixels_in_line(bb_y, detector.pixel_height);
+    const Pixel<> tl(center_pixel.x - bb_half_height,
+                     center_pixel.y - bb_half_width);
 
-    int bb_width = br.y - tl.y;
+    const int bb_width = 2 * bb_half_width;
+    const int bb_height = 2 * bb_half_height;
+    const int bb_size = bb_width * bb_height;
     F inv_bb_width = F(1) / bb_width;
-    int bb_height = br.x - tl.x;
-    int bb_size = bb_width * bb_height;
 
 #if SHARED_BUFFER
     int n_ellipse_pixels = 0;
