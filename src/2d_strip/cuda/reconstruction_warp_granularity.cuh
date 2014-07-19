@@ -88,6 +88,8 @@ __global__ void reconstruction(StripDetector<F> detector,
     int n_ellipse_pixels = 0;
 #endif
 
+    F ellipse_kernels[MAX_PIXELS_PER_THREAD];
+
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
       int index;
       Pixel<> pixel =
@@ -116,7 +118,8 @@ __global__ void reconstruction(StripDetector<F> detector,
 #if SHARED_BUFFER
         ellipse_pixels[MAX_PIXELS_PER_THREAD * threadIdx.x + n_ellipse_pixels] =
             make_short2(pixel.x, pixel.y);
-        n_ellipse_pixels++;
+        ellipse_kernels[n_ellipse_pixels] = event_kernel;
+        ++n_ellipse_pixels;
 #endif
       }
     }
@@ -132,21 +135,8 @@ __global__ void reconstruction(StripDetector<F> detector,
     atomicMax(output_max_pixels_per_thread, n_ellipse_pixels);
 #endif
     for (int p = 0; p < n_ellipse_pixels; ++p) {
-      short2 p2 = ellipse_pixels[MAX_PIXELS_PER_THREAD * threadIdx.x + p];
-      Pixel<> pixel(p2.x, p2.y);
-      Point<F> point = detector.pixel_center(pixel);
-      point -= ellipse_center;
-
-      F event_kernel = kernel(y,
-                              tan,
-                              sec,
-                              sec_sq,
-                              detector.radius,
-                              point,
-                              detector.inv_cor_mat_diag,
-                              sqrt_det_cor_mat) /
-                       TEX_2D(F, sensitivity, pixel);
-
+      short2 pixel = ellipse_pixels[MAX_PIXELS_PER_THREAD * threadIdx.x + p];
+      F event_kernel = ellipse_kernels[p];
       atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                 event_kernel * rho[PIXEL_INDEX(pixel)] * inv_acc * sec_sq);
     }
