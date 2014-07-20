@@ -7,7 +7,7 @@
 
 #include "config.h"
 
-#if USE_TEXTURE
+#if SENSITIVITY_TEXTURE
 texture<float, 2, cudaReadModeElementType> tex_sensitivity;
 #endif
 
@@ -92,25 +92,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
   free(cpu_sensitivity);
 
-#if USE_TEXTURE_OBJECT
-  // create texture description
-  cudaResourceDesc resDesc;
-  memset(&resDesc, 0, sizeof(resDesc));
-  resDesc.resType = cudaResourceTypePitch2D;
-  resDesc.res.pitch2D.devPtr = gpu_sensitivity;
-  resDesc.res.pitch2D.pitchInBytes = pitch;
-  resDesc.res.pitch2D.width = detector.n_y_pixels;
-  resDesc.res.pitch2D.height = detector.n_z_pixels;
-  // resDesc.res.pitch2D.desc = cudaCreateChannelDesc<F>();
-  resDesc.res.pitch2D.desc.f = cudaChannelFormatKindFloat;
-  resDesc.res.pitch2D.desc.x = 32;  // 32 bits per channel for float texture
-  cudaTextureDesc texDesc;
-  memset(&texDesc, 0, sizeof(texDesc));
-  texDesc.readMode = cudaReadModeElementType;
-  // create texture object
-  cudaTextureObject_t tex_sensitivity;
-  cudaCreateTextureObject(&tex_sensitivity, &resDesc, &texDesc, NULL);
-#elif USE_TEXTURE
+#if SENSITIVITY_TEXTURE
   cudaChannelFormatDesc desc_sensitivity = cudaCreateChannelDesc<float>();
   cudaBindTexture2D(NULL,
                     &tex_sensitivity,
@@ -175,7 +157,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                      n_events,
                      gpu_output_rho,
                      gpu_rho,
-                     TEX_VAL(tex_sensitivity),
                      n_blocks,
                      n_threads_per_block);
 
@@ -209,9 +190,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
     progress_callback(n_iteration_blocks * n_iterations_in_block, context);
   }
 
-#if USE_TEXTURE_OBJECT
-  cudaDestroyTextureObject(tex_sensitivity);
-#elif USE_TEXTURE
+#if SENSITIVITY_TEXTURE
   cudaUnbindTexture(&tex_sensitivity);
 #endif
   cudaFree(gpu_events_z_u);

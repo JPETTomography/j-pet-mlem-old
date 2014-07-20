@@ -17,7 +17,6 @@ __global__ void reconstruction(StripDetector<F> detector,
                                const int n_events,
                                F* output_rho,
                                F* rho,
-                               TEX_ARG(sensitivity),
                                const int n_blocks,
                                const int n_threads_per_block) {
   Kernel<F> kernel;

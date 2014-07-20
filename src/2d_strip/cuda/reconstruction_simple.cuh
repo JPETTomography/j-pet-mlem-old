@@ -15,11 +15,10 @@ __global__ void reconstruction(StripDetector<F> detector,
                                int n_events,
                                F* output,
                                F* rho,
-                               TEX_ARG(sensitivity),
                                int n_blocks,
                                int n_threads_per_block) {
   // mark variables used
-  (void)(events_dl, sensitivity);
+  (void)(events_dl);
 
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
