@@ -140,11 +140,13 @@ template <typename FType = double> class Reconstruction {
     return *this;
   }
 
-  template <class FileWriter> void output_bitmap(FileWriter& fw) {
+  template <class FileWriter>
+  void output_bitmap(FileWriter& fw, bool output_sensitivity = false) {
     fw.template write_header<>(detector.n_z_pixels, detector.n_y_pixels);
 
+    auto& output = output_sensitivity ? sensitivity : rho;
     F output_max = 0;
-    for (auto& v : rho) {
+    for (auto& v : output) {
       output_max = std::max(output_max, v);
     }
 
@@ -155,7 +157,7 @@ template <typename FType = double> class Reconstruction {
     for (int y = 0; y < detector.n_y_pixels; ++y) {
       for (auto x = 0; x < detector.n_z_pixels; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -
-                 output_gain * rho[y * detector.n_z_pixels + x];
+                 output_gain * output[y * detector.n_z_pixels + x];
       }
       fw.write_row(row);
     }

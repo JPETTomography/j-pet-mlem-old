@@ -46,10 +46,10 @@ template <typename FType = double> class StripDetector {
         center_z(center_z),
         size_y(n_y_pixels * pixel_height),
         size_z(n_z_pixels * pixel_width),
-        tl_y(center_y + F(0.5) * size_y),
-        tl_z(center_z - F(0.5) * size_z),
-        tl_y_half_h(tl_y - F(0.5) * pixel_height),
-        tl_z_half_w(tl_z + F(0.5) * pixel_width),
+        tl_y(center_y + size_y / 2),
+        tl_z(center_z - size_z / 2),
+        tl_y_half_h(tl_y - pixel_height / 2),
+        tl_z_half_w(tl_z + pixel_width / 2),
         inv_pow_sigma_z(1 / (sigma_z * sigma_z)),
         inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
 #if !__CUDACC__ && !_MSC_VER
@@ -61,9 +61,7 @@ template <typename FType = double> class StripDetector {
                             1 / (sigma_z * sigma_z),
                             1 / (sigma_dl * sigma_dl) } },
 #endif
-        half_scintilator_length_(F(0.5) * scintilator_length),
-        half_pixel_width_(F(0.5) * pixel_width),
-        half_pixel_height_(F(0.5) * pixel_height) {
+        half_scintilator_length(scintilator_length / 2) {
 #if __CUDACC__
     inv_cor_mat_diag[0] = inv_pow_sigma_z;
     inv_cor_mat_diag[1] = inv_pow_sigma_z;
@@ -103,8 +101,8 @@ template <typename FType = double> class StripDetector {
   }
 
   _ F sensitivity(Point p) const {
-    F L_plus = half_scintilator_length_ + p.x;
-    F L_minus = half_scintilator_length_ - p.x;
+    F L_plus = half_scintilator_length + p.x;
+    F L_minus = half_scintilator_length - p.x;
     F R_plus = radius + p.y;
     F R_minus = radius - p.y;
 
@@ -173,9 +171,7 @@ template <typename FType = double> class StripDetector {
   const FVec inv_cor_mat_diag;
 
  private:
-  const F half_scintilator_length_;
-  const F half_pixel_width_;
-  const F half_pixel_height_;
+  const F half_scintilator_length;
 
   _ F bb_z(F A, F C, F B_2) const { return 3 / compat::sqrt(C - (B_2 / A)); }
   _ F bb_y(F A, F C, F B_2) const { return 3 / compat::sqrt(A - (B_2 / C)); }
