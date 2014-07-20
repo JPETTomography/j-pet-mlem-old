@@ -38,8 +38,8 @@ template <typename FType = double> class Kernel {
 
     return (INV_POW_TWO_PI * (1 / (sigma * dl))) *
            compat::exp(F(-0.5) *
-                       (compat::pow((pixel_center.x - y) / dl, F(2)) +
-                        compat::pow((pixel_center.y - z) / sigma, F(2))));
+                       (compat::pow((pixel_center.y - y) / dl, F(2)) +
+                        compat::pow((pixel_center.x - z) / sigma, F(2))));
   }
 
   _ F operator()(const F y,
@@ -55,17 +55,17 @@ template <typename FType = double> class Kernel {
     FVec vec_a;
     FVec vec_b;
 
-    vec_o[0] = -(pixel_center.x + y - R) * tan * pow_inv_cos;
-    vec_o[1] = -(pixel_center.x + y + R) * tan * pow_inv_cos;
-    vec_o[2] = -(pixel_center.x + y) * inv_cos * (1 + 2 * (tan * tan));
+    vec_o[0] = -(pixel_center.y + y - R) * tan * pow_inv_cos;
+    vec_o[1] = -(pixel_center.y + y + R) * tan * pow_inv_cos;
+    vec_o[2] = -(pixel_center.y + y) * inv_cos * (1 + 2 * (tan * tan));
 
-    vec_a[0] = -(pixel_center.x + y - R) * pow_inv_cos;
-    vec_a[1] = -(pixel_center.x + y + R) * pow_inv_cos;
-    vec_a[2] = -2 * (pixel_center.x + y) * (inv_cos * tan);
+    vec_a[0] = -(pixel_center.y + y - R) * pow_inv_cos;
+    vec_a[1] = -(pixel_center.y + y + R) * pow_inv_cos;
+    vec_a[2] = -2 * (pixel_center.y + y) * (inv_cos * tan);
 
-    vec_b[0] = pixel_center.y - (pixel_center.x * tan);
-    vec_b[1] = pixel_center.y - (pixel_center.x * tan);
-    vec_b[2] = -2 * pixel_center.x * inv_cos;
+    vec_b[0] = pixel_center.x - (pixel_center.y * tan);
+    vec_b[1] = pixel_center.x - (pixel_center.y * tan);
+    vec_b[2] = -2 * pixel_center.y * inv_cos;
 
     F a_ic_a = multiply(vec_a, inv_cor_mat_diag, vec_a);
     F b_ic_a = multiply(vec_b, inv_cor_mat_diag, vec_a);

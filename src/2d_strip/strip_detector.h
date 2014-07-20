@@ -31,8 +31,8 @@ template <typename FType = double> class StripDetector {
                 F pixel_width,   // z direction
                 F sigma_z,
                 F sigma_dl,
-                F grid_center_y = 0,
-                F grid_center_z = 0)
+                F center_y = 0,
+                F center_z = 0)
       : radius(radius),
         scintilator_length(scintilator_length),
         n_y_pixels(n_y_pixels),
@@ -42,18 +42,16 @@ template <typename FType = double> class StripDetector {
         pixel_height(pixel_height),
         sigma_z(sigma_z),
         sigma_dl(sigma_dl),
-        grid_center_y(grid_center_y),
-        grid_center_z(grid_center_z),
-        grid_size_y(n_y_pixels * pixel_height),
-        grid_size_z(n_z_pixels * pixel_width),
-        grid_ul_y(grid_center_y + F(0.5) * grid_size_y),
-        grid_ul_z(grid_center_z - F(0.5) * grid_size_z),
+        center_y(center_y),
+        center_z(center_z),
+        size_y(n_y_pixels * pixel_height),
+        size_z(n_z_pixels * pixel_width),
+        tl_y(center_y + F(0.5) * size_y),
+        tl_z(center_z - F(0.5) * size_z),
+        tl_y_half_h(tl_y - F(0.5) * pixel_height),
+        tl_z_half_w(tl_z + F(0.5) * pixel_width),
         inv_pow_sigma_z(1 / (sigma_z * sigma_z)),
         inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
-        grid_ul_y_half_h(grid_center_y + F(0.5) * grid_size_y -
-                         F(0.5) * pixel_height),
-        grid_ul_z_half_w(grid_center_z - F(0.5) * grid_size_z +
-                         F(0.5) * pixel_width),
 #if !__CUDACC__ && !_MSC_VER
         inv_cor_mat_diag{ 1 / (sigma_z * sigma_z),
                           1 / (sigma_z * sigma_z),
@@ -95,13 +93,13 @@ template <typename FType = double> class StripDetector {
   }
 
   _ Point pixel_center(Pixel p) const {
-    return Point(grid_ul_z_half_w + p.x * pixel_width,
-                 grid_ul_y_half_h - p.y * pixel_height);
+    return Point(tl_z_half_w + p.x * pixel_width,
+                 tl_y_half_h - p.y * pixel_height);
   }
 
   _ Pixel pixel_location(Point p) const {
-    return Pixel((grid_ul_y - p.y) / pixel_height,
-                 (p.x - grid_ul_z) / pixel_width);
+    return Pixel((p.x - tl_z_half_w) / pixel_width,
+                 (tl_y_half_h - p.y) / pixel_height);
   }
 
   _ F sensitivity(Point p) const {
@@ -162,16 +160,16 @@ template <typename FType = double> class StripDetector {
   const F pixel_height;
   const F sigma_z;
   const F sigma_dl;
-  const F grid_center_y;
-  const F grid_center_z;
-  const F grid_size_y;
-  const F grid_size_z;
-  const F grid_ul_y;
-  const F grid_ul_z;
+  const F center_y;
+  const F center_z;
+  const F size_y;
+  const F size_z;
+  const F tl_y;
+  const F tl_z;
+  const F tl_y_half_h;
+  const F tl_z_half_w;
   const F inv_pow_sigma_z;
   const F inv_pow_sigma_dl;
-  const F grid_ul_y_half_h;
-  const F grid_ul_z_half_w;
   const FVec inv_cor_mat_diag;
 
  private:

@@ -17,11 +17,10 @@
 
 #define BB_UPDATE 1
 
-template <typename FType = double, typename DetectorType = StripDetector<FType>>
-class Reconstruction {
+template <typename FType = double> class Reconstruction {
  public:
   typedef FType F;
-  typedef DetectorType Detector;
+  typedef StripDetector<FType> Detector;
   typedef typename Detector::Pixel Pixel;
   typedef typename Detector::Point Point;
 
@@ -185,16 +184,18 @@ class Reconstruction {
     ellipse_kernel_mul_rho.reserve(2000);
 
     F acc = 0;
+
     for (int iy = tl.y; iy < br.y; ++iy) {
       for (int iz = tl.x; iz < br.x; ++iz) {
-        Pixel pixel(iy, iz);
+        Pixel pixel(iz, iy);
         Point point = detector.pixel_center(pixel);
 
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
 
-          int i = pixel.y * detector.n_z_pixels + pixel.x;
+          int i = pixel.y * detector.n_y_pixels + pixel.x;
 
+          F pixel_sensitivity = sensitivity[i];
           F event_kernel = kernel(y,
                                   tan,
                                   sec,
@@ -203,7 +204,7 @@ class Reconstruction {
                                   point,
                                   detector.inv_cor_mat_diag,
                                   sqrt_det_cor_mat) /
-                           sensitivity[i];
+                           pixel_sensitivity;
           F event_kernel_mul_rho = event_kernel * rho[i];
           ellipse_kernel_mul_rho.push_back(
               std::make_pair(pixel, event_kernel_mul_rho));
@@ -212,10 +213,12 @@ class Reconstruction {
       }
     }
 
+    F inv_acc = 1 / acc;
+
     for (auto& e : ellipse_kernel_mul_rho) {
       auto pixel = e.first;
-      int i = pixel.y * detector.n_z_pixels + pixel.x;
-      thread_rho[thread * detector.total_n_pixels + i] += e.second / acc;
+      int i = pixel.y * detector.n_y_pixels + pixel.x;
+      thread_rho[thread * detector.total_n_pixels + i] += e.second * inv_acc;
     }
   }
 
