@@ -150,7 +150,7 @@ template <typename FType = double> class StripDetector {
     F dy = p.y - ellipse_center.y;
     F dz = p.x - ellipse_center.x;
 
-    return (A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)) <= 9;
+    return (A * dy * dy) + (B * dy * dz) + (C * dz * dz) <= 9;
   }
 
   const F radius;

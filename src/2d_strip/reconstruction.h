@@ -25,52 +25,64 @@ class Reconstruction {
   typedef typename Detector::Pixel Pixel;
   typedef typename Detector::Point Point;
 
-  F sqrt_det_cor_mat;
   Detector detector;
+  F sqrt_det_cor_mat;
 
  private:
+  const int n_threads;
   std::vector<Event<F>> events;
   std::vector<F> rho;
   std::vector<F> acc_log;
-  std::vector<std::vector<F>> thread_rho;
+  std::vector<F> thread_rho;
   std::vector<F> sensitivity;
 
   Kernel<F> kernel;
 
-  const int n_pixels;
-  const int pixel_size;
-
  public:
+  Reconstruction(F R_distance,
+                 F scintilator_length,
+                 int n_y_pixels,
+                 int n_z_pixels,
+                 F pixel_height,
+                 F pixel_width,
+                 F sigma_z,
+                 F sigma_dl)
+      : detector(R_distance,
+                 scintilator_length,
+                 n_y_pixels,
+                 n_z_pixels,
+                 pixel_height,
+                 pixel_width,
+                 sigma_z,
+                 sigma_dl),
+        sqrt_det_cor_mat(detector.sqrt_det_cor_mat()),
+        n_threads(omp_get_max_threads()),
+        rho(detector.total_n_pixels, 100),
+        thread_rho(detector.total_n_pixels * n_threads),
+        sensitivity(detector.total_n_pixels) {
+
+    for (int y = 0; y < detector.n_y_pixels; ++y) {
+      for (int z = 0; z < detector.n_z_pixels; ++z) {
+        Point point = detector.pixel_center(Pixel(z, y));
+        sensitivity[y * detector.n_z_pixels + z] = detector.sensitivity(point);
+      }
+    }
+  }
+
   Reconstruction(F R_distance,
                  F scintilator_length,
                  int n_pixels,
                  F pixel_size,
                  F sigma_z,
                  F sigma_dl)
-      : detector(R_distance,
-                 scintilator_length,
-                 n_pixels,
-                 n_pixels,
-                 pixel_size,
-                 pixel_size,
-                 sigma_z,
-                 sigma_dl),
-        rho(n_pixels * n_pixels, 100),
-        sensitivity(n_pixels * n_pixels),
-        n_pixels(n_pixels),
-        pixel_size(pixel_size) {
-
-    sqrt_det_cor_mat = std::sqrt(detector.inv_cor_mat_diag[0] *  //
-                                 detector.inv_cor_mat_diag[1] *  //
-                                 detector.inv_cor_mat_diag[2]);
-
-    for (int y = 0; y < n_pixels; ++y) {
-      for (int z = 0; z < n_pixels; ++z) {
-        Point point = detector.pixel_center(Pixel(z, y));
-        sensitivity[y * n_pixels + z] = detector.sensitivity(point);
-      }
-    }
-  }
+      : Reconstruction(R_distance,
+                       scintilator_length,
+                       n_pixels,
+                       n_pixels,
+                       pixel_size,
+                       pixel_size,
+                       sigma_z,
+                       sigma_dl) {}
 
   /// Performs n_iterations of the list mode MLEM algorithm
   template <typename ProgressCallback>
@@ -78,20 +90,16 @@ class Reconstruction {
                   int n_iterations,
                   int n_iterations_so_far = 0) {
 
-    for (int i = 0; i < n_iterations; i++) {
-
-      thread_rho.assign(omp_get_max_threads(),
-                        std::vector<F>(n_pixels * n_pixels, 0));
-
-      progress(i + n_iterations_so_far);
-
+    for (int iteration = 0; iteration < n_iterations; ++iteration) {
+      thread_rho.assign(detector.total_n_pixels * n_threads, 0);
+      progress(iteration + n_iterations_so_far);
       int n_events = events.size();
 
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
       for (int e = 0; e < n_events; ++e) {
-        int t = omp_get_thread_num();
+        int thread = omp_get_thread_num();
 
 #if BB_UPDATE
         auto event = events[e];
@@ -99,7 +107,7 @@ class Reconstruction {
         event.transform(detector.radius, tan, y, z);
         F angle = std::atan(tan);
 
-        bb_update(Point(z, y), angle, y, tan, t);
+        bb_update(Point(z, y), angle, y, tan, thread);
 #else
         F y = events[id].z_u;
         F z = events[id].z_d;
@@ -107,14 +115,11 @@ class Reconstruction {
 #endif
       }
 
-      rho.assign(n_pixels * n_pixels, 0);
+      rho.assign(detector.total_n_pixels, 0);
 
-      for (int t = 0; t < omp_get_max_threads(); ++t) {
-        for (int iy = 0; iy < n_pixels; ++iy) {
-          for (int iz = 0; iz < n_pixels; ++iz) {
-            int i = iy * n_pixels + iz;
-            rho[i] += thread_rho[t][i];
-          }
+      for (int thread = 0; thread < n_threads; ++thread) {
+        for (int i = 0; i < detector.total_n_pixels; ++i) {
+          rho[i] += thread_rho[thread * detector.total_n_pixels + i];
         }
       }
     }
@@ -137,7 +142,7 @@ class Reconstruction {
   }
 
   template <class FileWriter> void output_bitmap(FileWriter& fw) {
-    fw.template write_header<>(n_pixels, n_pixels);
+    fw.template write_header<>(detector.n_z_pixels, detector.n_y_pixels);
 
     F output_max = 0;
     for (auto& v : rho) {
@@ -147,18 +152,18 @@ class Reconstruction {
     auto output_gain =
         static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-    uint8_t* row = (uint8_t*)alloca(n_pixels);
-    for (int y = 0; y < n_pixels; ++y) {
-      for (auto x = 0; x < n_pixels; ++x) {
+    uint8_t* row = (uint8_t*)alloca(detector.n_z_pixels);
+    for (int y = 0; y < detector.n_y_pixels; ++y) {
+      for (auto x = 0; x < detector.n_z_pixels; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -
-                 output_gain * rho[y * n_pixels + x];
+                 output_gain * rho[y * detector.n_z_pixels + x];
       }
       fw.write_row(row);
     }
   }
 
  private:
-  int n_pixels_in_line(F length) const {
+  int n_pixels_in_line(F length, F pixel_size) const {
     return static_cast<int>((length + F(0.5)) / pixel_size);
   }
 
@@ -169,8 +174,8 @@ class Reconstruction {
 
     Pixel center_pixel = detector.pixel_location(ellipse_center);
 
-    const int bb_half_width = n_pixels_in_line(bb_z);
-    const int bb_half_height = n_pixels_in_line(bb_y);
+    const int bb_half_width = n_pixels_in_line(bb_z, detector.pixel_width);
+    const int bb_half_height = n_pixels_in_line(bb_y, detector.pixel_height);
     const Pixel tl(center_pixel.x - bb_half_width,
                    center_pixel.y - bb_half_height);
     const Pixel br(center_pixel.x + bb_half_width,
@@ -182,12 +187,13 @@ class Reconstruction {
     F acc = 0;
     for (int iy = tl.y; iy < br.y; ++iy) {
       for (int iz = tl.x; iz < br.x; ++iz) {
-        int i = iy * n_pixels + iz;
-        Pixel pixel(iz, iy);
+        Pixel pixel(iy, iz);
         Point point = detector.pixel_center(pixel);
 
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
+
+          int i = pixel.y * detector.n_z_pixels + pixel.x;
 
           F event_kernel = kernel(y,
                                   tan,
@@ -208,17 +214,17 @@ class Reconstruction {
 
     for (auto& e : ellipse_kernel_mul_rho) {
       auto pixel = e.first;
-      int i = pixel.y * n_pixels + pixel.x;
-      thread_rho[thread][i] += e.second / acc;
+      int i = pixel.y * detector.n_z_pixels + pixel.x;
+      thread_rho[thread * detector.total_n_pixels + i] += e.second / acc;
     }
   }
 
-  void simple_update(Point ellipse_center, F y, F z, int tid) {
+  void simple_update(Point ellipse_center, F y, F z, int thread) {
 
     Pixel center_pixel = detector.pixel_location(ellipse_center);
 
-    int y_line = 3 * (detector.sigma_z / pixel_size);
-    int z_line = 3 * (detector.sigma_dl / pixel_size);
+    int y_line = 3 * (detector.sigma_z / detector.pixel_width);
+    int z_line = 3 * (detector.sigma_dl / detector.pixel_height);
 
     std::vector<std::pair<Pixel, F>> ellipse_kernels;
     ellipse_kernels.reserve(2000);
@@ -228,7 +234,7 @@ class Reconstruction {
     for (int iy = center_pixel.y - y_line; iy < center_pixel.y + y_line; ++iy) {
       for (int iz = center_pixel.x - z_line; iz < center_pixel.x + z_line;
            ++iz) {
-        int i = iy * n_pixels + iz;
+        int i = iy * detector.n_z_pixels + iz;
         Pixel pixel(iz, iy);
         Point point = detector.pixel_center(pixel);
 
@@ -242,8 +248,9 @@ class Reconstruction {
 
     for (auto& e : ellipse_kernels) {
       auto pixel = e.first;
-      int i = pixel.y * n_pixels + pixel.x;
-      thread_rho[tid][i] += e.second * rho[i] / acc;
+      int i = pixel.y * detector.n_z_pixels + pixel.x;
+      thread_rho[thread * detector.total_n_pixels + i] +=
+          e.second * rho[i] / acc;
     }
   }
 };
