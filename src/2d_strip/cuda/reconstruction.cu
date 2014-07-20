@@ -8,7 +8,7 @@
 #include "config.h"
 
 #if USE_SENSITIVITY
-texture<float, 2, cudaReadModeElementType> tex_sensitivity;
+texture<float, 2, cudaReadModeElementType> tex_inv_sensitivity;
 #endif
 texture<float, 2, cudaReadModeElementType> tex_rho;
 
@@ -52,15 +52,19 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   const int height = detector.n_y_pixels;
 
 #if USE_SENSITIVITY
+  F* cpu_inv_sensitivity = (F*)malloc(image_size);
   F* cpu_sensitivity = (F*)malloc(image_size);
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       Point<F> point = detector.pixel_center(Pixel<>(x, y));
-      cpu_sensitivity[y * width + x] = detector.sensitivity(point);
+      F pixel_sensitivity = detector.sensitivity(point);
+      cpu_sensitivity[y * width + x] = pixel_sensitivity;
+      cpu_inv_sensitivity[y * width + x] = 1 / pixel_sensitivity;
     }
   }
 
   output_callback(detector, -1, cpu_sensitivity, context);
+  free(cpu_sensitivity);
 #endif
 
   F* cpu_rho = (F*)malloc(image_size);
@@ -82,25 +86,25 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
 
 #if USE_SENSITIVITY
-  F* gpu_sensitivity;
-  size_t pitch_sensitivity;
+  F* gpu_inv_sensitivity;
+  size_t pitch_inv_sensitivity;
   cudaMallocPitch(
-      &gpu_sensitivity, &pitch_sensitivity, sizeof(F) * width, height);
-  cudaMemcpy2D(gpu_sensitivity,
-               pitch_sensitivity,
-               cpu_sensitivity,
+      &gpu_inv_sensitivity, &pitch_inv_sensitivity, sizeof(F) * width, height);
+  cudaMemcpy2D(gpu_inv_sensitivity,
+               pitch_inv_sensitivity,
+               cpu_inv_sensitivity,
                sizeof(F) * width,
                sizeof(F) * width,
                height,
                cudaMemcpyHostToDevice);
-  free(cpu_sensitivity);
+  free(cpu_inv_sensitivity);
   cudaBindTexture2D(NULL,
-                    &tex_sensitivity,
-                    gpu_sensitivity,
+                    &tex_inv_sensitivity,
+                    gpu_inv_sensitivity,
                     &desc,
                     width,
                     height,
-                    pitch_sensitivity);
+                    pitch_inv_sensitivity);
 #endif
 
   F* gpu_rho;
@@ -201,8 +205,8 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   }
 
 #if USE_SENSITIVITY
-  cudaUnbindTexture(&tex_sensitivity);
-  cudaFree(gpu_sensitivity);
+  cudaUnbindTexture(&tex_inv_sensitivity);
+  cudaFree(gpu_inv_sensitivity);
 #endif
   cudaUnbindTexture(&tex_rho);
   cudaFree(gpu_rho);

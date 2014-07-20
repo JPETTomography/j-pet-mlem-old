@@ -86,9 +86,9 @@ __global__ void reconstruction(StripDetector<F> detector,
         point -= ellipse_center;
 
 #if USE_SENSITIVITY
-        F pixel_sensitivity = tex2D(tex_sensitivity, pixel.x, pixel.y);
+        F inv_pixel_sensitivity = tex2D(tex_inv_sensitivity, pixel.x, pixel.y);
 #else
-        F pixel_sensitivity = 1;
+        F inv_pixel_sensitivity = 1;
 #endif
         F event_kernel = kernel(y,
                                 tan,
@@ -102,8 +102,8 @@ __global__ void reconstruction(StripDetector<F> detector,
         F event_kernel_mul_rho =
             event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
         acc += event_kernel_mul_rho;
-        event_kernel_mul_rho /= pixel_sensitivity;
 #if CACHE_ELLIPSE_PIXELS
+        event_kernel_mul_rho *= inv_pixel_sensitivity;
         ellipse_pixels[n_ellipse_pixels][threadIdx.x] =
             make_short2(pixel.x, pixel.y);
         ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
@@ -140,9 +140,9 @@ __global__ void reconstruction(StripDetector<F> detector,
         point -= ellipse_center;
 
 #if USE_SENSITIVITY
-        F pixel_sensitivity = tex2D(tex_sensitivity, pixel.x, pixel.y);
+        F inv_pixel_sensitivity = tex2D(tex_inv_sensitivity, pixel.x, pixel.y);
 #else
-        F pixel_sensitivity = 1;
+        F inv_pixel_sensitivity = 1;
 #endif
         F event_kernel = kernel(y,
                                 tan,
@@ -151,8 +151,8 @@ __global__ void reconstruction(StripDetector<F> detector,
                                 detector.radius,
                                 point,
                                 detector.inv_cor_mat_diag,
-                                sqrt_det_cor_mat) /
-                         pixel_sensitivity;
+                                sqrt_det_cor_mat) *
+                         inv_pixel_sensitivity;
 
         atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                   event_kernel * tex2D(tex_rho, pixel.x, pixel.y) * inv_acc);
