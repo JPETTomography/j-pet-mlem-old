@@ -115,6 +115,9 @@ int main(int argc, char* argv[]) {
     } else
 #endif
     {
+      png_writer png(output_wo_ext + "_sensitivity.png");
+      reconstruction.output_bitmap(png, true);
+
       for (int block = 0; block < n_blocks; block++) {
         reconstruction(progress, n_iterations, block * n_iterations);
 
