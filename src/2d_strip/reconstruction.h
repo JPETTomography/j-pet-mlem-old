@@ -205,12 +205,12 @@ template <typename FType = double> class Reconstruction {
                                   detector.radius,
                                   point,
                                   detector.inv_cor_mat_diag,
-                                  sqrt_det_cor_mat) /
-                           pixel_sensitivity;
+                                  sqrt_det_cor_mat);
           F event_kernel_mul_rho = event_kernel * rho[i];
+          acc += event_kernel_mul_rho;
+          event_kernel_mul_rho /= pixel_sensitivity;
           ellipse_kernel_mul_rho.push_back(
               std::make_pair(pixel, event_kernel_mul_rho));
-          acc += event_kernel_mul_rho * sensitivity[i];
         }
       }
     }

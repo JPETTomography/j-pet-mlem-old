@@ -97,12 +97,12 @@ __global__ void reconstruction(StripDetector<F> detector,
                                 detector.radius,
                                 point,
                                 detector.inv_cor_mat_diag,
-                                sqrt_det_cor_mat) /
-                         pixel_sensitivity;
+                                sqrt_det_cor_mat);
 
         F event_kernel_mul_rho =
             event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
-        acc += event_kernel_mul_rho * pixel_sensitivity;
+        acc += event_kernel_mul_rho;
+        event_kernel_mul_rho /= pixel_sensitivity;
 #if CACHE_ELLIPSE_PIXELS
         ellipse_pixels[n_ellipse_pixels][threadIdx.x] =
             make_short2(pixel.x, pixel.y);
