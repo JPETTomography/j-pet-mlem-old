@@ -5,7 +5,7 @@
 // reconstruction mode (comment out both for simple kernel)
 #define THREAD_GRANULARITY 0    // single thread processes single event
 #define WARP_GRANULARITY 1      // whole warp processes single event
-#define SENSITIVITY_TEXTURE 1   // use sensitivity texture
+#define USE_SENSITIVITY 1       // use sensitivity texture
 #define CACHE_ELLIPSE_PIXELS 1  // shared memory pixel buffer in error ellipse
 #define NORMAL_PHANTOM 0
 

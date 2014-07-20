@@ -67,7 +67,7 @@ __global__ void reconstruction(StripDetector<F> detector,
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
 
-#if SENSITIVITY_TEXTURE
+#if USE_SENSITIVITY
           F pixel_sensitivity = tex2D(tex_sensitivity, pixel.x, pixel.y);
 #else
           F pixel_sensitivity = 1;
@@ -98,7 +98,7 @@ __global__ void reconstruction(StripDetector<F> detector,
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
 
-#if SENSITIVITY_TEXTURE
+#if USE_SENSITIVITY
           F pixel_sensitivity = tex2D(tex_sensitivity, pixel.x, pixel.y);
 #else
           F pixel_sensitivity = 1;
