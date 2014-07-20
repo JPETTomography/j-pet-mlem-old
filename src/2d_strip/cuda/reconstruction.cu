@@ -10,6 +10,7 @@
 #if SENSITIVITY_TEXTURE
 texture<float, 2, cudaReadModeElementType> tex_sensitivity;
 #endif
+texture<float, 2, cudaReadModeElementType> tex_rho;
 
 #if THREAD_GRANULARITY
 #include "reconstruction_thread_granularity.cuh"
@@ -39,24 +40,30 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
   cudaSetDevice(device);
 
+#if __CUDACC__
   dim3 blocks(n_blocks);
   dim3 threads(n_threads_per_block);
+#endif
 
   size_t image_size = detector.total_n_pixels * sizeof(F);
   size_t events_size = n_events * sizeof(F);
 
-  F* cpu_sensitivity = (F*)malloc(image_size);
-  F* cpu_rho = (F*)malloc(image_size);
+  const int width = detector.n_z_pixels;
+  const int height = detector.n_y_pixels;
 
-  for (int y = 0; y < detector.n_y_pixels; ++y) {
-    for (int x = 0; x < detector.n_z_pixels; ++x) {
-      Point<F> point = detector.pixel_center(y, x);
-      cpu_sensitivity[y * detector.n_z_pixels + x] =
-          detector.sensitivity(point);
+#if SENSITIVITY_TEXTURE
+  F* cpu_sensitivity = (F*)malloc(image_size);
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      Point<F> point = detector.pixel_center(x, y);
+      cpu_sensitivity[y * width + x] = detector.sensitivity(point);
     }
   }
 
   output_callback(detector, -1, cpu_sensitivity, context);
+#endif
+
+  F* cpu_rho = (F*)malloc(image_size);
 
   for (int i = 0; i < detector.total_n_pixels; ++i) {
     cpu_rho[i] = 100;
@@ -72,39 +79,37 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
     cpu_events_dl[i] = events[i].dl;
   }
 
-  F* gpu_sensitivity;
-  F* gpu_output_rho;
-  F* gpu_rho;
-
-  size_t pitch;
-  cudaMallocPitch(&gpu_sensitivity,
-                  &pitch,
-                  sizeof(F) * detector.n_z_pixels,
-                  detector.n_y_pixels);
-
-  cudaMemcpy2D(gpu_sensitivity,
-               pitch,
-               cpu_sensitivity,
-               sizeof(F) * detector.n_z_pixels,
-               sizeof(F) * detector.n_z_pixels,
-               detector.n_y_pixels,
-               cudaMemcpyHostToDevice);
-
-  free(cpu_sensitivity);
+  cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
 
 #if SENSITIVITY_TEXTURE
-  cudaChannelFormatDesc desc_sensitivity = cudaCreateChannelDesc<float>();
+  F* gpu_sensitivity;
+  size_t pitch_sensitivity;
+  cudaMallocPitch(
+      &gpu_sensitivity, &pitch_sensitivity, sizeof(F) * width, height);
+  cudaMemcpy2D(gpu_sensitivity,
+               pitch_sensitivity,
+               cpu_sensitivity,
+               sizeof(F) * width,
+               sizeof(F) * width,
+               height,
+               cudaMemcpyHostToDevice);
+  free(cpu_sensitivity);
   cudaBindTexture2D(NULL,
                     &tex_sensitivity,
                     gpu_sensitivity,
-                    &desc_sensitivity,
-                    detector.n_z_pixels,
-                    detector.n_y_pixels,
-                    pitch);
+                    &desc,
+                    width,
+                    height,
+                    pitch_sensitivity);
 #endif
 
+  F* gpu_rho;
+  size_t pitch_rho;
+  cudaMallocPitch(&gpu_rho, &pitch_rho, sizeof(F) * width, height);
+  cudaBindTexture2D(NULL, &tex_rho, gpu_rho, &desc, width, height, pitch_rho);
+
+  F* gpu_output_rho;
   cudaMalloc((void**)&gpu_output_rho, image_size);
-  cudaMalloc((void**)&gpu_rho, image_size);
 
   F* gpu_events_z_u;
   F* gpu_events_z_d;
@@ -140,7 +145,13 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
       }
 
       cudaMemset(gpu_output_rho, 0, image_size);
-      cudaMemcpy(gpu_rho, cpu_rho, image_size, cudaMemcpyHostToDevice);
+      cudaMemcpy2D(gpu_rho,
+                   pitch_rho,
+                   cpu_rho,
+                   sizeof(F) * width,
+                   sizeof(F) * width,
+                   height,
+                   cudaMemcpyHostToDevice);
 
       if (verbose) {
         cudaEventRecord(start);
@@ -156,7 +167,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                      gpu_events_dl,
                      n_events,
                      gpu_output_rho,
-                     gpu_rho,
                      n_blocks,
                      n_threads_per_block);
 
@@ -192,13 +202,14 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
 #if SENSITIVITY_TEXTURE
   cudaUnbindTexture(&tex_sensitivity);
+  cudaFree(gpu_sensitivity);
 #endif
+  cudaUnbindTexture(&tex_rho);
+  cudaFree(gpu_rho);
   cudaFree(gpu_events_z_u);
   cudaFree(gpu_events_z_d);
   cudaFree(gpu_events_dl);
   cudaFree(gpu_output_rho);
-  cudaFree(gpu_rho);
-  cudaFree(gpu_sensitivity);
   free(cpu_rho);
 }
 

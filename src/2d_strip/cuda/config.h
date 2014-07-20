@@ -17,9 +17,3 @@
 
 // generic macro returning pixel location in linear memory
 #define PIXEL_INDEX(p) (((p).x * detector.n_z_pixels) + (p).y)
-
-#if SENSITIVITY_TEXTURE
-#define TEX_2D(F, t, p) tex2D(tex_##t, p.x, p.y)
-#else
-#define TEX_2D(F, t, p) 1
-#endif
