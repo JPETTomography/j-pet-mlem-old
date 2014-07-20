@@ -7,7 +7,7 @@
 
 #include "config.h"
 
-#if SENSITIVITY_TEXTURE
+#if USE_SENSITIVITY
 texture<float, 2, cudaReadModeElementType> tex_sensitivity;
 #endif
 texture<float, 2, cudaReadModeElementType> tex_rho;
@@ -51,11 +51,11 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   const int width = detector.n_z_pixels;
   const int height = detector.n_y_pixels;
 
-#if SENSITIVITY_TEXTURE
+#if USE_SENSITIVITY
   F* cpu_sensitivity = (F*)malloc(image_size);
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      Point<F> point = detector.pixel_center(x, y);
+      Point<F> point = detector.pixel_center(Pixel<>(x, y));
       cpu_sensitivity[y * width + x] = detector.sensitivity(point);
     }
   }
@@ -81,7 +81,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
   cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
 
-#if SENSITIVITY_TEXTURE
+#if USE_SENSITIVITY
   F* gpu_sensitivity;
   size_t pitch_sensitivity;
   cudaMallocPitch(
@@ -200,7 +200,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
     progress_callback(n_iteration_blocks * n_iterations_in_block, context);
   }
 
-#if SENSITIVITY_TEXTURE
+#if USE_SENSITIVITY
   cudaUnbindTexture(&tex_sensitivity);
   cudaFree(gpu_sensitivity);
 #endif

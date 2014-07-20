@@ -30,11 +30,10 @@ class Reconstruction {
 
  private:
   std::vector<Event<F>> events;
-  std::vector<std::vector<F>> rho;
-  std::vector<std::vector<F>> rho_temp;
+  std::vector<F> rho;
   std::vector<F> acc_log;
   std::vector<std::vector<F>> thread_rho;
-  std::vector<std::vector<F>> sensitivity;
+  std::vector<F> sensitivity;
 
   Kernel<F> kernel;
 
@@ -56,21 +55,19 @@ class Reconstruction {
                  pixel_size,
                  sigma_z,
                  sigma_dl),
+        rho(n_pixels * n_pixels, 100),
+        sensitivity(n_pixels * n_pixels),
         n_pixels(n_pixels),
         pixel_size(pixel_size) {
-    rho.assign(n_pixels, std::vector<F>(n_pixels, 100));
-    rho_temp.assign(n_pixels, std::vector<F>(n_pixels, 10));
 
     sqrt_det_cor_mat = std::sqrt(detector.inv_cor_mat_diag[0] *  //
                                  detector.inv_cor_mat_diag[1] *  //
                                  detector.inv_cor_mat_diag[2]);
 
-    sensitivity.assign(n_pixels, std::vector<F>(n_pixels));
-
     for (int y = 0; y < n_pixels; ++y) {
       for (int z = 0; z < n_pixels; ++z) {
-        Point point = detector.pixel_center(y, z);
-        sensitivity[y][z] = detector.sensitivity(point.x, point.y);
+        Point point = detector.pixel_center(Pixel(z, y));
+        sensitivity[y * n_pixels + z] = detector.sensitivity(point);
       }
     }
   }
@@ -88,37 +85,35 @@ class Reconstruction {
 
       progress(i + n_iterations_so_far);
 
-      int size = events.size();
+      int n_events = events.size();
 
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-      for (int id = 0; id < size; ++id) {
-        int tid = omp_get_thread_num();
+      for (int e = 0; e < n_events; ++e) {
+        int t = omp_get_thread_num();
 
 #if BB_UPDATE
-        auto event = events[id];
+        auto event = events[e];
         F tan, y, z;
         event.transform(detector.radius, tan, y, z);
         F angle = std::atan(tan);
 
-        Point ellipse_center = Point(y, z);
-        bb_update(ellipse_center, angle, y, tan, tid);
+        bb_update(Point(z, y), angle, y, tan, t);
 #else
         F y = events[id].z_u;
         F z = events[id].z_d;
-
-        Point ellipse_center = Point(y, z);
-        simple_update(ellipse_center, y, z, tid, id);
+        simple_update(Point(z, y), y, z, tid, id);
 #endif
       }
 
-      rho.assign(n_pixels, std::vector<F>(n_pixels, 0));
+      rho.assign(n_pixels * n_pixels, 0);
 
-      for (int i = 0; i < n_pixels; ++i) {
-        for (int j = 0; j < n_pixels; ++j) {
-          for (int k = 0; k < omp_get_max_threads(); ++k) {
-            rho[i][j] += thread_rho[k][i + j * n_pixels];
+      for (int t = 0; t < omp_get_max_threads(); ++t) {
+        for (int iy = 0; iy < n_pixels; ++iy) {
+          for (int iz = 0; iz < n_pixels; ++iz) {
+            int i = iy * n_pixels + iz;
+            rho[i] += thread_rho[t][i];
           }
         }
       }
@@ -145,10 +140,8 @@ class Reconstruction {
     fw.template write_header<>(n_pixels, n_pixels);
 
     F output_max = 0;
-    for (auto& col : rho) {
-      for (auto& row : col) {
-        output_max = std::max(output_max, row);
-      }
+    for (auto& v : rho) {
+      output_max = std::max(output_max, v);
     }
 
     auto output_gain =
@@ -157,67 +150,8 @@ class Reconstruction {
     uint8_t* row = (uint8_t*)alloca(n_pixels);
     for (int y = 0; y < n_pixels; ++y) {
       for (auto x = 0; x < n_pixels; ++x) {
-        row[x] = std::numeric_limits<uint8_t>::max() - output_gain * rho[y][x];
-      }
-      fw.write_row(row);
-    }
-  }
-
-  template <class FileWriter>
-  void output_kernel_bitmap(FileWriter& fw, F y, F angle) {
-
-    F sec, sec_sq, A, B, C, bb_y, bb_z;
-    detector.ellipse_bb(angle, 0, sec, sec_sq, A, B, C, bb_y, bb_z);
-
-    Point emission_point = Point(0, 0);
-
-    Pixel center_pixel =
-        pixel_location(emission_point.first, emission_point.second);
-
-    Pixel ur = Pixel(center_pixel.first - n_pixels_in_line(bb_y),
-                     center_pixel.second + n_pixels_in_line(bb_z));
-    Pixel dl = Pixel(center_pixel.first + n_pixels_in_line(bb_y),
-                     center_pixel.second - n_pixels_in_line(bb_z));
-
-    std::vector<std::pair<Pixel, F>> ellipse_kernels;
-    ellipse_kernels.reserve(2000);
-
-    std::vector<std::vector<F>> kernel_space;
-    kernel_space.assign(bb_y, std::vector<F>(bb_z, 0));
-
-    for (int iz = dl.second; iz < ur.second; ++iz) {
-      for (int iy = ur.first; iy < dl.first; ++iy) {
-
-        Point point = detector.pixel_center(iy, iz);
-
-        if (detector.in_ellipse(A, B, C, emission_point, point)) {
-          point -= emission_point;
-
-          F event_kernel =
-              kernel.calculate_kernel(
-                  y, tan, sec, sec_sq, point, detector, sqrt_det_cor_mat) /
-              sensitivity[iy][iz];
-        }
-      }
-    }
-
-    fw.template write_header<>(bb_y, bb_z);
-
-    F output_max = 0;
-    for (auto& col : kernel_space) {
-      for (auto& row : col) {
-        output_max = std::max(output_max, row);
-      }
-    }
-
-    auto output_gain =
-        static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
-
-    for (int y = 0; y < n_pixels; ++y) {
-      uint8_t row[n_pixels];
-      for (auto x = 0; x < n_pixels; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -
-                 output_gain * kernel_space[y][x];
+                 output_gain * rho[y * n_pixels + x];
       }
       fw.write_row(row);
     }
@@ -228,26 +162,29 @@ class Reconstruction {
     return static_cast<int>((length + F(0.5)) / pixel_size);
   }
 
-  void bb_update(Point ellipse_center, F angle, F y, F tan, int tid) {
+  void bb_update(Point ellipse_center, F angle, F y, F tan, int thread) {
 
     F sec, sec_sq, A, B, C, bb_y, bb_z;
     detector.ellipse_bb(angle, tan, sec, sec_sq, A, B, C, bb_y, bb_z);
 
-    Pixel center_pixel =
-        detector.pixel_location(ellipse_center.x, ellipse_center.y);
+    Pixel center_pixel = detector.pixel_location(ellipse_center);
 
-    Pixel ur = Pixel(center_pixel.x - n_pixels_in_line(bb_y),
-                     center_pixel.y + n_pixels_in_line(bb_z));
-    Pixel dl = Pixel(center_pixel.x + n_pixels_in_line(bb_y),
-                     center_pixel.y - n_pixels_in_line(bb_z));
+    const int bb_half_width = n_pixels_in_line(bb_z);
+    const int bb_half_height = n_pixels_in_line(bb_y);
+    const Pixel tl(center_pixel.x - bb_half_width,
+                   center_pixel.y - bb_half_height);
+    const Pixel br(center_pixel.x + bb_half_width,
+                   center_pixel.y + bb_half_height);
 
-    std::vector<std::pair<Pixel, F>> ellipse_kernels;
-    ellipse_kernels.reserve(2000);
+    std::vector<std::pair<Pixel, F>> ellipse_kernel_mul_rho;
+    ellipse_kernel_mul_rho.reserve(2000);
 
     F acc = 0;
-    for (int iz = dl.y; iz < ur.y; ++iz) {
-      for (int iy = ur.x; iy < dl.x; ++iy) {
-        Point point = detector.pixel_center(iy, iz);
+    for (int iy = tl.y; iy < br.y; ++iy) {
+      for (int iz = tl.x; iz < br.x; ++iz) {
+        int i = iy * n_pixels + iz;
+        Pixel pixel(iz, iy);
+        Point point = detector.pixel_center(pixel);
 
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
@@ -260,24 +197,25 @@ class Reconstruction {
                                   point,
                                   detector.inv_cor_mat_diag,
                                   sqrt_det_cor_mat) /
-                           sensitivity[iy][iz];
-
-          ellipse_kernels.push_back(
-              std::make_pair(Pixel(iy, iz), event_kernel));
-          acc += event_kernel * sensitivity[iy][iz] * rho[iy][iz];
+                           sensitivity[i];
+          F event_kernel_mul_rho = event_kernel * rho[i];
+          ellipse_kernel_mul_rho.push_back(
+              std::make_pair(pixel, event_kernel_mul_rho));
+          acc += event_kernel_mul_rho * sensitivity[i];
         }
       }
     }
 
-    for (auto& e : ellipse_kernels) {
-      thread_rho[tid][e.first.x + (e.first.y * n_pixels)] +=
-          e.second * rho[e.first.x][e.first.y] / acc;
+    for (auto& e : ellipse_kernel_mul_rho) {
+      auto pixel = e.first;
+      int i = pixel.y * n_pixels + pixel.x;
+      thread_rho[thread][i] += e.second / acc;
     }
   }
 
   void simple_update(Point ellipse_center, F y, F z, int tid) {
 
-    Pixel pixel = detector.pixel_location(ellipse_center);
+    Pixel center_pixel = detector.pixel_location(ellipse_center);
 
     int y_line = 3 * (detector.sigma_z / pixel_size);
     int z_line = 3 * (detector.sigma_dl / pixel_size);
@@ -287,22 +225,25 @@ class Reconstruction {
 
     F acc = 0;
 
-    for (int iz = pixel.x - y_line; iz < pixel.y + y_line; ++iz) {
-      for (int iy = pixel.y - z_line; iy < pixel.z + z_line; ++iy) {
-
-        Point point = detector.pixel_center(iy, iz);
+    for (int iy = center_pixel.y - y_line; iy < center_pixel.y + y_line; ++iy) {
+      for (int iz = center_pixel.x - z_line; iz < center_pixel.x + z_line;
+           ++iz) {
+        int i = iy * n_pixels + iz;
+        Pixel pixel(iz, iy);
+        Point point = detector.pixel_center(pixel);
 
         F event_kernel = kernel.test_kernel(
             y, z, point, detector.sigma_z, detector.sigma_dl);
 
-        ellipse_kernels.push_back(std::make_pair(Pixel(iy, iz), event_kernel));
-        acc += event_kernel * rho[iy][iz];
+        ellipse_kernels.push_back(std::make_pair(pixel, event_kernel));
+        acc += event_kernel * rho[i];
       }
     }
 
     for (auto& e : ellipse_kernels) {
-      thread_rho[tid][e.first.first + (e.first.second * n_pixels)] +=
-          e.second * rho[e.first.first][e.first.second] / acc;
+      auto pixel = e.first;
+      int i = pixel.y * n_pixels + pixel.x;
+      thread_rho[tid][i] += e.second * rho[i] / acc;
     }
   }
 };

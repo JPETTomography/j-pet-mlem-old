@@ -16,4 +16,4 @@
 #define MAX_THREADS_PER_BLOCK 512  // more does not make sense anyway
 
 // generic macro returning pixel location in linear memory
-#define PIXEL_INDEX(p) (((p).x * detector.n_z_pixels) + (p).y)
+#define PIXEL_INDEX(p) (((p).y * detector.n_z_pixels) + (p).x)

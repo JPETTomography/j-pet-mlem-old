@@ -2,6 +2,8 @@
 
 #include <cuda_runtime.h>
 
+#include "geometry/point.h"
+#include "../event.h"
 #include "../kernel.h"
 #include "../strip_detector.h"
 
@@ -12,65 +14,64 @@ __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
                                F* events_z_d,
                                F* events_dl,
-                               int n_events,
-                               F* output,
-                               F* rho,
-                               int n_blocks,
-                               int n_threads_per_block) {
+                               const int n_events,
+                               F* output_rho,
+                               const int n_blocks,
+                               const int n_threads_per_block) {
   // mark variables used
   (void)(events_dl);
 
+  int n_threads = n_blocks * n_threads_per_block;
+  int n_chunks = (n_events + n_threads - 1) / n_threads;
+
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
-  int block_chunk = int(ceilf(n_events / (n_blocks * n_threads_per_block)));
+  for (int chunk = 0; chunk < n_chunks; ++chunk) {
+    int i = chunk * n_threads + tid;
+    // check if we are still on the list
+    if (i >= n_events) {
+      break;
+    }
 
-  for (int i = 0; i < block_chunk; ++i) {
+    F y, z;
+    y = events_z_u[i];
+    z = events_z_d[i];
+    F acc = 0;
 
-    if ((i * n_blocks * n_threads_per_block) + tid < n_events) {
+    int y_step = 3 * (detector.sigma_dl / detector.pixel_height);
+    int z_step = 3 * (detector.sigma_z / detector.pixel_width);
 
-      for (int j = 0; j < 1; ++j) {
-        F y, z;
-        y = events_z_u[i * n_blocks * n_threads_per_block + tid];
-        z = events_z_d[i * n_blocks * n_threads_per_block + tid];
-        F acc = 0;
+    Point<F> ellipse_center(y, z);
+    Pixel<> center_pixel = detector.pixel_location(ellipse_center);
 
-        int y_step = 3 * (detector.sigma_dl / detector.pixel_height);
-        int z_step = 3 * (detector.sigma_z / detector.pixel_width);
+    for (int iy = center_pixel.y - y_step; iy < center_pixel.y + y_step; ++iy) {
+      for (int iz = center_pixel.x - z_step; iz < center_pixel.x + z_step;
+           ++iz) {
+        Pixel<> pixel(iz, iy);
+        Point<F> point = detector.pixel_center(pixel);
+        Kernel<F> kernel;
+        float event_kernel =
+            kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
 
-        Pixel<> center_pixel = detector.pixel_location(y, z);
+        acc += event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
+      }
+    }
 
-        for (int iy = center_pixel.x - y_step; iy < center_pixel.x + y_step;
-             ++iy) {
-          for (int iz = center_pixel.y - z_step; iz < center_pixel.y + z_step;
-               ++iz) {
-            Pixel<> pixel(iy, iz);
-            Point<F> point = detector.pixel_center(pixel);
-            Kernel<F> kernel;
-            float event_kernel =
-                kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
+    float inv_acc = 1 / acc;
 
-            acc += event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(pixel)];
-          }
-        }
+    for (int iy = center_pixel.y - y_step; iy < center_pixel.y + y_step; ++iy) {
+      for (int iz = center_pixel.x - z_step; iz < center_pixel.x + z_step;
+           ++iz) {
+        Pixel<> pixel(iz, iy);
+        Point<F> point = detector.pixel_center(pixel);
 
-        float inv_acc = 1 / acc;
+        Kernel<F> kernel;
+        F event_kernel =
+            kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
 
-        for (int iz = center_pixel.y - z_step; iz < center_pixel.y + z_step;
-             ++iz) {
-          for (int iy = center_pixel.x - y_step; iy < center_pixel.x + y_step;
-               ++iy) {
-            Pixel<> pixel(iy, iz);
-            Point<F> point = detector.pixel_center(pixel);
-
-            Kernel<F> kernel;
-            F event_kernel =
-                kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
-
-            atomicAdd(&output[BUFFER_LINEAR_INDEX(pixel)],
-                      (event_kernel * rho[IMAGE_SPACE_LINEAR_INDEX(pixel)]) *
+            atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
+                      (event_kernel * tex2D(tex_rho, pixel.x, pixel.y) *
                           inv_acc);
-          }
-        }
       }
     }
   }

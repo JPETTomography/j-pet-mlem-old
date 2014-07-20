@@ -94,26 +94,21 @@ template <typename FType = double> class StripDetector {
     return to_angle(from_projection_space_tan(event));
   }
 
-  _ Point pixel_center(int i, int j) const {
-    return Point(grid_ul_y_half_h - i * pixel_height,
-                 grid_ul_z_half_w + j * pixel_width);
+  _ Point pixel_center(Pixel p) const {
+    return Point(grid_ul_z_half_w + p.x * pixel_width,
+                 grid_ul_y_half_h - p.y * pixel_height);
   }
 
-  _ Point pixel_center(Pixel pixel) const {
-    return pixel_center(pixel.x, pixel.y);
+  _ Pixel pixel_location(Point p) const {
+    return Pixel((grid_ul_y - p.y) / pixel_height,
+                 (p.x - grid_ul_z) / pixel_width);
   }
 
-  _ Pixel pixel_location(F y, F z) const {
-    return Pixel((grid_ul_y - y) / pixel_height, (z - grid_ul_z) / pixel_width);
-  }
-
-  _ Pixel pixel_location(Point p) const { return pixel_location(p.x, p.y); }
-
-  _ F sensitivity(F y, F z) const {
-    F L_plus = half_scintilator_length_ + z;
-    F L_minus = half_scintilator_length_ - z;
-    F R_plus = radius + y;
-    F R_minus = radius - y;
+  _ F sensitivity(Point p) const {
+    F L_plus = half_scintilator_length_ + p.x;
+    F L_minus = half_scintilator_length_ - p.x;
+    F R_plus = radius + p.y;
+    F R_minus = radius - p.y;
 
     return F(M_1_PI) *
            (compat::atan(compat::min(L_minus / R_minus, L_plus / R_plus)) -
@@ -125,8 +120,6 @@ template <typename FType = double> class StripDetector {
                         inv_cor_mat_diag[1] *  //
                         inv_cor_mat_diag[2]);
   }
-
-  _ F sensitivity(Point p) const { return sensitivity(p.x, p.y); }
 
   _ void ellipse_bb(F angle,
                     F tan,
@@ -154,8 +147,8 @@ template <typename FType = double> class StripDetector {
 
   _ bool in_ellipse(F A, F B, F C, Point ellipse_center, Point p) const {
 
-    F dy = p.x - ellipse_center.x;
-    F dz = p.y - ellipse_center.y;
+    F dy = p.y - ellipse_center.y;
+    F dz = p.x - ellipse_center.x;
 
     return (A * (dy * dy)) + (B * dy * dz) + (C * (dz * dz)) <= 9;
   }
