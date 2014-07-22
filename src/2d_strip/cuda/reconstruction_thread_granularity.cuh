@@ -52,10 +52,10 @@ __global__ void reconstruction(StripDetector<F> detector,
     // bounding box limits for event
     const int bb_half_width = n_pixels_in_line(bb_z, detector.pixel_width);
     const int bb_half_height = n_pixels_in_line(bb_y, detector.pixel_height);
-    const Pixel<> tl(center_pixel.y - bb_half_width,
-                     center_pixel.x - bb_half_height);
-    const Pixel<> br(center_pixel.y + bb_half_width,
-                     center_pixel.x + bb_half_height);
+    const Pixel<> tl(center_pixel.x - bb_half_width,
+                     center_pixel.y - bb_half_height);
+    const Pixel<> br(center_pixel.x + bb_half_width,
+                     center_pixel.y + bb_half_height);
 
     F acc = 0;
 
