@@ -90,6 +90,8 @@ __global__ void reconstruction(StripDetector<F> detector,
 #else
         F inv_pixel_sensitivity = 1;
 #endif
+
+#if USE_KERNEL
         F event_kernel = kernel(y,
                                 tan,
                                 sec,
@@ -98,6 +100,9 @@ __global__ void reconstruction(StripDetector<F> detector,
                                 point,
                                 detector.inv_cor_mat_diag,
                                 sqrt_det_cor_mat);
+#else
+        F event_kernel = 1;
+#endif
 
         F event_kernel_mul_rho =
             event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
