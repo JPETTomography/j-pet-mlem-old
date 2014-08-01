@@ -113,7 +113,14 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   cudaBindTexture2D(NULL, &tex_rho, gpu_rho, &desc, width, height, pitch_rho);
 
   F* gpu_output_rho;
+
+#if USE_WARP_IMAGE_SPACE
+  cudaMalloc((void**)&gpu_output_rho, n_blocks * image_size);
+  F* cpu_output_rho;
+  cpu_output_rho = (F*)malloc(n_blocks * image_size);
+#else
   cudaMalloc((void**)&gpu_output_rho, image_size);
+#endif
 
   F* gpu_events_z_u;
   F* gpu_events_z_d;
@@ -148,7 +155,11 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
         progress_callback(ib * n_iterations_in_block + it, context);
       }
 
+#if USE_WARP_IMAGE_SPACE
+      cudaMemset(gpu_output_rho, 0, n_blocks * image_size);
+#else
       cudaMemset(gpu_output_rho, 0, image_size);
+#endif
       cudaMemcpy2D(gpu_rho,
                    pitch_rho,
                    cpu_rho,
@@ -182,7 +193,27 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
         cudaEventElapsedTime(&time, start, stop);
       }
 
+#if USE_WARP_IMAGE_SPACE
+      cudaMemcpy(cpu_output_rho,
+                 gpu_output_rho,
+                 n_blocks * image_size,
+                 cudaMemcpyDeviceToHost);
+
+      for (int i = 0; i < detector.n_y_pixels; ++i) {
+        for (int j = 0; j < detector.n_z_pixels; ++j) {
+          int pixel_adr = i * detector.n_y_pixels + j;
+          cpu_rho[pixel_adr] = 0;
+          for (int block_id = 0; block_id < n_blocks; ++block_id) {
+
+            cpu_rho[i * detector.n_y_pixels + j] +=
+                cpu_output_rho[block_id * detector.n_y_pixels + pixel_adr];
+          }
+        }
+      }
+
+#else
       cudaMemcpy(cpu_rho, gpu_output_rho, image_size, cudaMemcpyDeviceToHost);
+#endif
 
       if (verbose) {
         cudaEventRecord(stop_mem_time);
@@ -215,6 +246,9 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   cudaFree(gpu_events_dl);
   cudaFree(gpu_output_rho);
   free(cpu_rho);
+#if USE_WARP_IMAGE_SPACE
+  free(cpu_output_rho);
+#endif
 }
 
 template void run_gpu_reconstruction<float>(

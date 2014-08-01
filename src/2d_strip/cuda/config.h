@@ -17,4 +17,14 @@
 #define MAX_THREADS_PER_BLOCK 512  // more does not make sense anyway
 
 // generic macro returning pixel location in linear memory
+
 #define PIXEL_INDEX(p) (((p).y * detector.n_z_pixels) + (p).x)
+#define WARP_BUFFER_PIXEL_INDEX(p) \
+  (warp_stride + ((p).y * detector.n_z_pixels) + (p).x)
+
+// performance analysis flags
+#define USE_KERNEL 1  // use kernel calculation - performance test
+#define USE_WARP_IMAGE_SPACE \
+  0  // use n_blocks * n_threads/warp_size image subspace - atomicAdd test
+#define THREAD_COALESCTED_ACCESS \
+  1  // linear coalescted access for each thread in warp

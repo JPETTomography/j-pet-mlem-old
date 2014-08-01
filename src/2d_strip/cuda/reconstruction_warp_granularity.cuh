@@ -20,11 +20,14 @@ __global__ void reconstruction(StripDetector<F> detector,
                                const int n_threads_per_block) {
   Kernel<F> kernel;
 
+  float full_acc = 0;
+
   const F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   const int n_warps_per_block = n_threads_per_block / WARP_SIZE;
   const int n_warps = n_blocks * n_warps_per_block;
   const int max_events_per_warp = (n_events + n_warps - 1) / n_warps;
   const int warp_index = threadIdx.x / WARP_SIZE;
+  const int warp_stride = blockIdx.x * detector.total_n_pixels;
 
 #if CACHE_ELLIPSE_PIXELS
   // gathers all pixel coordinates inside 3 sigma ellipse
@@ -123,12 +126,28 @@ __global__ void reconstruction(StripDetector<F> detector,
 
     F inv_acc = 1 / acc;
 
+    full_acc += acc;
+
 #if CACHE_ELLIPSE_PIXELS
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       short2 pixel = ellipse_pixels[p][threadIdx.x];
       F event_kernel_mul_rho = ellipse_kernel_mul_rho[p];
+#if USE_WARP_IMAGE_SPACE
+
+#if THREAD_COALESCTED_ACCESS
+
+      atomicAdd(&output_rho[blockIdx.x * blockDim.x + threadIdx.x],
+                event_kernel_mul_rho * inv_acc * sec_sq);
+#else
+
+      atomicAdd(&output_rho[WARP_BUFFER_PIXEL_INDEX(pixel)],
+                event_kernel_mul_rho * inv_acc * sec_sq);
+#endif
+
+#else
       atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                 event_kernel_mul_rho * inv_acc * sec_sq);
+#endif
     }
 #else
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
@@ -165,6 +184,12 @@ __global__ void reconstruction(StripDetector<F> detector,
     }
 #endif
   }
+#if 0
+    if (threadIdx.x == 0) {
+
+      printf("Full_Acc: %f\n", full_acc);
+    }
+#endif
 }
 
 template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
