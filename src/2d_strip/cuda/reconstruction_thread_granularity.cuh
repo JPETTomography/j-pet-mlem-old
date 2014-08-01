@@ -67,6 +67,7 @@ __global__ void reconstruction(StripDetector<F> detector,
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
 
+#if USE_KERNEL
           F event_kernel = kernel(y,
                                   tan,
                                   sec,
@@ -74,7 +75,11 @@ __global__ void reconstruction(StripDetector<F> detector,
                                   detector.radius,
                                   point,
                                   detector.inv_cor_mat_diag,
-                                  sqrt_det_cor_mat);
+                                  sqrt_det_cor_mat) *
+                           inv_pixel_sensitivity;
+#else
+          F event_kernel = 1;
+#endif
 
           acc += event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
         }
@@ -97,6 +102,8 @@ __global__ void reconstruction(StripDetector<F> detector,
 #else
           F inv_pixel_sensitivity = 1;
 #endif
+
+#if USE_KERNEL
           F event_kernel = kernel(y,
                                   tan,
                                   sec,
@@ -106,6 +113,9 @@ __global__ void reconstruction(StripDetector<F> detector,
                                   detector.inv_cor_mat_diag,
                                   sqrt_det_cor_mat) *
                            inv_pixel_sensitivity;
+#else
+          F event_kernel = 1;
+#endif
 
           atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                     event_kernel * tex2D(tex_rho, pixel.x, pixel.y) * inv_acc);
