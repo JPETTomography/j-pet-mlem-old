@@ -27,7 +27,6 @@ __global__ void reconstruction(StripDetector<F> detector,
   const int n_warps = n_blocks * n_warps_per_block;
   const int max_events_per_warp = (n_events + n_warps - 1) / n_warps;
   const int warp_index = threadIdx.x / WARP_SIZE;
-  const int warp_stride = blockIdx.x * detector.total_n_pixels;
 
 #if CACHE_ELLIPSE_PIXELS
   // gathers all pixel coordinates inside 3 sigma ellipse
@@ -131,23 +130,9 @@ __global__ void reconstruction(StripDetector<F> detector,
 #if CACHE_ELLIPSE_PIXELS
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       short2 pixel = ellipse_pixels[p][threadIdx.x];
-      F event_kernel_mul_rho = ellipse_kernel_mul_rho[p];
-#if USE_WARP_IMAGE_SPACE
 
-#if THREAD_COALESCTED_ACCESS
-
-      atomicAdd(&output_rho[blockIdx.x * blockDim.x + threadIdx.x],
-                event_kernel_mul_rho * inv_acc * sec_sq);
-#else
-
-      atomicAdd(&output_rho[WARP_BUFFER_PIXEL_INDEX(pixel)],
-                event_kernel_mul_rho * inv_acc * sec_sq);
-#endif
-
-#else
       atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
-                event_kernel_mul_rho * inv_acc * sec_sq);
-#endif
+                ellipse_kernel_mul_rho[p] * inv_acc);
     }
 #else
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {

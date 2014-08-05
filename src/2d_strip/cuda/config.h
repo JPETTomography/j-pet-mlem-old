@@ -8,7 +8,6 @@
 #define USE_SENSITIVITY 1       // use sensitivity texture
 #define CACHE_ELLIPSE_PIXELS 1  // shared memory pixel buffer in error ellipse
 #define NORMAL_PHANTOM 0
-#define USE_KERNEL 1 // use kernel calculation - for performance test
 
 // warp granulaty specific
 #define MAX_PIXELS_PER_THREAD 12   // this has been chosen arbitrarily,
@@ -24,7 +23,4 @@
 
 // performance analysis flags
 #define USE_KERNEL 1  // use kernel calculation - performance test
-#define USE_WARP_IMAGE_SPACE \
-  0  // use n_blocks * n_threads/warp_size image subspace - atomicAdd test
-#define THREAD_COALESCTED_ACCESS \
-  1  // linear coalescted access for each thread in warp
+#define USE_WARP_IMAGE_SPACE 0
