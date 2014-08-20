@@ -17,7 +17,7 @@
 
 #define BB_UPDATE 1
 
-template <typename FType = double> class Reconstruction {
+template <typename FType = double, template<typename Ft> class K = Kernel> class Reconstruction {
  public:
   typedef FType F;
   typedef StripDetector<FType> Detector;
@@ -36,7 +36,7 @@ template <typename FType = double> class Reconstruction {
   std::vector<F> sensitivity;
   std::vector<F> inv_sensitivity;
 
-  Kernel<F> kernel;
+  K<F> kernel;
 
  public:
   Reconstruction(F R_distance,
