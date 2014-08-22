@@ -4,7 +4,7 @@
 
 #include "util/cuda/debug.h"  // catches all CUDA errors
 #include "../event.h"
-
+#include "../kernel.h"
 #include "config.h"
 
 #if USE_SENSITIVITY
@@ -174,7 +174,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
       }
 
 #if __CUDACC__
-#define reconstruction reconstruction << <blocks, threads>>>
+#define reconstruction reconstruction<Kernel> << <blocks, threads>>>
 #endif
       reconstruction(detector,
                      gpu_events_z_u,

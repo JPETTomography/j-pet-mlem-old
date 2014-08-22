@@ -4,12 +4,11 @@
 
 #include "geometry/point.h"
 #include "../event.h"
-#include "../kernel.h"
 #include "../strip_detector.h"
 
 #include "config.h"
 
-template <typename F>
+template <template<typename Float> class K, typename F>
 __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
                                F* events_z_d,
@@ -18,7 +17,7 @@ __global__ void reconstruction(StripDetector<F> detector,
                                F* output_rho,
                                const int n_blocks,
                                const int n_threads_per_block) {
-  Kernel<F> kernel;
+  K<F> kernel;
 
   float full_acc = 0;
 
