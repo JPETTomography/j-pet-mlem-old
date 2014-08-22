@@ -45,7 +45,7 @@ template <typename FType = double> class Kernel {
   _ F operator()(const F y,
                  const F tan,
                  const F inv_cos,
-                 const F pow_inv_cos,
+                 const F pow_inv_cos, //what power?
                  const F R,
                  const Point pixel_center,
                  const FVec inv_cor_mat_diag,

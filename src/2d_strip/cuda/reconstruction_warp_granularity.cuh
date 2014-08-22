@@ -186,6 +186,7 @@ __device__ Pixel<> warp_space_pixel(int offset,
                                     int width,
                                     F inv_width,
                                     int& index) {
+         //threadIdx.x % WARP_SIZE + offset :  works for WARP_SIZE = 2^n
   index = (threadIdx.x & (WARP_SIZE - 1)) + offset;
   Pixel<> pixel;
   pixel.y = index * inv_width;
