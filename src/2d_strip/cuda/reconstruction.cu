@@ -22,7 +22,7 @@ void* safe_malloc(size_t size) {
   void* ptr;
   ptr = malloc(size);
   if (!ptr) {
-    fprintf(stderr,"canot allocate memeory");
+    fprintf(stderr, "cannot allocate memory");
     exit(7);
   }
   return ptr;
@@ -32,11 +32,49 @@ template <typename F> Events_SOA<F> malloc_events_soa(size_t n_events) {
   Events_SOA<F> soa;
   size_t mem_size = n_events * sizeof(F);
   soa.z_u = (F*)safe_malloc(mem_size);
-  soa.zdu = (F*)safe_malloc(mem_size);
+  soa.z_d = (F*)safe_malloc(mem_size);
   soa.dl = (F*)safe_malloc(mem_size);
   return soa;
 }
 
+template <typename F> void free_events_soa(Events_SOA<F> events) {
+  free(events.z_u);
+  free(events.z_d);
+  free(events.dl);
+}
+
+template <typename F>
+void transform_events_aos_to_soa(Events_SOA<F> dest,
+                                 Event<F>* source,
+                                 size_t n_events) {
+
+  for (int i = 0; i < n_events; ++i) {
+    dest.z_u[i] = source[i].z_u;
+    dest.z_d[i] = source[i].z_d;
+    dest.dl[i] = source[i].dl;
+  }
+}
+
+template <typename F> Events_SOA<F> cuda_malloc_events_soa(size_t n_events) {
+  Events_SOA<F> soa;
+  size_t mem_size = n_events * sizeof(F);
+
+  cudaMalloc(&soa.z_u, mem_size);
+  cudaMalloc(&soa.z_d, mem_size);
+  cudaMalloc(&soa.dl, mem_size);
+
+  return soa;
+}
+
+template <typename F>
+void copy_events_soa_to_device(Events_SOA<F> dest,
+                               Events_SOA<F> source,
+                               size_t n_events) {
+  size_t mem_size = n_events * sizeof(F);
+  cudaMemcpy(dest.z_u, source.z_u, mem_size, cudaMemcpyHostToDevice);
+  cudaMemcpy(dest.z_d, source.z_d, mem_size, cudaMemcpyHostToDevice);
+  cudaMemcpy(dest.dl, source.dl, mem_size, cudaMemcpyHostToDevice);
+}
 
 #if THREAD_GRANULARITY
 #include "reconstruction_thread_granularity.cuh"
@@ -72,7 +110,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 #endif
 
   size_t image_size = detector.total_n_pixels * sizeof(F);
-  size_t events_size = n_events * sizeof(F);
+
 
   const int width = detector.n_z_pixels;
   const int height = detector.n_y_pixels;
@@ -99,15 +137,12 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
     cpu_rho[i] = 100;
   }
 
-  F* cpu_events_z_u = (F*)malloc(events_size);
-  F* cpu_events_z_d = (F*)malloc(events_size);
-  F* cpu_events_dl = (F*)malloc(events_size);
 
-  for (int i = 0; i < n_events; ++i) {
-    cpu_events_z_u[i] = events[i].z_u;
-    cpu_events_z_d[i] = events[i].z_d;
-    cpu_events_dl[i] = events[i].dl;
-  }
+  Events_SOA<F> cpu_events = malloc_events_soa<F>(n_events);
+  transform_events_aos_to_soa(cpu_events, events, n_events);
+  Events_SOA<F> gpu_events = cuda_malloc_events_soa<F>(n_events);
+  copy_events_soa_to_device(gpu_events, cpu_events, n_events);
+  free_events_soa(cpu_events);
 
   cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
 
@@ -148,24 +183,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   cudaMalloc((void**)&gpu_output_rho, image_size);
 #endif
 
-  F* gpu_events_z_u;
-  F* gpu_events_z_d;
-  F* gpu_events_dl;
-
-  cudaMalloc((void**)&gpu_events_z_u, events_size);
-  cudaMalloc((void**)&gpu_events_z_d, events_size);
-  cudaMalloc((void**)&gpu_events_dl, events_size);
-
-  cudaMemcpy(
-      gpu_events_z_u, cpu_events_z_u, events_size, cudaMemcpyHostToDevice);
-  cudaMemcpy(
-      gpu_events_z_d, cpu_events_z_d, events_size, cudaMemcpyHostToDevice);
-  cudaMemcpy(gpu_events_dl, cpu_events_dl, events_size, cudaMemcpyHostToDevice);
-
-  free(cpu_events_z_u);
-  free(cpu_events_z_d);
-  free(cpu_events_dl);
-
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {
 
@@ -203,9 +220,9 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 #define reconstruction reconstruction<Kernel> << <blocks, threads>>>
 #endif
       reconstruction(detector,
-                     gpu_events_z_u,
-                     gpu_events_z_d,
-                     gpu_events_dl,
+                     gpu_events.z_u,
+                     gpu_events.z_d,
+                     gpu_events.dl,
                      n_events,
                      gpu_output_rho,
                      n_blocks,
@@ -267,9 +284,9 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 #endif
   cudaUnbindTexture(&tex_rho);
   cudaFree(gpu_rho);
-  cudaFree(gpu_events_z_u);
-  cudaFree(gpu_events_z_d);
-  cudaFree(gpu_events_dl);
+  cudaFree(gpu_events.z_u);
+  cudaFree(gpu_events.z_d);
+  cudaFree(gpu_events.dl);
   cudaFree(gpu_output_rho);
   free(cpu_rho);
 #if USE_WARP_IMAGE_SPACE
