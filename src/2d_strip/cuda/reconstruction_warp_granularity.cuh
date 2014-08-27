@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-template <template<typename Float> class K, typename F>
+template <template <typename Float> class K, typename F>
 __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
                                F* events_z_d,
@@ -60,8 +60,8 @@ __global__ void reconstruction(StripDetector<F> detector,
     // bounding box limits for event
     const int bb_half_width = n_pixels_in_line(bb_z, detector.pixel_width);
     const int bb_half_height = n_pixels_in_line(bb_y, detector.pixel_height);
-    const Pixel<> tl(center_pixel.x - bb_half_width,
-                     center_pixel.y - bb_half_height);
+    const Pixel<> top_left(center_pixel.x - bb_half_width,
+                           center_pixel.y - bb_half_height);
 
     const int bb_width = 2 * bb_half_width;
     const int bb_height = 2 * bb_half_height;
@@ -76,7 +76,7 @@ __global__ void reconstruction(StripDetector<F> detector,
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
       int index;
       Pixel<> pixel =
-          warp_space_pixel(offset, tl, bb_width, inv_bb_width, index);
+          warp_space_pixel(offset, top_left, bb_width, inv_bb_width, index);
 
       if (index >= bb_size)
         break;
@@ -137,7 +137,7 @@ __global__ void reconstruction(StripDetector<F> detector,
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
       int index;
       Pixel<> pixel =
-          warp_space_pixel(offset, tl, bb_width, inv_bb_width, index);
+          warp_space_pixel(offset, top_left, bb_width, inv_bb_width, index);
 
       if (index >= bb_size)
         break;
@@ -152,6 +152,7 @@ __global__ void reconstruction(StripDetector<F> detector,
 #else
         F inv_pixel_sensitivity = 1;
 #endif
+
         F event_kernel = kernel(y,
                                 tan,
                                 sec,
@@ -186,10 +187,10 @@ __device__ Pixel<> warp_space_pixel(int offset,
                                     int width,
                                     F inv_width,
                                     int& index) {
-         //threadIdx.x % WARP_SIZE + offset :  works for WARP_SIZE = 2^n
+  // threadIdx.x % WARP_SIZE + offset : works for WARP_SIZE = 2^n
   index = (threadIdx.x & (WARP_SIZE - 1)) + offset;
   Pixel<> pixel;
-  pixel.y = index * inv_width;
+  pixel.y = index * inv_width;  // index/width but faster
   pixel.x = index - width * pixel.y;
   pixel.x += tl.x;
   pixel.y += tl.y;

@@ -118,7 +118,6 @@ int main(int argc, char* argv[]) {
 
     png_writer png_true(output.wo_ext() + "_true.png");
     phantom.output_bitmap(png_true, true);
-
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
   } catch (const char* ex) {

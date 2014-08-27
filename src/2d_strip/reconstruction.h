@@ -17,7 +17,8 @@
 
 #define BB_UPDATE 1
 
-template <typename FType = double, template<typename Ft> class K = Kernel> class Reconstruction {
+template <typename FType = double, template <typename Ft> class K = Kernel>
+class Reconstruction {
  public:
   typedef FType F;
   typedef StripDetector<FType> Detector;

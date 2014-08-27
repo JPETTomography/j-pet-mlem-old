@@ -52,7 +52,7 @@ template <typename FType = double> class StripDetector {
         tl_z_half_w(tl_z + pixel_width / 2),
         inv_pow_sigma_z(1 / (sigma_z * sigma_z)),
         inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
-//Acounts for different initalisers in different compilers
+// Acounts for different initalisers in different compilers
 #if !__CUDACC__ && !_MSC_VER
         inv_cor_mat_diag{ 1 / (sigma_z * sigma_z),
                           1 / (sigma_z * sigma_z),
@@ -118,7 +118,7 @@ template <typename FType = double> class StripDetector {
                         inv_cor_mat_diag[2]);
   }
 
-  //TODO: Ellipse bounding box is actually a property of the kernel, not
+  // TODO: Ellipse bounding box is actually a property of the kernel, not
   //      detector.
 
   _ void ellipse_bb(F angle,
