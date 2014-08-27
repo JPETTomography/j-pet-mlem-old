@@ -130,6 +130,20 @@ int main(int argc, char* argv[]) {
         png_writer png(fn.str());
         reconstruction.output_bitmap(png);
       }
+
+    size_t iterations = n_iterations*n_blocks;
+    size_t events = reconstruction.n_events_procesed()/iterations;
+    size_t pixels = reconstruction.n_pixels_procesed()/iterations;
+    size_t kernels = reconstruction.n_kernel_calls()/iterations;
+    std::cout<<"iterations: "<<iterations<<" ";
+    std::cout << "events : " << events << " ";
+    std::cout << "pixels: " << pixels<< "(";
+    std::cout << (double)pixels / events;
+    std::cout << ") ";
+    std::cout << "kernel calls: " << kernels;
+    std::cout << "(";
+    std::cout << (double)kernels / events;
+    std::cout << ")" << std::endl;
     }
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
