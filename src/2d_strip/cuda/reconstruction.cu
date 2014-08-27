@@ -12,6 +12,32 @@ texture<float, 2, cudaReadModeElementType> tex_inv_sensitivity;
 #endif
 texture<float, 2, cudaReadModeElementType> tex_rho;
 
+template <typename F> struct Events_SOA {
+  F* z_u;
+  F* z_d;
+  F* dl;
+};
+
+void* safe_malloc(size_t size) {
+  void* ptr;
+  ptr = malloc(size);
+  if (!ptr) {
+    fprintf(stderr,"canot allocate memeory");
+    exit(7);
+  }
+  return ptr;
+}
+
+template <typename F> Events_SOA<F> malloc_events_soa(size_t n_events) {
+  Events_SOA<F> soa;
+  size_t mem_size = n_events * sizeof(F);
+  soa.z_u = (F*)safe_malloc(mem_size);
+  soa.zdu = (F*)safe_malloc(mem_size);
+  soa.dl = (F*)safe_malloc(mem_size);
+  return soa;
+}
+
+
 #if THREAD_GRANULARITY
 #include "reconstruction_thread_granularity.cuh"
 #elif WARP_GRANULARITY

@@ -8,6 +8,7 @@
 
 #include "config.h"
 
+
 template <template <typename Float> class K, typename F>
 __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
