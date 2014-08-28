@@ -1,6 +1,7 @@
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <algorithm>
 
 #include "util/cuda/debug.h"  // catches all CUDA errors
 #include "../event.h"
@@ -12,59 +13,13 @@ texture<float, 2, cudaReadModeElementType> tex_inv_sensitivity;
 #endif
 texture<float, 2, cudaReadModeElementType> tex_rho;
 
-template <typename F> struct Events_SOA {
-  F* z_u;
-  F* z_d;
-  F* dl;
-};
-
-void* safe_malloc(size_t size) {
-  void* ptr;
-  ptr = malloc(size);
-  if (!ptr) {
-    fprintf(stderr, "cannot allocate memory");
-    exit(7);
-  }
-  return ptr;
-}
-
-template <typename F> Events_SOA<F> malloc_events_soa(size_t n_events) {
-  Events_SOA<F> soa;
-  size_t mem_size = n_events * sizeof(F);
-  soa.z_u = (F*)safe_malloc(mem_size);
-  soa.z_d = (F*)safe_malloc(mem_size);
-  soa.dl = (F*)safe_malloc(mem_size);
-  return soa;
-}
-
-template <typename F> void free_events_soa(Events_SOA<F> events) {
-  free(events.z_u);
-  free(events.z_d);
-  free(events.dl);
-}
-
-template <typename F>
-void transform_events_aos_to_soa(Events_SOA<F> dest,
-                                 Event<F>* source,
-                                 size_t n_events) {
-
-  for (int i = 0; i < n_events; ++i) {
-    dest.z_u[i] = source[i].z_u;
-    dest.z_d[i] = source[i].z_d;
-    dest.dl[i] = source[i].dl;
-  }
-}
-
-template <typename F> Events_SOA<F> cuda_malloc_events_soa(size_t n_events) {
-  Events_SOA<F> soa;
-  size_t mem_size = n_events * sizeof(F);
-
-  cudaMalloc(&soa.z_u, mem_size);
-  cudaMalloc(&soa.z_d, mem_size);
-  cudaMalloc(&soa.dl, mem_size);
-
-  return soa;
-}
+#if THREAD_GRANULARITY
+#include "reconstruction_thread_granularity.cuh"
+#elif WARP_GRANULARITY
+#include "reconstruction_warp_granularity.cuh"
+#else
+#include "reconstruction_simple.cuh"
+#endif
 
 template <typename F>
 void copy_events_soa_to_device(Events_SOA<F> dest,
@@ -76,13 +31,15 @@ void copy_events_soa_to_device(Events_SOA<F> dest,
   cudaMemcpy(dest.dl, source.dl, mem_size, cudaMemcpyHostToDevice);
 }
 
-#if THREAD_GRANULARITY
-#include "reconstruction_thread_granularity.cuh"
-#elif WARP_GRANULARITY
-#include "reconstruction_warp_granularity.cuh"
-#else
-#include "reconstruction_simple.cuh"
-#endif
+template <typename F>
+void load_events_to_gpu(const Event<F>* events,
+                        Events_SOA<F> gpu_events,
+                        size_t n_events) {
+  Events_SOA<F> cpu_events = malloc_events_soa<F>(n_events);
+  transform_events_aos_to_soa(cpu_events, events, n_events);
+  copy_events_soa_to_device(gpu_events, cpu_events, n_events);
+  free_events_soa(cpu_events);
+}
 
 template <typename F>
 void run_gpu_reconstruction(StripDetector<F>& detector,
@@ -111,13 +68,12 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
   size_t image_size = detector.total_n_pixels * sizeof(F);
 
-
   const int width = detector.n_z_pixels;
   const int height = detector.n_y_pixels;
 
 #if USE_SENSITIVITY
-  F* cpu_inv_sensitivity = (F*)malloc(image_size);
-  F* cpu_sensitivity = (F*)malloc(image_size);
+  F* cpu_inv_sensitivity = (F*)safe_malloc(image_size);
+  F* cpu_sensitivity = (F*)safe_malloc(image_size);
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       Point<F> point = detector.pixel_center(Pixel<>(x, y));
@@ -131,18 +87,11 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   free(cpu_sensitivity);
 #endif
 
-  F* cpu_rho = (F*)malloc(image_size);
+  F* cpu_rho = (F*)safe_malloc(image_size);
+  std::fill_n(cpu_rho, F(100), detector.total_n_pixels);
 
-  for (int i = 0; i < detector.total_n_pixels; ++i) {
-    cpu_rho[i] = 100;
-  }
-
-
-  Events_SOA<F> cpu_events = malloc_events_soa<F>(n_events);
-  transform_events_aos_to_soa(cpu_events, events, n_events);
   Events_SOA<F> gpu_events = cuda_malloc_events_soa<F>(n_events);
-  copy_events_soa_to_device(gpu_events, cpu_events, n_events);
-  free_events_soa(cpu_events);
+  load_events_to_gpu(events, gpu_events, n_events);
 
   cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
 
