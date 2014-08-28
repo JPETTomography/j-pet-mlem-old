@@ -42,6 +42,24 @@ void load_events_to_gpu(const Event<F>* events,
 }
 
 template <typename F>
+void fill_with_sensitivity(F* sensitivity,
+                           F* inv_sensitivity,
+                           StripDetector<F>& detector) {
+
+ size_t width = detector.n_z_pixels;
+ size_t height = detector.n_y_pixels;
+
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      Point<F> point = detector.pixel_center(Pixel<>(x, y));
+      F pixel_sensitivity = detector.sensitivity(point);
+      sensitivity[y * width + x] = pixel_sensitivity;
+      inv_sensitivity[y * width + x] = 1 / pixel_sensitivity;
+    }
+  }
+}
+
+template <typename F>
 void run_gpu_reconstruction(StripDetector<F>& detector,
                             Event<F>* events,
                             int n_events,
@@ -71,31 +89,16 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   const int width = detector.n_z_pixels;
   const int height = detector.n_y_pixels;
 
-#if USE_SENSITIVITY
-  F* cpu_inv_sensitivity = (F*)safe_malloc(image_size);
-  F* cpu_sensitivity = (F*)safe_malloc(image_size);
-  for (int y = 0; y < height; ++y) {
-    for (int x = 0; x < width; ++x) {
-      Point<F> point = detector.pixel_center(Pixel<>(x, y));
-      F pixel_sensitivity = detector.sensitivity(point);
-      cpu_sensitivity[y * width + x] = pixel_sensitivity;
-      cpu_inv_sensitivity[y * width + x] = 1 / pixel_sensitivity;
-    }
-  }
-
-  output_callback(detector, -1, cpu_sensitivity, context);
-  free(cpu_sensitivity);
-#endif
-
-  F* cpu_rho = (F*)safe_malloc(image_size);
-  std::fill_n(cpu_rho, F(100), detector.total_n_pixels);
-
-  Events_SOA<F> gpu_events = cuda_malloc_events_soa<F>(n_events);
-  load_events_to_gpu(events, gpu_events, n_events);
-
   cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
 
 #if USE_SENSITIVITY
+  F* cpu_inv_sensitivity = (F*)safe_malloc(image_size);
+  F* cpu_sensitivity = (F*)safe_malloc(image_size);
+
+  fill_with_sensitivity(cpu_sensitivity, cpu_inv_sensitivity, detector);
+
+  output_callback(detector, -1, cpu_sensitivity, context);
+  free(cpu_sensitivity);
   F* gpu_inv_sensitivity;
   size_t pitch_inv_sensitivity;
   cudaMallocPitch(
@@ -108,6 +111,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                height,
                cudaMemcpyHostToDevice);
   free(cpu_inv_sensitivity);
+
   cudaBindTexture2D(NULL,
                     &tex_inv_sensitivity,
                     gpu_inv_sensitivity,
@@ -115,6 +119,19 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                     width,
                     height,
                     pitch_inv_sensitivity);
+
+
+#endif
+
+  F* cpu_rho = (F*)safe_malloc(image_size);
+  std::fill_n(cpu_rho, F(100), detector.total_n_pixels);
+
+  Events_SOA<F> gpu_events = cuda_malloc_events_soa<F>(n_events);
+  load_events_to_gpu(events, gpu_events, n_events);
+
+
+#if USE_SENSITIVITY
+
 #endif
 
   F* gpu_rho;
