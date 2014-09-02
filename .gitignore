@@ -34,6 +34,7 @@
 /*.svg
 /*.txt
 /build*/
+*.pyc
 
 # build files
 /Makefile
