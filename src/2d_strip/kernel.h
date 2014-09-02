@@ -27,15 +27,9 @@ template <typename FType = double> class Kernel {
            vec_a[2] * inv_cor_mat_diag[2] * vec_b[2];
   }
 
-#ifndef __CUDACC__
- public:
-  size_t n_invocations_;
-#endif
 
  public:
-#ifndef __CUDACC__
-  Kernel() : n_invocations_(0) {}
-#endif
+
 
   _ F test(const F y,
            const F z,
@@ -60,9 +54,7 @@ template <typename FType = double> class Kernel {
                  const FVec inv_cor_mat_diag,
                  const F sqrt_det_cor_mat) {
 
-#ifndef __CUDACC__
-    n_invocations_++;
-#endif
+
 
     FVec vec_o;
     FVec vec_a;
@@ -99,8 +91,5 @@ template <typename FType = double> class Kernel {
     return element_before_exp * exp;
   }
 
-#ifndef __CUDACC__
-  size_t reset_n_invocations() { n_invocations_ = 0; }
-  size_t n_invocations() { return n_invocations_; }
-#endif
+
 };
