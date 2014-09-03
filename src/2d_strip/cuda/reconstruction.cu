@@ -6,6 +6,7 @@
 #include "util/cuda/debug.h"  // catches all CUDA errors
 #include "../event.h"
 #include "../kernel.h"
+#include "events_soa.h"
 #include "config.h"
 
 #if USE_SENSITIVITY
@@ -22,42 +23,9 @@ texture<float, 2, cudaReadModeElementType> tex_rho;
 #endif
 
 template <typename F>
-void copy_events_soa_to_device(Events_SOA<F> dest,
-                               Events_SOA<F> source,
-                               size_t n_events) {
-  size_t mem_size = n_events * sizeof(F);
-  cudaMemcpy(dest.z_u, source.z_u, mem_size, cudaMemcpyHostToDevice);
-  cudaMemcpy(dest.z_d, source.z_d, mem_size, cudaMemcpyHostToDevice);
-  cudaMemcpy(dest.dl, source.dl, mem_size, cudaMemcpyHostToDevice);
-}
-
-template <typename F>
-void load_events_to_gpu(const Event<F>* events,
-                        Events_SOA<F> gpu_events,
-                        size_t n_events) {
-  Events_SOA<F> cpu_events = malloc_events_soa<F>(n_events);
-  transform_events_aos_to_soa(cpu_events, events, n_events);
-  copy_events_soa_to_device(gpu_events, cpu_events, n_events);
-  free_events_soa(cpu_events);
-}
-
-template <typename F>
 void fill_with_sensitivity(F* sensitivity,
                            F* inv_sensitivity,
-                           StripDetector<F>& detector) {
-
-  size_t width = detector.n_z_pixels;
-  size_t height = detector.n_y_pixels;
-
-  for (int y = 0; y < height; ++y) {
-    for (int x = 0; x < width; ++x) {
-      Point<F> point = detector.pixel_center(Pixel<>(x, y));
-      F pixel_sensitivity = detector.sensitivity(point);
-      sensitivity[y * width + x] = pixel_sensitivity;
-      inv_sensitivity[y * width + x] = 1 / pixel_sensitivity;
-    }
-  }
-}
+                           StripDetector<F>& detector);
 
 template <typename F>
 void run_gpu_reconstruction(StripDetector<F>& detector,
@@ -274,3 +242,21 @@ template void run_gpu_reconstruction<float>(
     int n_blocks,
     int n_threads_per_block,
     bool verbose);
+
+template <typename F>
+void fill_with_sensitivity(F* sensitivity,
+                           F* inv_sensitivity,
+                           StripDetector<F>& detector) {
+
+  size_t width = detector.n_z_pixels;
+  size_t height = detector.n_y_pixels;
+
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      Point<F> point = detector.pixel_center(Pixel<>(x, y));
+      F pixel_sensitivity = detector.sensitivity(point);
+      sensitivity[y * width + x] = pixel_sensitivity;
+      inv_sensitivity[y * width + x] = 1 / pixel_sensitivity;
+    }
+  }
+}
