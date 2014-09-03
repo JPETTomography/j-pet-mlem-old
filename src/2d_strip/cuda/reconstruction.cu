@@ -46,8 +46,8 @@ void fill_with_sensitivity(F* sensitivity,
                            F* inv_sensitivity,
                            StripDetector<F>& detector) {
 
- size_t width = detector.n_z_pixels;
- size_t height = detector.n_y_pixels;
+  size_t width = detector.n_z_pixels;
+  size_t height = detector.n_y_pixels;
 
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
