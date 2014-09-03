@@ -186,8 +186,7 @@ OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
   unsigned int* cpu_prng_seed;
 
   cpu_prng_seed =
-      (unsigned int*)malloc(number_of_blocks * number_of_threads_per_block * 4 *
-                            sizeof(unsigned int));
+      new unsigned int[number_of_blocks * number_of_threads_per_block * 4];
 
   fill_gpu_data(lookup_table_lors.data(),
                 lookup_table_pixel.data(),
@@ -294,7 +293,7 @@ OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
                    (iteration_per_thread * number_of_blocks *
                     number_of_threads_per_block) << std::endl;
 
-  free(cpu_prng_seed);
+  delete[] cpu_prng_seed;
 
   return output_matrix;
 }

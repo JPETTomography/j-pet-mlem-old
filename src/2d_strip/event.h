@@ -3,7 +3,6 @@
 #include <cmath>
 
 #include "util/cuda/compat.h"
-#include "util/utils.h"
 
 template <typename F> struct Event {
   F z_u;
@@ -85,17 +84,16 @@ template <typename F> Events_SOA<F> cuda_malloc_events_soa(size_t n_events) {
 
 template <typename F> Events_SOA<F> malloc_events_soa(size_t n_events) {
   Events_SOA<F> soa;
-  size_t mem_size = n_events * sizeof(F);
-  soa.z_u = (F*)safe_malloc(mem_size);
-  soa.z_d = (F*)safe_malloc(mem_size);
-  soa.dl = (F*)safe_malloc(mem_size);
+  soa.z_u = new F[n_events];
+  soa.z_d = new F[n_events];
+  soa.dl = new F[n_events];
   return soa;
 }
 
 template <typename F> void free_events_soa(Events_SOA<F> events) {
-  free(events.z_u);
-  free(events.z_d);
-  free(events.dl);
+  delete[] events.z_u;
+  delete[] events.z_d;
+  delete[] events.dl;
 }
 
 template <typename F>

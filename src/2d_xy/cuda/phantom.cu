@@ -32,8 +32,7 @@ void run_gpu_phantom(int number_of_threads_per_block,
   cudaSetDevice(1);
 
   cpu_prng_seed =
-      (unsigned int*)malloc(number_of_blocks * number_of_threads_per_block * 4 *
-                            sizeof(unsigned int));
+      new unsigned int[number_of_blocks * number_of_threads_per_block * 4];
 
   for (int i = 0; i < 4 * number_of_blocks * number_of_threads_per_block; ++i) {
 
@@ -51,8 +50,7 @@ void run_gpu_phantom(int number_of_threads_per_block,
     }
   }
 
-  MatrixElement* cpu_matrix =
-      (MatrixElement*)malloc(number_of_blocks * sizeof(MatrixElement));
+  MatrixElement* cpu_matrix = new MatrixElement[number_of_blocks];
 
   unsigned int* gpu_prng_seed;
   MatrixElement* gpu_MatrixElement;
