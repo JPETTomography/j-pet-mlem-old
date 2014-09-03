@@ -6,7 +6,7 @@
 #include "util/cuda/debug.h"  // catches all CUDA errors
 #include "../event.h"
 #include "../kernel.h"
-#include "events_soa.h"
+#include "gpu_events_soa.h"
 #include "config.h"
 
 #if USE_SENSITIVITY
@@ -93,12 +93,8 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   F* cpu_rho = new F[detector.total_n_pixels];
   std::fill_n(cpu_rho, F(100), detector.total_n_pixels);
 
-  Events_SOA<F> gpu_events = cuda_malloc_events_soa<F>(n_events);
-  load_events_to_gpu(events, gpu_events, n_events);
-
-#if USE_SENSITIVITY
-
-#endif
+  // this class allocated CUDA pointers and deallocated them in destructor
+  GPUEventsSOA<F> gpu_events(events, n_events);
 
   F* gpu_rho;
   size_t pitch_rho;
@@ -216,9 +212,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 #endif
   cudaUnbindTexture(&tex_rho);
   cudaFree(gpu_rho);
-  cudaFree(gpu_events.z_u);
-  cudaFree(gpu_events.z_d);
-  cudaFree(gpu_events.dl);
   cudaFree(gpu_output_rho);
   delete[] cpu_rho;
 #if USE_WARP_IMAGE_SPACE
