@@ -100,7 +100,7 @@ template <typename FType = double> class Kernel {
   }
 
 #ifndef __CUDACC__
-  size_t reset_n_invocations() { n_invocations_ = 0; }
+  void reset_n_invocations() { n_invocations_ = 0; }
   size_t n_invocations() { return n_invocations_; }
 #endif
 };
