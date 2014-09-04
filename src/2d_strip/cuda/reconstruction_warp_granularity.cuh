@@ -1,13 +1,12 @@
 #pragma once
 
-#include <cuda_runtime.h>
+#include <cuda.h>
 
 #include "geometry/point.h"
 #include "../event.h"
 #include "../strip_detector.h"
 
 #include "config.h"
-
 
 template <template <typename Float> class K, typename F>
 __global__ void reconstruction(StripDetector<F> detector,
@@ -19,7 +18,7 @@ __global__ void reconstruction(StripDetector<F> detector,
                                const int n_blocks,
                                const int n_threads_per_block) {
   K<F> kernel;
-  volatile int n = 1;
+
   float full_acc = 0;
 
   const F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
@@ -119,9 +118,28 @@ __global__ void reconstruction(StripDetector<F> detector,
       }
     }
 
+#if __CUDA_ARCH__ >= 300
+
     for (int xor_iter = 16; xor_iter >= 1; xor_iter /= 2) {
       acc += __shfl_xor(acc, xor_iter, WARP_SIZE);
     }
+#else
+    __shared__ float accumulator[MAX_THREADS_PER_BLOCK];
+    int tid = threadIdx.x;
+    int index = (tid & (WARP_SIZE - 1));
+    accumulator[threadIdx.x] = acc;
+    if (index < 16)
+      accumulator[tid] += accumulator[tid + 16];
+    if (index < 8)
+      accumulator[tid] += accumulator[tid + 8];
+    if (index < 4)
+      accumulator[tid] += accumulator[tid + 4];
+    if (index < 2)
+      accumulator[tid] += accumulator[tid + 2];
+    if (index < 1)
+      accumulator[tid] += accumulator[tid + 1];
+    acc = accumulator[tid & ~(WARP_SIZE - 1)];
+#endif
 
     F inv_acc = 1 / acc;
 
@@ -130,10 +148,9 @@ __global__ void reconstruction(StripDetector<F> detector,
 #if CACHE_ELLIPSE_PIXELS
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       short2 pixel = ellipse_pixels[p][threadIdx.x];
-//if(n > 0)
+      // if(n_blocks > 0)
       atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                 ellipse_kernel_mul_rho[p] * inv_acc);
-
     }
 #else
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {

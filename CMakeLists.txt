@@ -48,7 +48,7 @@ find_package(CUDA)
 if(CUDA_FOUND)
   add_definitions(-DHAVE_CUDA=1)
   include_directories(${CUDA_INCLUDE_DIRS})
-  list(APPEND CUDA_NVCC_FLAGS -arch=sm_30)
+  list(APPEND CUDA_NVCC_FLAGS -arch=compute_20 -code=sm_20,sm_30)
   list(APPEND CUDA_NVCC_FLAGS_RELEASE
     -Xptxas -v,-O3,-lineinfo
     --use_fast_math)
