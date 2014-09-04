@@ -15,7 +15,12 @@
 #define omp_get_thread_num() 0
 #endif
 
+#include "reconstruction_stats.h"
+
 #define BB_UPDATE 1
+
+#define READER(T, name) \
+  T name() { return stats_.total_##name##_; }
 
 template <typename FType = double, template <typename Ft> class K = Kernel>
 class Reconstruction {
@@ -39,13 +44,7 @@ class Reconstruction {
 
   K<F> kernel;
 
-  std::vector<size_t> n_events_procesed_;
-  std::vector<size_t> n_pixels_procesed_;
-  std::vector<size_t> n_kernel_calls_;
-
-  size_t total_n_events_procesed_;
-  size_t total_n_pixels_procesed_;
-  size_t total_n_kernel_calls_;
+  Stats<size_t> stats_;
 
  public:
   Reconstruction(F R_distance,
@@ -70,12 +69,7 @@ class Reconstruction {
         thread_rhos(n_threads),
         sensitivity(detector.total_n_pixels),
         inv_sensitivity(detector.total_n_pixels),
-        n_events_procesed_(n_threads, 0),
-        n_pixels_procesed_(n_threads, 0),
-        n_kernel_calls_(n_threads, 0),
-        total_n_events_procesed_(0),
-        total_n_pixels_procesed_(0),
-        total_n_kernel_calls_(0) {
+        stats_(n_threads) {
 
     for (int y = 0; y < detector.n_y_pixels; ++y) {
       for (int z = 0; z < detector.n_z_pixels; ++z) {
@@ -108,9 +102,7 @@ class Reconstruction {
                   int n_iterations,
                   int n_iterations_so_far = 0) {
 
-    std::fill_n(n_events_procesed_.begin(), n_threads, 0);
-    std::fill_n(n_pixels_procesed_.begin(), n_threads, 0);
-    std::fill_n(n_kernel_calls_.begin(), n_threads, 0);
+    stats_.fill(0);
 
     for (int iteration = 0; iteration < n_iterations; ++iteration) {
       for (auto& rho : thread_rhos) {
@@ -124,7 +116,7 @@ class Reconstruction {
 #endif
       for (int e = 0; e < n_events; ++e) {
         int thread = omp_get_thread_num();
-        n_events_procesed_[thread]++;
+        stats_.n_events_processed_[thread]++;
 #if BB_UPDATE
         auto event = events[e];
         F tan, y, z;
@@ -147,11 +139,7 @@ class Reconstruction {
         }
       }
     }
-    for (int thread = 0; thread < n_threads; ++thread) {
-      total_n_events_procesed_ += n_events_procesed_[thread];
-      total_n_kernel_calls_ += n_kernel_calls_[thread];
-      total_n_pixels_procesed_ += n_pixels_procesed_[thread];
-    }
+    stats_.collect();
   }
 
   // accessor for CUDA compatibility
@@ -211,6 +199,16 @@ class Reconstruction {
 
     const int bb_half_width = n_pixels_in_line(bb_z, detector.pixel_width);
     const int bb_half_height = n_pixels_in_line(bb_y, detector.pixel_height);
+
+    int thread_number = omp_get_thread_num();
+    stats_.bb_width_sum_[thread_number] += 2 * bb_half_width;
+    stats_.bb_height_sum_[thread_number] += 2 * bb_half_height;
+    stats_.bb_width2_sum_[thread_number] += 4 * bb_half_width * bb_half_width;
+    stats_.bb_height2_sum_[thread_number] +=
+        4 * bb_half_height * bb_half_height;
+    stats_.bb_width_height_sum_[thread_number] +=
+        4 * bb_half_width * bb_half_height;
+
     const Pixel tl(center_pixel.x - bb_half_width,
                    center_pixel.y - bb_half_height);
     const Pixel br(center_pixel.x + bb_half_width,
@@ -225,7 +223,7 @@ class Reconstruction {
 
     for (int iy = tl.y; iy < br.y; ++iy) {
       for (int iz = tl.x; iz < br.x; ++iz) {
-        n_pixels_procesed_[omp_get_thread_num()]++;
+        stats_.n_pixels_processed_[omp_get_thread_num()]++;
         Pixel pixel(iz, iy);
         Point point = detector.pixel_center(pixel);
 
@@ -235,7 +233,7 @@ class Reconstruction {
           int i = pixel.y * detector.n_y_pixels + pixel.x;
 
           F pixel_sensitivity = sensitivity[i];
-          n_kernel_calls_[omp_get_thread_num()]++;
+          stats_.n_kernel_calls_[omp_get_thread_num()]++;
           F event_kernel = kernel(y,
                                   tan,
                                   sec,
@@ -285,12 +283,12 @@ class Reconstruction {
 
     for (int iy = tl.y; iy < br.y; ++iy) {
       for (int iz = tl.x; iz < br.x; ++iz) {
-        n_pixels_procesed_[omp_get_thread_num()]++;
+        stats_.n_pixels_processed_[omp_get_thread_num()]++;
         Pixel pixel(iz, iy);
         Point point = detector.pixel_center(pixel);
 
         int i = pixel.y * detector.n_y_pixels + pixel.x;
-        n_kernel_calls_[omp_get_thread_num()]++;
+        stats_.n_kernel_calls_[omp_get_thread_num()]++;
         F event_kernel =
             kernel.test(y, z, point, detector.sigma_z, detector.sigma_dl);
         F event_kernel_mul_rho = event_kernel * rho[i];
@@ -311,7 +309,12 @@ class Reconstruction {
   }
 
  public:
-  size_t n_events_procesed() const { return total_n_events_procesed_; }
-  size_t n_pixels_procesed() const { return total_n_pixels_procesed_; }
-  size_t n_kernel_calls() const { return total_n_kernel_calls_; }
+  READER(size_t, n_events_processed);
+  READER(size_t, n_pixels_processed);
+  READER(size_t, n_kernel_calls);
+  READER(size_t, bb_width_sum);
+  READER(size_t, bb_width2_sum);
+  READER(size_t, bb_height_sum);
+  READER(size_t, bb_height2_sum);
+  READER(size_t, bb_width_height_sum);
 };

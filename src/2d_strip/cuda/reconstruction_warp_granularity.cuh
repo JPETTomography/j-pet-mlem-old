@@ -124,6 +124,7 @@ __global__ void reconstruction(StripDetector<F> detector,
       acc += __shfl_xor(acc, xor_iter, WARP_SIZE);
     }
 #else
+#if 1
     __shared__ float accumulator[MAX_THREADS_PER_BLOCK];
     int tid = threadIdx.x;
     int index = (tid & (WARP_SIZE - 1));
@@ -140,6 +141,7 @@ __global__ void reconstruction(StripDetector<F> detector,
       accumulator[tid] += accumulator[tid + 1];
     acc = accumulator[tid & ~(WARP_SIZE - 1)];
 #endif
+#endif
 
     F inv_acc = 1 / acc;
 
@@ -149,13 +151,13 @@ __global__ void reconstruction(StripDetector<F> detector,
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       short2 pixel = ellipse_pixels[p][threadIdx.x];
 
-      // if(n_blocks > 0)
-      atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
-                ellipse_kernel_mul_rho[p] * inv_acc);
-
+      if (n_blocks > 0)
+#ifndef __NO_ATOMIC__
         atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                   ellipse_kernel_mul_rho[p] * inv_acc);
-
+#else
+        output_rho[PIXEL_INDEX(pixel)] += ellipse_kernel_mul_rho[p] * inv_acc;
+#endif
     }
 #else
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {

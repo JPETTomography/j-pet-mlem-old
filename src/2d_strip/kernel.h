@@ -27,10 +27,7 @@ template <typename FType = double> class Kernel {
            vec_a[2] * inv_cor_mat_diag[2] * vec_b[2];
   }
 
-
  public:
-
-
   _ F test(const F y,
            const F z,
            const Point pixel_center,
@@ -53,8 +50,6 @@ template <typename FType = double> class Kernel {
                  const Point pixel_center,
                  const FVec inv_cor_mat_diag,
                  const F sqrt_det_cor_mat) {
-
-
 
     FVec vec_o;
     FVec vec_a;
@@ -90,6 +85,4 @@ template <typename FType = double> class Kernel {
 
     return element_before_exp * exp;
   }
-
-
 };
