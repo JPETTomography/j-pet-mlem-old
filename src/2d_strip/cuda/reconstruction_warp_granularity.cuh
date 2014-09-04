@@ -148,9 +148,14 @@ __global__ void reconstruction(StripDetector<F> detector,
 #if CACHE_ELLIPSE_PIXELS
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       short2 pixel = ellipse_pixels[p][threadIdx.x];
+
       // if(n_blocks > 0)
       atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                 ellipse_kernel_mul_rho[p] * inv_acc);
+
+        atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
+                  ellipse_kernel_mul_rho[p] * inv_acc);
+
     }
 #else
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {

@@ -6,6 +6,7 @@
 #include "util/cuda/debug.h"  // catches all CUDA errors
 #include "../event.h"
 #include "../kernel.h"
+#include "gpu_events_soa.h"
 #include "config.h"
 
 #if USE_SENSITIVITY
@@ -22,42 +23,9 @@ texture<float, 2, cudaReadModeElementType> tex_rho;
 #endif
 
 template <typename F>
-void copy_events_soa_to_device(Events_SOA<F> dest,
-                               Events_SOA<F> source,
-                               size_t n_events) {
-  size_t mem_size = n_events * sizeof(F);
-  cudaMemcpy(dest.z_u, source.z_u, mem_size, cudaMemcpyHostToDevice);
-  cudaMemcpy(dest.z_d, source.z_d, mem_size, cudaMemcpyHostToDevice);
-  cudaMemcpy(dest.dl, source.dl, mem_size, cudaMemcpyHostToDevice);
-}
-
-template <typename F>
-void load_events_to_gpu(const Event<F>* events,
-                        Events_SOA<F> gpu_events,
-                        size_t n_events) {
-  Events_SOA<F> cpu_events = malloc_events_soa<F>(n_events);
-  transform_events_aos_to_soa(cpu_events, events, n_events);
-  copy_events_soa_to_device(gpu_events, cpu_events, n_events);
-  free_events_soa(cpu_events);
-}
-
-template <typename F>
 void fill_with_sensitivity(F* sensitivity,
                            F* inv_sensitivity,
-                           StripDetector<F>& detector) {
-
- size_t width = detector.n_z_pixels;
- size_t height = detector.n_y_pixels;
-
-  for (int y = 0; y < height; ++y) {
-    for (int x = 0; x < width; ++x) {
-      Point<F> point = detector.pixel_center(Pixel<>(x, y));
-      F pixel_sensitivity = detector.sensitivity(point);
-      sensitivity[y * width + x] = pixel_sensitivity;
-      inv_sensitivity[y * width + x] = 1 / pixel_sensitivity;
-    }
-  }
-}
+                           StripDetector<F>& detector);
 
 template <typename F>
 void run_gpu_reconstruction(StripDetector<F>& detector,
@@ -92,13 +60,13 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
 
 #if USE_SENSITIVITY
-  F* cpu_inv_sensitivity = (F*)safe_malloc(image_size);
-  F* cpu_sensitivity = (F*)safe_malloc(image_size);
+  F* cpu_inv_sensitivity = new F[detector.total_n_pixels];
+  F* cpu_sensitivity = new F[detector.total_n_pixels];
 
   fill_with_sensitivity(cpu_sensitivity, cpu_inv_sensitivity, detector);
 
   output_callback(detector, -1, cpu_sensitivity, context);
-  free(cpu_sensitivity);
+  delete[] cpu_sensitivity;
   F* gpu_inv_sensitivity;
   size_t pitch_inv_sensitivity;
   cudaMallocPitch(
@@ -110,7 +78,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                sizeof(F) * width,
                height,
                cudaMemcpyHostToDevice);
-  free(cpu_inv_sensitivity);
+  delete[] cpu_inv_sensitivity;
 
   cudaBindTexture2D(NULL,
                     &tex_inv_sensitivity,
@@ -120,19 +88,13 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                     height,
                     pitch_inv_sensitivity);
 
-
 #endif
 
-  F* cpu_rho = (F*)safe_malloc(image_size);
+  F* cpu_rho = new F[detector.total_n_pixels];
   std::fill_n(cpu_rho, F(100), detector.total_n_pixels);
 
-  Events_SOA<F> gpu_events = cuda_malloc_events_soa<F>(n_events);
-  load_events_to_gpu(events, gpu_events, n_events);
-
-
-#if USE_SENSITIVITY
-
-#endif
+  // this class allocated CUDA pointers and deallocated them in destructor
+  GPUEventsSOA<F> gpu_events(events, n_events);
 
   F* gpu_rho;
   size_t pitch_rho;
@@ -144,7 +106,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 #if USE_WARP_IMAGE_SPACE
   cudaMalloc((void**)&gpu_output_rho, n_blocks * image_size);
   F* cpu_output_rho;
-  cpu_output_rho = (F*)malloc(n_blocks * image_size);
+  cpu_output_rho = new F[n_blocks * detector.total_n_pixels];
 #else
   cudaMalloc((void**)&gpu_output_rho, image_size);
 #endif
@@ -250,13 +212,10 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 #endif
   cudaUnbindTexture(&tex_rho);
   cudaFree(gpu_rho);
-  cudaFree(gpu_events.z_u);
-  cudaFree(gpu_events.z_d);
-  cudaFree(gpu_events.dl);
   cudaFree(gpu_output_rho);
-  free(cpu_rho);
+  delete[] cpu_rho;
 #if USE_WARP_IMAGE_SPACE
-  free(cpu_output_rho);
+  delete[] cpu_output_rho;
 #endif
 }
 
@@ -276,3 +235,21 @@ template void run_gpu_reconstruction<float>(
     int n_blocks,
     int n_threads_per_block,
     bool verbose);
+
+template <typename F>
+void fill_with_sensitivity(F* sensitivity,
+                           F* inv_sensitivity,
+                           StripDetector<F>& detector) {
+
+  size_t width = detector.n_z_pixels;
+  size_t height = detector.n_y_pixels;
+
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      Point<F> point = detector.pixel_center(Pixel<>(x, y));
+      F pixel_sensitivity = detector.sensitivity(point);
+      sensitivity[y * width + x] = pixel_sensitivity;
+      inv_sensitivity[y * width + x] = 1 / pixel_sensitivity;
+    }
+  }
+}
