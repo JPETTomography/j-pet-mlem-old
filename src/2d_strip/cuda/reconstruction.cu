@@ -46,6 +46,10 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                             bool verbose) {
 
   cudaSetDevice(device);
+  cudaDeviceProp prop;
+  cudaGetDeviceProperties(&prop, device);  
+
+  fprintf(stdout,"Running on %s", prop.name);
 
 #if __CUDACC__
   dim3 blocks(n_blocks);
