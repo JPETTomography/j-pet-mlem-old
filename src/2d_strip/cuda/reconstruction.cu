@@ -95,7 +95,9 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 #endif
 
   F* cpu_rho = new F[detector.total_n_pixels];
-  std::fill_n(cpu_rho, F(100), detector.total_n_pixels);
+  for (int i = 0; i < detector.total_n_pixels; ++i) {
+    cpu_rho[i] = 100;
+  }
 
   // this class allocated CUDA pointers and deallocated them in destructor
   GPUEventsSOA<F> gpu_events(events, n_events);
