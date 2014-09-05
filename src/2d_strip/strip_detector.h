@@ -52,18 +52,22 @@ template <typename FType = double> class StripDetector {
         tl_z_half_w(tl_z + pixel_width / 2),
         inv_pow_sigma_z(1 / (sigma_z * sigma_z)),
         inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
-// Acounts for different initalisers in different compilers
-#if !__CUDACC__ && !_MSC_VER
+// FIXME: workaround array initialization of const member on MSVC and CUDA
+#if !__CUDACC__
+#if !_MSC_VER
         inv_cor_mat_diag{ 1 / (sigma_z * sigma_z),
                           1 / (sigma_z * sigma_z),
                           1 / (sigma_dl * sigma_dl) },
-#elif _MSC_VER
-        inv_cor_mat_diag{ { 1 / (sigma_z * sigma_z),
-                            1 / (sigma_z * sigma_z),
-                            1 / (sigma_dl * sigma_dl) } },
+#else
+        // use std::array wrapper on MSVC as workaround
+        inv_cor_mat_diag(FVec{ 1 / (sigma_z * sigma_z),
+                               1 / (sigma_z * sigma_z),
+                               1 / (sigma_dl * sigma_dl) }),
+#endif
 #endif
         half_scintilator_length(scintilator_length / 2) {
 #if __CUDACC__
+    // initialize directly on CUDA as it does not support any of two above
     inv_cor_mat_diag[0] = inv_pow_sigma_z;
     inv_cor_mat_diag[1] = inv_pow_sigma_z;
     inv_cor_mat_diag[2] = inv_pow_sigma_dl;

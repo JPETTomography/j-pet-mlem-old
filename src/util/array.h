@@ -16,7 +16,9 @@ template <std::size_t MaxSize, typename T> class Array {
 #if __INTEL_COMPILER
   template <typename... Ts> Array(Ts... e) : s(sizeof...(e)), v{ e... } {}
 #elif _MSC_VER
-  template <typename... Ts> Array(Ts... e) : s(sizeof...(e)), v{ { e... } } {}
+  template <typename... Ts>
+  Array(Ts... e)
+      : s(sizeof...(e)), v(std::array<T, MaxSize>{ e... }) {}
 #else
   template <typename... Ts> Array(Ts&&... e) : s(sizeof...(e)), v{ e... } {}
 #endif
