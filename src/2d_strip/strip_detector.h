@@ -74,16 +74,16 @@ template <typename FType = double> class StripDetector {
 #endif
   }
 
-  Event<F> to_projection_space_tan(const ImageSpaceEventTan<F>& is_event) {
-    F z_u = is_event.z + (radius - is_event.y) * is_event.tan;
-    F z_d = is_event.z - (radius + is_event.y) * is_event.tan;
-    F dl = -2 * is_event.y * sqrt(is_event.tan * is_event.tan + 1);
-    return Event<F>(z_u, z_d, dl);
-  }
+  //  Event<F> to_projection_space_tan(const ImageSpaceEventTan<F>& is_event) {
+  //    F z_u = is_event.z + (radius - is_event.y) * is_event.tan;
+  //    F z_d = is_event.z - (radius + is_event.y) * is_event.tan;
+  //    F dl = -2 * is_event.y * sqrt(is_event.tan * is_event.tan + 1);
+  //    return Event<F>(z_u, z_d, dl);
+  //  }
 
-  Event<F> to_projection_space_angle(const ImageSpaceEventAngle<F>& is_ea) {
-    return to_angle(to_projection_space_angle(is_ea));
-  }
+  //  Event<F> to_projection_space_angle(const ImageSpaceEventAngle<F>& is_ea) {
+  //    return to_angle(to_projection_space_angle(is_ea));
+  //  }
 
   ImageSpaceEventTan<F> from_projection_space_tan(const Event<F>& event) {
     F tan, y, z;
@@ -91,9 +91,10 @@ template <typename FType = double> class StripDetector {
     return ImageSpaceEventTan<F>(y, z, tan);
   }
 
-  ImageSpaceEventAngle<F> from_projection_space_angle(const Event<F>& event) {
-    return to_angle(from_projection_space_tan(event));
-  }
+  //  ImageSpaceEventAngle<F> from_projection_space_angle(const Event<F>& event)
+  //  {
+  //    return to_angle(from_projection_space_tan(event));
+  //  }
 
   _ Point pixel_center(Pixel p) const {
     return Point(tl_z_half_w + p.x * pixel_width,

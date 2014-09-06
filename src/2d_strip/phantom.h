@@ -19,6 +19,55 @@
 
 template <typename F> int sgn(F val) { return (0 < val) - (val < 0); }
 
+template <typename F = double> class Ellipse {
+
+ public:
+  Ellipse(F x, F y, F a, F b, F angle_rad, F intensity)
+      : x_(x), y_(y), a_(a), b_(b), angle_(angle_rad) {
+    F c = std::cos(angle);
+    F s = std::sin(angle);
+    A_ = c * c / (a_ * a_) + s * s / (b_ * b_);
+    B_ = s * s / (a_ * a_) + c * c / (b_ * b_);
+    C_ = s * c(F(1.0) / (a_ * a_) - F(1.0) / (b_ * b_));
+    measure_= M_PI*a_*b_;
+  }
+
+  bool in(F x_a, F y_a) {
+    F x = x_a - x_;
+    F y = y_a - y_;
+    return (A_ * x * x + 2 * C_ * x * y + B_ * y * y) <= F(1.0);
+  };
+
+  F x() const { return x_; }
+  F y() const { return y_; }
+  F a() const { return a_; }
+  F b() const { return b_; }
+  F angle() const { return angle_; }
+  F measure() { return measure_;}
+
+ private:
+  F x_, y_;  // center
+  F a_, b_;
+  F angle_;
+  F A_, B_, C_;
+  F measure_;
+};
+
+
+template<typename F> class PhantomRegion {
+  PhantomRegion(const Ellipse& ellipse): ellipse_(ellipse), intensity_(intensity) {
+    weight_ = intensity_*ellipse_.measure();
+  }
+
+  bool in(F x, F y) const {return ellipse_.in(x,y);}
+  F weight() const {return weight_;}
+
+private:
+  Ellipse<F> ellipse_;
+  F intensity;
+  F weight_;
+};
+
 template <typename FType = double> class Phantom {
   typedef FType F;
   typedef std::pair<int, int> Pixel;
