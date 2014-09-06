@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "event.h"
+#include "geometry/ellipse.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -15,218 +16,146 @@
 #define omp_get_thread_num() 0
 #endif
 
-#define MAIN_PHANTOM 1
-
 template <typename F> int sgn(F val) { return (0 < val) - (val < 0); }
 
-template <typename F = double> class Ellipse {
-
+template <typename F> class PhantomRegion {
  public:
-  Ellipse(F x, F y, F a, F b, F angle_rad, F intensity)
-      : x_(x), y_(y), a_(a), b_(b), angle_(angle_rad) {
-    F c = std::cos(angle);
-    F s = std::sin(angle);
-    A_ = c * c / (a_ * a_) + s * s / (b_ * b_);
-    B_ = s * s / (a_ * a_) + c * c / (b_ * b_);
-    C_ = s * c(F(1.0) / (a_ * a_) - F(1.0) / (b_ * b_));
-    measure_= M_PI*a_*b_;
+  PhantomRegion(const Ellipse<F>& ellipse, F intensity)
+      : ellipse_(ellipse), intensity_(intensity) {
+    weight_ = intensity_ * ellipse_.measure();
   }
 
-  bool in(F x_a, F y_a) {
-    F x = x_a - x_;
-    F y = y_a - y_;
-    return (A_ * x * x + 2 * C_ * x * y + B_ * y * y) <= F(1.0);
-  };
-
-  F x() const { return x_; }
-  F y() const { return y_; }
-  F a() const { return a_; }
-  F b() const { return b_; }
-  F angle() const { return angle_; }
-  F measure() { return measure_;}
+  bool in(F x, F y) const { return ellipse_.in(x, y); }
+  F weight() const { return weight_; }
+  Ellipse<F> shape() const { return ellipse_; }
 
  private:
-  F x_, y_;  // center
-  F a_, b_;
-  F angle_;
-  F A_, B_, C_;
-  F measure_;
-};
-
-
-template<typename F> class PhantomRegion {
-  PhantomRegion(const Ellipse& ellipse): ellipse_(ellipse), intensity_(intensity) {
-    weight_ = intensity_*ellipse_.measure();
-  }
-
-  bool in(F x, F y) const {return ellipse_.in(x,y);}
-  F weight() const {return weight_;}
-
-private:
   Ellipse<F> ellipse_;
-  F intensity;
+  F intensity_;
   F weight_;
 };
 
-template <typename FType = double> class Phantom {
+template <typename D, typename FType = double> class Phantom {
   typedef FType F;
-  typedef std::pair<int, int> Pixel;
-  typedef std::pair<F, F> Point;
+  typedef ::Pixel<> Pixel;
   typedef std::minstd_rand0 rng;
 
  private:
-  int n_pixels;
-  F pixel_size;
-  F R_distance;
-  F scintillator_length;
-  F sin;
-  F cos;
-  F inv_a2;
-  F inv_b2;
-  F sigma_z;
-  F sigma_dl;
-  std::vector<EllipseParameters<F>> ellipse_list;
+  D detector_;
+
+  std::vector<PhantomRegion<F>> region_list;
+  std::vector<F> CDF_;
+  std::vector<EllipsePointsGenerator<F>> point_generators_;
+
   std::vector<Event<F>> events;
   std::vector<std::vector<F>> output;
   std::vector<std::vector<F>> output_without_errors;
 
+  std::uniform_real_distribution<F> uni_;
+  std::uniform_real_distribution<F> uniform_angle;
+
  public:
-  Phantom(std::vector<EllipseParameters<F>>& el,
-          int n_pixels,
-          F pixel_size,
-          F R_distance,
-          F Scintilator_length,
-          F sigma_z,
-          F sigma_dl)
-      : n_pixels(n_pixels),
-        pixel_size(pixel_size),
-        R_distance(R_distance),
-        scintillator_length(Scintilator_length),
-        sigma_z(sigma_z),
-        sigma_dl(sigma_dl) {
-    ellipse_list = el;
+  Phantom(const D& detector, const std::vector<PhantomRegion<F>>& el)
+      : detector_(detector), CDF_(el.size(), 0), uniform_angle(-1, 1) {
+    region_list = el;
+    CDF_[0] = region_list[0].weight();
+
+    for (size_t i = 1; i < el.size(); i++) {
+      CDF_[i] = region_list[i].weight() + CDF_[i - 1];
+    }
+    F norm = CDF_[el.size() - 1];
+    for (size_t i = 0; i < el.size(); i++) {
+      CDF_[i] /= norm;
+    }
+
+    for (size_t i = 0; i < el.size(); ++i)
+      point_generators_.push_back(EllipsePointsGenerator<F>(el[i].shape()));
+    int n_pixels = detector_.n_z_pixels;
     output.assign(n_pixels, std::vector<F>(n_pixels, 0));
     output_without_errors.assign(n_pixels, std::vector<F>(n_pixels, 0));
   }
 
-  bool in(F y, F z, EllipseParameters<F> el) const {
+  template <typename G> size_t choose_region(G& gen) {
+    F r = uni_(gen);
+    size_t i = 0;
 
-    F dy = (y - el.y);
-    F dz = (z - el.x);
-    F d1 = (sin * dy + cos * dz);  // y
-    F d2 = (sin * dz - cos * dy);  // z
+    while (r > CDF_[i])
+      ++i;
 
-    return (d1 * d1 / (el.a * el.a)) + (d2 * d2 / (el.b * el.b)) <= 1;
+    return i;
   }
 
-  void operator()() {
-    const F RADIAN = F(M_PI / 180);
+  template <typename G> Point<F> gen_point(G& gen) {
+  again:
+    size_t i_region = choose_region(gen);
+    Point<F> p = point_generators_[i_region].point(gen);
+    for (int j = 0; j < i_region; j++) {
+      if (region_list[j].shape().in(p.x, p.y))
+        goto again;
+    }
+    return p;
+  }
+
+  template <typename G> ImageSpaceEventAngle<F> gen_event(G& gen) {
+    Point<F> p = gen_point(gen);
+    F rangle = F(M_PI_4) * uniform_angle(gen);
+    return ImageSpaceEventAngle<F>(p.y, p.x, rangle);
+  }
+
+  void operator()(size_t n_emissions) {
 
     std::vector<std::vector<Event<F>>> event_list_per_thread(
         omp_get_max_threads());
 
-    // event_list_per_thread.resize(omp_get_max_threads());
+    rng rd;
+    std::vector<rng> rng_list;
 
-    for (auto& el : ellipse_list) {
+    for (int i = 0; i < omp_get_max_threads(); ++i) {
 
-      F max = std::max(el.a, el.b);
+      rng_list.push_back(rd);
+      rng_list[i].seed(42 + (3453 * i));
+      // OR
+      // Turn on leapfrogging with an offset that depends on the task id
+    }
 
-      std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
-                << el.angle << " " << el.n_emissions << std::endl;
+    for (int i = 0; i < omp_get_max_threads(); ++i)
+      event_list_per_thread[i].clear();
 
-      std::uniform_real_distribution<F> uniform_angle(-1, 1);
-      std::uniform_real_distribution<F> uniform_y(el.y - max, el.y + max);
-      std::uniform_real_distribution<F> uniform_z(el.x - max, el.x + max);
-      std::normal_distribution<F> normal_dist_dz(0, sigma_z);
-      std::normal_distribution<F> normal_dist_dl(0, sigma_dl);
-      rng rd;
-
-      std::vector<rng> rng_list;
-
-      for (int i = 0; i < omp_get_max_threads(); ++i) {
-
-        rng_list.push_back(rd);
-        rng_list[i].seed(42 + (3453 * i));
-        // OR
-        // Turn on leapfrogging with an offset that depends on the task id
-      }
-
-      sin = std::sin(el.angle * RADIAN);
-      cos = std::cos(el.angle * RADIAN);
-      inv_a2 = 1 / (el.a * el.a);
-      inv_b2 = 1 / (el.b * el.b);
-
-      int n_emissions = el.n_emissions;  // FIXME: el.n_emission is float
-      for (int i = 0; i < omp_get_max_threads(); ++i)
-        event_list_per_thread[i].clear();
 #if _OPENMP
 #pragma omp for schedule(static)
 #endif
-      for (int emission = 0; emission < n_emissions; ++emission) {
+    for (int emission = 0; emission < n_emissions; ++emission) {
 
-#if MAIN_PHANTOM
-        F ry = uniform_y(rng_list[omp_get_thread_num()]);
-        F rz = uniform_z(rng_list[omp_get_thread_num()]);
-        F rangle = F(M_PI_4) * uniform_angle(rng_list[omp_get_thread_num()]);
+      auto event = gen_event(rng_list[omp_get_thread_num()]);
 
-        if (in(ry, rz, el) /* && std::abs(rangle) != M_PI_2 */) {
-          F z_u, z_d, dl;
+      auto res = detector_.detect_event(event, rng_list[omp_get_thread_num()]);
+      if (res.second) {
 
-          z_u = rz + (R_distance - ry) * std::tan(rangle);
-          z_d = rz - (R_distance + ry) * std::tan(rangle);
-          dl = -2 * ry * std::sqrt(1 + (std::tan(rangle) * std::tan(rangle)));
+        ImageSpaceEventTan<F> revent =
+            detector_.from_projection_space_tan(res.first);
 
-          z_u += normal_dist_dz(rng_list[omp_get_thread_num()]);
-          z_d += normal_dist_dz(rng_list[omp_get_thread_num()]);
-          dl += normal_dist_dl(rng_list[omp_get_thread_num()]);
+        Pixel pp = detector_.pixel_location(Point<F>(event.z, event.y));
+        Pixel p = detector_.pixel_location(Point<F>(revent.z, revent.y));
 
-          if (std::abs(z_u) < scintillator_length / 2 &&
-              std::abs(z_d) < scintillator_length / 2) {
+        output[p.y][p.x]++;
+        output_without_errors[pp.y][pp.x]++;
 
-            Event<F> event(z_u, z_d, dl);
-
-            F tan, y, z;
-            event.transform(R_distance, tan, y, z);
-
-            Pixel p = pixel_location(y, z);
-            Pixel pp = pixel_location(ry, rz);
-
-            output[p.first][p.second]++;
-            output_without_errors[pp.first][pp.second]++;
-
-            event_list_per_thread[omp_get_thread_num()].push_back(event);
-          }
-        }
-#else
-        F ry = el.y + normal_dist_dl(rng_list[omp_get_thread_num()]);
-        F rz = el.x + normal_dist_dz(rng_list[omp_get_thread_num()]);
-
-        F y = ry;
-        F z = rz;
-
-        Pixel p = pixel_location(x, y);
-        Pixel pp = pixel_location(0, 0);
-
-        output[p.first][p.second]++;
-        output_without_errors[pp.first][pp.second]++;
-
-        Event<F> event(ry, rz, dl);
-        event_list_per_thread[omp_get_thread_num()].push_back(event);
-#endif
+        event_list_per_thread[omp_get_thread_num()].push_back(res.first);
       }
-
-      for (int i = 0; i < omp_get_max_threads(); ++i) {
-        events.insert(events.end(),
-                      event_list_per_thread[i].begin(),
-                      event_list_per_thread[i].end());
-      }
-
-      std::cout << "VECTOR SIZE: " << events.size() << std::endl;
     }
+
+    for (int i = 0; i < omp_get_max_threads(); ++i) {
+      events.insert(events.end(),
+                    event_list_per_thread[i].begin(),
+                    event_list_per_thread[i].end());
+    }
+
+    std::cout << "Detected  " << events.size() << " events" << std::endl;
   }
 
   template <class FileWriter>
   void output_bitmap(FileWriter& fw, bool wo_errors = false) {
+    int n_pixels = detector_.n_z_pixels;
     fw.template write_header<>(n_pixels, n_pixels);
 
     auto& target_output = wo_errors ? output_without_errors : output;
@@ -247,11 +176,6 @@ template <typename FType = double> class Phantom {
       }
       fw.write_row(row);
     }
-  }
-
-  // coord Plane
-  Pixel pixel_location(F y, F z) {
-    return Pixel((R_distance - y) / pixel_size, (R_distance + z) / pixel_size);
   }
 
   template <typename StreamType> Phantom& operator>>(StreamType& out) {

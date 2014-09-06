@@ -16,10 +16,13 @@
 #include "util/png_writer.h"
 
 #include "phantom.h"
+#include "strip_detector.h"
 
 #if _OPENMP
 #include <omp.h>
 #endif
+
+const double RADIAN = M_PI / 180;
 
 int main(int argc, char* argv[]) {
 
@@ -67,10 +70,8 @@ int main(int argc, char* argv[]) {
     double sigma_dl = cl.get<double>("s-dl");
     double emissions = cl.get<double>("emissions");
 
-    typedef EllipseParameters<double> Ellipse;
-    std::vector<Ellipse> ellipse_list;
-
-    double normalized_acceptance = 0;
+    // typedef EllipseParameters<double> Ellipse;
+    std::vector<PhantomRegion<double>> ellipse_list;
 
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);
@@ -83,31 +84,29 @@ int main(int argc, char* argv[]) {
         if (!(iss >> x >> y >> a >> b >> angle >> acceptance))
           break;
 
-        Ellipse el(x, y, a, b, angle, acceptance);
+        Ellipse<double> el(x, y, a, b, angle * RADIAN);
 
-        normalized_acceptance += acceptance;
+        std::cout << el.x() << " " << el.y() << " " << el.a() << " " << el.b()
+                  << " " << el.angle() << " " << el.A() << " " << el.B() << " "
+                  << el.C() << std::endl;
+        PhantomRegion<double> region(el, acceptance);
 
-        std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
-                  << el.angle << " " << el.n_emissions << std::endl;
-
-        ellipse_list.push_back(el);
+        ellipse_list.push_back(region);
       }
     }
 
-    for (auto& el : ellipse_list) {
-      el.n_emissions *= emissions / normalized_acceptance;
-      std::cout << el.n_emissions << std::endl;
-    }
+    Phantom<StripDetector<double>, double> phantom(
+        StripDetector<double>(R_distance,
+                              scintillator_length,
+                              n_pixels,
+                              n_pixels,
+                              pixel_size,
+                              pixel_size,
+                              sigma_z,
+                              sigma_dl),
+        ellipse_list);
 
-    Phantom<Ellipse::F> phantom(ellipse_list,
-                                n_pixels,
-                                pixel_size,
-                                R_distance,
-                                scintillator_length,
-                                sigma_z,
-                                sigma_dl);
-
-    phantom();
+    phantom(emissions);
 
     auto output = cl.get<cmdline::path>("output");
     obstream out(output);

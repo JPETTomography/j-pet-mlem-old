@@ -4,6 +4,10 @@
 #include <array>
 #endif
 
+#if !__CUDACC__
+#include <random>
+#endif
+
 #include "event.h"
 
 #include "geometry/pixel.h"
@@ -34,7 +38,7 @@ template <typename FType = double> class StripDetector {
                 F center_y = 0,
                 F center_z = 0)
       : radius(radius),
-        scintilator_length(scintilator_length),
+        scintillator_length(scintilator_length),
         n_y_pixels(n_y_pixels),
         n_z_pixels(n_z_pixels),
         total_n_pixels(n_y_pixels * n_z_pixels),
@@ -54,6 +58,8 @@ template <typename FType = double> class StripDetector {
         inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
 // FIXME: workaround array initialization of const member on MSVC and CUDA
 #if !__CUDACC__
+        normal_dist_dz(0, sigma_z),
+        normal_dist_dl(0, sigma_dl),
 #if !_MSC_VER
         inv_cor_mat_diag{ 1 / (sigma_z * sigma_z),
                           1 / (sigma_z * sigma_z),
@@ -74,27 +80,29 @@ template <typename FType = double> class StripDetector {
 #endif
   }
 
-  //  Event<F> to_projection_space_tan(const ImageSpaceEventTan<F>& is_event) {
-  //    F z_u = is_event.z + (radius - is_event.y) * is_event.tan;
-  //    F z_d = is_event.z - (radius + is_event.y) * is_event.tan;
-  //    F dl = -2 * is_event.y * sqrt(is_event.tan * is_event.tan + 1);
-  //    return Event<F>(z_u, z_d, dl);
-  //  }
+  Event<F> to_projection_space_tan(
+      const ImageSpaceEventTan<F>& is_event) const {
+    F z_u = is_event.z + (radius - is_event.y) * is_event.tan;
+    F z_d = is_event.z - (radius + is_event.y) * is_event.tan;
+    F dl = -2 * is_event.y * sqrt(is_event.tan * is_event.tan + 1);
+    return Event<F>(z_u, z_d, dl);
+  }
 
-  //  Event<F> to_projection_space_angle(const ImageSpaceEventAngle<F>& is_ea) {
-  //    return to_angle(to_projection_space_angle(is_ea));
-  //  }
+  Event<F> to_projection_space_angle(
+      const ImageSpaceEventAngle<F>& is_ea) const {
+    return to_projection_space_tan(is_ea.to_tan());
+  }
 
-  ImageSpaceEventTan<F> from_projection_space_tan(const Event<F>& event) {
+  ImageSpaceEventTan<F> from_projection_space_tan(const Event<F>& event) const {
     F tan, y, z;
     event.transform(radius, tan, y, z);
     return ImageSpaceEventTan<F>(y, z, tan);
   }
 
-  //  ImageSpaceEventAngle<F> from_projection_space_angle(const Event<F>& event)
-  //  {
-  //    return to_angle(from_projection_space_tan(event));
-  //  }
+  ImageSpaceEventAngle<F> from_projection_space_angle(
+      const Event<F>& event) const {
+    return from_projection_space_tan(event).to_angle();
+  }
 
   _ Point pixel_center(Pixel p) const {
     return Point(tl_z_half_w + p.x * pixel_width,
@@ -158,8 +166,34 @@ template <typename FType = double> class StripDetector {
     return (A * dy * dy) + (B * dy * dz) + (C * dz * dz) <= 9;
   }
 
+#if !__CUDACC__
+  template <typename G>
+  std::pair<Event<F>, bool> detect_event(ImageSpaceEventAngle<F> is_event,
+                                         G& gen) {
+
+    Event<F> ps_event = to_projection_space_angle(is_event);
+
+    F z_u, z_d, dl;
+    z_u = ps_event.z_u;
+    z_d = ps_event.z_d;
+    dl = ps_event.dl;
+
+    z_u += normal_dist_dz(gen);
+    z_d += normal_dist_dz(gen);
+    dl += normal_dist_dl(gen);
+
+    if (std::abs(z_u) < scintillator_length / 2 &&
+        std::abs(z_d) < scintillator_length / 2) {
+
+      Event<F> event(z_u, z_d, dl);
+      return std::make_pair(event, true);
+    } else
+      return std::make_pair(Event<F>(0, 0, 0), false);
+  }
+#endif
+
   const F radius;
-  const F scintilator_length;
+  const F scintillator_length;
   const int n_y_pixels;
   const int n_z_pixels;
   const int total_n_pixels;
@@ -181,6 +215,10 @@ template <typename FType = double> class StripDetector {
 
  private:
   const F half_scintilator_length;
+#if !__CUDACC__
+  std::normal_distribution<F> normal_dist_dz;
+  std::normal_distribution<F> normal_dist_dl;
+#endif
 
   _ F bb_z(F A, F C, F B_2) const { return 3 / compat::sqrt(C - (B_2 / A)); }
   _ F bb_y(F A, F C, F B_2) const { return 3 / compat::sqrt(A - (B_2 / C)); }
