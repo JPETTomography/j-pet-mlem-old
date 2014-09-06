@@ -46,13 +46,13 @@ template <typename FType = double> class Phantom {
           int n_pixels,
           F pixel_size,
           F R_distance,
-          F Scentilator_length,
+          F Scintilator_length,
           F sigma_z,
           F sigma_dl)
       : n_pixels(n_pixels),
         pixel_size(pixel_size),
         R_distance(R_distance),
-        scintillator_length(Scentilator_length),
+        scintillator_length(Scintilator_length),
         sigma_z(sigma_z),
         sigma_dl(sigma_dl) {
     ellipse_list = el;
@@ -73,16 +73,17 @@ template <typename FType = double> class Phantom {
   void operator()() {
     const F RADIAN = F(M_PI / 180);
 
-    std::vector<std::vector<Event<F>>> event_list_per_thread;
+    std::vector<std::vector<Event<F>>> event_list_per_thread(
+        omp_get_max_threads());
 
-    event_list_per_thread.resize(omp_get_max_threads());
+    // event_list_per_thread.resize(omp_get_max_threads());
 
     for (auto& el : ellipse_list) {
 
       F max = std::max(el.a, el.b);
 
       std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
-                << el.angle << std::endl;
+                << el.angle << " " << el.n_emissions << std::endl;
 
       std::uniform_real_distribution<F> uniform_angle(-1, 1);
       std::uniform_real_distribution<F> uniform_y(el.y - max, el.y + max);
@@ -107,6 +108,8 @@ template <typename FType = double> class Phantom {
       inv_b2 = 1 / (el.b * el.b);
 
       int n_emissions = el.n_emissions;  // FIXME: el.n_emission is float
+      for (int i = 0; i < omp_get_max_threads(); ++i)
+        event_list_per_thread[i].clear();
 #if _OPENMP
 #pragma omp for schedule(static)
 #endif
