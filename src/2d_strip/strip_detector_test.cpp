@@ -1,52 +1,77 @@
 #include "catch.hpp"
+#include <vector>
 #include <cmath>
+
+#include "util/png_writer.h"
+#include "util/bstream.h"
+#include "util/svg_ostream.h"
 
 #include "strip_detector.h"
 
-const double degree = M_PI / 180.0;
+TEST_CASE("strip/detector/pixel_location") {
 
-TEST_CASE("strip/detector/conversions1") {
-  StripDetector<> detector(450.0, 200.0, 200, 200, 5.0, 5.0, 10, 63);
+  StripDetector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
-  ImageSpaceEventAngle<> img_angle(10.0, 20.0, 7.0 * degree);
-  ImageSpaceEventTan<> img_tan = img_angle.to_tan();
-  CHECK(img_tan.y == Approx(10.0).epsilon(1e-13));
-  CHECK(img_tan.z == Approx(20.0).epsilon(1e-13));
-  CHECK(img_tan.tan == Approx(0.1227845609029046).epsilon(1e-13));
+  CHECK(detector.pixel_location(Point<>(0.0, 0.0)) == Pixel<>(100, 100));
 
-  Event<> proj = detector.to_projection_space_tan(img_tan);
-
-  CHECK(proj.z_u == Approx(74.02520679727803).epsilon(1e-13));
-  CHECK(proj.z_d == Approx(-36.480898015336116).epsilon(1e-13));
-  CHECK(proj.dl == Approx(-20.15019650917697).epsilon(1e-13));
-
-  ImageSpaceEventAngle<> re_img_angle =
-      detector.from_projection_space_angle(proj);
-
-  CHECK(re_img_angle.y == Approx(img_angle.y).epsilon(1e-13));
-  CHECK(re_img_angle.z == Approx(img_angle.z).epsilon(1e-13));
-  CHECK(re_img_angle.angle == Approx(img_angle.angle).epsilon(1e-13));
+  // test boundary points
+  CHECK(detector.pixel_location(Point<>(500.0, -500.0)) == Pixel<>(0, 0));
+  CHECK(detector.pixel_location(Point<>(500.0, 500.0)) == Pixel<>(0, 200));
+  CHECK(detector.pixel_location(Point<>(-500.0, -500.0)) == Pixel<>(200, 0));
+  CHECK(detector.pixel_location(Point<>(-500.0, 500.0)) == Pixel<>(200, 200));
 }
 
-TEST_CASE("strip/detector/conversions2") {
-  StripDetector<> detector(450.0, 200.0, 200, 200, 5.0, 5.0, 10, 63);
+TEST_CASE("strip/detector/pixel_center") {
 
-  ImageSpaceEventAngle<> img_angle(-10.0, 37.0, -5.0 * degree);
-  ImageSpaceEventTan<> img_tan = img_angle.to_tan();
-  CHECK(img_tan.y == Approx(-10.0).epsilon(1e-13));
-  CHECK(img_tan.z == Approx(37.0).epsilon(1e-13));
-  CHECK(img_tan.tan == Approx(-0.08748866352592401).epsilon(1e-13));
+  // space->image_space  y: [R,-R] ->[0,n_pixels_y], z:[-L/2,L/2] ->
+  // [0,n_pixels_z]
+  StripDetector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
-  Event<> proj = detector.to_projection_space_tan(img_tan);
+  // test middle point pixel center
+  CHECK(detector.pixel_center(detector.pixel_location(Point<>(0.0, 0.0))) ==
+        Point<>(-2.5, 2.5));
+  // test -y,+z
+  CHECK(detector.pixel_center(detector.pixel_location(Point<>(-6.0, 3.0))) ==
+        Point<>(-7.5, 2.5));
+  // test +y,+z
+  CHECK(detector.pixel_center(detector.pixel_location(Point<>(6.0, 3.0))) ==
+        Point<>(7.5, 2.5));
+  // test +y,-z
+  CHECK(detector.pixel_center(detector.pixel_location(Point<>(6.0, -3.0))) ==
+        Point<>(7.5, -2.5));
+  // test -y,-z
+  CHECK(detector.pixel_center(detector.pixel_location(Point<>(-6.0, -3.0))) ==
+        Point<>(-7.5, -2.5));
+}
 
-  CHECK(proj.z_u == Approx(-3.244785221925042).epsilon(1e-13));
-  CHECK(proj.z_d == Approx(75.49501195140655).epsilon(1e-13));
-  CHECK(proj.dl == Approx(20.076396750866948).epsilon(1e-13));
+TEST_CASE("strip/detector/bbox") {
 
-  ImageSpaceEventAngle<> re_img_angle =
-      detector.from_projection_space_angle(proj);
+  StripDetector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
-  CHECK(re_img_angle.y == Approx(img_angle.y).epsilon(1e-13));
-  CHECK(re_img_angle.z == Approx(img_angle.z).epsilon(1e-13));
-  CHECK(re_img_angle.angle == Approx(img_angle.angle).epsilon(1e-13));
+  struct {
+    double angle;
+    double bby_value;
+    double bbz_value;
+  } v[] = { { 0.0470448, 94.3954, 21.6737 },
+            { -0.594145, 78.3053, 56.9959 },
+            { 0.20029, 92.6108, 28.3458 },
+            { -0.571667, 79.4745, 55.3539 },
+            { -0.420542, 86.266, 44.0276 } };
+
+  for (int i = 0; i < sizeof(v) / sizeof(*v); ++i) {
+    auto inv_pow_sigma_dl = (1.0 / (detector.sigma_dl * detector.sigma_dl));
+    auto inv_pow_sigma_z = (1.0 / (detector.sigma_z * detector.sigma_z));
+    auto angle = v[i].angle;
+    auto bby_value = v[i].bby_value;
+    auto bbz_value = v[i].bbz_value;
+
+    auto A = ((4.0 / (cos(angle) * cos(angle))) * inv_pow_sigma_dl) +
+             (2.0 * tan(angle) * tan(angle) * inv_pow_sigma_z);
+    auto B = -4.0 * tan(angle) * inv_pow_sigma_z;
+    auto C = 2.0 * inv_pow_sigma_z;
+    auto B_2 = (B / 2.0) * (B / 2.0);
+
+    CHECK(detector.bb_y(A, C, B_2) == Approx(bby_value).epsilon(1e-4));
+    CHECK(detector.bb_z(A, C, B_2) == Approx(bbz_value).epsilon(1e-4));
+  }
 }
