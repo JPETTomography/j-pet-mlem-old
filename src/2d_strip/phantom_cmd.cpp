@@ -40,7 +40,9 @@ int main(int argc, char* argv[]) {
         "r-distance", 'r', "R distance between scientilators", false, 500);
     cl.add<double>("s-length", 'l', "scintillator length", false, 1000);
     cl.add<double>("p-size", 'p', "pixel size", false, 5);
-    cl.add<int>("n-pixels", 'n', "number of pixels", false, 200);
+    cl.add<int>("n-pixels", 'n', "number of pixels", false);
+    cl.add<int>("n-z-pixels", '\0', "number of z pixels", false);
+    cl.add<int>("n-y-pixels", '\0', "number of y pixels", false);
     cl.add<double>("s-z", 's', "Sigma z error", false, 10);
     cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
     cl.add<double>("emissions", 'e', "number of emissions", false, 500000);
@@ -65,7 +67,7 @@ int main(int argc, char* argv[]) {
     double R_distance = cl.get<double>("r-distance");
     double scintillator_length = cl.get<double>("s-length");
     double pixel_size = cl.get<double>("p-size");
-    int n_pixels = cl.get<int>("n-pixels");
+
     double sigma_z = cl.get<double>("s-z");
     double sigma_dl = cl.get<double>("s-dl");
     double emissions = cl.get<double>("emissions");
@@ -73,6 +75,22 @@ int main(int argc, char* argv[]) {
     // typedef EllipseParameters<double> Ellipse;
     std::vector<PhantomRegion<double>> ellipse_list;
 
+    int n_z_pixels;
+    int n_y_pixels;
+    if (cl.exist("n-pixels")) {
+      n_z_pixels = cl.get<int>("n-pixels");
+      n_y_pixels = cl.get<int>("n-pixels");
+    } else {
+      if (cl.exist("n-z-pixels"))
+        n_z_pixels = cl.get<int>("n-z-pixels");
+      else
+        n_z_pixels = (int)std::ceil(scintillator_length / pixel_size);
+
+      if (cl.exist("n-y-pixels"))
+        n_y_pixels = cl.get<int>("nyz-pixels");
+      else
+        n_y_pixels = (int)std::ceil(2 * R_distance / pixel_size);
+    }
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);
       std::string line;
@@ -98,8 +116,8 @@ int main(int argc, char* argv[]) {
     Phantom<StripDetector<double>, double> phantom(
         StripDetector<double>(R_distance,
                               scintillator_length,
-                              n_pixels,
-                              n_pixels,
+                              n_y_pixels,
+                              n_z_pixels,
                               pixel_size,
                               pixel_size,
                               sigma_z,

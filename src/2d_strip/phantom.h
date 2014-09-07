@@ -70,11 +70,10 @@ template <typename D, typename FType = double> class Phantom {
 
     for (size_t i = 0; i < el.size(); ++i)
       point_generators_.push_back(EllipsePointsGenerator<F>(el[i].shape()));
-    int n_pixels = detector_.n_z_pixels;
 
-    std::cerr<<"n pixels = "<<n_pixels<<std::endl;
-    output.assign(n_pixels, std::vector<F>(n_pixels, 0));
-    output_without_errors.assign(n_pixels, std::vector<F>(n_pixels, 0));
+    output.assign(detector_.n_y_pixels, std::vector<F>(detector_.n_z_pixels, 0));
+    output_without_errors.assign(detector_.n_y_pixels,
+                                 std::vector<F>(detector_.n_z_pixels, 0));
   }
 
   template <typename G> size_t choose_region(G& gen) {
@@ -105,8 +104,6 @@ template <typename D, typename FType = double> class Phantom {
   }
 
   void operator()(size_t n_emissions) {
-
-    std::cerr<<"emitting"<<std::endl;
 
     std::vector<std::vector<Event<F>>> event_list_per_thread(
         omp_get_max_threads());
@@ -141,10 +138,8 @@ template <typename D, typename FType = double> class Phantom {
         Pixel pp = detector_.pixel_location(Point<F>(event.z, event.y));
         Pixel p = detector_.pixel_location(Point<F>(revent.z, revent.y));
 
-
-
-       output[p.y][p.x]++;
-       output_without_errors[pp.y][pp.x]++;
+        output[p.y][p.x]++;
+        output_without_errors[pp.y][pp.x]++;
 
         event_list_per_thread[omp_get_thread_num()].push_back(res.first);
       }
