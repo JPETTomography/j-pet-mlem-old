@@ -77,7 +77,7 @@ template <typename F> F rad(F deg) { return deg * F(M_PI) / 180; }
 
 #ifdef TEST_CASE
 namespace Catch {
-  template <typename FType> struct StringMaker<::Point<FType>> {
+  template <typename FType> struct StringMaker</**/ ::Point<FType>> {
     static std::string convert(const ::Point<FType>& p) {
       std::ostringstream oss;
       oss << "(" << p.x << ", " << p.y << ")";

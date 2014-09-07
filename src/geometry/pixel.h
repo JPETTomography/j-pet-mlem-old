@@ -40,7 +40,7 @@ template <typename SType = int> class Pixel {
 
 #ifdef TEST_CASE
 namespace Catch {
-  template <typename SType> struct StringMaker<::Pixel<SType>> {
+  template <typename SType> struct StringMaker</**/ ::Pixel<SType>> {
     static std::string convert(const ::Pixel<SType>& p) {
       std::ostringstream oss;
       oss << "(" << p.x << ", " << p.y << ")";
