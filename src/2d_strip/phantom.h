@@ -71,6 +71,8 @@ template <typename D, typename FType = double> class Phantom {
     for (size_t i = 0; i < el.size(); ++i)
       point_generators_.push_back(EllipsePointsGenerator<F>(el[i].shape()));
     int n_pixels = detector_.n_z_pixels;
+
+    std::cerr<<"n pixels = "<<n_pixels<<std::endl;
     output.assign(n_pixels, std::vector<F>(n_pixels, 0));
     output_without_errors.assign(n_pixels, std::vector<F>(n_pixels, 0));
   }
@@ -103,6 +105,8 @@ template <typename D, typename FType = double> class Phantom {
   }
 
   void operator()(size_t n_emissions) {
+
+    std::cerr<<"emitting"<<std::endl;
 
     std::vector<std::vector<Event<F>>> event_list_per_thread(
         omp_get_max_threads());
@@ -137,8 +141,10 @@ template <typename D, typename FType = double> class Phantom {
         Pixel pp = detector_.pixel_location(Point<F>(event.z, event.y));
         Pixel p = detector_.pixel_location(Point<F>(revent.z, revent.y));
 
-        output[p.y][p.x]++;
-        output_without_errors[pp.y][pp.x]++;
+
+
+       output[p.y][p.x]++;
+       output_without_errors[pp.y][pp.x]++;
 
         event_list_per_thread[omp_get_thread_num()].push_back(res.first);
       }
@@ -155,8 +161,8 @@ template <typename D, typename FType = double> class Phantom {
 
   template <class FileWriter>
   void output_bitmap(FileWriter& fw, bool wo_errors = false) {
-    int n_pixels = detector_.n_z_pixels;
-    fw.template write_header<>(n_pixels, n_pixels);
+
+    fw.template write_header<>(detector_.n_z_pixels, detector_.n_y_pixels);
 
     auto& target_output = wo_errors ? output_without_errors : output;
     F output_max = 0;
@@ -168,9 +174,9 @@ template <typename D, typename FType = double> class Phantom {
     auto output_gain =
         static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-    uint8_t* row = (uint8_t*)alloca(n_pixels);
-    for (int y = 0; y < n_pixels; ++y) {
-      for (auto x = 0; x < n_pixels; ++x) {
+    uint8_t* row = (uint8_t*)alloca(detector_.n_z_pixels);
+    for (int y = 0; y < detector_.n_y_pixels; ++y) {
+      for (auto x = 0; x < detector_.n_z_pixels; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -
                  output_gain * target_output[y][x];
       }

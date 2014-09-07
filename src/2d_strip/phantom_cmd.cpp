@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
     double R_distance = cl.get<double>("r-distance");
     double scintillator_length = cl.get<double>("s-length");
     double pixel_size = cl.get<double>("p-size");
-    double n_pixels = scintillator_length / pixel_size;
+    int n_pixels = cl.get<int>("n-pixels");
     double sigma_z = cl.get<double>("s-z");
     double sigma_dl = cl.get<double>("s-dl");
     double emissions = cl.get<double>("emissions");
