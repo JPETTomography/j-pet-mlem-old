@@ -80,12 +80,21 @@ int main(int argc, char* argv[]) {
     auto R_distance = cl.get<double>("r-distance");
     auto scintillator_length = cl.get<double>("s-length");
     auto pixel_size = cl.get<double>("p-size");
-    auto n_pixels = scintillator_length / pixel_size;
+
     auto sigma = cl.get<double>("s-z");
     auto dl = cl.get<double>("s-dl");
 
-    Reconstruction<double> reconstruction(
-        R_distance, scintillator_length, n_pixels, pixel_size, sigma, dl);
+    int n_z_pixels = (int)std::ceil(scintillator_length / pixel_size);
+    int n_y_pixels = (int)std::ceil(2 * R_distance / pixel_size);
+    std::cerr<<n_y_pixels<<"x"<<n_z_pixels<<std::endl;
+    Reconstruction<double> reconstruction(R_distance,
+                                          scintillator_length,
+                                          n_y_pixels,
+                                          n_z_pixels,
+                                          pixel_size,
+                                          pixel_size,
+                                          sigma,
+                                          dl);
 
     for (auto& fn : cl.rest()) {
       ibstream in(fn);
@@ -100,8 +109,14 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-      Reconstruction<float> sp_reconstruction(
-          R_distance, scintillator_length, n_pixels, pixel_size, sigma, dl);
+      Reconstruction<float> sp_reconstruction(R_distance,
+                                              scintillator_length,
+                                              n_y_pixels,
+                                              n_z_pixels,
+                                              pixel_size,
+                                              pixel_size,
+                                              sigma,
+                                              dl);
       run_gpu_reconstruction(sp_reconstruction.detector,
                              reconstruction.get_event_list(),
                              n_blocks,

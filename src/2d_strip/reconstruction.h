@@ -230,7 +230,7 @@ class Reconstruction {
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
 
-          int i = pixel.y * detector.n_y_pixels + pixel.x;
+          int i = pixel.y * detector.n_z_pixels + pixel.x;
 
           F pixel_sensitivity = sensitivity[i];
           stats_.n_kernel_calls_[omp_get_thread_num()]++;
@@ -257,7 +257,7 @@ class Reconstruction {
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       auto pixel = ellipse_pixels[p];
       auto pixel_kernel = ellipse_kernel_mul_rho[p];
-      int i = pixel.y * detector.n_y_pixels + pixel.x;
+      int i = pixel.y * detector.n_z_pixels + pixel.x;
       output_rho[i] += pixel_kernel * inv_acc;
     }
   }
@@ -287,7 +287,7 @@ class Reconstruction {
         Pixel pixel(iz, iy);
         Point point = detector.pixel_center(pixel);
 
-        int i = pixel.y * detector.n_y_pixels + pixel.x;
+        int i = pixel.y * detector.n_z_pixels + pixel.x;
         stats_.n_kernel_calls_[omp_get_thread_num()]++;
         F event_kernel =
             kernel.test(y, z, point, detector.sigma_z, detector.sigma_dl);
