@@ -5,7 +5,7 @@
 
 #include "circle.h"
 
-TEST_CASE("circle/init", "circle initialization") {
+TEST_CASE("geometry/2d_xy/circle/init", "circle initialization") {
   Circle<> c1(1.);
 
   CHECK(c1.radius() == 1.);
@@ -17,7 +17,7 @@ TEST_CASE("circle/init", "circle initialization") {
   CHECK(c2.radius2() == Approx(2.));
 }
 
-TEST_CASE("circle/secant") {
+TEST_CASE("geometry/2d_xy/circle/secant") {
   Circle<> c(1);
 
   SECTION("angle-0", "0 degrees from (0, 0)") {
@@ -70,7 +70,7 @@ TEST_CASE("circle/secant") {
   }
 }
 
-TEST_CASE("circle/secant/math", "[math]") {
+TEST_CASE("geometry/2d_xy/circle/secant/math") {
   std::ifstream in("secant.test");
 
   if (!in) {

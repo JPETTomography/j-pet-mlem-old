@@ -65,7 +65,7 @@ TEST_CASE("strip/sensitivity/non_square") {
 }
 
 #if DONT_TEST
-TEST_CASE("strip/kernel/ctor1", "[ctor]") {
+TEST_CASE("strip/kernel/ctor1") {
 
   StripDetector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
@@ -77,7 +77,7 @@ TEST_CASE("strip/kernel/ctor1", "[ctor]") {
 }
 #endif
 
-TEST_CASE("strip/kernel/ctor2", "[ctor]") {
+TEST_CASE("strip/kernel/ctor2") {
 
   StripDetector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 

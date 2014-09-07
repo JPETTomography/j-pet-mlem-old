@@ -4,7 +4,7 @@
 
 #include "phantom.h"
 
-TEST_CASE("phantom/elliptical_region") {
+TEST_CASE("2d_xy/phantom/elliptical_region") {
 
   EllipticalRegion<> disk(Point<>(1, 1), 2, 2, 0, 0.5);
   EllipticalRegion<> region(Point<>(0, 1), 1, 0.5, M_PI / 3, 0.75);
@@ -25,7 +25,7 @@ TEST_CASE("phantom/elliptical_region") {
   }
 }
 
-TEST_CASE("phantom/phantom") {
+TEST_CASE("2d_xy/phantom/phantom") {
 
   Phantom<> phantom;
   phantom.push_back(EllipticalRegion<>(Point<>(1, 1), 2, 2, 0, 0.5));
