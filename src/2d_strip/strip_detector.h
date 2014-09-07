@@ -92,7 +92,7 @@ template <typename FType = double> class StripDetector {
   }
 
   ImageSpaceEventAngle<F> from_projection_space_angle(const Event<F>& event) {
-    return to_angle(from_projection_space_tan(event));
+    return from_projection_space_tan(event).to_angle();
   }
 
   _ Point pixel_center(Pixel p) const {
@@ -157,6 +157,9 @@ template <typename FType = double> class StripDetector {
     return (A * dy * dy) + (B * dy * dz) + (C * dz * dz) <= 9;
   }
 
+  _ F bb_z(F A, F C, F B_2) const { return 3 / compat::sqrt(C - (B_2 / A)); }
+  _ F bb_y(F A, F C, F B_2) const { return 3 / compat::sqrt(A - (B_2 / C)); }
+
   const F radius;
   const F scintilator_length;
   const int n_y_pixels;
@@ -180,7 +183,4 @@ template <typename FType = double> class StripDetector {
 
  private:
   const F half_scintilator_length;
-
-  _ F bb_z(F A, F C, F B_2) const { return 3 / compat::sqrt(C - (B_2 / A)); }
-  _ F bb_y(F A, F C, F B_2) const { return 3 / compat::sqrt(A - (B_2 / C)); }
 };

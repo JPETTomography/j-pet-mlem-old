@@ -37,3 +37,15 @@ template <typename SType = int> class Pixel {
     return y < p.y || (y == p.y && x < p.x);
   }
 };
+
+#ifdef TEST_CASE
+namespace Catch {
+  template <typename SType> struct StringMaker<::Pixel<SType>> {
+    static std::string convert(const ::Pixel<SType>& p) {
+      std::ostringstream oss;
+      oss << "(" << p.x << ", " << p.y << ")";
+      return oss.str();
+    }
+  };
+}
+#endif

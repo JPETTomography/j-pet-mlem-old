@@ -6,53 +6,52 @@
 
 TEST_CASE("phantom/elliptical_region") {
 
-  EllipticalRegion disk(1.0, 1.0, 2.0, 2.0, 0.0, 0.5);
-  EllipticalRegion region(0, 1, 1, 0.5, M_PI / 3.0, 0.75);
+  EllipticalRegion<> disk(Point<>(1, 1), 2, 2, 0, 0.5);
+  EllipticalRegion<> region(Point<>(0, 1), 1, 0.5, M_PI / 3, 0.75);
 
-  SECTION("getter", "") {
+  SECTION("getter") {
     REQUIRE(disk.activity() == 0.5);
     REQUIRE(region.activity() == 0.75);
   }
 
-  SECTION("in", "") {
-    REQUIRE(true == disk.in(1, 1));
-    REQUIRE(true == disk.in(1.563, -0.8545));
-    REQUIRE(false == disk.in(-0.677, -2.5));
+  SECTION("operator()") {
+    REQUIRE(true == /***/ disk(Point<>(1, 1)));
+    REQUIRE(true == /***/ disk(Point<>(1.563, -0.8545)));
+    REQUIRE(false == /**/ disk(Point<>(-0.677, -2.5)));
 
-    REQUIRE(true == region.in(-0.328, 0.26));
-    REQUIRE(true == region.in(0.4371, 1.792));
-    REQUIRE(false == region.in(1, 1));
+    REQUIRE(true == /***/ region(Point<>(-0.328, 0.26)));
+    REQUIRE(true == /***/ region(Point<>(0.4371, 1.792)));
+    REQUIRE(false == /**/ region(Point<>(1, 1)));
   }
 }
 
 TEST_CASE("phantom/phantom") {
 
-  // Phantom phantom(-3, -3, 3, 3);
-  Phantom phantom;
-  phantom.add_region(1.0, 1.0, 2.0, 2.0, 0.0, 0.5);
-  phantom.add_region(0, 1, 1, 0.5, M_PI / 3.0, 0.75);
+  Phantom<> phantom;
+  phantom.push_back(EllipticalRegion<>(Point<>(1, 1), 2, 2, 0, 0.5));
+  phantom.push_back(EllipticalRegion<>(Point<>(0, 1), 1, 0.5, M_PI / 3, 0.75));
 
-  SECTION("activity", "") {
-    REQUIRE(0.5 == phantom.activity(1, 1));
-    REQUIRE(0.5 == phantom.activity(1.563, -0.8545));
-    REQUIRE(0.0 == phantom.activity(-0.677, -2.5));
+  SECTION("activity") {
+    REQUIRE(0.50 == phantom.activity(Point<>(1, 1)));
+    REQUIRE(0.50 == phantom.activity(Point<>(1.563, -0.8545)));
+    REQUIRE(0.00 == phantom.activity(Point<>(-0.677, -2.5)));
 
-    REQUIRE(0.75 == phantom.activity(-0.328, 0.26));
-    REQUIRE(0.75 == phantom.activity(0.4371, 1.792));
+    REQUIRE(0.75 == phantom.activity(Point<>(-0.328, 0.26)));
+    REQUIRE(0.75 == phantom.activity(Point<>(0.4371, 1.792)));
   }
 
-  SECTION("emit", "") {
-    REQUIRE(false == phantom.test_emit(1, 1, .75));
-    REQUIRE(true == phantom.test_emit(1, 1, .45));
-    REQUIRE(false == phantom.test_emit(1.563, -0.8545, .51));
-    REQUIRE(true == phantom.test_emit(1.563, -0.8545, .10));
-    REQUIRE(false == phantom.test_emit(-0.677, -2.5, .1));
-    REQUIRE(false == phantom.test_emit(-0.677, -2.5, .25));
-    REQUIRE(false == phantom.test_emit(-0.677, -2.5, 0.001));
+  SECTION("emit") {
+    REQUIRE(false == /**/ phantom.test_emit(Point<>(1, 1), .75));
+    REQUIRE(true == /***/ phantom.test_emit(Point<>(1, 1), .45));
+    REQUIRE(false == /**/ phantom.test_emit(Point<>(1.563, -0.8545), .51));
+    REQUIRE(true == /***/ phantom.test_emit(Point<>(1.563, -0.8545), .10));
+    REQUIRE(false == /**/ phantom.test_emit(Point<>(-0.677, -2.5), .1));
+    REQUIRE(false == /**/ phantom.test_emit(Point<>(-0.677, -2.5), .25));
+    REQUIRE(false == /**/ phantom.test_emit(Point<>(-0.677, -2.5), 0.001));
 
-    REQUIRE(false == phantom.test_emit(-0.328, 0.26, .76));
-    REQUIRE(true == phantom.test_emit(-0.328, 0.26, .74));
-    REQUIRE(false == phantom.test_emit(0.4371, 1.792, .77));
-    REQUIRE(true == phantom.test_emit(0.4371, 1.792, .73));
+    REQUIRE(false == /**/ phantom.test_emit(Point<>(-0.328, 0.26), .76));
+    REQUIRE(true == /***/ phantom.test_emit(Point<>(-0.328, 0.26), .74));
+    REQUIRE(false == /**/ phantom.test_emit(Point<>(0.4371, 1.792), .77));
+    REQUIRE(true == /***/ phantom.test_emit(Point<>(0.4371, 1.792), .73));
   }
 }

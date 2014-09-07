@@ -4,7 +4,7 @@
 
 TEST_CASE("square_detector/intersection") {
 
-  SquareDetector<> d(2., 1.);
+  SquareDetector<> d(2., 1., 0.);
 
   CHECK(d[0].x == 1.);
   CHECK(d[0].y == .5);
