@@ -58,7 +58,7 @@ TEST_CASE("strip/detector/bbox") {
             { -0.571667, 79.4745, 55.3539 },
             { -0.420542, 86.266, 44.0276 } };
 
-  for (int i = 0; i < sizeof(v) / sizeof(*v); ++i) {
+  for (size_t i = 0; i < sizeof(v) / sizeof(*v); ++i) {
     auto inv_pow_sigma_dl = (1.0 / (detector.sigma_dl * detector.sigma_dl));
     auto inv_pow_sigma_z = (1.0 / (detector.sigma_z * detector.sigma_z));
     auto angle = v[i].angle;

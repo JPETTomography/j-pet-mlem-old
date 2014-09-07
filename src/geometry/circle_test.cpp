@@ -79,7 +79,7 @@ TEST_CASE("geometry/2d_xy/circle/secant/math") {
   }
 
   double r;
-  int n_detectors;
+  int n_detectors = 0;
   in >> r;
   in >> n_detectors;
 
