@@ -4,7 +4,8 @@
 
 #include "util/cuda/compat.h"
 
-template <typename F> struct Event {
+template <typename FType = double> struct Event {
+  typedef FType F;
   F z_u;
   F z_d;
   F dl;
@@ -29,9 +30,10 @@ template <typename F> struct Event {
   }
 };
 
-template <typename F> struct ImageSpaceEventTan;
+template <typename FType = double> struct ImageSpaceEventTan;
 
-template <typename F> struct ImageSpaceEventAngle {
+template <typename FType = double> struct ImageSpaceEventAngle {
+  typedef FType F;
   const F y;
   const F z;
   const F angle;
@@ -43,7 +45,8 @@ template <typename F> struct ImageSpaceEventAngle {
   }
 };
 
-template <typename F> struct ImageSpaceEventTan {
+template <typename FType> struct ImageSpaceEventTan {
+  typedef FType F;
   const F y;
   const F z;
   const F tan;
@@ -55,7 +58,7 @@ template <typename F> struct ImageSpaceEventTan {
   }
 };
 
-template <typename FType> struct EllipseParameters {
+template <typename FType = double> struct EllipseParameters {
   typedef FType F;
   F x, y, a, b;
   F angle;

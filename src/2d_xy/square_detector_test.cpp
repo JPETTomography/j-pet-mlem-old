@@ -2,9 +2,9 @@
 
 #include "square_detector.h"
 
-TEST_CASE("square_detector/intersection") {
+TEST_CASE("2d_xy/square_detector/intersection") {
 
-  SquareDetector<> d(2., 1.);
+  SquareDetector<> d(2., 1., 0.);
 
   CHECK(d[0].x == 1.);
   CHECK(d[0].y == .5);

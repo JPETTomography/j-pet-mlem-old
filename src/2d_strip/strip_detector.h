@@ -192,6 +192,9 @@ template <typename FType = double> class StripDetector {
   }
 #endif
 
+  _ F bb_z(F A, F C, F B_2) const { return 3 / compat::sqrt(C - (B_2 / A)); }
+  _ F bb_y(F A, F C, F B_2) const { return 3 / compat::sqrt(A - (B_2 / C)); }
+
   const F radius;
   const F scintillator_length;
   const int n_y_pixels;
@@ -215,11 +218,9 @@ template <typename FType = double> class StripDetector {
 
  private:
   const F half_scintilator_length;
+
 #if !__CUDACC__
   std::normal_distribution<F> normal_dist_dz;
   std::normal_distribution<F> normal_dist_dl;
 #endif
-
-  _ F bb_z(F A, F C, F B_2) const { return 3 / compat::sqrt(C - (B_2 / A)); }
-  _ F bb_y(F A, F C, F B_2) const { return 3 / compat::sqrt(A - (B_2 / C)); }
 };

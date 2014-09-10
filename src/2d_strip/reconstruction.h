@@ -19,7 +19,6 @@
 
 #define BB_UPDATE 1
 
-
 #define READER(T, name) \
   T name() { return stats_.total_##name##_; }
 
@@ -74,22 +73,19 @@ class Reconstruction {
 
     for (int y = 0; y < detector.n_y_pixels; ++y) {
       for (int z = 0; z < detector.n_z_pixels; ++z) {
-#ifdef USE_SENSITIVITY
+
         Point point = detector.pixel_center(Pixel(z, y));
-        F pixel_sensitivity = detector.sensitivity(point)/3;
+        F pixel_sensitivity = detector.sensitivity(point) / 3;
         Point ur(pixel_width / 2, pixel_height / 2);
-        pixel_sensitivity += detector.sensitivity(point + ur)/6;
-        pixel_sensitivity += detector.sensitivity(point - ur)/6;
+        pixel_sensitivity += detector.sensitivity(point + ur) / 6;
+        pixel_sensitivity += detector.sensitivity(point - ur) / 6;
         Point ul(-pixel_width / 2, pixel_height / 2);
-        pixel_sensitivity += detector.sensitivity(point + ul)/6;
-        pixel_sensitivity += detector.sensitivity(point - ul)/6;
+        pixel_sensitivity += detector.sensitivity(point + ul) / 6;
+        pixel_sensitivity += detector.sensitivity(point - ul) / 6;
         sensitivity[y * detector.n_z_pixels + z] = pixel_sensitivity;
         inv_sensitivity[y * detector.n_z_pixels + z] = pixel_sensitivity;
 
-#else
-        sensitivity[y * detector.n_z_pixels + z] = 1;
-        inv_sensitivity[y * detector.n_z_pixels + z] = 1;
-#endif
+
       }
     }
   }
@@ -256,8 +252,8 @@ class Reconstruction {
                                   detector.inv_cor_mat_diag,
                                   sqrt_det_cor_mat);
           F event_kernel_mul_rho = event_kernel * rho[i];
-          acc += event_kernel_mul_rho*pixel_sensitivity;
-          //event_kernel_mul_rho *= pixel_sensitivity;
+          acc += event_kernel_mul_rho * pixel_sensitivity;
+          // event_kernel_mul_rho *= pixel_sensitivity;
           ellipse_pixels[n_ellipse_pixels] = pixel;
           ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
           ++n_ellipse_pixels;

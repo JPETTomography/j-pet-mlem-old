@@ -2,17 +2,17 @@
 
 #include "circle_detector.h"
 
-TEST_CASE("circle_detector/ctor", "[ctor]") {
+TEST_CASE("2d_xy/circle_detector/ctor") {
 
-  CircleDetector<> circle(0.010, 0.010);
+  CircleDetector<> circle(0.01);
 
   CHECK(circle.center.x == 0);
   CHECK(circle.center.y == 0);
 };
 
-TEST_CASE("circle_detector/move", "[ctor]") {
+TEST_CASE("2d_xy/circle_detector/move") {
 
-  CircleDetector<> circle(0.010, 0.010);
+  CircleDetector<> circle(0.01);
 
   CircleDetector<>::Point p(0.5, 0.7);
   circle += p;

@@ -137,3 +137,17 @@ pet_target(2d_strip reconstruction)
 # custom documentation and config files to be shown in project tree
 file(GLOB EXTRA scripts/* cmake/*)
 add_custom_target(extra SOURCES README.md .clang-format ${EXTRA})
+
+# tests
+file(GLOB_RECURSE TESTS src/*_test.cpp)
+include_directories(lib/catch/include)
+cmake_policy(SET CMP0037 OLD)
+add_executable(test src/util/test.cpp ${TESTS})
+set_target_properties(test PROPERTIES EXCLUDE_FROM_ALL 1)
+
+# clang doesn't print colored diagnostics when invoked from Ninja
+if(UNIX AND
+   CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
+   CMAKE_GENERATOR STREQUAL "Ninja")
+  add_definitions(-fcolor-diagnostics)
+endif()

@@ -91,6 +91,15 @@ Additional options:
 		cmake -DCMAKE_CXX_COMPILER=g++   # for GCC
 		cmake -DCMAKE_CXX_COMPILER=clang # for Clang
 
+Testing
+-------
+
+Tests are not build by default. In order to build and run tests run:
+
+	make test && ./test
+
+Files containing tests have `_test.cpp` suffix.
+
 Coding Style
 ------------
 

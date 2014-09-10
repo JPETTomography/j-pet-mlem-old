@@ -32,6 +32,14 @@ template <typename FType = double, typename SType = int> struct Point {
     return *this;
   }
 
+  _ bool operator!=(const Point& p) const { return x != p.x || y != p.y; }
+
+  _ bool operator==(const Point& p) const { return x == p.x && y == p.y; }
+
+  _ bool operator<(const Point& p) const {
+    return y < p.y || (y == p.y && x < p.x);
+  }
+
   F length2() const { return x * x + y * y; }
 
   F length() const { return compat::sqrt(x * x + y * y); }
@@ -66,3 +74,15 @@ template <typename FType = double, typename SType = int> struct Point {
 
 template <typename F> F deg(F rad) { return rad * 180 / F(M_PI); }
 template <typename F> F rad(F deg) { return deg * F(M_PI) / 180; }
+
+#ifdef TEST_CASE
+namespace Catch {
+  template <typename FType> struct StringMaker</**/ ::Point<FType>> {
+    static std::string convert(const ::Point<FType>& p) {
+      std::ostringstream oss;
+      oss << "(" << p.x << ", " << p.y << ")";
+      return oss.str();
+    }
+  };
+}
+#endif
