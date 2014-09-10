@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 
     int n_z_pixels = (int)std::ceil(scintillator_length / pixel_size);
     int n_y_pixels = (int)std::ceil(2 * R_distance / pixel_size);
-    std::cerr<<n_y_pixels<<"x"<<n_z_pixels<<std::endl;
+    std::cerr << n_y_pixels << "x" << n_z_pixels << std::endl;
     Reconstruction<double> reconstruction(R_distance,
                                           scintillator_length,
                                           n_y_pixels,

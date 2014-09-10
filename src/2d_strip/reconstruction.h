@@ -84,8 +84,6 @@ class Reconstruction {
         pixel_sensitivity += detector.sensitivity(point - ul) / 6;
         sensitivity[y * detector.n_z_pixels + z] = pixel_sensitivity;
         inv_sensitivity[y * detector.n_z_pixels + z] = pixel_sensitivity;
-
-
       }
     }
   }
