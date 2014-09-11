@@ -87,9 +87,9 @@ __global__ void reconstruction(StripDetector<F> detector,
         point -= ellipse_center;
 
 #if USE_SENSITIVITY
-        F inv_pixel_sensitivity = tex2D(tex_inv_sensitivity, pixel.x, pixel.y);
+        F pixel_sensitivity = tex2D(tex_sensitivity, pixel.x, pixel.y);
 #else
-        F inv_pixel_sensitivity = 1;
+        F pixel_sensitivity = 1;
 #endif
 
 #if USE_KERNEL
@@ -107,9 +107,8 @@ __global__ void reconstruction(StripDetector<F> detector,
 
         F event_kernel_mul_rho =
             event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
-        acc += event_kernel_mul_rho;
+        acc += event_kernel_mul_rho*pixel_sensitivity;
 #if CACHE_ELLIPSE_PIXELS
-        event_kernel_mul_rho *= inv_pixel_sensitivity;
         ellipse_pixels[n_ellipse_pixels][threadIdx.x] =
             make_short2(pixel.x, pixel.y);
         ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
@@ -170,8 +169,7 @@ __global__ void reconstruction(StripDetector<F> detector,
       if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
         point -= ellipse_center;
 
-#if USE_SENSITIVITYp.s.
-
+#if USE_SENSITIVITY
         F inv_pixel_sensitivity = tex2D(tex_inv_sensitivity, pixel.x, pixel.y);
 #else
         F inv_pixel_sensitivity = 1;

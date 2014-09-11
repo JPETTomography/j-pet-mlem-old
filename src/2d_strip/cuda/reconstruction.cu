@@ -10,7 +10,7 @@
 #include "config.h"
 
 #if USE_SENSITIVITY
-texture<float, 2, cudaReadModeElementType> tex_inv_sensitivity;
+texture<float, 2, cudaReadModeElementType> tex_sensitivity;
 #endif
 texture<float, 2, cudaReadModeElementType> tex_rho;
 
@@ -70,27 +70,27 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   fill_with_sensitivity(cpu_sensitivity, cpu_inv_sensitivity, detector);
 
   output_callback(detector, -1, cpu_sensitivity, context);
-  delete[] cpu_sensitivity;
-  F* gpu_inv_sensitivity;
-  size_t pitch_inv_sensitivity;
+
+  F* gpu_sensitivity;
+  size_t pitch_sensitivity;
   cudaMallocPitch(
-      &gpu_inv_sensitivity, &pitch_inv_sensitivity, sizeof(F) * width, height);
-  cudaMemcpy2D(gpu_inv_sensitivity,
-               pitch_inv_sensitivity,
-               cpu_inv_sensitivity,
+      &gpu_sensitivity, &pitch_sensitivity, sizeof(F) * width, height);
+  cudaMemcpy2D(gpu_sensitivity,
+               pitch_sensitivity,
+               cpu_sensitivity,
                sizeof(F) * width,
                sizeof(F) * width,
                height,
                cudaMemcpyHostToDevice);
-  delete[] cpu_inv_sensitivity;
+  delete[] cpu_sensitivity;
 
   cudaBindTexture2D(NULL,
-                    &tex_inv_sensitivity,
-                    gpu_inv_sensitivity,
+                    &tex_sensitivity,
+                    gpu_sensitivity,
                     &desc,
                     width,
                     height,
-                    pitch_inv_sensitivity);
+                    pitch_sensitivity);
 
 #endif
 
@@ -213,8 +213,8 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   }
 
 #if USE_SENSITIVITY
-  cudaUnbindTexture(&tex_inv_sensitivity);
-  cudaFree(gpu_inv_sensitivity);
+  cudaUnbindTexture(&tex_sensitivity);
+  cudaFree(gpu_sensitivity);
 #endif
   cudaUnbindTexture(&tex_rho);
   cudaFree(gpu_rho);
@@ -223,6 +223,26 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 #if USE_WARP_IMAGE_SPACE
   delete[] cpu_output_rho;
 #endif
+}
+
+
+
+template <typename F>
+void fill_with_sensitivity(F* sensitivity,
+                           F* inv_sensitivity,
+                           StripDetector<F>& detector) {
+
+  size_t width = detector.n_z_pixels;
+  size_t height = detector.n_y_pixels;
+
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      Point<F> point = detector.pixel_center(Pixel<>(x, y));
+      F pixel_sensitivity = detector.sensitivity(point);
+      sensitivity[y * width + x] = pixel_sensitivity;
+      //inv_sensitivity[y * width + x] = 1 / pixel_sensitivity;
+    }
+  }
 }
 
 // Explicit template instantiation
@@ -243,21 +263,3 @@ template void run_gpu_reconstruction<float>(
     int n_blocks,
     int n_threads_per_block,
     bool verbose);
-
-template <typename F>
-void fill_with_sensitivity(F* sensitivity,
-                           F* inv_sensitivity,
-                           StripDetector<F>& detector) {
-
-  size_t width = detector.n_z_pixels;
-  size_t height = detector.n_y_pixels;
-
-  for (int y = 0; y < height; ++y) {
-    for (int x = 0; x < width; ++x) {
-      Point<F> point = detector.pixel_center(Pixel<>(x, y));
-      F pixel_sensitivity = detector.sensitivity(point);
-      sensitivity[y * width + x] = pixel_sensitivity;
-      inv_sensitivity[y * width + x] = 1 / pixel_sensitivity;
-    }
-  }
-}
