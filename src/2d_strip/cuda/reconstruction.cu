@@ -64,10 +64,10 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
 
 #if USE_SENSITIVITY
-  F* cpu_inv_sensitivity = new F[detector.total_n_pixels];
+
   F* cpu_sensitivity = new F[detector.total_n_pixels];
 
-  fill_with_sensitivity(cpu_sensitivity, cpu_inv_sensitivity, detector);
+  fill_with_sensitivity(cpu_sensitivity,  detector);
 
   output_callback(detector, -1, cpu_sensitivity, context);
 
@@ -229,7 +229,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
 template <typename F>
 void fill_with_sensitivity(F* sensitivity,
-                           F* inv_sensitivity,
                            StripDetector<F>& detector) {
 
   size_t width = detector.n_z_pixels;
@@ -237,10 +236,7 @@ void fill_with_sensitivity(F* sensitivity,
 
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      Point<F> point = detector.pixel_center(Pixel<>(x, y));
-      F pixel_sensitivity = detector.sensitivity(point);
-      sensitivity[y * width + x] = pixel_sensitivity;
-      //inv_sensitivity[y * width + x] = 1 / pixel_sensitivity;
+      sensitivity[y * width + x] = detector.pixel_sensitivity(Pixel<>(x, y));
     }
   }
 }

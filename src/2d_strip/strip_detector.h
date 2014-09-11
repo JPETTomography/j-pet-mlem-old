@@ -125,6 +125,20 @@ template <typename FType = double> class StripDetector {
             compat::atan(compat::max(-L_plus / R_minus, -L_minus / R_plus)));
   }
 
+  _ F pixel_sensitivity(Pixel p) const {
+
+    Point point = this->pixel_center(p);
+    F sens = this->sensitivity(point) / 3;
+    Point ur(pixel_width / 2, pixel_height / 2);
+    sens += this->sensitivity(point + ur) / 6;
+    sens += this->sensitivity(point - ur) / 6;
+    Point ul(-pixel_width / 2, pixel_height / 2);
+    sens += this->sensitivity(point + ul) / 6;
+    sens += this->sensitivity(point - ul) / 6;
+
+    return sens;
+  }
+
   _ F sqrt_det_cor_mat() const {
     return compat::sqrt(inv_cor_mat_diag[0] *  //
                         inv_cor_mat_diag[1] *  //

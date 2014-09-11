@@ -40,7 +40,6 @@ class Reconstruction {
   std::vector<F> acc_log;
   std::vector<std::vector<F>> thread_rhos;
   std::vector<F> sensitivity;
-  std::vector<F> inv_sensitivity;
 
   K<F> kernel;
 
@@ -68,22 +67,13 @@ class Reconstruction {
         rho(detector.total_n_pixels, 100),
         thread_rhos(n_threads),
         sensitivity(detector.total_n_pixels),
-        inv_sensitivity(detector.total_n_pixels),
         stats_(n_threads) {
 
     for (int y = 0; y < detector.n_y_pixels; ++y) {
       for (int z = 0; z < detector.n_z_pixels; ++z) {
 
-        Point point = detector.pixel_center(Pixel(z, y));
-        F pixel_sensitivity = detector.sensitivity(point) / 3;
-        Point ur(pixel_width / 2, pixel_height / 2);
-        pixel_sensitivity += detector.sensitivity(point + ur) / 6;
-        pixel_sensitivity += detector.sensitivity(point - ur) / 6;
-        Point ul(-pixel_width / 2, pixel_height / 2);
-        pixel_sensitivity += detector.sensitivity(point + ul) / 6;
-        pixel_sensitivity += detector.sensitivity(point - ul) / 6;
-        sensitivity[y * detector.n_z_pixels + z] = pixel_sensitivity;
-        inv_sensitivity[y * detector.n_z_pixels + z] = pixel_sensitivity;
+        sensitivity[y * detector.n_z_pixels + z] = detector.pixel_sensitivity(Pixel(z,y));
+
       }
     }
   }
