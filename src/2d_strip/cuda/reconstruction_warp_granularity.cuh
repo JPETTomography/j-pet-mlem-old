@@ -124,7 +124,6 @@ __global__ void reconstruction(StripDetector<F> detector,
       acc += __shfl_xor(acc, xor_iter, WARP_SIZE);
     }
 #else
-#if 1
     __shared__ float accumulator[MAX_THREADS_PER_BLOCK];
     int tid = threadIdx.x;
     int index = (tid & (WARP_SIZE - 1));
@@ -141,10 +140,8 @@ __global__ void reconstruction(StripDetector<F> detector,
       accumulator[tid] += accumulator[tid + 1];
     acc = accumulator[tid & ~(WARP_SIZE - 1)];
 #endif
-#endif
 
     F inv_acc = 1 / acc;
-
     full_acc += acc;
 
 #if CACHE_ELLIPSE_PIXELS
@@ -173,7 +170,8 @@ __global__ void reconstruction(StripDetector<F> detector,
       if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
         point -= ellipse_center;
 
-#if USE_SENSITIVITY
+#if USE_SENSITIVITYp.s.
+
         F inv_pixel_sensitivity = tex2D(tex_inv_sensitivity, pixel.x, pixel.y);
 #else
         F inv_pixel_sensitivity = 1;
@@ -195,6 +193,7 @@ __global__ void reconstruction(StripDetector<F> detector,
     }
 #endif
   }
+
 #if 0
     if (threadIdx.x == 0) {
 

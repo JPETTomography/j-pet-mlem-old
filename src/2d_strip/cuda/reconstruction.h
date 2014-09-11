@@ -59,7 +59,7 @@ namespace GPU {
     fn << ".png";
 
     png_writer png(fn.str());
-    png.write_header<>(detector.n_y_pixels, detector.n_z_pixels);
+    png.write_header<>(detector.n_z_pixels, detector.n_y_pixels);
 
     float output_max = 0;
     for (int i = 0; i < detector.total_n_pixels; ++i) {

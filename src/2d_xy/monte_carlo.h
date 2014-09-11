@@ -56,7 +56,7 @@ class MonteCarlo {
     // thread local random generators
     RandomGenerator* mp_gens =
         new (alloca(sizeof(RandomGenerator) * omp_get_max_threads()))
-            RandomGenerator[omp_get_max_threads()];
+        RandomGenerator[omp_get_max_threads()];
     for (auto t = 0; t < omp_get_max_threads(); ++t) {
       mp_gens[t].seed(gen());
     }

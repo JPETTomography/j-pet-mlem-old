@@ -225,6 +225,8 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 #endif
 }
 
+// Explicit template instantiation
+
 template void run_gpu_reconstruction<float>(
     StripDetector<float>& detector,
     Event<float>* events,
