@@ -67,7 +67,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
   F* cpu_sensitivity = new F[detector.total_n_pixels];
 
-  fill_with_sensitivity(cpu_sensitivity,  detector);
+  fill_with_sensitivity(cpu_sensitivity, detector);
 
   output_callback(detector, -1, cpu_sensitivity, context);
 
@@ -225,11 +225,8 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 #endif
 }
 
-
-
 template <typename F>
-void fill_with_sensitivity(F* sensitivity,
-                           StripDetector<F>& detector) {
+void fill_with_sensitivity(F* sensitivity, StripDetector<F>& detector) {
 
   size_t width = detector.n_z_pixels;
   size_t height = detector.n_y_pixels;

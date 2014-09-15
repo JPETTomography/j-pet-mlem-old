@@ -58,8 +58,6 @@ template <typename FType = double> class StripDetector {
         inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
 // FIXME: workaround array initialization of const member on MSVC and CUDA
 #if !__CUDACC__
-        normal_dist_dz(0, sigma_z),
-        normal_dist_dl(0, sigma_dl),
 #if !_MSC_VER
         inv_cor_mat_diag{ 1 / (sigma_z * sigma_z),
                           1 / (sigma_z * sigma_z),
@@ -70,6 +68,8 @@ template <typename FType = double> class StripDetector {
                                1 / (sigma_z * sigma_z),
                                1 / (sigma_dl * sigma_dl) }),
 #endif
+        normal_dist_dz(0, sigma_z),
+        normal_dist_dl(0, sigma_dl),
 #endif
         half_scintilator_length(scintilator_length / 2) {
 #if __CUDACC__
@@ -182,7 +182,7 @@ template <typename FType = double> class StripDetector {
 
 #if !__CUDACC__
   template <typename G>
-  std::pair<Event<F>, bool> detect_event(ImageSpaceEventAngle<F> is_event,
+  std::pair<Event<F>, bool> detect_event(const ImageSpaceEventAngle<F> is_event,
                                          G& gen) {
 
     Event<F> ps_event = to_projection_space_angle(is_event);
@@ -231,10 +231,9 @@ template <typename FType = double> class StripDetector {
   const FVec inv_cor_mat_diag;
 
  private:
-  const F half_scintilator_length;
-
 #if !__CUDACC__
   std::normal_distribution<F> normal_dist_dz;
   std::normal_distribution<F> normal_dist_dl;
 #endif
+  const F half_scintilator_length;
 };

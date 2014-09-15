@@ -18,21 +18,19 @@
 
 template <typename F> int sgn(F val) { return (0 < val) - (val < 0); }
 
-template <typename F> class PhantomRegion {
- public:
+template <typename FType> struct PhantomRegion {
+  typedef FType F;
+
   PhantomRegion(const Ellipse<F>& ellipse, F intensity)
-      : ellipse_(ellipse), intensity_(intensity) {
-    weight_ = intensity_ * ellipse_.measure();
-  }
+      : shape(ellipse),
+        intensity(intensity),
+        weight(intensity * shape.measure) {}
 
-  bool in(F x, F y) const { return ellipse_.in(x, y); }
-  F weight() const { return weight_; }
-  Ellipse<F> shape() const { return ellipse_; }
+  bool contains(Point<F> p) const { return shape.constains(p); }
 
- private:
-  Ellipse<F> ellipse_;
-  F intensity_;
-  F weight_;
+  const Ellipse<F> shape;
+  const F intensity;
+  const F weight;
 };
 
 template <typename D, typename FType = double> class Phantom {
@@ -41,47 +39,48 @@ template <typename D, typename FType = double> class Phantom {
   typedef std::minstd_rand0 rng;
 
  private:
-  D detector_;
+  D detector;
 
   std::vector<PhantomRegion<F>> region_list;
-  std::vector<F> CDF_;
-  std::vector<EllipsePointsGenerator<F>> point_generators_;
+  std::vector<F> CDF;
+  std::vector<EllipsePointsGenerator<F>> point_generators;
 
   std::vector<Event<F>> events;
   std::vector<std::vector<F>> output;
   std::vector<std::vector<F>> output_without_errors;
 
-  std::uniform_real_distribution<F> uni_;
+  std::uniform_real_distribution<F> uniform;
   std::uniform_real_distribution<F> uniform_angle;
 
  public:
   Phantom(const D& detector, const std::vector<PhantomRegion<F>>& el)
-      : detector_(detector), CDF_(el.size(), 0), uniform_angle(-1, 1) {
-    region_list = el;
-    CDF_[0] = region_list[0].weight();
+      : detector(detector),
+        region_list(el),
+        CDF(el.size(), 0),
+        uniform_angle(-1, 1) {
+    CDF[0] = region_list[0].weight;
 
     for (size_t i = 1; i < el.size(); i++) {
-      CDF_[i] = region_list[i].weight() + CDF_[i - 1];
+      CDF[i] = region_list[i].weight + CDF[i - 1];
     }
-    F norm = CDF_[el.size() - 1];
+    F norm = CDF[el.size() - 1];
     for (size_t i = 0; i < el.size(); i++) {
-      CDF_[i] /= norm;
+      CDF[i] /= norm;
     }
 
     for (size_t i = 0; i < el.size(); ++i)
-      point_generators_.push_back(EllipsePointsGenerator<F>(el[i].shape()));
+      point_generators.push_back(EllipsePointsGenerator<F>(el[i].shape));
 
-    output.assign(detector_.n_y_pixels,
-                  std::vector<F>(detector_.n_z_pixels, 0));
-    output_without_errors.assign(detector_.n_y_pixels,
-                                 std::vector<F>(detector_.n_z_pixels, 0));
+    output.assign(detector.n_y_pixels, std::vector<F>(detector.n_z_pixels, 0));
+    output_without_errors.assign(detector.n_y_pixels,
+                                 std::vector<F>(detector.n_z_pixels, 0));
   }
 
   template <typename G> size_t choose_region(G& gen) {
-    F r = uni_(gen);
+    F r = uniform(gen);
     size_t i = 0;
 
-    while (r > CDF_[i])
+    while (r > CDF[i])
       ++i;
 
     return i;
@@ -90,9 +89,9 @@ template <typename D, typename FType = double> class Phantom {
   template <typename G> Point<F> gen_point(G& gen) {
   again:
     size_t i_region = choose_region(gen);
-    Point<F> p = point_generators_[i_region].point(gen);
+    Point<F> p = point_generators[i_region].point(gen);
     for (int j = 0; j < i_region; j++) {
-      if (region_list[j].shape().in(p.x, p.y))
+      if (region_list[j].shape.contains(p))
         goto again;
     }
     return p;
@@ -130,14 +129,14 @@ template <typename D, typename FType = double> class Phantom {
 
       auto event = gen_event(rng_list[omp_get_thread_num()]);
 
-      auto res = detector_.detect_event(event, rng_list[omp_get_thread_num()]);
+      auto res = detector.detect_event(event, rng_list[omp_get_thread_num()]);
       if (res.second) {
 
         ImageSpaceEventTan<F> revent =
-            detector_.from_projection_space_tan(res.first);
+            detector.from_projection_space_tan(res.first);
 
-        Pixel pp = detector_.pixel_location(Point<F>(event.z, event.y));
-        Pixel p = detector_.pixel_location(Point<F>(revent.z, revent.y));
+        Pixel pp = detector.pixel_location(Point<F>(event.z, event.y));
+        Pixel p = detector.pixel_location(Point<F>(revent.z, revent.y));
 
         output[p.y][p.x]++;
         output_without_errors[pp.y][pp.x]++;
@@ -158,7 +157,7 @@ template <typename D, typename FType = double> class Phantom {
   template <class FileWriter>
   void output_bitmap(FileWriter& fw, bool wo_errors = false) {
 
-    fw.template write_header<>(detector_.n_z_pixels, detector_.n_y_pixels);
+    fw.template write_header<>(detector.n_z_pixels, detector.n_y_pixels);
 
     auto& target_output = wo_errors ? output_without_errors : output;
     F output_max = 0;
@@ -170,9 +169,9 @@ template <typename D, typename FType = double> class Phantom {
     auto output_gain =
         static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-    uint8_t* row = (uint8_t*)alloca(detector_.n_z_pixels);
-    for (int y = 0; y < detector_.n_y_pixels; ++y) {
-      for (auto x = 0; x < detector_.n_z_pixels; ++x) {
+    uint8_t* row = (uint8_t*)alloca(detector.n_z_pixels);
+    for (int y = 0; y < detector.n_y_pixels; ++y) {
+      for (auto x = 0; x < detector.n_z_pixels; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -
                  output_gain * target_output[y][x];
       }

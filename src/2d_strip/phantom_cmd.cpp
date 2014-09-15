@@ -104,9 +104,9 @@ int main(int argc, char* argv[]) {
 
         Ellipse<double> el(x, y, a, b, angle * RADIAN);
 
-        std::cout << el.x() << " " << el.y() << " " << el.a() << " " << el.b()
-                  << " " << el.angle() << " " << el.A() << " " << el.B() << " "
-                  << el.C() << std::endl;
+        std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
+                  << el.angle << " " << el.A << " " << el.B << " " << el.C
+                  << std::endl;
         PhantomRegion<double> region(el, acceptance);
 
         ellipse_list.push_back(region);

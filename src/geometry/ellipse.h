@@ -3,67 +3,61 @@
 
 #include <random>
 
-#include "geometry/point.h"
+#include "point.h"
+#include "util/cuda/compat.h"
 
-template <typename F = double> class Ellipse {
+template <typename FType = double> struct Ellipse {
+  typedef FType F;
 
- public:
-  Ellipse(F x, F y, F a, F b, F angle_rad)
-      : x_(x), y_(y), a_(a), b_(b), angle_(angle_rad) {
-    F c = std::cos(angle_);
-    F s = std::sin(angle_);
-    A_ = c * c / (a_ * a_) + s * s / (b_ * b_);
-    B_ = s * s / (a_ * a_) + c * c / (b_ * b_);
-    C_ = s * c * (F(1.0) / (a_ * a_) - F(1.0) / (b_ * b_));
-    measure_ = M_PI * a_ * b_;
+  Ellipse(F x, F y, F a, F b, F angle)
+      : Ellipse(x, y, a, b, angle, compat::sin(angle), compat::cos(angle)) {}
+
+  bool contains(const Point<F> p) const {
+    F x = p.x - this->x;
+    F y = p.y - this->y;
+    return (A * x * x + 2 * C * x * y + B * y * y) <= 1;
   }
 
-  bool in(F x_a, F y_a) {
-    F x = x_a - x_;
-    F y = y_a - y_;
-    return (A_ * x * x + 2 * C_ * x * y + B_ * y * y) <= F(1.0);
-  };
-
-  F x() const { return x_; }
-  F y() const { return y_; }
-  F a() const { return a_; }
-  F b() const { return b_; }
-  F angle() const { return angle_; }
-  F A() const { return A_; }
-  F B() const { return B_; }
-  F C() const { return C_; }
-  F measure() { return measure_; }
+  const F x, y;  // center
+  const F a, b;
+  const F angle;
+  const F A, B, C;
+  const F measure;
 
  private:
-  F x_, y_;  // center
-  F a_, b_;
-  F angle_;
-  F A_, B_, C_;
-  F measure_;
+  Ellipse(F x, F y, F a, F b, F angle, F s, F c)
+      : x(x),
+        y(y),
+        a(a),
+        b(b),
+        angle(angle),
+        A(c * c / (a * a) + s * s / (b * b)),
+        B(s * s / (a * a) + c * c / (b * b)),
+        C(s * c * (1 / (a * a) - 1 / (b * b))),
+        measure(M_PI * a * b) {}
 };
 
 template <typename F> class EllipsePointsGenerator {
  public:
-  EllipsePointsGenerator(const Ellipse<F>& ellipse) : ellipse_(ellipse) {
-    c_ = std::cos(ellipse_.angle());
-    s_ = std::sin(ellipse_.angle());
-  }
+  EllipsePointsGenerator(const Ellipse<F>& ellipse)
+      : ellipse(ellipse),
+        s(compat::sin(ellipse.angle)),
+        c(compat::cos(ellipse.angle)) {}
 
   template <typename G> Point<F> point(G& gen) {
-    F angle = 2 * M_PI * uni_(gen);
-    F r = std::sqrt(uni_(gen));
-    F x = ellipse_.a() * r * std::cos(angle);
-    F y = ellipse_.b() * r * std::sin(angle);
+    F angle = 2 * M_PI * uni(gen);
+    F r = std::sqrt(uni(gen));
+    F x = ellipse.a * r * std::cos(angle);
+    F y = ellipse.b * r * std::sin(angle);
 
-    return Point<F>(c_ * x - s_ * y + ellipse_.x(),
-                    s_ * x + c_ * y + ellipse_.y());
+    return Point<F>(c * x - s * y + ellipse.x, s * x + c * y + ellipse.y);
   }
 
  private:
-  Ellipse<F> ellipse_;
-  F s_;
-  F c_;
-  std::uniform_real_distribution<F> uni_;
+  Ellipse<F> ellipse;
+  F s;
+  F c;
+  std::uniform_real_distribution<F> uni;
 };
 
 #endif  // ELLIPSE_H

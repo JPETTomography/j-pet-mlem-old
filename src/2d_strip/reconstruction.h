@@ -72,8 +72,8 @@ class Reconstruction {
     for (int y = 0; y < detector.n_y_pixels; ++y) {
       for (int z = 0; z < detector.n_z_pixels; ++z) {
 
-        sensitivity[y * detector.n_z_pixels + z] = detector.pixel_sensitivity(Pixel(z,y));
-
+        sensitivity[y * detector.n_z_pixels + z] =
+            detector.pixel_sensitivity(Pixel(z, y));
       }
     }
   }
