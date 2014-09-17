@@ -9,7 +9,7 @@
 
 #include "config.h"
 
-template <typename F>
+template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
                                F* events_z_d,

@@ -8,16 +8,16 @@
 
 #include "config.h"
 
-template <template <typename Float> class K>
-    typename F > __global__ void reconstruction(StripDetector<F> detector,
-                                                F* events_z_u,
-                                                F* events_z_d,
-                                                F* events_dl,
-                                                const int n_events,
-                                                F* output_rho,
-                                                const int n_blocks,
-                                                const int n_threads_per_block) {
-  K<F> kernel;
+template <template <typename Float> class Kernel, typename F>
+__global__ void reconstruction(StripDetector<F> detector,
+                               F* events_z_u,
+                               F* events_z_d,
+                               F* events_dl,
+                               const int n_events,
+                               F* output_rho,
+                               const int n_blocks,
+                               const int n_threads_per_block) {
+  Kernel<F> kernel;
 
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   int n_threads = n_blocks * n_threads_per_block;

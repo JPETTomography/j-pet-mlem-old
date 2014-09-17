@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cuda.h>
+#include <cuda_runtime.h>
 
 #include "geometry/point.h"
 #include "../event.h"
@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-template <template <typename Float> class K, typename F>
+template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
                                F* events_z_d,
@@ -17,7 +17,7 @@ __global__ void reconstruction(StripDetector<F> detector,
                                F* output_rho,
                                const int n_blocks,
                                const int n_threads_per_block) {
-  K<F> kernel;
+  Kernel<F> kernel;
 
   float full_acc = 0;
 
@@ -118,15 +118,16 @@ __global__ void reconstruction(StripDetector<F> detector,
     }
 
 #if __CUDA_ARCH__ >= 300
-
+    // reduce acc from all threads using __shfl_xor
     for (int xor_iter = 16; xor_iter >= 1; xor_iter /= 2) {
       acc += __shfl_xor(acc, xor_iter, WARP_SIZE);
     }
 #else
-    __shared__ float accumulator[MAX_THREADS_PER_BLOCK];
+    // fallback to older reduction algorithm
+    __shared__ F accumulator[MAX_THREADS_PER_BLOCK];
     int tid = threadIdx.x;
     int index = (tid & (WARP_SIZE - 1));
-    accumulator[threadIdx.x] = acc;
+    accumulator[tid] = acc;
     if (index < 16)
       accumulator[tid] += accumulator[tid + 16];
     if (index < 8)
@@ -148,7 +149,7 @@ __global__ void reconstruction(StripDetector<F> detector,
       short2 pixel = ellipse_pixels[p][threadIdx.x];
 
       if (n_blocks > 0)
-#ifndef __NO_ATOMIC__
+#if !NO_ATOMIC
         atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                   ellipse_kernel_mul_rho[p] * inv_acc);
 #else
@@ -191,13 +192,6 @@ __global__ void reconstruction(StripDetector<F> detector,
     }
 #endif
   }
-
-#if 0
-    if (threadIdx.x == 0) {
-
-      printf("Full_Acc: %f\n", full_acc);
-    }
-#endif
 }
 
 template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
