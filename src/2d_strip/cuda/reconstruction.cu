@@ -9,9 +9,7 @@
 #include "gpu_events_soa.h"
 #include "config.h"
 
-#if USE_SENSITIVITY
 texture<float, 2, cudaReadModeElementType> tex_sensitivity;
-#endif
 texture<float, 2, cudaReadModeElementType> tex_rho;
 
 #if THREAD_GRANULARITY
@@ -65,8 +63,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
   cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
 
-#if USE_SENSITIVITY
-
   F* cpu_sensitivity = new F[detector.total_n_pixels];
 
   fill_with_sensitivity(cpu_sensitivity, detector);
@@ -94,8 +90,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                     height,
                     pitch_sensitivity);
 
-#endif
-
   F* cpu_rho = new F[detector.total_n_pixels];
   for (int i = 0; i < detector.total_n_pixels; ++i) {
     cpu_rho[i] = 100;
@@ -111,7 +105,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
   F* gpu_output_rho;
 
-#if USE_WARP_IMAGE_SPACE
+#if USE_RHO_PER_WARP
   cudaMalloc((void**)&gpu_output_rho, n_blocks * image_size);
   F* cpu_output_rho;
   cpu_output_rho = new F[n_blocks * detector.total_n_pixels];
@@ -134,7 +128,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
         progress_callback(ib * n_iterations_in_block + it, context);
       }
 
-#if USE_WARP_IMAGE_SPACE
+#if USE_RHO_PER_WARP
       cudaMemset(gpu_output_rho, 0, n_blocks * image_size);
 #else
       cudaMemset(gpu_output_rho, 0, image_size);
@@ -172,7 +166,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
         cudaEventElapsedTime(&time, start, stop);
       }
 
-#if USE_WARP_IMAGE_SPACE
+#if USE_RHO_PER_WARP
       cudaMemcpy(cpu_output_rho,
                  gpu_output_rho,
                  n_blocks * image_size,
@@ -214,15 +208,13 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
     progress_callback(n_iteration_blocks * n_iterations_in_block, context);
   }
 
-#if USE_SENSITIVITY
   cudaUnbindTexture(&tex_sensitivity);
   cudaFree(gpu_sensitivity);
-#endif
   cudaUnbindTexture(&tex_rho);
   cudaFree(gpu_rho);
   cudaFree(gpu_output_rho);
   delete[] cpu_rho;
-#if USE_WARP_IMAGE_SPACE
+#if USE_RHO_PER_WARP
   delete[] cpu_output_rho;
 #endif
 }

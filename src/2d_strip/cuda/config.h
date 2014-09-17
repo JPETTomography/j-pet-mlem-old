@@ -5,9 +5,9 @@
 // reconstruction mode (comment out both for simple kernel)
 #define THREAD_GRANULARITY 0    // single thread processes single event
 #define WARP_GRANULARITY 1      // whole warp processes single event
-#define USE_SENSITIVITY 1       // use sensitivity texture
 #define CACHE_ELLIPSE_PIXELS 1  // shared memory pixel buffer in error ellipse
 #define NORMAL_PHANTOM 0
+#define USE_RHO_PER_WARP 0
 
 // warp granulaty specific
 #define MAX_PIXELS_PER_THREAD 12   // this has been chosen arbitrarily,
@@ -20,7 +20,3 @@
 #define PIXEL_INDEX(p) (((p).y * detector.n_z_pixels) + (p).x)
 #define WARP_BUFFER_PIXEL_INDEX(p) \
   (warp_stride + ((p).y * detector.n_z_pixels) + (p).x)
-
-// performance analysis flags
-#define USE_KERNEL 1  // use kernel calculation - performance test
-#define USE_WARP_IMAGE_SPACE 0

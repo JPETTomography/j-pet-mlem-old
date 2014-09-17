@@ -19,6 +19,15 @@ __global__ void reconstruction(StripDetector<F> detector,
                                const int n_threads_per_block) {
   Kernel<F> kernel;
 
+#define ALWAYS_TRUE /***/ (n_blocks > 0)
+#define ALWAYS_FALSE /**/ (n_blocks == 0)
+
+  // set conditions that always evaluate to same value, if we use kernel
+  // parameter that always evaluate to same value, compiler cannot optimize it
+  // out and must generate both branches
+  bool use_kernel = true;       // use ALWAYS_XXX to measure performance
+  bool use_sensitivity = true;  // use ALWAYS_XXX to measure performance
+
   float full_acc = 0;
 
   const F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
@@ -86,24 +95,18 @@ __global__ void reconstruction(StripDetector<F> detector,
       if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
         point -= ellipse_center;
 
-#if USE_SENSITIVITY
-        F pixel_sensitivity = tex2D(tex_sensitivity, pixel.x, pixel.y);
-#else
-        F pixel_sensitivity = 1;
-#endif
+        F pixel_sensitivity =
+            use_sensitivity ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
 
-#if USE_KERNEL
-        F event_kernel = kernel(y,
-                                tan,
-                                sec,
-                                sec_sq,
-                                detector.radius,
-                                point,
-                                detector.inv_cor_mat_diag,
-                                sqrt_det_cor_mat);
-#else
-        F event_kernel = 1;
-#endif
+        F event_kernel = use_kernel ? kernel(y,
+                                             tan,
+                                             sec,
+                                             sec_sq,
+                                             detector.radius,
+                                             point,
+                                             detector.inv_cor_mat_diag,
+                                             sqrt_det_cor_mat)
+                                    : 1;
 
         F event_kernel_mul_rho =
             event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
