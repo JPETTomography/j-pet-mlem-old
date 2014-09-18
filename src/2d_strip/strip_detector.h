@@ -68,8 +68,6 @@ template <typename FType = double> class StripDetector {
                                1 / (sigma_z * sigma_z),
                                1 / (sigma_dl * sigma_dl) }),
 #endif
-        normal_dist_dz(0, sigma_z),
-        normal_dist_dl(0, sigma_dl),
 #endif
         half_scintilator_length(scintilator_length / 2) {
 #if __CUDACC__
@@ -192,6 +190,9 @@ template <typename FType = double> class StripDetector {
     z_d = ps_event.z_d;
     dl = ps_event.dl;
 
+    std::normal_distribution<F> normal_dist_dz(0, sigma_z);
+    std::normal_distribution<F> normal_dist_dl(0, sigma_dl);
+
     z_u += normal_dist_dz(gen);
     z_d += normal_dist_dz(gen);
     dl += normal_dist_dl(gen);
@@ -231,9 +232,5 @@ template <typename FType = double> class StripDetector {
   const FVec inv_cor_mat_diag;
 
  private:
-#if !__CUDACC__
-  std::normal_distribution<F> normal_dist_dz;
-  std::normal_distribution<F> normal_dist_dl;
-#endif
   const F half_scintilator_length;
 };
