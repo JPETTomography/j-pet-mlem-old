@@ -151,7 +151,6 @@ __global__ void reconstruction(StripDetector<F> detector,
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       short2 pixel = ellipse_pixels[p][threadIdx.x];
 
-      if (n_blocks > 0)
 #if !NO_ATOMIC
         atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                   ellipse_kernel_mul_rho[p] * inv_acc);
