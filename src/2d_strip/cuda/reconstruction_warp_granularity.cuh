@@ -19,16 +19,18 @@ __global__ void reconstruction(StripDetector<F> detector,
                                const int n_threads_per_block) {
   Kernel<F> kernel;
 
-#define ALWAYS_TRUE /***/ (n_blocks > 0)
-#define ALWAYS_FALSE /**/ (n_blocks == 0)
+  // The variables below always evaluate to true/false, but compiler cannot
+  // assume that since n_blocks is only known at runtime.
+  bool rt_true = /***/ (n_blocks > 0);
+  bool rt_false = /**/ (n_blocks == 0);
+  (void)(rt_true, rt_false);  // marks above as used variables
 
-  // set conditions that always evaluate to same value, if we use kernel
-  // parameter that always evaluate to same value, compiler cannot optimize it
-  // out and must generate both branches
-  bool use_kernel = true;       // use ALWAYS_XXX to measure performance
-  bool use_sensitivity = true;  // use ALWAYS_XXX to measure performance
-
-  float full_acc = 0;
+  // In optimized build we set it to true/false which triggers else branches to
+  // be optimized out of the code, however in code parts benchmark we shall use
+  // rt_true/rt_false that guarantees else branches to be not optimized, so we
+  // can reliably measure time disabling certain computations.
+  bool use_kernel = true;
+  bool use_sensitivity = true;
 
   const F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   const int n_warps_per_block = n_threads_per_block / WARP_SIZE;
@@ -145,17 +147,16 @@ __global__ void reconstruction(StripDetector<F> detector,
 #endif
 
     F inv_acc = 1 / acc;
-    full_acc += acc;
 
 #if CACHE_ELLIPSE_PIXELS
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       short2 pixel = ellipse_pixels[p][threadIdx.x];
 
 #if !NO_ATOMIC
-        atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
-                  ellipse_kernel_mul_rho[p] * inv_acc);
+      atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
+                ellipse_kernel_mul_rho[p] * inv_acc);
 #else
-        output_rho[PIXEL_INDEX(pixel)] += ellipse_kernel_mul_rho[p] * inv_acc;
+      output_rho[PIXEL_INDEX(pixel)] += ellipse_kernel_mul_rho[p] * inv_acc;
 #endif
     }
 #else
