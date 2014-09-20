@@ -145,27 +145,10 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
         cudaEventRecord(start);
         cudaEventRecord(start_mem_time);
       }
-#ifdef __METRIC__
-      F* gpu_metric_memory;
-      const int metric_size = n_blocks * n_threads_per_block;
-      cudaMalloc((void**)&gpu_metric_memory, metric_size);
-      cudaMemset(gpu_metric_memory, 0, metric_size);
-#endif
 
 #if __CUDACC__
 #define reconstruction reconstruction<Kernel> << <blocks, threads>>>
 #endif
-#ifdef __METRIC__
-      reconstruction(gpu_metric_memory,
-                     detector,
-                     gpu_events.z_u,
-                     gpu_events.z_d,
-                     gpu_events.dl,
-                     n_events,
-                     gpu_output_rho,
-                     n_blocks,
-                     n_threads_per_block);
-#else
       reconstruction(detector,
                      gpu_events.z_u,
                      gpu_events.z_d,
@@ -174,7 +157,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                      gpu_output_rho,
                      n_blocks,
                      n_threads_per_block);
-#endif
 
       cudaThreadSynchronize();
 
@@ -183,10 +165,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
         cudaEventSynchronize(stop);
         cudaEventElapsedTime(&time, start, stop);
       }
-
-#ifdef __METRIC__
-  cudaFree(gpu_metric_memory);
-#endif
 
 #if USE_RHO_PER_WARP
       cudaMemcpy(cpu_output_rho,
@@ -239,7 +217,6 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 #if USE_RHO_PER_WARP
   delete[] cpu_output_rho;
 #endif
-
 }
 
 template <typename F>

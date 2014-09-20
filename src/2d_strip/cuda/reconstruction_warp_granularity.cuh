@@ -8,18 +8,6 @@
 
 #include "config.h"
 
-#ifdef __METRIC__
-template <template <typename Float> class Kernel, typename F>
-__global__ void reconstruction(F* metric_memory,
-                               StripDetector<F> detector,
-                               F* events_z_u,
-                               F* events_z_d,
-                               F* events_dl,
-                               const int n_events,
-                               F* output_rho,
-                               const int n_blocks,
-                               const int n_threads_per_block) {
-#else
 template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
@@ -29,28 +17,18 @@ __global__ void reconstruction(StripDetector<F> detector,
                                F* output_rho,
                                const int n_blocks,
                                const int n_threads_per_block) {
-#endif
-
   Kernel<F> kernel;
 
 #define ALWAYS_TRUE /***/ (n_blocks > 0)
 #define ALWAYS_FALSE /**/ (n_blocks == 0)
-
-#ifdef __METRIC__
-  const int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
-  float full_acc = 0;
-#endif
 
   // set conditions that always evaluate to same value, if we use kernel
   // parameter that always evaluate to same value, compiler cannot optimize it
   // out and must generate both branches
   bool use_kernel = true;       // use ALWAYS_XXX to measure performance
   bool use_sensitivity = true;  // use ALWAYS_XXX to measure performance
-  bool use_atomic = true;
-  bool use_register_buffer = true;
-#ifdef __METRIC__
-  bool use_shmem_buffer = true;
-#endif
+
+  float full_acc = 0;
 
   const F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   const int n_warps_per_block = n_threads_per_block / WARP_SIZE;
@@ -64,15 +42,6 @@ __global__ void reconstruction(StripDetector<F> detector,
       ellipse_pixels[MAX_PIXELS_PER_THREAD][MAX_THREADS_PER_BLOCK];
 #endif
 
-#ifdef __METRIC__
-  if (!use_shmem_buffer) {
-    short2 t = make_short2(2, 2);
-    if (threadIdx.x == 0) {
-      ellipse_pixels[0][blockIdx.x] = t;
-    }
-    __syncthreads();
-  }
-#endif
   for (int i = 0; i < max_events_per_warp; ++i) {
 
     int event_index = i * n_warps + blockIdx.x * n_warps_per_block + warp_index;
@@ -142,22 +111,10 @@ __global__ void reconstruction(StripDetector<F> detector,
         F event_kernel_mul_rho =
             event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
         acc += event_kernel_mul_rho * pixel_sensitivity;
-
 #if CACHE_ELLIPSE_PIXELS
-#ifdef __METRIC__
-        if (use_shmem_buffer) {
-          ellipse_pixels[n_ellipse_pixels][threadIdx.x] =
-              make_short2(pixel.x, pixel.y);
-        }
-#else
         ellipse_pixels[n_ellipse_pixels][threadIdx.x] =
             make_short2(pixel.x, pixel.y);
-
-#endif
-        if (use_register_buffer) {
-          ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
-        }
-
+        ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
         ++n_ellipse_pixels;
 #endif
       }
@@ -188,43 +145,19 @@ __global__ void reconstruction(StripDetector<F> detector,
 #endif
 
     F inv_acc = 1 / acc;
-
-// Register accumulation increased in each kernel, saved to metric_memory buffor
-// at the end of the calculations.
-#ifdef __METRIC__
     full_acc += acc;
-#endif
-
-#ifdef __METRIC__
-    if (use_shmem_buffer) {
-#endif
 
 #if CACHE_ELLIPSE_PIXELS
-
-      for (int p = 0; p < n_ellipse_pixels; ++p) {
-        short2 pixel = ellipse_pixels[p][threadIdx.x];
-
-#ifdef __METRIC__
-        full_acc += pixel.x * inv_acc;
-        if (!use_atomic) {
-          full_acc += ellipse_kernel_mul_rho[p] * inv_acc;
-        }
-
-        if (!use_register_buffer) {
-          full_acc += pixel.x;
-        }
-
-#endif
+    for (int p = 0; p < n_ellipse_pixels; ++p) {
+      short2 pixel = ellipse_pixels[p][threadIdx.x];
 
 #if !NO_ATOMIC
-        if (use_atomic) {
-          atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
-                    ellipse_kernel_mul_rho[p] * inv_acc);
-        }
+        atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
+                  ellipse_kernel_mul_rho[p] * inv_acc);
 #else
         output_rho[PIXEL_INDEX(pixel)] += ellipse_kernel_mul_rho[p] * inv_acc;
 #endif
-      }
+    }
 #else
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
       int index;
@@ -260,14 +193,7 @@ __global__ void reconstruction(StripDetector<F> detector,
       }
     }
 #endif
-#ifdef __METRIC__
-    }
-#endif
   }
-
-#ifdef __METRIC__
-  metric_memory[tid] += full_acc + ellipse_pixels[0][blockIdx.x].x;
-#endif
 }
 
 template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
