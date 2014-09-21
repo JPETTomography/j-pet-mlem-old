@@ -26,6 +26,7 @@
 /pubs/**/*.toc
 /pubs/**/*.nav
 /pubs/**/*.snm
+/pubs/**/*.vrb
 
 # well known temporary files
 *~
