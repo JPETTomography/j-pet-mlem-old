@@ -1,128 +1,96 @@
-(* Content-type: application/vnd.wolfram.mathematica *)
-
-(*** Wolfram Notebook File ***)
-(* http://www.wolfram.com/nb *)
-
-(* CreatedBy='Mathematica 9.0' *)
-
-(*CacheID: 234*)
-(* Internal cache information:
-NotebookFileLineBreakTest
-NotebookFileLineBreakTest
-NotebookDataPosition[       157,          7]
-NotebookDataLength[     81531,       1338]
-NotebookOptionsPosition[     80955,       1313]
-NotebookOutlinePosition[     81295,       1328]
-CellTagsIndexPosition[     81252,       1325]
-WindowFrame->Normal*)
-
-(* Beginning of Notebook Content *)
 Notebook[{
-
-Cell[CellGroupData[{
-Cell[BoxData[
+Cell[BoxData[{
  RowBox[{
-  RowBox[{"Detector", "[", 
-   RowBox[{"h_", ",", "w_"}], "]"}], " ", "=", " ", 
-  RowBox[{"{", 
-   RowBox[{
-    RowBox[{"FaceForm", "[", "]"}], ",", 
-    RowBox[{"EdgeForm", "[", "Black", "]"}], ",", 
-    RowBox[{"Circle", "[", 
-     RowBox[{
-      RowBox[{"{", 
-       RowBox[{"0", ",", "0"}], "}"}], ",", "20"}], "]"}], ",", 
-    RowBox[{"Rectangle", "[", 
-     RowBox[{
+  RowBox[{
+   RowBox[{"Detector", "[", 
+    RowBox[{"h_", ",", "w_"}], "]"}], " ", "=", " ", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"FaceForm", "[", "]"}], ",", 
+     RowBox[{"EdgeForm", "[", "Black", "]"}], ",", 
+     RowBox[{"Circle", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"0", ",", "0"}], "}"}], ",", "20"}], "]"}], ",", 
+     RowBox[{"Rectangle", "[", 
       RowBox[{
        RowBox[{
-        RowBox[{"-", "1"}], "/", "2"}], 
-       RowBox[{"{", 
-        RowBox[{"h", ",", "w"}], "}"}]}], ",", 
-      RowBox[{
-       RowBox[{"1", "/", "2"}], 
-       RowBox[{"{", 
-        RowBox[{"h", ",", "w"}], "}"}]}]}], "]"}]}], "}"}]}]], "Input",
- CellChangeTimes->{{3.612684863585168*^9, 3.6126849413697863`*^9}, {
-  3.612685609976412*^9, 3.6126856610132732`*^9}}],
-
-Cell[BoxData[
- RowBox[{"{", 
+        RowBox[{
+         RowBox[{"-", "1"}], "/", "2"}], 
+        RowBox[{"{", 
+         RowBox[{"h", ",", "w"}], "}"}]}], ",", 
+       RowBox[{
+        RowBox[{"1", "/", "2"}], 
+        RowBox[{"{", 
+         RowBox[{"h", ",", "w"}], "}"}]}]}], "]"}]}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
   RowBox[{
-   RowBox[{"FaceForm", "[", "]"}], ",", 
-   RowBox[{"EdgeForm", "[", 
-    RowBox[{"GrayLevel", "[", "0", "]"}], "]"}], ",", 
-   RowBox[{"Circle", "[", 
+   RowBox[{"PureDetector", "[", 
+    RowBox[{"h_", ",", "w_"}], "]"}], " ", "=", " ", 
+   RowBox[{"{", 
     RowBox[{
-     RowBox[{"{", 
-      RowBox[{"0", ",", "0"}], "}"}], ",", "20"}], "]"}], ",", 
-   RowBox[{"Rectangle", "[", 
-    RowBox[{
-     RowBox[{"{", 
+     RowBox[{"FaceForm", "[", "]"}], ",", 
+     RowBox[{"EdgeForm", "[", "Black", "]"}], ",", 
+     RowBox[{"Rectangle", "[", 
       RowBox[{
-       RowBox[{"-", 
-        FractionBox["h", "2"]}], ",", 
-       RowBox[{"-", 
-        FractionBox["w", "2"]}]}], "}"}], ",", 
-     RowBox[{"{", 
-      RowBox[{
-       FractionBox["h", "2"], ",", 
-       FractionBox["w", "2"]}], "}"}]}], "]"}]}], "}"}]], "Output",
- CellChangeTimes->{{3.61268565460851*^9, 3.612685661592845*^9}}]
-}, Open  ]],
-
-Cell[CellGroupData[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1"}], "/", "2"}], 
+        RowBox[{"{", 
+         RowBox[{"h", ",", "w"}], "}"}]}], ",", 
+       RowBox[{
+        RowBox[{"1", "/", "2"}], 
+        RowBox[{"{", 
+         RowBox[{"h", ",", "w"}], "}"}]}]}], "]"}]}], "}"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.612684863585168*^9, 3.6126849413697863`*^9}, {
+  3.612685609976412*^9, 3.6126856610132732`*^9}, {3.620142842203107*^9, 
+  3.6201428573235817`*^9}}],
 
 Cell[BoxData[
  RowBox[{"Graphics", "[", 
-  RowBox[{"{", 
-   RowBox[{"Detector", "[", 
-    RowBox[{"17", ",", "7"}], "]"}], "}"}], "]"}]], "Input",
- CellChangeTimes->{{3.612684942739008*^9, 3.6126849631572866`*^9}}],
-
-Cell[BoxData[
- GraphicsBox[
-  {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-   RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-    NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}]], "Output",
- CellChangeTimes->{
-  3.6126849641436777`*^9, {3.612685650495296*^9, 3.612685662923188*^9}}]
-}, Open  ]],
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"Detector", "[", 
+     RowBox[{"17", ",", "7"}], "]"}], "}"}], ",", 
+   RowBox[{"ImageSize", "\[Rule]", "Full"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.612684942739008*^9, 3.6126849631572866`*^9}, {
+  3.620143628510326*^9, 3.6201436315123777`*^9}}],
 
 Cell[BoxData[
  RowBox[{
-  RowBox[{"DistributeOnCircle", "[", 
-   RowBox[{"g_", ",", " ", "r_", ",", " ", "n_", ",", " ", 
-    RowBox[{"phi_:", " ", "0"}]}], "]"}], ":=", 
-  RowBox[{"Module", "[", 
-   RowBox[{
-    RowBox[{"{", 
-     RowBox[{
-      RowBox[{"dphi", "=", 
-       RowBox[{"2", " ", 
-        RowBox[{"Pi", "/", "n"}]}]}], ",", " ", 
-      RowBox[{"gt", " ", "=", " ", 
-       RowBox[{"Translate", "[", 
-        RowBox[{"g", ",", 
+  RowBox[{
+   RowBox[{"DistributeOnCircle", "[", 
+    RowBox[{"g_", ",", " ", "r_", ",", " ", "n_", ",", " ", 
+     RowBox[{"phi_:", " ", "0"}]}], "]"}], ":=", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"dphi", "=", 
+        RowBox[{"2", " ", 
+         RowBox[{"Pi", "/", "n"}]}]}], ",", " ", 
+       RowBox[{"gt", " ", "=", " ", 
+        RowBox[{"Translate", "[", 
+         RowBox[{"g", ",", 
+          RowBox[{"{", 
+           RowBox[{"r", ",", "0"}], "}"}]}], "]"}]}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Table", "[", 
+      RowBox[{
+       RowBox[{"Rotate", "[", 
+        RowBox[{"gt", ",", 
+         RowBox[{
+          RowBox[{"dphi", "*", "i"}], "+", "phi"}], ",", 
          RowBox[{"{", 
-          RowBox[{"r", ",", "0"}], "}"}]}], "]"}]}]}], "}"}], ",", 
-    "\[IndentingNewLine]", 
-    RowBox[{"Table", "[", 
-     RowBox[{
-      RowBox[{"Rotate", "[", 
-       RowBox[{"gt", ",", 
-        RowBox[{
-         RowBox[{"dphi", "*", "i"}], "+", "phi"}], ",", 
-        RowBox[{"{", 
-         RowBox[{"0", ",", "0"}], "}"}]}], "]"}], ",", 
-      RowBox[{"{", 
-       RowBox[{"i", ",", "0", ",", 
-        RowBox[{"n", "-", "1"}]}], "}"}]}], "]"}]}], "\[IndentingNewLine]", 
-   "]"}]}]], "Input",
+          RowBox[{"0", ",", "0"}], "}"}]}], "]"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"i", ",", "0", ",", 
+         RowBox[{"n", "-", "1"}]}], "}"}]}], "]"}]}], "\[IndentingNewLine]", 
+    "]"}]}], ";"}]], "Input",
  CellChangeTimes->{{3.612684977568164*^9, 3.612685160841608*^9}, {
-  3.6126853156316433`*^9, 3.612685316243917*^9}}],
-
-Cell[CellGroupData[{
+   3.6126853156316433`*^9, 3.612685316243917*^9}, 3.6201430976663113`*^9}],
 
 Cell[BoxData[
  RowBox[{
@@ -160,1188 +128,119 @@ Cell[BoxData[
        RowBox[{
         RowBox[{"{", 
          RowBox[{"0", ",", "0"}], "}"}], ",", "250"}], "]"}], "}"}]}], 
-    "\[IndentingNewLine]", "]"}], "//", "Graphics"}], 
+    "\[IndentingNewLine]", "]"}], "//", 
+   RowBox[{
+    RowBox[{"Graphics", "[", 
+     RowBox[{"#", ",", 
+      RowBox[{"ImageSize", "\[Rule]", "Full"}]}], "]"}], "&"}]}], 
   "\[IndentingNewLine]"}]], "Input",
  CellChangeTimes->{{3.6126851628139133`*^9, 3.612685352393001*^9}, {
-  3.612685454334326*^9, 3.612685463002079*^9}, {3.612685688922121*^9, 
-  3.6126857125403214`*^9}, {3.612685923155491*^9, 3.612685938313508*^9}}],
+   3.612685454334326*^9, 3.612685463002079*^9}, {3.612685688922121*^9, 
+   3.6126857125403214`*^9}, {3.612685923155491*^9, 3.612685938313508*^9}, 
+   3.62014408887888*^9}],
 
 Cell[BoxData[
- GraphicsBox[{GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     1, 0}, {0, 1}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.9914448613738104, -0.13052619222005157`}, {0.13052619222005157`, 
-     0.9914448613738104}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.9659258262890682, -0.2588190451025207}, {0.2588190451025207, 
-     0.9659258262890682}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.9238795325112867, -0.3826834323650898}, {0.3826834323650898, 
-     0.9238795325112867}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.8660254037844386, -0.5}, {0.5, 0.8660254037844386}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.7933533402912352, -0.6087614290087207}, {0.6087614290087207, 
-     0.7933533402912352}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.7071067811865475, -0.7071067811865475}, {0.7071067811865475, 
-     0.7071067811865475}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.6087614290087207, -0.7933533402912352}, {0.7933533402912352, 
-     0.6087614290087207}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.5, -0.8660254037844386}, {0.8660254037844386, 0.5}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.3826834323650898, -0.9238795325112867}, {0.9238795325112867, 
-     0.3826834323650898}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.2588190451025207, -0.9659258262890682}, {0.9659258262890682, 
-     0.2588190451025207}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.13052619222005157`, -0.9914448613738104}, {0.9914448613738104, 
-     0.13052619222005157`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0, -1}, {1, 0}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.13052619222005157`, -0.9914448613738104}, {
-     0.9914448613738104, -0.13052619222005157`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.2588190451025207, -0.9659258262890682}, {
-     0.9659258262890682, -0.2588190451025207}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.3826834323650898, -0.9238795325112867}, {
-     0.9238795325112867, -0.3826834323650898}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.5, -0.8660254037844386}, {0.8660254037844386, -0.5}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.6087614290087207, -0.7933533402912352}, {
-     0.7933533402912352, -0.6087614290087207}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.7071067811865475, -0.7071067811865475}, {
-     0.7071067811865475, -0.7071067811865475}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.7933533402912352, -0.6087614290087207}, {
-     0.6087614290087207, -0.7933533402912352}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.8660254037844386, -0.5}, {0.5, -0.8660254037844386}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.9238795325112867, -0.3826834323650898}, {
-     0.3826834323650898, -0.9238795325112867}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.9659258262890682, -0.2588190451025207}, {
-     0.2588190451025207, -0.9659258262890682}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.9914448613738104, -0.13052619222005157`}, {
-     0.13052619222005157`, -0.9914448613738104}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-1, 0}, {0, -1}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.9914448613738104, 
-     0.13052619222005157`}, {-0.13052619222005157`, -0.9914448613738104}}, {0,
-      0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.9659258262890682, 
-     0.2588190451025207}, {-0.2588190451025207, -0.9659258262890682}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.9238795325112867, 
-     0.3826834323650898}, {-0.3826834323650898, -0.9238795325112867}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.8660254037844386, 0.5}, {-0.5, -0.8660254037844386}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.7933533402912352, 
-     0.6087614290087207}, {-0.6087614290087207, -0.7933533402912352}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.7071067811865475, 
-     0.7071067811865475}, {-0.7071067811865475, -0.7071067811865475}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.6087614290087207, 
-     0.7933533402912352}, {-0.7933533402912352, -0.6087614290087207}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.5, 0.8660254037844386}, {-0.8660254037844386, -0.5}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.3826834323650898, 
-     0.9238795325112867}, {-0.9238795325112867, -0.3826834323650898}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.2588190451025207, 
-     0.9659258262890682}, {-0.9659258262890682, -0.2588190451025207}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 
-     0}], {{{-0.13052619222005157`, 
-     0.9914448613738104}, {-0.9914448613738104, -0.13052619222005157`}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0, 1}, {-1, 0}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.13052619222005157`, 0.9914448613738104}, {-0.9914448613738104, 
-     0.13052619222005157`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.2588190451025207, 0.9659258262890682}, {-0.9659258262890682, 
-     0.2588190451025207}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.3826834323650898, 0.9238795325112867}, {-0.9238795325112867, 
-     0.3826834323650898}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.5, 0.8660254037844386}, {-0.8660254037844386, 0.5}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.6087614290087207, 0.7933533402912352}, {-0.7933533402912352, 
-     0.6087614290087207}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.7071067811865475, 0.7071067811865475}, {-0.7071067811865475, 
-     0.7071067811865475}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.7933533402912352, 0.6087614290087207}, {-0.6087614290087207, 
-     0.7933533402912352}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.8660254037844386, 0.5}, {-0.5, 0.8660254037844386}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.9238795325112867, 0.3826834323650898}, {-0.3826834323650898, 
-     0.9238795325112867}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.9659258262890682, 0.2588190451025207}, {-0.2588190451025207, 
-     0.9659258262890682}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {360, 0}], {{{
-     0.9914448613738104, 0.13052619222005157`}, {-0.13052619222005157`, 
-     0.9914448613738104}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.9994645874763657, -0.03271908282177614}, {0.03271908282177614, 
-     0.9994645874763657}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.986643332084879, -0.16289547339458874`}, {0.16289547339458874`, 
-     0.986643332084879}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.9569403357322088, -0.29028467725446233`}, {0.29028467725446233`, 
-     0.9569403357322088}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.9108638249211758, -0.41270702980439467`}, {0.41270702980439467`, 
-     0.9108638249211758}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.8492021815265789, -0.528067850650368}, {0.528067850650368, 
-     0.8492021815265789}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.773010453362737, -0.6343932841636455}, {0.6343932841636455, 
-     0.773010453362737}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.6835923020228712, -0.7298640726978356}, {0.7298640726978356, 
-     0.6835923020228712}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.5824776968678022, -0.8128466845916152}, {0.8128466845916152, 
-     0.5824776968678022}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.47139673682599764`, -0.881921264348355}, {0.881921264348355, 
-     0.47139673682599764`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.3522500479212335, -0.9359059267573258}, {0.9359059267573258, 
-     0.3522500479212335}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.22707626303437323`, -0.9738769792773336}, {0.9738769792773336, 
-     0.22707626303437323`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.0980171403295606, -0.9951847266721969}, {0.9951847266721969, 
-     0.0980171403295606}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.03271908282177614, -0.9994645874763657}, {
-     0.9994645874763657, -0.03271908282177614}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.16289547339458874`, -0.986643332084879}, {
-     0.986643332084879, -0.16289547339458874`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.29028467725446233`, -0.9569403357322088}, {
-     0.9569403357322088, -0.29028467725446233`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.41270702980439467`, -0.9108638249211758}, {
-     0.9108638249211758, -0.41270702980439467`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.528067850650368, -0.8492021815265789}, {
-     0.8492021815265789, -0.528067850650368}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.6343932841636455, -0.773010453362737}, {
-     0.773010453362737, -0.6343932841636455}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.7298640726978356, -0.6835923020228712}, {
-     0.6835923020228712, -0.7298640726978356}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.8128466845916152, -0.5824776968678022}, {
-     0.5824776968678022, -0.8128466845916152}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.881921264348355, -0.47139673682599764`}, {
-     0.47139673682599764`, -0.881921264348355}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.9359059267573258, -0.3522500479212335}, {
-     0.3522500479212335, -0.9359059267573258}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.9738769792773336, -0.22707626303437323`}, {
-     0.22707626303437323`, -0.9738769792773336}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.9951847266721969, -0.0980171403295606}, {
-     0.0980171403295606, -0.9951847266721969}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.9994645874763657, 
-     0.03271908282177614}, {-0.03271908282177614, -0.9994645874763657}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.986643332084879, 
-     0.16289547339458874`}, {-0.16289547339458874`, -0.986643332084879}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.9569403357322088, 
-     0.29028467725446233`}, {-0.29028467725446233`, -0.9569403357322088}}, {0,
-      0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.9108638249211758, 
-     0.41270702980439467`}, {-0.41270702980439467`, -0.9108638249211758}}, {0,
-      0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.8492021815265789, 
-     0.528067850650368}, {-0.528067850650368, -0.8492021815265789}}, {0, 0}}],
-    GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.773010453362737, 
-     0.6343932841636455}, {-0.6343932841636455, -0.773010453362737}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.6835923020228712, 
-     0.7298640726978356}, {-0.7298640726978356, -0.6835923020228712}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.5824776968678022, 
-     0.8128466845916152}, {-0.8128466845916152, -0.5824776968678022}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.47139673682599764`, 
-     0.881921264348355}, {-0.881921264348355, -0.47139673682599764`}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.3522500479212335, 
-     0.9359059267573258}, {-0.9359059267573258, -0.3522500479212335}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.22707626303437323`, 
-     0.9738769792773336}, {-0.9738769792773336, -0.22707626303437323`}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 
-     0}], {{{-0.0980171403295606, 
-     0.9951847266721969}, {-0.9951847266721969, -0.0980171403295606}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.03271908282177614, 0.9994645874763657}, {-0.9994645874763657, 
-     0.03271908282177614}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.16289547339458874`, 0.986643332084879}, {-0.986643332084879, 
-     0.16289547339458874`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.29028467725446233`, 0.9569403357322088}, {-0.9569403357322088, 
-     0.29028467725446233`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.41270702980439467`, 0.9108638249211758}, {-0.9108638249211758, 
-     0.41270702980439467`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.528067850650368, 0.8492021815265789}, {-0.8492021815265789, 
-     0.528067850650368}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.6343932841636455, 0.773010453362737}, {-0.773010453362737, 
-     0.6343932841636455}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.7298640726978356, 0.6835923020228712}, {-0.6835923020228712, 
-     0.7298640726978356}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.8128466845916152, 0.5824776968678022}, {-0.5824776968678022, 
-     0.8128466845916152}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.881921264348355, 0.47139673682599764`}, {-0.47139673682599764`, 
-     0.881921264348355}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.9359059267573258, 0.3522500479212335}, {-0.3522500479212335, 
-     0.9359059267573258}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.9738769792773336, 0.22707626303437323`}, {-0.22707626303437323`, 
-     0.9738769792773336}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {400, 0}], {{{
-     0.9951847266721969, 0.0980171403295606}, {-0.0980171403295606, 
-     0.9951847266721969}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.9978589232386035, -0.06540312923014306}, {0.06540312923014306, 
-     0.9978589232386035}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.9807852804032304, -0.19509032201612825`}, {0.19509032201612825`, 
-     0.9807852804032304}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.9469301294951057, -0.3214394653031616}, {0.3214394653031616, 
-     0.9469301294951057}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.8968727415326883, -0.4422886902190013}, {0.4422886902190013, 
-     0.8968727415326883}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.8314696123025452, -0.5555702330196022}, {0.5555702330196022, 
-     0.8314696123025452}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.7518398074789774, -0.6593458151000688}, {0.6593458151000688, 
-     0.7518398074789774}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.6593458151000688, -0.7518398074789774}, {0.7518398074789774, 
-     0.6593458151000688}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.5555702330196022, -0.8314696123025452}, {0.8314696123025452, 
-     0.5555702330196022}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.4422886902190013, -0.8968727415326883}, {0.8968727415326883, 
-     0.4422886902190013}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.3214394653031616, -0.9469301294951057}, {0.9469301294951057, 
-     0.3214394653031616}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.19509032201612825`, -0.9807852804032304}, {0.9807852804032304, 
-     0.19509032201612825`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.06540312923014306, -0.9978589232386035}, {0.9978589232386035, 
-     0.06540312923014306}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.06540312923014306, -0.9978589232386035}, {
-     0.9978589232386035, -0.06540312923014306}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.19509032201612825`, -0.9807852804032304}, {
-     0.9807852804032304, -0.19509032201612825`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.3214394653031616, -0.9469301294951057}, {
-     0.9469301294951057, -0.3214394653031616}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.4422886902190013, -0.8968727415326883}, {
-     0.8968727415326883, -0.4422886902190013}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.5555702330196022, -0.8314696123025452}, {
-     0.8314696123025452, -0.5555702330196022}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.6593458151000688, -0.7518398074789774}, {
-     0.7518398074789774, -0.6593458151000688}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.7518398074789774, -0.6593458151000688}, {
-     0.6593458151000688, -0.7518398074789774}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.8314696123025452, -0.5555702330196022}, {
-     0.5555702330196022, -0.8314696123025452}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.8968727415326883, -0.4422886902190013}, {
-     0.4422886902190013, -0.8968727415326883}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.9469301294951057, -0.3214394653031616}, {
-     0.3214394653031616, -0.9469301294951057}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.9807852804032304, -0.19509032201612825`}, {
-     0.19509032201612825`, -0.9807852804032304}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.9978589232386035, -0.06540312923014306}, {
-     0.06540312923014306, -0.9978589232386035}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.9978589232386035, 
-     0.06540312923014306}, {-0.06540312923014306, -0.9978589232386035}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.9807852804032304, 
-     0.19509032201612825`}, {-0.19509032201612825`, -0.9807852804032304}}, {0,
-      0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.9469301294951057, 
-     0.3214394653031616}, {-0.3214394653031616, -0.9469301294951057}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.8968727415326883, 
-     0.4422886902190013}, {-0.4422886902190013, -0.8968727415326883}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.8314696123025452, 
-     0.5555702330196022}, {-0.5555702330196022, -0.8314696123025452}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.7518398074789774, 
-     0.6593458151000688}, {-0.6593458151000688, -0.7518398074789774}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.6593458151000688, 
-     0.7518398074789774}, {-0.7518398074789774, -0.6593458151000688}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.5555702330196022, 
-     0.8314696123025452}, {-0.8314696123025452, -0.5555702330196022}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.4422886902190013, 
-     0.8968727415326883}, {-0.8968727415326883, -0.4422886902190013}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.3214394653031616, 
-     0.9469301294951057}, {-0.9469301294951057, -0.3214394653031616}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.19509032201612825`, 
-     0.9807852804032304}, {-0.9807852804032304, -0.19509032201612825`}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 
-     0}], {{{-0.06540312923014306, 
-     0.9978589232386035}, {-0.9978589232386035, -0.06540312923014306}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.06540312923014306, 0.9978589232386035}, {-0.9978589232386035, 
-     0.06540312923014306}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.19509032201612825`, 0.9807852804032304}, {-0.9807852804032304, 
-     0.19509032201612825`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.3214394653031616, 0.9469301294951057}, {-0.9469301294951057, 
-     0.3214394653031616}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.4422886902190013, 0.8968727415326883}, {-0.8968727415326883, 
-     0.4422886902190013}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.5555702330196022, 0.8314696123025452}, {-0.8314696123025452, 
-     0.5555702330196022}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.6593458151000688, 0.7518398074789774}, {-0.7518398074789774, 
-     0.6593458151000688}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.7518398074789774, 0.6593458151000688}, {-0.6593458151000688, 
-     0.7518398074789774}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.8314696123025452, 0.5555702330196022}, {-0.5555702330196022, 
-     0.8314696123025452}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.8968727415326883, 0.4422886902190013}, {-0.4422886902190013, 
-     0.8968727415326883}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.9469301294951057, 0.3214394653031616}, {-0.3214394653031616, 
-     0.9469301294951057}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.9807852804032304, 0.19509032201612825`}, {-0.19509032201612825`, 
-     0.9807852804032304}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {440, 0}], {{{
-     0.9978589232386035, 0.06540312923014306}, {-0.06540312923014306, 
-     0.9978589232386035}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.9951847266721969, -0.0980171403295606}, {0.0980171403295606, 
-     0.9951847266721969}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.9738769792773336, -0.22707626303437323`}, {0.22707626303437323`, 
-     0.9738769792773336}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.9359059267573258, -0.3522500479212335}, {0.3522500479212335, 
-     0.9359059267573258}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.881921264348355, -0.47139673682599764`}, {0.47139673682599764`, 
-     0.881921264348355}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.8128466845916152, -0.5824776968678022}, {0.5824776968678022, 
-     0.8128466845916152}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.7298640726978356, -0.6835923020228712}, {0.6835923020228712, 
-     0.7298640726978356}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.6343932841636455, -0.773010453362737}, {0.773010453362737, 
-     0.6343932841636455}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.528067850650368, -0.8492021815265789}, {0.8492021815265789, 
-     0.528067850650368}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.41270702980439467`, -0.9108638249211758}, {0.9108638249211758, 
-     0.41270702980439467`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.29028467725446233`, -0.9569403357322088}, {0.9569403357322088, 
-     0.29028467725446233`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.16289547339458874`, -0.986643332084879}, {0.986643332084879, 
-     0.16289547339458874`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.03271908282177614, -0.9994645874763657}, {0.9994645874763657, 
-     0.03271908282177614}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.0980171403295606, -0.9951847266721969}, {
-     0.9951847266721969, -0.0980171403295606}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.22707626303437323`, -0.9738769792773336}, {
-     0.9738769792773336, -0.22707626303437323`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.3522500479212335, -0.9359059267573258}, {
-     0.9359059267573258, -0.3522500479212335}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.47139673682599764`, -0.881921264348355}, {
-     0.881921264348355, -0.47139673682599764`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.5824776968678022, -0.8128466845916152}, {
-     0.8128466845916152, -0.5824776968678022}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.6835923020228712, -0.7298640726978356}, {
-     0.7298640726978356, -0.6835923020228712}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.773010453362737, -0.6343932841636455}, {
-     0.6343932841636455, -0.773010453362737}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.8492021815265789, -0.528067850650368}, {
-     0.528067850650368, -0.8492021815265789}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.9108638249211758, -0.41270702980439467`}, {
-     0.41270702980439467`, -0.9108638249211758}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.9569403357322088, -0.29028467725446233`}, {
-     0.29028467725446233`, -0.9569403357322088}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.986643332084879, -0.16289547339458874`}, {
-     0.16289547339458874`, -0.986643332084879}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.9994645874763657, -0.03271908282177614}, {
-     0.03271908282177614, -0.9994645874763657}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.9951847266721969, 
-     0.0980171403295606}, {-0.0980171403295606, -0.9951847266721969}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.9738769792773336, 
-     0.22707626303437323`}, {-0.22707626303437323`, -0.9738769792773336}}, {0,
-      0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.9359059267573258, 
-     0.3522500479212335}, {-0.3522500479212335, -0.9359059267573258}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.881921264348355, 
-     0.47139673682599764`}, {-0.47139673682599764`, -0.881921264348355}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.8128466845916152, 
-     0.5824776968678022}, {-0.5824776968678022, -0.8128466845916152}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.7298640726978356, 
-     0.6835923020228712}, {-0.6835923020228712, -0.7298640726978356}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.6343932841636455, 
-     0.773010453362737}, {-0.773010453362737, -0.6343932841636455}}, {0, 0}}],
-    GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.528067850650368, 
-     0.8492021815265789}, {-0.8492021815265789, -0.528067850650368}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.41270702980439467`, 
-     0.9108638249211758}, {-0.9108638249211758, -0.41270702980439467`}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.29028467725446233`, 
-     0.9569403357322088}, {-0.9569403357322088, -0.29028467725446233`}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.16289547339458874`, 
-     0.986643332084879}, {-0.986643332084879, -0.16289547339458874`}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 
-     0}], {{{-0.03271908282177614, 
-     0.9994645874763657}, {-0.9994645874763657, -0.03271908282177614}}, {0, 
-     0}}], GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.0980171403295606, 0.9951847266721969}, {-0.9951847266721969, 
-     0.0980171403295606}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.22707626303437323`, 0.9738769792773336}, {-0.9738769792773336, 
-     0.22707626303437323`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.3522500479212335, 0.9359059267573258}, {-0.9359059267573258, 
-     0.3522500479212335}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.47139673682599764`, 0.881921264348355}, {-0.881921264348355, 
-     0.47139673682599764`}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.5824776968678022, 0.8128466845916152}, {-0.8128466845916152, 
-     0.5824776968678022}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.6835923020228712, 0.7298640726978356}, {-0.7298640726978356, 
-     0.6835923020228712}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.773010453362737, 0.6343932841636455}, {-0.6343932841636455, 
-     0.773010453362737}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.8492021815265789, 0.528067850650368}, {-0.528067850650368, 
-     0.8492021815265789}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.9108638249211758, 0.41270702980439467`}, {-0.41270702980439467`, 
-     0.9108638249211758}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.9569403357322088, 0.29028467725446233`}, {-0.29028467725446233`, 
-     0.9569403357322088}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.986643332084879, 0.16289547339458874`}, {-0.16289547339458874`, 
-     0.986643332084879}}, {0, 0}}], 
-   GeometricTransformationBox[GeometricTransformationBox[
-     {EdgeForm[GrayLevel[0]], FaceForm[None], CircleBox[{0, 0}, 20], 
-      RectangleBox[NCache[{Rational[-17, 2], Rational[-7, 2]}, {-8.5, -3.5}], 
-       NCache[{Rational[17, 2], Rational[7, 2]}, {8.5, 3.5}]]}, {480, 0}], {{{
-     0.9994645874763657, 0.03271908282177614}, {-0.03271908282177614, 
-     0.9994645874763657}}, {0, 0}}], CircleBox[{0, 0}, 250]},
-  ImageSize->{732., Automatic}]], "Output",
- CellChangeTimes->{3.612685940125474*^9}]
-}, Open  ]]
+ RowBox[{
+  RowBox[{
+   RowBox[{"Join", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", "360", ",", "48"}], "]"}], 
+     "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", "400", ",", "48", ",", " ", 
+       RowBox[{
+        RowBox[{"1", "/", "2"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", 
+       RowBox[{"360", "*", "2"}], ",", "96", ",", " ", 
+       RowBox[{
+        RowBox[{"2", "/", "4"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"{", 
+      RowBox[{"Circle", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"0", ",", "0"}], "}"}], ",", "250"}], "]"}], "}"}]}], 
+    "\[IndentingNewLine]", "]"}], "//", 
+   RowBox[{
+    RowBox[{"Graphics", "[", 
+     RowBox[{"#", ",", 
+      RowBox[{"ImageSize", "\[Rule]", "Full"}]}], "]"}], "&"}]}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.6126851628139133`*^9, 3.612685352393001*^9}, {
+   3.612685454334326*^9, 3.612685463002079*^9}, {3.612685688922121*^9, 
+   3.6126857125403214`*^9}, {3.612685923155491*^9, 3.612685938313508*^9}, {
+   3.620110291642312*^9, 3.620110354727724*^9}, {3.6201104272876043`*^9, 
+   3.620110428365781*^9}, 3.620144090881106*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"Join", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", "360", ",", "48"}], "]"}], 
+     "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", "400", ",", "48", ",", " ", 
+       RowBox[{
+        RowBox[{"1", "/", "2"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", 
+       RowBox[{"360", "*", "2"}], ",", "96", ",", " ", 
+       RowBox[{
+        RowBox[{"2", "/", "4"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"PureDetector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", 
+       RowBox[{
+        RowBox[{"360", "*", "2"}], "+", "40"}], ",", "192", ",", " ", 
+       RowBox[{
+        RowBox[{"2", "/", "4"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"{", 
+      RowBox[{"Circle", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"0", ",", "0"}], "}"}], ",", "250"}], "]"}], "}"}]}], 
+    "\[IndentingNewLine]", "]"}], "//", 
+   RowBox[{
+    RowBox[{"Graphics", "[", 
+     RowBox[{"#", ",", 
+      RowBox[{"ImageSize", "\[Rule]", "Full"}]}], "]"}], "&"}]}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.6126851628139133`*^9, 3.612685352393001*^9}, {
+   3.612685454334326*^9, 3.612685463002079*^9}, {3.612685688922121*^9, 
+   3.6126857125403214`*^9}, {3.612685923155491*^9, 3.612685938313508*^9}, {
+   3.620110291642312*^9, 3.620110354727724*^9}, {3.6201104272876043`*^9, 
+   3.620110445712434*^9}, {3.620142867313346*^9, 3.6201428992832336`*^9}, {
+   3.620143248942169*^9, 3.620143356365321*^9}, {3.620143429952499*^9, 
+   3.620143431377481*^9}, {3.620143495974585*^9, 3.6201435534294243`*^9}, 
+   3.620143781525593*^9, {3.620143831941869*^9, 3.620143869682722*^9}, {
+   3.620143934968212*^9, 3.620143976428967*^9}, {3.620144062363933*^9, 
+   3.620144078391802*^9}}]
 },
-WindowSize->{1164, 1059},
-WindowMargins->{{Automatic, 441}, {Automatic, -10}},
-FrontEndVersion->"9.0 for Linux x86 (64-bit) (February 7, 2013)",
+WindowSize->{1188, 1036},
+WindowMargins->{{249, Automatic}, {Automatic, 0}},
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (June 27, \
+2014)",
 StyleDefinitions->"Default.nb"
 ]
-(* End of Notebook Content *)
-
-(* Internal cache information *)
-(*CellTagsOutline
-CellTagsIndex->{}
-*)
-(*CellTagsIndex
-CellTagsIndex->{}
-*)
-(*NotebookFileOutline
-Notebook[{
-Cell[CellGroupData[{
-Cell[579, 22, 798, 24, 32, "Input"],
-Cell[1380, 48, 696, 22, 49, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[2113, 75, 214, 5, 32, "Input"],
-Cell[2330, 82, 336, 6, 374, "Output"]
-}, Open  ]],
-Cell[2681, 91, 1081, 31, 77, "Input"],
-Cell[CellGroupData[{
-Cell[3787, 126, 1669, 40, 187, "Input"],
-Cell[5459, 168, 75480, 1142, 779, "Output"]
-}, Open  ]]
-}
-]
-*)
-
-(* End of internal cache information *)
