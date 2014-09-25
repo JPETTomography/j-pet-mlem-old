@@ -91,6 +91,8 @@ int main(int argc, char* argv[]) {
       else
         n_y_pixels = (int)std::ceil(2 * R_distance / pixel_size);
     }
+
+    std::cerr<<n_z_pixels<<"x"<<n_y_pixels<<std::endl;
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);
       std::string line;
@@ -112,17 +114,18 @@ int main(int argc, char* argv[]) {
         ellipse_list.push_back(region);
       }
     }
-
-    Phantom<StripDetector<double>, double> phantom(
-        StripDetector<double>(R_distance,
+ StripDetector<double> detector(R_distance,
                               scintillator_length,
                               n_y_pixels,
                               n_z_pixels,
                               pixel_size,
                               pixel_size,
                               sigma_z,
-                              sigma_dl),
+                       sigma_dl);
+    Phantom<StripDetector<double>, double> phantom(
+       detector,
         ellipse_list);
+    std::cerr<<"detector "<<detector.size_y<<" "<<detector.tl_y_half_h<<std::endl;
 
     phantom(emissions);
 

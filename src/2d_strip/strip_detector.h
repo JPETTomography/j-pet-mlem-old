@@ -198,7 +198,7 @@ template <typename FType = double> class StripDetector {
     dl += normal_dist_dl(gen);
 
     if (std::abs(z_u) < scintillator_length / 2 &&
-        std::abs(z_d) < scintillator_length / 2) {
+        std::abs(z_d) < scintillator_length / 2 ) {
 
       Event<F> event(z_u, z_d, dl);
       return std::make_pair(event, true);

@@ -135,9 +135,13 @@ template <typename D, typename FType = double> class Phantom {
         ImageSpaceEventTan<F> revent =
             detector.from_projection_space_tan(res.first);
 
+        if(std::abs(revent.y)>= detector.radius) 
+          continue;
+
         Pixel pp = detector.pixel_location(Point<F>(event.z, event.y));
         Pixel p = detector.pixel_location(Point<F>(revent.z, revent.y));
 
+        //std::cerr<<revent.y<<" "<<revent.z<<" "<<p.y<<" "<<p.x<<std::endl;
         output[p.y][p.x]++;
         output_without_errors[pp.y][pp.x]++;
 
