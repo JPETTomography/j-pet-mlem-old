@@ -206,10 +206,29 @@ class Reconstruction {
     stats_.bb_width_height_sum_[thread_number] +=
         4 * bb_half_width * bb_half_height;
 
-    const Pixel tl(center_pixel.x - bb_half_width,
-                   center_pixel.y - bb_half_height);
-    const Pixel br(center_pixel.x + bb_half_width,
-                   center_pixel.y + bb_half_height);
+    Pixel tl(center_pixel.x - bb_half_width, center_pixel.y - bb_half_height);
+    Pixel br(center_pixel.x + bb_half_width, center_pixel.y + bb_half_height);
+
+    Pixel tl_temp = tl;
+    Pixel br_temp = br;
+
+    if (tl.x < 0)
+      tl.x = 0;
+    if (tl.x > (detector.n_z_pixels - 1))
+      tl.x = (detector.n_z_pixels - 1);
+    if (tl.y < 0)
+      tl.y = 0;
+    if (tl.y > (detector.n_y_pixels - 1))
+      tl.y = (detector.n_y_pixels - 1);
+
+    if (br.x < 0)
+      br.x = 0;
+    if (br.x > (detector.n_z_pixels - 1))
+      br.x = (detector.n_z_pixels - 1);
+    if (br.y < 0)
+      br.y = 0;
+    if (br.y > (detector.n_y_pixels - 1))
+      br.y = (detector.n_y_pixels - 1);
 
     const int bb_size = 4 * bb_half_width * bb_half_height;
     F* ellipse_kernel_mul_rho = (F*)alloca(bb_size * sizeof(F));
@@ -241,10 +260,10 @@ class Reconstruction {
                                   sqrt_det_cor_mat);
           F event_kernel_mul_rho = event_kernel * rho[i];
           acc += event_kernel_mul_rho * pixel_sensitivity;
-          // event_kernel_mul_rho *= pixel_sensitivity;
           ellipse_pixels[n_ellipse_pixels] = pixel;
           ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
           ++n_ellipse_pixels;
+
         }
       }
     }

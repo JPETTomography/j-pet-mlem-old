@@ -118,6 +118,21 @@ template <typename FType = double> class StripDetector {
     F R_plus = radius + p.y;
     F R_minus = radius - p.y;
 
+    if (R_plus <= 0) {
+      R_plus = 1;
+    }
+    if (R_minus <= 0) {
+      R_minus = 1;
+    }
+
+#if __TEST_SENSITIVITY__
+    printf("L_p: %f L_m: %f\n", L_plus, L_minus);
+    printf("R_p: %f R_m: %f\n", R_plus, R_minus);
+    printf("FIRST: %f SECOND: %f\n",
+           compat::atan(compat::min(L_minus / R_minus, L_plus / R_plus)),
+           compat::atan(compat::max(-L_plus / R_minus, -L_minus / R_plus)));
+#endif
+
     return F(M_1_PI) *
            (compat::atan(compat::min(L_minus / R_minus, L_plus / R_plus)) -
             compat::atan(compat::max(-L_plus / R_minus, -L_minus / R_plus)));
@@ -126,12 +141,17 @@ template <typename FType = double> class StripDetector {
   _ F pixel_sensitivity(Pixel p) const {
 
     Point point = this->pixel_center(p);
-    F sens = this->sensitivity(point) / 3;
     Point ur(pixel_width / 2, pixel_height / 2);
-    sens += this->sensitivity(point + ur) / 6;
-    sens += this->sensitivity(point - ur) / 6;
     Point ul(-pixel_width / 2, pixel_height / 2);
+
+    F sens = this->sensitivity(point) / 3;
+
+    sens += this->sensitivity(point + ur) / 6;
+
+    sens += this->sensitivity(point - ur) / 6;
+
     sens += this->sensitivity(point + ul) / 6;
+
     sens += this->sensitivity(point - ul) / 6;
 
     return sens;
@@ -145,8 +165,8 @@ template <typename FType = double> class StripDetector {
 
   bool check_boundary(Pixel p) {
 
-    return (!(p.x < 0 || p.x > (this->n_z_pixels - 1) || p.y < 0 ||
-              p.y > (this->n_y_pixels - 1)));
+    return ((p.x >= 0 || p.x < (this->n_z_pixels) || p.y >= 0 ||
+             p.y < (this->n_y_pixels)));
   }
 
   // TODO: Ellipse bounding box is actually a property of the kernel, not
