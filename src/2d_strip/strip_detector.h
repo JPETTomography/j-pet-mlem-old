@@ -143,6 +143,12 @@ template <typename FType = double> class StripDetector {
                         inv_cor_mat_diag[2]);
   }
 
+  bool check_boundary(Pixel p) {
+
+    return (!(p.x < 0 || p.x > (this->n_z_pixels - 1) || p.y < 0 ||
+              p.y > (this->n_y_pixels - 1)));
+  }
+
   // TODO: Ellipse bounding box is actually a property of the kernel, not
   //      detector.
 
@@ -198,7 +204,7 @@ template <typename FType = double> class StripDetector {
     dl += normal_dist_dl(gen);
 
     if (std::abs(z_u) < scintillator_length / 2 &&
-        std::abs(z_d) < scintillator_length / 2 ) {
+        std::abs(z_d) < scintillator_length / 2) {
 
       Event<F> event(z_u, z_d, dl);
       return std::make_pair(event, true);
