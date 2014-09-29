@@ -54,11 +54,9 @@ int main(int argc, char* argv[]) {
 
     std::vector<PhantomRegion<double>> ellipse_list;
 
-    StripDetector<double>* detector =
-        make_strip_detector_from_options<double>(cl);
+    StripDetector<double> detector = strip_detector_from_options<double>(cl);
 
-    std::cerr << detector->n_z_pixels << "x" << detector->n_y_pixels
-              << std::endl;
+    std::cerr << detector.n_z_pixels << "x" << detector.n_y_pixels << std::endl;
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);
       std::string line;
@@ -81,8 +79,8 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    Phantom<StripDetector<double>, double> phantom(*detector, ellipse_list);
-    std::cerr << "detector " << detector->size_y << " " << detector->tl_y_half_h
+    Phantom<StripDetector<double>, double> phantom(detector, ellipse_list);
+    std::cerr << "detector " << detector.size_y << " " << detector.tl_y_half_h
               << std::endl;
 
     phantom(emissions);

@@ -53,11 +53,11 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    StripDetector<double>* strip_detector =
-        make_strip_detector_from_options<double>(cl);
-    std::cerr << strip_detector->n_y_pixels << "x" << strip_detector->n_z_pixels
+    StripDetector<double> strip_detector =
+        strip_detector_from_options<double>(cl);
+    std::cerr << strip_detector.n_y_pixels << "x" << strip_detector.n_z_pixels
               << std::endl;
-    Reconstruction<double> reconstruction(*strip_detector);
+    Reconstruction<double> reconstruction(strip_detector);
 
     for (auto& fn : cl.rest()) {
       ibstream events(fn);
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-      StripDetector<float> single_precision_strip_detector(*strip_detector);
+      StripDetector<float> single_precision_strip_detector(strip_detector);
 
       run_gpu_reconstruction(single_precision_strip_detector,
                              reconstruction.get_event_list(),
