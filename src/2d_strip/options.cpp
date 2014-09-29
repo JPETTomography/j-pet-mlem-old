@@ -55,5 +55,5 @@ void set_options_for_phantom(cmdline::parser& parser) {
   parser.add<double>("emissions", 'e', "number of emissions", false, 500000);
 #if _OPENMP
   parser.add<int>("n-threads", 'T', "number of OpenMP threads", false, 4);
-}
 #endif
+}
