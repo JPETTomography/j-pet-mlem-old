@@ -78,6 +78,20 @@ template <typename FType = double> class StripDetector {
 #endif
   }
 
+#ifndef __CUDACC__
+  template <typename F_OTHER>
+  StripDetector(const StripDetector<F_OTHER>& other)
+      : StripDetector(other.radius,
+                      other.scintillator_length,
+                      other.n_y_pixels,
+                      other.n_z_pixels,
+                      other.pixel_width,
+                      other.pixel_height,
+                      other.sigma_z,
+                      other.sigma_dl,
+                      other.center_y,
+                      other.center_z) {}
+#endif
   Event<F> to_projection_space_tan(
       const ImageSpaceEventTan<F>& is_event) const {
     F z_u = is_event.z + (radius - is_event.y) * is_event.tan;
