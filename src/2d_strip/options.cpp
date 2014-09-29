@@ -4,8 +4,7 @@
 #include "util/cmdline_types.h"
 #include "util/variant.h"
 
-void set_detector_options(cmdline::parser& parser) {
-
+void add_detector_options(cmdline::parser& parser) {
   parser.add<double>(
       "r-distance", 'r', "R distance between scientilators", false, 500);
   parser.add<double>("s-length", 'l', "scentilator length", false, 1000);
@@ -17,14 +16,14 @@ void set_detector_options(cmdline::parser& parser) {
   parser.add<double>("s-dl", 'd', "Sigma dl error", false, 42);
 }
 
-void set_options_for_reconstruction(cmdline::parser& parser) {
+void add_reconstruction_options(cmdline::parser& parser) {
+  add_detector_options(parser);
+
   std::ostringstream msg;
   msg << "events_file ..." << std::endl;
   msg << "build: " << VARIANT << std::endl;
   msg << "note: All length options below should be expressed in milimeters.";
   parser.footer(msg.str());
-
-  set_detector_options(parser);
 
   parser.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
   parser.add<int>(
@@ -46,12 +45,13 @@ void set_options_for_reconstruction(cmdline::parser& parser) {
 #endif
 }
 
-void set_options_for_phantom(cmdline::parser& parser) {
+void add_phantom_options(cmdline::parser& parser) {
+  add_detector_options(parser);
+
   parser.footer("phantom_description");
 
   parser.add<cmdline::path>(
       "output", 'o', "output events file", false, "phantom.bin");
-  set_detector_options(parser);
   parser.add<double>("emissions", 'e', "number of emissions", false, 500000);
 #if _OPENMP
   parser.add<int>("n-threads", 'T', "number of OpenMP threads", false, 4);

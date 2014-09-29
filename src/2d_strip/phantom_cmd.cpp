@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
   try {
     cmdline::parser cl;
 
-    set_options_for_phantom(cl);
+    add_phantom_options(cl);
 
     cl.parse_check(argc, argv);
 

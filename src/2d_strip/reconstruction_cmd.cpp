@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    set_options_for_reconstruction(cl);
+    add_reconstruction_options(cl);
     cl.parse_check(argc, argv);
 
     if (!cl.rest().size()) {
