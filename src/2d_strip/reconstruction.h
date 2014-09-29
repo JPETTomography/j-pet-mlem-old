@@ -40,7 +40,7 @@ class Reconstruction {
 
   K<F> kernel;
 
-  Stats<size_t> stats_;
+  Stats<size_t> stats;
 
  public:
   Reconstruction(const Detector& detector_a)
@@ -50,7 +50,7 @@ class Reconstruction {
         rho(detector.total_n_pixels, 100),
         thread_rhos(n_threads),
         sensitivity(detector.total_n_pixels),
-        stats_(n_threads) {
+        stats(n_threads) {
 
     for (int y = 0; y < detector.n_y_pixels; ++y) {
       for (int z = 0; z < detector.n_z_pixels; ++z) {
@@ -99,7 +99,7 @@ class Reconstruction {
                   int n_iterations,
                   int n_iterations_so_far = 0) {
 
-    stats_.fill(0);
+    stats.fill();
 
     for (int iteration = 0; iteration < n_iterations; ++iteration) {
       for (auto& rho : thread_rhos) {
@@ -113,7 +113,7 @@ class Reconstruction {
 #endif
       for (int e = 0; e < n_events; ++e) {
         int thread = omp_get_thread_num();
-        stats_.n_events_processed_[thread]++;
+        stats.n_events_processed_by(thread, 1);
 #if BB_UPDATE
         auto event = events[e];
         F tan, y, z;
@@ -136,7 +136,7 @@ class Reconstruction {
         }
       }
     }
-    stats_.collect();
+    stats.collect();
   }
 
   // accessor for CUDA compatibility
@@ -197,14 +197,12 @@ class Reconstruction {
     const int bb_half_width = n_pixels_in_line(bb_z, detector.pixel_width);
     const int bb_half_height = n_pixels_in_line(bb_y, detector.pixel_height);
 
-    int thread_number = omp_get_thread_num();
-    stats_.bb_width_sum_[thread_number] += 2 * bb_half_width;
-    stats_.bb_height_sum_[thread_number] += 2 * bb_half_height;
-    stats_.bb_width2_sum_[thread_number] += 4 * bb_half_width * bb_half_width;
-    stats_.bb_height2_sum_[thread_number] +=
-        4 * bb_half_height * bb_half_height;
-    stats_.bb_width_height_sum_[thread_number] +=
-        4 * bb_half_width * bb_half_height;
+    int thread = omp_get_thread_num();
+    stats.bb_width_sum_by(thread, 2 * bb_half_width);
+    stats.bb_height_sum_by(thread, 2 * bb_half_height);
+    stats.bb_width2_sum_by(thread, 4 * bb_half_width * bb_half_width);
+    stats.bb_height2_sum_by(thread, 4 * bb_half_height * bb_half_height);
+    stats.bb_width_height_sum_by(thread, 4 * bb_half_width * bb_half_height);
 
     Pixel tl(center_pixel.x - bb_half_width, center_pixel.y - bb_half_height);
     Pixel br(center_pixel.x + bb_half_width, center_pixel.y + bb_half_height);
@@ -236,7 +234,7 @@ class Reconstruction {
 
     for (int iy = tl.y; iy < br.y; ++iy) {
       for (int iz = tl.x; iz < br.x; ++iz) {
-        stats_.n_pixels_processed_[omp_get_thread_num()]++;
+        stats.n_pixels_processed_by();
         Pixel pixel(iz, iy);
         Point point = detector.pixel_center(pixel);
 
@@ -246,7 +244,7 @@ class Reconstruction {
           int i = pixel.y * detector.n_z_pixels + pixel.x;
 
           F pixel_sensitivity = sensitivity[i];
-          stats_.n_kernel_calls_[omp_get_thread_num()]++;
+          stats.n_kernel_calls_by();
           F event_kernel = kernel(y,
                                   tan,
                                   sec,
@@ -295,12 +293,12 @@ class Reconstruction {
 
     for (int iy = tl.y; iy < br.y; ++iy) {
       for (int iz = tl.x; iz < br.x; ++iz) {
-        stats_.n_pixels_processed_[omp_get_thread_num()]++;
+        stats.n_pixels_processed_by();
         Pixel pixel(iz, iy);
         Point point = detector.pixel_center(pixel);
 
         int i = pixel.y * detector.n_z_pixels + pixel.x;
-        stats_.n_kernel_calls_[omp_get_thread_num()]++;
+        stats.n_kernel_calls_by();
         F event_kernel =
             kernel.test(y, z, point, detector.sigma_z, detector.sigma_dl);
         F event_kernel_mul_rho = event_kernel * rho[i];
@@ -320,16 +318,16 @@ class Reconstruction {
     }
   }
 
-#define READER(T, name) \
-  T name() const { return stats_.total_##name##_; }
+#define STAT_GETTER(T, name) \
+  T name() const { return stats.total_##name; }
 
  public:
-  READER(size_t, n_events_processed);
-  READER(size_t, n_pixels_processed);
-  READER(size_t, n_kernel_calls);
-  READER(size_t, bb_width_sum);
-  READER(size_t, bb_width2_sum);
-  READER(size_t, bb_height_sum);
-  READER(size_t, bb_height2_sum);
-  READER(size_t, bb_width_height_sum);
+  STAT_GETTER(size_t, n_events_processed)
+  STAT_GETTER(size_t, n_pixels_processed)
+  STAT_GETTER(size_t, n_kernel_calls)
+  STAT_GETTER(size_t, bb_width_sum)
+  STAT_GETTER(size_t, bb_width2_sum)
+  STAT_GETTER(size_t, bb_height_sum)
+  STAT_GETTER(size_t, bb_height2_sum)
+  STAT_GETTER(size_t, bb_width_height_sum)
 };
