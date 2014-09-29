@@ -46,22 +46,8 @@ class Reconstruction {
   Stats<size_t> stats_;
 
  public:
-  Reconstruction(F R_distance,
-                 F scintilator_length,
-                 int n_y_pixels,
-                 int n_z_pixels,
-                 F pixel_height,
-                 F pixel_width,
-                 F sigma_z,
-                 F sigma_dl)
-      : detector(R_distance,
-                 scintilator_length,
-                 n_y_pixels,
-                 n_z_pixels,
-                 pixel_height,
-                 pixel_width,
-                 sigma_z,
-                 sigma_dl),
+  Reconstruction(const Detector& detector_a)
+      : detector(detector_a),
         sqrt_det_cor_mat(detector.sqrt_det_cor_mat()),
         n_threads(omp_get_max_threads()),
         rho(detector.total_n_pixels, 100),
@@ -77,6 +63,23 @@ class Reconstruction {
       }
     }
   }
+
+  Reconstruction(F R_distance,
+                 F scintilator_length,
+                 int n_y_pixels,
+                 int n_z_pixels,
+                 F pixel_height,
+                 F pixel_width,
+                 F sigma_z,
+                 F sigma_dl)
+      : Reconstruction(Detector(R_distance,
+                                scintilator_length,
+                                n_y_pixels,
+                                n_z_pixels,
+                                pixel_height,
+                                pixel_width,
+                                sigma_z,
+                                sigma_dl)) {}
 
   Reconstruction(F R_distance,
                  F scintilator_length,
@@ -263,7 +266,6 @@ class Reconstruction {
           ellipse_pixels[n_ellipse_pixels] = pixel;
           ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
           ++n_ellipse_pixels;
-
         }
       }
     }

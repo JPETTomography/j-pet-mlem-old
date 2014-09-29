@@ -15,15 +15,13 @@
 #include "util/png_writer.h"
 #include "util/progress.h"
 
-
-#include"options.h"
+#include "options.h"
 #include "event.h"
 #include "reconstruction.h"
 
 #if HAVE_CUDA
 #include "cuda/reconstruction.h"
 #endif
-
 
 using namespace std;
 
@@ -80,15 +78,15 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-      Reconstruction<float> sp_reconstruction(R_distance,
-                                              scintillator_length,
-                                              n_y_pixels,
-                                              n_z_pixels,
-                                              pixel_size,
-                                              pixel_size,
-                                              sigma,
-                                              dl);
-      run_gpu_reconstruction(sp_reconstruction.detector,
+      StripDetector<float> detector(R_distance,
+                                    scintillator_length,
+                                    n_y_pixels,
+                                    n_z_pixels,
+                                    pixel_size,
+                                    pixel_size,
+                                    sigma,
+                                    dl);
+      run_gpu_reconstruction(detector,
                              reconstruction.get_event_list(),
                              n_blocks,
                              n_iterations,
