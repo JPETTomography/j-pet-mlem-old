@@ -96,11 +96,13 @@ int main(int argc, char* argv[]) {
         std::stringstream fn;
         fn << output_wo_ext << "_"               // phantom_
            << std::setw(3) << std::setfill('0')  //
-           << block * n_iterations + 1           // 001
-           << std::setw(0) << ".png";            // .png
+           << block * n_iterations + 1;          // 001
 
-        png_writer png(fn.str());
+        png_writer png(fn.str() + ".png");
         reconstruction.output_bitmap(png);
+
+        obstream bin(fn.str() + ".bin");
+        reconstruction >> bin;
       }
 
       if (cl.exist("verbose")) {

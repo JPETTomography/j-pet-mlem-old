@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <vector>
 
 class ibstream : public std::ifstream {
  public:
@@ -20,6 +21,13 @@ class obstream : public std::ofstream {
 
   template <typename T> obstream& operator<<(const T v) {
     write(reinterpret_cast<const char*>(&v), sizeof(v));
+    return *this;
+  }
+
+  template <typename T> obstream& operator<<(const std::vector<T> vector) {
+    for (auto&& v : vector) {
+      *this << v;
+    }
     return *this;
   }
 };

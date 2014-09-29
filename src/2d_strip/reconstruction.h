@@ -155,6 +155,10 @@ class Reconstruction {
     return *this;
   }
 
+  template <typename StreamType> StreamType& operator>>(StreamType& out) {
+    return out << rho;
+  }
+
   template <class FileWriter>
   void output_bitmap(FileWriter& fw, bool output_sensitivity = false) {
     fw.template write_header<>(detector.n_z_pixels, detector.n_y_pixels);
