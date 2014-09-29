@@ -1,4 +1,5 @@
 #pragma once
+#include<string>
 
 // @cond PRIVATE
 // redefine help formatting for greater readibility

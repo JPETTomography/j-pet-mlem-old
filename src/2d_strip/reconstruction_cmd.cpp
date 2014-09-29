@@ -14,14 +14,16 @@
 #include "util/cmdline_types.h"
 #include "util/png_writer.h"
 #include "util/progress.h"
-#include "util/variant.h"
 
+
+#include"options.h"
 #include "event.h"
 #include "reconstruction.h"
 
 #if HAVE_CUDA
 #include "cuda/reconstruction.h"
 #endif
+
 
 using namespace std;
 
@@ -33,38 +35,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    std::ostringstream msg;
-    msg << "events_file ..." << std::endl;
-    msg << "build: " << VARIANT << std::endl;
-    msg << "note: All length options below should be expressed in meters.";
-    cl.footer(msg.str());
-
-    cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
-    cl.add<int>(
-        "iterations", 'I', "number of iterations (per block)", false, 1);
-    cl.add<cmdline::path>(
-        "output", 'o', "output files prefix (png)", false, "rec");
-    cl.add<double>(
-        "r-distance", 'r', "R distance between scientilators", false, 500);
-    cl.add<double>("s-length", 'l', "scentilator length", false, 1000);
-    cl.add<double>("p-size", 'p', "pixel size", false, 5);
-    cl.add<int>("n-pixels", 'n', "number of pixels", false, 200);
-    cl.add<double>("s-z", 's', "Sigma z error", false, 10);
-    cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
-    cl.add<double>("gm", 'u', "Gamma error", false, 0);
-    cl.add("verbose", 'v', "prints the iterations information on std::out");
-#if HAVE_CUDA
-    cl.add("gpu", 'G', "run on GPU (via CUDA)");
-    cl.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
-    cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 32);
-    cl.add<int>(
-        "cuda-threads", 'W', "CUDA threads per block", cmdline::dontsave, 512);
-#endif
-#if _OPENMP
-    cl.add<int>(
-        "n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
-#endif
-
+    set_options(cl);
     cl.parse_check(argc, argv);
 
     if (!cl.rest().size()) {
