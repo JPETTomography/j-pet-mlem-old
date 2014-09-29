@@ -14,6 +14,7 @@
 #include "util/svg_ostream.h"
 #include "util/cmdline_types.h"
 #include "util/png_writer.h"
+#include "options.h"
 
 #include "phantom.h"
 #include "strip_detector.h"
@@ -32,23 +33,8 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    cl.footer("phantom_description");
 
-    cl.add<cmdline::path>(
-        "output", 'o', "output events file", false, "phantom.bin");
-    cl.add<double>(
-        "r-distance", 'r', "R distance between scientilators", false, 500);
-    cl.add<double>("s-length", 'l', "scintillator length", false, 1000);
-    cl.add<double>("p-size", 'p', "pixel size", false, 5);
-    cl.add<int>("n-pixels", 'n', "number of pixels", false);
-    cl.add<int>("n-z-pixels", '\0', "number of z pixels", false);
-    cl.add<int>("n-y-pixels", '\0', "number of y pixels", false);
-    cl.add<double>("s-z", 's', "Sigma z error", false, 10);
-    cl.add<double>("s-dl", 'd', "Sigma dl error", false, 63);
-    cl.add<double>("emissions", 'e', "number of emissions", false, 500000);
-#if _OPENMP
-    cl.add<int>("n-threads", 'T', "number of OpenMP threads", false, 4);
-#endif
+    set_options_for_phantom(cl);
 
     cl.parse_check(argc, argv);
 
@@ -92,7 +78,7 @@ int main(int argc, char* argv[]) {
         n_y_pixels = (int)std::ceil(2 * R_distance / pixel_size);
     }
 
-    std::cerr<<n_z_pixels<<"x"<<n_y_pixels<<std::endl;
+    std::cerr << n_z_pixels << "x" << n_y_pixels << std::endl;
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);
       std::string line;
@@ -114,18 +100,17 @@ int main(int argc, char* argv[]) {
         ellipse_list.push_back(region);
       }
     }
- StripDetector<double> detector(R_distance,
-                              scintillator_length,
-                              n_y_pixels,
-                              n_z_pixels,
-                              pixel_size,
-                              pixel_size,
-                              sigma_z,
-                       sigma_dl);
-    Phantom<StripDetector<double>, double> phantom(
-       detector,
-        ellipse_list);
-    std::cerr<<"detector "<<detector.size_y<<" "<<detector.tl_y_half_h<<std::endl;
+    StripDetector<double> detector(R_distance,
+                                   scintillator_length,
+                                   n_y_pixels,
+                                   n_z_pixels,
+                                   pixel_size,
+                                   pixel_size,
+                                   sigma_z,
+                                   sigma_dl);
+    Phantom<StripDetector<double>, double> phantom(detector, ellipse_list);
+    std::cerr << "detector " << detector.size_y << " " << detector.tl_y_half_h
+              << std::endl;
 
     phantom(emissions);
 

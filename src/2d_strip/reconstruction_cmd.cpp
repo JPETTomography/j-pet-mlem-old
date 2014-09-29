@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    set_options(cl);
+    set_options_for_reconstruction(cl);
     cl.parse_check(argc, argv);
 
     if (!cl.rest().size()) {
