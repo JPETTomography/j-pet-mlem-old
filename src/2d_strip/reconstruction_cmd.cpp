@@ -86,14 +86,8 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-      StripDetector<float> detector(R_distance,
-                                    scintillator_length,
-                                    n_y_pixels,
-                                    n_z_pixels,
-                                    pixel_size,
-                                    pixel_size,
-                                    sigma,
-                                    dl);
+      StripDetector<float> detector(reconstruction.detector);
+
       run_gpu_reconstruction(detector,
                              reconstruction.get_event_list(),
                              n_blocks,
