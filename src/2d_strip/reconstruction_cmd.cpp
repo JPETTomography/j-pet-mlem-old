@@ -15,15 +15,13 @@
 #include "util/png_writer.h"
 #include "util/progress.h"
 
-
-#include"options.h"
+#include "options.h"
 #include "event.h"
 #include "reconstruction.h"
 
 #if HAVE_CUDA
 #include "cuda/reconstruction.h"
 #endif
-
 
 using namespace std;
 

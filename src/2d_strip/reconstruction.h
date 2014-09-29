@@ -263,7 +263,6 @@ class Reconstruction {
           ellipse_pixels[n_ellipse_pixels] = pixel;
           ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
           ++n_ellipse_pixels;
-
         }
       }
     }
