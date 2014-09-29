@@ -50,35 +50,15 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    double R_distance = cl.get<double>("r-distance");
-    double scintillator_length = cl.get<double>("s-length");
-    double pixel_size = cl.get<double>("p-size");
-
-    double sigma_z = cl.get<double>("s-z");
-    double sigma_dl = cl.get<double>("s-dl");
     double emissions = cl.get<double>("emissions");
 
-    // typedef EllipseParameters<double> Ellipse;
     std::vector<PhantomRegion<double>> ellipse_list;
 
-    int n_z_pixels;
-    int n_y_pixels;
-    if (cl.exist("n-pixels")) {
-      n_z_pixels = cl.get<int>("n-pixels");
-      n_y_pixels = cl.get<int>("n-pixels");
-    } else {
-      if (cl.exist("n-z-pixels"))
-        n_z_pixels = cl.get<int>("n-z-pixels");
-      else
-        n_z_pixels = (int)std::ceil(scintillator_length / pixel_size);
+    StripDetector<double>* detector =
+        make_strip_detector_from_options<double>(cl);
 
-      if (cl.exist("n-y-pixels"))
-        n_y_pixels = cl.get<int>("nyz-pixels");
-      else
-        n_y_pixels = (int)std::ceil(2 * R_distance / pixel_size);
-    }
-
-    std::cerr << n_z_pixels << "x" << n_y_pixels << std::endl;
+    std::cerr << detector->n_z_pixels << "x" << detector->n_y_pixels
+              << std::endl;
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);
       std::string line;
@@ -100,16 +80,9 @@ int main(int argc, char* argv[]) {
         ellipse_list.push_back(region);
       }
     }
-    StripDetector<double> detector(R_distance,
-                                   scintillator_length,
-                                   n_y_pixels,
-                                   n_z_pixels,
-                                   pixel_size,
-                                   pixel_size,
-                                   sigma_z,
-                                   sigma_dl);
-    Phantom<StripDetector<double>, double> phantom(detector, ellipse_list);
-    std::cerr << "detector " << detector.size_y << " " << detector.tl_y_half_h
+
+    Phantom<StripDetector<double>, double> phantom(*detector, ellipse_list);
+    std::cerr << "detector " << detector->size_y << " " << detector->tl_y_half_h
               << std::endl;
 
     phantom(emissions);

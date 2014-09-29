@@ -25,7 +25,6 @@
 #include "cuda/reconstruction.h"
 #endif
 
-
 std::ostream& print_statistics(std::ostream& out,
                                const Reconstruction<double>& reconstruction,
                                int n_iterations,
@@ -54,28 +53,15 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    auto R_distance = cl.get<double>("r-distance");
-    auto scintillator_length = cl.get<double>("s-length");
-    auto pixel_size = cl.get<double>("p-size");
-
-    auto sigma = cl.get<double>("s-z");
-    auto dl = cl.get<double>("s-dl");
-
-    int n_z_pixels = (int)std::ceil(scintillator_length / pixel_size);
-    int n_y_pixels = (int)std::ceil(2 * R_distance / pixel_size);
-    std::cerr << n_y_pixels << "x" << n_z_pixels << std::endl;
-    Reconstruction<double> reconstruction(R_distance,
-                                          scintillator_length,
-                                          n_y_pixels,
-                                          n_z_pixels,
-                                          pixel_size,
-                                          pixel_size,
-                                          sigma,
-                                          dl);
+    StripDetector<double>* strip_detector =
+        make_strip_detector_from_options<double>(cl);
+    std::cerr << strip_detector->n_y_pixels << "x" << strip_detector->n_z_pixels
+              << std::endl;
+    Reconstruction<double> reconstruction(*strip_detector);
 
     for (auto& fn : cl.rest()) {
-      ibstream in(fn);
-      reconstruction << in;
+      ibstream events(fn);
+      reconstruction << events;
     }
 
     auto n_blocks = cl.get<int>("blocks");
@@ -86,9 +72,9 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-      StripDetector<float> detector(reconstruction.detector);
+      StripDetector<float> single_precision_strip_detector(*strip_detector);
 
-      run_gpu_reconstruction(detector,
+      run_gpu_reconstruction(single_precision_strip_detector,
                              reconstruction.get_event_list(),
                              n_blocks,
                              n_iterations,

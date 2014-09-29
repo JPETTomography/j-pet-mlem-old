@@ -1,8 +1,8 @@
+#include "options.h"
+
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/variant.h"
-
-#include "options.h"
 
 void set_detector_options(cmdline::parser& parser) {
 
