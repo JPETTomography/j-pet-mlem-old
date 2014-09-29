@@ -25,6 +25,7 @@
 #include "cuda/reconstruction.h"
 #endif
 
+
 std::ostream& print_statistics(std::ostream& out,
                                const Reconstruction<double>& reconstruction,
                                int n_iterations,

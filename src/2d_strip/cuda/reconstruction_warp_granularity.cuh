@@ -71,11 +71,33 @@ __global__ void reconstruction(StripDetector<F> detector,
     // bounding box limits for event
     const int bb_half_width = n_pixels_in_line(bb_z, detector.pixel_width);
     const int bb_half_height = n_pixels_in_line(bb_y, detector.pixel_height);
-    const Pixel<> top_left(center_pixel.x - bb_half_width,
-                           center_pixel.y - bb_half_height);
+    Pixel<> top_left(center_pixel.x - bb_half_width,
+                     center_pixel.y - bb_half_height);
 
-    const int bb_width = 2 * bb_half_width;
-    const int bb_height = 2 * bb_half_height;
+    Pixel<> top_right(center_pixel.x + bb_half_width,
+                      center_pixel.y + bb_half_height);
+
+    // check boundary conditions
+    if (top_left.x < 0)
+      top_left.x = 0;
+    if (top_left.x > (detector.n_z_pixels - 1))
+      top_left.x = (detector.n_z_pixels - 1);
+    if (top_left.y < 0)
+      top_left.y = 0;
+    if (top_left.y > (detector.n_y_pixels - 1))
+      top_left.y = (detector.n_y_pixels - 1);
+
+    if (top_right.x < 0)
+      top_right.x = 0;
+    if (top_right.x > (detector.n_z_pixels - 1))
+      top_right.x = (detector.n_z_pixels - 1);
+    if (top_right.y < 0)
+      top_right.y = 0;
+    if (top_right.y > (detector.n_y_pixels - 1))
+      top_right.y = (detector.n_y_pixels - 1);
+
+    const int bb_width = top_right.x - top_left.x;
+    const int bb_height = top_right.y - top_left.y;
     const int bb_size = bb_width * bb_height;
     F inv_bb_width = F(1) / bb_width;
 
@@ -113,6 +135,7 @@ __global__ void reconstruction(StripDetector<F> detector,
         F event_kernel_mul_rho =
             event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
         acc += event_kernel_mul_rho * pixel_sensitivity;
+
 #if CACHE_ELLIPSE_PIXELS
         ellipse_pixels[n_ellipse_pixels][threadIdx.x] =
             make_short2(pixel.x, pixel.y);
@@ -173,21 +196,15 @@ __global__ void reconstruction(StripDetector<F> detector,
       if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
         point -= ellipse_center;
 
-#if USE_SENSITIVITY
-        F inv_pixel_sensitivity = tex2D(tex_inv_sensitivity, pixel.x, pixel.y);
-#else
-        F inv_pixel_sensitivity = 1;
-#endif
-
-        F event_kernel = kernel(y,
-                                tan,
-                                sec,
-                                sec_sq,
-                                detector.radius,
-                                point,
-                                detector.inv_cor_mat_diag,
-                                sqrt_det_cor_mat) *
-                         inv_pixel_sensitivity;
+        F event_kernel = use_kernel ? kernel(y,
+                                             tan,
+                                             sec,
+                                             sec_sq,
+                                             detector.radius,
+                                             point,
+                                             detector.inv_cor_mat_diag,
+                                             sqrt_det_cor_mat)
+                                    : 1;
 
         atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                   event_kernel * tex2D(tex_rho, pixel.x, pixel.y) * inv_acc);
