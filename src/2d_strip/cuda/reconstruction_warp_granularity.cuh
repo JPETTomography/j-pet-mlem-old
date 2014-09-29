@@ -19,11 +19,12 @@ __global__ void reconstruction(StripDetector<F> detector,
                                const int n_threads_per_block) {
   Kernel<F> kernel;
 
+#if USE_RUNTIME_TRUE_FALSE
   // The variables below always evaluate to true/false, but compiler cannot
   // assume that since n_blocks is only known at runtime.
   bool rt_true = /***/ (n_blocks > 0);
   bool rt_false = /**/ (n_blocks == 0);
-  (void)(rt_true, rt_false);  // marks above as used variables
+#endif
 
   // In optimized build we set it to true/false which triggers else branches to
   // be optimized out of the code, however in code parts benchmark we shall use
