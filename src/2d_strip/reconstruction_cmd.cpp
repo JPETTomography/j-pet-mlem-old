@@ -1,4 +1,6 @@
 #include <iostream>
+#include <ostream>
+
 #include <vector>
 #include <ctime>
 #include <sstream>
@@ -22,6 +24,11 @@
 #if HAVE_CUDA
 #include "cuda/reconstruction.h"
 #endif
+
+std::ostream& print_statistics(std::ostream& out,
+                               const Reconstruction<double>& reconstruction,
+                               int n_iterations,
+                               int n_blocks);
 
 using namespace std;
 
@@ -116,35 +123,7 @@ int main(int argc, char* argv[]) {
       }
 
       if (cl.exist("verbose")) {
-        size_t iterations = n_iterations * n_blocks;
-        size_t events = reconstruction.n_events_processed() / iterations;
-        size_t pixels = reconstruction.n_pixels_processed() / iterations;
-        size_t kernels = reconstruction.n_kernel_calls() / iterations;
-        std::cout << "iterations: " << iterations << " "
-                  << "events: " << events << " "
-                  << "pixels: " << pixels << " "
-                  << "(" << (double)pixels / events << ") "
-                  << "kernel calls: " << kernels << " "
-                  << "(" << (double)kernels / events << ")" << std::endl;
-
-        size_t bb_width_sum = reconstruction.bb_width_sum() / n_iterations;
-        size_t bb_height_sum = reconstruction.bb_height_sum() / n_iterations;
-        size_t bb_width2_sum = reconstruction.bb_width2_sum() / n_iterations;
-        size_t bb_height2_sum = reconstruction.bb_height2_sum() / n_iterations;
-        size_t bb_width_height_sum =
-            reconstruction.bb_width_height_sum() / n_iterations;
-        double avg_width = (double)bb_width_sum / events;
-        double avg_height = (double)bb_height_sum / events;
-        double avg_width2 = (double)bb_width2_sum / events;
-        double avg_height2 = (double)bb_height2_sum / events;
-        double avg_width_height = (double)bb_width_height_sum / events;
-        avg_width2 -= avg_width * avg_width;
-        avg_height2 -= avg_height * avg_height;
-        avg_width_height -= avg_width * avg_height;
-        std::cout << "width: " << avg_width << "(" << std::sqrt(avg_width2)
-                  << ")"
-                  << " height: " << avg_height << "(" << std::sqrt(avg_height2)
-                  << ")  " << avg_width_height << std::endl;
+        print_statistics(std::cout, reconstruction, n_iterations, n_blocks);
       }
     }
   } catch (std::string& ex) {
@@ -154,4 +133,38 @@ int main(int argc, char* argv[]) {
   }
 
   return 0;
+}
+
+std::ostream& print_statistics(std::ostream& out,
+                               const Reconstruction<double>& reconstruction,
+                               int n_iterations,
+                               int n_blocks) {
+  size_t iterations = n_iterations * n_blocks;
+  size_t events = reconstruction.n_events_processed() / iterations;
+  size_t pixels = reconstruction.n_pixels_processed() / iterations;
+  size_t kernels = reconstruction.n_kernel_calls() / iterations;
+  out << "iterations: " << iterations << " "
+      << "events: " << events << " "
+      << "pixels: " << pixels << " "
+      << "(" << (double)pixels / events << ") "
+      << "kernel calls: " << kernels << " "
+      << "(" << (double)kernels / events << ")" << std::endl;
+
+  size_t bb_width_sum = reconstruction.bb_width_sum() / n_iterations;
+  size_t bb_height_sum = reconstruction.bb_height_sum() / n_iterations;
+  size_t bb_width2_sum = reconstruction.bb_width2_sum() / n_iterations;
+  size_t bb_height2_sum = reconstruction.bb_height2_sum() / n_iterations;
+  size_t bb_width_height_sum =
+      reconstruction.bb_width_height_sum() / n_iterations;
+  double avg_width = (double)bb_width_sum / events;
+  double avg_height = (double)bb_height_sum / events;
+  double avg_width2 = (double)bb_width2_sum / events;
+  double avg_height2 = (double)bb_height2_sum / events;
+  double avg_width_height = (double)bb_width_height_sum / events;
+  avg_width2 -= avg_width * avg_width;
+  avg_height2 -= avg_height * avg_height;
+  avg_width_height -= avg_width * avg_height;
+  out << "width: " << avg_width << "(" << std::sqrt(avg_width2) << ")"
+      << " height: " << avg_height << "(" << std::sqrt(avg_height2) << ")  "
+      << avg_width_height << std::endl;
 }

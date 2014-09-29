@@ -19,9 +19,6 @@
 
 #define BB_UPDATE 1
 
-#define READER(T, name) \
-  T name() { return stats_.total_##name##_; }
-
 template <typename FType = double, template <typename Ft> class K = Kernel>
 class Reconstruction {
  public:
@@ -325,6 +322,9 @@ class Reconstruction {
       }
     }
   }
+
+#define READER(T, name) \
+  T name() const { return stats_.total_##name##_; }
 
  public:
   READER(size_t, n_events_processed);
