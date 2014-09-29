@@ -36,6 +36,11 @@ template <typename SType = int> class Pixel {
   _ bool operator<(const Pixel& p) const {
     return y < p.y || (y == p.y && x < p.x);
   }
+
+  _ void clamp(const Pixel& tl, const Pixel& br) {
+    x = compat::min(br.x, compat::max(tl.x, x));
+    y = compat::min(br.y, compat::max(tl.y, y));
+  }
 };
 
 #ifdef TEST_CASE

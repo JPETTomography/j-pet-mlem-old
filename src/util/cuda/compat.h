@@ -23,6 +23,8 @@ namespace compat {
 #define _ __device__ __host__
 #define constexpr
 
+  _ int min(const int a, const int b) { return ::min(a, b); }
+  _ int max(const int a, const int b) { return ::max(a, b); }
   _ float min(const float a, const float b) { return fminf(a, b); }
   _ float max(const float a, const float b) { return fmaxf(a, b); }
   _ float ceil(const float a) { return ceilf(a); }

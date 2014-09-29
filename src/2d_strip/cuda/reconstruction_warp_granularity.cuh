@@ -75,30 +75,19 @@ __global__ void reconstruction(StripDetector<F> detector,
     Pixel<> top_left(center_pixel.x - bb_half_width,
                      center_pixel.y - bb_half_height);
 
-    Pixel<> top_right(center_pixel.x + bb_half_width,
-                      center_pixel.y + bb_half_height);
+    Pixel<> bottom_right(center_pixel.x + bb_half_width,
+                         center_pixel.y + bb_half_height);
+
+    Pixel<> detector_top_left(0, 0);
+    Pixel<> detector_bottom_right(detector.n_z_pixels - 1,
+                                  detector.n_y_pixels - 1);
 
     // check boundary conditions
-    if (top_left.x < 0)
-      top_left.x = 0;
-    if (top_left.x > (detector.n_z_pixels - 1))
-      top_left.x = (detector.n_z_pixels - 1);
-    if (top_left.y < 0)
-      top_left.y = 0;
-    if (top_left.y > (detector.n_y_pixels - 1))
-      top_left.y = (detector.n_y_pixels - 1);
+    top_left.clamp(detector_top_left, detector_bottom_right);
+    bottom_right.clamp(detector_top_left, detector_bottom_right);
 
-    if (top_right.x < 0)
-      top_right.x = 0;
-    if (top_right.x > (detector.n_z_pixels - 1))
-      top_right.x = (detector.n_z_pixels - 1);
-    if (top_right.y < 0)
-      top_right.y = 0;
-    if (top_right.y > (detector.n_y_pixels - 1))
-      top_right.y = (detector.n_y_pixels - 1);
-
-    const int bb_width = top_right.x - top_left.x;
-    const int bb_height = top_right.y - top_left.y;
+    const int bb_width = bottom_right.x - top_left.x;
+    const int bb_height = bottom_right.y - top_left.y;
     const int bb_size = bb_width * bb_height;
     F inv_bb_width = F(1) / bb_width;
 
