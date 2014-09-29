@@ -25,10 +25,10 @@
 #include "cuda/reconstruction.h"
 #endif
 
-std::ostream& print_statistics(std::ostream& out,
-                               const Reconstruction<double>& reconstruction,
-                               int n_iterations,
-                               int n_blocks);
+void print_statistics(std::ostream& out,
+                      const Reconstruction<double>& reconstruction,
+                      int n_iterations,
+                      int n_blocks);
 
 using namespace std;
 
@@ -116,10 +116,10 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
-std::ostream& print_statistics(std::ostream& out,
-                               const Reconstruction<double>& reconstruction,
-                               int n_iterations,
-                               int n_blocks) {
+void print_statistics(std::ostream& out,
+                      const Reconstruction<double>& reconstruction,
+                      int n_iterations,
+                      int n_blocks) {
   size_t iterations = n_iterations * n_blocks;
   size_t events = reconstruction.n_events_processed() / iterations;
   size_t pixels = reconstruction.n_pixels_processed() / iterations;
