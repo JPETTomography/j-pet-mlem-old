@@ -209,9 +209,6 @@ class Reconstruction {
     Pixel tl(center_pixel.x - bb_half_width, center_pixel.y - bb_half_height);
     Pixel br(center_pixel.x + bb_half_width, center_pixel.y + bb_half_height);
 
-    Pixel tl_temp = tl;
-    Pixel br_temp = br;
-
     if (tl.x < 0)
       tl.x = 0;
     if (tl.x > (detector.n_z_pixels - 1))
