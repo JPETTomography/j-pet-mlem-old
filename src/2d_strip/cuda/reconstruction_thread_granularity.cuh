@@ -70,7 +70,7 @@ __global__ void reconstruction(StripDetector<F> detector,
     const Pixel<> br(center_pixel.x + bb_half_width,
                      center_pixel.y + bb_half_height);
 
-    F acc = 0;
+    F denominator = 0;
 
     for (int iy = tl.y; iy < br.y; ++iy) {
       for (int iz = tl.x; iz < br.x; ++iz) {
@@ -94,12 +94,12 @@ __global__ void reconstruction(StripDetector<F> detector,
           F event_kernel = 1;
 #endif
 
-          acc += event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
+          denominator += event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
         }
       }
     }
 
-    F inv_acc = 1 / acc;
+    F inv_denominator = 1 / denominator;
 
     for (int iy = tl.y; iy < br.y; ++iy) {
       for (int iz = tl.x; iz < br.x; ++iz) {
@@ -124,7 +124,7 @@ __global__ void reconstruction(StripDetector<F> detector,
 
           atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                     event_kernel * tex2D(tex_rho, pixel.x, pixel.y) /
-                        pixel_sensitivity * inv_acc);
+                        pixel_sensitivity * inv_denominator);
         }
       }
     }

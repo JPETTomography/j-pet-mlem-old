@@ -8,6 +8,8 @@
 
 #include "config.h"
 
+template <typename F> __device__ void reduce(F& value);
+
 template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
@@ -56,7 +58,7 @@ __global__ void reconstruction(StripDetector<F> detector,
                    events_z_d[event_index],
                    events_dl[event_index]);
 
-    F acc = 0;
+    F denominator = 0;
 
     F tan, y, z;
     event.transform(detector.radius, tan, y, z);
@@ -124,7 +126,7 @@ __global__ void reconstruction(StripDetector<F> detector,
 
         F event_kernel_mul_rho =
             event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
-        acc += event_kernel_mul_rho * pixel_sensitivity;
+        denominator += event_kernel_mul_rho * pixel_sensitivity;
 
 #if CACHE_ELLIPSE_PIXELS
         ellipse_pixels[n_ellipse_pixels][threadIdx.x] =
@@ -135,31 +137,10 @@ __global__ void reconstruction(StripDetector<F> detector,
       }
     }
 
-#if __CUDA_ARCH__ >= 300
-    // reduce acc from all threads using __shfl_xor
-    for (int xor_iter = 16; xor_iter >= 1; xor_iter /= 2) {
-      acc += __shfl_xor(acc, xor_iter, WARP_SIZE);
-    }
-#else
-    // fallback to older reduction algorithm
-    __shared__ F accumulator[MAX_THREADS_PER_BLOCK];
-    int tid = threadIdx.x;
-    int index = (tid & (WARP_SIZE - 1));
-    accumulator[tid] = acc;
-    if (index < 16)
-      accumulator[tid] += accumulator[tid + 16];
-    if (index < 8)
-      accumulator[tid] += accumulator[tid + 8];
-    if (index < 4)
-      accumulator[tid] += accumulator[tid + 4];
-    if (index < 2)
-      accumulator[tid] += accumulator[tid + 2];
-    if (index < 1)
-      accumulator[tid] += accumulator[tid + 1];
-    acc = accumulator[tid & ~(WARP_SIZE - 1)];
-#endif
+    // reduce denominator so all threads now share same value
+    reduce(denominator);
 
-    F inv_acc = 1 / acc;
+    F inv_acc = 1 / denominator;
 
 #if CACHE_ELLIPSE_PIXELS
     for (int p = 0; p < n_ellipse_pixels; ++p) {
@@ -222,4 +203,24 @@ __device__ Pixel<> warp_space_pixel(int offset,
   pixel.x += tl.x;
   pixel.y += tl.y;
   return pixel;
+}
+
+template <typename F> __device__ void reduce(F& value) {
+#if __CUDA_ARCH__ >= 300
+  // reduce acc from all threads using __shfl_xor
+  for (int i = 16; i >= 1; i /= 2) {
+    value += __shfl_xor(value, i, WARP_SIZE);
+  }
+#else
+  // fallback to older reduction algorithm
+  __shared__ F accumulator[MAX_THREADS_PER_BLOCK];
+  int tid = threadIdx.x;
+  int index = (tid & (WARP_SIZE - 1));
+  accumulator[tid] = value;
+  for (int i = 16; i >= 1; i /= 2) {
+    if (index < i)
+      accumulator[tid] += accumulator[tid + i];
+  }
+  value = accumulator[tid & ~(WARP_SIZE - 1)];
+#endif
 }
