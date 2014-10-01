@@ -19,6 +19,20 @@ __global__ void reconstruction(StripDetector<F> detector,
                                const int n_threads_per_block) {
   Kernel<F> kernel;
 
+#if USE_RUNTIME_TRUE_FALSE
+  // The variables below always evaluate to true/false, but compiler cannot
+  // assume that since n_blocks is only known at runtime.
+  bool rt_true = /***/ (n_blocks > 0);
+  bool rt_false = /**/ (n_blocks == 0);
+#endif
+
+  // In optimized build we set it to true/false which triggers else branches to
+  // be optimized out of the code, however in code parts benchmark we shall use
+  // rt_true/rt_false that guarantees else branches to be not optimized, so we
+  // can reliably measure time disabling certain computations.
+  bool use_kernel = true;
+  bool use_sensitivity = false;
+
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   int n_threads = n_blocks * n_threads_per_block;
   int n_chunks = (n_events + n_threads - 1) / n_threads;
@@ -95,29 +109,22 @@ __global__ void reconstruction(StripDetector<F> detector,
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
 
-#if USE_SENSITIVITY
-          F inv_pixel_sensitivity =
-              tex2D(tex_inv_sensitivity, pixel.x, pixel.y);
-#else
-          F inv_pixel_sensitivity = 1;
-#endif
+          F pixel_sensitivity =
+              use_sensitivity ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
 
-#if USE_KERNEL
-          F event_kernel = kernel(y,
-                                  tan,
-                                  sec,
-                                  sec_sq,
-                                  detector.radius,
-                                  point,
-                                  detector.inv_cor_mat_diag,
-                                  sqrt_det_cor_mat) *
-                           inv_pixel_sensitivity;
-#else
-          F event_kernel = 1;
-#endif
+          F event_kernel = use_kernel ? kernel(y,
+                                               tan,
+                                               sec,
+                                               sec_sq,
+                                               detector.radius,
+                                               point,
+                                               detector.inv_cor_mat_diag,
+                                               sqrt_det_cor_mat)
+                                      : 1;
 
           atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
-                    event_kernel * tex2D(tex_rho, pixel.x, pixel.y) * inv_acc);
+                    event_kernel * tex2D(tex_rho, pixel.x, pixel.y) /
+                        pixel_sensitivity * inv_acc);
         }
       }
     }
