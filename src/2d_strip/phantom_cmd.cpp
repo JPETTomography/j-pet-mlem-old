@@ -91,9 +91,14 @@ int main(int argc, char* argv[]) {
 
     png_writer png(output.wo_ext() + ".png");
     phantom.output_bitmap(png);
+    obstream bin(output.wo_ext() + ".bin");
+    phantom.output_binary_picture(bin, false);
 
     png_writer png_true(output.wo_ext() + "_true.png");
     phantom.output_bitmap(png_true, true);
+    obstream bin_true(output.wo_ext() + "_true.bin");
+    phantom.output_binary_picture(bin_true, true);
+
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
   } catch (const char* ex) {
