@@ -192,7 +192,7 @@ class Reconstruction {
                  F y,
                  F tan,
                  std::vector<F>& output_rho) {
-
+    bool use_sensitivity = false;
     F sec, sec_sq, A, B, C, bb_y, bb_z;
     detector.ellipse_bb(angle, tan, sec, sec_sq, A, B, C, bb_y, bb_z);
 
@@ -247,7 +247,7 @@ class Reconstruction {
 
           int i = pixel.y * detector.n_z_pixels + pixel.x;
 
-          F pixel_sensitivity = sensitivity[i];
+          F pixel_sensitivity = use_sensitivity?sensitivity[i]:1;
           stats.n_kernel_calls_by();
           F event_kernel = kernel(y,
                                   tan,

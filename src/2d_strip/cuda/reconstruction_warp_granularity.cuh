@@ -31,7 +31,7 @@ __global__ void reconstruction(StripDetector<F> detector,
   // rt_true/rt_false that guarantees else branches to be not optimized, so we
   // can reliably measure time disabling certain computations.
   bool use_kernel = true;
-  bool use_sensitivity = true;
+  bool use_sensitivity = false;
 
   const F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   const int n_warps_per_block = n_threads_per_block / WARP_SIZE;
