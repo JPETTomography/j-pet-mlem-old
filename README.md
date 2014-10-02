@@ -91,6 +91,25 @@ Additional options:
 		cmake -DCMAKE_CXX_COMPILER=g++   # for GCC
 		cmake -DCMAKE_CXX_COMPILER=clang # for Clang
 
+Build Configuration
+-------------------
+
+There are several compile time options that can be changed, enabled or
+disabled. All *PET* specific options are *CMake* variables/options prefixed
+with `PET_`.
+
+To list all available configure options:
+
+	cmake -LH
+
+Once command above is run, typing `cmake -DPET` and pressing **[TAB]** in
+terminal completes all PET specific variables, unless *Bash* completion is
+disabled.
+
+To disable some option enabled by default, e.g. `PET_WARP_GRANULARITY`:
+
+	cmake -DPET_WARP_GRANULARITY:BOOL=OFF
+
 Testing
 -------
 
