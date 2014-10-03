@@ -112,8 +112,6 @@ if(PNG_FOUND)
   link_libraries(${PNG_LIBRARIES})
 endif()
 
-list(APPEND 2d_strip_srcs src/2d_strip/options.cpp)
-
 # add options above as compile flags removing PET_ prefix
 get_cmake_property(vars VARIABLES)
 foreach(var ${vars})
@@ -155,15 +153,22 @@ function(pet_target TYPE CMD)
       src/${TYPE}/cuda/${CMD}*.cpp)
     list(APPEND CUDA ${CUDA_HEADERS})
   endif()
+  # add other files
+  file(GLOB others src/${TYPE}/*.cpp)
+  foreach(other ${others})
+    if(NOT other MATCHES "_(test|cmd).cpp$")
+      list(APPEND OTHER ${other})
+    endif()
+  endforeach()
   # add target specific headers
   file(GLOB HEADERS src/${TYPE}/*.h)
   # add target executable
   add_executable(${TYPE}_${CMD}
     src/${TYPE}/${CMD}_cmd.cpp
+    ${OTHER}
     ${HEADERS}
     ${COMMON}
-    ${CUDA}
-    ${${TYPE}_srcs})
+    ${CUDA})
   # add CUDA objects to the target
   if(CUDA_FOUND)
     target_link_libraries(${TYPE}_${CMD} ${CUDA_LIBRARIES})
