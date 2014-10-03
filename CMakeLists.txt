@@ -31,6 +31,9 @@ set(PET_MAX_THREADS_PER_BLOCK 512
     CACHE INTEGER
     "not used in current implementation")
 
+# extra verbosity
+option(CUDA_PTXAS_VERBOSE "show verbose information about CUDA registers" OFF)
+
 # use Release by default
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -68,10 +71,15 @@ find_package(CUDA)
 if(CUDA_FOUND)
   add_definitions(-DHAVE_CUDA=1)
   include_directories(${CUDA_INCLUDE_DIRS})
-  list(APPEND CUDA_NVCC_FLAGS  -gencode arch=compute_30,code=sm_30 -gencode arch=compute_20,code=sm_20)
+  list(APPEND CUDA_NVCC_FLAGS
+    -gencode arch=compute_30,code=sm_30
+    -gencode arch=compute_20,code=sm_20)
   list(APPEND CUDA_NVCC_FLAGS_RELEASE
-    -Xptxas -v,-O3,-lineinfo
+    -Xptxas -O3,-lineinfo
     --use_fast_math)
+  if(CUDA_PTXAS_VERBOSE)
+    list(APPEND CUDA_NVCC_FLAGS_RELEASE -Xptxas -v)
+  endif()
   list(APPEND CUDA_NVCC_FLAGS_DEBUG -g -G)
   if(NOT MSVC)
     list(APPEND CUDA_NVCC_FLAGS -Xcompiler -Wall,-Wno-unused-function)
