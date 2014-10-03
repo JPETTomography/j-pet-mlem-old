@@ -86,18 +86,22 @@ int main(int argc, char* argv[]) {
     phantom(emissions);
 
     auto output = cl.get<cmdline::path>("output");
+    auto output_base_name = output.wo_ext();
     obstream out(output);
     phantom >> out;
 
-    png_writer png(output.wo_ext() + ".png");
-    phantom.output_bitmap(png);
-    obstream bin(output.wo_ext() + ".bin");
-    phantom.output_binary_picture(bin, false);
+    std::ofstream cfg(output_base_name + ".cfg");
+    cfg << cl;
 
-    png_writer png_true(output.wo_ext() + "_true.png");
+    png_writer png(output_base_name + ".png");
+    phantom.output_bitmap(png);
+    obstream bin(output_base_name + ".bin");
+    phantom.output_binary(bin, false);
+
+    png_writer png_true(output_base_name + "_true.png");
     phantom.output_bitmap(png_true, true);
-    obstream bin_true(output.wo_ext() + "_true.bin");
-    phantom.output_binary_picture(bin_true, true);
+    obstream bin_true(output_base_name + "_true.bin");
+    phantom.output_binary(bin_true, true);
 
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;

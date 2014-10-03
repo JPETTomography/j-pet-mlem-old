@@ -187,14 +187,13 @@ template <typename D, typename FType = double> class Phantom {
   }
 
   template <class FileWriter>
-  void output_binary_picture(FileWriter& fw, bool wo_errors = false) {
+  void output_binary(FileWriter& fw, bool wo_errors = false) {
 
-         auto& target_output = wo_errors ? output_without_errors : output;
-          for (int y = 0; y < detector.n_y_pixels; ++y) {
-              fw<<target_output[y];
-            }
+    auto& target_output = wo_errors ? output_without_errors : output;
+    for (int y = 0; y < detector.n_y_pixels; ++y) {
+      fw << target_output[y];
+    }
   }
-
 
   template <typename StreamType> Phantom& operator>>(StreamType& out) {
 

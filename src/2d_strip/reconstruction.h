@@ -247,7 +247,7 @@ class Reconstruction {
 
           int i = pixel.y * detector.n_z_pixels + pixel.x;
 
-          F pixel_sensitivity = use_sensitivity?sensitivity[i]:1;
+          F pixel_sensitivity = use_sensitivity ? sensitivity[i] : 1;
           stats.n_kernel_calls_by();
           F event_kernel = kernel(y,
                                   tan,
