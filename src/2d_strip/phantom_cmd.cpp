@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
 
     png_writer png(output_base_name + ".png");
     phantom.output_bitmap(png);
-    obstream bin(output_base_name + ".bin");
+    obstream bin(output_base_name + "_detected.bin");
     phantom.output_binary(bin, false);
 
     png_writer png_true(output_base_name + "_true.png");
