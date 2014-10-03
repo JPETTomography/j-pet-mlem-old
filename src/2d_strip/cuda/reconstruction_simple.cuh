@@ -36,7 +36,7 @@ __global__ void reconstruction(StripDetector<F> detector,
     F y, z;
     y = events_z_u[i];
     z = events_z_d[i];
-    F acc = 0;
+    F denominator = 0;
 
     int y_step = 3 * (detector.sigma_dl / detector.pixel_height);
     int z_step = 3 * (detector.sigma_z / detector.pixel_width);
@@ -53,11 +53,11 @@ __global__ void reconstruction(StripDetector<F> detector,
         float event_kernel =
             kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
 
-        acc += event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
+        denominator += event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
       }
     }
 
-    float inv_acc = 1 / acc;
+    F inv_denominator = 1 / denominator;
 
     for (int iy = center_pixel.y - y_step; iy < center_pixel.y + y_step; ++iy) {
       for (int iz = center_pixel.x - z_step; iz < center_pixel.x + z_step;
@@ -69,9 +69,9 @@ __global__ void reconstruction(StripDetector<F> detector,
         F event_kernel =
             kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
 
-            atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
-                      (event_kernel * tex2D(tex_rho, pixel.x, pixel.y) *
-                          inv_acc);
+        atomicAdd(
+            &output_rho[PIXEL_INDEX(pixel)],
+            event_kernel * tex2D(tex_rho, pixel.x, pixel.y) * inv_denominator);
       }
     }
   }

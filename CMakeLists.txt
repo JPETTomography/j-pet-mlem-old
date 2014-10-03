@@ -12,19 +12,23 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 project(PET CXX) # using only C++
 
 # configuration time options
-option(PET_WARP_GRANULARITY
-       "whole warp processes single event (otherwise single thread)" ON)
-option(PET_CACHE_ELLIPSE_PIXELS
-       "shared memory pixel buffer in error ellipse")
-option(PET_NORMAL_PHANTOM
-       "normalize phantom" OFF)
-option(PET_USE_RHO_PER_WARP
-       "write separate output rho per each warp" OFF)
-
-# miscellaneous settings
-set(PET_MAX_PIXELS_PER_THREAD 12 CACHE INTEGER
+set(PET_GRANULARITY_TYPE "WARP"
+    CACHE STRING
+    "warp, thread (or simple just for testing) granularity")
+set(PET_CACHE_ELLIPSE_PIXELS ON
+    CACHE BOOL
+    "shared memory pixel buffer in error ellipse")
+set(PET_NORMAL_PHANTOM OFF
+    CACHE BOOL
+    "normalize phantom")
+set(PET_USE_RHO_PER_WARP OFF
+    CACHE BOOL
+    "write separate output rho per each warp")
+set(PET_MAX_PIXELS_PER_THREAD 12
+    CACHE INTEGER
     "chosen arbitrarily, no more than 11 pixels per thread in current config")
-set(PET_MAX_THREADS_PER_BLOCK 512 CACHE INTEGER
+set(PET_MAX_THREADS_PER_BLOCK 512
+    CACHE INTEGER
     "not used in current implementation")
 
 # use Release by default
@@ -105,20 +109,22 @@ list(APPEND 2d_strip_srcs src/2d_strip/options.cpp)
 # add options above as compile flags removing PET_ prefix
 get_cmake_property(vars VARIABLES)
 foreach(var ${vars})
-  if(NOT var MATCHES "_DIR$")
+  if(var MATCHES "^PET_" AND NOT var MATCHES "_DIR$")
     string(REGEX REPLACE "^PET_" "" name ${var})
-    if(NOT name STREQUAL var)
-      if(${var})
-        if(${var} STREQUAL ON)
-          set(value 1)
-        else()
-          set(value ${${var}})
-        endif()
-        message(STATUS "Using ${name}=${value}")
-        add_definitions(-D${name}=${value})
+    if(name MATCHES "_TYPE$")
+      string(REGEX REPLACE "_TYPE$" "" type_name ${name})
+      add_definitions(-DUSE_${${var}}_${type_name}=1)
+      message(STATUS "Using ${${var}} ${type_name}")
+    elseif(${var})
+      if(${var} STREQUAL ON)
+        add_definitions(-D${name}=1)
+        message(STATUS "Enabled ${name}")
       else()
-        message(STATUS "Not using ${name}")
+        message(STATUS "Using ${name}=${${var}}")
+        add_definitions(-D${name}=${${var}})
       endif()
+    else()
+      message(STATUS "Disabled ${name}")
     endif()
   endif()
 endforeach()

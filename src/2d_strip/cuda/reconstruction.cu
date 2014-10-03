@@ -12,10 +12,12 @@
 texture<float, 2, cudaReadModeElementType> tex_sensitivity;
 texture<float, 2, cudaReadModeElementType> tex_rho;
 
-#if WARP_GRANULARITY
+#if USE_WARP_GRANULARITY
 #include "reconstruction_warp_granularity.cuh"
-#else
+#elif USE_THREAD_GRANULARITY
 #include "reconstruction_thread_granularity.cuh"
+#else
+#include "reconstruction_simple.cuh"
 #endif
 
 template <typename F>
