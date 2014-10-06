@@ -48,17 +48,19 @@ namespace GPU {
               void* ptr) {
     Context* context = static_cast<Context*>(ptr);
 
-    std::stringstream fn;
-    fn << context->output_file_name << "_";  // phantom_
+    std::stringstream base_name;
+    base_name << context->output_file_name << "_";  // phantom_
     if (iteration >= 0) {
-      fn << std::setw(3) << std::setfill('0')  //
-         << iteration + 1 << std::setw(0);     // 001
+      base_name << std::setw(3) << std::setfill('0')  //
+                << iteration + 1 << std::setw(0);     // 001
     } else {
-      fn << "sensitivity";
+      base_name << "sensitivity";
     }
-    fn << ".png";
 
-    png_writer png(fn.str());
+    obstream bin(base_name.str() + ".bin");
+    bin.write(output, detector.total_n_pixels);
+
+    png_writer png(base_name.str() + ".png");
     png.write_header<>(detector.n_z_pixels, detector.n_y_pixels);
 
     float output_max = 0;

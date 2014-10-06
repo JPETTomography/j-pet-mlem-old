@@ -12,6 +12,11 @@ class ibstream : public std::ifstream {
     read(reinterpret_cast<char*>(&v), sizeof(v));
     return *this;
   }
+
+  template <typename T> ibstream& read(T* ptr, size_t size) {
+    read(reinterpret_cast<const char*>(ptr), sizeof(*ptr) * size);
+    return *this;
+  }
 };
 
 class obstream : public std::ofstream {
@@ -28,6 +33,11 @@ class obstream : public std::ofstream {
     for (auto&& v : vector) {
       *this << v;
     }
+    return *this;
+  }
+
+  template <typename T> obstream& write(const T* ptr, size_t size) {
+    write(reinterpret_cast<const char*>(ptr), sizeof(*ptr) * size);
     return *this;
   }
 };
