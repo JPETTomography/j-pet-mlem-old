@@ -170,7 +170,6 @@ int main(int argc, char* argv[]) {
 
     auto& n_pixels = cl.get<int>("n-pixels");
     auto& n_detectors = cl.get<int>("n-detectors");
-    auto& n_emissions = cl.get<int>("n-emissions");
     auto& radius = cl.get<double>("radius");
     auto& s_pixel = cl.get<double>("s-pixel");
     auto& w_detector = cl.get<double>("w-detector");

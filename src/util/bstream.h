@@ -14,8 +14,7 @@ class ibstream : public std::ifstream {
   }
 
   template <typename T> ibstream& read(T* ptr, size_t size) {
-    std::ifstream::read(reinterpret_cast<const char*>(ptr),
-                        sizeof(*ptr) * size);
+    std::ifstream::read(reinterpret_cast<char*>(ptr), sizeof(*ptr) * size);
     return *this;
   }
 };
