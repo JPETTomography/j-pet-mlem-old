@@ -43,4 +43,20 @@ namespace cmdline {
   template bool not_from_file(cmdline::parser&,
                               cmdline::path&,
                               std::string const&);
+
+  void load_accompanying_config(cmdline::parser& parser, bool only_one) {
+    // load config files accompanying phantom files
+    for (cmdline::path fn : parser.rest()) {
+      std::ifstream in(fn.wo_ext() + ".cfg");
+      // check if file exists
+      if (in.is_open()) {
+        in.close();
+        cmdline::load(parser, fn, fn.wo_ext() + ".cfg");
+        if (only_one) {
+          break;
+        }
+      }
+    }
+  }
+
 }  // cmdline

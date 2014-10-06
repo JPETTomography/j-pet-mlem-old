@@ -80,7 +80,6 @@ int main(int argc, char* argv[]) {
                 "emissions per pixel",
                 false,
                 0,
-                cmdline::default_reader<int>(),
                 cmdline::not_from_file);
     cl.add<double>("radius", 'r', "inner detector ring radius", false);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
@@ -193,17 +192,7 @@ int main(int argc, char* argv[]) {
       throw("need to specify output --png option when --from is specified");
     }
 
-    // load config files accompanying matrix files
-    for (cmdline::path fn : cl.rest()) {
-      std::ifstream in(fn.wo_ext() + ".cfg");
-      if (!in.is_open())
-        continue;
-      // load except n-emissions
-      auto n_prev_emissions = n_emissions;
-      in >> cl;
-      n_emissions = n_prev_emissions;
-      break;  // only one config file allowed!
-    }
+    cmdline::load_accompanying_config(cl, false);
 
     if (verbose) {
       std::cerr << "assumed:" << std::endl;

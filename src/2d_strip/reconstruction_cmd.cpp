@@ -13,6 +13,7 @@
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
 #include "util/cmdline_types.h"
+#include "util/cmdline_hooks.h"
 #include "util/png_writer.h"
 #include "util/progress.h"
 
@@ -47,19 +48,13 @@ int main(int argc, char* argv[]) {
       throw("at least one events input file expected, consult --help");
     }
 
+    cmdline::load_accompanying_config(cl);
+
 #if _OPENMP
     if (cl.exist("n-threads")) {
       omp_set_num_threads(cl.get<int>("n-threads"));
     }
 #endif
-
-    // load config files accompanying phantom files
-    for (cmdline::path fn : cl.rest()) {
-      std::ifstream in(fn.wo_ext() + ".cfg");
-      if (!in.is_open())
-        continue;
-      in >> cl;
-    }
 
     StripDetector<double> strip_detector =
         strip_detector_from_options<double>(cl);

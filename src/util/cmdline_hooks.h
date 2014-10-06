@@ -13,4 +13,7 @@ namespace cmdline {
   template <typename T>
   bool not_from_file(cmdline::parser& parser, T& value, const std::string& arg);
 
+  /// loads accompanying .cfg files from paths given as command line arguments
+  void load_accompanying_config(cmdline::parser& parser, bool only_one = false);
+
 }  // cmdline
