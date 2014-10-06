@@ -76,10 +76,8 @@ __global__ void reconstruction(StripDetector<F> detector,
     const int bb_half_height = n_pixels_in_line(bb_y, detector.pixel_height);
     Pixel<> top_left(center_pixel.x - bb_half_width,
                      center_pixel.y - bb_half_height);
-
     Pixel<> bottom_right(center_pixel.x + bb_half_width,
                          center_pixel.y + bb_half_height);
-
     Pixel<> detector_top_left(0, 0);
     Pixel<> detector_bottom_right(detector.n_z_pixels - 1,
                                   detector.n_y_pixels - 1);

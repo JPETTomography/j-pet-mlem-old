@@ -26,7 +26,8 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
                                                     F* image,
                                                     void* context),
                             void (*progress_callback)(int iteration,
-                                                      void* context),
+                                                      void* context,
+                                                      bool finished),
                             void* context,
                             int device,
                             int n_blocks,
@@ -81,9 +82,9 @@ namespace GPU {
     }
   }
 
-  void progress(int iteration, void* ptr) {
+  void progress(int iteration, void* ptr, bool finished) {
     Context* context = static_cast<Context*>(ptr);
-    context->progress(iteration);
+    context->progress(iteration, finished);
   }
 }
 

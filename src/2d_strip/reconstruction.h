@@ -102,11 +102,12 @@ class Reconstruction {
     stats.fill();
 
     for (int iteration = 0; iteration < n_iterations; ++iteration) {
-      for (auto& rho : thread_rhos) {
-        rho.assign(detector.total_n_pixels, 0);
-      }
       progress(iteration + n_iterations_so_far);
       int n_events = events.size();
+
+      for (auto& thread_rho : thread_rhos) {
+        thread_rho.assign(detector.total_n_pixels, 0);
+      }
 
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
@@ -135,6 +136,8 @@ class Reconstruction {
           rho[i] += thread_rhos[thread][i];
         }
       }
+
+      progress(iteration + n_iterations_so_far, true);
     }
     stats.collect();
   }
@@ -208,26 +211,17 @@ class Reconstruction {
     stats.bb_height2_sum_by(thread, 4 * bb_half_height * bb_half_height);
     stats.bb_width_height_sum_by(thread, 4 * bb_half_width * bb_half_height);
 
-    Pixel tl(center_pixel.x - bb_half_width, center_pixel.y - bb_half_height);
-    Pixel br(center_pixel.x + bb_half_width, center_pixel.y + bb_half_height);
+    Pixel top_left(center_pixel.x - bb_half_width,
+                   center_pixel.y - bb_half_height);
+    Pixel bottom_right(center_pixel.x + bb_half_width,
+                       center_pixel.y + bb_half_height);
+    Pixel detector_top_left(0, 0);
+    Pixel detector_bottom_right(detector.n_z_pixels - 1,
+                                detector.n_y_pixels - 1);
 
-    if (tl.x < 0)
-      tl.x = 0;
-    if (tl.x > (detector.n_z_pixels - 1))
-      tl.x = (detector.n_z_pixels - 1);
-    if (tl.y < 0)
-      tl.y = 0;
-    if (tl.y > (detector.n_y_pixels - 1))
-      tl.y = (detector.n_y_pixels - 1);
-
-    if (br.x < 0)
-      br.x = 0;
-    if (br.x > (detector.n_z_pixels - 1))
-      br.x = (detector.n_z_pixels - 1);
-    if (br.y < 0)
-      br.y = 0;
-    if (br.y > (detector.n_y_pixels - 1))
-      br.y = (detector.n_y_pixels - 1);
+    // check boundary conditions
+    top_left.clamp(detector_top_left, detector_bottom_right);
+    bottom_right.clamp(detector_top_left, detector_bottom_right);
 
     const int bb_size = 4 * bb_half_width * bb_half_height;
     F* ellipse_kernel_mul_rho = (F*)alloca(bb_size * sizeof(F));
@@ -236,8 +230,8 @@ class Reconstruction {
 
     F acc = 0;
 
-    for (int iy = tl.y; iy < br.y; ++iy) {
-      for (int iz = tl.x; iz < br.x; ++iz) {
+    for (int iy = top_left.y; iy < bottom_right.y; ++iy) {
+      for (int iz = top_left.x; iz < bottom_right.x; ++iz) {
         stats.n_pixels_processed_by();
         Pixel pixel(iz, iy);
         Point point = detector.pixel_center(pixel);

@@ -2,7 +2,6 @@
 #include <ostream>
 
 #include <vector>
-#include <ctime>
 #include <sstream>
 #include <iomanip>
 
@@ -28,7 +27,8 @@
 void print_statistics(std::ostream& out,
                       const Reconstruction<double>& reconstruction,
                       int n_iterations,
-                      int n_blocks);
+                      int n_blocks,
+                      std::string prefix = std::string());
 
 using namespace std;
 
@@ -53,10 +53,15 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
+    auto verbose = cl.exist("verbose");
+    auto verbosity = cl.count("verbose");
+
     StripDetector<double> strip_detector =
         strip_detector_from_options<double>(cl);
-    std::cerr << strip_detector.n_y_pixels << "x" << strip_detector.n_z_pixels
-              << std::endl;
+    if (verbose) {
+      std::cout << "# image: " << strip_detector.n_y_pixels << "x"
+                << strip_detector.n_z_pixels << std::endl;
+    }
     Reconstruction<double> reconstruction(strip_detector);
 
     for (auto& fn : cl.rest()) {
@@ -68,7 +73,7 @@ int main(int argc, char* argv[]) {
     auto n_iterations = cl.get<int>("iterations");
     auto output_wo_ext = cl.get<cmdline::path>("output").wo_ext();
 
-    Progress progress(true, n_blocks * n_iterations, 1);
+    Progress progress(verbosity, n_blocks * n_iterations, 1);
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
@@ -105,8 +110,9 @@ int main(int argc, char* argv[]) {
         reconstruction >> bin;
       }
 
-      if (cl.exist("verbose")) {
-        print_statistics(std::cout, reconstruction, n_iterations, n_blocks);
+      if (verbose) {
+        print_statistics(
+            std::cout, reconstruction, n_iterations, n_blocks, "# ");
       }
     }
   } catch (std::string& ex) {
@@ -121,12 +127,13 @@ int main(int argc, char* argv[]) {
 void print_statistics(std::ostream& out,
                       const Reconstruction<double>& reconstruction,
                       int n_iterations,
-                      int n_blocks) {
+                      int n_blocks,
+                      std::string prefix) {
   size_t iterations = n_iterations * n_blocks;
   size_t events = reconstruction.n_events_processed() / iterations;
   size_t pixels = reconstruction.n_pixels_processed() / iterations;
   size_t kernels = reconstruction.n_kernel_calls() / iterations;
-  out << "iterations: " << iterations << " "
+  out << prefix << "iterations: " << iterations << " "
       << "events: " << events << " "
       << "pixels: " << pixels << " "
       << "(" << (double)pixels / events << ") "
@@ -147,7 +154,7 @@ void print_statistics(std::ostream& out,
   avg_width2 -= avg_width * avg_width;
   avg_height2 -= avg_height * avg_height;
   avg_width_height -= avg_width * avg_height;
-  out << "width: " << avg_width << "(" << std::sqrt(avg_width2) << ")"
+  out << prefix << "width: " << avg_width << "(" << std::sqrt(avg_width2) << ")"
       << " height: " << avg_height << "(" << std::sqrt(avg_height2) << ")  "
       << avg_width_height << std::endl;
 }
