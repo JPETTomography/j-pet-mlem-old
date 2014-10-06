@@ -6,8 +6,8 @@
 
 void add_detector_options(cmdline::parser& parser) {
   parser.add<double>(
-      "r-distance", 'r', "R distance between scientilators", false, 500);
-  parser.add<double>("s-length", 'l', "scentilator length", false, 1000);
+      "r-distance", 'r', "R distance between scintillator", false, 500);
+  parser.add<double>("s-length", 'l', "scintillator length", false, 1000);
   parser.add<double>("p-size", 'p', "pixel size", false, 5);
   parser.add<int>("n-pixels", 'n', "number of pixels", false, 200);
   parser.add<int>("n-z-pixels", '\0', "number of z pixels", false);
