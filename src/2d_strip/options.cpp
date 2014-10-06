@@ -2,59 +2,66 @@
 
 #include "cmdline.h"
 #include "util/cmdline_types.h"
+#include "util/cmdline_hooks.h"
 #include "util/variant.h"
 
-void add_detector_options(cmdline::parser& parser) {
-  parser.add<double>(
+void add_detector_options(cmdline::parser& cl) {
+  cl.add<cmdline::path>("config",
+                        'c',
+                        "load config file",
+                        cmdline::dontsave,
+                        cmdline::path(),
+                        cmdline::default_reader<cmdline::path>(),
+                        cmdline::load);
+
+  cl.add<double>(
       "r-distance", 'r', "R distance between scintillator", false, 500);
-  parser.add<double>("s-length", 'l', "scintillator length", false, 1000);
-  parser.add<double>("p-size", 'p', "pixel size", false, 5);
-  parser.add<int>("n-pixels", 'n', "number of pixels", false, 200);
-  parser.add<int>("n-z-pixels", '\0', "number of z pixels", false);
-  parser.add<int>("n-y-pixels", '\0', "number of y pixels", false);
-  parser.add<double>("s-z", 's', "Sigma z error", false, 10);
-  parser.add<double>("s-dl", 'd', "Sigma dl error", false, 42);
+  cl.add<double>("s-length", 'l', "scintillator length", false, 1000);
+  cl.add<double>("p-size", 'p', "pixel size", false, 5);
+  cl.add<int>("n-pixels", 'n', "number of pixels", false, 200);
+  cl.add<int>("n-z-pixels", '\0', "number of z pixels", false);
+  cl.add<int>("n-y-pixels", '\0', "number of y pixels", false);
+  cl.add<double>("s-z", 's', "Sigma z error", false, 10);
+  cl.add<double>("s-dl", 'd', "Sigma dl error", false, 42);
 }
 
-void add_reconstruction_options(cmdline::parser& parser) {
-  add_detector_options(parser);
+void add_reconstruction_options(cmdline::parser& cl) {
+  add_detector_options(cl);
 
   std::ostringstream msg;
   msg << "events_file ..." << std::endl;
   msg << "build: " << VARIANT << std::endl;
   msg << "note: All length options below should be expressed in milimeters.";
-  parser.footer(msg.str());
+  cl.footer(msg.str());
 
-  parser.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
-  parser.add<int>(
-      "iterations", 'I', "number of iterations (per block)", false, 1);
-  parser.add<cmdline::path>(
+  cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
+  cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
+  cl.add<cmdline::path>(
       "output", 'o', "output files prefix (png)", false, "rec");
 
-  parser.add("verbose", 'v', "prints the iterations information on std::out");
+  cl.add("verbose", 'v', "prints the iterations information on std::out");
 #if HAVE_CUDA
-  parser.add("gpu", 'G', "run on GPU (via CUDA)");
-  parser.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
-  parser.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 32);
-  parser.add<int>(
+  cl.add("gpu", 'G', "run on GPU (via CUDA)");
+  cl.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
+  cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 32);
+  cl.add<int>(
       "cuda-threads", 'W', "CUDA threads per block", cmdline::dontsave, 512);
 #endif
 #if _OPENMP
-  parser.add<int>(
-      "n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
+  cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
 #endif
 }
 
-void add_phantom_options(cmdline::parser& parser) {
-  add_detector_options(parser);
+void add_phantom_options(cmdline::parser& cl) {
+  add_detector_options(cl);
 
-  parser.footer("phantom_description");
+  cl.footer("phantom_description");
 
-  parser.add<cmdline::path>(
+  cl.add<cmdline::path>(
       "output", 'o', "output events file", false, "phantom.bin");
-  parser.add<double>("emissions", 'e', "number of emissions", false, 500000);
-  parser.add("verbose", 'v', "prints the iterations information on std::out");
+  cl.add<double>("emissions", 'e', "number of emissions", false, 500000);
+  cl.add("verbose", 'v', "prints the iterations information on std::out");
 #if _OPENMP
-  parser.add<int>("n-threads", 'T', "number of OpenMP threads", false, 4);
+  cl.add<int>("n-threads", 'T', "number of OpenMP threads", false, 4);
 #endif
 }
