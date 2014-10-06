@@ -10,8 +10,7 @@ namespace cmdline {
   bool load(cmdline::parser& parser, path& value, const std::string& arg);
 
   /// skips setting option if it comes from config file
-  bool not_from_file(cmdline::parser& parser,
-                     int& value,
-                     const std::string& arg);
+  template <typename T>
+  bool not_from_file(cmdline::parser& parser, T& value, const std::string& arg);
 
 }  // cmdline

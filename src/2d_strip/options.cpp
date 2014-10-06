@@ -31,7 +31,6 @@ static void add_common_options(cmdline::parser& cl) {
               "number of emissions",
               false,
               0,
-              cmdline::default_reader<int>(),
               cmdline::not_from_file);
   cl.add("verbose", 'v', "print progress information (-v) or benchmark (-vv)");
 #if _OPENMP
@@ -51,8 +50,12 @@ void add_reconstruction_options(cmdline::parser& cl) {
 
   cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
   cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
-  cl.add<cmdline::path>(
-      "output", 'o', "output files prefix (png)", false, "rec");
+  cl.add<cmdline::path>("output",
+                        'o',
+                        "output files prefix (png)",
+                        false,
+                        "rec",
+                        cmdline::not_from_file);
 
 #if HAVE_CUDA
   cl.add("gpu", 'G', "run on GPU (via CUDA)");
@@ -68,6 +71,10 @@ void add_phantom_options(cmdline::parser& cl) {
   add_common_options(cl);
 
   cl.footer("phantom_description");
-  cl.add<cmdline::path>(
-      "output", 'o', "output events file", false, "phantom.bin");
+  cl.add<cmdline::path>("output",
+                        'o',
+                        "output events file",
+                        false,
+                        "phantom.bin",
+                        cmdline::not_from_file);
 }

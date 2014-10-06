@@ -5,7 +5,7 @@
 
 namespace cmdline {
 
-  std::vector<std::string> dir_stack;
+  static std::vector<std::string> dir_stack;
 
   bool load(cmdline::parser& parser, path& value, const std::string& arg) {
     (void)value;  // unused
@@ -31,11 +31,16 @@ namespace cmdline {
     return true;
   }
 
+  template <typename T>
   bool not_from_file(cmdline::parser& parser,
-                     int& value,
+                     T& value,
                      const std::string& arg) {
     (void)parser, (void)value, (void)arg;  // unused
     return dir_stack.empty();
   }
 
+  template bool not_from_file(cmdline::parser&, int&, std::string const&);
+  template bool not_from_file(cmdline::parser&,
+                              cmdline::path&,
+                              std::string const&);
 }  // cmdline
