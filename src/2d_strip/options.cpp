@@ -39,7 +39,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
   cl.add<cmdline::path>(
       "output", 'o', "output files prefix (png)", false, "rec");
 
-  cl.add("verbose", 'v', "prints the iterations information on std::out");
+  cl.add("verbose", 'v', "print the iteration information to stdout");
 #if HAVE_CUDA
   cl.add("gpu", 'G', "run on GPU (via CUDA)");
   cl.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
@@ -59,9 +59,15 @@ void add_phantom_options(cmdline::parser& cl) {
 
   cl.add<cmdline::path>(
       "output", 'o', "output events file", false, "phantom.bin");
-  cl.add<double>("emissions", 'e', "number of emissions", false, 500000);
-  cl.add("verbose", 'v', "prints the iterations information on std::out");
+  cl.add<int>("emissions",
+              'e',
+              "number of emissions",
+              false,
+              0,
+              cmdline::default_reader<int>(),
+              cmdline::not_from_file);
+  cl.add("verbose", 'v', "print the phantom information to stdout");
 #if _OPENMP
-  cl.add<int>("n-threads", 'T', "number of OpenMP threads", false, 4);
+  cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
 #endif
 }

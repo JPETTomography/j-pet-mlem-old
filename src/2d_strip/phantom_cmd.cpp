@@ -50,8 +50,8 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    double emissions = cl.get<double>("emissions");
-    bool verbose = cl.exist("verbose");
+    auto emissions = cl.get<int>("emissions");
+    auto verbose = cl.exist("verbose");
 
     std::vector<PhantomRegion<double>> ellipse_list;
 
