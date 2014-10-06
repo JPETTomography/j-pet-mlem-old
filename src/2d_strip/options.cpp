@@ -5,7 +5,7 @@
 #include "util/cmdline_hooks.h"
 #include "util/variant.h"
 
-void add_detector_options(cmdline::parser& cl) {
+static void add_detector_options(cmdline::parser& cl) {
   cl.add<cmdline::path>("config",
                         'c',
                         "load config file",
@@ -25,8 +25,23 @@ void add_detector_options(cmdline::parser& cl) {
   cl.add<double>("s-dl", 'd', "Sigma dl error", false, 42);
 }
 
+static void add_common_options(cmdline::parser& cl) {
+  cl.add<int>("emissions",
+              'e',
+              "number of emissions",
+              false,
+              0,
+              cmdline::default_reader<int>(),
+              cmdline::not_from_file);
+  cl.add("verbose", 'v', "print progress information (-v) or benchmark (-vv)");
+#if _OPENMP
+  cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
+#endif
+}
+
 void add_reconstruction_options(cmdline::parser& cl) {
   add_detector_options(cl);
+  add_common_options(cl);
 
   std::ostringstream msg;
   msg << "events_file ..." << std::endl;
@@ -39,7 +54,6 @@ void add_reconstruction_options(cmdline::parser& cl) {
   cl.add<cmdline::path>(
       "output", 'o', "output files prefix (png)", false, "rec");
 
-  cl.add("verbose", 'v', "print the iteration information to stdout");
 #if HAVE_CUDA
   cl.add("gpu", 'G', "run on GPU (via CUDA)");
   cl.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
@@ -47,27 +61,13 @@ void add_reconstruction_options(cmdline::parser& cl) {
   cl.add<int>(
       "cuda-threads", 'W', "CUDA threads per block", cmdline::dontsave, 512);
 #endif
-#if _OPENMP
-  cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
-#endif
 }
 
 void add_phantom_options(cmdline::parser& cl) {
   add_detector_options(cl);
+  add_common_options(cl);
 
   cl.footer("phantom_description");
-
   cl.add<cmdline::path>(
       "output", 'o', "output events file", false, "phantom.bin");
-  cl.add<int>("emissions",
-              'e',
-              "number of emissions",
-              false,
-              0,
-              cmdline::default_reader<int>(),
-              cmdline::not_from_file);
-  cl.add("verbose", 'v', "print the phantom information to stdout");
-#if _OPENMP
-  cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
-#endif
 }

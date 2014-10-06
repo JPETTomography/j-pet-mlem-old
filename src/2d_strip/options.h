@@ -3,7 +3,6 @@
 #include "cmdline.h"
 #include "2d_strip/strip_detector.h"
 
-void add_detector_options(cmdline::parser& parser);
 void add_reconstruction_options(cmdline::parser& parser);
 void add_phantom_options(cmdline::parser& parser);
 

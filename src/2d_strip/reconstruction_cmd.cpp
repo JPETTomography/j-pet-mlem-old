@@ -53,16 +53,24 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    auto verbose = cl.exist("verbose");
-    auto verbosity = cl.count("verbose");
+    // load config files accompanying phantom files
+    for (cmdline::path fn : cl.rest()) {
+      std::ifstream in(fn.wo_ext() + ".cfg");
+      if (!in.is_open())
+        continue;
+      in >> cl;
+    }
 
     StripDetector<double> strip_detector =
         strip_detector_from_options<double>(cl);
+    Reconstruction<double> reconstruction(strip_detector);
+
+    auto verbose = cl.exist("verbose");
+    auto verbosity = cl.count("verbose");
     if (verbose) {
       std::cout << "# image: " << strip_detector.n_y_pixels << "x"
                 << strip_detector.n_z_pixels << std::endl;
     }
-    Reconstruction<double> reconstruction(strip_detector);
 
     for (auto& fn : cl.rest()) {
       ibstream events(fn);
