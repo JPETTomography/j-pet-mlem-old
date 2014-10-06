@@ -53,6 +53,7 @@ void add_phantom_options(cmdline::parser& parser) {
   parser.add<cmdline::path>(
       "output", 'o', "output events file", false, "phantom.bin");
   parser.add<double>("emissions", 'e', "number of emissions", false, 500000);
+  parser.add("verbose", 'v', "prints the iterations information on std::out");
 #if _OPENMP
   parser.add<int>("n-threads", 'T', "number of OpenMP threads", false, 4);
 #endif

@@ -51,12 +51,17 @@ int main(int argc, char* argv[]) {
 #endif
 
     double emissions = cl.get<double>("emissions");
+    bool verbose = cl.exist("verbose");
 
     std::vector<PhantomRegion<double>> ellipse_list;
 
     StripDetector<double> detector = strip_detector_from_options<double>(cl);
 
-    std::cerr << detector.n_z_pixels << "x" << detector.n_y_pixels << std::endl;
+    if (verbose) {
+      std::cerr << "size: " << detector.n_z_pixels << "x" << detector.n_y_pixels
+                << std::endl;
+    }
+
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);
       std::string line;
@@ -70,20 +75,29 @@ int main(int argc, char* argv[]) {
 
         Ellipse<double> el(x, y, a, b, angle * RADIAN);
 
-        std::cout << el.x << " " << el.y << " " << el.a << " " << el.b << " "
-                  << el.angle << " " << el.A << " " << el.B << " " << el.C
-                  << std::endl;
-        PhantomRegion<double> region(el, acceptance);
+        if (verbose) {
+          std::cout << "ellipse: " << el.x << " " << el.y << " " << el.a << " "
+                    << el.b << " " << el.angle << " " << el.A << " " << el.B
+                    << " " << el.C << std::endl;
+        }
 
+        PhantomRegion<double> region(el, acceptance);
         ellipse_list.push_back(region);
       }
     }
 
     Phantom<StripDetector<double>, double> phantom(detector, ellipse_list);
-    std::cerr << "detector " << detector.size_y << " " << detector.tl_y_half_h
-              << std::endl;
+
+    if (verbose) {
+      std::cerr << "detector: " << detector.size_y << " "
+                << detector.tl_y_half_h << std::endl;
+    }
 
     phantom(emissions);
+
+    if (verbose) {
+      std::cerr << "detected: " << phantom.n_events() << " events" << std::endl;
+    }
 
     auto output = cl.get<cmdline::path>("output");
     auto output_base_name = output.wo_ext();

@@ -76,6 +76,8 @@ template <typename D, typename FType = double> class Phantom {
                                  std::vector<F>(detector.n_z_pixels, 0));
   }
 
+  size_t n_events() { return events.size(); }
+
   template <typename G> size_t choose_region(G& gen) {
     F r = uniform(gen);
     size_t i = 0;
@@ -157,8 +159,6 @@ template <typename D, typename FType = double> class Phantom {
                     event_list_per_thread[i].begin(),
                     event_list_per_thread[i].end());
     }
-
-    std::cout << "Detected  " << events.size() << " events" << std::endl;
   }
 
   template <class FileWriter>
@@ -190,8 +190,8 @@ template <typename D, typename FType = double> class Phantom {
   void output_binary(FileWriter& fw, bool wo_errors = false) {
 
     auto& target_output = wo_errors ? output_without_errors : output;
-    for (int y = 0; y < detector.n_y_pixels; ++y) {
-      fw << target_output[y];
+    for (auto& line : target_output) {
+      fw << line;
     }
   }
 
