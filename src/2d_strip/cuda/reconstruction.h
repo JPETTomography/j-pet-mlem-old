@@ -12,8 +12,6 @@
 #include "../event.h"
 #include "../strip_detector.h"
 
-#include "config.h"
-
 // this is forward declaration of CUDA side entry-point function
 template <typename F>
 void run_gpu_reconstruction(StripDetector<F>& detector,

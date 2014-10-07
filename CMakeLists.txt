@@ -24,12 +24,21 @@ set(PET_CACHE_ELLIPSE_PIXELS ON
 set(PET_NORMAL_PHANTOM OFF
     CACHE BOOL
     "normalize phantom")
+set(PET_USE_SENSITIVITY OFF
+    CACHE BOOL
+    "use sensitivity when calculating reconstruction")
+set(PET_USE_KERNEL ON
+    CACHE BOOL
+    "use kernel (when off it uses constant 1 for kernel value)")
 set(PET_USE_RHO_PER_WARP OFF
     CACHE BOOL
     "write separate output rho per each warp")
 set(PET_MAX_PIXELS_PER_THREAD 12
     CACHE INTEGER
     "chosen arbitrarily, no more than 11 pixels per thread in current config")
+set(PET_WARP_SIZE 32
+    CACHE INTEGER
+    "normally it should not be changed to anything else than 32")
 set(PET_MAX_THREADS_PER_BLOCK 512
     CACHE INTEGER
     "not used in current implementation")
@@ -134,6 +143,7 @@ foreach(var ${vars})
         add_definitions(-D${name}=${${var}})
       endif()
     else()
+      add_definitions(-D${name}=0)
       message(STATUS "Disabled ${name}")
     endif()
   endif()

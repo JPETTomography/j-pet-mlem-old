@@ -6,7 +6,7 @@
 #include "../event.h"
 #include "../strip_detector.h"
 
-#include "config.h"
+#define PIXEL_INDEX(p) (((p).y * detector.n_z_pixels) + (p).x)
 
 template <typename F> __device__ void reduce(F& value);
 
@@ -20,20 +20,6 @@ __global__ void reconstruction(StripDetector<F> detector,
                                const int n_blocks,
                                const int n_threads_per_block) {
   Kernel<F> kernel;
-
-#if USE_RUNTIME_TRUE_FALSE
-  // The variables below always evaluate to true/false, but compiler cannot
-  // assume that since n_blocks is only known at runtime.
-  bool rt_true = /***/ (n_blocks > 0);
-  bool rt_false = /**/ (n_blocks == 0);
-#endif
-
-  // In optimized build we set it to true/false which triggers else branches to
-  // be optimized out of the code, however in code parts benchmark we shall use
-  // rt_true/rt_false that guarantees else branches to be not optimized, so we
-  // can reliably measure time disabling certain computations.
-  bool use_kernel = true;
-  bool use_sensitivity = false;
 
   const F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   const int n_warps_per_block = n_threads_per_block / WARP_SIZE;
@@ -110,9 +96,9 @@ __global__ void reconstruction(StripDetector<F> detector,
         point -= ellipse_center;
 
         F pixel_sensitivity =
-            use_sensitivity ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
+            USE_SENSITIVITY ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
 
-        F event_kernel = use_kernel ? kernel(y,
+        F event_kernel = USE_KERNEL ? kernel(y,
                                              tan,
                                              sec,
                                              sec_sq,
@@ -144,12 +130,8 @@ __global__ void reconstruction(StripDetector<F> detector,
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       short2 pixel = ellipse_pixels[p][threadIdx.x];
 
-#if !NO_ATOMIC
       atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                 ellipse_kernel_mul_rho[p] * inv_acc);
-#else
-      output_rho[PIXEL_INDEX(pixel)] += ellipse_kernel_mul_rho[p] * inv_acc;
-#endif
     }
 #else
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
@@ -165,7 +147,7 @@ __global__ void reconstruction(StripDetector<F> detector,
       if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
         point -= ellipse_center;
 
-        F event_kernel = use_kernel ? kernel(y,
+        F event_kernel = USE_KERNEL ? kernel(y,
                                              tan,
                                              sec,
                                              sec_sq,

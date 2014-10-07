@@ -7,7 +7,6 @@
 #include "../event.h"
 #include "../kernel.h"
 #include "gpu_events_soa.h"
-#include "config.h"
 
 texture<float, 2, cudaReadModeElementType> tex_sensitivity;
 texture<float, 2, cudaReadModeElementType> tex_rho;

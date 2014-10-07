@@ -6,8 +6,6 @@
 #include "../event.h"
 #include "../strip_detector.h"
 
-#include "config.h"
-
 template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
@@ -19,20 +17,6 @@ __global__ void reconstruction(StripDetector<F> detector,
                                const int n_threads_per_block) {
   Kernel<F> kernel;
 
-#if USE_RUNTIME_TRUE_FALSE
-  // The variables below always evaluate to true/false, but compiler cannot
-  // assume that since n_blocks is only known at runtime.
-  bool rt_true = /***/ (n_blocks > 0);
-  bool rt_false = /**/ (n_blocks == 0);
-#endif
-
-  // In optimized build we set it to true/false which triggers else branches to
-  // be optimized out of the code, however in code parts benchmark we shall use
-  // rt_true/rt_false that guarantees else branches to be not optimized, so we
-  // can reliably measure time disabling certain computations.
-  bool use_kernel = true;
-  bool use_sensitivity = false;
-
   F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   int n_threads = n_blocks * n_threads_per_block;
   int n_chunks = (n_events + n_threads - 1) / n_threads;
@@ -40,17 +24,15 @@ __global__ void reconstruction(StripDetector<F> detector,
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
   for (int chunk = 0; chunk < n_chunks; ++chunk) {
-    int i = chunk * n_threads + tid;
+    int event_index = chunk * n_threads + tid;
     // check if we are still on the list
-    if (i >= n_events) {
+    if (event_index >= n_events) {
       break;
     }
 
-#if AOS_ACCESS
-    Event<F> event = events[i];
-#else
-    Event<F> event(events_z_u[i], events_z_d[i], events_dl[i]);
-#endif
+    Event<F> event(events_z_u[event_index],
+                   events_z_d[event_index],
+                   events_dl[event_index]);
 
     F tan, y, z;
     event.transform(detector.radius, tan, y, z);
@@ -80,19 +62,17 @@ __global__ void reconstruction(StripDetector<F> detector,
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
 
-#if USE_KERNEL
-          F event_kernel = kernel(y,
-                                  tan,
-                                  sec,
-                                  sec_sq,
-                                  detector.radius,
-                                  point,
-                                  detector.inv_cor_mat_diag,
-                                  sqrt_det_cor_mat) *
-                           inv_pixel_sensitivity;
-#else
-          F event_kernel = 1;
-#endif
+          F event_kernel = USE_KERNEL
+                               ? kernel(y,
+                                        tan,
+                                        sec,
+                                        sec_sq,
+                                        detector.radius,
+                                        point,
+                                        detector.inv_cor_mat_diag,
+                                        sqrt_det_cor_mat) *
+                                     inv_pixel_sensitivity
+                               : 1;
 
           denominator += event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
         }
@@ -110,9 +90,9 @@ __global__ void reconstruction(StripDetector<F> detector,
           point -= ellipse_center;
 
           F pixel_sensitivity =
-              use_sensitivity ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
+              USE_SENSITIVITY ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
 
-          F event_kernel = use_kernel ? kernel(y,
+          F event_kernel = USE_KERNEL ? kernel(y,
                                                tan,
                                                sec,
                                                sec_sq,
