@@ -74,7 +74,9 @@ int main(int argc, char* argv[]) {
 
     auto n_blocks = cl.get<int>("blocks");
     auto n_iterations = cl.get<int>("iterations");
-    auto output_wo_ext = cl.get<cmdline::path>("output").wo_ext();
+    auto output_base_name = cl.exist("output")
+                                ? cl.get<cmdline::path>("output").wo_ext()
+                                : cmdline::path();
 
     Progress progress(verbosity, n_blocks * n_iterations, 1);
 
@@ -91,26 +93,30 @@ int main(int argc, char* argv[]) {
                              cl.get<int>("cuda-threads"),
                              cl.exist("verbose"),
                              progress,
-                             output_wo_ext);
+                             output_base_name);
     } else
 #endif
     {
-      png_writer png(output_wo_ext + "_sensitivity.png");
-      reconstruction.output_bitmap(png, true);
+      if (output_base_name.length()) {
+        png_writer png(output_base_name + "_sensitivity.png");
+        reconstruction.output_bitmap(png, true);
+      }
 
       for (int block = 0; block < n_blocks; block++) {
         reconstruction(progress, n_iterations, block * n_iterations);
 
-        std::stringstream fn;
-        fn << output_wo_ext << "_"               // phantom_
-           << std::setw(3) << std::setfill('0')  //
-           << block * n_iterations + 1;          // 001
+        if (output_base_name.length()) {
+          std::stringstream fn;
+          fn << output_base_name << "_"            // phantom_
+             << std::setw(3) << std::setfill('0')  //
+             << block * n_iterations + 1;          // 001
 
-        png_writer png(fn.str() + ".png");
-        reconstruction.output_bitmap(png);
+          png_writer png(fn.str() + ".png");
+          reconstruction.output_bitmap(png);
 
-        obstream bin(fn.str() + ".bin");
-        reconstruction >> bin;
+          obstream bin(fn.str() + ".bin");
+          reconstruction >> bin;
+        }
       }
 #if USE_STATISTICS
       if (verbose) {

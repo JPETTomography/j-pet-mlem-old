@@ -54,7 +54,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
                         'o',
                         "output files prefix (png)",
                         false,
-                        "rec",
+                        cmdline::path(),
                         cmdline::not_from_file);
 
 #if HAVE_CUDA

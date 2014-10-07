@@ -49,6 +49,10 @@ namespace GPU {
               void* ptr) {
     Context* context = static_cast<Context*>(ptr);
 
+    if (!context->output_file_name.length()) {
+      return;
+    }
+
     std::stringstream base_name;
     base_name << context->output_file_name << "_";  // phantom_
     if (iteration >= 0) {
