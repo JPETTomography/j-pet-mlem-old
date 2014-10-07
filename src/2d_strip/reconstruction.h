@@ -230,7 +230,7 @@ class Reconstruction {
     Pixel* ellipse_pixels = (Pixel*)alloca(bb_size * sizeof(Pixel));
     int n_ellipse_pixels = 0;
 
-    F acc = 0;
+    F denominator = 0;
 
     for (int iy = top_left.y; iy < bottom_right.y; ++iy) {
       for (int iz = top_left.x; iz < bottom_right.x; ++iz) {
@@ -254,7 +254,7 @@ class Reconstruction {
                                   detector.inv_cor_mat_diag,
                                   sqrt_det_cor_mat);
           F event_kernel_mul_rho = event_kernel * rho[i];
-          acc += event_kernel_mul_rho * pixel_sensitivity;
+          denominator += event_kernel_mul_rho * pixel_sensitivity;
           ellipse_pixels[n_ellipse_pixels] = pixel;
           ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
           ++n_ellipse_pixels;
@@ -262,13 +262,13 @@ class Reconstruction {
       }
     }
 
-    F inv_acc = 1 / acc;
+    F inv_denominator = 1 / denominator;
 
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       auto pixel = ellipse_pixels[p];
       auto pixel_kernel = ellipse_kernel_mul_rho[p];
       int i = pixel.y * detector.n_z_pixels + pixel.x;
-      output_rho[i] += pixel_kernel * inv_acc;
+      output_rho[i] += pixel_kernel * inv_denominator;
     }
   }
 
@@ -289,7 +289,7 @@ class Reconstruction {
     F* ellipse_kernel_mul_rho = (F*)alloca(bb_size * sizeof(F));
     int n_ellipse_pixels = 0;
 
-    F acc = 0;
+    F denominator = 0;
 
     for (int iy = tl.y; iy < br.y; ++iy) {
       for (int iz = tl.x; iz < br.x; ++iz) {
@@ -306,14 +306,14 @@ class Reconstruction {
       }
     }
 
-    F inv_acc = 1 / acc;
+    F inv_denominator = 1 / denominator;
 
     for (int iy = tl.y; iy < br.y; ++iy) {
       for (int iz = tl.x; iz < br.x; ++iz) {
         Pixel pixel(iz, iy);
         int i = pixel.y * detector.n_z_pixels + pixel.x;
         int ik = (pixel.y - tl.y) * z_line * 2 + pixel.x - tl.x;
-        output_rho[i] += ellipse_kernel_mul_rho[ik] * rho[i] * inv_acc;
+        output_rho[i] += ellipse_kernel_mul_rho[ik] * rho[i] * inv_denominator;
       }
     }
   }
