@@ -133,9 +133,9 @@ void print_statistics(std::ostream& out,
                       int n_blocks,
                       std::string prefix) {
   size_t iterations = n_iterations * n_blocks;
-  size_t events = reconstruction.n_events_processed() / iterations;
-  size_t pixels = reconstruction.n_pixels_processed() / iterations;
-  size_t kernels = reconstruction.n_kernel_calls() / iterations;
+  size_t events = reconstruction.stats.n_events_processed / iterations;
+  size_t pixels = reconstruction.stats.n_pixels_processed / iterations;
+  size_t kernels = reconstruction.stats.n_kernel_calls / iterations;
   out << prefix << "iterations: " << iterations << " "
       << "events: " << events << " "
       << "pixels: " << pixels << " "
@@ -143,12 +143,12 @@ void print_statistics(std::ostream& out,
       << "kernel calls: " << kernels << " "
       << "(" << (double)kernels / events << ")" << std::endl;
 
-  size_t bb_width_sum = reconstruction.bb_width_sum() / n_iterations;
-  size_t bb_height_sum = reconstruction.bb_height_sum() / n_iterations;
-  size_t bb_width2_sum = reconstruction.bb_width2_sum() / n_iterations;
-  size_t bb_height2_sum = reconstruction.bb_height2_sum() / n_iterations;
+  size_t bb_width_sum = reconstruction.stats.bb_width_sum / n_iterations;
+  size_t bb_height_sum = reconstruction.stats.bb_height_sum / n_iterations;
+  size_t bb_width2_sum = reconstruction.stats.bb_width2_sum / n_iterations;
+  size_t bb_height2_sum = reconstruction.stats.bb_height2_sum / n_iterations;
   size_t bb_width_height_sum =
-      reconstruction.bb_width_height_sum() / n_iterations;
+      reconstruction.stats.bb_width_height_sum / n_iterations;
   double avg_width = (double)bb_width_sum / events;
   double avg_height = (double)bb_height_sum / events;
   double avg_width2 = (double)bb_width2_sum / events;
