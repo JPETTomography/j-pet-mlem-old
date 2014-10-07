@@ -69,6 +69,9 @@ int main(int argc, char* argv[]) {
 
     for (auto& fn : cl.rest()) {
       ibstream events(fn);
+      if (!events.is_open()) {
+        throw("cannot open phantom events file: " + fn);
+      }
       reconstruction << events;
     }
 
