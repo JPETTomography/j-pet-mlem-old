@@ -19,10 +19,11 @@
 
 #define BB_UPDATE 1
 
-template <typename FType = double, template <typename Ft> class K = Kernel>
+template <typename FType = double, typename KernelType = Kernel<FType>>
 class Reconstruction {
  public:
   typedef FType F;
+  typedef KernelType Kernel;
   typedef StripDetector<FType> Detector;
   typedef typename Detector::Pixel Pixel;
   typedef typename Detector::Point Point;
@@ -37,7 +38,7 @@ class Reconstruction {
   std::vector<F> acc_log;
   std::vector<std::vector<F>> thread_rhos;
   std::vector<F> sensitivity;
-  K<F> kernel;
+  Kernel kernel;
   Stats<size_t> stats_;
 
  public:
