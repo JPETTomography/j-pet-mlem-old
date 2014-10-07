@@ -4,7 +4,7 @@ template <typename T> struct Stats {
 
 #if USE_STATISTICS
 
-#define DEFINE_STAT_INITIALIZER(name) name(n_threads, 0), total_##name(0)
+#define DEFINE_STAT_INITIALIZER(name) thread_##name(n_threads, 0), name(0)
 
   Stats(size_t n_threads)
       : n_threads(n_threads),
@@ -47,7 +47,8 @@ template <typename T> struct Stats {
 
 #if USE_STATISTICS
 
-#define FILL_STAT_WITH(name, value) std::fill_n(name.begin(), n_threads, value)
+#define FILL_STAT_WITH(name, value) \
+  std::fill_n(thread_##name.begin(), n_threads, value)
 
   void fill(T value = T()) {
     FILL_STAT_WITH(n_events_processed, value);

@@ -112,11 +112,12 @@ int main(int argc, char* argv[]) {
         obstream bin(fn.str() + ".bin");
         reconstruction >> bin;
       }
-
+#if USE_STATISTICS
       if (verbose) {
         print_statistics(
             std::cout, reconstruction, n_iterations, n_blocks, "# ");
       }
+#endif
     }
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
@@ -127,6 +128,7 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
+#if USE_STATISTICS
 void print_statistics(std::ostream& out,
                       const Reconstruction<double>& reconstruction,
                       int n_iterations,
@@ -161,3 +163,4 @@ void print_statistics(std::ostream& out,
       << " height: " << avg_height << "(" << std::sqrt(avg_height2) << ")  "
       << avg_width_height << std::endl;
 }
+#endif

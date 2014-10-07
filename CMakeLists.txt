@@ -15,6 +15,9 @@ project(PET CXX) # using only C++
 set(PET_GRANULARITY_TYPE "WARP"
     CACHE STRING
     "warp, thread (or simple just for testing) granularity")
+set(PET_USE_STATISTICS OFF
+    CACHE BOOL
+    "collect statistics and print them after program is finished")
 set(PET_CACHE_ELLIPSE_PIXELS ON
     CACHE BOOL
     "shared memory pixel buffer in error ellipse")
