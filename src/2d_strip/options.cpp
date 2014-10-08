@@ -18,7 +18,7 @@ static void add_detector_options(cmdline::parser& cl) {
       "r-distance", 'r', "R distance between scintillator", false, 500);
   cl.add<double>("s-length", 'l', "scintillator length", false, 1000);
   cl.add<double>("p-size", 'p', "pixel size", false, 5);
-  cl.add<int>("n-pixels", 'n', "number of pixels", false, 200);
+  cl.add<int>("n-pixels", 'n', "number of pixels", cmdline::dontsave, 200);
   cl.add<int>("n-z-pixels", 0, "number of z pixels", false);
   cl.add<int>("n-y-pixels", 0, "number of y pixels", false);
   cl.add<double>("s-z", 's', "Sigma z error", false, 10);
