@@ -56,8 +56,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    StripDetector<double> strip_detector =
-        strip_detector_from_options<double>(cl);
+    StripDetector<double> strip_detector(CL_DETECTOR_PARAMETERS(cl));
     Reconstruction<double> reconstruction(strip_detector);
 
     auto verbose = cl.exist("verbose");

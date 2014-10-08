@@ -33,10 +33,9 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-
     add_phantom_options(cl);
-
     cl.parse_check(argc, argv);
+    calculate_detector_options(cl);
 
     if (!cl.rest().size()) {
       throw(
@@ -55,7 +54,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<PhantomRegion<double>> ellipse_list;
 
-    StripDetector<double> detector = strip_detector_from_options<double>(cl);
+    StripDetector<double> detector(CL_DETECTOR_PARAMETERS(cl));
 
     if (verbose) {
       std::cerr << "size: " << detector.n_z_pixels << "x" << detector.n_y_pixels
