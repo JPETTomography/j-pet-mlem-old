@@ -6,6 +6,8 @@
 #include "../event.h"
 #include "../strip_detector.h"
 
+#define PIXEL_INDEX(p) (((p).y * detector.n_z_pixels) + (p).x)
+
 template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
@@ -62,19 +64,21 @@ __global__ void reconstruction(StripDetector<F> detector,
         if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
 
-          F event_kernel = USE_KERNEL
-                               ? kernel(y,
-                                        tan,
-                                        sec,
-                                        sec_sq,
-                                        detector.radius,
-                                        point,
-                                        detector.inv_cor_mat_diag,
-                                        sqrt_det_cor_mat) *
-                                     inv_pixel_sensitivity
-                               : 1;
+          F pixel_sensitivity =
+              USE_SENSITIVITY ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
 
-          denominator += event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
+          F event_kernel = USE_KERNEL ? kernel(y,
+                                               tan,
+                                               sec,
+                                               sec_sq,
+                                               detector.radius,
+                                               point,
+                                               detector.inv_cor_mat_diag,
+                                               sqrt_det_cor_mat)
+                                      : 1;
+
+          denominator += event_kernel * tex2D(tex_rho, pixel.x, pixel.y) *
+                         pixel_sensitivity;
         }
       }
     }
