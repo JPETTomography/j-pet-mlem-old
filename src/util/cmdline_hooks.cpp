@@ -14,7 +14,7 @@ namespace cmdline {
       path = dir_stack.back() + path;
     }
     if (parser.exist("verbose")) {
-      std::cout << "load: " << path << std::endl;
+      std::cout << "# load: " << path << std::endl;
     }
     std::ifstream in(path);
     if (!in.is_open()) {

@@ -29,7 +29,8 @@ class Progress {
         total(total),
         start_time(Clock::now()),
         mask(1),
-        last_completed(std::numeric_limits<unsigned long>::max()) {
+        last_completed(std::numeric_limits<unsigned long>::max()),
+        total_ellapsed_ms(0) {
     // computes mask that shows percentage only ~ once per thousand of total
     auto total_resonable_update = total / 1000;
     while (mask < total_resonable_update && mask < reasonable_update) {
@@ -64,11 +65,16 @@ class Progress {
         start_time = Clock::now();
       } else {
         auto ellapsed_ms = ellapsed() * 1000;
+        total_ellapsed_ms += ellapsed_ms;
         auto prev_precision = std::cout.precision();
         std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(2)
-                  << std::setw(4) << (completed + 1) << " " << std::setw(8)
-                  << ellapsed_ms << std::endl
-                  << std::resetiosflags(std::ios::fixed)
+                  << std::setw(4) << (completed + 1) << " " << std::setw(10)
+                  << ellapsed_ms << std::endl;
+        if (completed == total - 1) {
+          std::cout << "# av " << std::setw(10) << total_ellapsed_ms / total
+                    << "   total " << total_ellapsed_ms << std::endl;
+        }
+        std::cout << std::resetiosflags(std::ios::fixed)
                   << std::setprecision(prev_precision);
       }
       return;
@@ -112,4 +118,5 @@ class Progress {
   Time start_time;
   unsigned long mask;
   unsigned long last_completed;
+  double total_ellapsed_ms;
 };
