@@ -1,5 +1,7 @@
 #include "options.h"
 
+#include <cmath>
+
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
