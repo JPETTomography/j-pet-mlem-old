@@ -1,5 +1,6 @@
 ---
 BasedOnStyle: Chromium
+BinPackArguments: false
 Standard: C++11
 Cpp11BracedListStyle: false
 AlwaysBreakTemplateDeclarations: false
