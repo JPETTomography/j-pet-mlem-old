@@ -19,9 +19,8 @@ __global__ void reconstruction(StripDetector<F> detector,
                                F* output_rho,
                                const int n_blocks,
                                const int n_threads_per_block) {
-  Kernel<F> kernel;
+  Kernel<F> kernel(detector.sigma_z, detector.sigma_dl);
 
-  const F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   const int n_warps_per_block = n_threads_per_block / WARP_SIZE;
   const int n_warps = n_blocks * n_warps_per_block;
   const int max_events_per_warp = (n_events + n_warps - 1) / n_warps;
@@ -53,7 +52,7 @@ __global__ void reconstruction(StripDetector<F> detector,
     Point<F> ellipse_center(z, y);
 
     F sec, sec_sq, A, B, C, bb_y, bb_z;
-    detector.ellipse_bb(angle, tan, sec, sec_sq, A, B, C, bb_y, bb_z);
+    kernel.ellipse_bb(angle, tan, sec, sec_sq, A, B, C, bb_y, bb_z);
 
     Pixel<> center_pixel = detector.pixel_location(ellipse_center);
 
@@ -92,21 +91,15 @@ __global__ void reconstruction(StripDetector<F> detector,
 
       Point<F> point = detector.pixel_center(pixel);
 
-      if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
+      if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
         point -= ellipse_center;
 
         F pixel_sensitivity =
             USE_SENSITIVITY ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
 
-        F event_kernel = USE_KERNEL ? kernel(y,
-                                             tan,
-                                             sec,
-                                             sec_sq,
-                                             detector.radius,
-                                             point,
-                                             detector.inv_cor_mat_diag,
-                                             sqrt_det_cor_mat)
-                                    : 1;
+        F event_kernel =
+            USE_KERNEL ? kernel(y, tan, sec, sec_sq, detector.radius, point)
+                       : 1;
 
         F event_kernel_mul_rho =
             event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
@@ -147,15 +140,9 @@ __global__ void reconstruction(StripDetector<F> detector,
       if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
         point -= ellipse_center;
 
-        F event_kernel = USE_KERNEL ? kernel(y,
-                                             tan,
-                                             sec,
-                                             sec_sq,
-                                             detector.radius,
-                                             point,
-                                             detector.inv_cor_mat_diag,
-                                             sqrt_det_cor_mat)
-                                    : 1;
+        F event_kernel =
+            USE_KERNEL ? kernel(y, tan, sec, sec_sq, detector.radius, point)
+                       : 1;
 
         atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                   event_kernel * tex2D(tex_rho, pixel.x, pixel.y) * inv_acc);

@@ -29,7 +29,6 @@ class Reconstruction {
   typedef typename Detector::Point Point;
 
   Detector detector;
-  F sqrt_det_cor_mat;
 
  private:
   const int n_threads;
@@ -44,13 +43,13 @@ class Reconstruction {
  public:
   const Stats<size_t>& stats;
 
-  Reconstruction(const Detector& detector_a)
-      : detector(detector_a),
-        sqrt_det_cor_mat(detector.sqrt_det_cor_mat()),
+  Reconstruction(const Detector& detector)
+      : detector(detector),
         n_threads(omp_get_max_threads()),
         rho(detector.total_n_pixels, 100),
         thread_rhos(n_threads),
         sensitivity(detector.total_n_pixels),
+        kernel(detector.sigma_z, detector.sigma_dl),
         stats_(n_threads),
         stats(stats_) {
 
@@ -199,7 +198,7 @@ class Reconstruction {
                  std::vector<F>& output_rho) {
     bool use_sensitivity = false;
     F sec, sec_sq, A, B, C, bb_y, bb_z;
-    detector.ellipse_bb(angle, tan, sec, sec_sq, A, B, C, bb_y, bb_z);
+    kernel.ellipse_bb(angle, tan, sec, sec_sq, A, B, C, bb_y, bb_z);
 
     Pixel center_pixel = detector.pixel_location(ellipse_center);
 
@@ -238,21 +237,14 @@ class Reconstruction {
         Pixel pixel(iz, iy);
         Point point = detector.pixel_center(pixel);
 
-        if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
+        if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
 
           int i = pixel.y * detector.n_z_pixels + pixel.x;
 
           F pixel_sensitivity = use_sensitivity ? sensitivity[i] : 1;
           stats_.n_kernel_calls_by();
-          F event_kernel = kernel(y,
-                                  tan,
-                                  sec,
-                                  sec_sq,
-                                  detector.radius,
-                                  point,
-                                  detector.inv_cor_mat_diag,
-                                  sqrt_det_cor_mat);
+          F event_kernel = kernel(y, tan, sec, sec_sq, detector.radius, point);
           F event_kernel_mul_rho = event_kernel * rho[i];
           denominator += event_kernel_mul_rho * pixel_sensitivity;
           ellipse_pixels[n_ellipse_pixels] = pixel;

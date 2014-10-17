@@ -12,19 +12,24 @@ template <typename FType = double> class Kernel {
  public:
   typedef FType F;
   typedef ::Point<F> Point;
-#if !_MSC_VER || __CUDACC__
   typedef FType FVec[3];
-#else
-  typedef std::array<F, 3> FVec;
-#endif
+
+  const F inv_pow_sigma_z;
+  const F inv_pow_sigma_dl;
+  const F sqrt_det_cor_mat;
+
+  _ Kernel(F sigma_z, F sigma_dl)
+      : inv_pow_sigma_z(1 / (sigma_z * sigma_z)),
+        inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
+        sqrt_det_cor_mat(inv_pow_sigma_z *  //
+                         inv_pow_sigma_z *  //
+                         inv_pow_sigma_dl) {}
 
  private:
-  _ static F multiply(const FVec vec_a,
-                      const FVec inv_cor_mat_diag,
-                      const FVec vec_b) {
-    return vec_a[0] * inv_cor_mat_diag[0] * vec_b[0] +
-           vec_a[1] * inv_cor_mat_diag[1] * vec_b[1] +
-           vec_a[2] * inv_cor_mat_diag[2] * vec_b[2];
+  _ F multiply_by_inv_cor_mat(const FVec vec_a, const FVec vec_b) {
+    return vec_a[0] * inv_pow_sigma_z * vec_b[0] +
+           vec_a[1] * inv_pow_sigma_z * vec_b[1] +
+           vec_a[2] * inv_pow_sigma_dl * vec_b[2];
   }
 
  public:
@@ -47,9 +52,7 @@ template <typename FType = double> class Kernel {
                  const F inv_cos,
                  const F pow_inv_cos,  // what power?
                  const F R,
-                 const Point pixel_center,
-                 const FVec inv_cor_mat_diag,
-                 const F sqrt_det_cor_mat) {
+                 const Point pixel_center) {
 
     FVec vec_o;
     FVec vec_a;
@@ -67,10 +70,10 @@ template <typename FType = double> class Kernel {
     vec_b[1] = pixel_center.x - (pixel_center.y * tan);
     vec_b[2] = -2 * pixel_center.y * inv_cos;
 
-    F a_ic_a = multiply(vec_a, inv_cor_mat_diag, vec_a);
-    F b_ic_a = multiply(vec_b, inv_cor_mat_diag, vec_a);
-    F b_ic_b = multiply(vec_b, inv_cor_mat_diag, vec_b);
-    F o_ic_b = multiply(vec_o, inv_cor_mat_diag, vec_b);
+    F a_ic_a = multiply_by_inv_cor_mat(vec_a, vec_a);
+    F b_ic_a = multiply_by_inv_cor_mat(vec_b, vec_a);
+    F b_ic_b = multiply_by_inv_cor_mat(vec_b, vec_b);
+    F o_ic_b = multiply_by_inv_cor_mat(vec_o, vec_b);
 
     F norm = a_ic_a + (2 * o_ic_b);
 
@@ -85,4 +88,42 @@ template <typename FType = double> class Kernel {
 
     return element_before_exp * exp;
   }
+
+  // TODO: Ellipse bounding box is actually a property of the kernel, not
+  //      detector.
+
+  _ void ellipse_bb(F angle,
+                    F tan,
+                    F& sec,     // out
+                    F& sec_sq,  // out
+                    F& A,       // out
+                    F& B,       // out
+                    F& C,       // out
+                    F& bb_y,    // out
+                    F& bb_z     // out
+                    ) const {
+
+    F cos = compat::cos(angle);
+    sec = 1 / cos;
+    sec_sq = sec * sec;
+
+    A = (4 / (cos * cos)) * inv_pow_sigma_dl + 2 * tan * tan * inv_pow_sigma_z;
+    B = -4 * tan * inv_pow_sigma_z;
+    C = 2 * inv_pow_sigma_z;
+    F B_2 = (B / 2) * (B / 2);
+
+    bb_y = this->bb_y(A, C, B_2);
+    bb_z = this->bb_z(A, C, B_2);
+  }
+
+  _ bool in_ellipse(F A, F B, F C, Point ellipse_center, Point p) const {
+
+    F dy = p.y - ellipse_center.y;
+    F dz = p.x - ellipse_center.x;
+
+    return (A * dy * dy) + (B * dy * dz) + (C * dz * dz) <= 9;
+  }
+
+  _ F bb_z(F A, F C, F B_2) const { return 3 / compat::sqrt(C - (B_2 / A)); }
+  _ F bb_y(F A, F C, F B_2) const { return 3 / compat::sqrt(A - (B_2 / C)); }
 };

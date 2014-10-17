@@ -54,29 +54,7 @@ template <typename FType = double> class StripDetector {
         tl_z(center_z - size_z / 2),
         tl_y_half_h(tl_y - pixel_height / 2),
         tl_z_half_w(tl_z + pixel_width / 2),
-        inv_pow_sigma_z(1 / (sigma_z * sigma_z)),
-        inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
-// FIXME: workaround array initialization of const member on MSVC and CUDA
-#if !__CUDACC__
-#if !_MSC_VER
-        inv_cor_mat_diag{ 1 / (sigma_z * sigma_z),
-                          1 / (sigma_z * sigma_z),
-                          1 / (sigma_dl * sigma_dl) },
-#else
-        // use std::array wrapper on MSVC as workaround
-        inv_cor_mat_diag(FVec{ 1 / (sigma_z * sigma_z),
-                               1 / (sigma_z * sigma_z),
-                               1 / (sigma_dl * sigma_dl) }),
-#endif
-#endif
-        half_scintilator_length(scintilator_length / 2) {
-#if __CUDACC__
-    // initialize directly on CUDA as it does not support any of two above
-    inv_cor_mat_diag[0] = inv_pow_sigma_z;
-    inv_cor_mat_diag[1] = inv_pow_sigma_z;
-    inv_cor_mat_diag[2] = inv_pow_sigma_dl;
-#endif
-  }
+        half_scintilator_length(scintilator_length / 2) {}
 
 #ifndef __CUDACC__
   template <typename F_OTHER>
@@ -165,51 +143,10 @@ template <typename FType = double> class StripDetector {
            this->sensitivity(point - ul) / 6;   // bottom-right
   }
 
-  _ F sqrt_det_cor_mat() const {
-    return compat::sqrt(inv_cor_mat_diag[0] *  //
-                        inv_cor_mat_diag[1] *  //
-                        inv_cor_mat_diag[2]);
-  }
-
   bool check_boundary(Pixel p) {
 
     return ((p.x >= 0 || p.x < (this->n_z_pixels) || p.y >= 0 ||
              p.y < (this->n_y_pixels)));
-  }
-
-  // TODO: Ellipse bounding box is actually a property of the kernel, not
-  //      detector.
-
-  _ void ellipse_bb(F angle,
-                    F tan,
-                    F& sec,     // out
-                    F& sec_sq,  // out
-                    F& A,       // out
-                    F& B,       // out
-                    F& C,       // out
-                    F& bb_y,    // out
-                    F& bb_z     // out
-                    ) const {
-
-    F cos = compat::cos(angle);
-    sec = 1 / cos;
-    sec_sq = sec * sec;
-
-    A = (4 / (cos * cos)) * inv_pow_sigma_dl + 2 * tan * tan * inv_pow_sigma_z;
-    B = -4 * tan * inv_pow_sigma_z;
-    C = 2 * inv_pow_sigma_z;
-    F B_2 = (B / 2) * (B / 2);
-
-    bb_y = this->bb_y(A, C, B_2);
-    bb_z = this->bb_z(A, C, B_2);
-  }
-
-  _ bool in_ellipse(F A, F B, F C, Point ellipse_center, Point p) const {
-
-    F dy = p.y - ellipse_center.y;
-    F dz = p.x - ellipse_center.x;
-
-    return (A * dy * dy) + (B * dy * dz) + (C * dz * dz) <= 9;
   }
 
 #if !__CUDACC__
@@ -241,9 +178,6 @@ template <typename FType = double> class StripDetector {
   }
 #endif
 
-  _ F bb_z(F A, F C, F B_2) const { return 3 / compat::sqrt(C - (B_2 / A)); }
-  _ F bb_y(F A, F C, F B_2) const { return 3 / compat::sqrt(A - (B_2 / C)); }
-
   const F radius;
   const F scintillator_length;
   const int n_y_pixels;
@@ -261,9 +195,6 @@ template <typename FType = double> class StripDetector {
   const F tl_z;
   const F tl_y_half_h;
   const F tl_z_half_w;
-  const F inv_pow_sigma_z;
-  const F inv_pow_sigma_dl;
-  const FVec inv_cor_mat_diag;
 
  private:
   const F half_scintilator_length;

@@ -17,9 +17,8 @@ __global__ void reconstruction(StripDetector<F> detector,
                                F* output_rho,
                                const int n_blocks,
                                const int n_threads_per_block) {
-  Kernel<F> kernel;
+  Kernel<F> kernel(detector.sigma_z, detector.sigma_dl);
 
-  F sqrt_det_cor_mat = detector.sqrt_det_cor_mat();
   int n_threads = n_blocks * n_threads_per_block;
   int n_chunks = (n_events + n_threads - 1) / n_threads;
 
@@ -42,7 +41,7 @@ __global__ void reconstruction(StripDetector<F> detector,
     Point<F> ellipse_center(z, y);
 
     F sec, sec_sq, A, B, C, bb_y, bb_z;
-    detector.ellipse_bb(angle, tan, sec, sec_sq, A, B, C, bb_y, bb_z);
+    kernel.ellipse_bb(angle, tan, sec, sec_sq, A, B, C, bb_y, bb_z);
 
     Pixel<> center_pixel = detector.pixel_location(ellipse_center);
 
@@ -61,21 +60,15 @@ __global__ void reconstruction(StripDetector<F> detector,
         Pixel<> pixel(iz, iy);
         Point<F> point = detector.pixel_center(pixel);
 
-        if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
+        if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
 
           F pixel_sensitivity =
               USE_SENSITIVITY ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
 
-          F event_kernel = USE_KERNEL ? kernel(y,
-                                               tan,
-                                               sec,
-                                               sec_sq,
-                                               detector.radius,
-                                               point,
-                                               detector.inv_cor_mat_diag,
-                                               sqrt_det_cor_mat)
-                                      : 1;
+          F event_kernel =
+              USE_KERNEL ? kernel(y, tan, sec, sec_sq, detector.radius, point)
+                         : 1;
 
           denominator += event_kernel * tex2D(tex_rho, pixel.x, pixel.y) *
                          pixel_sensitivity;
@@ -90,21 +83,15 @@ __global__ void reconstruction(StripDetector<F> detector,
         Pixel<> pixel(iz, iy);
         Point<F> point = detector.pixel_center(pixel);
 
-        if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
+        if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
 
           F pixel_sensitivity =
               USE_SENSITIVITY ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
 
-          F event_kernel = USE_KERNEL ? kernel(y,
-                                               tan,
-                                               sec,
-                                               sec_sq,
-                                               detector.radius,
-                                               point,
-                                               detector.inv_cor_mat_diag,
-                                               sqrt_det_cor_mat)
-                                      : 1;
+          F event_kernel =
+              USE_KERNEL ? kernel(y, tan, sec, sec_sq, detector.radius, point)
+                         : 1;
 
           atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                     event_kernel * tex2D(tex_rho, pixel.x, pixel.y) /
