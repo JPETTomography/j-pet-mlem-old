@@ -1,9 +1,5 @@
 #pragma once
 
-#if _MSC_VER
-#include <array>
-#endif
-
 #if !__CUDACC__
 #include <random>
 #endif
