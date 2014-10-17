@@ -48,9 +48,8 @@ __global__ void reconstruction(StripDetector<F> detector,
     F tan, y, z;
     event.transform(detector.radius, tan, y, z);
 
-    F cos = compat::cos(compat::atan(tan));
-    F A, B, C, bb_y, bb_z;
-    kernel.ellipse_bb(cos, tan, A, B, C, bb_y, bb_z);
+    F sec, A, B, C, bb_y, bb_z;
+    kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);
 
     Point<F> ellipse_center(z, y);
     Pixel<> center_pixel = detector.pixel_location(ellipse_center);
@@ -97,7 +96,7 @@ __global__ void reconstruction(StripDetector<F> detector,
             USE_SENSITIVITY ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
 
         F event_kernel =
-            USE_KERNEL ? kernel(y, cos, tan, detector.radius, point) : 1;
+            USE_KERNEL ? kernel(y, tan, sec, detector.radius, point) : 1;
 
         F event_kernel_mul_rho =
             event_kernel * tex2D(tex_rho, pixel.x, pixel.y);

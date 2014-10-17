@@ -120,9 +120,8 @@ class Reconstruction {
         auto event = events[e];
         F tan, y, z;
         event.transform(detector.radius, tan, y, z);
-        F angle = std::atan(tan);
 
-        bb_update(Point(z, y), angle, y, tan, thread_rhos[thread]);
+        bb_update(Point(z, y), y, tan, thread_rhos[thread]);
 #else
         F y = events[e].z_u;
         F z = events[e].z_d;
@@ -191,15 +190,10 @@ class Reconstruction {
     return static_cast<int>((length + F(0.5)) / pixel_size);
   }
 
-  void bb_update(Point ellipse_center,
-                 F angle,
-                 F y,
-                 F tan,
-                 std::vector<F>& output_rho) {
+  void bb_update(Point ellipse_center, F y, F tan, std::vector<F>& output_rho) {
     bool use_sensitivity = false;
-    F A, B, C, bb_y, bb_z;
-    F cos = std::cos(angle);
-    kernel.ellipse_bb(cos, tan, A, B, C, bb_y, bb_z);
+    F sec, A, B, C, bb_y, bb_z;
+    kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);
 
     Pixel center_pixel = detector.pixel_location(ellipse_center);
 
@@ -245,7 +239,7 @@ class Reconstruction {
 
           F pixel_sensitivity = use_sensitivity ? sensitivity[i] : 1;
           stats_.n_kernel_calls_by();
-          F event_kernel = kernel(y, cos, tan, detector.radius, point);
+          F event_kernel = kernel(y, tan, sec, detector.radius, point);
           F event_kernel_mul_rho = event_kernel * rho[i];
           denominator += event_kernel_mul_rho * pixel_sensitivity;
           ellipse_pixels[n_ellipse_pixels] = pixel;

@@ -40,12 +40,11 @@ template <typename FType = double> class Kernel {
   }
 
   _ F operator()(const F y,
-                 const F cos,
                  const F tan,
+                 const F sec,
                  const F R,
                  const Point pixel_center) {
 
-    F sec = 1 / cos;
     F sec_sq = sec * sec;
 
     F pixel_center_y_p_y = pixel_center.y + y;
@@ -72,8 +71,8 @@ template <typename FType = double> class Kernel {
     return element_before_exp * exp;
   }
 
-  _ void ellipse_bb(F cos,
-                    F tan,
+  _ void ellipse_bb(F tan,
+                    F& sec,   // out
                     F& A,     // out
                     F& B,     // out
                     F& C,     // out
@@ -81,7 +80,10 @@ template <typename FType = double> class Kernel {
                     F& bb_z   // out
                     ) const {
 
-    A = (4 / (cos * cos)) * inv_pow_sigma_dl + 2 * tan * tan * inv_pow_sigma_z;
+    F tan_sq = tan * tan;
+    // NOTE: sqrt(1 + tan*tan) =:= 1 / cos(arctan(tan))
+    sec = 1 / compat::cos(compat::atan(tan));
+    A = 4 * sec * sec * inv_pow_sigma_dl + 2 * tan_sq * inv_pow_sigma_z;
     B = -4 * tan * inv_pow_sigma_z;
     C = 2 * inv_pow_sigma_z;
     F B_2 = (B / 2) * (B / 2);
