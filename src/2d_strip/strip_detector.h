@@ -158,17 +158,11 @@ template <typename FType = double> class StripDetector {
     Point ur(pixel_width / 2, pixel_height / 2);
     Point ul(-pixel_width / 2, pixel_height / 2);
 
-    F sens = this->sensitivity(point) / 3;
-
-    sens += this->sensitivity(point + ur) / 6;
-
-    sens += this->sensitivity(point - ur) / 6;
-
-    sens += this->sensitivity(point + ul) / 6;
-
-    sens += this->sensitivity(point - ul) / 6;
-
-    return sens;
+    return this->sensitivity(point) / 3 +       // center
+           this->sensitivity(point + ur) / 6 +  // top-right
+           this->sensitivity(point - ur) / 6 +  // bottom-left
+           this->sensitivity(point + ul) / 6 +  // top-left
+           this->sensitivity(point - ul) / 6;   // bottom-right
   }
 
   _ F sqrt_det_cor_mat() const {
