@@ -43,7 +43,7 @@ template <typename FType = double> class Kernel {
                  const F tan,
                  const F sec,
                  const F R,
-                 const Point pixel_center) {
+                 const Point pixel_center) const {
 
     F sec_sq = sec * sec;
 
@@ -107,6 +107,7 @@ template <typename FType = double> class Kernel {
            vec_a.r * inv_pow_sigma_dl * vec_b.r;
   }
 
+ public:  // needed public for tests
   _ F bb_z(F A, F C, F B_2) const { return 3 / compat::sqrt(C - (B_2 / A)); }
   _ F bb_y(F A, F C, F B_2) const { return 3 / compat::sqrt(A - (B_2 / C)); }
 };
