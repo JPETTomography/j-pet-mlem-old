@@ -5,6 +5,7 @@
 namespace PET2D {
 namespace Barrel {
 
+/// Single detector with shape of custom polygon
 template <std::size_t NVertices, typename FType = double>
 class PolygonalDetector : public Polygon<NVertices, FType> {
  public:

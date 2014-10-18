@@ -12,7 +12,7 @@
 namespace PET2D {
 namespace Barrel {
 
-/// Provides model for 2D ring of detectors
+/// 2D ring of detectors
 template <typename FType = double,
           typename SType = int,
           typename DetectorType = SquareDetector<FType>>
@@ -27,17 +27,14 @@ class DetectorRing : public std::vector<DetectorType> {
   typedef DetectorType Detector;
   typedef Barrel::Event<F> Event;
 
-  /// @param n_detectors number of detectors on ring
-  /// @param radius      radius of ring
-  /// @param w_detector  width of single detector (along ring)
-  /// @param h_detector  height/depth of single detector
-  ///                    (perpendicular to ring)
-  /// @param d_detector  diameter of circle single detector is inscribed in
-  DetectorRing(S n_detectors,
-               F radius,
-               F w_detector,
-               F h_detector,
-               F d_detector = F())
+  DetectorRing(S n_detectors,      ///< number of detectors on ring
+               F radius,           ///< radius of ring
+               F w_detector,       ///< width of single detector (along ring)
+               F h_detector,       ///< height/depth of single detector
+                                   ///< (perpendicular to ring)
+               F d_detector = F()  ///< diameter of circle single detector is
+                                   ///< inscribed in
+               )
       : c_inner(radius),
         c_outer(radius + (d_detector > F() ? d_detector : h_detector)),
         n_detectors(n_detectors),
@@ -95,10 +92,11 @@ class DetectorRing : public std::vector<DetectorType> {
     return 2.0 * c_outer.radius() + max_bias_size;
   }
 
-  /// Quantizes position with given:
-  /// @param step_size      step size
-  /// @param max_bias_size  possible bias (fuzz) maximum size
-  S quantize_position(F position, F step_size, S n_positions) {
+  /// Quantizes position across lor
+  S quantize_position(F position,    ///< position across lor
+                      F step_size,   ///< step size
+                      S n_positions  ///< number of positions
+                      ) {
     // number of positions if always even, lower half are negative positions
     // where 0 means position closests to detector with higher index
     // maximum means position closests to detector with lower index
@@ -108,10 +106,10 @@ class DetectorRing : public std::vector<DetectorType> {
       return static_cast<S>(floor(position / step_size)) + n_positions / 2;
   }
 
-  /// Returns number of position steps (indexes) for:
-  /// @param step_size      step size
-  /// @param max_bias_size  possible bias (fuzz) maximum size
-  S n_positions(F step_size, F max_bias_size) {
+  /// Returns number of position steps (indexes)
+  S n_positions(F step_size,     ///< step size
+                F max_bias_size  ///< possible bias (fuzz) maximum size
+                ) {
     // since position needs to be symmetric against (0,0) number must be even
     return (static_cast<S>(ceil(2.0 * max_dl(max_bias_size) / step_size)) + 1) /
            2 * 2;
@@ -169,17 +167,15 @@ class DetectorRing : public std::vector<DetectorType> {
     return check_for_hits(gen, model, inner, outer, e, detector, depth, p1, p2);
   }
 
-  /// @param model acceptance model
-  /// @param rx, ry coordinates of the emission point
-  /// @param output parameter contains the lor of the event
   template <class RandomGenerator, class AcceptanceModel>
-  short emit_event(RandomGenerator& gen,
-                   AcceptanceModel& model,
-                   F rx,
-                   F ry,
-                   F angle,
-                   LOR& lor,
-                   F& position) {
+  short emit_event(RandomGenerator& gen,    ///< random number generator
+                   AcceptanceModel& model,  ///< acceptance model
+                   F rx,        ///< x coordinate of the emission point
+                   F ry,        ///< y coordinate of the emission point
+                   F angle,     ///< emission angle
+                   LOR& lor,    ///<[out] lor of the event
+                   F& position  ///<[out] position of the event
+                   ) {
 
     typename Circle::Event e(rx, ry, angle);
 

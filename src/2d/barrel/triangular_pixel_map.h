@@ -5,6 +5,9 @@
 namespace PET2D {
 namespace Barrel {
 
+/// \brief Triangular pixel map
+///
+/// Provides efficient storage for triangular map of pixels.
 template <typename PixelType, typename SType = int, typename HitType = int>
 class TriangularPixelMap {
  public:
@@ -38,11 +41,10 @@ class TriangularPixelMap {
 
   /// Computes pixel index and determines symmetry number based on pixel
   /// position
-  /// @param x        pixel x coordinate (0..n_pixels)
-  /// @param x        pixel y coordinate (0..n_pixels)
-  /// @param diag     outputs true if abs(x)==abs(y)
-  /// @param symmetry outputs symmetry number (0..7)
-  S pixel_index(Pixel p, bool& diag, S& symmetry) const {
+  S pixel_index(Pixel p,     ///< pixel coordinate (0..n_pixels, 0..n_pixels)
+                bool& diag,  ///<[out] true if abs(x)==abs(y)
+                S& symmetry  ///<[out] symmetry number (0..7)
+                ) const {
     // shift so 0,0 is now center
     p.x -= n_pixels_in_row_half();
     p.y -= n_pixels_in_row_half();

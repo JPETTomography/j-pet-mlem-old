@@ -8,6 +8,7 @@
 namespace PET2D {
 namespace Barrel {
 
+/// Circular shape detector
 template <typename FType = double> class CircleDetector : Circle<FType> {
  public:
   typedef FType F;

@@ -6,6 +6,7 @@
 namespace PET2D {
 namespace Barrel {
 
+/// Line of Response
 template <typename SType = int> class LOR : public std::pair<SType, SType> {
  public:
   typedef SType S;

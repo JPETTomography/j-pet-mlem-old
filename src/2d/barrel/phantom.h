@@ -7,6 +7,7 @@
 namespace PET2D {
 namespace Barrel {
 
+/// Elliptical phantom region
 template <typename FType = double> struct EllipticalRegion {
   typedef FType F;
   typedef PET2D::Point<F> Point;
@@ -68,6 +69,7 @@ template <typename FType = double> struct EllipticalRegion {
 #endif
 };
 
+/// Phantom made of elliptical regions
 template <typename FType = double>
 class Phantom : public std::vector<EllipticalRegion<FType>> {
  public:
@@ -87,6 +89,7 @@ class Phantom : public std::vector<EllipticalRegion<FType>> {
   bool test_emit(Point p, F rnd) const { return activity(p) > rnd; }
 };
 
+/// Single point source
 template <typename FType = double> struct PointSource {
   typedef FType F;
   typedef PET2D::Point<F> Point;
@@ -99,6 +102,7 @@ template <typename FType = double> struct PointSource {
   F intensity;
 };
 
+/// Phantom made of point sources
 template <typename FType = double>
 class PointSources : public std::vector<PointSource<FType>> {
  public:

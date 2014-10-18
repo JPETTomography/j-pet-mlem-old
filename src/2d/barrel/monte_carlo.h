@@ -7,6 +7,7 @@
 namespace PET2D {
 namespace Barrel {
 
+/// Drives Monte-Carlo system matrix construction
 template <typename DetectorRingType,
           typename MatrixType,
           typename FType = double,
@@ -32,18 +33,17 @@ class MonteCarlo {
         start_pixel(start_pixel) {}
 
   /// Executes Monte-Carlo system matrix generation for given detector ring
-  /// @param gen   random number generator
-  /// @param model acceptance model (returns bool for call operator with given
-  /// length)
   template <typename RandomGenerator,
             typename AcceptanceModel,
             typename ProgressCallback>
-  void operator()(RandomGenerator& gen,
-                  AcceptanceModel model,
-                  S n_emissions,
-                  ProgressCallback progress,
-                  bool o_collect_mc_matrix = true,
-                  bool o_collect_pixel_stats = true) {
+  void operator()(
+      RandomGenerator& gen,              ///< random number generator
+      AcceptanceModel model,             ///< acceptance model
+      S n_emissions,                     ///< number of emissions generated
+      ProgressCallback progress,         ///< progress callback
+      bool o_collect_mc_matrix = true,   ///< enable matrix generation
+      bool o_collect_pixel_stats = true  ///< enable pixel stats
+      ) {
     if (n_emissions <= 0)
       return;
 

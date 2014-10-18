@@ -5,6 +5,7 @@
 namespace PET2D {
 namespace Barrel {
 
+/// Single square detector
 template <typename FType = double>
 class SquareDetector : public Polygon<4, FType> {
  public:

@@ -5,6 +5,7 @@
 namespace PET2D {
 namespace Barrel {
 
+/// Single triangular detector
 template <typename FType = double>
 class TriangleDetector : public Polygon<3, FType> {
  public:

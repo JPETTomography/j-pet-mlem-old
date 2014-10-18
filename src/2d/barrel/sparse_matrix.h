@@ -1,28 +1,3 @@
-/// \mainpage
-///
-/// \section Sparse system matrix binary file format
-///
-///   - \c uint32_t \b magic =
-///     -# \c PETp  triangular
-///     -# \c PETP  full
-///     -# \c TOFp  TOF triangular
-///     -# \c TOFP  TOF full
-///   - \c uint32_t \b n_pixels_    half size for \c PETp,
-///                                 full size for \c PETP
-///   - \c uint32_t \b n_emissions  per pixel
-///   - \c uint32_t \b n_detectors  regardless of magic
-///   - \c while (!eof)
-///     - \c uint16_t \b lor_a, \b lor_b  pair
-///     - \c uint32_t \b pixel_pair_count
-///     - \c for(.. count ..)
-///       - \c uint32_t \b position             only for TOF type
-///       - \c uint16_t \b pixel_x, \b pixel_y  half pixels for \c PETp,
-///                                             pixels for \c PETP
-///       - \c uint32_t \b pixel_hits
-///
-/// \b Note: TOF position has no particular meaning without quantisation
-/// definition. However this is not needed for reconstruction.
-
 #pragma once
 
 #include "util/bstream.h"
@@ -43,6 +18,7 @@ fourcc("TOFP", MAGIC_VERSION_TOF_FULL);        //     X        X
 namespace PET2D {
 namespace Barrel {
 
+/// Single element of sparse PET system matrix
 template <typename LORType,
           typename PositionType,
           typename PixelType,
@@ -66,6 +42,32 @@ struct SparseElement {
   HitType hits;
 };
 
+/// \brief Sparse 2D barrel PET system matrix
+///
+/// Made for efficient storage of large PET system matrix.
+///
+/// Sparse system matrix binary file format:
+///
+///   - \c uint32_t \b magic =
+///     -# \c PETp  triangular
+///     -# \c PETP  full
+///     -# \c TOFp  TOF triangular
+///     -# \c TOFP  TOF full
+///   - \c uint32_t \b n_pixels_    half size for \c PETp,
+///                                 full size for \c PETP
+///   - \c uint32_t \b n_emissions  per pixel
+///   - \c uint32_t \b n_detectors  regardless of magic
+///   - \c while (!eof)
+///     - \c uint16_t \b lor_a, \b lor_b  pair
+///     - \c uint32_t \b pixel_pair_count
+///     - \c for(.. count ..)
+///       - \c uint32_t \b position             only for TOF type
+///       - \c uint16_t \b pixel_x, \b pixel_y  half pixels for \c PETp,
+///                                             pixels for \c PETP
+///       - \c uint32_t \b pixel_hits
+///
+/// \b Note: TOF position has no particular meaning without quantisation
+/// definition. However this is not needed for reconstruction.
 template <typename PixelType,
           typename LORType,
           typename SType = int,
@@ -488,9 +490,9 @@ class SparseMatrix
   };
 
   /// Computes LOR based on given symmetry (1 out 8)
-  /// @param lor      base lor for symmetry
-  /// @param symmetry number (0..7)
-  LOR symmetric_lor(LOR lor, S symmetry) const {
+  LOR symmetric_lor(LOR lor,    ///< base lor for symmetry
+                    S symmetry  ///< symmetry number (0..7)
+                    ) const {
     if (symmetry & 1) {
       lor.first = (n_2_detectors_ - lor.first) % n_detectors_;
       lor.second = (n_2_detectors_ - lor.second) % n_detectors_;

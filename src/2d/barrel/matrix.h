@@ -6,6 +6,7 @@
 namespace PET2D {
 namespace Barrel {
 
+/// 2D barrel PET system matrix
 template <typename PixelType,
           typename LORType,
           typename SType = int,
@@ -21,9 +22,10 @@ class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
   typedef HitType Hit;
   typedef Barrel::SparseMatrix<PixelType, LORType, SType, HitType> SparseMatrix;
 
-  /// @param n_pixels_in_row number of pixels in each directions
-  /// @param n_detectors     number of detectors stored in the matrix
-  Matrix(S n_pixels_in_row, S n_detectors, S n_tof_positions = 1)
+  Matrix(S n_pixels_in_row,     ///< number of pixels in each directions
+         S n_detectors,         ///< number of detectors stored in the matrix
+         S n_tof_positions = 1  ///< number of TOF positions (1 for no TOF)
+         )
       : Super(n_pixels_in_row),
         n_detectors_(n_detectors),
         n_tof_positions_(n_tof_positions),

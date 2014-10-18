@@ -5,8 +5,7 @@
 namespace PET2D {
 namespace Barrel {
 
-/// Represents model which always produces a decay
-
+/// Model which always produces a decay
 template <typename FType = double> class AlwaysAccept {
  public:
   typedef FType F;
@@ -23,6 +22,8 @@ template <typename FType = double> class AlwaysAccept {
   static F max_bias() { return static_cast<F>(0); }
 };
 
+/// \brief Model of scintilator acceptance
+///
 /// Represents model of scintilator where CDF of decay is given by:
 /// F = 1-e^(-scale * length), where for length l we get:
 /// l = 0:           F(l) = 0

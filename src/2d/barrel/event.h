@@ -6,6 +6,7 @@
 namespace PET2D {
 namespace Barrel {
 
+/// Model for 2D barrel PET event
 template <typename FType = double> struct Event {
   typedef FType F;
   typedef PET2D::Point<F> Point;

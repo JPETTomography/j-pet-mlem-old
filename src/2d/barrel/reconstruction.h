@@ -13,12 +13,14 @@
 namespace PET2D {
 namespace Barrel {
 
+/// Reconstruction for 2D PET barrel
 template <typename FType = double, typename SType = int> class Reconstruction {
  public:
   typedef FType F;
   typedef SType S;
   typedef PET2D::Pixel<S> Pixel;
   typedef Barrel::LOR<S> LOR;
+  /// Reconstruction input element
   typedef struct {
     LOR lor;
     S position;
