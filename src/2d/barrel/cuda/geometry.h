@@ -6,11 +6,6 @@ namespace PET2D {
 namespace Barrel {
 namespace GPU {
 
-struct Data {
-  float x, y;
-  float f_data[8];
-};
-
 struct Point {
   float x, y;
 };
