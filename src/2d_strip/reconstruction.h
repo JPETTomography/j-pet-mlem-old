@@ -38,10 +38,10 @@ class Reconstruction {
   std::vector<std::vector<F>> thread_rhos;
   std::vector<F> sensitivity;
   Kernel kernel;
-  Stats<size_t> stats_;
+  ReconstructionStats<size_t> stats_;
 
  public:
-  const Stats<size_t>& stats;
+  const ReconstructionStats<size_t>& stats;
 
   Reconstruction(const Detector& detector)
       : detector(detector),

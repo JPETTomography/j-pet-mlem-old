@@ -1,6 +1,6 @@
 #pragma once
 
-template <typename T> struct Stats {
+template <typename T> struct ReconstructionStats {
 
 #if USE_STATISTICS
 
@@ -27,7 +27,7 @@ template <typename T> struct Stats {
 
 #else
 
-  Stats(size_t) {}
+  ReconstructionStats(size_t) {}
 
 #define DEFINE_STAT(name)      \
   T name;                      \

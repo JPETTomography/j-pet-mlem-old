@@ -138,8 +138,7 @@ __global__ void reconstruction(StripDetector<F> detector,
         point -= ellipse_center;
 
         F event_kernel =
-            USE_KERNEL ? kernel(y, tan, sec, sec_sq, detector.radius, point)
-                       : 1;
+            USE_KERNEL ? kernel(y, tan, sec, detector.radius, point) : 1;
 
         atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                   event_kernel * tex2D(tex_rho, pixel.x, pixel.y) * inv_acc);
