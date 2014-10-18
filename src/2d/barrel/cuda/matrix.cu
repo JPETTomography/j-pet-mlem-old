@@ -11,6 +11,9 @@
 
 #include "2d/geometry/pixel.h"
 
+using namespace PET2D;
+using namespace PET2D::Barrel;
+
 bool run_gpu_matrix(int pixel_i,
                     int n_tof_positions,
                     int number_of_threads_per_block,
@@ -20,7 +23,7 @@ bool run_gpu_matrix(int pixel_i,
                     float h_detector,
                     float w_detector,
                     float pixel_size,
-                    gpu::LOR* lookup_table_lors,
+                    GPU::LOR* lookup_table_lors,
                     Pixel<>* lookup_table_pixel,
                     unsigned int* cpu_prng_seed,
                     MatrixElement* cpu_matrix,

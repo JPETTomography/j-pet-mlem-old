@@ -2,6 +2,9 @@
 
 #include "util/random.h"
 
+namespace PET2D {
+namespace Barrel {
+
 /// Represents model which always produces a decay
 
 template <typename FType = double> class AlwaysAccept {
@@ -53,3 +56,5 @@ template <typename FType = double> class ScintilatorAccept {
   F scale;
   F inv_scale;
 };
+}  // Barrel
+}  // PET2D

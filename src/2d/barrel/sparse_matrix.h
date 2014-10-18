@@ -40,6 +40,9 @@ fourcc("PETP", MAGIC_VERSION_FULL);            //     X        X
 fourcc("TOFp", MAGIC_VERSION_TOF_TRIANGULAR);  //     X        X        X
 fourcc("TOFP", MAGIC_VERSION_TOF_FULL);        //     X        X
 
+namespace PET2D {
+namespace Barrel {
+
 template <typename LORType,
           typename PositionType,
           typename PixelType,
@@ -519,3 +522,5 @@ class SparseMatrix
     return p;
   }
 };
+}  // Barrel
+}  // PET2D

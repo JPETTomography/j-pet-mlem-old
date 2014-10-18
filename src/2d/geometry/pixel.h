@@ -2,6 +2,8 @@
 
 #include "util/cuda/compat.h"
 
+namespace PET2D {
+
 template <typename SType = int> class Pixel {
  public:
   typedef SType S;
@@ -42,15 +44,16 @@ template <typename SType = int> class Pixel {
     y = compat::min(br.y, compat::max(tl.y, y));
   }
 };
+}  // PET2D
 
 #ifdef TEST_CASE
 namespace Catch {
-  template <typename SType> struct StringMaker</**/ ::Pixel<SType>> {
-    static std::string convert(const ::Pixel<SType>& p) {
-      std::ostringstream oss;
-      oss << "(" << p.x << ", " << p.y << ")";
-      return oss.str();
-    }
-  };
+template <typename SType> struct StringMaker</**/ ::Pixel<SType>> {
+  static std::string convert(const ::Pixel<SType>& p) {
+    std::ostringstream oss;
+    oss << "(" << p.x << ", " << p.y << ")";
+    return oss.str();
+  }
+};
 }
 #endif

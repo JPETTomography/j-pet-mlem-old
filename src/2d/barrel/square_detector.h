@@ -2,6 +2,9 @@
 
 #include "2d/geometry/polygon.h"
 
+namespace PET2D {
+namespace Barrel {
+
 template <typename FType = double>
 class SquareDetector : public Polygon<4, FType> {
  public:
@@ -21,3 +24,5 @@ class SquareDetector : public Polygon<4, FType> {
  private:
   SquareDetector() {}
 };
+}  // Barrel
+}  // PET2D

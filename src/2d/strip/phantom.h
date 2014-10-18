@@ -35,7 +35,7 @@ template <typename FType> struct PhantomRegion {
 
 template <typename D, typename FType = double> class Phantom {
   typedef FType F;
-  typedef ::Pixel<> Pixel;
+  typedef PET2D::Pixel<> Pixel;
   typedef std::minstd_rand0 rng;
 
  private:

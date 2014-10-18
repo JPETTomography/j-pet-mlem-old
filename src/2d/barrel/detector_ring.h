@@ -1,6 +1,4 @@
 #pragma once
-//#define DEBUG 1
-#include <map>
 
 #include "util/random.h"
 #include "square_detector.h"
@@ -11,6 +9,9 @@
 #include "lor.h"
 #include "circle_detector.h"
 
+namespace PET2D {
+namespace Barrel {
+
 /// Provides model for 2D ring of detectors
 template <typename FType = double,
           typename SType = int,
@@ -19,12 +20,12 @@ class DetectorRing : public std::vector<DetectorType> {
  public:
   typedef FType F;
   typedef SType S;
-  typedef ::LOR<S> LOR;
-  typedef ::Pixel<S> Pixel;
-  typedef ::Circle<F> Circle;
-  typedef ::Point<F> Point;
+  typedef Barrel::LOR<S> LOR;
+  typedef PET2D::Pixel<S> Pixel;
+  typedef PET2D::Circle<F> Circle;
+  typedef PET2D::Point<F> Point;
   typedef DetectorType Detector;
-  typedef ::Event<F> Event;
+  typedef Barrel::Event<F> Event;
 
   /// @param n_detectors number of detectors on ring
   /// @param radius      radius of ring
@@ -274,3 +275,5 @@ class DetectorRing : public std::vector<DetectorType> {
   F radius_diff;
 };
 #undef DEBUG
+}  // Barrel
+}  // PET2D

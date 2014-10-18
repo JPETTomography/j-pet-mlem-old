@@ -2,6 +2,9 @@
 
 #include "2d/geometry/polygon.h"
 
+namespace PET2D {
+namespace Barrel {
+
 template <std::size_t NVertices, typename FType = double>
 class PolygonalDetector : public Polygon<NVertices, FType> {
  public:
@@ -27,3 +30,5 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
  private:
   PolygonalDetector() {}
 };
+}  // Barrel
+}  // PET2D

@@ -6,6 +6,9 @@
 #include "model.h"
 #include "detector_ring.h"
 
+using namespace PET2D;
+using namespace PET2D::Barrel;
+
 TEST_CASE("2d/barrel/detector_ring/math") {
 
   std::ifstream in("detector_ring.test");

@@ -9,6 +9,9 @@
 
 #include "matrix_pixel_major.h"
 
+using namespace PET2D;
+using namespace PET2D::Barrel;
+
 TEST_CASE("2d/barrel/lor/ctor") {
 
   LOR<> lor(9, 7);

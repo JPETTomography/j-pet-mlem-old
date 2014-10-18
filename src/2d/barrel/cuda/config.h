@@ -1,11 +1,16 @@
 #pragma once
 
-struct gpu_kernel_parameters {
-
+namespace PET2D {
+namespace Barrel {
+namespace GPU {
+struct Parameters {
   int x, y, iteration, tof_n_positions, number_of_blocks, number_of_threads;
-
   float radius, h_detector, w_detector, pixel_size;
 };
+}  // GPU
+}  // Barrel
+}  // PET2D
+
 // no time-of-flight MC
 #define NO_TOF 0
 

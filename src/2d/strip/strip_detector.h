@@ -15,13 +15,8 @@
 template <typename FType = double> class StripDetector {
  public:
   typedef FType F;
-#if !_MSC_VER || __CUDACC__
-  typedef FType FVec[3];
-#else
-  typedef std::array<F, 3> FVec;
-#endif
-  typedef ::Pixel<> Pixel;
-  typedef ::Point<F> Point;
+  typedef PET2D::Pixel<> Pixel;
+  typedef PET2D::Point<F> Point;
 
   StripDetector(F radius,
                 F scintilator_length,

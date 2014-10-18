@@ -3,6 +3,9 @@
 #include <iostream>
 #include <algorithm>
 
+namespace PET2D {
+namespace Barrel {
+
 template <typename SType = int> class LOR : public std::pair<SType, SType> {
  public:
   typedef SType S;
@@ -35,3 +38,5 @@ template <typename SType = int> class LOR : public std::pair<SType, SType> {
     return out << '(' << lor.first << ", " << lor.second << ')';
   }
 };
+}  // Barrel
+}  // PET2D

@@ -1,10 +1,11 @@
-#ifndef ELLIPSE_H
-#define ELLIPSE_H
+#pragma once
 
 #include <random>
 
 #include "point.h"
 #include "util/cuda/compat.h"
+
+namespace PET2D {
 
 template <typename FType = double> struct Ellipse {
   typedef FType F;
@@ -59,5 +60,4 @@ template <typename F> class EllipsePointsGenerator {
   F c;
   std::uniform_real_distribution<F> uni;
 };
-
-#endif  // ELLIPSE_H
+}  // PET2D

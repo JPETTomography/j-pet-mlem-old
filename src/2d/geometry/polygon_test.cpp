@@ -5,6 +5,8 @@
 
 #include "polygon.h"
 
+using namespace PET2D;
+
 TEST_CASE("geometry/2d/barrel/polygon/intersection") {
   Polygon<4> p;
   p.push_back(Point<>(1., 1.));

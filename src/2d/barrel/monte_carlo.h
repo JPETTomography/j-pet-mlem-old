@@ -4,6 +4,9 @@
 #include <omp.h>
 #endif
 
+namespace PET2D {
+namespace Barrel {
+
 template <typename DetectorRingType,
           typename MatrixType,
           typename FType = double,
@@ -191,3 +194,5 @@ class MonteCarlo {
   F tof_step;
   S start_pixel;
 };
+}  // Barrel
+}  // PET2D

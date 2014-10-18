@@ -16,6 +16,9 @@
 #include "2d/barrel/model.h"
 #include "2d/geometry/point.h"
 
+using namespace PET2D;
+using namespace PET2D::Barrel;
+
 bool run_gpu_matrix(int pixel_id,
                     int n_tof_positions,
                     int number_of_threads_per_block,
@@ -25,13 +28,13 @@ bool run_gpu_matrix(int pixel_id,
                     float h_detector,
                     float w_detector,
                     float pixel_size,
-                    gpu::LOR* lookup_table_lors,
+                    GPU::LOR* lookup_table_lors,
                     Pixel<>* lookup_table_pixels,
                     unsigned int* cpu_prng_seed,
-                    gpu::MatrixElement* cpu_matrix,
-                    gpu::MatrixElement* gpu_output);
+                    GPU::MatrixElement* cpu_matrix,
+                    GPU::MatrixElement* gpu_output);
 
-void fill_gpu_data(gpu::LOR* lookup_table_lors,
+void fill_gpu_data(GPU::LOR* lookup_table_lors,
                    Pixel<>* lookup_table_pixel,
                    unsigned int* cpu_prng_seed,
                    int& number_of_blocks,
@@ -41,7 +44,7 @@ void fill_gpu_data(gpu::LOR* lookup_table_lors,
   for (int i = 0; i < NUMBER_OF_DETECTORS; ++i) {
     for (int j = 0; j < NUMBER_OF_DETECTORS; ++j) {
 
-      gpu::LOR temp;
+      GPU::LOR temp;
       temp.lor_a = i;
       temp.lor_b = j;
       lookup_table_lors[(i * (i + 1) / 2) + j] = temp;
@@ -67,7 +70,7 @@ void fill_gpu_data(gpu::LOR* lookup_table_lors,
   }
 }
 
-OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
+GPU::OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
 
   auto pixels_in_row = cl.get<int>("n-pixels");
   auto n_detectors = cl.get<int>("n-detectors");
@@ -152,13 +155,13 @@ OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
 
   int triangle_pixel_size = (pixels_in_row / 2 * (pixels_in_row / 2 + 1) / 2);
 
-  std::vector<gpu::LOR> lookup_table_lors;
+  std::vector<GPU::LOR> lookup_table_lors;
   lookup_table_lors.resize(LORS);
 
   std::vector<Pixel<>> lookup_table_pixel;
   lookup_table_pixel.resize(triangle_pixel_size);
 
-  gpu::MatrixElement matrix_element;
+  GPU::MatrixElement matrix_element;
 
   for (int lor_i = 0; lor_i < LORS; ++lor_i) {
 
@@ -167,18 +170,18 @@ OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
 
 #if NO_TOF > 0
 
-  std::vector<gpu::MatrixElement> gpu_vector_output;
+  std::vector<GPU::MatrixElement> gpu_vector_output;
   gpu_vector_output.resize(1);
 
-  std::vector<gpu::MatrixElement> cpu_matrix;
+  std::vector<GPU::MatrixElement> cpu_matrix;
   cpu_matrix.resize(number_of_blocks);
 
 #else
 
-  std::vector<gpu::MatrixElement> gpu_vector_output;
+  std::vector<GPU::MatrixElement> gpu_vector_output;
   gpu_vector_output.resize(n_tof_positions);
 
-  std::vector<gpu::MatrixElement> cpu_matrix;
+  std::vector<GPU::MatrixElement> cpu_matrix;
   cpu_matrix.resize(n_tof_positions * number_of_blocks);
 
 #endif
@@ -195,7 +198,7 @@ OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
                 number_of_threads_per_block,
                 pixels_in_row);
 
-  OutputMatrix output_matrix(
+  GPU::OutputMatrix output_matrix(
       pixels_in_row, n_detectors, *emission_adr, n_tof_positions);
 
   double fulltime = double();
@@ -248,12 +251,12 @@ OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
 
       if (gpu_vector_output[0].hit[lor_i] > 0) {
 
-        OutputMatrix::LOR lor(lookup_table_lors[lor_i].lor_a,
-                              lookup_table_lors[lor_i].lor_b);
+        GPU::OutputMatrix::LOR lor(lookup_table_lors[lor_i].lor_a,
+                                   lookup_table_lors[lor_i].lor_b);
 
         auto pixel = lookup_table_pixel[pixel_i];
 
-        OutputMatrix::Element element;
+        GPU::OutputMatrix::Element element;
         element.lor = lor;
         element.pixel = pixel;
         element.hits = gpu_vector_output[0].hit[lor_i];
@@ -269,12 +272,12 @@ OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
 
         if (gpu_vector_output[tof_i].hit[lor_i] > 0) {
 
-          OutputMatrix::LOR lor(lookup_table_lors[lor_i].lor_a,
-                                lookup_table_lors[lor_i].lor_b);
+          GPU::OutputMatrix::LOR lor(lookup_table_lors[lor_i].lor_a,
+                                     lookup_table_lors[lor_i].lor_b);
 
           auto pixel = lookup_table_pixel[pixel_i];
 
-          OutputMatrix::Element element;
+          GPU::OutputMatrix::Element element;
           element.lor = lor;
           element.pixel = pixel;
           element.hits = gpu_vector_output[tof_i].hit[lor_i];

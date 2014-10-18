@@ -36,6 +36,9 @@
 #include "cuda/matrix.h"
 #endif
 
+using namespace PET2D;
+using namespace PET2D::Barrel;
+
 // all available detector shapes
 typedef DetectorRing<double, int, SquareDetector<double>> SquareDetectorRing;
 typedef DetectorRing<double, int, CircleDetector<double>> CircleDetectorRing;

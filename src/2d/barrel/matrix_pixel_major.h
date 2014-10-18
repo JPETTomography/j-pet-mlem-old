@@ -2,6 +2,9 @@
 
 #include "matrix.h"
 
+namespace PET2D {
+namespace Barrel {
+
 /// This class represents a system matrix that stores the content in
 /// "pixel major" mode. That is for each pixel a list w lors is kept.
 ///
@@ -230,3 +233,5 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   std::vector<LOR> index_to_lor;
   std::vector<Pixel> index_to_pixel;
 };
+}  // Barrel
+}  // PET2D

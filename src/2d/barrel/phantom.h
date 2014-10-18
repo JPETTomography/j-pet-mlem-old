@@ -4,9 +4,12 @@
 #include <vector>
 #include "2d/geometry/point.h"
 
+namespace PET2D {
+namespace Barrel {
+
 template <typename FType = double> struct EllipticalRegion {
   typedef FType F;
-  typedef ::Point<F> Point;
+  typedef PET2D::Point<F> Point;
 
   EllipticalRegion(Point center, F a, F b, F phi, F activity)
       : center_(center), a_(a), b_(b), phi_(phi), activity_(activity) {
@@ -69,7 +72,7 @@ template <typename FType = double>
 class Phantom : public std::vector<EllipticalRegion<FType>> {
  public:
   typedef FType F;
-  typedef ::Point<F> Point;
+  typedef PET2D::Point<F> Point;
 
   size_t n_regions() const { return this->size(); }
 
@@ -86,7 +89,7 @@ class Phantom : public std::vector<EllipticalRegion<FType>> {
 
 template <typename FType = double> struct PointSource {
   typedef FType F;
-  typedef ::Point<F> Point;
+  typedef PET2D::Point<F> Point;
 
   PointSource(Point p, F intensity) : p(p), intensity(intensity) {}
 
@@ -129,3 +132,5 @@ class PointSources : public std::vector<PointSource<FType>> {
   std::vector<F> cumulants;
   F total;
 };
+}  // Barrel
+}  // PET2D

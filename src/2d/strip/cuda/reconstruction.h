@@ -34,60 +34,60 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
 
 namespace GPU {
 
-  struct Context {
-    Context(Progress& progress, std::string& output_file_name)
-        : progress(progress), output_file_name(output_file_name) {}
-    Progress& progress;
-    std::string& output_file_name;
-  };
+struct Context {
+  Context(Progress& progress, std::string& output_file_name)
+      : progress(progress), output_file_name(output_file_name) {}
+  Progress& progress;
+  std::string& output_file_name;
+};
 
-  void output(StripDetector<float>& detector,
-              int iteration,
-              float* output,
-              void* ptr) {
-    Context* context = static_cast<Context*>(ptr);
+void output(StripDetector<float>& detector,
+            int iteration,
+            float* output,
+            void* ptr) {
+  Context* context = static_cast<Context*>(ptr);
 
-    if (!context->output_file_name.length()) {
-      return;
-    }
-
-    std::stringstream base_name;
-    base_name << context->output_file_name << "_";  // phantom_
-    if (iteration >= 0) {
-      base_name << std::setw(3) << std::setfill('0')  //
-                << iteration + 1 << std::setw(0);     // 001
-    } else {
-      base_name << "sensitivity";
-    }
-
-    obstream bin(base_name.str() + ".bin");
-    bin.write(output, detector.total_n_pixels);
-
-    png_writer png(base_name.str() + ".png");
-    png.write_header<>(detector.n_z_pixels, detector.n_y_pixels);
-
-    float output_max = 0;
-    for (int i = 0; i < detector.total_n_pixels; ++i) {
-      output_max = std::max(output_max, output[i]);
-    }
-
-    auto output_gain =
-        static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
-
-    uint8_t* row = (uint8_t*)alloca(detector.n_z_pixels);
-    for (int y = 0; y < detector.n_y_pixels; ++y) {
-      for (auto x = 0; x < detector.n_z_pixels; ++x) {
-        row[x] = std::numeric_limits<uint8_t>::max() -
-                 output_gain * output[y * detector.n_z_pixels + x];
-      }
-      png.write_row(row);
-    }
+  if (!context->output_file_name.length()) {
+    return;
   }
 
-  void progress(int iteration, void* ptr, bool finished) {
-    Context* context = static_cast<Context*>(ptr);
-    context->progress(iteration, finished);
+  std::stringstream base_name;
+  base_name << context->output_file_name << "_";  // phantom_
+  if (iteration >= 0) {
+    base_name << std::setw(3) << std::setfill('0')  //
+              << iteration + 1 << std::setw(0);     // 001
+  } else {
+    base_name << "sensitivity";
   }
+
+  obstream bin(base_name.str() + ".bin");
+  bin.write(output, detector.total_n_pixels);
+
+  png_writer png(base_name.str() + ".png");
+  png.write_header<>(detector.n_z_pixels, detector.n_y_pixels);
+
+  float output_max = 0;
+  for (int i = 0; i < detector.total_n_pixels; ++i) {
+    output_max = std::max(output_max, output[i]);
+  }
+
+  auto output_gain =
+      static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
+
+  uint8_t* row = (uint8_t*)alloca(detector.n_z_pixels);
+  for (int y = 0; y < detector.n_y_pixels; ++y) {
+    for (auto x = 0; x < detector.n_z_pixels; ++x) {
+      row[x] = std::numeric_limits<uint8_t>::max() -
+               output_gain * output[y * detector.n_z_pixels + x];
+    }
+    png.write_row(row);
+  }
+}
+
+void progress(int iteration, void* ptr, bool finished) {
+  Context* context = static_cast<Context*>(ptr);
+  context->progress(iteration, finished);
+}
 }
 
 // wraps progress and output into abstract context ptr and run CUDA code

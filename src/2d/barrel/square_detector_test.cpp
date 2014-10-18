@@ -2,6 +2,9 @@
 
 #include "square_detector.h"
 
+using namespace PET2D;
+using namespace PET2D::Barrel;
+
 TEST_CASE("2d/barrel/square_detector/intersection") {
 
   SquareDetector<> d(2., 1., 0.);

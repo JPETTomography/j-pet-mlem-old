@@ -10,12 +10,15 @@
 #include "2d/geometry/pixel.h"
 #include "lor.h"
 
+namespace PET2D {
+namespace Barrel {
+
 template <typename FType = double, typename SType = int> class Reconstruction {
  public:
   typedef FType F;
   typedef SType S;
-  typedef ::Pixel<S> Pixel;
-  typedef ::LOR<S> LOR;
+  typedef PET2D::Pixel<S> Pixel;
+  typedef Barrel::LOR<S> LOR;
   typedef struct {
     LOR lor;
     S position;
@@ -210,3 +213,5 @@ template <typename FType = double, typename SType = int> class Reconstruction {
     }
   };
 };
+}  // Barrel
+}  // PET2D

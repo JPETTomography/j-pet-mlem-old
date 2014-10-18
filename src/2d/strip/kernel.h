@@ -8,7 +8,7 @@
 template <typename FType = double> class Kernel {
  public:
   typedef FType F;
-  typedef ::Point<F> Point;
+  typedef PET2D::Point<F> Point;
   typedef struct { F p, q, r; } FVec;
 
  private:

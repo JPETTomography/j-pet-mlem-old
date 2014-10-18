@@ -2,13 +2,16 @@
 
 #include "circle_detector.h"
 
+using namespace PET2D;
+using namespace PET2D::Barrel;
+
 TEST_CASE("2d/barrel/circle_detector/ctor") {
 
   CircleDetector<> circle(0.01);
 
   CHECK(circle.center.x == 0);
   CHECK(circle.center.y == 0);
-};
+}
 
 TEST_CASE("2d/barrel/circle_detector/move") {
 
@@ -33,4 +36,4 @@ TEST_CASE("2d/barrel/circle_detector/move") {
 
   CHECK(rx == Approx(rcircle.center.x));
   CHECK(ry == Approx(rcircle.center.y));
-};
+}

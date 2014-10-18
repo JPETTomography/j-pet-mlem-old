@@ -3,9 +3,12 @@
 #include "2d/geometry/point.h"
 #include "util/cuda/compat.h"
 
+namespace PET2D {
+namespace Barrel {
+
 template <typename FType = double> struct Event {
   typedef FType F;
-  typedef ::Point<F> Point;
+  typedef PET2D::Point<F> Point;
 
   Event(F x, F y, F phi) : x(x), y(y), phi(phi) {
     // get line equation coefficients
@@ -56,3 +59,5 @@ template <typename FType = double> struct Event {
   // precalculated variables
   F b2, b2c, ac, a2_b2, b_a2_b2;
 };
+}  // Barrel
+}  // PET2D

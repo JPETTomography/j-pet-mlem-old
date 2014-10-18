@@ -4,6 +4,9 @@
 
 #include "phantom.h"
 
+using namespace PET2D;
+using namespace PET2D::Barrel;
+
 TEST_CASE("2d/barrel/phantom/elliptical_region") {
 
   EllipticalRegion<> disk(Point<>(1, 1), 2, 2, 0, 0.5);

@@ -5,7 +5,7 @@
 #include "geometry.h"
 #include "config.h"
 
-using namespace gpu;
+using namespace PET2D::Barrel::GPU;
 
 __device__ void create_detector_ring(float h_detector,
                                      float w_detector,

@@ -5,6 +5,8 @@
 
 #include "circle.h"
 
+using namespace PET2D;
+
 TEST_CASE("geometry/2d/barrel/circle/init", "circle initialization") {
   Circle<> c1(1.);
 

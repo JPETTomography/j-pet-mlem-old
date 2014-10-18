@@ -2,6 +2,9 @@
 
 #include "2d/geometry/polygon.h"
 
+namespace PET2D {
+namespace Barrel {
+
 template <typename FType = double>
 class TriangleDetector : public Polygon<3, FType> {
  public:
@@ -51,3 +54,5 @@ class TriangleDetector : public Polygon<3, FType> {
  private:
   TriangleDetector() {}
 };
+}  // Barrel
+}  // PET2D

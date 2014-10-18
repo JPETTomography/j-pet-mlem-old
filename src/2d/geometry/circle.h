@@ -7,10 +7,12 @@
 #include "util/svg_ostream.h"
 #include "util/array.h"
 
+namespace PET2D {
 /// Produces secant angles circle/line intersection as a equation system
 /// solution.
 /// @see /math/secant.nb
-/// @note This circle has only radius specified and center point lies in (0, 0).
+/// @note This circle has only radius specified and center point lies in (0,
+/// 0).
 template <typename FType = double, typename SType = int> class Circle {
  public:
   typedef FType F;
@@ -22,8 +24,8 @@ template <typename FType = double, typename SType = int> class Circle {
   {}
 
   typedef F Angle;
-  typedef ::Point<F> Point;
-  typedef ::Event<F> Event;
+  typedef PET2D::Point<F> Point;
+  typedef Barrel::Event<F> Event;
   typedef Array<2, Point> Secant;
   typedef Array<2, Angle> SecantAngles;
   typedef Array<2, S> SecantSections;
@@ -78,3 +80,4 @@ template <typename FType = double, typename SType = int> class Circle {
   F radius_;
   F radius2_;
 };
+}  // PET2D

@@ -5,5 +5,12 @@
 #include "2d/barrel/lor.h"
 #include "2d/barrel/sparse_matrix.h"
 
+namespace PET2D {
+namespace Barrel {
+namespace GPU {
 typedef SparseMatrix<Pixel<>, LOR<>> OutputMatrix;
-OutputMatrix run_gpu_matrix(cmdline::parser& cl);
+}  // GPU
+}  // Barrel
+}  // PET2D
+
+PET2D::Barrel::GPU::OutputMatrix run_gpu_matrix(cmdline::parser& cl);

@@ -2,6 +2,9 @@
 
 #include <cstdint>
 
+namespace PET2D {
+namespace Barrel {
+
 template <typename PixelType, typename SType = int, typename HitType = int>
 class TriangularPixelMap {
  public:
@@ -85,3 +88,5 @@ class TriangularPixelMap {
   S total_n_pixels_in_triangle_;
   Pixel end_pixel_;
 };
+}  // Barrel
+}  // PET2D

@@ -8,13 +8,15 @@
 #include "util/svg_ostream.h"
 #include "util/array.h"
 
+namespace PET2D {
+
 template <std::size_t NumPoints, typename FType = double>
 class Polygon : public Array<NumPoints, Point<FType>> {
  public:
   typedef FType F;
   typedef F Angle;
-  typedef ::Point<F> Point;
-  typedef ::Event<F> Event;
+  typedef PET2D::Point<F> Point;
+  typedef Barrel::Event<F> Event;
   typedef Array<2, Point> Intersections;
   typedef ::svg_ostream<F> svg_ostream;
 
@@ -97,3 +99,4 @@ class Polygon : public Array<NumPoints, Point<FType>> {
     return out;
   }
 };
+}  // PET2D

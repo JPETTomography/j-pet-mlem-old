@@ -3,6 +3,9 @@
 #include "triangular_pixel_map.h"
 #include "sparse_matrix.h"
 
+namespace PET2D {
+namespace Barrel {
+
 template <typename PixelType,
           typename LORType,
           typename SType = int,
@@ -16,7 +19,7 @@ class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
   typedef SType S;
   typedef typename std::make_signed<S>::type SS;
   typedef HitType Hit;
-  typedef ::SparseMatrix<PixelType, LORType, SType, HitType> SparseMatrix;
+  typedef Barrel::SparseMatrix<PixelType, LORType, SType, HitType> SparseMatrix;
 
   /// @param n_pixels_in_row number of pixels in each directions
   /// @param n_detectors     number of detectors stored in the matrix
@@ -64,3 +67,5 @@ class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
   LOR end_lor_;
   Hit n_emissions_;
 };
+}  // Barrel
+}  // PET2D

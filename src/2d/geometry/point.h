@@ -6,10 +6,12 @@
 
 #include "pixel.h"
 
+namespace PET2D {
+
 template <typename FType = double, typename SType = int> struct Point {
   typedef FType F;
   typedef SType S;
-  typedef ::Pixel<S> Pixel;
+  typedef PET2D::Pixel<S> Pixel;
 
   _ Point() : x(0), y(0) {}
   _ Point(F x, F y) : x(x), y(y) {}
@@ -71,18 +73,19 @@ template <typename FType = double, typename SType = int> struct Point {
                  static_cast<S>(std::floor(y / pixel_size + pixel_count_2)));
   }
 };
+}  // PET2D
 
 template <typename F> F deg(F rad) { return rad * 180 / F(M_PI); }
 template <typename F> F rad(F deg) { return deg * F(M_PI) / 180; }
 
 #ifdef TEST_CASE
 namespace Catch {
-  template <typename FType> struct StringMaker</**/ ::Point<FType>> {
-    static std::string convert(const ::Point<FType>& p) {
-      std::ostringstream oss;
-      oss << "(" << p.x << ", " << p.y << ")";
-      return oss.str();
-    }
-  };
+template <typename FType> struct StringMaker</**/ ::Point<FType>> {
+  static std::string convert(const ::Point<FType>& p) {
+    std::ostringstream oss;
+    oss << "(" << p.x << ", " << p.y << ")";
+    return oss.str();
+  }
+};
 }
 #endif

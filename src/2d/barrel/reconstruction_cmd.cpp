@@ -28,6 +28,9 @@
 #include <omp.h>
 #endif
 
+using namespace PET2D;
+using namespace PET2D::Barrel;
+
 template <typename Iterator>
 void output_vector(std::ostream& out,
                    Iterator it,

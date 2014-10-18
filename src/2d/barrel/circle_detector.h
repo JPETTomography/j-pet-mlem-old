@@ -5,12 +5,15 @@
 #include "util/svg_ostream.h"
 #include "util/array.h"
 
+namespace PET2D {
+namespace Barrel {
+
 template <typename FType = double> class CircleDetector : Circle<FType> {
  public:
   typedef FType F;
   typedef Circle<F> Super;
   typedef F Angle;
-  typedef ::Point<F> Point;
+  typedef PET2D::Point<F> Point;
   typedef Array<2, Point> Intersections;
   typedef typename Super::Event Event;
 
@@ -70,3 +73,5 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
  private:
   CircleDetector() {}
 };
+}  // Barrel
+}  // PET2D

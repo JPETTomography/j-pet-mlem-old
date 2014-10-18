@@ -13,6 +13,9 @@
 // FIXME: remove me
 #include "2d/geometry/pixel.h"
 
+using namespace PET2D;
+using namespace PET2D::Barrel;
+
 void run_gpu_phantom(int number_of_threads_per_block,
                      int number_of_blocks,
                      int n_emissions,
@@ -22,7 +25,7 @@ void run_gpu_phantom(int number_of_threads_per_block,
                      float w_detector,
                      float pixel_size,
                      Pixel<>* lookup_table_pixel,
-                     gpu::LOR* lookup_table_lors,
+                     GPU::LOR* lookup_table_lors,
                      MatrixElement* gpu_output) {
 
   dim3 blocks(number_of_blocks);
@@ -127,7 +130,7 @@ void run_gpu_phantom(int number_of_threads_per_block,
         }
 #if BROKEN
         if (temp > 0.0f) {
-          gpu::LOR lor(lookup_table_lors[i].lor_a, lookup_table_lors[i].lor_b);
+          GPU::LOR lor(lookup_table_lors[i].lor_a, lookup_table_lors[i].lor_b);
           gpu_output[p].hit[lor.index()] = temp;
         }
 #endif
