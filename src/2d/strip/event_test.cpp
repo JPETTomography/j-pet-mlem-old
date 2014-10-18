@@ -1,7 +1,7 @@
 #include "catch.hpp"
 #include <cmath>
 
-#include "strip_detector.h"
+#include "detector.h"
 
 using namespace PET2D;
 using namespace PET2D::Strip;

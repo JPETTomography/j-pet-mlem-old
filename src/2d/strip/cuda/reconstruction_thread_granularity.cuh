@@ -4,7 +4,7 @@
 
 #include "2d/geometry/point.h"
 #include "../event.h"
-#include "../strip_detector.h"
+#include "../detector.h"
 
 #define PIXEL_INDEX(p) (((p).y * detector.n_z_pixels) + (p).x)
 
@@ -13,7 +13,7 @@ namespace Strip {
 namespace GPU {
 
 template <template <typename Float> class Kernel, typename F>
-__global__ void reconstruction(StripDetector<F> detector,
+__global__ void reconstruction(Detector<F> detector,
                                F* events_z_u,
                                F* events_z_d,
                                F* events_dl,

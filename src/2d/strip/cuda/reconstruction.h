@@ -10,7 +10,7 @@
 #include "util/progress.h"
 
 #include "../event.h"
-#include "../strip_detector.h"
+#include "../detector.h"
 
 namespace PET2D {
 namespace Strip {
@@ -18,12 +18,12 @@ namespace GPU {
 
 // this is forward declaration of CUDA side entry-point function
 template <typename F>
-void run_reconstruction(StripDetector<F>& detector,
+void run_reconstruction(Detector<F>& detector,
                         Event<F>* events,
                         int n_events,
                         int n_iteration_blocks,
                         int n_iterations_in_block,
-                        void (*output_callback)(StripDetector<F>& detector,
+                        void (*output_callback)(Detector<F>& detector,
                                                 int iteration,
                                                 F* image,
                                                 void* context),
@@ -43,7 +43,7 @@ struct Context {
   std::string& output_file_name;
 };
 
-void output(StripDetector<float>& detector,
+void output(Detector<float>& detector,
             int iteration,
             float* output,
             void* ptr) {
@@ -92,7 +92,7 @@ void progress(int iteration, void* ptr, bool finished) {
 }
 
 // wraps progress and output into abstract context ptr and run CUDA code
-void run_reconstruction(StripDetector<float>& detector,
+void run_reconstruction(Detector<float>& detector,
                         std::vector<Event<float>>& events,
                         int n_iteration_blocks,
                         int n_iterations_per_block,
@@ -119,7 +119,7 @@ void run_reconstruction(StripDetector<float>& detector,
 }
 
 // convert double (DP) events into float (SP) events and run SP kernel
-void run_reconstruction(StripDetector<float>& detector,
+void run_reconstruction(Detector<float>& detector,
                         std::vector<Event<double>>& events,
                         int n_iteration_blocks,
                         int n_iterations_per_block,

@@ -15,22 +15,22 @@ namespace Strip {
 
 /// Class responsible for the Strip detector together with the pixel grid
 /// inside.
-template <typename FType = double> class StripDetector {
+template <typename FType = double> class Detector {
  public:
   typedef FType F;
   typedef PET2D::Pixel<> Pixel;
   typedef PET2D::Point<F> Point;
 
-  StripDetector(F radius,
-                F scintilator_length,
-                int n_y_pixels,
-                int n_z_pixels,
-                F pixel_height,  // y direction
-                F pixel_width,   // z direction
-                F sigma_z,
-                F sigma_dl,
-                F center_y = 0,
-                F center_z = 0)
+  Detector(F radius,
+           F scintilator_length,
+           int n_y_pixels,
+           int n_z_pixels,
+           F pixel_height,  // y direction
+           F pixel_width,   // z direction
+           F sigma_z,
+           F sigma_dl,
+           F center_y = 0,
+           F center_z = 0)
       : radius(radius),
         scintillator_length(scintilator_length),
         n_y_pixels(n_y_pixels),
@@ -52,17 +52,17 @@ template <typename FType = double> class StripDetector {
 
 #ifndef __CUDACC__
   template <typename F_OTHER>
-  StripDetector(const StripDetector<F_OTHER>& other)
-      : StripDetector(other.radius,
-                      other.scintillator_length,
-                      other.n_y_pixels,
-                      other.n_z_pixels,
-                      other.pixel_width,
-                      other.pixel_height,
-                      other.sigma_z,
-                      other.sigma_dl,
-                      other.center_y,
-                      other.center_z) {}
+  Detector(const Detector<F_OTHER>& other)
+      : Detector(other.radius,
+                 other.scintillator_length,
+                 other.n_y_pixels,
+                 other.n_z_pixels,
+                 other.pixel_width,
+                 other.pixel_height,
+                 other.sigma_z,
+                 other.sigma_dl,
+                 other.center_y,
+                 other.center_z) {}
 #endif
   Event<F> to_projection_space_tan(
       const ImageSpaceEventTan<F>& is_event) const {

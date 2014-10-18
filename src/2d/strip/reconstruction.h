@@ -6,7 +6,7 @@
 
 #include "event.h"
 #include "kernel.h"
-#include "strip_detector.h"
+#include "detector.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -27,7 +27,7 @@ class Reconstruction {
  public:
   typedef FType F;
   typedef KernelType Kernel;
-  typedef StripDetector<FType> Detector;
+  typedef Detector<FType> Detector;
   typedef typename Detector::Pixel Pixel;
   typedef typename Detector::Point Point;
 

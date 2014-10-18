@@ -17,7 +17,7 @@
 #include "options.h"
 
 #include "phantom.h"
-#include "strip_detector.h"
+#include "detector.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<PhantomRegion<double>> ellipse_list;
 
-    StripDetector<double> detector(CL_DETECTOR_PARAMETERS(cl));
+    Detector<double> detector(CL_DETECTOR_PARAMETERS(cl));
 
     if (verbose) {
       std::cerr << "size: " << detector.n_z_pixels << "x" << detector.n_y_pixels
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    Phantom<StripDetector<double>, double> phantom(detector, ellipse_list);
+    Phantom<Detector<double>, double> phantom(detector, ellipse_list);
 
     if (verbose) {
       std::cerr << "detector: " << detector.size_y << " "

@@ -5,14 +5,14 @@
 #include "2d/geometry/point.h"
 #include "../event.h"
 #include "../kernel.h"
-#include "../strip_detector.h"
+#include "../detector.h"
 
 namespace PET2D {
 namespace Strip {
 namespace GPU {
 
 template <template <typename Float> class Kernel, typename F>
-__global__ void reconstruction(StripDetector<F> detector,
+__global__ void reconstruction(Detector<F> detector,
                                F* events_z_u,
                                F* events_z_d,
                                F* events_dl,

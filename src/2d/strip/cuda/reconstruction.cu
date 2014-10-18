@@ -24,15 +24,15 @@ namespace Strip {
 namespace GPU {
 
 template <typename F>
-void fill_with_sensitivity(F* sensitivity, StripDetector<F>& detector);
+void fill_with_sensitivity(F* sensitivity, Detector<F>& detector);
 
 template <typename F>
-void run_reconstruction(StripDetector<F>& detector,
+void run_reconstruction(Detector<F>& detector,
                         Event<F>* events,
                         int n_events,
                         int n_iteration_blocks,
                         int n_iterations_in_block,
-                        void (*output_callback)(StripDetector<F>& detector,
+                        void (*output_callback)(Detector<F>& detector,
                                                 int iteration,
                                                 F* image,
                                                 void* context),
@@ -187,7 +187,7 @@ void run_reconstruction(StripDetector<F>& detector,
 }
 
 template <typename F>
-void fill_with_sensitivity(F* sensitivity, StripDetector<F>& detector) {
+void fill_with_sensitivity(F* sensitivity, Detector<F>& detector) {
 
   size_t width = detector.n_z_pixels;
   size_t height = detector.n_y_pixels;
@@ -202,12 +202,12 @@ void fill_with_sensitivity(F* sensitivity, StripDetector<F>& detector) {
 // Explicit template instantiation
 
 template void run_reconstruction<float>(
-    StripDetector<float>& detector,
+    Detector<float>& detector,
     Event<float>* events,
     int n_events,
     int n_iteration_blocks,
     int n_iterations_in_block,
-    void (*output_callback)(StripDetector<float>& detector,
+    void (*output_callback)(Detector<float>& detector,
                             int iteration,
                             float* image,
                             void* context),
