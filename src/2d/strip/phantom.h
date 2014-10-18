@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "event.h"
-#include "geometry/ellipse.h"
+#include "2d/geometry/ellipse.h"
 
 #if _OPENMP
 #include <omp.h>

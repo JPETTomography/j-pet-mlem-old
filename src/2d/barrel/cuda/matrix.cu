@@ -9,7 +9,7 @@
 #include "geometry_methods.cuh"
 #include "monte_carlo.cuh"
 
-#include "geometry/pixel.h"
+#include "2d/geometry/pixel.h"
 
 bool run_gpu_matrix(int pixel_i,
                     int n_tof_positions,

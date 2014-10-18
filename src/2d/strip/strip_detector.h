@@ -6,8 +6,8 @@
 
 #include "event.h"
 
-#include "geometry/pixel.h"
-#include "geometry/point.h"
+#include "2d/geometry/pixel.h"
+#include "2d/geometry/point.h"
 #include "util/cuda/compat.h"
 
 /// Class responsible for the Strip detector together with the pixel grid

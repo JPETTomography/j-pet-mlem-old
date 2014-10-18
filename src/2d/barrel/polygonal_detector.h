@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geometry/polygon.h"
+#include "2d/geometry/polygon.h"
 
 template <std::size_t NVertices, typename FType = double>
 class PolygonalDetector : public Polygon<NVertices, FType> {

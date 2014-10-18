@@ -2,7 +2,7 @@
 
 #include <cuda_runtime.h>
 
-#include "geometry/point.h"
+#include "2d/geometry/point.h"
 #include "../event.h"
 #include "../strip_detector.h"
 

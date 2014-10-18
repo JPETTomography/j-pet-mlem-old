@@ -3,7 +3,7 @@
 
 #include "catch.hpp"
 
-#include "geometry/pixel.h"
+#include "2d/geometry/pixel.h"
 #include "lor.h"
 #include "detector_ring.h"
 

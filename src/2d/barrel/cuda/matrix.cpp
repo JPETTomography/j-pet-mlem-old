@@ -14,7 +14,7 @@
 #include "2d/barrel/square_detector.h"
 #include "2d/barrel/monte_carlo.h"
 #include "2d/barrel/model.h"
-#include "geometry/point.h"
+#include "2d/geometry/point.h"
 
 bool run_gpu_matrix(int pixel_id,
                     int n_tof_positions,

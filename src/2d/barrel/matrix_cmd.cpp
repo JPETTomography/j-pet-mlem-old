@@ -18,7 +18,7 @@
 #include "triangle_detector.h"
 #include "polygonal_detector.h"
 #include "matrix_pixel_major.h"
-#include "geometry/pixel.h"
+#include "2d/geometry/pixel.h"
 #include "lor.h"
 #include "model.h"
 #include "util/png_writer.h"

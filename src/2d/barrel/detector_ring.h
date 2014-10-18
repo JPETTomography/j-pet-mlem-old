@@ -4,10 +4,10 @@
 
 #include "util/random.h"
 #include "square_detector.h"
-#include "geometry/circle.h"
+#include "2d/geometry/circle.h"
 #include "util/svg_ostream.h"
-#include "geometry/point.h"
-#include "geometry/pixel.h"
+#include "2d/geometry/point.h"
+#include "2d/geometry/pixel.h"
 #include "lor.h"
 #include "circle_detector.h"
 

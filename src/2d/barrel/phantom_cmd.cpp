@@ -16,7 +16,7 @@
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 
-#include "geometry/point.h"
+#include "2d/geometry/point.h"
 #include "phantom.h"
 #include "detector_ring.h"
 #include "circle_detector.h"

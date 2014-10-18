@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include <vector>
-#include "geometry/point.h"
+#include "2d/geometry/point.h"
 
 template <typename FType = double> struct EllipticalRegion {
   typedef FType F;

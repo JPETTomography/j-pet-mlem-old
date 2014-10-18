@@ -11,7 +11,7 @@
 #include "monte_carlo.cuh"
 
 // FIXME: remove me
-#include "geometry/pixel.h"
+#include "2d/geometry/pixel.h"
 
 void run_gpu_phantom(int number_of_threads_per_block,
                      int number_of_blocks,

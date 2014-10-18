@@ -7,7 +7,7 @@
 
 #include "detector_ring.h"
 #include "sparse_matrix.h"
-#include "geometry/pixel.h"
+#include "2d/geometry/pixel.h"
 #include "lor.h"
 
 template <typename FType = double, typename SType = int> class Reconstruction {

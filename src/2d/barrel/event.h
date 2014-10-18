@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geometry/point.h"
+#include "2d/geometry/point.h"
 #include "util/cuda/compat.h"
 
 template <typename FType = double> struct Event {
