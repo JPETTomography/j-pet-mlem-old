@@ -119,6 +119,19 @@ Tests are not build by default. In order to build and run tests run:
 
 Files containing tests have `_test.cpp` suffix.
 
+Documentation
+-------------
+
+[doxygen]: http://www.doxygen.org/
+[markdown]: http://daringfireball.net/projects/markdown/
+
+Project uses [Doxygen][doxygen] to generate documentation out of source code
+and [Markdown][markdown] files. To generate documentation run:
+
+	doxygen
+
+Next open `doc/html/index.html` file to view documentation.
+
 Coding Style
 ------------
 
