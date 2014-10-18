@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+/// Writes custom data to \a PNG file
 class png_writer {
  public:
   png_writer(std::string fn);

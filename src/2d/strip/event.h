@@ -7,6 +7,7 @@
 namespace PET2D {
 namespace Strip {
 
+/// Detector-space event
 template <typename FType = double> struct Event {
   typedef FType F;
   F z_u;
@@ -35,6 +36,7 @@ template <typename FType = double> struct Event {
 
 template <typename FType = double> struct ImageSpaceEventTan;
 
+/// Image-space event using angle in radians
 template <typename FType = double> struct ImageSpaceEventAngle {
   typedef FType F;
   const F y;
@@ -48,6 +50,7 @@ template <typename FType = double> struct ImageSpaceEventAngle {
   }
 };
 
+/// Image-space event using angle tangent
 template <typename FType> struct ImageSpaceEventTan {
   typedef FType F;
   const F y;
@@ -61,6 +64,7 @@ template <typename FType> struct ImageSpaceEventTan {
   }
 };
 
+/// Describes emissions from ellipse
 template <typename FType = double> struct EllipseParameters {
   typedef FType F;
   F x, y, a, b;

@@ -5,6 +5,7 @@
 #include <ctime>
 #endif
 
+/// \a Tausworthe random number generator
 class tausworthe {
  public:
   typedef unsigned int result_type;
@@ -54,6 +55,7 @@ class tausworthe {
   template <typename T> void LCG_step(T& z, T A, T C) { z = (A * z + C); }
 };
 
+/// Uniform real distribution for given range and \a RNG
 template <typename FType = double> class uniform_real_distribution {
  public:
   typedef FType result_type;

@@ -10,6 +10,7 @@
 #include <omp.h>
 #endif
 
+/// Provides automatic progress and \a EST display
 class Progress {
  public:
   typedef std::chrono::high_resolution_clock Clock;

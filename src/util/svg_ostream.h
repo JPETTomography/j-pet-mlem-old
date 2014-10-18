@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+/// \c SVG file generator based on \c std::ofstream
 template <typename FType = double> class svg_ostream : public std::ofstream {
  public:
   typedef FType F;

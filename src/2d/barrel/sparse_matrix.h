@@ -42,8 +42,8 @@ struct SparseElement {
   HitType hits;
 };
 
-/// \brief Sparse 2D barrel PET system matrix
-///
+/// Sparse 2D barrel PET system matrix
+
 /// Made for efficient storage of large PET system matrix.
 ///
 /// Sparse system matrix binary file format:

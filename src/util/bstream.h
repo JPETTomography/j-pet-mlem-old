@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 
+/// Binary input stream based on \c std::ifstream
 class ibstream : public std::ifstream {
  public:
   ibstream(std::string fn, std::ios_base::openmode mode = std::ios_base::in)
@@ -19,6 +20,7 @@ class ibstream : public std::ifstream {
   }
 };
 
+/// Binary output stream based on \c std::ifstream
 class obstream : public std::ofstream {
  public:
   obstream(std::string fn, std::ios_base::openmode mode = std::ios_base::out)

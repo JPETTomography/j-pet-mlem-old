@@ -3,6 +3,7 @@
 namespace PET2D {
 namespace Strip {
 
+/// Gathers various reconstruction statistics
 template <typename T> struct ReconstructionStats {
 
 #if USE_STATISTICS

@@ -5,8 +5,8 @@
 namespace PET2D {
 namespace Barrel {
 
-/// \brief Triangular pixel map
-///
+/// Triangular pixel map
+
 /// Provides efficient storage for triangular map of pixels.
 template <typename PixelType, typename SType = int, typename HitType = int>
 class TriangularPixelMap {

@@ -8,16 +8,19 @@
 namespace PET2D {
 namespace Strip {
 
+/// Analytic approximation of emission probability
 template <typename FType = double> class Kernel {
  public:
   typedef FType F;
   typedef PET2D::Point<F> Point;
-  typedef struct { F p, q, r; } FVec;
 
  private:
   const F inv_pow_sigma_z;
   const F inv_pow_sigma_dl;
   const F inv_pow_two_pi_sqrt_det_cor_mat;
+  /// \cond PRIVATE
+  typedef struct { F p, q, r; } FVec;
+  /// \endcond
 
  public:
   _ Kernel(F sigma_z, F sigma_dl)

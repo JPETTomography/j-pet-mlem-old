@@ -9,13 +9,15 @@
 
 namespace PET2D {
 
-/// \brief Circle with given radius lying in (0, 0)
-///
+/// Circle with given radius lying in (0, 0)
+
 /// Produces secant angles circle/line intersection as a equation system
 /// solution.
 ///
-/// \see /math/secant.nb
-/// \note This circle has only radius specified and center point lies in (0, 0).
+/// \see
+///   /math/secant.nb
+/// \note
+///   This circle has only radius specified and center point lies in (0, 0).
 template <typename FType = double, typename SType = int> class Circle {
  public:
   typedef FType F;
