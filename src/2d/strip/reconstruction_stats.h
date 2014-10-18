@@ -1,5 +1,8 @@
 #pragma once
 
+namespace PET2D {
+namespace Strip {
+
 template <typename T> struct ReconstructionStats {
 
 #if USE_STATISTICS
@@ -83,3 +86,5 @@ template <typename T> struct ReconstructionStats {
 
 #endif
 };
+}  // Strip
+}  // PET2D

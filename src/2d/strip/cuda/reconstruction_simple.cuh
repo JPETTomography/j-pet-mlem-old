@@ -7,7 +7,9 @@
 #include "../kernel.h"
 #include "../strip_detector.h"
 
-#include "config.h"
+namespace PET2D {
+namespace Strip {
+namespace GPU {
 
 template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(StripDetector<F> detector,
@@ -76,3 +78,6 @@ __global__ void reconstruction(StripDetector<F> detector,
     }
   }
 }
+}  // GPU
+}  // Strip
+}  // PET2D

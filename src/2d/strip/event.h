@@ -4,6 +4,9 @@
 
 #include "util/cuda/compat.h"
 
+namespace PET2D {
+namespace Strip {
+
 template <typename FType = double> struct Event {
   typedef FType F;
   F z_u;
@@ -67,3 +70,5 @@ template <typename FType = double> struct EllipseParameters {
   _ EllipseParameters(F x, F y, F a, F b, F angle, F n_emissions)
       : x(x), y(y), a(a), b(b), angle(angle), n_emissions(n_emissions) {}
 };
+}  // Strip
+}  // PET2D

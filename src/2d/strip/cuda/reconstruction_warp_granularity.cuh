@@ -8,6 +8,10 @@
 
 #define PIXEL_INDEX(p) (((p).y * detector.n_z_pixels) + (p).x)
 
+namespace PET2D {
+namespace Strip {
+namespace GPU {
+
 template <typename F> __device__ void reduce(F& value);
 
 template <template <typename Float> class Kernel, typename F>
@@ -187,3 +191,6 @@ template <typename F> __device__ void reduce(F& value) {
   value = accumulator[tid & ~(WARP_SIZE - 1)];
 #endif
 }
+}  // GPU
+}  // Strip
+}  // PET2D

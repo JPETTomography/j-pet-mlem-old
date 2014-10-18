@@ -23,6 +23,9 @@
 #include <omp.h>
 #endif
 
+using namespace PET2D;
+using namespace PET2D::Strip;
+
 const double RADIAN = M_PI / 180;
 
 int main(int argc, char* argv[]) {

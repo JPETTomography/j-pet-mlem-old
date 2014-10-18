@@ -48,8 +48,8 @@ template <typename SType = int> class Pixel {
 
 #ifdef TEST_CASE
 namespace Catch {
-template <typename SType> struct StringMaker</**/ ::Pixel<SType>> {
-  static std::string convert(const ::Pixel<SType>& p) {
+template <typename SType> struct StringMaker<PET2D::Pixel<SType>> {
+  static std::string convert(const PET2D::Pixel<SType>& p) {
     std::ostringstream oss;
     oss << "(" << p.x << ", " << p.y << ")";
     return oss.str();

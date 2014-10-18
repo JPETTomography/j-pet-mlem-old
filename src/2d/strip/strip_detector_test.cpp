@@ -8,6 +8,9 @@
 
 #include "strip_detector.h"
 
+using namespace PET2D;
+using namespace PET2D::Strip;
+
 TEST_CASE("strip/detector/pixel_location") {
 
   StripDetector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);

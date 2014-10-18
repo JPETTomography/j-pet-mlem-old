@@ -10,6 +10,9 @@
 #include "2d/geometry/point.h"
 #include "util/cuda/compat.h"
 
+namespace PET2D {
+namespace Strip {
+
 /// Class responsible for the Strip detector together with the pixel grid
 /// inside.
 template <typename FType = double> class StripDetector {
@@ -190,3 +193,5 @@ template <typename FType = double> class StripDetector {
  private:
   const F half_scintilator_length;
 };
+}  // Strip
+}  // PET2D

@@ -2,6 +2,9 @@
 
 #include "cmdline.h"
 
+namespace PET2D {
+namespace Strip {
+
 /// adds reconstruction specific command line options
 void add_reconstruction_options(cmdline::parser& parser);
 
@@ -17,3 +20,6 @@ void calculate_detector_options(cmdline::parser& parser);
       cl.get<int>("n-y-pixels"), cl.get<int>("n-z-pixels"), \
       cl.get<double>("p-size"), cl.get<double>("p-size"),   \
       cl.get<double>("s-z"), cl.get<double>("s-dl")
+
+}  // Strip
+}  // PET2D

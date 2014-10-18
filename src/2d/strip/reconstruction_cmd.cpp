@@ -25,6 +25,9 @@
 #include "cuda/reconstruction.h"
 #endif
 
+using namespace PET2D;
+using namespace PET2D::Strip;
+
 void print_statistics(std::ostream& out,
                       const Reconstruction<double>& reconstruction,
                       int n_iterations,
@@ -86,16 +89,16 @@ int main(int argc, char* argv[]) {
     if (cl.exist("gpu")) {
       StripDetector<float> single_precision_strip_detector(strip_detector);
 
-      run_gpu_reconstruction(single_precision_strip_detector,
-                             reconstruction.get_event_list(),
-                             n_blocks,
-                             n_iterations,
-                             cl.get<int>("cuda-device"),
-                             cl.get<int>("cuda-blocks"),
-                             cl.get<int>("cuda-threads"),
-                             cl.exist("verbose"),
-                             progress,
-                             output_base_name);
+      GPU::run_reconstruction(single_precision_strip_detector,
+                              reconstruction.get_event_list(),
+                              n_blocks,
+                              n_iterations,
+                              cl.get<int>("cuda-device"),
+                              cl.get<int>("cuda-blocks"),
+                              cl.get<int>("cuda-threads"),
+                              cl.exist("verbose"),
+                              progress,
+                              output_base_name);
     } else
 #endif
     {

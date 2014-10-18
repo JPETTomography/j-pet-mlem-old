@@ -7,6 +7,9 @@
 #include "util/cmdline_hooks.h"
 #include "util/variant.h"
 
+namespace PET2D {
+namespace Strip {
+
 static void add_detector_options(cmdline::parser& cl) {
   cl.add<cmdline::path>("config",
                         'c',
@@ -96,3 +99,5 @@ void calculate_detector_options(cmdline::parser& parser) {
       parser.get<int>("n-y-pixels") = std::ceil(2 * R_distance / pixel_size);
   }
 }
+}  // Strip
+}  // PET2D

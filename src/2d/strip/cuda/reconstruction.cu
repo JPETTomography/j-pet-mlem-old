@@ -19,29 +19,31 @@ texture<float, 2, cudaReadModeElementType> tex_rho;
 #include "reconstruction_simple.cuh"
 #endif
 
-template <typename F>
-void fill_with_sensitivity(F* sensitivity,
-                           F* inv_sensitivity,
-                           StripDetector<F>& detector);
+namespace PET2D {
+namespace Strip {
+namespace GPU {
 
 template <typename F>
-void run_gpu_reconstruction(StripDetector<F>& detector,
-                            Event<F>* events,
-                            int n_events,
-                            int n_iteration_blocks,
-                            int n_iterations_in_block,
-                            void (*output_callback)(StripDetector<F>& detector,
-                                                    int iteration,
-                                                    F* image,
-                                                    void* context),
-                            void (*progress_callback)(int iteration,
-                                                      void* context,
-                                                      bool finished),
-                            void* context,
-                            int device,
-                            int n_blocks,
-                            int n_threads_per_block,
-                            bool verbose) {
+void fill_with_sensitivity(F* sensitivity, StripDetector<F>& detector);
+
+template <typename F>
+void run_reconstruction(StripDetector<F>& detector,
+                        Event<F>* events,
+                        int n_events,
+                        int n_iteration_blocks,
+                        int n_iterations_in_block,
+                        void (*output_callback)(StripDetector<F>& detector,
+                                                int iteration,
+                                                F* image,
+                                                void* context),
+                        void (*progress_callback)(int iteration,
+                                                  void* context,
+                                                  bool finished),
+                        void* context,
+                        int device,
+                        int n_blocks,
+                        int n_threads_per_block,
+                        bool verbose) {
 
   cudaSetDevice(device);
   cudaDeviceProp prop;
@@ -96,7 +98,7 @@ void run_gpu_reconstruction(StripDetector<F>& detector,
   }
 
   // this class allocated CUDA pointers and deallocated them in destructor
-  GPUEventsSOA<F> gpu_events(events, n_events);
+  GPU::EventsSOA<F> gpu_events(events, n_events);
 
   F* gpu_rho;
   size_t pitch_rho;
@@ -199,7 +201,7 @@ void fill_with_sensitivity(F* sensitivity, StripDetector<F>& detector) {
 
 // Explicit template instantiation
 
-template void run_gpu_reconstruction<float>(
+template void run_reconstruction<float>(
     StripDetector<float>& detector,
     Event<float>* events,
     int n_events,
@@ -215,3 +217,7 @@ template void run_gpu_reconstruction<float>(
     int n_blocks,
     int n_threads_per_block,
     bool verbose);
+
+}  // GPU
+}  // Strip
+}  // PET2D

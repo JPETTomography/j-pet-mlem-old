@@ -3,6 +3,9 @@
 
 #include "strip_detector.h"
 
+using namespace PET2D;
+using namespace PET2D::Strip;
+
 const double degree = M_PI / 180.0;
 
 TEST_CASE("strip/event/conversions1") {

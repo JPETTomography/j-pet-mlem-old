@@ -9,6 +9,9 @@
 #include "reconstruction.h"
 #include "kernel.h"
 
+using namespace PET2D;
+using namespace PET2D::Strip;
+
 const double degree = M_PI / 180.0;
 
 template <typename F>

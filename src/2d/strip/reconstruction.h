@@ -19,6 +19,9 @@
 
 #define BB_UPDATE 1
 
+namespace PET2D {
+namespace Strip {
+
 template <typename FType = double, typename KernelType = Kernel<FType>>
 class Reconstruction {
  public:
@@ -305,3 +308,5 @@ class Reconstruction {
     }
   }
 };
+}  // Strip
+}  // PET2D

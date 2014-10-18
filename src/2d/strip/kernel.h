@@ -5,6 +5,9 @@
 #include "2d/geometry/point.h"
 #include "util/cuda/compat.h"
 
+namespace PET2D {
+namespace Strip {
+
 template <typename FType = double> class Kernel {
  public:
   typedef FType F;
@@ -111,3 +114,5 @@ template <typename FType = double> class Kernel {
   _ F bb_z(F A, F C, F B_2) const { return 3 / compat::sqrt(C - (B_2 / A)); }
   _ F bb_y(F A, F C, F B_2) const { return 3 / compat::sqrt(A - (B_2 / C)); }
 };
+}  // Strip
+}  // PET2D

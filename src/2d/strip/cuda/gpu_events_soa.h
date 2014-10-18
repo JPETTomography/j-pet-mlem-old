@@ -1,11 +1,15 @@
 #pragma once
 
-template <typename F> struct GPUEventsSOA {
+namespace PET2D {
+namespace Strip {
+namespace GPU {
+
+template <typename F> struct EventsSOA {
   F* z_u;
   F* z_d;
   F* dl;
 
-  GPUEventsSOA(const Event<F>* source, size_t n_events) {
+  EventsSOA(const Event<F>* source, size_t n_events) {
 
     // temporary CPU side SOA
     F* cpu_z_u = new F[n_events];
@@ -36,9 +40,12 @@ template <typename F> struct GPUEventsSOA {
     delete[] cpu_dl;
   }
 
-  ~GPUEventsSOA() {
+  ~EventsSOA() {
     cudaFree(z_u);
     cudaFree(z_d);
     cudaFree(dl);
   }
 };
+}  // GPU
+}  // Strip
+}  // PET2D

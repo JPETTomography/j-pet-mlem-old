@@ -8,6 +8,10 @@
 
 #define PIXEL_INDEX(p) (((p).y * detector.n_z_pixels) + (p).x)
 
+namespace PET2D {
+namespace Strip {
+namespace GPU {
+
 template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(StripDetector<F> detector,
                                F* events_z_u,
@@ -102,3 +106,6 @@ __global__ void reconstruction(StripDetector<F> detector,
 template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
   return (length + F(0.5)) / pixel_size;
 }
+}  // GPU
+}  // Strip
+}  // PET2D
