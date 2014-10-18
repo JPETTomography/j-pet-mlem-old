@@ -10,6 +10,7 @@
 
 namespace PET2D {
 
+/// Closed polygon described by set of points
 template <std::size_t NumPoints, typename FType = double>
 class Polygon : public Array<NumPoints, Point<FType>> {
  public:

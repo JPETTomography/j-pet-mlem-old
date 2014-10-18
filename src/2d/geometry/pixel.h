@@ -4,6 +4,7 @@
 
 namespace PET2D {
 
+/// Pixel using discreete coordinates
 template <typename SType = int> class Pixel {
  public:
   typedef SType S;

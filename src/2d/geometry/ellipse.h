@@ -7,6 +7,7 @@
 
 namespace PET2D {
 
+/// Ellipse with given point and axes
 template <typename FType = double> struct Ellipse {
   typedef FType F;
 
@@ -38,6 +39,7 @@ template <typename FType = double> struct Ellipse {
         measure(M_PI * a * b) {}
 };
 
+/// Generates random points from given ellipse
 template <typename F> class EllipsePointsGenerator {
  public:
   EllipsePointsGenerator(const Ellipse<F>& ellipse)
