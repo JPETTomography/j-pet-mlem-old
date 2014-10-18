@@ -67,6 +67,7 @@ include_directories(src lib/cmdline)
 # common headers and utility sources used by all commands
 file(GLOB COMMON
   src/geometry/*.h
+  src/2d/geometry/*.h
   src/math/*.h
   src/util/*.h
   src/util/png_writer.cpp
