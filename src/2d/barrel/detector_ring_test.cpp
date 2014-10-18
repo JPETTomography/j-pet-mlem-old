@@ -6,7 +6,7 @@
 #include "model.h"
 #include "detector_ring.h"
 
-TEST_CASE("2d_xy/detector_ring/math") {
+TEST_CASE("2d/barrel/detector_ring/math") {
 
   std::ifstream in("detector_ring.test");
 

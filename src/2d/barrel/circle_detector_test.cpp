@@ -2,7 +2,7 @@
 
 #include "circle_detector.h"
 
-TEST_CASE("2d_xy/circle_detector/ctor") {
+TEST_CASE("2d/barrel/circle_detector/ctor") {
 
   CircleDetector<> circle(0.01);
 
@@ -10,7 +10,7 @@ TEST_CASE("2d_xy/circle_detector/ctor") {
   CHECK(circle.center.y == 0);
 };
 
-TEST_CASE("2d_xy/circle_detector/move") {
+TEST_CASE("2d/barrel/circle_detector/move") {
 
   CircleDetector<> circle(0.01);
 

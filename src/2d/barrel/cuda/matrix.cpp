@@ -10,10 +10,10 @@
 #include "matrix.h"
 #include "geometry.h"
 
-#include "2d_xy/detector_ring.h"
-#include "2d_xy/square_detector.h"
-#include "2d_xy/monte_carlo.h"
-#include "2d_xy/model.h"
+#include "2d/barrel/detector_ring.h"
+#include "2d/barrel/square_detector.h"
+#include "2d/barrel/monte_carlo.h"
+#include "2d/barrel/model.h"
 #include "geometry/point.h"
 
 bool run_gpu_matrix(int pixel_id,

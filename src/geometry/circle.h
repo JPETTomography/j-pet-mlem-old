@@ -3,7 +3,7 @@
 #include <initializer_list>
 
 #include "point.h"
-#include "2d_xy/event.h"
+#include "2d/barrel/event.h"
 #include "util/svg_ostream.h"
 #include "util/array.h"
 

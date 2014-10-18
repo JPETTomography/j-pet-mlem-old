@@ -4,7 +4,7 @@
 
 #include "event.h"
 
-TEST_CASE("2d_xy/event/set") {
+TEST_CASE("2d/barrel/event/set") {
 
   Event<double> event(1.0, 0.5, 2.0);
 

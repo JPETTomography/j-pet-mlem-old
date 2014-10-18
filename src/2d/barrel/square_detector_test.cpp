@@ -2,7 +2,7 @@
 
 #include "square_detector.h"
 
-TEST_CASE("2d_xy/square_detector/intersection") {
+TEST_CASE("2d/barrel/square_detector/intersection") {
 
   SquareDetector<> d(2., 1., 0.);
 
