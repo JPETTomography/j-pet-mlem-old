@@ -209,7 +209,7 @@ pet_target(2d strip reconstruction)
 
 # custom documentation and config files to be shown in project tree
 file(GLOB EXTRA scripts/* cmake/*)
-add_custom_target(extra SOURCES README.md .clang-format ${EXTRA})
+add_custom_target(extra SOURCES README.md Doxyfile .clang-format ${EXTRA})
 
 # tests
 file(GLOB_RECURSE TESTS src/*_test.cpp)

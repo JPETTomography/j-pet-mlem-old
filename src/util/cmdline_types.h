@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-// @cond PRIVATE
+// \cond PRIVATE
 // redefine help formatting for greater readibility
 namespace cmdline {
 
@@ -61,4 +61,4 @@ template <> inline std::string default_value<ssize_t>(ssize_t def) {
 }
 
 }  // cmdline
-// @end cond
+// \endcond
