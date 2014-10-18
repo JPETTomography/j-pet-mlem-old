@@ -5,6 +5,8 @@
 
 #include "vector.h"
 
+namespace Math {
+
 // FIXME: we asssume that this is diagonal matrix for now
 template <size_t Dim, typename FType = double>
 class Matrix : std::vector<FType> {
@@ -24,3 +26,4 @@ class Matrix : std::vector<FType> {
     return r;
   }
 };
+}  // Math

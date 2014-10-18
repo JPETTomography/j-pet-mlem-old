@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <vector>
 
+namespace Math {
+
 template <size_t Dim, typename FType = double>
 class Vector : std::vector<FType> {
  public:
@@ -28,3 +30,4 @@ class Vector : std::vector<FType> {
     return v;
   }
 };
+}  // Math
