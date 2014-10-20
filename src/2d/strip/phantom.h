@@ -72,7 +72,7 @@ template <typename D, typename FType = double> class Phantom {
     }
 
     for (size_t i = 0; i < el.size(); ++i)
-      point_generators.push_back(EllipsePointGenerator<F>(el[i].shape));
+      point_generators.emplace_back(el[i].shape);
 
     output.assign(detector.n_y_pixels, std::vector<F>(detector.n_z_pixels, 0));
     output_without_errors.assign(detector.n_y_pixels,

@@ -62,6 +62,10 @@ template <std::size_t MaxSize, typename T> class Array {
 
   void push_back(const value_type& val) { v[s++] = val; }
 
+  template <typename... Args> void emplace_back(Args&&... args) {
+    new (&v[s++]) value_type(std::forward<Args>(args)...);
+  }
+
   reference at(size_type i) { return v[i]; }
   const_reference at(size_type i) const { return v[i]; }
 

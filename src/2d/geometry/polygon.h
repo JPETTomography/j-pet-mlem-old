@@ -68,9 +68,9 @@ class Polygon : public Array<NumPoints, Point<FType>> {
       } else if (v1 * v2 < 0) {
         // calculate intersection
         auto m = e.a * (p1.x - p2.x) + e.b * (p1.y - p2.y);
-        intersections.push_back(Point(
+        intersections.emplace_back(
             (e.c * (p1.x - p2.x) + e.b * (p2.x * p1.y - p1.x * p2.y)) / m,
-            (e.c * (p1.y - p2.y) + e.a * (p1.x * p2.y - p2.x * p1.y)) / m));
+            (e.c * (p1.y - p2.y) + e.a * (p1.x * p2.y - p2.x * p1.y)) / m);
       }
       if (intersections.full())
         return intersections;

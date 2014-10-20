@@ -186,8 +186,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
         i_current_pixel = i_pixel;
       }
       this->hit(i_pixel, hits);
-      pixel_lor_hits[i_pixel].push_back(
-          SparseElement(e.lor, e.position, pixel, hits));
+      pixel_lor_hits[i_pixel].emplace_back(e.lor, e.position, pixel, hits);
     }
     if (lor_count) {
       pixel_lor_count[i_current_pixel] += lor_count;

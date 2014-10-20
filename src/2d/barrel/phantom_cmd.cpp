@@ -277,8 +277,6 @@ void run(cmdline::parser& cl, Model& model) {
   auto& tof_step = cl.get<double>("tof-step");
   auto verbose = cl.exist("verbose");
 
-  PointPhantom<> point_sources;
-
   // automatic radius
   if (!cl.exist("s-pixel")) {
     if (!cl.exist("radius")) {
@@ -324,6 +322,7 @@ void run(cmdline::parser& cl, Model& model) {
   if (cl.exist("detected"))
     only_detected = true;
 
+  PointPhantom<> point_phantom;
   Phantom<> phantom;
 
   for (auto& fn : cl.rest()) {
@@ -345,9 +344,9 @@ void run(cmdline::parser& cl, Model& model) {
       std::string type;
       is >> type;
       if (type == "point") {
-        point_sources.push_back(PointSource<>(is));
+        point_phantom.emplace_back(is);
       } else if (type == "ellipse") {
-        phantom.push_back(EllipticalSource<>(is));
+        phantom.emplace_back(is);
       } else {
         std::ostringstream msg;
         msg << fn << ":" << n_line << " unhandled type of shape: " << type;
@@ -407,14 +406,14 @@ void run(cmdline::parser& cl, Model& model) {
   }
   progress(n_emitted);
 
-  if (point_sources.n_sources() > 0) {
-    point_sources.normalize();
+  if (point_phantom.n_sources() > 0) {
+    point_phantom.normalize();
     n_emitted = 0;
     while (n_emitted < n_emissions) {
       progress(n_emitted);
 
       auto rng = one_dis(gen);
-      auto p = point_sources.draw(rng);
+      auto p = point_phantom.draw(rng);
 
       if (p.length2() >= fov_radius2)
         continue;

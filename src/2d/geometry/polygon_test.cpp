@@ -9,10 +9,10 @@ using namespace PET2D;
 
 TEST_CASE("geometry/2d/barrel/polygon/intersection") {
   Polygon<4> p;
-  p.push_back(Point<>(1., 1.));
-  p.push_back(Point<>(2., 1.));
-  p.push_back(Point<>(2., 2.));
-  p.push_back(Point<>(1., 2.));
+  p.emplace_back(1., 1.);
+  p.emplace_back(2., 1.);
+  p.emplace_back(2., 2.);
+  p.emplace_back(1., 2.);
 
   Polygon<4>::Event e1(0., .5, M_PI_4);
   Polygon<4>::Event e2(0., 1.5, M_PI_4);

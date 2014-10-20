@@ -190,7 +190,7 @@ class SparseMatrix
           position = 0;
         }
 
-        this->push_back(Element(lor, position, Pixel(x, y), hits));
+        this->emplace_back(lor, position, Pixel(x, y), hits);
       }
     }
   }
@@ -408,8 +408,8 @@ class SparseMatrix
           // higher detector index to lower
           position = n_tof_positions_ - 1 - position;
         }
-        full.push_back(
-            Element(lor, position, symmetric_pixel(pixel, symmetry), hits));
+        full.emplace_back(
+            lor, position, symmetric_pixel(pixel, symmetry), hits);
       }
     }
     return full;

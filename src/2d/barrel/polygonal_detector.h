@@ -21,8 +21,7 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
 
     for (std::size_t i = 0; i < NVertices; ++i) {
       auto angle = step * (i + F(0.5));
-      this->push_back(
-          Point(radius * std::cos(angle), radius * std::sin(angle)));
+      this->emplace_back(radius * std::cos(angle), radius * std::sin(angle));
     }
   }
 
