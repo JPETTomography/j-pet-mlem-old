@@ -14,6 +14,16 @@ template <typename FType = double> struct Ellipse {
   Ellipse(F x, F y, F a, F b, F angle)
       : Ellipse(x, y, a, b, angle, compat::sin(angle), compat::cos(angle)) {}
 
+#if !__CUDACC__
+  /// constructs Ellipse from stream
+  Ellipse(std::istream& in)
+      : Ellipse(read<F>(in),
+                read<F>(in),
+                read<F>(in),
+                read<F>(in),
+                read<F>(in)) {}
+#endif
+
   bool contains(const Point<F> p) const {
     F x = p.x - this->x;
     F y = p.y - this->y;
@@ -40,14 +50,14 @@ template <typename FType = double> struct Ellipse {
 };
 
 /// Generates random points from given ellipse
-template <typename F> class EllipsePointsGenerator {
+template <typename F> class EllipsePointGenerator {
  public:
-  EllipsePointsGenerator(const Ellipse<F>& ellipse)
+  EllipsePointGenerator(const Ellipse<F>& ellipse)
       : ellipse(ellipse),
         s(compat::sin(ellipse.angle)),
         c(compat::cos(ellipse.angle)) {}
 
-  template <typename G> Point<F> point(G& gen) {
+  template <typename Generator> Point<F> operator()(Generator& gen) {
     F angle = 2 * M_PI * uni(gen);
     F r = std::sqrt(uni(gen));
     F x = ellipse.a * r * std::cos(angle);

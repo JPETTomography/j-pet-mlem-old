@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/cuda/compat.h"
+#include "util/read.h"
 
 namespace PET2D {
 
@@ -15,6 +16,11 @@ template <typename SType = int> class Pixel {
   _ Pixel() : x(0), y(0) {}
 
   S x, y;
+
+#if !__CUDACC__
+  /// constructs Pixel from stream
+  Pixel(std::istream& in) : x(read<S>(in)), y(read<S>(in)) {}
+#endif
 
   _ const S index() const { return y * (y + 1) / 2 + x; }
 

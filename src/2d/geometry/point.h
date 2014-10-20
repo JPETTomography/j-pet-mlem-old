@@ -19,6 +19,11 @@ template <typename FType = double, typename SType = int> struct Point {
 
   F x, y;
 
+#if !__CUDACC__
+  /// constructs Point from stream
+  Point(std::istream& in) : x(read<F>(in)), y(read<F>(in)) {}
+#endif
+
   _ Point operator+(const Point& p) const { return Point(x + p.x, y + p.y); }
 
   _ Point operator-(const Point& p) const { return Point(x - p.x, y - p.y); }

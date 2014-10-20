@@ -48,7 +48,7 @@ template <typename D, typename FType = double> class Phantom {
 
   std::vector<PhantomRegion<F>> region_list;
   std::vector<F> CDF;
-  std::vector<EllipsePointsGenerator<F>> point_generators;
+  std::vector<EllipsePointGenerator<F>> point_generators;
 
   std::vector<Event<F>> events;
   std::vector<std::vector<F>> output;
@@ -74,7 +74,7 @@ template <typename D, typename FType = double> class Phantom {
     }
 
     for (size_t i = 0; i < el.size(); ++i)
-      point_generators.push_back(EllipsePointsGenerator<F>(el[i].shape));
+      point_generators.push_back(EllipsePointGenerator<F>(el[i].shape));
 
     output.assign(detector.n_y_pixels, std::vector<F>(detector.n_z_pixels, 0));
     output_without_errors.assign(detector.n_y_pixels,
@@ -93,10 +93,10 @@ template <typename D, typename FType = double> class Phantom {
     return i;
   }
 
-  template <typename G> Point<F> gen_point(G& gen) {
+  template <typename Generator> Point<F> gen_point(Generator& generator) {
   again:
-    size_t i_region = choose_region(gen);
-    Point<F> p = point_generators[i_region].point(gen);
+    size_t i_region = choose_region(generator);
+    Point<F> p = point_generators[i_region](generator);
     for (int j = 0; j < i_region; j++) {
       if (region_list[j].shape.contains(p))
         goto again;
@@ -104,9 +104,10 @@ template <typename D, typename FType = double> class Phantom {
     return p;
   }
 
-  template <typename G> ImageSpaceEventAngle<F> gen_event(G& gen) {
-    Point<F> p = gen_point(gen);
-    F rangle = F(M_PI_4) * uniform_angle(gen);
+  template <typename Generator>
+  ImageSpaceEventAngle<F> gen_event(Generator& generator) {
+    Point<F> p = gen_point(generator);
+    F rangle = F(M_PI_4) * uniform_angle(generator);
     return ImageSpaceEventAngle<F>(p.y, p.x, rangle);
   }
 

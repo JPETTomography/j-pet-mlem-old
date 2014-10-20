@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <vector>
+
 #include "2d/geometry/point.h"
 
 namespace PET2D {
@@ -12,54 +13,45 @@ template <typename FType = double> struct EllipticalRegion {
   typedef FType F;
   typedef PET2D::Point<F> Point;
 
+  const Point center;
+  const F a;
+  const F b;
+  const F phi;
+  const F activity;
+
   EllipticalRegion(Point center, F a, F b, F phi, F activity)
-      : center_(center), a_(a), b_(b), phi_(phi), activity_(activity) {
-    init();
+      : center(center), a(a), b(b), phi(phi), activity(activity) {
+    sincos(phi, &sin, &cos);
+    inv_a2 = 1 / (a * a);
+    inv_b2 = 1 / (b * b);
   }
 
-  EllipticalRegion(std::istream& in) {
-    in >> center_.x >> center_.y >> a_ >> b_ >> phi_ >> activity_;
-    init();
-  }
-
-  F activity() const { return activity_; }
+#if !__CUDACC__
+  EllipticalRegion(std::istream& in)
+      : EllipticalRegion(Point(in),
+                         read<F>(in),
+                         read<F>(in),
+                         read<F>(in),
+                         read<F>(in)) {}
+#endif
 
   bool operator()(Point p) const {
 
-    auto d = p - center_;
+    auto d = p - center;
 
-    auto r_x = d.x * cos_ + d.y * sin_;
-    auto r_y = -d.x * sin_ + d.y * cos_;
+    auto r_x = d.x * cos + d.y * sin;
+    auto r_y = -d.x * sin + d.y * cos;
 
     auto r2 = r_x * r_x * inv_a2 + r_y * r_y * inv_b2;
 
     return r2 < static_cast<F>(1);
   }
 
-  F center() const { return center_; }
-  F a() const { return a_; }
-  F b() const { return b_; }
-  F phi() const { return phi_; }
-
  private:
-  void init() {
-    sincos(phi_, &sin_, &cos_);
-    inv_a2 = static_cast<F>(1) / (a_ * a_);
-    inv_b2 = static_cast<F>(1) / (b_ * b_);
-  }
-
-  Point center_;
-  F a_;
-  F b_;
-
-  F phi_;
-  F activity_;
-
   F inv_a2;
   F inv_b2;
-
-  F sin_;
-  F cos_;
+  F sin;
+  F cos;
 
 #if __APPLE__ || _MSC_VER
   template <typename F> static inline void sincos(F a, F* s, F* c) {
@@ -81,7 +73,7 @@ class Phantom : public std::vector<EllipticalRegion<FType>> {
   F activity(Point p) const {
     for (auto& region : *this) {
       if (region(p))
-        return region.activity();
+        return region.activity;
     }
     return static_cast<F>(0);
   }
@@ -96,10 +88,11 @@ template <typename FType = double> struct PointSource {
 
   PointSource(Point p, F intensity) : p(p), intensity(intensity) {}
 
-  PointSource(std::istream& in) { in >> p.x >> p.y >> intensity; }
+  PointSource(std::istream& in)
+      : p(read<F>(in), read<F>(in)), intensity(read<F>(in)) {}
 
-  Point p;
-  F intensity;
+  const Point p;
+  const F intensity;
 };
 
 /// Phantom made of point sources
@@ -119,7 +112,7 @@ class PointSources : public std::vector<PointSource<FType>> {
     F cumulant = static_cast<F>(0);
     cumulants.clear();
     for (auto& source : *this) {
-      cumulant += source.intensity /= total;
+      cumulant += source.intensity / total;
       cumulants.push_back(cumulant);
     }
   }
