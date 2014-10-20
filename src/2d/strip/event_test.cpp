@@ -9,7 +9,7 @@ using namespace PET2D::Strip;
 const double degree = M_PI / 180.0;
 
 TEST_CASE("strip/event/conversions1") {
-  StripDetector<> detector(450.0, 200.0, 200, 200, 5.0, 5.0, 10, 63);
+  Detector<> detector(450.0, 200.0, 200, 200, 5.0, 5.0, 10, 63);
 
   ImageSpaceEventAngle<> img_angle(10.0, 20.0, 7.0 * degree);
   ImageSpaceEventTan<> img_tan = img_angle.to_tan();
@@ -32,7 +32,7 @@ TEST_CASE("strip/event/conversions1") {
 }
 
 TEST_CASE("strip/event/conversions2") {
-  StripDetector<> detector(450.0, 200.0, 200, 200, 5.0, 5.0, 10, 63);
+  Detector<> detector(450.0, 200.0, 200, 200, 5.0, 5.0, 10, 63);
 
   ImageSpaceEventAngle<> img_angle(-10.0, 37.0, -5.0 * degree);
   ImageSpaceEventTan<> img_tan = img_angle.to_tan();

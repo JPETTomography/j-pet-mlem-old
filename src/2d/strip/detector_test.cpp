@@ -13,7 +13,7 @@ using namespace PET2D::Strip;
 
 TEST_CASE("strip/detector/pixel_location") {
 
-  StripDetector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
   CHECK(detector.pixel_location(Point<>(0.0, 0.0)) == Pixel<>(100, 100));
 
@@ -28,7 +28,7 @@ TEST_CASE("strip/detector/pixel_center") {
 
   // space->image_space  y: [R,-R] ->[0,n_pixels_y], z:[-L/2,L/2] ->
   // [0,n_pixels_z]
-  StripDetector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
   // test middle point pixel center
   CHECK(detector.pixel_center(detector.pixel_location(Point<>(0.0, 0.0))) ==

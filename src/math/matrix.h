@@ -12,7 +12,7 @@ template <size_t Dim, typename FType = double>
 class Matrix : std::vector<FType> {
  public:
   typedef FType F;
-  typedef ::Vector<Dim> Vector;
+  typedef Math::Vector<Dim> Vector;
 
   Matrix(std::initializer_list<F> l) : std::vector<F>(l) {}
 

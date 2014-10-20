@@ -24,7 +24,7 @@ void check(F ref, F y, F angle, F dy, F dz, F R, const Kernel<F>& kernel) {
 
 TEST_CASE("strip/sensitivity/square") {
 
-  StripDetector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
   CHECK(detector.sensitivity(Point<>(0.0, 0.0)) == Approx(0.5).epsilon(1e-13));
   CHECK(detector.sensitivity(Point<>(0.0, 50.0)) ==
@@ -37,7 +37,7 @@ TEST_CASE("strip/sensitivity/square") {
 
 TEST_CASE("strip/sensitivity/non_square") {
 
-  StripDetector<> detector(450, 200, 200, 200, 5, 5, 10, 63);
+  Detector<> detector(450, 200, 200, 200, 5, 5, 10, 63);
 
   CHECK(detector.sensitivity(Point<>(0.0, 0.0)) ==
         Approx(0.1392089745461279).epsilon(1e-13));
@@ -52,7 +52,7 @@ TEST_CASE("strip/sensitivity/non_square") {
 #if DONT_TEST
 TEST_CASE("strip/kernel/ctor1") {
 
-  StripDetector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
   Kernel<> kernel(detector.sigma_z, detector.sigma_dl);
   double R = detector.radius;
 
@@ -66,7 +66,7 @@ TEST_CASE("strip/kernel/ctor1") {
 
 TEST_CASE("strip/kernel/ctor2") {
 
-  StripDetector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
   Kernel<> kernel(detector.sigma_z, detector.sigma_dl);
   double R = detector.radius;
 
@@ -83,7 +83,7 @@ TEST_CASE("strip/kernel/ctor2") {
 
 TEST_CASE("strip/kernel/bbox") {
 
-  StripDetector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
   Kernel<> kernel(detector.sigma_z, detector.sigma_dl);
   double R = detector.radius;
 
