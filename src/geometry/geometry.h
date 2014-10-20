@@ -62,8 +62,6 @@ template <int N, typename F> class Vector {
     return true;
   }
 
-  Vector& rotate(F angle);
-
  private:
   F v_[N];
 };
@@ -100,19 +98,18 @@ template <int N, typename F> class Point {
   F& operator[](int i) { return p_[i]; }
   F operator[](int i) const { return p_[i]; }
 
-  Point& rotate(F angle, Point center);
-  Point& rotate(F angle);
-
  private:
   F p_[N];
 };
 }  // Base
 }  // private
 
+/// \cond PRIVATE
 template <int N, typename F = double> class Vector : public Base::Vector<N, F> {
  public:
   using Base::Vector<N, F>::Vector;  // inherit constructors
 };
+/// \endcond
 
 template <typename F> class Vector<2, F> : public Base::Vector<2, F> {
  public:
@@ -131,10 +128,12 @@ template <typename F> class Vector<2, F> : public Base::Vector<2, F> {
   }
 };
 
+/// \cond PRIVATE
 template <int N, typename F = double> class Point : public Base::Point<N, F> {
  public:
   using Base::Point<N, F>::Point;  // inherit constructors
 };
+/// \endcond
 
 template <typename F> class Point<2, F> : public Base::Point<2, F> {
  public:
