@@ -79,6 +79,23 @@ template <typename FType = double, typename SType = int> struct Point {
                  static_cast<S>(std::floor(y / pixel_size + pixel_count_2)));
   }
 };
+
+/// Single point source
+template <typename FType = double, typename SType = int>
+struct PointSource : public Point<FType, SType> {
+  typedef FType F;
+  typedef SType S;
+  typedef PET2D::Point<F, S> Point;
+
+  const F intensity;
+
+  PointSource(Point p, F intensity) : Point::Point(p), intensity(intensity) {}
+
+#if !__CUDACC__
+  /// constructs point source from stream
+  PointSource(std::istream& in) : Point::Point(in), intensity(read<F>(in)) {}
+#endif
+};
 }  // PET2D
 
 template <typename F> F deg(F rad) { return rad * 180 / F(M_PI); }

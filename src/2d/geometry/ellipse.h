@@ -8,11 +8,16 @@
 namespace PET2D {
 
 /// Ellipse with given point and axes
-template <typename FType = double> struct Ellipse {
+template <typename FType = double, typename SType = int> struct Ellipse {
   typedef FType F;
+  typedef SType S;
+  typedef PET2D::Point<F, S> Point;
 
   Ellipse(F x, F y, F a, F b, F angle)
       : Ellipse(x, y, a, b, angle, compat::sin(angle), compat::cos(angle)) {}
+
+  Ellipse(const Point center, F a, F b, F angle)
+      : Ellipse(center.x, center.y, a, b, angle) {}
 
 #if !__CUDACC__
   /// constructs Ellipse from stream
@@ -24,52 +29,81 @@ template <typename FType = double> struct Ellipse {
                 read<F>(in)) {}
 #endif
 
-  bool contains(const Point<F> p) const {
-    F x = p.x - this->x;
-    F y = p.y - this->y;
-    return (A * x * x + 2 * C * x * y + B * y * y) <= 1;
+  /// checks if ellipse contains given point
+  bool contains(Point p) const {
+    p -= center;
+    return (A * p.x * p.x + 2 * C * p.x * p.x + B * p.y * p.y) <= 1;
   }
 
-  const F x, y;  // center
-  const F a, b;
-  const F angle;
-  const F A, B, C;
-  const F measure;
+  const Point center;  ///< ellipse center
+  const F a, b;        ///< ellipse axis
+  const F angle;       ///< ellipse angle (rotation)
+  const F A, B, C;     ///< ellipse equation components
+  const F area;        ///< ellipse area
 
  private:
   Ellipse(F x, F y, F a, F b, F angle, F s, F c)
-      : x(x),
-        y(y),
+      : center(x, y),
         a(a),
         b(b),
         angle(angle),
         A(c * c / (a * a) + s * s / (b * b)),
         B(s * s / (a * a) + c * c / (b * b)),
         C(s * c * (1 / (a * a) - 1 / (b * b))),
-        measure(M_PI * a * b) {}
+        area(M_PI * a * b) {}
+};
+
+/// Elliptical emmission source
+template <typename FType = double, typename SType = int>
+struct EllipticalSource : public Ellipse<FType> {
+  typedef FType F;
+  typedef SType S;
+  typedef PET2D::Ellipse<F, S> Ellipse;
+  typedef PET2D::Point<F, S> Point;
+
+  const F intensity;
+
+  EllipticalSource(F x, F y, F a, F b, F phi, F intensity)
+      : Ellipse::Ellipse(x, y, a, b, phi), intensity(intensity) {}
+
+  EllipticalSource(Point center, F a, F b, F phi, F intensity)
+      : Ellipse::Ellipse(center, a, b, phi), intensity(intensity) {}
+
+#if !__CUDACC__
+  EllipticalSource(std::istream& in)
+      : Ellipse::Ellipse(in), intensity(read<F>(in)) {}
+#endif
 };
 
 /// Generates random points from given ellipse
-template <typename F> class EllipsePointGenerator {
+template <typename FType = double, typename SType = int>
+class EllipsePointGenerator {
  public:
-  EllipsePointGenerator(const Ellipse<F>& ellipse)
-      : ellipse(ellipse),
-        s(compat::sin(ellipse.angle)),
-        c(compat::cos(ellipse.angle)) {}
+  typedef FType F;
+  typedef SType S;
+  typedef PET2D::Ellipse<F, S> Ellipse;
+  typedef PET2D::Point<F, S> Point;
+  typedef std::uniform_real_distribution<F> Distribution;
 
-  template <typename Generator> Point<F> operator()(Generator& gen) {
-    F angle = 2 * M_PI * uni(gen);
-    F r = std::sqrt(uni(gen));
+  EllipsePointGenerator(const Ellipse& ellipse)
+      : ellipse(ellipse),
+        sin(compat::sin(ellipse.angle)),
+        cos(compat::cos(ellipse.angle)) {}
+
+  template <typename Generator> Point operator()(Generator& generator) {
+    F angle = 2 * M_PI * distribution(generator);
+    F r = std::sqrt(distribution(generator));
     F x = ellipse.a * r * std::cos(angle);
     F y = ellipse.b * r * std::sin(angle);
 
-    return Point<F>(c * x - s * y + ellipse.x, s * x + c * y + ellipse.y);
+    return Point(cos * x - sin * y + ellipse.center.x,
+                 sin * x + cos * y + ellipse.center.y);
   }
 
  private:
-  Ellipse<F> ellipse;
-  F s;
-  F c;
-  std::uniform_real_distribution<F> uni;
+  Ellipse ellipse;
+  F sin;
+  F cos;
+  Distribution distribution;
 };
 }  // PET2D

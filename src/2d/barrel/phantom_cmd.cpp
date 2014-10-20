@@ -277,7 +277,7 @@ void run(cmdline::parser& cl, Model& model) {
   auto& tof_step = cl.get<double>("tof-step");
   auto verbose = cl.exist("verbose");
 
-  PointSources<> point_sources;
+  PointPhantom<> point_sources;
 
   // automatic radius
   if (!cl.exist("s-pixel")) {
@@ -347,7 +347,7 @@ void run(cmdline::parser& cl, Model& model) {
       if (type == "point") {
         point_sources.push_back(PointSource<>(is));
       } else if (type == "ellipse") {
-        phantom.push_back(EllipticalRegion<>(is));
+        phantom.push_back(EllipticalSource<>(is));
       } else {
         std::ostringstream msg;
         msg << fn << ":" << n_line << " unhandled type of shape: " << type;

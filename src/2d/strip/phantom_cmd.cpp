@@ -78,9 +78,9 @@ int main(int argc, char* argv[]) {
         Ellipse<double> el(x, y, a, b, angle * RADIAN);
 
         if (verbose) {
-          std::cout << "ellipse: " << el.x << " " << el.y << " " << el.a << " "
-                    << el.b << " " << el.angle << " " << el.A << " " << el.B
-                    << " " << el.C << std::endl;
+          std::cout << "ellipse: " << el.center.x << " " << el.center.y << " "
+                    << el.a << " " << el.b << " " << el.angle << " " << el.A
+                    << " " << el.B << " " << el.C << std::endl;
         }
 
         PhantomRegion<double> region(el, acceptance);

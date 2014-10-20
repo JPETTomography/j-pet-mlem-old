@@ -26,9 +26,7 @@ template <typename FType> struct PhantomRegion {
   typedef FType F;
 
   PhantomRegion(const Ellipse<F>& ellipse, F intensity)
-      : shape(ellipse),
-        intensity(intensity),
-        weight(intensity * shape.measure) {}
+      : shape(ellipse), intensity(intensity), weight(intensity * shape.area) {}
 
   bool contains(Point<F> p) const { return shape.constains(p); }
 
