@@ -1,15 +1,20 @@
 #pragma once
 
-namespace Geometry {
+#include <cmath>
 
+namespace Geometry {
+namespace {  // keeps Base private
 namespace Base {
-template <int N, typename F = double> class Vector {
+
+template <int N, typename F> class Vector {
  public:
   Vector(F v[N]) {
     for (int i = 0; i < N; i++) {
       v_[i] = v[i];
     }
   }
+
+  template <typename... Fs> Vector(Fs... vs) : v_{ vs... } {}
 
   Vector& operator+=(const Vector& rhs) {
     for (int i = 0; i < N; ++i)
@@ -50,6 +55,15 @@ template <int N, typename F = double> class Vector {
   F& operator[](int i) { return v_[i]; }
   F operator[](int i) const { return v_[i]; }
 
+  bool operator==(const Vector& rhs) {
+    for (int i = 0; i < N; ++i)
+      if (rhs.v_[i] != v_[i])
+        return false;
+    return true;
+  }
+
+  Vector& rotate(F angle);
+
  private:
   F v_[N];
 };
@@ -61,73 +75,70 @@ template <int N, typename F> class Point {
       p_[i] += p[i];
   }
 
+  template <typename... Fs> Point(Fs... ps) : p_{ ps... } {}
+
   Point& operator+=(const Vector<N, F>& rhs) {
     for (int i = 0; i < N; ++i)
       p_[i] += rhs[i];
 
     return *this;
-  };
+  }
+
   Point& operator-=(const Vector<N, F>& rhs) {
     for (int i = 0; i < N; ++i)
       p_[i] -= rhs[i];
     return *this;
   }
 
+  bool operator==(const Point& rhs) {
+    for (int i = 0; i < N; ++i)
+      if (rhs.p_[i] != p_[i])
+        return false;
+    return true;
+  }
+
+  F& operator[](int i) { return p_[i]; }
+  F operator[](int i) const { return p_[i]; }
+
+  Point& rotate(F angle, Point center);
+  Point& rotate(F angle);
+
  private:
   F p_[N];
 };
-
-template <int N, typename F = double>
-Point<N, F> operator+(const Vector<N, F>& v, const Point<N, F>& p) {}
-
-template <int N, typename F = double>
-Point<N, F> operator-(const Vector<N, F>& v, const Point<N, F>& p);
-template <int N, typename F = double>
-Point<N, F> operator+(const Point<N, F>& p, const Vector<N, F>& v);
-template <int N, typename F = double>
-Point<N, F> operator+(const Point<N, F>& p, const Vector<N, F>& v);
-
-template <int N, typename F = double>
-Vector<N, F> operator+(const Vector<N, F>& v1, const Vector<N, F>& v2);
-template <int N, typename F = double>
-Vector<N, F> operator-(const Vector<N, F>& v1, const Vector<N, F>& v2);
-
-template <int N, typename F = double>
-Vector<N, F> operator-(const Point<N, F>& p1, const Point<N, F>& p2);
-
-template <int N, typename F = double>
-Vector<N, F> operator+(const Vector<N, F>& v1, F s);
-template <int N, typename F = double>
-Vector<N, F> operator+(F s, const Vector<N, F>& v1);
-}
+}  // Base
+}  // private
 
 template <int N, typename F = double> class Vector : public Base::Vector<N, F> {
  public:
-  Vector(F v[N]) : Base::Vector<N, F>(v) {}
-};
-template <int N, typename F = double> class Point : public Base::Point<N, F> {
- public:
-  Point(F v[N]) : Base::Point<N, F>(v) {}
+  using Base::Vector<N, F>::Vector;  // inherit constructors
 };
 
 template <typename F> class Vector<2, F> : public Base::Vector<2, F> {
  public:
-  Vector(F v[2]) : Base::Vector<2, F>(v) {}
+  using Base::Vector<2, F>::Vector;  // inherit constructors
 
   Vector& rotate(F angle) {
-    F s = sin(angle);
-    F c = cos(angle);
+    F s = std::sin(angle);
+    F c = std::cos(angle);
     F x = (*this)[0];
     F y = (*this)[1];
 
     (*this)[0] = x * c - y * s;
     (*this)[1] = y * c + x * s;
+
+    return *this;
   }
+};
+
+template <int N, typename F = double> class Point : public Base::Point<N, F> {
+ public:
+  using Base::Point<N, F>::Point;  // inherit constructors
 };
 
 template <typename F> class Point<2, F> : public Base::Point<2, F> {
  public:
-  Point(F v[2]) : Base::Point<2, F>(v) {}
+  using Base::Point<2, F>::Point;  // inherit constructors
 
   Point& rotate(F angle, Point center) {
     Vector<2, F> v = (*this) - center;
@@ -138,6 +149,7 @@ template <typename F> class Point<2, F> : public Base::Point<2, F> {
 
     return *this;
   }
+
   Point& rotate(F angle) {
     Vector<2, F> v;
     v[0] = (*this)[0];
@@ -149,4 +161,31 @@ template <typename F> class Point<2, F> : public Base::Point<2, F> {
     return *this;
   }
 };
+}  // Geometry
+
+#ifdef TEST_CASE
+namespace Catch {
+
+template <int N, typename F> struct StringMaker<Geometry::Vector<N, F>> {
+  static std::string convert(const Geometry::Vector<N, F>& p) {
+    std::ostringstream oss;
+    oss << "<" << p[0];
+    for (int i = 1; i < N; ++i)
+      oss << ", " << p[i];
+    oss << ">";
+    return oss.str();
+  }
+};
+
+template <int N, typename F> struct StringMaker<Geometry::Point<N, F>> {
+  static std::string convert(const Geometry::Point<N, F>& p) {
+    std::ostringstream oss;
+    oss << "(" << p[0];
+    for (int i = 1; i < N; ++i)
+      oss << ", " << p[i];
+    oss << ")";
+    return oss.str();
+  }
+};
 }
+#endif
