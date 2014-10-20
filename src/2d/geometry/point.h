@@ -52,9 +52,12 @@ template <typename FType = double, typename SType = int> struct Point {
 
   F length() const { return compat::sqrt(x * x + y * y); }
 
-  // I know it is bad idea to count all over again
-  // sin/cos for given point, but this will be used
-  // only for initialization.
+  /// Rotate point around (0, 0) with given angle
+
+  /// \note
+  /// I know it is bad idea to count all over again
+  /// \c sin/cos for given point, but this will be used
+  /// only for initialization.
   Point& rotate(F phi) {
     F sin_phi = compat::sin(phi);
     F cos_phi = compat::cos(phi);
