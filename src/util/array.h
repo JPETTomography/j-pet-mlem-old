@@ -27,7 +27,7 @@ template <std::size_t MaxSize, typename T> class array {
   template <typename... Ts> array(Ts&&... e) : s(sizeof...(e)), v{ e... } {}
 #endif
 
-  /// returns if the array is full (has max number of elements)
+  /// Returns if the array is full (has max number of elements)
   bool full() const { return (s == MaxSize); }
 
   // minimal std::vector compatibility

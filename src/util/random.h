@@ -14,11 +14,15 @@ class tausworthe {
   typedef unsigned int result_type;
   typedef long seed_type;
 
+  /// Minimum value returned by random number generator
   static result_type min() { return 0; }
+  /// Maximum value returned by random number generator
   static result_type max() { return std::numeric_limits<result_type>::max(); }
 
+  /// Created new random number generator with given seed.
   tausworthe(seed_type a_seed = 121245) { seed(a_seed); }
 
+  /// Returns random number
   result_type operator()() {
     taus_step(seeds[0], 13, 19, 12, 4294967294u);
     taus_step(seeds[1], 2, 25, 4, 4294967288u);
@@ -27,6 +31,7 @@ class tausworthe {
     return seeds[0] ^ seeds[1] ^ seeds[2] ^ seeds[3];
   }
 
+  /// Randomizes generator with given seed value
   void seed(seed_type a_seed) {
 #if !_MSC_VER
     srand48(a_seed);
@@ -63,15 +68,21 @@ template <typename FType = double> class uniform_real_distribution {
  public:
   typedef FType result_type;
 
-  uniform_real_distribution(result_type a = 0, result_type b = 1)
+  /// Creates new distribution with given [a, b) range
+  uniform_real_distribution(result_type a = 0,  ///< minimum value
+                            result_type b = 1   ///< maxumim value
+                            )
       : size_(b - a), offset_(a) {}
 
+  /// Returns value from given range using generator
   template <class Generator> result_type operator()(Generator& g) {
     return g() * size() * scale<Generator>() + offset() -
            static_cast<result_type>(Generator::min()) / range<Generator>();
   }
 
+  /// Return distribution range size
   result_type size() const { return size_; }
+  /// Return distribution range offset
   result_type offset() const { return offset_; }
 
   template <class Generator> static result_type range() {

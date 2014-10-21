@@ -12,22 +12,24 @@
 
 namespace util {
 
-/// Provides automatic progress and \a EST display
+/// Provides automatic progress and \a EST display.
 class progress {
  public:
   typedef std::chrono::high_resolution_clock clock_t;
   typedef clock_t::time_point time_t;
 
   enum {
-    Disabled = 0,
-    Estimate,
-    Benchmark,
+    Disabled = 0,  ///< Do not display any progress.
+    Estimate,      ///< Show only one line progress with estimated time.
+    Benchmark,     ///< Show detailed statistics per each update.
   };
 
-  progress(int verbosity,
-           unsigned long total,
-           unsigned long reasonable_update =
-               std::numeric_limits<unsigned long>::max())
+  /// Constructs new progress handler.
+  progress(
+      int verbosity,                     ///< Verbosity level (0-2)
+      unsigned long total,               ///< Total number of iterations
+      unsigned long reasonable_update =  ///< Iterations that trigger update
+      std::numeric_limits<unsigned long>::max())
       : verbosity(verbosity),
         total(total),
         start_time(clock_t::now()),
@@ -46,13 +48,18 @@ class progress {
     }
   }
 
-  progress(bool enabled,
-           unsigned long total,
-           unsigned long reasonable_update =
-               std::numeric_limits<unsigned long>::max())
+  /// Constructs new progress handler.
+  progress(
+      bool enabled,                      ///< If progress is enabled at all
+      unsigned long total,               ///< Total number of iterations
+      unsigned long reasonable_update =  ///< Iterations that trigger update
+      std::numeric_limits<unsigned long>::max())
       : progress(enabled ? Estimate : Disabled, total, reasonable_update) {}
 
-  void operator()(unsigned long completed, bool finished = false) {
+  /// Call when begining or finishing iteration
+  void operator()(unsigned long completed,  ///< Number of completed so far
+                  bool finished = false     ///< Whether we finish iteration
+                  ) {
 
     // limit updates so they are not too often
     if (!verbosity || (completed & mask) != 0 || last_completed == completed)

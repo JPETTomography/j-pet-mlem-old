@@ -9,11 +9,13 @@ template <typename FType = double> class svg_ostream : public std::ofstream {
  public:
   typedef FType F;
 
-  svg_ostream(const std::string& fn,
-              F x_max,
-              F y_max,
-              F image_width,
-              F image_height)
+  /// Constructs new \a SVG file at given path with provided dimensions
+  svg_ostream(const std::string& fn,  ///< Path to \a SVG file
+              F x_max,                ///< Maximum \c x value
+              F y_max,                ///< Maximum \c y value
+              F image_width,          ///< Image (canvas) width
+              F image_height          ///< Image (canvas) height
+              )
       : std::ofstream(fn) {
     auto x_translate = x_max;
     auto y_translate = y_max;
@@ -68,7 +70,13 @@ template <typename FType = double> class svg_ostream : public std::ofstream {
     *this << "</svg>" << std::endl;
   }
 
-  svg_ostream& link_image(std::string fn, F x, F y, F width, F height) {
+  /// Embeds image at given path at provided position and dimensions
+  svg_ostream& link_image(std::string fn,  ///< Path to embedded image
+                          F x,             ///< Image \c x position
+                          F y,             ///< Image \c y position
+                          F width,         ///< Image width
+                          F height         ///< Image height
+                          ) {
     *this << "<image"
           << " xlink:href=\"" << fn << "\""
           << " x=\"" << x << "\""
