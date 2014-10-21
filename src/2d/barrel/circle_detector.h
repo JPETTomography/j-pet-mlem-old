@@ -15,7 +15,7 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
   typedef Circle<F> Super;
   typedef F Angle;
   typedef PET2D::Point<F> Point;
-  typedef Array<2, Point> Intersections;
+  typedef util::array<2, Point> Intersections;
   typedef typename Super::Event Event;
 
   CircleDetector(F radius)
@@ -57,7 +57,8 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
 
   const char* svg_class;
 
-  friend svg_ostream<F>& operator<<(svg_ostream<F>& svg, CircleDetector& cd) {
+  friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
+                                          CircleDetector& cd) {
     svg << "<circle class=\"" << cd.svg_class << "\" cx=\"" << cd.center.x
         << "\" cy=\"" << cd.center.y << "\" r=\"" << cd.radius() << "\"/>"
         << std::endl;

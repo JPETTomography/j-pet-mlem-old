@@ -139,7 +139,7 @@ int main(int argc, char* argv[]) {
     cl.add("stats", 0, "show stats");
     cl.add("wait", 0, "wait before exit");
     cl.add("verbose", 'v', "prints the iterations information on std::out");
-    cl.add<tausworthe::seed_type>(
+    cl.add<util::random::tausworthe::seed_type>(
         "seed", 'S', "random number generator seed", cmdline::dontsave);
 #if HAVE_CUDA
     cl.add("gpu", 'G', "run on GPU (via CUDA)");
@@ -338,9 +338,9 @@ SparseMatrix<Pixel<>, LOR<>> run_cpu_matrix(cmdline::parser& cl,
   auto verbose = cl.exist("verbose");
 
   std::random_device rd;
-  tausworthe gen(rd());
+  util::random::tausworthe gen(rd());
   if (cl.exist("seed")) {
-    gen.seed(cl.get<tausworthe::seed_type>("seed"));
+    gen.seed(cl.get<util::random::tausworthe::seed_type>("seed"));
   }
 
   int n_tof_positions = 1;
@@ -355,7 +355,7 @@ SparseMatrix<Pixel<>, LOR<>> run_cpu_matrix(cmdline::parser& cl,
       n_pixels, n_detectors, n_tof_positions);
 
   for (auto& fn : cl.rest()) {
-    ibstream in(fn, std::ios::binary);
+    util::ibstream in(fn, std::ios::binary);
     if (!in.is_open())
       throw("cannot open input file: " + fn);
     try {
@@ -421,7 +421,7 @@ SparseMatrix<Pixel<>, LOR<>> run_cpu_matrix(cmdline::parser& cl,
 
   MonteCarlo<DetectorRing, ComputeMatrix> monte_carlo(
       detector_ring, matrix, s_pixel, tof_step, m_pixel);
-  Progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
+  util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
   monte_carlo(gen, model, n_emissions, progress);
 
 #ifdef GPU_TOF_TEST
@@ -456,7 +456,7 @@ void post_process(cmdline::parser& cl,
     auto fn_wo_ext = fn.wo_ext();
     auto fn_wo_path = fn_wo_ext.wo_path();
     bool full = cl.exist("full");
-    obstream out(fn, std::ios::binary | std::ios::trunc);
+    util::obstream out(fn, std::ios::binary | std::ios::trunc);
     if (full) {
       auto full_matrix = sparse_matrix.to_full();
       out << full_matrix;
@@ -468,18 +468,18 @@ void post_process(cmdline::parser& cl,
     os << cl;
 
     try {
-      png_writer png(fn_wo_ext + ".png");
+      util::png_writer png(fn_wo_ext + ".png");
       sparse_matrix.output_bitmap(png);
     } catch (const char* ex) {
       // don't bail out just produce warning
       std::cerr << "warning: " << ex << std::endl;
     }
 
-    svg_ostream<> svg(fn_wo_ext + ".svg",
-                      detector_ring.outer_radius(),
-                      detector_ring.outer_radius(),
-                      1024.,
-                      1024.);
+    util::svg_ostream<> svg(fn_wo_ext + ".svg",
+                            detector_ring.outer_radius(),
+                            detector_ring.outer_radius(),
+                            1024.,
+                            1024.);
     svg << detector_ring;
 
     svg.link_image(fn_wo_path + ".png",
@@ -505,7 +505,7 @@ void post_process(cmdline::parser& cl,
     auto fn_wo_ext = fn.wo_ext();
     auto fn_wo_path = fn_wo_ext.wo_path();
 
-    png_writer png(fn);
+    util::png_writer png(fn);
     auto position = cl.get<int>("pos");
     if (cl.exist("full")) {
       sparse_matrix.to_full().output_bitmap(png, lor, position);
@@ -513,11 +513,11 @@ void post_process(cmdline::parser& cl,
       sparse_matrix.output_bitmap(png, lor, position);
     }
 
-    svg_ostream<> svg(fn_wo_ext + ".svg",
-                      detector_ring.outer_radius(),
-                      detector_ring.outer_radius(),
-                      1024.,
-                      1024.);
+    util::svg_ostream<> svg(fn_wo_ext + ".svg",
+                            detector_ring.outer_radius(),
+                            detector_ring.outer_radius(),
+                            1024.,
+                            1024.);
     svg << detector_ring;
 
     svg.link_image(fn_wo_path + ".png",

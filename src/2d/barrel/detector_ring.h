@@ -247,7 +247,8 @@ class DetectorRing : public std::vector<DetectorType> {
     return 2;
   }
 
-  friend svg_ostream<F>& operator<<(svg_ostream<F>& svg, DetectorRing& dr) {
+  friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
+                                          DetectorRing& dr) {
     svg << dr.c_outer;
     svg << dr.c_inner;
 

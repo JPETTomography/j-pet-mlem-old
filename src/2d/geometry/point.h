@@ -21,7 +21,7 @@ template <typename FType = double, typename SType = int> struct Point {
 
 #if !__CUDACC__
   /// constructs Point from stream
-  Point(std::istream& in) : x(read<F>(in)), y(read<F>(in)) {}
+  Point(std::istream& in) : x(util::read<F>(in)), y(util::read<F>(in)) {}
 #endif
 
   _ Point operator+(const Point& p) const { return Point(x + p.x, y + p.y); }
@@ -96,7 +96,8 @@ struct PointSource : public Point<FType, SType> {
 
 #if !__CUDACC__
   /// constructs point source from stream
-  PointSource(std::istream& in) : Point::Point(in), intensity(read<F>(in)) {}
+  PointSource(std::istream& in)
+      : Point::Point(in), intensity(util::read<F>(in)) {}
 #endif
 };
 }  // PET2D

@@ -31,9 +31,9 @@ template <typename FType = double, typename SType = int> class Circle {
   typedef F Angle;
   typedef PET2D::Point<F> Point;
   typedef Barrel::Event<F> Event;
-  typedef Array<2, Point> Secant;
-  typedef Array<2, Angle> SecantAngles;
-  typedef Array<2, S> SecantSections;
+  typedef util::array<2, Point> Secant;
+  typedef util::array<2, Angle> SecantAngles;
+  typedef util::array<2, S> SecantSections;
 
   Secant secant(const Event& e) {
     auto cabr2 = (-(e.c * e.c) + e.a2_b2 * radius2_);
@@ -76,7 +76,8 @@ template <typename FType = double, typename SType = int> class Circle {
   F radius() const { return radius_; }
   F radius2() const { return radius2_; }
 
-  friend svg_ostream<F>& operator<<(svg_ostream<F>& svg, Circle& c) {
+  friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
+                                          Circle& c) {
     svg << "<circle cx=\"0\" cy=\"0\" r=\"" << c.radius_ << "\"/>" << std::endl;
     return svg;
   }

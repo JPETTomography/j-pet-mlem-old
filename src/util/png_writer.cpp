@@ -3,14 +3,18 @@
 
 #ifdef HAVE_LIBPNG
 #include <png.h>
+namespace {
 struct png_writer_private {
   FILE* fp;
   png_structp png_ptr;
   png_infop info_ptr;
 };
+}
 #endif
 
 #include "png_writer.h"
+
+namespace util {
 
 png_writer::png_writer(std::string fn) {
 #ifdef HAVE_LIBPNG
@@ -84,3 +88,5 @@ png_writer::~png_writer() {
     delete priv;
 #endif
 }
+
+}  // util

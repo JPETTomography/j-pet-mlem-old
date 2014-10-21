@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
 
     auto verbose = cl.exist("verbose");
 
-    ibstream in_matrix(cl.get<cmdline::path>("system"));
+    util::ibstream in_matrix(cl.get<cmdline::path>("system"));
     if (!in_matrix.is_open())
       throw("cannot open input file: " + cl.get<cmdline::path>("system"));
     Reconstruction<>::Matrix matrix(in_matrix);
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
     out_detected.close();
 
     // output reconstruction PNG
-    png_writer png(output.wo_ext() + ".png");
+    util::png_writer png(output.wo_ext() + ".png");
     png.write_header<>(n_pixels_in_row, n_pixels_in_row);
 
     double output_max = 0.0;

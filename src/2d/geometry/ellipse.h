@@ -22,11 +22,11 @@ template <typename FType = double, typename SType = int> struct Ellipse {
 #if !__CUDACC__
   /// constructs Ellipse from stream
   Ellipse(std::istream& in)
-      : Ellipse(read<F>(in),
-                read<F>(in),
-                read<F>(in),
-                read<F>(in),
-                read<F>(in)) {}
+      : Ellipse(util::read<F>(in),
+                util::read<F>(in),
+                util::read<F>(in),
+                util::read<F>(in),
+                util::read<F>(in)) {}
 #endif
 
   /// checks if ellipse contains given point
@@ -71,7 +71,7 @@ struct EllipticalSource : public Ellipse<FType> {
 
 #if !__CUDACC__
   EllipticalSource(std::istream& in)
-      : Ellipse::Ellipse(in), intensity(read<F>(in)) {}
+      : Ellipse::Ellipse(in), intensity(util::read<F>(in)) {}
 #endif
 };
 

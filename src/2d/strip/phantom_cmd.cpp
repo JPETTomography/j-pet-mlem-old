@@ -103,20 +103,20 @@ int main(int argc, char* argv[]) {
 
     auto output = cl.get<cmdline::path>("output");
     auto output_base_name = output.wo_ext();
-    obstream out(output);
+    util::obstream out(output);
     phantom >> out;
 
     std::ofstream cfg(output_base_name + ".cfg");
     cfg << cl;
 
-    png_writer png(output_base_name + ".png");
+    util::png_writer png(output_base_name + ".png");
     phantom.output_bitmap(png);
-    obstream bin(output_base_name + "_detected.bin");
+    util::obstream bin(output_base_name + "_detected.bin");
     phantom.output_binary(bin, false);
 
-    png_writer png_true(output_base_name + "_true.png");
+    util::png_writer png_true(output_base_name + "_true.png");
     phantom.output_bitmap(png_true, true);
-    obstream bin_true(output_base_name + "_true.bin");
+    util::obstream bin_true(output_base_name + "_true.bin");
     phantom.output_binary(bin_true, true);
 
   } catch (std::string& ex) {

@@ -19,7 +19,7 @@ template <typename SType = int> class Pixel {
 
 #if !__CUDACC__
   /// constructs Pixel from stream
-  Pixel(std::istream& in) : x(read<S>(in)), y(read<S>(in)) {}
+  Pixel(std::istream& in) : x(util::read<S>(in)), y(util::read<S>(in)) {}
 #endif
 
   _ const S index() const { return y * (y + 1) / 2 + x; }

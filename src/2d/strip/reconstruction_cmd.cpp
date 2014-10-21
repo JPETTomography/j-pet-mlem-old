@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
     }
 
     for (auto& fn : cl.rest()) {
-      ibstream events(fn);
+      util::ibstream events(fn);
       if (!events.is_open()) {
         throw("cannot open phantom events file: " + fn);
       }
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
                                 ? cl.get<cmdline::path>("output").wo_ext()
                                 : cmdline::path();
 
-    Progress progress(verbosity, n_blocks * n_iterations, 1);
+    util::progress progress(verbosity, n_blocks * n_iterations, 1);
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
 #endif
     {
       if (output_base_name.length()) {
-        png_writer png(output_base_name + "_sensitivity.png");
+        util::png_writer png(output_base_name + "_sensitivity.png");
         reconstruction.output_bitmap(png, true);
       }
 
@@ -116,10 +116,10 @@ int main(int argc, char* argv[]) {
              << std::setw(3) << std::setfill('0')  //
              << block * n_iterations + 1;          // 001
 
-          png_writer png(fn.str() + ".png");
+          util::png_writer png(fn.str() + ".png");
           reconstruction.output_bitmap(png);
 
-          obstream bin(fn.str() + ".bin");
+          util::obstream bin(fn.str() + ".bin");
           reconstruction >> bin;
         }
       }

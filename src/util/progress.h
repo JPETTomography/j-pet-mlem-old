@@ -10,11 +10,13 @@
 #include <omp.h>
 #endif
 
+namespace util {
+
 /// Provides automatic progress and \a EST display
-class Progress {
+class progress {
  public:
-  typedef std::chrono::high_resolution_clock Clock;
-  typedef Clock::time_point Time;
+  typedef std::chrono::high_resolution_clock clock_t;
+  typedef clock_t::time_point time_t;
 
   enum {
     Disabled = 0,
@@ -22,13 +24,13 @@ class Progress {
     Benchmark,
   };
 
-  Progress(int verbosity,
+  progress(int verbosity,
            unsigned long total,
            unsigned long reasonable_update =
                std::numeric_limits<unsigned long>::max())
       : verbosity(verbosity),
         total(total),
-        start_time(Clock::now()),
+        start_time(clock_t::now()),
         mask(1),
         last_completed(std::numeric_limits<unsigned long>::max()),
         total_ellapsed_ms(0) {
@@ -44,11 +46,11 @@ class Progress {
     }
   }
 
-  Progress(bool enabled,
+  progress(bool enabled,
            unsigned long total,
            unsigned long reasonable_update =
                std::numeric_limits<unsigned long>::max())
-      : Progress(enabled ? Estimate : Disabled, total, reasonable_update) {}
+      : progress(enabled ? Estimate : Disabled, total, reasonable_update) {}
 
   void operator()(unsigned long completed, bool finished = false) {
 
@@ -63,7 +65,7 @@ class Progress {
     // Verbose (benchmark) mode
     if (verbosity >= Benchmark) {
       if (!finished) {
-        start_time = Clock::now();
+        start_time = clock_t::now();
       } else {
         auto ellapsed_ms = ellapsed() * 1000;
         total_ellapsed_ms += ellapsed_ms;
@@ -101,7 +103,7 @@ class Progress {
  private:
   double ellapsed() {
     return std::chrono::duration_cast<std::chrono::duration<double>>(
-               Clock::now() - start_time).count();
+               clock_t::now() - start_time).count();
   }
 
   static const char* timetostr(int sec) {
@@ -116,8 +118,9 @@ class Progress {
 
   int verbosity;
   unsigned long total;
-  Time start_time;
+  time_t start_time;
   unsigned long mask;
   unsigned long last_completed;
   double total_ellapsed_ms;
 };
+}  // util

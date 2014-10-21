@@ -355,12 +355,13 @@ void run(cmdline::parser& cl, Model& model) {
     } while (!in.eof());
   }
 
-  uniform_real_distribution<> one_dis(0, 1);
-  uniform_real_distribution<> point_dis(-n_pixels * s_pixel / 2,
-                                        +n_pixels * s_pixel / 2);
-  uniform_real_distribution<> phi_dis(0, M_PI);
+  util::random::uniform_real_distribution<> one_dis(0, 1);
+  util::random::uniform_real_distribution<> point_dis(-n_pixels * s_pixel / 2,
+                                                      +n_pixels * s_pixel / 2);
+  util::random::uniform_real_distribution<> phi_dis(0, M_PI);
 
-  Progress progress(verbose, n_emissions, only_detected ? 10000 : 1000000);
+  util::progress progress(
+      verbose, n_emissions, only_detected ? 10000 : 1000000);
 
   auto fov_radius2 = dr.fov_radius() * dr.fov_radius();
 
@@ -477,8 +478,8 @@ void run(cmdline::parser& cl, Model& model) {
   std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
   os << cl;
 
-  png_writer pix(fn_wo_ext + ".png");
-  png_writer pix_detected(fn_wo_ext + "_detected.png");
+  util::png_writer pix(fn_wo_ext + ".png");
+  util::png_writer pix_detected(fn_wo_ext + "_detected.png");
 
   std::ofstream pixels_text_out(fn_wo_ext + "_pixels.txt");
   std::ofstream pixels_detected_text_out(fn_wo_ext + "_detected_pixels.txt");

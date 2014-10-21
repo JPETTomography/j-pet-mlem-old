@@ -5,24 +5,26 @@
 #include <array>
 #endif
 
+namespace util {
+
 /// Stack based replacement for \c std::vector
 
 /// This class is drop-in replacement for \c std::vector for all cases when
 /// maximum size is known at compile time.
 /// This way we can pass everything via stack, omitting unnecessary allocations.
-template <std::size_t MaxSize, typename T> class Array {
+template <std::size_t MaxSize, typename T> class array {
  public:
 #if !_MSC_VER
-  Array() : s(0), v() {}
+  array() : s(0), v() {}
 #endif
 #if __INTEL_COMPILER
-  template <typename... Ts> Array(Ts... e) : s(sizeof...(e)), v{ e... } {}
+  template <typename... Ts> array(Ts... e) : s(sizeof...(e)), v{ e... } {}
 #elif _MSC_VER
   template <typename... Ts>
-  Array(Ts... e)
+  array(Ts... e)
       : s(sizeof...(e)), v(std::array<T, MaxSize>{ e... }) {}
 #else
-  template <typename... Ts> Array(Ts&&... e) : s(sizeof...(e)), v{ e... } {}
+  template <typename... Ts> array(Ts&&... e) : s(sizeof...(e)), v{ e... } {}
 #endif
 
   /// returns if the array is full (has max number of elements)
@@ -86,3 +88,4 @@ template <std::size_t MaxSize, typename T> class Array {
   std::array<T, MaxSize> v;
 #endif
 };
+}  // util

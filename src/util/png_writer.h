@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+namespace util {
+
 /// Writes custom data to \a PNG file
 class png_writer {
  public:
@@ -26,3 +28,4 @@ class png_writer {
   void priv_write_row(unsigned char* row);
   struct png_writer_private* priv;
 };
+}  // util

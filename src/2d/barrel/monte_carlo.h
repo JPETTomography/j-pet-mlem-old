@@ -49,8 +49,8 @@ class MonteCarlo {
 
     auto n_positions = detector_ring.n_positions(tof_step, model.max_bias());
     bool tof = (tof_step > static_cast<F>(0));
-    uniform_real_distribution<F> one_dis(0, 1);
-    uniform_real_distribution<F> phi_dis(0, F(M_PI));
+    util::random::uniform_real_distribution<F> one_dis(0, 1);
+    util::random::uniform_real_distribution<F> phi_dis(0, F(M_PI));
 
     matrix.add_emissions(n_emissions);
 

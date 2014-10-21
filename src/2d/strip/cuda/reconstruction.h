@@ -37,9 +37,9 @@ void run_reconstruction(Detector<F>& detector,
                         bool verbose);
 
 struct Context {
-  Context(Progress& progress, std::string& output_file_name)
+  Context(util::progress& progress, std::string& output_file_name)
       : progress(progress), output_file_name(output_file_name) {}
-  Progress& progress;
+  util::progress& progress;
   std::string& output_file_name;
 };
 
@@ -62,10 +62,10 @@ void output(Detector<float>& detector,
     base_name << "sensitivity";
   }
 
-  obstream bin(base_name.str() + ".bin");
+  util::obstream bin(base_name.str() + ".bin");
   bin.write(output, detector.total_n_pixels);
 
-  png_writer png(base_name.str() + ".png");
+  util::png_writer png(base_name.str() + ".png");
   png.write_header<>(detector.n_z_pixels, detector.n_y_pixels);
 
   float output_max = 0;
@@ -100,7 +100,7 @@ void run_reconstruction(Detector<float>& detector,
                         int n_blocks,
                         int n_threads_per_block,
                         bool verbose,
-                        Progress& progress,
+                        util::progress& progress,
                         std::string output) {
 
   Context context(progress, output);
@@ -127,7 +127,7 @@ void run_reconstruction(Detector<float>& detector,
                         int n_blocks,
                         int n_threads_per_block,
                         bool verbose,
-                        Progress& progress,
+                        util::progress& progress,
                         std::string output_file_name) {
   std::vector<Event<float>> sp_event_list;
   for (auto& event : events) {

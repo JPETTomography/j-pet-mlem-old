@@ -3,11 +3,11 @@
 #include "random.h"
 
 TEST_CASE("random") {
-  tausworthe gen;
-  uniform_real_distribution<> one;
-  uniform_real_distribution<> d99to100(99., 100.);
+  util::random::tausworthe gen;
+  util::random::uniform_real_distribution<> one;
+  util::random::uniform_real_distribution<> d99to100(99., 100.);
 
-  CHECK(one.scale<tausworthe>() == Approx(2.328306436538696e-10));
+  CHECK(one.scale<util::random::tausworthe>() == Approx(2.328306436538696e-10));
 
   for (auto i = 0; i < 100; ++i) {
     auto r = one(gen);

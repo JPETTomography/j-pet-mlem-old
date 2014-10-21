@@ -53,7 +53,7 @@ template <typename FType = double> class ScintilatorAccept {
   static F max_bias() { return static_cast<F>(0); }
 
  private:
-  uniform_real_distribution<F> one_dis;
+  util::random::uniform_real_distribution<F> one_dis;
   F scale;
   F inv_scale;
 };

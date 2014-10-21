@@ -115,7 +115,7 @@ class SparseMatrix
   S n_tof_positions() const { return n_tof_positions_; }
   bool triangular() const { return triangular_; }
 
-  SparseMatrix(ibstream& in) {
+  SparseMatrix(util::ibstream& in) {
     FileInt in_magic;
     in >> in_magic;
     if (in_magic != MAGIC_VERSION_TRIANGULAR &&
@@ -229,7 +229,7 @@ class SparseMatrix
     return *this;
   }
 
-  friend obstream& operator<<(obstream& out, SparseMatrix& sm) {
+  friend util::obstream& operator<<(util::obstream& out, SparseMatrix& sm) {
     auto tof = (sm.n_tof_positions_ > 1);
     if (sm.triangular_) {
       out << (tof ? MAGIC_VERSION_TOF_TRIANGULAR : MAGIC_VERSION_TRIANGULAR);

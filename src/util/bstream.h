@@ -3,6 +3,8 @@
 #include <fstream>
 #include <vector>
 
+namespace util {
+
 /// Binary input stream based on \c std::ifstream
 class ibstream : public std::ifstream {
  public:
@@ -44,3 +46,4 @@ class obstream : public std::ofstream {
     return *this;
   }
 };
+}  // util

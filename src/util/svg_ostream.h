@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+namespace util {
+
 /// \c SVG file generator based on \c std::ofstream
 template <typename FType = double> class svg_ostream : public std::ofstream {
  public:
@@ -76,3 +78,4 @@ template <typename FType = double> class svg_ostream : public std::ofstream {
     return *this;
   }
 };
+}  // util

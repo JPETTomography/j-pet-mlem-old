@@ -5,6 +5,9 @@
 #include <ctime>
 #endif
 
+namespace util {
+namespace random {
+
 /// \a Tausworthe random number generator
 class tausworthe {
  public:
@@ -83,3 +86,5 @@ template <typename FType = double> class uniform_real_distribution {
  private:
   result_type size_, offset_;
 };
+}  // random
+}  // util
