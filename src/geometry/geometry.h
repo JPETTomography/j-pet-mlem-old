@@ -14,7 +14,10 @@ template <int N, typename F> class Vector {
     }
   }
 
+#ifndef _MSC_VER
+  // MSVC does not support array initializers
   template <typename... Fs> Vector(Fs... vs) : v_{ vs... } {}
+#endif
 
   Vector& operator+=(const Vector& rhs) {
     for (int i = 0; i < N; ++i)
@@ -73,7 +76,10 @@ template <int N, typename F> class Point {
       p_[i] += p[i];
   }
 
+#ifndef _MSC_VER
+  // MSVC does not support array initializers
   template <typename... Fs> Point(Fs... ps) : p_{ ps... } {}
+#endif
 
   Point& operator+=(const Vector<N, F>& rhs) {
     for (int i = 0; i < N; ++i)
