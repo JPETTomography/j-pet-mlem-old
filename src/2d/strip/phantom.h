@@ -95,7 +95,7 @@ template <typename D, typename FType = double> class Phantom {
   again:
     size_t i_region = choose_region(generator);
     Point<F> p = point_generators[i_region](generator);
-    for (int j = 0; j < i_region; j++) {
+    for (size_t j = 0; j < i_region; j++) {
       if (region_list[j].shape.contains(p))
         goto again;
     }
@@ -131,7 +131,7 @@ template <typename D, typename FType = double> class Phantom {
 #if _OPENMP
 #pragma omp for schedule(static)
 #endif
-    for (int emission = 0; emission < n_emissions; ++emission) {
+    for (size_t emission = 0; emission < n_emissions; ++emission) {
 
       auto event = gen_event(rng_list[omp_get_thread_num()]);
 

@@ -28,7 +28,7 @@ class Reconstruction {
  public:
   typedef FType F;
   typedef KernelType Kernel;
-  typedef Detector<FType> Detector;
+  typedef Strip::Detector<FType> Detector;
   typedef typename Detector::Pixel Pixel;
   typedef typename Detector::Point Point;
 

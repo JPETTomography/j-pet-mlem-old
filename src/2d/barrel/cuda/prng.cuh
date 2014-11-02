@@ -12,8 +12,6 @@ __constant__ unsigned int offset[4] = { 4294967294,
                                         4294967280,
                                         4294967168 };
 
-__shared__ unsigned int randStates[32];
-
 //-----------end state rng
 //---------------------------------------------------------//
 
