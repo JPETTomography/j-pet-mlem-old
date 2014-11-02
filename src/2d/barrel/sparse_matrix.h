@@ -37,18 +37,17 @@ constexpr uint32_t operator"" _4cc(const char* str, size_t) {
   return (uint32_t)((str[3] << 24) | (str[2] << 16) | (str[1] << 8) | str[0]);
 }
 
-/// Sparse 2D barrel PET system matrix
-
-/// Made for efficient storage of large PET system matrix.
+/// \page sparse_format Sparse system matrix binary file format
 ///
-/// Sparse system matrix binary file format:
+/// \brief Describes binary format used to keep optimal representation for
+/// system matrix.
 ///
-///   - \c uint32_t \b magic =
+///   - \c uint32_t \b magic in
 ///     -# \c PETp  triangular
 ///     -# \c PETP  full
 ///     -# \c TOFp  TOF triangular
 ///     -# \c TOFP  TOF full
-///   - \c uint32_t \b n_pixels_    half size for \c PETp,
+///   - \c uint32_t \b n_pixels     half size for \c PETp,
 ///                                 full size for \c PETP
 ///   - \c uint32_t \b n_emissions  per pixel
 ///   - \c uint32_t \b n_detectors  regardless of magic
@@ -63,6 +62,11 @@ constexpr uint32_t operator"" _4cc(const char* str, size_t) {
 ///
 /// \b Note: TOF position has no particular meaning without quantisation
 /// definition. However this is not needed for reconstruction.
+
+/// Sparse 2D barrel PET system matrix
+
+/// Made for efficient storage of large PET system matrix.
+/// \see \ref sparse_format
 template <typename PixelType,
           typename LORType,
           typename SType = int,
