@@ -57,7 +57,6 @@ class DetectorRing : std::vector<DetectorType> {
     Detector detector_base(w_detector, h_detector, d_detector);
     auto r_detector = d_detector / 2;
     CircleDetector<F> circle_detector_base(r_detector);
-    circle_detector_base.svg_class = "circle_detector";
 
     // move detector to the right edge of inner ring
     // along zero angle polar coordinate
@@ -254,12 +253,17 @@ class DetectorRing : std::vector<DetectorType> {
     svg << dr.c_outer;
     svg << dr.c_inner;
 
+    svg << "<g id=\"photomultipiers\">" << std::endl;
     for (auto& detector : dr.c_detectors) {
       svg << detector;
     }
+    svg << "</g>" << std::endl;
+
+    svg << "<g id=\"scintillators\">" << std::endl;
     for (auto& detector : dr) {
       svg << detector;
     }
+    svg << "</g>" << std::endl;
 
     return svg;
   }

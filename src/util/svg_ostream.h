@@ -43,14 +43,14 @@ template <typename FType = double> class svg_ostream : public std::ofstream {
           << " stroke-width: " << stroke << ";"
           << " vector-effect: none;"
           << " } }" << std::endl;
-    *this << "    polygon, .detector {"
+    *this << "    polygon, #scintillators circle {"
           << " fill: #f99;"
           << " stroke: red;"
           << " }" << std::endl;
     *this << "    circle  { fill: white;"
           << " stroke: green;"
           << " }" << std::endl;
-    *this << "    .circle_detector { fill: #ddd;"
+    *this << "    #photomultipiers circle { fill: #ddd;"
           << " stroke: #999;"
           << " }" << std::endl;
     *this << "  ]]>"
