@@ -1,13 +1,13 @@
 #pragma once
 
-#include "2d/geometry/polygon.h"
+#include "polygonal_detector.h"
 
 namespace PET2D {
 namespace Barrel {
 
 /// Single triangular detector
 template <typename FType = double>
-class TriangleDetector : public Polygon<3, FType> {
+class TriangleDetector : public PolygonalDetector<3, FType> {
  public:
   typedef FType F;
   typedef F Angle;

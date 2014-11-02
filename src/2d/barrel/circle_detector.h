@@ -9,7 +9,7 @@ namespace PET2D {
 namespace Barrel {
 
 /// Circular shape detector
-template <typename FType = double> class CircleDetector : Circle<FType> {
+template <typename FType = double> class CircleDetector : public Circle<FType> {
  public:
   typedef FType F;
   typedef Circle<F> Base;
@@ -41,9 +41,12 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
     return *this;
   }
 
-  F max_distance() { return center.length() + this->radius(); }
+  F max_distance() { return center.length() + this->radius; }
 
   Point center;
+
+  /// \returns itself
+  const CircleDetector& circumscribe_circle() const { return *this; }
 
   Intersections intersections(typename Base::Event e) {
     auto intersections = this->secant(e - center);
@@ -56,13 +59,13 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
                                           CircleDetector& cd) {
     svg << "<circle cx=\"" << cd.center.x << "\" cy=\"" << cd.center.y
-        << "\" r=\"" << cd.radius() << "\"/>" << std::endl;
+        << "\" r=\"" << cd.radius << "\"/>" << std::endl;
     return svg;
   }
 
   friend std::ostream& operator<<(std::ostream& out, CircleDetector& cd) {
     out << "circle (" << cd.center.x << ", " << cd.center.y << ") radius "
-        << cd.radius() << std::endl;
+        << cd.radius << std::endl;
     out << std::flush;
     return out;
   }

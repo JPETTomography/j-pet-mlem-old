@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "square_detector.h"
+#include "circle_detector.h"
 #include "util/svg_ostream.h"
 #include "lor.h"
 
@@ -14,18 +15,18 @@ namespace Barrel {
 /// No assumptions are made for how geometry of this detector looks like in
 /// comparison to DetectorRing where are single detectors are placed on the
 /// ring.
-template <typename FType = double,
-          typename SType = int,
-          typename DetectorType = SquareDetector<FType>>
-class CompoundDetector : std::vector<DetectorType> {
+template <typename DetectorType = SquareDetector<double>, typename SType = int>
+class CompoundDetector : public std::vector<DetectorType> {
  public:
-  typedef FType F;
+  typedef DetectorType Detector;
   typedef SType S;
+  typedef typename Detector::F F;
   typedef Barrel::LOR<S> LOR;
   typedef PET2D::Pixel<S> Pixel;
   typedef PET2D::Point<F> Point;
-  typedef DetectorType Detector;
   typedef Barrel::Event<F> Event;
+  typedef std::vector<Detector> Base;
+  typedef Barrel::CircleDetector<F> CircleDetector;
 
   /// Tries to detect given event.
 
@@ -39,9 +40,6 @@ class CompoundDetector : std::vector<DetectorType> {
                ) {
     // FIXME: implement me!
     (void)(gen, model, e, lor, position);
-    if (detector_centers.size() != this->size()) {
-      calculate_detector_centers();
-    }
     return 0;
   }
 
@@ -54,16 +52,20 @@ class CompoundDetector : std::vector<DetectorType> {
     return svg;
   }
 
- private:
-  std::vector<Point> detector_centers;
-
-  void calculate_detector_centers() {
-    detector_centers.resize(this->size());
-    for (size_t i = 0; i < this->size(); ++i) {
-      auto& center = detector_centers[i];
-      center = (*this)[i]->center();
-    }
+  void push_back(const Detector& detector) {
+    Base::push_back(detector);
+    c_detectors.push_back(this->back().circumscribe_center());
   }
+
+  template <class... Args> void emplace_back(Args&&... args) {
+    Base::emplace_back(std::forward<Args&&>(args)...);
+    c_detectors.push_back(this->back().circumscribe_circle());
+  }
+
+  const CircleDetector& circumscribe(int i) { return c_detectors[i]; }
+
+ private:
+  std::vector<CircleDetector> c_detectors;
 };
 }
 }

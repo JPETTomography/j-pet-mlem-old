@@ -1,5 +1,6 @@
 #pragma once
 
+#include "circle_detector.h"
 #include "2d/geometry/polygon.h"
 
 namespace PET2D {
@@ -12,6 +13,7 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
   typedef FType F;
   typedef F Angle;
   typedef typename Polygon<NVertices, F>::Point Point;
+  typedef Barrel::CircleDetector<F> CircleDetector;
 
   PolygonalDetector(F w, F h, F d = F()) {
     (void)h, (void)d;  // unused
@@ -25,9 +27,19 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
     }
   }
 
+  /// \returns circumscribed circular detector
+  CircleDetector circumscribe_circle() const {
+    Point center = this->center();
+    F radius = 0;
+    for (const Point& p : *this) {
+      radius = std::max(radius, (p - center).length());
+    }
+    return CircleDetector(radius, center);
+  }
+
   static F default_height_for_width(const F w) { return w; }
 
- private:
+ protected:
   PolygonalDetector() {}
 };
 }  // Barrel

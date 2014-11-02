@@ -14,18 +14,16 @@ namespace Barrel {
 
 /// This is optimized CompoundDetector using assumption all detectors lie on
 /// ring, so some operations like possible secants can be done much quicker.
-template <typename FType = double,
-          typename SType = int,
-          typename DetectorType = SquareDetector<FType>>
-class DetectorRing : std::vector<DetectorType> {
+template <typename DetectorType = SquareDetector<double>, typename SType = int>
+class DetectorRing : public std::vector<DetectorType> {
  public:
-  typedef FType F;
   typedef SType S;
+  typedef DetectorType Detector;
+  typedef typename Detector::F F;
   typedef Barrel::LOR<S> LOR;
   typedef PET2D::Pixel<S> Pixel;
   typedef PET2D::Circle<F> Circle;
   typedef PET2D::Point<F> Point;
-  typedef DetectorType Detector;
   typedef Barrel::Event<F> Event;
 
   DetectorRing(S n_detectors,      ///< number of detectors on ring
@@ -40,7 +38,7 @@ class DetectorRing : std::vector<DetectorType> {
         c_outer(radius + (d_detector > F() ? d_detector : h_detector)),
         n_detectors(n_detectors),
         n_lors(n_detectors * (n_detectors + 1) / 2),
-        radius_diff(c_outer.radius() - c_inner.radius()) {
+        radius_diff(c_outer.radius - c_inner.radius) {
     if (radius <= 0)
       throw("invalid radius");
     if (w_detector > 0 && h_detector == 0)
@@ -82,14 +80,14 @@ class DetectorRing : std::vector<DetectorType> {
     }
   }
 
-  F radius() const { return c_inner.radius(); }
-  F outer_radius() const { return c_outer.radius(); }
+  F radius() const { return c_inner.radius; }
+  F outer_radius() const { return c_outer.radius; }
   S lors() const { return n_lors; }
   S detectors() const { return n_detectors; }
   F fov_radius() const { return fov_radius_; }
 
   F max_dl(F max_bias_size) const {
-    return 2.0 * c_outer.radius() + max_bias_size;
+    return 2.0 * c_outer.radius + max_bias_size;
   }
 
   /// Quantizes position across lor

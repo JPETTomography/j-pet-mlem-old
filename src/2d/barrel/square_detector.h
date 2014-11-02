@@ -1,13 +1,13 @@
 #pragma once
 
-#include "2d/geometry/polygon.h"
+#include "polygonal_detector.h"
 
 namespace PET2D {
 namespace Barrel {
 
 /// Single square detector
 template <typename FType = double>
-class SquareDetector : public Polygon<4, FType> {
+class SquareDetector : public PolygonalDetector<4, FType> {
  public:
   typedef FType F;
   typedef typename Polygon<4, F>::Point Point;
@@ -18,6 +18,13 @@ class SquareDetector : public Polygon<4, FType> {
     this->emplace_back(w / 2, -h / 2);
     this->emplace_back(-w / 2, -h / 2);
     this->emplace_back(-w / 2, h / 2);
+  }
+
+  SquareDetector(F x, F y, F w, F h) {
+    this->emplace_back(x + w / 2, y + h / 2);
+    this->emplace_back(x + w / 2, y - h / 2);
+    this->emplace_back(x - w / 2, y - h / 2);
+    this->emplace_back(x - w / 2, y + h / 2);
   }
 
   static F default_height_for_width(const F w) { return w; }

@@ -10,13 +10,13 @@ using namespace PET2D;
 TEST_CASE("geometry/2d/barrel/circle/init", "circle initialization") {
   Circle<> c1(1.);
 
-  CHECK(c1.radius() == 1.);
-  CHECK(c1.radius2() == 1.);
+  CHECK(c1.radius == 1.);
+  CHECK(c1.radius2 == 1.);
 
   Circle<> c2(std::sqrt(2.));
 
-  CHECK(c2.radius() == std::sqrt(2.));  // exact!
-  CHECK(c2.radius2() == 2.0_e13);
+  CHECK(c2.radius == std::sqrt(2.));  // exact!
+  CHECK(c2.radius2 == 2.0_e13);
 }
 
 TEST_CASE("geometry/2d/barrel/circle/secant") {

@@ -24,9 +24,11 @@ template <typename FType = double, typename SType = int> class Circle {
   typedef SType S;
 
   Circle(F radius)
-      : radius_(radius),           // store radius
-        radius2_(radius * radius)  // store precomputed square
+      : radius(radius),           // store radius
+        radius2(radius * radius)  // store precomputed square
   {}
+
+  Circle& operator=(const Circle& other) { return *(new (this) Circle(other)); }
 
   typedef F Angle;
   typedef PET2D::Point<F> Point;
@@ -36,7 +38,7 @@ template <typename FType = double, typename SType = int> class Circle {
   typedef util::array<2, S> SecantSections;
 
   Secant secant(const Event& e) {
-    auto cabr2 = (-(e.c * e.c) + e.a2_b2 * radius2_);
+    auto cabr2 = (-(e.c * e.c) + e.a2_b2 * radius2);
     auto sq = sqrt(e.b2 * cabr2);
     auto asq = e.a * sq;
 
@@ -73,17 +75,13 @@ template <typename FType = double, typename SType = int> class Circle {
     return ss;
   }
 
-  F radius() const { return radius_; }
-  F radius2() const { return radius2_; }
-
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
                                           Circle& c) {
-    svg << "<circle cx=\"0\" cy=\"0\" r=\"" << c.radius_ << "\"/>" << std::endl;
+    svg << "<circle cx=\"0\" cy=\"0\" r=\"" << c.radius << "\"/>" << std::endl;
     return svg;
   }
 
- private:
-  F radius_;
-  F radius2_;
+  const F radius;
+  const F radius2;
 };
 }  // PET2D
