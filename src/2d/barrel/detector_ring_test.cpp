@@ -60,7 +60,7 @@ TEST_CASE("2d/barrel/detector_ring/math") {
     DetectorRing<>::LOR lor;
     AlwaysAccept<> model;
     double position;
-    auto hits = ring.emit_event(model, model, x, y, phi, lor, position);
+    auto hits = ring.detect(model, model, event, lor, position);
 
     if (hits >= 2) {
       CHECK(std::find(detector.begin(), detector.end(), lor.first) !=

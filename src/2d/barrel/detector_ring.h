@@ -167,17 +167,15 @@ class DetectorRing : public CompoundDetector<FType, SType, DetectorType> {
     return check_for_hits(gen, model, inner, outer, e, detector, depth, p1, p2);
   }
 
+  /// Tries to detect given event
+  /// \return number of coincidences (detector hits)
   template <class RandomGenerator, class AcceptanceModel>
-  short emit_event(RandomGenerator& gen,    ///< random number generator
-                   AcceptanceModel& model,  ///< acceptance model
-                   F rx,        ///< x coordinate of the emission point
-                   F ry,        ///< y coordinate of the emission point
-                   F angle,     ///< emission angle
-                   LOR& lor,    ///<[out] lor of the event
-                   F& position  ///<[out] position of the event
-                   ) {
-
-    typename Circle::Event e(rx, ry, angle);
+  short detect(RandomGenerator& gen,    ///< random number generator
+               AcceptanceModel& model,  ///< acceptance model
+               const Event& e,          ///< event to be detected
+               LOR& lor,                ///<[out] lor of the event
+               F& position              ///<[out] position of the event
+               ) {
 
     auto inner_secant = c_inner.secant(e);
     auto outer_secant = c_outer.secant(e);
@@ -213,7 +211,7 @@ class DetectorRing : public CompoundDetector<FType, SType, DetectorType> {
       throw(msg.str());
     }
 
-    Point origin(rx, ry);
+    Point origin(e.x, e.y);
     F length1 = origin.nearest_distance(d1_p1, d1_p2) + depth1;
     F length2 = origin.nearest_distance(d2_p1, d2_p2) + depth2;
 

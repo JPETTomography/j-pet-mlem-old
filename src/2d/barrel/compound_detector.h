@@ -26,17 +26,17 @@ class CompoundDetector : public std::vector<DetectorType> {
   typedef DetectorType Detector;
   typedef Barrel::Event<F> Event;
 
+  /// Tries to detect given event
+  /// \return number of coincidences (detector hits)
   template <class RandomGenerator, class AcceptanceModel>
-  short emit_event(RandomGenerator& gen,    ///< random number generator
-                   AcceptanceModel& model,  ///< acceptance model
-                   F rx,        ///< x coordinate of the emission point
-                   F ry,        ///< y coordinate of the emission point
-                   F angle,     ///< emission angle
-                   LOR& lor,    ///<[out] lor of the event
-                   F& position  ///<[out] position of the event
-                   ) {
+  short detect(RandomGenerator& gen,    ///< random number generator
+               AcceptanceModel& model,  ///< acceptance model
+               const Event& e,          ///< event to be detected
+               LOR& lor,                ///<[out] lor of the event
+               F& position              ///<[out] position of the event
+               ) {
     // FIXME: implement me!
-    (void)(gen, model, rx, ry, angle, lor, position);
+    (void)(gen, model, e, lor, position);
     return 0;
   }
 

@@ -14,6 +14,7 @@ template <typename DetectorRingType,
           typename SType = int>
 class MonteCarlo {
   typedef DetectorRingType DetectorRing;
+  typedef typename DetectorRing::Event Event;
   typedef MatrixType Matrix;
   typedef FType F;
   typedef SType S;
@@ -99,8 +100,8 @@ class MonteCarlo {
         auto angle = phi_dis(l_gen);
         LOR lor;
         F position = 0;
-        auto hits = detector_ring.emit_event(
-            l_gen, model, rx, ry, angle, lor, position);
+        Event event(rx, ry, angle);
+        auto hits = detector_ring.detect(l_gen, model, event, lor, position);
 
         S quantized_position = 0;
         if (tof)
@@ -168,8 +169,8 @@ class MonteCarlo {
         for (auto angle = 0.0; angle < 3.14; angle += 0.1) {
           LOR lor;
           F position = 0;
-          auto hits = detector_ring.emit_event(
-              l_gen, model, rx, ry, angle, lor, position);
+          Event event(rx, ry, angle);
+          auto hits = detector_ring.detect(l_gen, model, event, lor, position);
 
           S quantized_position = 0;
           if (tof)

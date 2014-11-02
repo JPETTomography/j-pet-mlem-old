@@ -385,7 +385,8 @@ void run(cmdline::parser& cl, Model& model) {
         pixels[pixel.y * n_pixels + pixel.x]++;
         auto angle = phi_dis(gen);
         double position;
-        auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor, position);
+        typename DetectorRing::Event event(p, angle);
+        auto hits = dr.detect(gen, model, event, lor, position);
         if (hits == 2) {
           if (lor.first > lor.second)
             std::swap(lor.first, lor.second);
@@ -429,7 +430,8 @@ void run(cmdline::parser& cl, Model& model) {
       auto angle = phi_dis(gen);
       typename DetectorRing::LOR lor;
       double position;
-      auto hits = dr.emit_event(gen, model, p.x, p.y, angle, lor, position);
+      typename DetectorRing::Event event(p, angle);
+      auto hits = dr.detect(gen, model, event, lor, position);
       if (hits == 2) {
         if (lor.first > lor.second)
           std::swap(lor.first, lor.second);
