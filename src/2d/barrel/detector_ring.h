@@ -1,23 +1,23 @@
 #pragma once
 
+#include "compound_detector.h"
 #include "util/random.h"
-#include "square_detector.h"
 #include "2d/geometry/circle.h"
-#include "util/svg_ostream.h"
-#include "2d/geometry/point.h"
-#include "2d/geometry/pixel.h"
-#include "lor.h"
 #include "circle_detector.h"
 
 namespace PET2D {
 namespace Barrel {
 
-/// 2D ring of detectors
+/// Detector made of 2D ring of single detectors
+
+/// This is optimized CompoundDetector using assumption all detectors lie on
+/// ring, so some operations like possible secants can be done much quicker.
 template <typename FType = double,
           typename SType = int,
           typename DetectorType = SquareDetector<FType>>
-class DetectorRing : public std::vector<DetectorType> {
+class DetectorRing : public CompoundDetector<FType, SType, DetectorType> {
  public:
+  typedef CompoundDetector<FType, SType, DetectorType> Base;
   typedef FType F;
   typedef SType S;
   typedef Barrel::LOR<S> LOR;
