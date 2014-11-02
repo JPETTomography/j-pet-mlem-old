@@ -115,6 +115,7 @@ class DetectorRing : public CompoundDetector<FType, SType, DetectorType> {
            2 * 2;
   }
 
+ private:
   template <class RandomGenerator, class AcceptanceModel>
   bool check_for_hits(RandomGenerator& gen,
                       AcceptanceModel& model,
@@ -167,7 +168,9 @@ class DetectorRing : public CompoundDetector<FType, SType, DetectorType> {
     return check_for_hits(gen, model, inner, outer, e, detector, depth, p1, p2);
   }
 
-  /// Tries to detect given event
+ public:
+  /// Tries to detect given event.
+
   /// \return number of coincidences (detector hits)
   template <class RandomGenerator, class AcceptanceModel>
   short detect(RandomGenerator& gen,    ///< random number generator

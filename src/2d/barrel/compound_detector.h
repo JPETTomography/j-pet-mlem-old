@@ -26,7 +26,8 @@ class CompoundDetector : public std::vector<DetectorType> {
   typedef DetectorType Detector;
   typedef Barrel::Event<F> Event;
 
-  /// Tries to detect given event
+  /// Tries to detect given event.
+
   /// \return number of coincidences (detector hits)
   template <class RandomGenerator, class AcceptanceModel>
   short detect(RandomGenerator& gen,    ///< random number generator
