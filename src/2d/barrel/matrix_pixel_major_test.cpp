@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "catch.hpp"
+#include "util/test.h"
 
 #include "2d/geometry/pixel.h"
 #include "lor.h"

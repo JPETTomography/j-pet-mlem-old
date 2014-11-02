@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include "util/test.h"
 
 #include "circle_detector.h"
 

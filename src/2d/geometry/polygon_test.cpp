@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "catch.hpp"
+#include "util/test.h"
 
 #include "polygon.h"
 
@@ -26,20 +26,20 @@ TEST_CASE("geometry/2d/barrel/polygon/intersection") {
     auto i1 = p.intersections(e1);
 
     REQUIRE(i1.size() == 2);
-    CHECK(std::min(i1[0].x, i1[1].x) == Approx(1.));
-    CHECK(std::max(i1[0].x, i1[1].x) == Approx(1.5));
+    CHECK(std::min(i1[0].x, i1[1].x) == 1.0_e13);
+    CHECK(std::max(i1[0].x, i1[1].x) == 1.5_e13);
 
-    CHECK(std::min(i1[0].y, i1[1].y) == Approx(1.5));
-    CHECK(std::max(i1[0].y, i1[1].y) == Approx(2.));
+    CHECK(std::min(i1[0].y, i1[1].y) == 1.5_e13);
+    CHECK(std::max(i1[0].y, i1[1].y) == 2.0_e13);
 
     auto i3 = p.intersections(e3);
 
     REQUIRE(i3.size() == 2);
-    CHECK(std::min(i3[0].x, i3[1].x) == Approx(1.));
-    CHECK(std::max(i3[0].x, i3[1].x) == Approx(2.));
+    CHECK(std::min(i3[0].x, i3[1].x) == 1.0_e13);
+    CHECK(std::max(i3[0].x, i3[1].x) == 2.0_e13);
 
-    CHECK(std::min(i3[0].y, i3[1].y) == Approx(1.5));
-    CHECK(std::max(i3[0].y, i3[1].y) == Approx(1.5));
+    CHECK(std::min(i3[0].y, i3[1].y) == 1.5_e13);
+    CHECK(std::max(i3[0].y, i3[1].y) == 1.5_e13);
   }
 }
 

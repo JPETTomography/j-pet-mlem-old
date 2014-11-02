@@ -1,7 +1,7 @@
-#include "catch.hpp"
 #include <vector>
 #include <cmath>
 
+#include "util/test.h"
 #include "util/png_writer.h"
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
@@ -26,27 +26,20 @@ TEST_CASE("strip/sensitivity/square") {
 
   Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
-  CHECK(detector.sensitivity(Point<>(0.0, 0.0)) == Approx(0.5).epsilon(1e-13));
-  CHECK(detector.sensitivity(Point<>(0.0, 50.0)) ==
-        Approx(0.46652458328685176).epsilon(1e-13));
-  CHECK(detector.sensitivity(Point<>(100.0, -50.0)) ==
-        Approx(0.4410019151324715).epsilon(1e-13));
-  CHECK(detector.sensitivity(Point<>(-200, -450)) ==
-        Approx(0.07526632771111386).epsilon(1e-13));
+  CHECK(detector.sensitivity(Point<>(0.0, 0.0)) == 0.5_e13);
+  CHECK(detector.sensitivity(Point<>(0.0, 50.0)) == 0.46652458328685176_e13);
+  CHECK(detector.sensitivity(Point<>(100.0, -50.0)) == 0.4410019151324715_e13);
+  CHECK(detector.sensitivity(Point<>(-200, -450)) == 0.07526632771111386_e13);
 }
 
 TEST_CASE("strip/sensitivity/non_square") {
 
   Detector<> detector(450, 200, 200, 200, 5, 5, 10, 63);
 
-  CHECK(detector.sensitivity(Point<>(0.0, 0.0)) ==
-        Approx(0.1392089745461279).epsilon(1e-13));
-  CHECK(detector.sensitivity(Point<>(0.0, 50.0)) ==
-        Approx(0.07044657495455454).epsilon(1e-13));
-  CHECK(detector.sensitivity(Point<>(100.0, -50.0)) ==
-        Approx(0.07402517367717103).epsilon(1e-13));
-  CHECK(detector.sensitivity(Point<>(-200, -70)) ==
-        Approx(0.05269621503719814).epsilon(1e-13));
+  CHECK(detector.sensitivity(Point<>(0.0, 0.0)) == 0.1392089745461279_e13);
+  CHECK(detector.sensitivity(Point<>(0.0, 50.0)) == 0.07044657495455454_e13);
+  CHECK(detector.sensitivity(Point<>(100.0, -50.0)) == 0.07402517367717103_e13);
+  CHECK(detector.sensitivity(Point<>(-200, -70)) == 0.05269621503719814_e13);
 }
 
 #if DONT_TEST

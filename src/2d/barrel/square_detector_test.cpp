@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include "util/test.h"
 
 #include "square_detector.h"
 
@@ -28,11 +28,11 @@ TEST_CASE("2d/barrel/square_detector/intersection") {
     auto i1 = d.intersections(e1);
 
     REQUIRE(i1.size() == 2);
-    CHECK(std::min(i1[0].x, i1[1].x) == Approx(0.5));
-    CHECK(std::max(i1[0].x, i1[1].x) == Approx(1.));
+    CHECK(std::min(i1[0].x, i1[1].x) == 0.5_e13);
+    CHECK(std::max(i1[0].x, i1[1].x) == 1.0_e13);
 
-    CHECK(std::min(i1[0].y, i1[1].y) == Approx(-0.5));
-    CHECK(std::max(i1[0].y, i1[1].y) == Approx(0.));
+    CHECK(std::min(i1[0].y, i1[1].y) == -0.5_e13);
+    CHECK(std::max(i1[0].y, i1[1].y) == 0.0_e13);
   }
 
   SECTION("detector/rotated", "rotated") {

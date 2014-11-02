@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "catch.hpp"
+#include "util/test.h"
 
 #include "model.h"
 #include "detector_ring.h"

@@ -1,6 +1,6 @@
 #include <cmath>
 
-#include "catch.hpp"
+#include "util/test.h"
 
 #include "geometry.h"
 
