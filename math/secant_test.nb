@@ -3,9 +3,7 @@ Cell[BoxData[
  RowBox[{"SetDirectory", "@", 
   RowBox[{"FileNameJoin", "@", 
    RowBox[{"{", 
-    RowBox[{
-     RowBox[{"NotebookDirectory", "[", "]"}], ",", "\"\<..\>\"", ",", 
-     "\"\<data\>\""}], "}"}]}]}]], "Input"],
+    RowBox[{"NotebookDirectory", "[", "]"}], "}"}]}]}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -93,8 +91,6 @@ Cell[BoxData[
      RowBox[{"intersections", "=", 
       RowBox[{"line", "/.", "sol"}]}]}]}], "]"}]}]], "Input"],
 
-Cell[CellGroupData[{
-
 Cell[BoxData[
  RowBox[{
   RowBox[{"TestCase", "[", 
@@ -105,31 +101,10 @@ Cell[BoxData[
     RowBox[{"Pi", "/", "2"}], ",", "1"}], "]"}], "//", "N"}]], "Input"],
 
 Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{
-   RowBox[{"{", 
-    RowBox[{"0.6666666666666666`", ",", 
-     RowBox[{"-", "0.74535599249993`"}]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{"0.6666666666666666`", ",", "0.7453559924999299`"}], "}"}]}], 
-  "}"}]], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
  RowBox[{"r", "=", "0.450"}]], "Input"],
-
-Cell[BoxData["0.45`"], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{"nDetectors", "=", "204"}]], "Input"],
-
-Cell[BoxData["204"], "Output"]
-}, Open  ]],
 
 Cell[BoxData[
  RowBox[{
@@ -193,29 +168,10 @@ Cell[BoxData[
           RowBox[{"[", "2", "]"}], "]"}]}]}], "}"}], "&"}], "/@", "tc"}]}], 
    ";"}], " "}]], "Input"],
 
-Cell[CellGroupData[{
-
 Cell[BoxData[
  RowBox[{"angles", "[", 
   RowBox[{"[", 
    RowBox[{"1", ";;", "3"}], "]"}], "]"}]], "Input"],
-
-Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{
-   RowBox[{"{", 
-    RowBox[{
-     RowBox[{"-", "2.838113722441732`"}], ",", "1.481237677364332`"}], "}"}], 
-   ",", 
-   RowBox[{"{", 
-    RowBox[{
-     RowBox[{"-", "2.8001576707106204`"}], ",", "1.2277650556479027`"}], 
-    "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     RowBox[{"-", "2.3020948415773312`"}], ",", "0.8340875905758698`"}], 
-    "}"}]}], "}"}]], "Output"]
-}, Open  ]],
 
 Cell[BoxData[
  RowBox[{
@@ -239,29 +195,10 @@ Cell[BoxData[
          "/", "d"}], "]"}], ",", "nDetectors"}], "]"}]}], "]"}]}], 
   ";"}]], "Input"],
 
-Cell[CellGroupData[{
-
 Cell[BoxData[
  RowBox[{"sections", "[", 
   RowBox[{"[", 
    RowBox[{"1", ";;", "6"}], "]"}], "]"}]], "Input"],
-
-Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{
-   RowBox[{"{", 
-    RowBox[{"111", ",", "48"}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{"113", ",", "39"}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{"129", ",", "27"}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{"183", ",", "130"}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{"186", ",", "107"}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{"89", ",", "172"}], "}"}]}], "}"}]], "Output"]
-}, Open  ]],
 
 Cell[BoxData[
  RowBox[{
@@ -270,19 +207,10 @@ Cell[BoxData[
     RowBox[{"sdata", ",", "tc", ",", "angles", ",", "sections"}], "]"}]}], 
   ";"}]], "Input"],
 
-Cell[CellGroupData[{
-
 Cell[BoxData[
  RowBox[{"\[IndentingNewLine]", 
   RowBox[{"chanel", "=", 
-   RowBox[{"OpenWrite", "[", "\"\<secant.test\>\"", "]"}]}]}]], "Input"],
-
-Cell[BoxData[
- RowBox[{"OutputStream", "[", 
-  RowBox[{"\<\"secant.test\"\>", ",", "120"}], "]"}]], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
+   RowBox[{"OpenWrite", "[", "\"\<secant_test.tab\>\"", "]"}]}]}]], "Input"],
 
 Cell[BoxData[
  RowBox[{"Export", "[", 
@@ -292,14 +220,7 @@ Cell[BoxData[
   "]"}]], "Input"],
 
 Cell[BoxData[
- RowBox[{"OutputStream", "[", 
-  RowBox[{"\<\"secant.test\"\>", ",", "120"}], "]"}]], "Output"]
-}, Open  ]],
-
-Cell[BoxData[
  RowBox[{"Write", "[", "chanel", "]"}]], "Input"],
-
-Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{"Export", "[", 
@@ -307,24 +228,14 @@ Cell[BoxData[
    RowBox[{"Flatten", "/@", "out"}], ",", "\"\<Table\>\""}], "]"}]], "Input"],
 
 Cell[BoxData[
- RowBox[{"OutputStream", "[", 
-  RowBox[{"\<\"secant.test\"\>", ",", "120"}], "]"}]], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
- RowBox[{"Close", "[", "chanel", "]"}]], "Input"],
-
-Cell[BoxData["\<\"secant.test\"\>"], "Output"]
-}, Open  ]]
+ RowBox[{"Close", "[", "chanel", "]"}]], "Input"]
 },
-WindowSize->{740, 1040},
+WindowSize->{1434, 1040},
 WindowMargins->{{Automatic, 68}, {Automatic, 0}},
 PrivateNotebookOptions->{"FileOutlineCache"->False},
 TrackCellChangeTimes->False,
-FrontEndVersion->"9.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (January 25, \
-2013)",
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (September 9, \
+2014)",
 StyleDefinitions->"Default.nb"
 ]
 
