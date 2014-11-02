@@ -62,7 +62,7 @@ class CompoundDetector : public std::vector<DetectorType> {
     c_detectors.push_back(this->back().circumscribe_circle());
   }
 
-  const CircleDetector& circumscribe(int i) { return c_detectors[i]; }
+  const CircleDetector& circumscribed(int i) { return c_detectors[i]; }
 
  private:
   std::vector<CircleDetector> c_detectors;

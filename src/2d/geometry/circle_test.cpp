@@ -7,7 +7,7 @@
 
 using namespace PET2D;
 
-TEST("geometry/2d/barrel/circle/init", "circle initialization") {
+TEST("2d/geometry/circle/init", "circle initialization") {
   Circle<> c1(1.);
 
   CHECK(c1.radius == 1.);
@@ -19,7 +19,7 @@ TEST("geometry/2d/barrel/circle/init", "circle initialization") {
   CHECK(c2.radius2 == 2.0_e13);
 }
 
-TEST("geometry/2d/barrel/circle/secant") {
+TEST("2d/geometry/circle/secant") {
   Circle<> c(1);
 
   SECTION("angle-0", "0 degrees from (0, 0)") {
@@ -41,6 +41,7 @@ TEST("geometry/2d/barrel/circle/secant") {
     CHECK(std::min(a[0], a[1]) == 0.0_e13);
     CHECK(std::max(a[0], a[1]) == Approx(M_PI));
   }
+
   SECTION("angle-90", "90 degrees from (0, 0)") {
     Circle<>::Event zero90(0., 0., M_PI_2);
     auto s = c.secant(zero90);
@@ -60,6 +61,7 @@ TEST("geometry/2d/barrel/circle/secant") {
     CHECK(std::min(a[0], a[1]) == Approx(-M_PI_2));
     CHECK(std::max(a[0], a[1]) == Approx(M_PI_2));
   }
+
   SECTION("angle-45", "45 degrees from (1, 0)") {
     Circle<>::Event xone45(1., 0., M_PI_4);
     auto s = c.secant(xone45);
@@ -72,7 +74,7 @@ TEST("geometry/2d/barrel/circle/secant") {
   }
 }
 
-TEST("geometry/2d/barrel/circle/secant/math") {
+TEST("2d/geometry/circle/secant/math") {
   std::ifstream in("math/secant.test");
 
   if (!in) {

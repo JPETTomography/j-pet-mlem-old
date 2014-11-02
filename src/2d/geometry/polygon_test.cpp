@@ -7,7 +7,7 @@
 
 using namespace PET2D;
 
-TEST("geometry/2d/polygon/center") {
+TEST("2d/geometry/polygon/center") {
   Polygon<4> ps;
   ps.emplace_back(1., 1.);
   ps.emplace_back(2., 1.);
@@ -24,7 +24,7 @@ TEST("geometry/2d/polygon/center") {
   CHECK(pt.center() == Point<>(1.5, 4. / 3.));
 }
 
-TEST("geometry/2d/polygon/intersection") {
+TEST("2d/geometry/polygon/intersection") {
   Polygon<4> p;
   p.emplace_back(1., 1.);
   p.emplace_back(2., 1.);
@@ -58,7 +58,7 @@ TEST("geometry/2d/polygon/intersection") {
   CHECK(std::max(i3[0].y, i3[1].y) == 1.5_e13);
 }
 
-TEST("geometry/2d/polygon/intersection/math") {
+TEST("2d/geometry/polygon/intersection/math") {
   std::ifstream in("math/polygon.test");
 
   if (!in) {
