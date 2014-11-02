@@ -3,9 +3,7 @@ Cell[BoxData[
  RowBox[{"SetDirectory", "@", 
   RowBox[{"FileNameJoin", "@", 
    RowBox[{"{", 
-    RowBox[{
-     RowBox[{"NotebookDirectory", "[", "]"}], ",", "\"\<..\>\"", ",", 
-     "\"\<data\>\""}], "}"}]}]}]], "Input"],
+    RowBox[{"NotebookDirectory", "[", "]"}], "}"}]}]}]], "Input"],
 
 Cell[BoxData[{
  RowBox[{
@@ -104,8 +102,6 @@ Cell[BoxData[
        RowBox[{"{", "}"}]}], " ", "]"}]}]}], "\[IndentingNewLine]", 
    "]"}]}]], "Input"],
 
-Cell[CellGroupData[{
-
 Cell[BoxData[
  RowBox[{"Intersect", "[", 
   RowBox[{
@@ -120,12 +116,6 @@ Cell[BoxData[
       RowBox[{"1", ",", "1"}], "}"}]}], "}"}]}], "]"}]], "Input"],
 
 Cell[BoxData[
- RowBox[{"{", "}"}]], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
  RowBox[{"poly", "=", 
   RowBox[{"Polygon", "[", 
    RowBox[{"{", 
@@ -138,20 +128,6 @@ Cell[BoxData[
       RowBox[{"1", ",", "1"}], "}"}], ",", 
      RowBox[{"{", 
       RowBox[{"0", ",", "1"}], "}"}]}], "}"}], "]"}]}]], "Input"],
-
-Cell[BoxData[
- RowBox[{"Polygon", "[", 
-  RowBox[{"{", 
-   RowBox[{
-    RowBox[{"{", 
-     RowBox[{"0", ",", "0"}], "}"}], ",", 
-    RowBox[{"{", 
-     RowBox[{"1", ",", "0"}], "}"}], ",", 
-    RowBox[{"{", 
-     RowBox[{"1", ",", "1"}], "}"}], ",", 
-    RowBox[{"{", 
-     RowBox[{"0", ",", "1"}], "}"}]}], "}"}], "]"}]], "Output"]
-}, Open  ]],
 
 Cell[BoxData[
  RowBox[{"Clear", "[", "rotate", "]"}]], "Input"],
@@ -225,8 +201,6 @@ Cell[BoxData[
          RowBox[{"Length", "[", "#", "]"}], ">", "0"}], "&"}]}], "]"}]}]}], 
    "\[IndentingNewLine]", "]"}]}]], "Input"],
 
-Cell[CellGroupData[{
-
 Cell[BoxData[
  RowBox[{
   RowBox[{"eventToLine", "[", 
@@ -246,22 +220,6 @@ Cell[BoxData[
       RowBox[{"Cos", "[", "phi", "]"}]}]}]}], "}"}], "  "}]], "Input"],
 
 Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{
-   RowBox[{"Sin", "[", "phi", "]"}], ",", 
-   RowBox[{"-", 
-    RowBox[{"Cos", "[", "phi", "]"}]}], ",", 
-   RowBox[{
-    RowBox[{
-     RowBox[{"-", "y"}], " ", 
-     RowBox[{"Cos", "[", "phi", "]"}]}], "+", 
-    RowBox[{"x", " ", 
-     RowBox[{"Sin", "[", "phi", "]"}]}]}]}], "}"}]], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
  RowBox[{"Graphics", "[", 
   RowBox[{"{", 
    RowBox[{
@@ -274,16 +232,6 @@ Cell[BoxData[
        RowBox[{"{", 
         RowBox[{"0", ",", "1", ",", "0.25"}], "}"}], ",", "poly"}], "]"}]}]}],
     "}"}], "]"}]], "Input"],
-
-Cell[BoxData[
- GraphicsBox[
-  {EdgeForm[GrayLevel[0]], FaceForm[None], 
-   PolygonBox[{{0, 0}, {1, 0}, {1, 1}, {0, 1}}], 
-   {RGBColor[1, 0, 0], PointSize[0.025], PointBox[{1, 0.25}], 
-    PointBox[{0, 0.25}]}}]], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{"\[IndentingNewLine]", 
@@ -309,24 +257,6 @@ Cell[BoxData[
    "\[IndentingNewLine]"}]}]], "Input"],
 
 Cell[BoxData[
- RowBox[{"Polygon", "[", 
-  RowBox[{"{", 
-   RowBox[{
-    RowBox[{"{", 
-     RowBox[{"0.25`", ",", "0.25`"}], "}"}], ",", 
-    RowBox[{"{", 
-     RowBox[{"0.46650635094610965`", ",", "0.125`"}], "}"}], ",", 
-    RowBox[{"{", 
-     RowBox[{"0.7165063509461096`", ",", "0.5580127018922193`"}], "}"}], ",", 
-    
-    RowBox[{"{", 
-     RowBox[{"0.5`", ",", "0.6830127018922193`"}], "}"}]}], "}"}], 
-  "]"}]], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
  RowBox[{"Graphics", "[", 
   RowBox[{
    RowBox[{"{", 
@@ -341,15 +271,6 @@ Cell[BoxData[
       RowBox[{"{", 
        RowBox[{"0", ",", "1"}], "}"}]}], "}"}]}], ",", 
    RowBox[{"Frame", "\[Rule]", "True"}]}], "]"}]], "Input"],
-
-Cell[BoxData[
- GraphicsBox[
-  {EdgeForm[GrayLevel[0]], FaceForm[None], 
-   PolygonBox[{{0.25, 0.25}, {0.46650635094610965`, 0.125}, {
-    0.7165063509461096, 0.5580127018922193}, {0.5, 0.6830127018922193}}]},
-  Frame->True,
-  PlotRange->{{0, 1}, {0, 1}}]], "Output"]
-}, Open  ]],
 
 Cell[BoxData[
  RowBox[{
@@ -397,31 +318,15 @@ Cell[BoxData[
      RowBox[{"events", ",", "lines", ",", "lengths", ",", "inters"}], 
      "]"}]}]}], ";"}]], "Input"],
 
-Cell[CellGroupData[{
-
 Cell[BoxData[
  RowBox[{"p1", "[", 
   RowBox[{"[", "1", "]"}], "]"}]], "Input"],
 
-Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{
-   RowBox[{"{", 
-    RowBox[{"0.25`", ",", "0.25`"}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{"0.46650635094610965`", ",", "0.125`"}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{"0.7165063509461096`", ",", "0.5580127018922193`"}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{"0.5`", ",", "0.6830127018922193`"}], "}"}]}], "}"}]], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
 Cell[BoxData[{
  RowBox[{"out", "=", 
   RowBox[{
-  "OpenWrite", "[", "\"\<polygon.test\>\"", "]"}]}], "\[IndentingNewLine]", 
+  "OpenWrite", "[", "\"\<polygon_test.tab\>\"", 
+   "]"}]}], "\[IndentingNewLine]", 
  RowBox[{"Write", "[", 
   RowBox[{"out", ",", "nEvents"}], "]"}], "\n", 
  RowBox[{"Export", "[", 
@@ -434,27 +339,6 @@ Cell[BoxData[{
   RowBox[{"out", ",", "exp", ",", "\"\<Table\>\""}], 
   "]"}], "\[IndentingNewLine]", 
  RowBox[{"Close", "[", "out", "]"}], "\n", "\"\<polygon.test\>\""}], "Input"],
-
-Cell[BoxData[
- RowBox[{"OutputStream", "[", 
-  RowBox[{"\<\"polygon.test\"\>", ",", "31"}], "]"}]], "Output"],
-
-Cell[BoxData[
- RowBox[{"OutputStream", "[", 
-  RowBox[{"\<\"polygon.test\"\>", ",", "35"}], "]"}]], "Output"],
-
-Cell[BoxData[
- RowBox[{"OutputStream", "[", 
-  RowBox[{"\<\"polygon.test\"\>", ",", "31"}], "]"}]], "Output"],
-
-Cell[BoxData[
- RowBox[{"OutputStream", "[", 
-  RowBox[{"\<\"polygon.test\"\>", ",", "31"}], "]"}]], "Output"],
-
-Cell[BoxData["\<\"polygon.test\"\>"], "Output"],
-
-Cell[BoxData["\<\"polygon.test\"\>"], "Output"]
-}, Open  ]],
 
 Cell[BoxData[
  RowBox[{
@@ -489,24 +373,11 @@ Cell[BoxData[
            RowBox[{"Length", "[", "#", "]"}], ">", "0"}], " ", "&"}]}], 
         "]"}]}], "}"}]}]}], "]"}]}]], "Input"],
 
-Cell[CellGroupData[{
-
 Cell[BoxData[{
  RowBox[{"h", "=", "0.020"}], "\[IndentingNewLine]", 
  RowBox[{"w", "=", "0.006"}], "\[IndentingNewLine]", 
  RowBox[{"r", "=", "0.450"}], "\[IndentingNewLine]", 
  RowBox[{"nDetectors", "=", "280"}]}], "Input"],
-
-Cell[BoxData["0.02`"], "Output"],
-
-Cell[BoxData["0.006`"], "Output"],
-
-Cell[BoxData["0.45`"], "Output"],
-
-Cell[BoxData["280"], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{"scintilator", "=", 
@@ -531,22 +402,6 @@ Cell[BoxData[
        RowBox[{"w", "/", "2"}]}], "}"}]}], "}"}], "]"}]}]], "Input"],
 
 Cell[BoxData[
- RowBox[{"Polygon", "[", 
-  RowBox[{"{", 
-   RowBox[{
-    RowBox[{"{", 
-     RowBox[{"0.45`", ",", 
-      RowBox[{"-", "0.003`"}]}], "}"}], ",", 
-    RowBox[{"{", 
-     RowBox[{"0.47000000000000003`", ",", 
-      RowBox[{"-", "0.003`"}]}], "}"}], ",", 
-    RowBox[{"{", 
-     RowBox[{"0.47000000000000003`", ",", "0.003`"}], "}"}], ",", 
-    RowBox[{"{", 
-     RowBox[{"0.45`", ",", "0.003`"}], "}"}]}], "}"}], "]"}]], "Output"]
-}, Open  ]],
-
-Cell[BoxData[
  RowBox[{
   RowBox[{"detector", "=", 
    RowBox[{"Table", "[", 
@@ -559,8 +414,6 @@ Cell[BoxData[
       RowBox[{"i", ",", "0", ",", 
        RowBox[{"nDetectors", "-", "1"}]}], "}"}]}], "]"}]}], ";"}]], "Input"],
 
-Cell[CellGroupData[{
-
 Cell[BoxData[
  RowBox[{"Intersect", "[", 
   RowBox[{
@@ -572,36 +425,6 @@ Cell[BoxData[
      RowBox[{"1", "/", 
       RowBox[{"Sqrt", "[", "2", "]"}]}], ",", "0.2"}], "}"}], ",", 
    "detector"}], "]"}]], "Input"],
-
-Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{
-   RowBox[{"{", 
-    RowBox[{
-     RowBox[{"{", "56", "}"}], ",", 
-     RowBox[{"{", "156", "}"}]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     RowBox[{"{", 
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{"0.15713226052963675`", ",", "0.43997497300425586`"}], "}"}], 
-       ",", 
-       RowBox[{"{", 
-        RowBox[{"0.14735397131384803`", ",", "0.4301966837884671`"}], "}"}]}],
-       "}"}], ",", 
-     RowBox[{"{", 
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{
-         RowBox[{"-", "0.43019668378846704`"}], ",", 
-         RowBox[{"-", "0.147353971313848`"}]}], "}"}], ",", 
-       RowBox[{"{", 
-        RowBox[{
-         RowBox[{"-", "0.43997497300425586`"}], ",", 
-         RowBox[{"-", "0.15713226052963677`"}]}], "}"}]}], "}"}]}], "}"}]}], 
-  "}"}]], "Output"]
-}, Open  ]],
 
 Cell[BoxData[
  RowBox[{
@@ -671,28 +494,12 @@ Cell[BoxData[
      RowBox[{"sdata", ",", "lengths", ",", "inters"}], "]"}]}]}], 
   ";"}]], "Input"],
 
-Cell[CellGroupData[{
-
 Cell[BoxData[""], "Input"],
-
-Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{
-  "0.22402511836483466`", ",", "0.1746700899926763`", ",", 
-   "0.11940829071407731`", ",", "2", ",", "10", ",", "61", ",", 
-   "0.42585201868700107`", ",", "0.19888509330976412`", ",", 
-   "0.4092889270086048`", ",", "0.19689786901363024`", ",", 
-   RowBox[{"-", "0.45386290073122126`"}], ",", "0.09333771752487088`", ",", 
-   RowBox[{"-", "0.46080755438350934`"}], ",", "0.09250450445487007`"}], 
-  "}"}]], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
 
 Cell[BoxData[{
  RowBox[{"out", "=", 
   RowBox[{
-  "OpenWrite", "[", "\"\<detector_ring.test\>\"", 
+  "OpenWrite", "[", "\"\<detector_ring_test.tab\>\"", 
    "]"}]}], "\[IndentingNewLine]", 
  RowBox[{"Export", "[", 
   RowBox[{"out", ",", 
@@ -704,28 +511,14 @@ Cell[BoxData[{
  RowBox[{"Export", "[", 
   RowBox[{"out", ",", "exp", ",", "\"\<Table\>\""}], 
   "]"}], "\[IndentingNewLine]", 
- RowBox[{"Close", "[", "out", "]"}]}], "Input"],
-
-Cell[BoxData[
- RowBox[{"OutputStream", "[", 
-  RowBox[{"\<\"detector_ring.test\"\>", ",", "106"}], "]"}]], "Output"],
-
-Cell[BoxData[
- RowBox[{"OutputStream", "[", 
-  RowBox[{"\<\"detector_ring.test\"\>", ",", "106"}], "]"}]], "Output"],
-
-Cell[BoxData[
- RowBox[{"OutputStream", "[", 
-  RowBox[{"\<\"detector_ring.test\"\>", ",", "106"}], "]"}]], "Output"],
-
-Cell[BoxData["\<\"detector_ring.test\"\>"], "Output"]
-}, Open  ]]
+ RowBox[{"Close", "[", "out", "]"}]}], "Input"]
 },
 WindowSize->{1075, 986},
 WindowMargins->{{Automatic, 12}, {-230, 0}},
 PrivateNotebookOptions->{"FileOutlineCache"->False},
 TrackCellChangeTimes->False,
-FrontEndVersion->"9.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (January 25, \
-2013)",
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (September 9, \
+2014)",
 StyleDefinitions->"Default.nb"
 ]
+

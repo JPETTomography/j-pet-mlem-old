@@ -11,10 +11,10 @@ using namespace PET2D::Barrel;
 
 TEST("2d/barrel/detector_ring/math") {
 
-  std::ifstream in("math/detector_ring.test");
+  std::ifstream in("math/detector_ring_test.tab");
 
   if (!in) {
-    WARN("cannot open file `math/detector_ring.test'");
+    WARN("cannot open file `math/detector_ring_test.tab'");
     return;
   }
 
@@ -52,8 +52,10 @@ TEST("2d/barrel/detector_ring/math") {
       auto inters = ring[detector[i]].intersections(event);
       CHECK(inters.size() == 2);
 
-      CHECK(std::min(p1.x, p2.x) == std::min(inters[0].x, inters[1].x));
-      CHECK(std::max(p1.x, p2.x) == std::max(inters[0].x, inters[1].x));
+      CHECK(std::min(p1.x, p2.x) ==
+            Approx(std::min(inters[0].x, inters[1].x)).epsilon(1e-13));
+      CHECK(std::max(p1.x, p2.x) ==
+            Approx(std::max(inters[0].x, inters[1].x)).epsilon(1e-13));
     }
 
     // this is not yet a complete tests....

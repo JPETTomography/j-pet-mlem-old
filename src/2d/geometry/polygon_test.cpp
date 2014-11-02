@@ -59,10 +59,10 @@ TEST("2d/geometry/polygon/intersection") {
 }
 
 TEST("2d/geometry/polygon/intersection/math") {
-  std::ifstream in("math/polygon.test");
+  std::ifstream in("math/polygon_test.tab");
 
   if (!in) {
-    WARN("cannot open file `math/polygon.test'");
+    WARN("cannot open file `math/polygon_test.tab'");
     return;
   }
 
