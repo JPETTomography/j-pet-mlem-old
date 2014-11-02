@@ -11,7 +11,7 @@
 using namespace PET2D;
 using namespace PET2D::Strip;
 
-TEST_CASE("strip/detector/pixel_location") {
+TEST("strip/detector/pixel_location") {
 
   Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
@@ -24,7 +24,7 @@ TEST_CASE("strip/detector/pixel_location") {
   CHECK(detector.pixel_location({ -500.0, 500.0 }) == Pixel<>(200, 200));
 }
 
-TEST_CASE("strip/detector/pixel_center") {
+TEST("strip/detector/pixel_center") {
 
   // space->image_space  y: [R,-R] ->[0,n_pixels_y], z:[-L/2,L/2] ->
   // [0,n_pixels_z]

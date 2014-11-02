@@ -9,7 +9,7 @@
 using namespace PET2D;
 using namespace PET2D::Barrel;
 
-TEST_CASE("2d/barrel/detector_ring/math") {
+TEST("2d/barrel/detector_ring/math") {
 
   std::ifstream in("math/detector_ring.test");
 

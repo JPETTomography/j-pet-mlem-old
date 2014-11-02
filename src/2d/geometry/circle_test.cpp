@@ -7,7 +7,7 @@
 
 using namespace PET2D;
 
-TEST_CASE("geometry/2d/barrel/circle/init", "circle initialization") {
+TEST("geometry/2d/barrel/circle/init", "circle initialization") {
   Circle<> c1(1.);
 
   CHECK(c1.radius == 1.);
@@ -19,7 +19,7 @@ TEST_CASE("geometry/2d/barrel/circle/init", "circle initialization") {
   CHECK(c2.radius2 == 2.0_e13);
 }
 
-TEST_CASE("geometry/2d/barrel/circle/secant") {
+TEST("geometry/2d/barrel/circle/secant") {
   Circle<> c(1);
 
   SECTION("angle-0", "0 degrees from (0, 0)") {
@@ -72,7 +72,7 @@ TEST_CASE("geometry/2d/barrel/circle/secant") {
   }
 }
 
-TEST_CASE("geometry/2d/barrel/circle/secant/math") {
+TEST("geometry/2d/barrel/circle/secant/math") {
   std::ifstream in("math/secant.test");
 
   if (!in) {

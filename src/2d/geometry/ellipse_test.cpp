@@ -6,7 +6,7 @@
 
 using namespace PET2D;
 
-TEST_CASE("2d/ellipse/elliptical_region") {
+TEST("2d/ellipse/elliptical_region") {
 
   EllipticalSource<> s1(1, 1, 2, 2, 0, 0.5);
   EllipticalSource<> s2(0, 1, 1, 0.5, M_PI / 3, 0.75);

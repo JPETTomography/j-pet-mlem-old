@@ -2,7 +2,7 @@
 
 #include "random.h"
 
-TEST_CASE("random") {
+TEST("random") {
   util::random::tausworthe gen;
   util::random::uniform_real_distribution<> one;
   util::random::uniform_real_distribution<> d99to100(99., 100.);

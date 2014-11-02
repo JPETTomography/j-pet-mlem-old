@@ -8,8 +8,9 @@
 using namespace PET2D;
 using namespace PET2D::Barrel;
 
-TEST_CASE("2d/barrel/compound_detector/math") {
+#define TEST_CASE2 test()
 
+TEST("2d/barrel/compound_detector/math") {
   SECTION("square_detector") {
     CompoundDetector<SquareDetector<>> detector;
     detector.emplace_back(1., 1., 2., 2.);

@@ -27,3 +27,7 @@ inline InverseApprox& operator-(Approx& other) {
 inline InverseApprox&& operator-(Approx&& other) {
   return static_cast<InverseApprox&&>(other);
 }
+
+// Stupid but working workaround for making syntax highlight working for tests
+// in QtCreator. Use TEST("...") instead TEST_CASE("...").
+#define TEST TEST_CASE

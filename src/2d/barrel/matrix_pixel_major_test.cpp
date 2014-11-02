@@ -12,7 +12,7 @@
 using namespace PET2D;
 using namespace PET2D::Barrel;
 
-TEST_CASE("2d/barrel/lor/ctor") {
+TEST("2d/barrel/lor/ctor") {
 
   LOR<> lor(9, 7);
 
@@ -22,7 +22,7 @@ TEST_CASE("2d/barrel/lor/ctor") {
   CHECK(lor.index() == 9 * (9 + 1) / 2 + 7);
 }
 
-TEST_CASE("2d/barrel/lor/iterator") {
+TEST("2d/barrel/lor/iterator") {
 
   int count = 0;
   for (auto lor = LOR<>(); lor != LOR<>::end_for_detectors(10); ++lor) {
@@ -31,12 +31,12 @@ TEST_CASE("2d/barrel/lor/iterator") {
   CHECK(count == 10 * (10 + 1) / 2);
 }
 
-TEST_CASE("2d/barrel/pix_major_system_matrix/ctor") {
+TEST("2d/barrel/pix_major_system_matrix/ctor") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 }
 
-TEST_CASE("2d/barrel/pix_major_system_matrix/add") {
+TEST("2d/barrel/pix_major_system_matrix/add") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
@@ -55,7 +55,7 @@ TEST_CASE("2d/barrel/pix_major_system_matrix/add") {
   CHECK(hits == 0);
 }
 
-TEST_CASE("2d/barrel/pix_major_system_matrix/add_twice") {
+TEST("2d/barrel/pix_major_system_matrix/add_twice") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
@@ -70,7 +70,7 @@ TEST_CASE("2d/barrel/pix_major_system_matrix/add_twice") {
   CHECK(matrix.n_lors_at_pixel_index(13) == 1);
 }
 
-TEST_CASE("2d/barrel/pix_major_system_matrix/add_to_all") {
+TEST("2d/barrel/pix_major_system_matrix/add_to_all") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
@@ -88,7 +88,7 @@ TEST_CASE("2d/barrel/pix_major_system_matrix/add_to_all") {
   }
 }
 
-TEST_CASE("2d/barrel/pix_major_system_matrix/to_sparse") {
+TEST("2d/barrel/pix_major_system_matrix/to_sparse") {
   DetectorRing<> dr(140, 0.450, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 

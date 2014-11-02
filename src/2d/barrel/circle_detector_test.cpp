@@ -5,7 +5,7 @@
 using namespace PET2D;
 using namespace PET2D::Barrel;
 
-TEST_CASE("2d/barrel/circle_detector/ctor") {
+TEST("2d/barrel/circle_detector/ctor") {
 
   CircleDetector<> circle(0.01);
 
@@ -13,7 +13,7 @@ TEST_CASE("2d/barrel/circle_detector/ctor") {
   CHECK(circle.center.y == 0);
 }
 
-TEST_CASE("2d/barrel/circle_detector/move") {
+TEST("2d/barrel/circle_detector/move") {
 
   CircleDetector<> circle(0.01);
 
