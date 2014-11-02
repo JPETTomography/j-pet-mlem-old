@@ -4,7 +4,14 @@
 
 namespace PET2D {
 namespace Barrel {
+
+/// GPU internal namespace
+
+/// \todo This namespace should disappear, and we shall use shared classes like
+/// it is done for PET2D::Strip.
 namespace GPU {
+
+/// \cond PRIVATE
 
 struct Point {
   float x, y;
@@ -43,6 +50,9 @@ struct LOR {
   int lor_b;
   int index() const { return (lor_a * (lor_a + 1)) / 2 + lor_b; }
 };
+
+/// \endcond
+
 }  // GPU
 }  // Barrel
 }  // PET2D

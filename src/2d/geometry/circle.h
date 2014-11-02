@@ -9,7 +9,7 @@
 
 namespace PET2D {
 
-/// Circle with given radius lying in (0, 0)
+/// Zero (0, 0) anchored circle with given radius
 
 /// Produces secant angles circle/line intersection as a equation system
 /// solution.

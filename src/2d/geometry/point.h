@@ -8,7 +8,7 @@
 
 namespace PET2D {
 
-/// Point with given coordinates
+/// 2D point with given coordinates
 template <typename FType = double, typename SType = int> struct Point {
   typedef FType F;
   typedef SType S;

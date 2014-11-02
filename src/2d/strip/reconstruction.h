@@ -22,7 +22,7 @@
 namespace PET2D {
 namespace Strip {
 
-/// Reconstruction for 2D PET strip
+/// 2D strip PET reconstruction
 template <typename FType = double, typename KernelType = Kernel<FType>>
 class Reconstruction {
  public:

@@ -7,7 +7,7 @@
 
 namespace PET2D {
 
-/// Ellipse with given point and axes
+/// Unanchored ellipse with given point and axes
 template <typename FType = double, typename SType = int> struct Ellipse {
   typedef FType F;
   typedef SType S;

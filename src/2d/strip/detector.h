@@ -13,7 +13,7 @@
 namespace PET2D {
 namespace Strip {
 
-/// Strip detector with two scintillators and pixel grid
+/// Strip-detector made of two strip scintillators and pixel grid
 template <typename FType = double> class Detector {
  public:
   typedef FType F;

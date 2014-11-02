@@ -21,7 +21,7 @@ namespace Strip {
 
 template <typename F> int sgn(F val) { return (0 < val) - (val < 0); }
 
-/// Phantom region made of ellipse and intensity
+/// Virtual phantom region made of ellipse and intensity
 template <typename FType> struct PhantomRegion {
   typedef FType F;
 
@@ -35,7 +35,7 @@ template <typename FType> struct PhantomRegion {
   const F weight;
 };
 
-/// Phantom made of elliptical regions
+/// Virtual phantom made of elliptical regions
 template <typename D, typename FType = double> class Phantom {
   typedef FType F;
   typedef PET2D::Pixel<> Pixel;
