@@ -13,8 +13,8 @@ TEST("strip/event/conversions1") {
 
   ImageSpaceEventAngle<> img_angle(10.0, 20.0, 7.0 * degree);
   ImageSpaceEventTan<> img_tan = img_angle.to_tan();
-  CHECK(img_tan.y == 10.0_e13);
-  CHECK(img_tan.z == 20.0_e13);
+  CHECK(img_tan.y == 10._e13);
+  CHECK(img_tan.z == 20._e13);
   CHECK(img_tan.tan == 0.1227845609029046_e13);
 
   Event<> proj = detector.to_projection_space_tan(img_tan);
@@ -36,8 +36,8 @@ TEST("strip/event/conversions2") {
 
   ImageSpaceEventAngle<> img_angle(-10.0, 37.0, -5.0 * degree);
   ImageSpaceEventTan<> img_tan = img_angle.to_tan();
-  CHECK(img_tan.y == -10.0_e13);
-  CHECK(img_tan.z == 37.0_e13);
+  CHECK(img_tan.y == -10._e13);
+  CHECK(img_tan.z == 37._e13);
   CHECK(img_tan.tan == -0.08748866352592401_e13);
 
   Event<> proj = detector.to_projection_space_tan(img_tan);

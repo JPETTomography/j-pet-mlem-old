@@ -29,10 +29,10 @@ TEST("2d/barrel/square_detector/intersection") {
 
     REQUIRE(i1.size() == 2);
     CHECK(std::min(i1[0].x, i1[1].x) == 0.5_e13);
-    CHECK(std::max(i1[0].x, i1[1].x) == 1.0_e13);
+    CHECK(std::max(i1[0].x, i1[1].x) == 1._e13);
 
     CHECK(std::min(i1[0].y, i1[1].y) == -0.5_e13);
-    CHECK(std::max(i1[0].y, i1[1].y) == 0.0_e13);
+    CHECK(std::max(i1[0].y, i1[1].y) == 0._e13);
   }
 
   SECTION("detector/rotated", "rotated") {

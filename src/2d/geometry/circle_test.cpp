@@ -16,7 +16,7 @@ TEST("2d/geometry/circle/init", "circle initialization") {
   Circle<> c2(std::sqrt(2.));
 
   CHECK(c2.radius == std::sqrt(2.));  // exact!
-  CHECK(c2.radius2 == 2.0_e13);
+  CHECK(c2.radius2 == 2._e13);
 }
 
 TEST("2d/geometry/circle/secant") {
@@ -26,8 +26,8 @@ TEST("2d/geometry/circle/secant") {
     Circle<>::Event zero(0., 0., 0.);
     auto s = c.secant(zero);
 
-    CHECK(std::min(s[0].x, s[1].x) == -1.0_e13);
-    CHECK(std::max(s[0].x, s[1].x) == 1.0_e13);
+    CHECK(std::min(s[0].x, s[1].x) == -1._e13);
+    CHECK(std::max(s[0].x, s[1].x) == 1._e13);
 
     CHECK(s[0].y == 0.);
     CHECK(s[1].y == 0.);
@@ -38,7 +38,7 @@ TEST("2d/geometry/circle/secant") {
     if (a[1] == Approx(-M_PI))
       a[1] += 2. * M_PI;
 
-    CHECK(std::min(a[0], a[1]) == 0.0_e13);
+    CHECK(std::min(a[0], a[1]) == 0._e13);
     CHECK(std::max(a[0], a[1]) == Approx(M_PI));
 
     Circle<>::Event one(1., 1., 0.);
@@ -56,8 +56,8 @@ TEST("2d/geometry/circle/secant") {
     Circle<>::Event zero90(0., 0., M_PI_2);
     auto s = c.secant(zero90);
 
-    CHECK(s[0].x == 0.0_e13);
-    CHECK(s[1].x == 0.0_e13);
+    CHECK(s[0].x == 0._e13);
+    CHECK(s[1].x == 0._e13);
 
     CHECK(std::min(s[0].y, s[1].y) == -1.);
     CHECK(std::max(s[0].y, s[1].y) == 1.);
@@ -76,10 +76,10 @@ TEST("2d/geometry/circle/secant") {
     Circle<>::Event xone45(1., 0., M_PI_4);
     auto s = c.secant(xone45);
 
-    CHECK(std::min(s[0].x, s[1].x) == 0.0_e13);
+    CHECK(std::min(s[0].x, s[1].x) == 0._e13);
     CHECK(std::max(s[0].x, s[1].x) == Approx(xone45.x));
 
-    CHECK(std::min(s[0].y, s[1].y) == -1.0_e13);
+    CHECK(std::min(s[0].y, s[1].y) == -1._e13);
     CHECK(std::max(s[0].y, s[1].y) == Approx(xone45.y));
   }
 }
