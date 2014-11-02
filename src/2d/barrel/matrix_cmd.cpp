@@ -164,9 +164,9 @@ int main(int argc, char* argv[]) {
       length_scale = 1.0 / cl.get<double>("acceptance");
     }
     // FIXME: fixup for spelling mistake, present in previous versions
-    auto& model = cl.get<std::string>("model");
-    if (model == "scintilator") {
-      model = "scintillator";
+    auto& model_name = cl.get<std::string>("model");
+    if (model_name == "scintilator") {
+      model_name = "scintillator";
     }
 
     auto& n_pixels = cl.get<int>("n-pixels");
@@ -279,7 +279,7 @@ int main(int argc, char* argv[]) {
   post_process(cl, detector_ring, sparse_matrix)
 
     // run simmulation on given detector model & shape
-    if (model == "always") {
+    if (model_name == "always") {
       if (shape == "square") {
         RUN(SquareDetectorRing, AlwaysAccept<>);
       } else if (shape == "circle") {
@@ -289,7 +289,7 @@ int main(int argc, char* argv[]) {
       } else if (shape == "hexagon") {
         RUN(HexagonalDetectorRing, AlwaysAccept<>);
       }
-    } else if (model == "scintillator") {
+    } else if (model_name == "scintillator") {
       if (shape == "square") {
         RUN(SquareDetectorRing, ScintilatorAccept<>, length_scale);
       } else if (shape == "circle") {

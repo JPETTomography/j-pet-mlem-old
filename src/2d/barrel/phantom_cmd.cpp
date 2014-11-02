@@ -132,9 +132,9 @@ int main(int argc, char* argv[]) {
       length_scale = 1.0 / cl.get<double>("acceptance");
     }
     // FIXME: fixup for spelling mistake, present in previous versions
-    auto& model = cl.get<std::string>("model");
-    if (model == "scintilator") {
-      model = "scintillator";
+    auto& model_name = cl.get<std::string>("model");
+    if (model_name == "scintilator") {
+      model_name = "scintillator";
     }
 
     auto& n_pixels = cl.get<int>("n-pixels");
@@ -216,7 +216,7 @@ int main(int argc, char* argv[]) {
     }
 
     // run simmulation on given detector model & shape
-    if (model == "always") {
+    if (model_name == "always") {
       AlwaysAccept<> model;
       if (shape == "square") {
         run<SquareDetectorRing>(cl, model);
@@ -227,7 +227,7 @@ int main(int argc, char* argv[]) {
       } else if (shape == "hexagon") {
         run<HexagonalDetectorRing>(cl, model);
       }
-    } else if (model == "scintillator") {
+    } else if (model_name == "scintillator") {
       ScintilatorAccept<> model(length_scale);
       if (shape == "square") {
         run<SquareDetectorRing>(cl, model);
