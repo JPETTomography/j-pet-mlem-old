@@ -73,10 +73,10 @@ TEST_CASE("geometry/2d/barrel/circle/secant") {
 }
 
 TEST_CASE("geometry/2d/barrel/circle/secant/math") {
-  std::ifstream in("secant.test");
+  std::ifstream in("math/secant.test");
 
   if (!in) {
-    WARN("cannot open file `secant.test'");
+    WARN("cannot open file `math/secant.test'");
     return;
   }
 

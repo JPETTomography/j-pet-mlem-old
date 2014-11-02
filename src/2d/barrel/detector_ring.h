@@ -1,6 +1,8 @@
 #pragma once
 
-#include "compound_detector.h"
+#include "square_detector.h"
+#include "util/svg_ostream.h"
+#include "lor.h"
 #include "util/random.h"
 #include "2d/geometry/circle.h"
 #include "circle_detector.h"
@@ -15,9 +17,8 @@ namespace Barrel {
 template <typename FType = double,
           typename SType = int,
           typename DetectorType = SquareDetector<FType>>
-class DetectorRing : public CompoundDetector<FType, SType, DetectorType> {
+class DetectorRing : std::vector<DetectorType> {
  public:
-  typedef CompoundDetector<FType, SType, DetectorType> Base;
   typedef FType F;
   typedef SType S;
   typedef Barrel::LOR<S> LOR;

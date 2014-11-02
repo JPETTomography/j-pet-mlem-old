@@ -7,14 +7,31 @@
 
 using namespace PET2D;
 
-TEST_CASE("geometry/2d/barrel/polygon/intersection") {
+TEST_CASE("geometry/2d/polygon/center") {
+  Polygon<4> ps;
+  ps.emplace_back(1., 1.);
+  ps.emplace_back(2., 1.);
+  ps.emplace_back(2., 2.);
+  ps.emplace_back(1., 2.);
+
+  CHECK(ps.center() == Point<>(1.5, 1.5));
+
+  Polygon<3> pt;
+  pt.emplace_back(1., 1.);
+  pt.emplace_back(2., 1.);
+  pt.emplace_back(1.5, 2.);
+
+  CHECK(pt.center() == Point<>(1.5, 4. / 3.));
+}
+
+TEST_CASE("geometry/2d/polygon/intersection") {
   Polygon<4> p;
   p.emplace_back(1., 1.);
   p.emplace_back(2., 1.);
   p.emplace_back(2., 2.);
   p.emplace_back(1., 2.);
 
-  Polygon<4>::Event e1(0., .5, M_PI_4);
+  Polygon<4>::Event e1(0., 0.5, M_PI_4);
   Polygon<4>::Event e2(0., 1.5, M_PI_4);
   Polygon<4>::Event e3(0., 1.5, 0.);
 
@@ -22,32 +39,30 @@ TEST_CASE("geometry/2d/barrel/polygon/intersection") {
   CHECK(false == p.intersects(e2));
   CHECK(true == p.intersects(e3));
 
-  SECTION("polygon/intersection/points", "intersection points") {
-    auto i1 = p.intersections(e1);
+  auto i1 = p.intersections(e1);
 
-    REQUIRE(i1.size() == 2);
-    CHECK(std::min(i1[0].x, i1[1].x) == 1.0_e13);
-    CHECK(std::max(i1[0].x, i1[1].x) == 1.5_e13);
+  REQUIRE(i1.size() == 2);
+  CHECK(std::min(i1[0].x, i1[1].x) == 1.0_e13);
+  CHECK(std::max(i1[0].x, i1[1].x) == 1.5_e13);
 
-    CHECK(std::min(i1[0].y, i1[1].y) == 1.5_e13);
-    CHECK(std::max(i1[0].y, i1[1].y) == 2.0_e13);
+  CHECK(std::min(i1[0].y, i1[1].y) == 1.5_e13);
+  CHECK(std::max(i1[0].y, i1[1].y) == 2.0_e13);
 
-    auto i3 = p.intersections(e3);
+  auto i3 = p.intersections(e3);
 
-    REQUIRE(i3.size() == 2);
-    CHECK(std::min(i3[0].x, i3[1].x) == 1.0_e13);
-    CHECK(std::max(i3[0].x, i3[1].x) == 2.0_e13);
+  REQUIRE(i3.size() == 2);
+  CHECK(std::min(i3[0].x, i3[1].x) == 1.0_e13);
+  CHECK(std::max(i3[0].x, i3[1].x) == 2.0_e13);
 
-    CHECK(std::min(i3[0].y, i3[1].y) == 1.5_e13);
-    CHECK(std::max(i3[0].y, i3[1].y) == 1.5_e13);
-  }
+  CHECK(std::min(i3[0].y, i3[1].y) == 1.5_e13);
+  CHECK(std::max(i3[0].y, i3[1].y) == 1.5_e13);
 }
 
-TEST_CASE("geometry/2d/barrel/polygon/intersection/math") {
-  std::ifstream in("polygon.test");
+TEST_CASE("geometry/2d/polygon/intersection/math") {
+  std::ifstream in("math/polygon.test");
 
   if (!in) {
-    WARN("cannot open file `polygon.test'");
+    WARN("cannot open file `math/polygon.test'");
     return;
   }
 

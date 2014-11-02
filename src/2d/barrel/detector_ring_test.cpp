@@ -11,10 +11,10 @@ using namespace PET2D::Barrel;
 
 TEST_CASE("2d/barrel/detector_ring/math") {
 
-  std::ifstream in("detector_ring.test");
+  std::ifstream in("math/detector_ring.test");
 
   if (!in) {
-    WARN("cannot open file `detector_ring.test'");
+    WARN("cannot open file `math/detector_ring.test'");
     return;
   }
 

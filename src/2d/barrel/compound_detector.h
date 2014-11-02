@@ -17,7 +17,8 @@ namespace Barrel {
 template <typename FType = double,
           typename SType = int,
           typename DetectorType = SquareDetector<FType>>
-class CompoundDetector : public std::vector<DetectorType> {
+class CompoundDetector : std::vector<DetectorType> {
+ public:
   typedef FType F;
   typedef SType S;
   typedef Barrel::LOR<S> LOR;
@@ -38,6 +39,9 @@ class CompoundDetector : public std::vector<DetectorType> {
                ) {
     // FIXME: implement me!
     (void)(gen, model, e, lor, position);
+    if (detector_centers.size() != this->size()) {
+      calculate_detector_centers();
+    }
     return 0;
   }
 
@@ -48,6 +52,17 @@ class CompoundDetector : public std::vector<DetectorType> {
     }
 
     return svg;
+  }
+
+ private:
+  std::vector<Point> detector_centers;
+
+  void calculate_detector_centers() {
+    detector_centers.resize(this->size());
+    for (size_t i = 0; i < this->size(); ++i) {
+      auto& center = detector_centers[i];
+      center = (*this)[i]->center();
+    }
   }
 };
 }

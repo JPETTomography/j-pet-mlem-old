@@ -35,6 +35,17 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
     return *this;
   }
 
+  /// Returns center point of the polygon
+  Point center() const {
+    Point center_point;
+    for (auto& p : *this) {
+      center_point += p;
+    }
+    center_point.x /= this->size();
+    center_point.y /= this->size();
+    return center_point;
+  }
+
   // tests for intersection with generic form line equation
   bool intersects(Event& e) {
     auto p1 = this->back();
