@@ -28,7 +28,7 @@ template <typename PixelType,
           typename SType = int,
           typename HitType = int>
 class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
-  typedef Matrix<PixelType, LORType, SType, HitType> Super;
+  typedef Matrix<PixelType, LORType, SType, HitType> Base;
 
  public:
   typedef PixelType Pixel;
@@ -36,11 +36,11 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   typedef SType S;
   typedef HitType Hit;
   typedef typename std::make_signed<S>::type SS;
-  typedef typename Super::SparseMatrix SparseMatrix;
+  typedef typename Base::SparseMatrix SparseMatrix;
   typedef typename SparseMatrix::Element SparseElement;
 
   MatrixPixelMajor(S n_pixels_in_row, S n_detectors, S n_tof_positions = 1)
-      : Super(n_pixels_in_row, n_detectors, n_tof_positions),
+      : Base(n_pixels_in_row, n_detectors, n_tof_positions),
         n_pixels_in_row_half(n_pixels_in_row / 2),
         n_pixels_(Pixel::end_for_n_pixels_in_row(n_pixels_in_row).index()),
         n_lors(LOR::end_for_detectors(n_detectors).index()),
@@ -213,7 +213,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
 
  private:
   // disable copy contructor
-  MatrixPixelMajor(const MatrixPixelMajor& rhs) : Super(0, 0) {
+  MatrixPixelMajor(const MatrixPixelMajor& rhs) : Base(0, 0) {
     (void)rhs;  // unused
     throw(__PRETTY_FUNCTION__);
   }

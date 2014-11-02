@@ -74,7 +74,7 @@ template <typename PixelType,
           typename HitType = int>
 class SparseMatrix
     : public std::vector<SparseElement<LORType, SType, PixelType, HitType>> {
-  typedef std::vector<SparseElement<LORType, SType, PixelType, HitType>> Super;
+  typedef std::vector<SparseElement<LORType, SType, PixelType, HitType>> Base;
 
  public:
   typedef PixelType Pixel;
@@ -221,8 +221,8 @@ class SparseMatrix
       }
     }
     sort_by_pixel_n_lor_leaving_empty();
-    auto first_empty = std::lower_bound(Super::begin(),
-                                        Super::end(),
+    auto first_empty = std::lower_bound(Base::begin(),
+                                        Base::end(),
                                         Element(LOR(), 0, Pixel(), 0),
                                         SortByPixelNPositionNLORLeavingEmpty());
     this->resize(first_empty - this->begin());
@@ -305,8 +305,8 @@ class SparseMatrix
     S* pixels = new S[n_pixels_in_row_ * n_pixels_in_row_]();
     if (lor.first != lor.second) {
       sort_by_lor();
-      for (auto it = std::lower_bound(Super::begin(),
-                                      Super::end(),
+      for (auto it = std::lower_bound(Base::begin(),
+                                      Base::end(),
                                       Element(lor, position, Pixel(), 0),
                                       SortByLORNPosition());
            it->lor == lor && (position < 0 || position == it->position);
@@ -356,23 +356,21 @@ class SparseMatrix
 
   void sort_by_lor() {
     if (n_tof_positions_ > 1) {
-      std::sort(Super::begin(), Super::end(), SortByLORNPosition());
+      std::sort(Base::begin(), Base::end(), SortByLORNPosition());
     } else {
-      std::sort(Super::begin(), Super::end(), SortByLOR());
+      std::sort(Base::begin(), Base::end(), SortByLOR());
     }
   }
-  void sort_by_pixel() {
-    std::sort(Super::begin(), Super::end(), SortByPixel());
-  }
+  void sort_by_pixel() { std::sort(Base::begin(), Base::end(), SortByPixel()); }
   void sort_by_lor_n_pixel() {
-    std::sort(Super::begin(), Super::end(), SortByLORNPositionNPixel());
+    std::sort(Base::begin(), Base::end(), SortByLORNPositionNPixel());
   }
   void sort_by_pixel_n_lor() {
-    std::sort(Super::begin(), Super::end(), SortByPixelNPositionNLOR());
+    std::sort(Base::begin(), Base::end(), SortByPixelNPositionNLOR());
   }
   void sort_by_pixel_n_lor_leaving_empty() {
     std::sort(
-        Super::begin(), Super::end(), SortByPixelNPositionNLORLeavingEmpty());
+        Base::begin(), Base::end(), SortByPixelNPositionNLORLeavingEmpty());
   }
 
   SparseMatrix to_full() {

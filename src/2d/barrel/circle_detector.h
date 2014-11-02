@@ -12,18 +12,17 @@ namespace Barrel {
 template <typename FType = double> class CircleDetector : Circle<FType> {
  public:
   typedef FType F;
-  typedef Circle<F> Super;
+  typedef Circle<F> Base;
   typedef F Angle;
   typedef PET2D::Point<F> Point;
   typedef util::array<2, Point> Intersections;
-  typedef typename Super::Event Event;
+  typedef typename Base::Event Event;
 
   CircleDetector(F radius)
       : Circle<F>(radius), center(), svg_class("detector") {}
 
   // this is for compatibility with square detector
-  CircleDetector(F w, F h, F d)
-      : Super(w / 2), center(), svg_class("detector") {
+  CircleDetector(F w, F h, F d) : Base(w / 2), center(), svg_class("detector") {
     (void)d;  // unused
     if (w != h)
       throw("circle detector height and width must be equal");
@@ -31,7 +30,7 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
 
   static F default_height_for_width(const F w) { return w; }
 
-  CircleDetector(F radius, Point center) : Super(radius), center(center) {}
+  CircleDetector(F radius, Point center) : Base(radius), center(center) {}
 
   CircleDetector& rotate(Angle phi) {
     center.rotate(phi);
@@ -47,7 +46,7 @@ template <typename FType = double> class CircleDetector : Circle<FType> {
 
   Point center;
 
-  Intersections intersections(typename Super::Event e) {
+  Intersections intersections(typename Base::Event e) {
     auto intersections = this->secant(e - center);
     for (auto& p : intersections) {
       p += center;

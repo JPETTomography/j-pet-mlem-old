@@ -12,7 +12,7 @@ template <typename PixelType,
           typename SType = int,
           typename HitType = int>
 class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
-  typedef TriangularPixelMap<PixelType, SType, HitType> Super;
+  typedef TriangularPixelMap<PixelType, SType, HitType> Base;
 
  public:
   typedef PixelType Pixel;
@@ -26,7 +26,7 @@ class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
          S n_detectors,         ///< number of detectors stored in the matrix
          S n_tof_positions = 1  ///< number of TOF positions (1 for no TOF)
          )
-      : Super(n_pixels_in_row),
+      : Base(n_pixels_in_row),
         n_detectors_(n_detectors),
         n_tof_positions_(n_tof_positions),
         end_lor_(LOR::end_for_detectors(n_detectors)),
