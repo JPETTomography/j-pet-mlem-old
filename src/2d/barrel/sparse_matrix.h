@@ -5,16 +5,6 @@
 #include <vector>
 #include <cstdint>
 
-#define fourcc(str, sym) static const uint32_t sym = (*(int*)(str))
-
-// binary serialization                        //  pixels detectors triangular
-fourcc("PETt", MAGIC_VERSION_1);               //                       X
-fourcc("PETs", MAGIC_VERSION_2);               //     X                 X
-fourcc("PETp", MAGIC_VERSION_TRIANGULAR);      //     X        X        X
-fourcc("PETP", MAGIC_VERSION_FULL);            //     X        X
-fourcc("TOFp", MAGIC_VERSION_TOF_TRIANGULAR);  //     X        X        X
-fourcc("TOFP", MAGIC_VERSION_TOF_FULL);        //     X        X
-
 namespace PET2D {
 namespace Barrel {
 
@@ -41,6 +31,11 @@ struct SparseElement {
   PixelType pixel;
   HitType hits;
 };
+
+/// Builds 32-bit FourCC from "1234"_4cc
+constexpr uint32_t operator"" _4cc(const char* str, size_t) {
+  return (uint32_t)((str[3] << 24) | (str[2] << 16) | (str[1] << 8) | str[0]);
+}
 
 /// Sparse 2D barrel PET system matrix
 
@@ -89,6 +84,18 @@ class SparseMatrix
   typedef uint32_t FileInt;
   typedef uint16_t FileHalf;
 
+  enum Magic : FileInt {
+    // binary serialization                //  pixels detectors triangular
+    // clang-format off
+    VERSION_1               = "PETt"_4cc,  //                       X
+    VERSION_2               = "PETs"_4cc,  //     X                 X
+    VERSION_TRIANGULAR      = "PETp"_4cc,  //     X        X        X
+    VERSION_FULL            = "PETP"_4cc,  //     X        X
+    VERSION_TOF_TRIANGULAR  = "TOFp"_4cc,  //     X        X        X
+    VERSION_TOF_FULL        = "TOFP"_4cc,  //     X        X
+    // clang-format on
+  };
+
   SparseMatrix(S n_pixels_in_row,
                S n_detectors,
                S n_emissions,
@@ -118,18 +125,18 @@ class SparseMatrix
   SparseMatrix(util::ibstream& in) {
     FileInt in_magic;
     in >> in_magic;
-    if (in_magic != MAGIC_VERSION_TRIANGULAR &&
-        in_magic != MAGIC_VERSION_FULL &&
-        in_magic != MAGIC_VERSION_TOF_TRIANGULAR &&
-        in_magic != MAGIC_VERSION_TOF_FULL && in_magic != MAGIC_VERSION_1 &&
-        in_magic != MAGIC_VERSION_2) {
+    if (in_magic != Magic::VERSION_TRIANGULAR &&
+        in_magic != Magic::VERSION_FULL &&
+        in_magic != Magic::VERSION_TOF_TRIANGULAR &&
+        in_magic != Magic::VERSION_TOF_FULL && in_magic != Magic::VERSION_1 &&
+        in_magic != Magic::VERSION_2) {
       throw("invalid file type format");
     }
 
-    bool in_is_triangular =
-        (in_magic != MAGIC_VERSION_FULL && in_magic != MAGIC_VERSION_TOF_FULL);
-    bool in_is_tof = (in_magic == MAGIC_VERSION_TOF_TRIANGULAR ||
-                      in_magic == MAGIC_VERSION_TOF_FULL);
+    bool in_is_triangular = (in_magic != Magic::VERSION_FULL &&
+                             in_magic != Magic::VERSION_TOF_FULL);
+    bool in_is_tof = (in_magic == Magic::VERSION_TOF_TRIANGULAR ||
+                      in_magic == Magic::VERSION_TOF_FULL);
 
     FileInt in_n_pixels_in_row;
     in >> in_n_pixels_in_row;
@@ -232,10 +239,10 @@ class SparseMatrix
   friend util::obstream& operator<<(util::obstream& out, SparseMatrix& sm) {
     auto tof = (sm.n_tof_positions_ > 1);
     if (sm.triangular_) {
-      out << (tof ? MAGIC_VERSION_TOF_TRIANGULAR : MAGIC_VERSION_TRIANGULAR);
+      out << (tof ? Magic::VERSION_TOF_TRIANGULAR : Magic::VERSION_TRIANGULAR);
       out << static_cast<FileInt>(sm.n_pixels_in_row_ / 2);
     } else {
-      out << (tof ? MAGIC_VERSION_TOF_FULL : MAGIC_VERSION_FULL);
+      out << (tof ? Magic::VERSION_TOF_FULL : Magic::VERSION_FULL);
       out << static_cast<FileInt>(sm.n_pixels_in_row_);
     }
     out << static_cast<FileInt>(sm.n_emissions_);
