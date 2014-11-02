@@ -40,6 +40,16 @@ TEST("2d/geometry/circle/secant") {
 
     CHECK(std::min(a[0], a[1]) == 0.0_e13);
     CHECK(std::max(a[0], a[1]) == Approx(M_PI));
+
+    Circle<>::Event one(1., 1., 0.);
+    auto sone = c.secant(one);
+    CHECK(sone.size() == 1);
+    CHECK(sone[0].x == 0.);
+    CHECK(sone[0].y == 1.);
+
+    Circle<>::Event two(2., 2., 0.);
+    auto stwo = c.secant(two);
+    CHECK(stwo.size() == 0);
   }
 
   SECTION("angle-90", "90 degrees from (0, 0)") {
