@@ -109,7 +109,7 @@ template <typename D, typename FType = double> class Phantom {
     return ImageSpaceEventAngle<F>(p.y, p.x, rangle);
   }
 
-  void operator()(size_t n_emissions) {
+  void operator()(int n_emissions) {
 
     std::vector<std::vector<Event<F>>> event_list_per_thread(
         omp_get_max_threads());
@@ -131,7 +131,7 @@ template <typename D, typename FType = double> class Phantom {
 #if _OPENMP
 #pragma omp for schedule(static)
 #endif
-    for (size_t emission = 0; emission < n_emissions; ++emission) {
+    for (int emission = 0; emission < n_emissions; ++emission) {
 
       auto event = gen_event(rng_list[omp_get_thread_num()]);
 
