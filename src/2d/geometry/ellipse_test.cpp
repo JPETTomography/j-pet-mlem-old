@@ -17,12 +17,12 @@ TEST_CASE("2d/ellipse/elliptical_region") {
   }
 
   SECTION("contains") {
-    REQUIRE(true == /***/ s1.contains(Point<>(1, 1)));
-    REQUIRE(true == /***/ s1.contains(Point<>(1.563, -0.8545)));
-    REQUIRE(false == /**/ s1.contains(Point<>(-0.677, -2.5)));
+    REQUIRE(true == /***/ s1.contains({ 1, 1 }));
+    REQUIRE(true == /***/ s1.contains({ 1.563, -0.8545 }));
+    REQUIRE(false == /**/ s1.contains({ -0.677, -2.5 }));
 
-    REQUIRE(true == /***/ s2.contains(Point<>(-0.328, 0.26)));
-    REQUIRE(true == /***/ s2.contains(Point<>(0.4371, 1.792)));
-    REQUIRE(false == /**/ s2.contains(Point<>(1, 1)));
+    REQUIRE(true == /***/ s2.contains({ -0.328, 0.26 }));
+    REQUIRE(true == /***/ s2.contains({ 0.4371, 1.792 }));
+    REQUIRE(false == /**/ s2.contains({ 1, 1 }));
   }
 }
