@@ -20,18 +20,20 @@ template <typename FType = double> class Detector {
   typedef PET2D::Pixel<> Pixel;
   typedef PET2D::Point<F> Point;
 
-  Detector(F radius,
-           F scintilator_length,
-           int n_y_pixels,
-           int n_z_pixels,
-           F pixel_height,  // y direction
-           F pixel_width,   // z direction
-           F sigma_z,
-           F sigma_dl,
-           F center_y = 0,
-           F center_z = 0)
+  /// Creates strip-detector with given parameters.
+  Detector(F radius,               //< radius of strip-detector along y-axis
+           F scintillator_length,  //< lenght of strip along z-axis
+           int n_y_pixels,         //< number of pixels along y-axis
+           int n_z_pixels,         //< number of pixels along z-axis
+           F pixel_height,         //< pixel size along y-axis
+           F pixel_width,          //< pixel size along z-axis
+           F sigma_z,              //< sigma z
+           F sigma_dl,             //< sigma dl
+           F center_y = 0,         //< center of detector y coordinate
+           F center_z = 0          //< center of detector z coordinate
+           )
       : radius(radius),
-        scintillator_length(scintilator_length),
+        scintillator_length(scintillator_length),
         n_y_pixels(n_y_pixels),
         n_z_pixels(n_z_pixels),
         total_n_pixels(n_y_pixels * n_z_pixels),
@@ -47,11 +49,33 @@ template <typename FType = double> class Detector {
         tl_z(center_z - size_z / 2),
         tl_y_half_h(tl_y - pixel_height / 2),
         tl_z_half_w(tl_z + pixel_width / 2),
-        half_scintilator_length(scintilator_length / 2) {}
+        half_scintillator_length(scintillator_length / 2) {}
 
 #ifndef __CUDACC__
-  template <typename F_OTHER>
-  Detector(const Detector<F_OTHER>& other)
+  /// Creates strip-detector determining pixel size from given detector
+  /// dimensions and number of pixels.
+  Detector(F radius,               //< radius of strip-detector along y-axis
+           F scintillator_length,  //< lenght of strip along z-axis
+           int n_y_pixels,         //< number of pixels along y-axis
+           int n_z_pixels,         //< number of pixels along z-axis
+           F sigma_z,              //< sigma z
+           F sigma_dl              //< sigma dl
+           )
+      : Detector(radius,
+                 scintillator_length,
+                 n_y_pixels,
+                 n_z_pixels,
+                 2 * radius / n_y_pixels,
+                 scintillator_length / n_z_pixels,
+                 sigma_z,
+                 sigma_dl,
+                 0,
+                 0) {}
+
+  /// Copy-construct strip-detector from other detector using different float
+  /// representation.
+  template <typename OtherFType>
+  Detector(const Detector<OtherFType>& other)
       : Detector(other.radius,
                  other.scintillator_length,
                  other.n_y_pixels,
@@ -63,6 +87,8 @@ template <typename FType = double> class Detector {
                  other.center_y,
                  other.center_z) {}
 #endif
+
+  /// Convert image space event tangent to projection space.
   Event<F> to_projection_space_tan(
       const ImageSpaceEventTan<F>& is_event) const {
     F z_u = is_event.z + (radius - is_event.y) * is_event.tan;
@@ -71,35 +97,40 @@ template <typename FType = double> class Detector {
     return Event<F>(z_u, z_d, dl);
   }
 
+  /// Convert image space event angle to projection space.
   Event<F> to_projection_space_angle(
       const ImageSpaceEventAngle<F>& is_ea) const {
     return to_projection_space_tan(is_ea.to_tan());
   }
 
+  /// Convert project space event to image space event tangent.
   ImageSpaceEventTan<F> from_projection_space_tan(const Event<F>& event) const {
     F tan, y, z;
     event.transform(radius, tan, y, z);
     return ImageSpaceEventTan<F>(y, z, tan);
   }
 
+  /// Convert project space event to image space event angle.
   ImageSpaceEventAngle<F> from_projection_space_angle(
       const Event<F>& event) const {
     return from_projection_space_tan(event).to_angle();
   }
 
+  /// Returns pixel center point for given pixel.
   _ Point pixel_center(Pixel p) const {
     return Point(tl_z_half_w + p.x * pixel_width,
                  tl_y_half_h - p.y * pixel_height);
   }
 
+  /// Returns pixel at given point.
   _ Pixel pixel_at(Point p) const {
-    return Pixel((p.x - tl_z_half_w) / pixel_width,
-                 (tl_y_half_h - p.y) / pixel_height);
+    return Pixel((p.x - tl_z) / pixel_width, (tl_y - p.y) / pixel_height);
   }
 
+  /// Returns sensitiviy of detector at given point.
   _ F sensitivity(Point p) const {
-    F L_plus = half_scintilator_length + p.x;
-    F L_minus = half_scintilator_length - p.x;
+    F L_plus = half_scintillator_length + p.x;
+    F L_minus = half_scintillator_length - p.x;
     F R_plus = radius + p.y;
     F R_minus = radius - p.y;
 
@@ -123,6 +154,7 @@ template <typename FType = double> class Detector {
             compat::atan(compat::max(-L_plus / R_minus, -L_minus / R_plus)));
   }
 
+  /// Returns sensitivity approximation at given pixel.
   _ F pixel_sensitivity(Pixel p) const {
 
     Point point = this->pixel_center(p);
@@ -190,7 +222,7 @@ template <typename FType = double> class Detector {
   const F tl_z_half_w;
 
  private:
-  const F half_scintilator_length;
+  const F half_scintillator_length;
 };
 }  // Strip
 }  // PET2D
