@@ -9,7 +9,7 @@ namespace Barrel {
 /// Line of Response
 template <typename SType = int> class LOR : public std::pair<SType, SType> {
  public:
-  typedef SType S;
+  using S = SType;
 
   LOR() : std::pair<S, S>(static_cast<S>(0), static_cast<S>(0)) {}
 

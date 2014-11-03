@@ -10,9 +10,9 @@ namespace PET2D {
 
 /// 2D point with given coordinates
 template <typename FType = double, typename SType = int> struct Point {
-  typedef FType F;
-  typedef SType S;
-  typedef PET2D::Pixel<S> Pixel;
+  using F = FType;
+  using S = SType;
+  using Pixel = PET2D::Pixel<S>;
 
   _ Point() : x(0), y(0) {}
   _ Point(F x, F y) : x(x), y(y) {}
@@ -86,9 +86,9 @@ template <typename FType = double, typename SType = int> struct Point {
 /// Single point source
 template <typename FType = double, typename SType = int>
 struct PointSource : public Point<FType, SType> {
-  typedef FType F;
-  typedef SType S;
-  typedef PET2D::Point<F, S> Point;
+  using F = FType;
+  using S = SType;
+  using Point = PET2D::Point<F, S>;
 
   const F intensity;
 

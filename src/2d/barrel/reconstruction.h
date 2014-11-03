@@ -16,19 +16,19 @@ namespace Barrel {
 /// 2D barrel PET reconstruction
 template <typename FType = double, typename SType = int> class Reconstruction {
  public:
-  typedef FType F;
-  typedef SType S;
-  typedef PET2D::Pixel<S> Pixel;
-  typedef Barrel::LOR<S> LOR;
+  using F = FType;
+  using S = SType;
+  using Pixel = PET2D::Pixel<S>;
+  using LOR = Barrel::LOR<S>;
   /// Input element for reconstruction
   typedef struct {
     LOR lor;
     S position;
     S mean;
   } Mean;
-  typedef std::vector<Mean> Means;
-  typedef std::vector<F> Output;
-  typedef SparseMatrix<Pixel, LOR> Matrix;
+  using Means = std::vector<Mean>;
+  using Output = std::vector<F>;
+  using Matrix = SparseMatrix<Pixel, LOR>;
 
   Reconstruction(S n_iterations,
                  Matrix& matrix,

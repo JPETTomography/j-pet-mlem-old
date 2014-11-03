@@ -40,10 +40,10 @@ using namespace PET2D;
 using namespace PET2D::Barrel;
 
 // all available detector shapes
-typedef DetectorRing<SquareDetector<>> SquareDetectorRing;
-typedef DetectorRing<CircleDetector<>> CircleDetectorRing;
-typedef DetectorRing<TriangleDetector<>> TriangleDetectorRing;
-typedef DetectorRing<PolygonalDetector<6>> HexagonalDetectorRing;
+using SquareDetectorRing = DetectorRing<SquareDetector<>>;
+using CircleDetectorRing = DetectorRing<CircleDetector<>>;
+using TriangleDetectorRing = DetectorRing<TriangleDetector<>>;
+using HexagonalDetectorRing = DetectorRing<PolygonalDetector<6>>;
 
 template <typename DetectorRing, typename Model>
 SparseMatrix<Pixel<>, LOR<>> run_cpu_matrix(cmdline::parser& cl,
@@ -348,7 +348,7 @@ SparseMatrix<Pixel<>, LOR<>> run_cpu_matrix(cmdline::parser& cl,
     n_tof_positions = detector_ring.n_positions(tof_step, max_bias);
   }
 
-  typedef MatrixPixelMajor<Pixel<>, LOR<>> ComputeMatrix;
+  using ComputeMatrix = MatrixPixelMajor<Pixel<>, LOR<>>;
   ComputeMatrix::SparseMatrix sparse_matrix(
       n_pixels, n_detectors, n_tof_positions);
 

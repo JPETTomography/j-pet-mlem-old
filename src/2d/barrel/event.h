@@ -8,8 +8,8 @@ namespace Barrel {
 
 /// Model for 2D barrel PET event
 template <typename FType = double> struct Event {
-  typedef FType F;
-  typedef PET2D::Point<F> Point;
+  using F = FType;
+  using Point = PET2D::Point<F>;
 
   Event(F x, F y, F phi) : x(x), y(y), phi(phi) {
     // get line equation coefficients

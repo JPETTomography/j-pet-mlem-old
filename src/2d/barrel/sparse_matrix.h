@@ -73,20 +73,20 @@ template <typename PixelType,
           typename HitType = int>
 class SparseMatrix
     : public std::vector<SparseElement<LORType, SType, PixelType, HitType>> {
-  typedef std::vector<SparseElement<LORType, SType, PixelType, HitType>> Base;
+  using Base = std::vector<SparseElement<LORType, SType, PixelType, HitType>>;
 
  public:
-  typedef PixelType Pixel;
-  typedef LORType LOR;
-  typedef SType S;
-  typedef typename std::make_signed<S>::type SS;
-  typedef HitType Hit;
-  typedef SparseElement<LOR, SType, Pixel, Hit> Element;
+  using Pixel = PixelType;
+  using LOR = LORType;
+  using S = SType;
+  using SS = typename std::make_signed<S>::type;
+  using Hit = HitType;
+  using Element = SparseElement<LOR, SType, Pixel, Hit>;
 
   // file representation types, size independent
-  typedef uint8_t BitmapPixel;
-  typedef uint32_t FileInt;
-  typedef uint16_t FileHalf;
+  using BitmapPixel = uint8_t;
+  using FileInt = uint32_t;
+  using FileHalf = uint16_t;
 
   enum Magic : FileInt {
     // binary serialization                //  pixels detectors triangular

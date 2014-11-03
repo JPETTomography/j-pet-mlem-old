@@ -28,16 +28,16 @@ template <typename PixelType,
           typename SType = int,
           typename HitType = int>
 class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
-  typedef Matrix<PixelType, LORType, SType, HitType> Base;
+  using Base = Matrix<PixelType, LORType, SType, HitType>;
 
  public:
-  typedef PixelType Pixel;
-  typedef LORType LOR;
-  typedef SType S;
-  typedef HitType Hit;
-  typedef typename std::make_signed<S>::type SS;
-  typedef typename Base::SparseMatrix SparseMatrix;
-  typedef typename SparseMatrix::Element SparseElement;
+  using Pixel = PixelType;
+  using LOR = LORType;
+  using S = SType;
+  using Hit = HitType;
+  using SS = typename std::make_signed<S>::type;
+  using SparseMatrix = typename Base::SparseMatrix;
+  using SparseElement = typename SparseMatrix::Element;
 
   MatrixPixelMajor(S n_pixels_in_row, S n_detectors, S n_tof_positions = 1)
       : Base(n_pixels_in_row, n_detectors, n_tof_positions),

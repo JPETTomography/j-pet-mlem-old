@@ -18,15 +18,15 @@ namespace Barrel {
 template <typename DetectorType = SquareDetector<double>, typename SType = int>
 class CompoundDetector : public std::vector<DetectorType> {
  public:
-  typedef DetectorType Detector;
-  typedef SType S;
-  typedef typename Detector::F F;
-  typedef Barrel::LOR<S> LOR;
-  typedef PET2D::Pixel<S> Pixel;
-  typedef PET2D::Point<F> Point;
-  typedef Barrel::Event<F> Event;
-  typedef std::vector<Detector> Base;
-  typedef Barrel::CircleDetector<F> CircleDetector;
+  using Detector = DetectorType;
+  using S = SType;
+  using F = typename Detector::F;
+  using LOR = Barrel::LOR<S>;
+  using Pixel = PET2D::Pixel<S>;
+  using Point = PET2D::Point<F>;
+  using Event = Barrel::Event<F>;
+  using Base = std::vector<Detector>;
+  using CircleDetector = Barrel::CircleDetector<F>;
 
   /// Tries to detect given event.
 

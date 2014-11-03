@@ -10,10 +10,10 @@ namespace Barrel {
 template <std::size_t NVertices, typename FType = double>
 class PolygonalDetector : public Polygon<NVertices, FType> {
  public:
-  typedef FType F;
-  typedef F Angle;
-  typedef typename Polygon<NVertices, F>::Point Point;
-  typedef Barrel::CircleDetector<F> CircleDetector;
+  using F = FType;
+  using Angle = F;
+  using Point = typename Polygon<NVertices, F>::Point;
+  using CircleDetector = Barrel::CircleDetector<F>;
 
   PolygonalDetector(F w, F h, F d = F()) {
     (void)h, (void)d;  // unused

@@ -13,13 +13,13 @@ template <typename DetectorRingType,
           typename FType = double,
           typename SType = int>
 class MonteCarlo {
-  typedef DetectorRingType DetectorRing;
-  typedef typename DetectorRing::Event Event;
-  typedef MatrixType Matrix;
-  typedef FType F;
-  typedef SType S;
-  typedef typename std::make_signed<S>::type SS;
-  typedef typename Matrix::LOR LOR;
+  using DetectorRing = DetectorRingType;
+  using Event = typename DetectorRing::Event;
+  using Matrix = MatrixType;
+  using F = FType;
+  using S = SType;
+  using SS = typename std::make_signed<S>::type;
+  using LOR = typename Matrix::LOR;
 
  public:
   MonteCarlo(DetectorRing& detector_ring,

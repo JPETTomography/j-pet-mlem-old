@@ -23,7 +23,7 @@ template <typename F> int sgn(F val) { return (0 < val) - (val < 0); }
 
 /// Virtual phantom region made of ellipse and intensity
 template <typename FType> struct PhantomRegion {
-  typedef FType F;
+  using F = FType;
 
   PhantomRegion(const Ellipse<F>& ellipse, F intensity)
       : shape(ellipse), intensity(intensity), weight(intensity * shape.area) {}
@@ -37,9 +37,9 @@ template <typename FType> struct PhantomRegion {
 
 /// Virtual phantom made of elliptical regions
 template <typename D, typename FType = double> class Phantom {
-  typedef FType F;
-  typedef PET2D::Pixel<> Pixel;
-  typedef std::minstd_rand0 rng;
+  using F = FType;
+  using Pixel = PET2D::Pixel<>;
+  using rng = std::minstd_rand0;
 
  private:
   D detector;

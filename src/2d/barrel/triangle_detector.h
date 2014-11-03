@@ -9,9 +9,9 @@ namespace Barrel {
 template <typename FType = double>
 class TriangleDetector : public PolygonalDetector<3, FType> {
  public:
-  typedef FType F;
-  typedef F Angle;
-  typedef typename Polygon<3, F>::Point Point;
+  using F = FType;
+  using Angle = F;
+  using Point = typename Polygon<3, F>::Point;
 
   TriangleDetector(F w, F h, F d = F()) {
     if (d > F()) {

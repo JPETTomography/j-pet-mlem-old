@@ -8,7 +8,7 @@ namespace Barrel {
 /// Model which always produces a decay
 template <typename FType = double> class AlwaysAccept {
  public:
-  typedef FType F;
+  using F = FType;
 
   AlwaysAccept() {}
   template <class RandomGenerator> bool operator()(RandomGenerator&, F) {
@@ -33,7 +33,7 @@ template <typename FType = double> class AlwaysAccept {
 
 template <typename FType = double> class ScintilatorAccept {
  public:
-  typedef FType F;
+  using F = FType;
 
   ScintilatorAccept(F scale)
       : one_dis(static_cast<F>(0), static_cast<F>(1)),

@@ -9,9 +9,9 @@ namespace PET2D {
 
 /// Unanchored ellipse with given point and axes
 template <typename FType = double, typename SType = int> struct Ellipse {
-  typedef FType F;
-  typedef SType S;
-  typedef PET2D::Point<F, S> Point;
+  using F = FType;
+  using S = SType;
+  using Point = PET2D::Point<F, S>;
 
   Ellipse(F x, F y, F a, F b, F angle)
       : Ellipse(x, y, a, b, angle, compat::sin(angle), compat::cos(angle)) {}
@@ -56,10 +56,10 @@ template <typename FType = double, typename SType = int> struct Ellipse {
 /// Elliptical emmission source
 template <typename FType = double, typename SType = int>
 struct EllipticalSource : public Ellipse<FType> {
-  typedef FType F;
-  typedef SType S;
-  typedef PET2D::Ellipse<F, S> Ellipse;
-  typedef PET2D::Point<F, S> Point;
+  using F = FType;
+  using S = SType;
+  using Ellipse = PET2D::Ellipse<F, S>;
+  using Point = PET2D::Point<F, S>;
 
   const F intensity;
 
@@ -79,11 +79,11 @@ struct EllipticalSource : public Ellipse<FType> {
 template <typename FType = double, typename SType = int>
 class EllipsePointGenerator {
  public:
-  typedef FType F;
-  typedef SType S;
-  typedef PET2D::Ellipse<F, S> Ellipse;
-  typedef PET2D::Point<F, S> Point;
-  typedef std::uniform_real_distribution<F> Distribution;
+  using F = FType;
+  using S = SType;
+  using Ellipse = PET2D::Ellipse<F, S>;
+  using Point = PET2D::Point<F, S>;
+  using Distribution = std::uniform_real_distribution<F>;
 
   EllipsePointGenerator(const Ellipse& ellipse)
       : ellipse(ellipse),

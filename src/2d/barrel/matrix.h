@@ -12,15 +12,15 @@ template <typename PixelType,
           typename SType = int,
           typename HitType = int>
 class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
-  typedef TriangularPixelMap<PixelType, SType, HitType> Base;
+  using Base = TriangularPixelMap<PixelType, SType, HitType>;
 
  public:
-  typedef PixelType Pixel;
-  typedef LORType LOR;
-  typedef SType S;
-  typedef typename std::make_signed<S>::type SS;
-  typedef HitType Hit;
-  typedef Barrel::SparseMatrix<PixelType, LORType, SType, HitType> SparseMatrix;
+  using Pixel = PixelType;
+  using LOR = LORType;
+  using S = SType;
+  using SS = typename std::make_signed<S>::type;
+  using Hit = HitType;
+  using SparseMatrix = Barrel::SparseMatrix<PixelType, LORType, SType, HitType>;
 
   Matrix(S n_pixels_in_row,     ///< number of pixels in each directions
          S n_detectors,         ///< number of detectors stored in the matrix

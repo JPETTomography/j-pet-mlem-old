@@ -7,7 +7,7 @@ namespace util {
 /// \c SVG file generator based on \c std::ofstream
 template <typename FType = double> class svg_ostream : public std::ofstream {
  public:
-  typedef FType F;
+  using F = FType;
 
   /// Constructs new \a SVG file at given path with provided dimensions
   svg_ostream(const std::string& fn,  ///< Path to \a SVG file

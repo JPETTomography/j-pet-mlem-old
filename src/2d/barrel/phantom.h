@@ -12,8 +12,8 @@ namespace Barrel {
 template <typename FType = double>
 class Phantom : public std::vector<EllipticalSource<FType>> {
  public:
-  typedef FType F;
-  typedef PET2D::Point<F> Point;
+  using F = FType;
+  using Point = PET2D::Point<F>;
 
   size_t n_regions() const { return this->size(); }
 
@@ -32,7 +32,7 @@ class Phantom : public std::vector<EllipticalSource<FType>> {
 template <typename FType = double>
 class PointPhantom : public std::vector<PointSource<FType>> {
  public:
-  typedef FType F;
+  using F = FType;
 
   size_t n_sources() const { return this->size(); }
 

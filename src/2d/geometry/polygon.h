@@ -14,12 +14,12 @@ namespace PET2D {
 template <std::size_t NumPoints, typename FType = double>
 class Polygon : public util::array<NumPoints, Point<FType>> {
  public:
-  typedef FType F;
-  typedef F Angle;
-  typedef PET2D::Point<F> Point;
-  typedef Barrel::Event<F> Event;
-  typedef util::array<2, Point> Intersections;
-  typedef util::svg_ostream<F> svg_ostream;
+  using F = FType;
+  using Angle = F;
+  using Point = PET2D::Point<F>;
+  using Event = Barrel::Event<F>;
+  using Intersections = util::array<2, Point>;
+  using svg_ostream = util::svg_ostream<F>;
 
   Polygon& rotate(Angle phi) {
     for (auto& p : *this) {

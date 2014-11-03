@@ -26,11 +26,11 @@ namespace Strip {
 template <typename FType = double, typename KernelType = Kernel<FType>>
 class Reconstruction {
  public:
-  typedef FType F;
-  typedef KernelType Kernel;
-  typedef Strip::Detector<FType> Detector;
-  typedef typename Detector::Pixel Pixel;
-  typedef typename Detector::Point Point;
+  using F = FType;
+  using Kernel = KernelType;
+  using Detector = Strip::Detector<FType>;
+  using Pixel = typename Detector::Pixel;
+  using Point = typename Detector::Point;
 
   Detector detector;
 

@@ -9,7 +9,7 @@ namespace Strip {
 
 /// Detector-space event
 template <typename FType = double> struct Event {
-  typedef FType F;
+  using F = FType;
   F z_u;
   F z_d;
   F dl;
@@ -38,7 +38,7 @@ template <typename FType = double> struct ImageSpaceEventTan;
 
 /// Image-space event using angle in radians
 template <typename FType = double> struct ImageSpaceEventAngle {
-  typedef FType F;
+  using F = FType;
   const F y;
   const F z;
   const F angle;
@@ -52,7 +52,7 @@ template <typename FType = double> struct ImageSpaceEventAngle {
 
 /// Image-space event using angle tangent
 template <typename FType> struct ImageSpaceEventTan {
-  typedef FType F;
+  using F = FType;
   const F y;
   const F z;
   const F tan;
@@ -66,7 +66,7 @@ template <typename FType> struct ImageSpaceEventTan {
 
 /// Describes emissions from ellipse
 template <typename FType = double> struct EllipseParameters {
-  typedef FType F;
+  using F = FType;
   F x, y, a, b;
   F angle;
   F n_emissions;

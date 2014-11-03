@@ -34,10 +34,10 @@ using namespace PET2D;
 using namespace PET2D::Barrel;
 
 // all available detector shapes
-typedef DetectorRing<SquareDetector<>> SquareDetectorRing;
-typedef DetectorRing<CircleDetector<>> CircleDetectorRing;
-typedef DetectorRing<TriangleDetector<>> TriangleDetectorRing;
-typedef DetectorRing<PolygonalDetector<6>> HexagonalDetectorRing;
+using SquareDetectorRing = DetectorRing<SquareDetector<>>;
+using CircleDetectorRing = DetectorRing<CircleDetector<>>;
+using TriangleDetectorRing = DetectorRing<TriangleDetector<>>;
+using HexagonalDetectorRing = DetectorRing<PolygonalDetector<6>>;
 
 template <typename DetectorRing, typename Model>
 void run(cmdline::parser& cl, Model& model);

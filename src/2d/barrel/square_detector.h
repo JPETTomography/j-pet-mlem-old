@@ -9,8 +9,8 @@ namespace Barrel {
 template <typename FType = double>
 class SquareDetector : public PolygonalDetector<4, FType> {
  public:
-  typedef FType F;
-  typedef typename Polygon<4, F>::Point Point;
+  using F = FType;
+  using Point = typename Polygon<4, F>::Point;
 
   SquareDetector(F w, F h, F d) {
     (void)d;  // unused

@@ -16,9 +16,9 @@ namespace Strip {
 /// Strip-detector made of two strip scintillators and pixel grid
 template <typename FType = double> class Detector {
  public:
-  typedef FType F;
-  typedef PET2D::Pixel<> Pixel;
-  typedef PET2D::Point<F> Point;
+  using F = FType;
+  using Pixel = PET2D::Pixel<>;
+  using Point = PET2D::Point<F>;
 
   /// Creates strip-detector with given parameters.
   Detector(F radius,               //< radius of strip-detector along y-axis

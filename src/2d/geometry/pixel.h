@@ -8,7 +8,7 @@ namespace PET2D {
 /// Discreete coordinates pixel
 template <typename SType = int> class Pixel {
  public:
-  typedef SType S;
+  using S = SType;
 
   _ Pixel(S x, S y) : x(x), y(y) {}
 

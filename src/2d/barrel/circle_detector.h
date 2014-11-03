@@ -11,12 +11,12 @@ namespace Barrel {
 /// Circular shape detector
 template <typename FType = double> class CircleDetector : public Circle<FType> {
  public:
-  typedef FType F;
-  typedef Circle<F> Base;
-  typedef F Angle;
-  typedef PET2D::Point<F> Point;
-  typedef util::array<2, Point> Intersections;
-  typedef typename Base::Event Event;
+  using F = FType;
+  using Base = Circle<F>;
+  using Angle = F;
+  using Point = PET2D::Point<F>;
+  using Intersections = util::array<2, Point>;
+  using Event = typename Base::Event;
 
   CircleDetector(F radius) : Circle<F>(radius), center() {}
 

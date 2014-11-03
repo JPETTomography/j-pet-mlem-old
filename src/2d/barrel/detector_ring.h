@@ -17,14 +17,14 @@ namespace Barrel {
 template <typename DetectorType = SquareDetector<double>, typename SType = int>
 class DetectorRing : public std::vector<DetectorType> {
  public:
-  typedef SType S;
-  typedef DetectorType Detector;
-  typedef typename Detector::F F;
-  typedef Barrel::LOR<S> LOR;
-  typedef PET2D::Pixel<S> Pixel;
-  typedef PET2D::Circle<F> Circle;
-  typedef PET2D::Point<F> Point;
-  typedef Barrel::Event<F> Event;
+  using S = SType;
+  using Detector = DetectorType;
+  using F = typename Detector::F;
+  using LOR = Barrel::LOR<S>;
+  using Pixel = PET2D::Pixel<S>;
+  using Circle = PET2D::Circle<F>;
+  using Point = PET2D::Point<F>;
+  using Event = Barrel::Event<F>;
 
   DetectorRing(S n_detectors,      ///< number of detectors on ring
                F radius,           ///< radius of ring

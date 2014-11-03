@@ -20,8 +20,8 @@ namespace PET2D {
 ///   This circle has only radius specified and center point lies in (0, 0).
 template <typename FType = double, typename SType = int> class Circle {
  public:
-  typedef FType F;
-  typedef SType S;
+  using F = FType;
+  using S = SType;
 
   Circle(F radius)
       : radius(radius),           // store radius
@@ -30,12 +30,12 @@ template <typename FType = double, typename SType = int> class Circle {
 
   Circle& operator=(const Circle& other) { return *(new (this) Circle(other)); }
 
-  typedef F Angle;
-  typedef PET2D::Point<F> Point;
-  typedef Barrel::Event<F> Event;
-  typedef util::array<2, Point> Secant;
-  typedef util::array<2, Angle> SecantAngles;
-  typedef util::array<2, S> SecantSections;
+  using Angle = F;
+  using Point = PET2D::Point<F>;
+  using Event = Barrel::Event<F>;
+  using Secant = util::array<2, Point>;
+  using SecantAngles = util::array<2, Angle>;
+  using SecantSections = util::array<2, S>;
 
   Secant secant(const Event& e) {
     auto cabr2 = (-(e.c * e.c) + e.a2_b2 * radius2);

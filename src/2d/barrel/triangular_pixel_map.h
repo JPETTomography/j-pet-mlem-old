@@ -11,12 +11,12 @@ namespace Barrel {
 template <typename PixelType, typename SType = int, typename HitType = int>
 class TriangularPixelMap {
  public:
-  typedef PixelType Pixel;
-  typedef SType S;
-  typedef typename std::make_signed<S>::type SS;
-  typedef HitType Hit;
-  typedef Hit* Pixels;
-  typedef uint8_t BitmapPixel;
+  using Pixel = PixelType;
+  using S = SType;
+  using SS = typename std::make_signed<S>::type;
+  using Hit = HitType;
+  using Pixels = Hit*;
+  using BitmapPixel = uint8_t;
 
   // reserve for pixel stats
   TriangularPixelMap(S n_pixels_in_row)

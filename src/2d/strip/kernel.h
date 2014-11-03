@@ -11,8 +11,8 @@ namespace Strip {
 /// Analytic approximation of emission probability
 template <typename FType = double> class Kernel {
  public:
-  typedef FType F;
-  typedef PET2D::Point<F> Point;
+  using F = FType;
+  using Point = PET2D::Point<F>;
 
  private:
   const F inv_pow_sigma_z;
