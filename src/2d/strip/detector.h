@@ -92,7 +92,7 @@ template <typename FType = double> class Detector {
                  tl_y_half_h - p.y * pixel_height);
   }
 
-  _ Pixel pixel_location(Point p) const {
+  _ Pixel pixel_at(Point p) const {
     return Pixel((p.x - tl_z_half_w) / pixel_width,
                  (tl_y_half_h - p.y) / pixel_height);
   }

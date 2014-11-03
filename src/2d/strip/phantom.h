@@ -144,11 +144,11 @@ template <typename D, typename FType = double> class Phantom {
         if (std::abs(revent.y) >= detector.radius)
           continue;
 
-        Pixel pp = detector.pixel_location(Point<F>(event.z, event.y));
+        Pixel pp = detector.pixel_at(Point<F>(event.z, event.y));
 
         if (detector.check_boundary(pp)) {
 
-          Pixel p = detector.pixel_location(Point<F>(revent.z, revent.y));
+          Pixel p = detector.pixel_at(Point<F>(revent.z, revent.y));
 
           output[p.y][p.x]++;
           output_without_errors[pp.y][pp.x]++;

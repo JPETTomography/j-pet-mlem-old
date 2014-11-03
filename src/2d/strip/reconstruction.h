@@ -199,7 +199,7 @@ class Reconstruction {
     F sec, A, B, C, bb_y, bb_z;
     kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);
 
-    Pixel center_pixel = detector.pixel_location(ellipse_center);
+    Pixel center_pixel = detector.pixel_at(ellipse_center);
 
     const int bb_half_width = n_pixels_in_line(bb_z, detector.pixel_width);
     const int bb_half_height = n_pixels_in_line(bb_y, detector.pixel_height);
@@ -268,7 +268,7 @@ class Reconstruction {
                      F z,
                      std::vector<F>& output_rho) {
 
-    Pixel center_pixel = detector.pixel_location(ellipse_center);
+    Pixel center_pixel = detector.pixel_at(ellipse_center);
 
     int y_line = 3 * detector.sigma_z / detector.pixel_width;
     int z_line = 3 * detector.sigma_dl / detector.pixel_height;

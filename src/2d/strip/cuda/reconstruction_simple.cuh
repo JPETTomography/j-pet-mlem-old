@@ -44,7 +44,7 @@ __global__ void reconstruction(Detector<F> detector,
     int z_step = 3 * (detector.sigma_z / detector.pixel_width);
 
     Point<F> ellipse_center(y, z);
-    Pixel<> center_pixel = detector.pixel_location(ellipse_center);
+    Pixel<> center_pixel = detector.pixel_at(ellipse_center);
 
     for (int iy = center_pixel.y - y_step; iy < center_pixel.y + y_step; ++iy) {
       for (int iz = center_pixel.x - z_step; iz < center_pixel.x + z_step;

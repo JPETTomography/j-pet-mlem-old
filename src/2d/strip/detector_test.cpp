@@ -11,38 +11,33 @@
 using namespace PET2D;
 using namespace PET2D::Strip;
 
-TEST("strip/detector/pixel_location") {
+TEST("strip/detector/pixel_at") {
 
-  Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  Detector<> d(500, 1000, 200, 200, 5, 5, 10, 63);
 
-  CHECK(detector.pixel_location({ 0.0, 0.0 }) == Pixel<>(100, 100));
+  CHECK(d.pixel_at({ 0.0, 0.0 }) == Pixel<>(100, 100));
 
   // test boundary points
-  CHECK(detector.pixel_location({ 500.0, -500.0 }) == Pixel<>(0, 0));
-  CHECK(detector.pixel_location({ 500.0, 500.0 }) == Pixel<>(0, 200));
-  CHECK(detector.pixel_location({ -500.0, -500.0 }) == Pixel<>(200, 0));
-  CHECK(detector.pixel_location({ -500.0, 500.0 }) == Pixel<>(200, 200));
+  CHECK(d.pixel_at({ 500.0, -500.0 }) == Pixel<>(0, 0));
+  CHECK(d.pixel_at({ 500.0, 500.0 }) == Pixel<>(0, 200));
+  CHECK(d.pixel_at({ -500.0, -500.0 }) == Pixel<>(200, 0));
+  CHECK(d.pixel_at({ -500.0, 500.0 }) == Pixel<>(200, 200));
 }
 
 TEST("strip/detector/pixel_center") {
 
-  // space->image_space  y: [R,-R] ->[0,n_pixels_y], z:[-L/2,L/2] ->
-  // [0,n_pixels_z]
-  Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  // space->image_space  y: [  R,  -R ] -> [0, n_pixels_y],
+  //                     z: [-L/2, L/2] -> [0, n_pixels_z]
+  Detector<> d(500, 1000, 200, 200, 5, 5, 10, 63);
 
   // test middle point pixel center
-  CHECK(detector.pixel_center(detector.pixel_location({ 0.0, 0.0 })) ==
-        Point<>(-2.5, 2.5));
+  CHECK(d.pixel_center(d.pixel_at({ 0.0, 0.0 })) == Point<>(-2.5, 2.5));
   // test -y,+z
-  CHECK(detector.pixel_center(detector.pixel_location({ -6.0, 3.0 })) ==
-        Point<>(-7.5, 2.5));
+  CHECK(d.pixel_center(d.pixel_at({ -6.0, 3.0 })) == Point<>(-7.5, 2.5));
   // test +y,+z
-  CHECK(detector.pixel_center(detector.pixel_location({ 6.0, 3.0 })) ==
-        Point<>(7.5, 2.5));
+  CHECK(d.pixel_center(d.pixel_at({ 6.0, 3.0 })) == Point<>(7.5, 2.5));
   // test +y,-z
-  CHECK(detector.pixel_center(detector.pixel_location({ 6.0, -3.0 })) ==
-        Point<>(7.5, -2.5));
+  CHECK(d.pixel_center(d.pixel_at({ 6.0, -3.0 })) == Point<>(7.5, -2.5));
   // test -y,-z
-  CHECK(detector.pixel_center(detector.pixel_location({ -6.0, -3.0 })) ==
-        Point<>(-7.5, -2.5));
+  CHECK(d.pixel_center(d.pixel_at({ -6.0, -3.0 })) == Point<>(-7.5, -2.5));
 }

@@ -56,7 +56,7 @@ __global__ void reconstruction(Detector<F> detector,
     kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);
 
     Point<F> ellipse_center(z, y);
-    Pixel<> center_pixel = detector.pixel_location(ellipse_center);
+    Pixel<> center_pixel = detector.pixel_at(ellipse_center);
 
     // bounding box limits for event
     const int bb_half_width = n_pixels_in_line(bb_z, detector.pixel_width);
