@@ -136,10 +136,10 @@ template <typename FType = double> class Detector {
            this->sensitivity(point - ul) / 6;   // bottom-right
   }
 
-  bool check_boundary(Pixel p) {
-
-    return ((p.x >= 0 || p.x < (this->n_z_pixels) || p.y >= 0 ||
-             p.y < (this->n_y_pixels)));
+  /// Checks if pixel is in the detector.
+  bool contains_pixel(Pixel p) {
+    return p.x >= 0 && p.x < (this->n_z_pixels) &&  //
+           p.y >= 0 && p.y < (this->n_y_pixels);
   }
 
 #if !__CUDACC__

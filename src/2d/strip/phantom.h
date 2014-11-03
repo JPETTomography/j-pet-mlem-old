@@ -146,7 +146,7 @@ template <typename D, typename FType = double> class Phantom {
 
         Pixel pp = detector.pixel_at(Point<F>(event.z, event.y));
 
-        if (detector.check_boundary(pp)) {
+        if (detector.contains_pixel(pp)) {
 
           Pixel p = detector.pixel_at(Point<F>(revent.z, revent.y));
 
