@@ -15,7 +15,7 @@ namespace util {
 template <std::size_t MaxSize, typename T> class array {
  public:
 #if !_MSC_VER
-  array() : s(0), v() {}
+  array() : s(0) {}
 #endif
 #if __INTEL_COMPILER
   template <typename... Ts> array(Ts... e) : s(sizeof...(e)), v{ e... } {}

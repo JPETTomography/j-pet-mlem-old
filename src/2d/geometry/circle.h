@@ -28,7 +28,8 @@ template <typename FType = double, typename SType = int> class Circle {
         radius2(radius * radius)  // store precomputed square
   {}
 
-  Circle& operator=(const Circle& other) { return *(new (this) Circle(other)); }
+  // allows copying whole object
+  Circle& operator=(const Circle& other) { return *new (this) Circle(other); }
 
   using Angle = F;
   using Point = PET2D::Point<F>;

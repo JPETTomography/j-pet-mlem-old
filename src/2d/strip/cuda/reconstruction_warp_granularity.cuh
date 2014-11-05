@@ -23,6 +23,10 @@ __global__ void reconstruction(Detector<F> detector,
                                F* output_rho,
                                const int n_blocks,
                                const int n_threads_per_block) {
+  using Point = PET2D::Point<F>;
+  using Pixel = PET2D::Pixel<>;
+  using Event = Strip::Event<F>;
+
   const int n_warps_per_block = n_threads_per_block / WARP_SIZE;
   const int n_warps = n_blocks * n_warps_per_block;
   const int max_events_per_warp = (n_events + n_warps - 1) / n_warps;
@@ -43,9 +47,9 @@ __global__ void reconstruction(Detector<F> detector,
     if (event_index >= n_events)
       break;
 
-    Event<F> event(events_z_u[event_index],
-                   events_z_d[event_index],
-                   events_dl[event_index]);
+    Event event(events_z_u[event_index],
+                events_z_d[event_index],
+                events_dl[event_index]);
 
     F denominator = 0;
 
@@ -55,26 +59,25 @@ __global__ void reconstruction(Detector<F> detector,
     F sec, A, B, C, bb_y, bb_z;
     kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);
 
-    Point<F> ellipse_center(z, y);
-    Pixel<> center_pixel = detector.pixel_at(ellipse_center);
+    Point ellipse_center(z, y);
+    Pixel center_pixel = detector.pixel_at(ellipse_center);
 
     // bounding box limits for event
     const int bb_half_width = n_pixels_in_line(bb_z, detector.pixel_width);
     const int bb_half_height = n_pixels_in_line(bb_y, detector.pixel_height);
-    Pixel<> top_left(center_pixel.x - bb_half_width,
-                     center_pixel.y - bb_half_height);
-    Pixel<> bottom_right(center_pixel.x + bb_half_width,
-                         center_pixel.y + bb_half_height);
-    Pixel<> detector_top_left(0, 0);
-    Pixel<> detector_bottom_right(detector.n_z_pixels - 1,
-                                  detector.n_y_pixels - 1);
+    Pixel bb_tl(center_pixel.x - bb_half_width,
+                center_pixel.y - bb_half_height);
+    Pixel bb_br(center_pixel.x + bb_half_width,
+                center_pixel.y + bb_half_height);
+    Pixel detector_tl(0, 0);
+    Pixel detector_br(detector.n_z_pixels - 1, detector.n_y_pixels - 1);
 
     // check boundary conditions
-    top_left.clamp(detector_top_left, detector_bottom_right);
-    bottom_right.clamp(detector_top_left, detector_bottom_right);
+    bb_tl.clamp(detector_tl, detector_br);
+    bb_br.clamp(detector_tl, detector_br);
 
-    const int bb_width = bottom_right.x - top_left.x;
-    const int bb_height = bottom_right.y - top_left.y;
+    const int bb_width = bb_br.x - bb_tl.x;
+    const int bb_height = bb_br.y - bb_tl.y;
     const int bb_size = bb_width * bb_height;
     F inv_bb_width = F(1) / bb_width;
 
@@ -85,13 +88,13 @@ __global__ void reconstruction(Detector<F> detector,
 
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
       int index;
-      Pixel<> pixel =
-          warp_space_pixel(offset, top_left, bb_width, inv_bb_width, index);
+      Pixel pixel =
+          warp_space_pixel(offset, bb_tl, bb_width, inv_bb_width, index);
 
       if (index >= bb_size)
         break;
 
-      Point<F> point = detector.pixel_center(pixel);
+      Point point = detector.pixel_center(pixel);
 
       if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
         point -= ellipse_center;
@@ -130,13 +133,13 @@ __global__ void reconstruction(Detector<F> detector,
 #else
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
       int index;
-      Pixel<> pixel =
+      Pixel pixel =
           warp_space_pixel(offset, top_left, bb_width, inv_bb_width, index);
 
       if (index >= bb_size)
         break;
 
-      Point<F> point = detector.pixel_center(pixel);
+      Point point = detector.pixel_center(pixel);
 
       if (detector.in_ellipse(A, B, C, ellipse_center, point)) {
         point -= ellipse_center;

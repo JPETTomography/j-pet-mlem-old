@@ -54,7 +54,7 @@ class CompoundDetector : public std::vector<DetectorType> {
 
   void push_back(const Detector& detector) {
     Base::push_back(detector);
-    c_detectors.push_back(this->back().circumscribe_center());
+    c_detectors.push_back(this->back().circumscribe_circle());
   }
 
   template <class... Args> void emplace_back(Args&&... args) {

@@ -37,7 +37,7 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
 
   /// Returns center point of the polygon
   Point center() const {
-    Point center_point;
+    Point center_point(0, 0);
     for (auto& p : *this) {
       center_point += p;
     }

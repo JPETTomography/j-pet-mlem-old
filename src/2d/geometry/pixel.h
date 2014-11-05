@@ -11,9 +11,7 @@ template <typename SType = int> class Pixel {
   using S = SType;
 
   _ Pixel(S x, S y) : x(x), y(y) {}
-
-  // default constructor
-  _ Pixel() : x(0), y(0) {}
+  _ Pixel() = default;
 
   S x, y;
 

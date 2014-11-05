@@ -20,6 +20,10 @@ __global__ void reconstruction(Detector<F> detector,
                                F* output_rho,
                                const int n_blocks,
                                const int n_threads_per_block) {
+  using Point = PET2D::Point<F>;
+  using Pixel = PET2D::Pixel<>;
+  using Event = Strip::Event<F>;
+
   // mark variables used
   (void)(events_dl);
 
@@ -43,15 +47,15 @@ __global__ void reconstruction(Detector<F> detector,
     int y_step = 3 * (detector.sigma_dl / detector.pixel_height);
     int z_step = 3 * (detector.sigma_z / detector.pixel_width);
 
-    Point<F> ellipse_center(y, z);
-    Pixel<> center_pixel = detector.pixel_at(ellipse_center);
+    Point ellipse_center(y, z);
+    Pixel center_pixel = detector.pixel_at(ellipse_center);
 
     for (int iy = center_pixel.y - y_step; iy < center_pixel.y + y_step; ++iy) {
       for (int iz = center_pixel.x - z_step; iz < center_pixel.x + z_step;
            ++iz) {
-        Pixel<> pixel(iz, iy);
-        Point<F> point = detector.pixel_center(pixel);
-        Kernel<F> kernel;
+        Pixel pixel(iz, iy);
+        Point point = detector.pixel_center(pixel);
+        Kernel kernel;
         float event_kernel =
             kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
 
@@ -64,10 +68,10 @@ __global__ void reconstruction(Detector<F> detector,
     for (int iy = center_pixel.y - y_step; iy < center_pixel.y + y_step; ++iy) {
       for (int iz = center_pixel.x - z_step; iz < center_pixel.x + z_step;
            ++iz) {
-        Pixel<> pixel(iz, iy);
-        Point<F> point = detector.pixel_center(pixel);
+        Pixel pixel(iz, iy);
+        Point point = detector.pixel_center(pixel);
 
-        Kernel<F> kernel;
+        Kernel kernel;
         F event_kernel =
             kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
 

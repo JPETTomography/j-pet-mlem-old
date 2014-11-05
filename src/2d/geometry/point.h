@@ -14,8 +14,8 @@ template <typename FType = double, typename SType = int> struct Point {
   using S = SType;
   using Pixel = PET2D::Pixel<S>;
 
-  _ Point() : x(0), y(0) {}
   _ Point(F x, F y) : x(x), y(y) {}
+  _ Point() = default;
 
   F x, y;
 

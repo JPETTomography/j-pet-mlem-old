@@ -21,6 +21,10 @@ __global__ void reconstruction(Detector<F> detector,
                                F* output_rho,
                                const int n_blocks,
                                const int n_threads_per_block) {
+  using Point = PET2D::Point<F>;
+  using Pixel = PET2D::Pixel<>;
+  using Event = Strip::Event<F>;
+
   Kernel<F> kernel(detector.sigma_z, detector.sigma_dl);
 
   int n_threads = n_blocks * n_threads_per_block;
@@ -35,9 +39,9 @@ __global__ void reconstruction(Detector<F> detector,
       break;
     }
 
-    Event<F> event(events_z_u[event_index],
-                   events_z_d[event_index],
-                   events_dl[event_index]);
+    Event event(events_z_u[event_index],
+                events_z_d[event_index],
+                events_dl[event_index]);
 
     F tan, y, z;
     event.transform(detector.radius, tan, y, z);
@@ -45,23 +49,23 @@ __global__ void reconstruction(Detector<F> detector,
     F sec, A, B, C, bb_y, bb_z;
     kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);
 
-    Point<F> ellipse_center(z, y);
-    Pixel<> center_pixel = detector.pixel_at(ellipse_center);
+    Point ellipse_center(z, y);
+    Pixel center_pixel = detector.pixel_at(ellipse_center);
 
     // bounding box limits for event
     const int bb_half_width = n_pixels_in_line(bb_z, detector.pixel_width);
     const int bb_half_height = n_pixels_in_line(bb_y, detector.pixel_height);
-    const Pixel<> tl(center_pixel.x - bb_half_width,
-                     center_pixel.y - bb_half_height);
-    const Pixel<> br(center_pixel.x + bb_half_width,
-                     center_pixel.y + bb_half_height);
+    const Pixel bb_tl(center_pixel.x - bb_half_width,
+                      center_pixel.y - bb_half_height);
+    const Pixel bb_br(center_pixel.x + bb_half_width,
+                      center_pixel.y + bb_half_height);
 
     F denominator = 0;
 
-    for (int iy = tl.y; iy < br.y; ++iy) {
-      for (int iz = tl.x; iz < br.x; ++iz) {
-        Pixel<> pixel(iz, iy);
-        Point<F> point = detector.pixel_center(pixel);
+    for (int iy = bb_tl.y; iy < bb_br.y; ++iy) {
+      for (int iz = bb_tl.x; iz < bb_br.x; ++iz) {
+        Pixel pixel(iz, iy);
+        Point point = detector.pixel_center(pixel);
 
         if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
@@ -80,10 +84,10 @@ __global__ void reconstruction(Detector<F> detector,
 
     F inv_denominator = 1 / denominator;
 
-    for (int iy = tl.y; iy < br.y; ++iy) {
-      for (int iz = tl.x; iz < br.x; ++iz) {
-        Pixel<> pixel(iz, iy);
-        Point<F> point = detector.pixel_center(pixel);
+    for (int iy = bb_tl.y; iy < bb_br.y; ++iy) {
+      for (int iz = bb_tl.x; iz < bb_br.x; ++iz) {
+        Pixel pixel(iz, iy);
+        Point point = detector.pixel_center(pixel);
 
         if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
           point -= ellipse_center;
