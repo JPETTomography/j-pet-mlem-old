@@ -5,6 +5,8 @@
 #include <ctime>
 #endif
 
+#include "cuda/compat.h"
+
 namespace util {
 namespace random {
 
@@ -13,14 +15,32 @@ class tausworthe {
  public:
   typedef unsigned int result_type;
   typedef long seed_type;
+  typedef unsigned int state_type[4];
 
   /// Minimum value returned by random number generator
   static result_type min() { return 0; }
   /// Maximum value returned by random number generator
   static result_type max() { return std::numeric_limits<result_type>::max(); }
 
-  /// Created new random number generator with given seed.
-  tausworthe(seed_type a_seed = 121245) { seed(a_seed); }
+  /// Creates new random number generator with given seed.
+  tausworthe(seed_type seed = 121245) { this->seed(seed); }
+
+  /// Creates new random number generator with seed taken from given memory.
+  _ tausworthe(const state_type state) { load(state); }
+
+  /// Loads generator state
+  _ void load(const state_type state) {
+    for (int i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
+      seeds[i] = state[i];
+    }
+  }
+
+  /// Save generator state
+  _ void save(state_type& state) const {
+    for (int i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
+      state[i] = seeds[i];
+    }
+  }
 
   /// Returns random number
   result_type operator()() {
@@ -32,28 +52,26 @@ class tausworthe {
   }
 
   /// Randomizes generator with given seed value
-  void seed(seed_type a_seed) {
+  void seed(seed_type seed) {
 #if !_MSC_VER
-    srand48(a_seed);
-    for (int i = 0; i < 4; ++i) {
-      result_type r;
-      while ((r = static_cast<result_type>(lrand48())) < 128)
-        ;
-      seeds[i] = r;
-    }
+    srand48(seed);
 #else
     srand(time(NULL));
-    for (int i = 0; i < 4; ++i) {
+#endif
+    for (int i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
       result_type r;
+#if !_MSC_VER
+      while ((r = static_cast<result_type>(lrand48())) < 128)
+#else
       while ((r = static_cast<result_type>(rand())) < 128)
+#endif
         ;
       seeds[i] = r;
     }
-#endif
   }
 
  private:
-  unsigned int seeds[4];
+  state_type seeds;
 
   template <typename T> void taus_step(T& z, int S1, int S2, int S3, T M) {
     unsigned b = (((z << S1) ^ z) >> S2);
