@@ -36,6 +36,7 @@ _ float tan(const float a) { return tanf(a); }
 _ float atan(const float a) { return atanf(a); }
 _ float pow(const float a, const float b) { return powf(a, b); }
 _ float exp(const float a) { return expf(a); }
+_ float log(const float a) { return logf(a); }
 
 #else
 
@@ -57,6 +58,7 @@ template <typename F> F tan(const F a) { return std::tan(a); }
 template <typename F> F atan(const F a) { return std::atan(a); }
 template <typename F> F pow(const F a, const F b) { return std::pow(a, b); }
 template <typename F> F exp(const F a) { return std::exp(a); }
+template <typename F> F log(const F a) { return std::log(a); }
 
 #endif
 }

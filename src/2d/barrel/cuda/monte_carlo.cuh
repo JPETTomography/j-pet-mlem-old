@@ -3,7 +3,6 @@
 #include <cuda_runtime.h>
 
 #include "geometry.h"
-#include "geometry_methods.cuh"
 #include "prng.cuh"
 
 namespace PET2D {
@@ -54,7 +53,7 @@ __global__ void monte_carlo_kernel(int x,
   /// \todo FIXME: This will fail for large number of detectors, remove
   /// hardcoded number of detectors.
   if (threadIdx.x < NUMBER_OF_DETECTORS) {
-    create_detector_ring(h_detector, w_detector, radius, ring);
+    create_detector_ring(threadIdx.x, h_detector, w_detector, radius, ring);
   }
 
   __syncthreads();
@@ -64,8 +63,6 @@ __global__ void monte_carlo_kernel(int x,
   Point center;
   SecantPoints inner_secant;
   SecantPoints outer_secant;
-  int exec_inter1 = 0;
-  int exec_inter2 = 0;
 
 #if CLOCK_TEST
 
@@ -133,8 +130,7 @@ __global__ void monte_carlo_kernel(int x,
                                        detector1,
                                        hit1,
                                        seed,
-                                       depth1,
-                                       exec_inter1);
+                                       depth1);
 #if WARP_DIVERGENCE_TEST
     if (intersection_flag) {
 
@@ -162,8 +158,7 @@ __global__ void monte_carlo_kernel(int x,
                                        detector2,
                                        hit2,
                                        seed,
-                                       depth2,
-                                       exec_inter2);
+                                       depth2);
 
 #if CLOCK_TEST
     if (intersection_flag) {

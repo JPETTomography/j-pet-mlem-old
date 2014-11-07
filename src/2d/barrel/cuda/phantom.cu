@@ -7,7 +7,6 @@
 #include "config.h"
 #include "prng.cuh"
 #include "geometry.h"
-#include "geometry_methods.cuh"
 #include "monte_carlo.cuh"
 
 // FIXME: remove me

@@ -6,7 +6,6 @@
 #include "config.h"
 #include "prng.cuh"
 #include "geometry.h"
-#include "geometry_methods.cuh"
 #include "monte_carlo.cuh"
 
 #include "2d/geometry/pixel.h"
