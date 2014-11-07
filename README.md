@@ -25,7 +25,7 @@ Prerequisites
 ##### Optional
 
 * [QtCreator][qtcreator] 3.1 for project editing via `CMakeLists.txt`
-* [CUDA][cuda] 6.0 (automatically detected by `cmake`)
+* [CUDA][cuda] 7.0 (automatically detected by `cmake`)
 * [Ninja][ninja] 1.4 for faster re-builds (with `cmake -G Ninja`)
 * `libpng` headers and libraries for PNG output
 
@@ -43,6 +43,8 @@ Prerequisites
 2. `libpng` is available on *Mac OS X* with [XQuartz][xquartz] X11 server
 
 [xquartz]: http://xquartz.macosforge.org
+
+3. `CUDA` 7.0 is required to compile GPU C++11 code
 
 ### Windows build requirements
 

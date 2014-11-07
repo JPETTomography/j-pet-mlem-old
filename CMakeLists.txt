@@ -79,6 +79,10 @@ endif()
 
 # CUDA support
 find_package(CUDA)
+if(CUDA_FOUND AND CUDA_VERSION VERSION_LESS "7.0")
+  message(STATUS "Error: CUDA 7.0 or greater required for this project")
+  unset(CUDA_FOUND)
+endif()
 if(CUDA_FOUND)
   add_definitions(-DHAVE_CUDA=1)
   include_directories(${CUDA_INCLUDE_DIRS})
