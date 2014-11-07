@@ -5,31 +5,29 @@
 #include "geometry.h"
 #include "config.h"
 
-using namespace PET2D::Barrel::GPU;
+namespace PET2D {
+namespace Barrel {
+namespace GPU {
 
 __device__ void create_detector_ring(float h_detector,
                                      float w_detector,
                                      float radius,
                                      DetectorRing& test_ring) {
 
-  Detector detector_base;
+  SquareDetector detector_base;
 
-  detector_base.points[0].x =
-      (h_detector / 2.0f) + radius + (h_detector / 2.0f);
-  detector_base.points[0].y = w_detector / 2.0f;
-  detector_base.points[1].x =
-      (h_detector / 2.0f) + radius + (h_detector / 2.0f);
-  detector_base.points[1].y = -w_detector / 2.0f;
-  detector_base.points[2].x =
-      (-h_detector / 2.0f) + radius + (h_detector / 2.0f);
-  detector_base.points[2].y = -w_detector / 2.0f;
-  detector_base.points[3].x =
-      (-h_detector / 2.0) + radius + (h_detector / 2.0f);
-  detector_base.points[3].y = w_detector / 2.0f;
+  detector_base.points[0].x = (h_detector / 2) + radius + (h_detector / 2);
+  detector_base.points[0].y = w_detector / 2;
+  detector_base.points[1].x = (h_detector / 2) + radius + (h_detector / 2);
+  detector_base.points[1].y = -w_detector / 2;
+  detector_base.points[2].x = (-h_detector / 2) + radius + (h_detector / 2);
+  detector_base.points[2].y = -w_detector / 2;
+  detector_base.points[3].x = (-h_detector / 2) + radius + (h_detector / 2);
+  detector_base.points[3].y = w_detector / 2;
 
   test_ring.detector_list[threadIdx.x] = detector_base;
 
-  float angle = 2.0f * (float)M_PI * threadIdx.x / NUMBER_OF_DETECTORS;
+  float angle = 2 * (float)M_PI * threadIdx.x / NUMBER_OF_DETECTORS;
 
 #if SINGLE_PRECISION_INTRINSIC > 0
   float sin_phi = __sinf(angle);
@@ -102,7 +100,7 @@ __device__ SecantAngles secant_angles(SecantPoints& e) {
 
 __device__ int section(float angle, int n_detectors) {
   // converting angles to [0,2 Pi) interval
-  float normalised_angle = angle > 0 ? angle : 2.0f * (float)M_PI + angle;
+  float normalised_angle = angle > 0 ? angle : 2 * (float)M_PI + angle;
   return static_cast<int>(round(normalised_angle * n_detectors * 0.1591549f)) %
          (n_detectors);
 }
@@ -144,7 +142,7 @@ __device__ int intersections(float x,
 
     float v2 = a * p2_x + b * p2_y - c;
 
-    if (v2 == 0.0f) {
+    if (v2 == 0) {
       hit.p[r].x = ring.detector_list[detector_id].points[i].x;
       hit.p[r].y = ring.detector_list[detector_id].points[i].y;
 
@@ -153,7 +151,7 @@ __device__ int intersections(float x,
       if (r == 2) {
         return r;
       }
-    } else if (v1 * v2 < 0.0f) {
+    } else if (v1 * v2 < 0) {
       // calculate intersection
 
       float m = a * (p1_x - p2_x) + b * (p1_y - p2_y);
@@ -236,22 +234,25 @@ __device__ int quantize_position(float position,
                                  float step_size,
                                  float n_positions) {
   if (position < 0)
-    return n_positions / 2.0f - 1.0f -
+    return n_positions / 2 - 1.0f -
            static_cast<int>(floor(-position / step_size));
   else
-    return static_cast<int>(floor(position / step_size)) + n_positions / 2.0f;
+    return static_cast<int>(floor(position / step_size)) + n_positions / 2;
 }
 
 __device__ float max_dl(float max_bias_size, float c_outer_radius) {
-  return 2.0f * c_outer_radius + max_bias_size;
+  return 2 * c_outer_radius + max_bias_size;
 }
 
 __device__ int n_positions(float step_size,
                            float max_bias_size,
                            float c_outer_radius) {
   // since position needs to be symmetric against (0,0) number must be even
-  return ((int)(ceil(2.0f * max_dl(max_bias_size, c_outer_radius) /
-                     step_size)) +
+  return ((int)(ceil(2 * max_dl(max_bias_size, c_outer_radius) / step_size)) +
           1) /
          2 * 2;
 }
+
+}  // GPU
+}  // Barrel
+}  // PET2D

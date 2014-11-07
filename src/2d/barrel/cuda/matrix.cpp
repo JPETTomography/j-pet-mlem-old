@@ -16,61 +16,39 @@
 #include "2d/barrel/model.h"
 #include "2d/geometry/point.h"
 
-using namespace PET2D;
-using namespace PET2D::Barrel;
+namespace PET2D {
+namespace Barrel {
+namespace GPU {
 
-bool run_gpu_matrix(int pixel_id,
-                    int n_tof_positions,
-                    int number_of_threads_per_block,
-                    int number_of_blocks,
-                    int n_emissions,
-                    float radius,
-                    float h_detector,
-                    float w_detector,
-                    float pixel_size,
-                    GPU::LOR* lookup_table_lors,
-                    Pixel<>* lookup_table_pixels,
-                    unsigned int* cpu_prng_seed,
-                    GPU::MatrixElement* cpu_matrix,
-                    GPU::MatrixElement* gpu_output);
+// forward declare CUDA function
+bool run_matrix(Pixel<> pixel,
+                int n_tof_positions,
+                int number_of_threads_per_block,
+                int number_of_blocks,
+                int n_emissions,
+                float radius,
+                float h_detector,
+                float w_detector,
+                float pixel_size,
+                unsigned int* cpu_prng_seed,
+                GPU::MatrixElement* cpu_matrix,
+                GPU::MatrixElement* gpu_output);
 
-void fill_gpu_data(GPU::LOR* lookup_table_lors,
-                   Pixel<>* lookup_table_pixel,
-                   unsigned int* cpu_prng_seed,
-                   int& number_of_blocks,
-                   int& number_of_threads_per_block,
-                   int& pixels_in_row) {
-
-  for (int i = 0; i < NUMBER_OF_DETECTORS; ++i) {
-    for (int j = 0; j < NUMBER_OF_DETECTORS; ++j) {
-
-      GPU::LOR temp;
-      temp.lor_a = i;
-      temp.lor_b = j;
-      lookup_table_lors[(i * (i + 1) / 2) + j] = temp;
-    }
-  }
-
-  for (int j = pixels_in_row / 2 - 1; j >= 0; --j) {
-    for (int i = 0; i <= j; ++i) {
-
-      Pixel<> pixel(i, j);
-      lookup_table_pixel[pixel.index()] = pixel;
-    }
-  }
-
+/// \brief Generated PRNG seed
+/// \todo TODO: Document why are we doing that
+static void gen_prng_seed(unsigned int* cpu_prng_seed,
+                          int number_of_blocks,
+                          int number_of_threads_per_block) {
   std::default_random_engine gen;
   std::uniform_int_distribution<unsigned int> dis(1024, 1000000);
   gen.seed(345555);
-
   for (int i = 0; i < 4 * number_of_blocks * number_of_threads_per_block; ++i) {
-
     // cpu_prng_seed[i] = 53445 + i; //dis(gen);
     cpu_prng_seed[i] = dis(gen);
   }
 }
 
-GPU::OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
+GPU::OutputMatrix run_matrix(cmdline::parser& cl) {
 
   auto pixels_in_row = cl.get<int>("n-pixels");
   auto n_detectors = cl.get<int>("n-detectors");
@@ -136,27 +114,10 @@ GPU::OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
   int n_tof_positions = 1;
 #else
   int n_tof_positions =
-      ((int)(ceil(2.0f * (2.0f * (radius + h_detector)) / 0.01f)) + 1) / 2 * 2;
-#endif
-
-#if USE_GPU_KERNEL_PARAMETERS
-  gpu_kernel_parameters kernel_parameters;
-
-  kernel_parameters.x = 0;
-  kernel_parameters.y = 0;
-  kernel_parameters.iteration = iteration_per_thread;
-  kernel_parameters.tof_n_positions = n_tof_positions;
-
-  kernel_parameters.radius = radius;
-  kernel_parameters.h_detector = h_detector;
-  kernel_parameters.w_detector = w_detector;
-  kernel_parameters.pixel_size = s_pixel;
+      ((int)(ceil(2 * (2 * (radius + h_detector)) / 0.01f)) + 1) / 2 * 2;
 #endif
 
   int triangle_pixel_size = (pixels_in_row / 2 * (pixels_in_row / 2 + 1) / 2);
-
-  std::vector<GPU::LOR> lookup_table_lors;
-  lookup_table_lors.resize(LORS);
 
   std::vector<Pixel<>> lookup_table_pixel;
   lookup_table_pixel.resize(triangle_pixel_size);
@@ -164,130 +125,98 @@ GPU::OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
   GPU::MatrixElement matrix_element;
 
   for (int lor_i = 0; lor_i < LORS; ++lor_i) {
-
-    matrix_element.hit[lor_i] = 0.f;
+    matrix_element.hit[lor_i] = 0;
   }
 
 #if NO_TOF > 0
-
   std::vector<GPU::MatrixElement> gpu_vector_output;
   gpu_vector_output.resize(1);
 
   std::vector<GPU::MatrixElement> cpu_matrix;
   cpu_matrix.resize(number_of_blocks);
-
 #else
-
   std::vector<GPU::MatrixElement> gpu_vector_output;
   gpu_vector_output.resize(n_tof_positions);
 
   std::vector<GPU::MatrixElement> cpu_matrix;
   cpu_matrix.resize(n_tof_positions * number_of_blocks);
-
 #endif
 
-  unsigned int* cpu_prng_seed;
-
-  cpu_prng_seed =
+  unsigned int* cpu_prng_seed =
       new unsigned int[number_of_blocks * number_of_threads_per_block * 4];
-
-  fill_gpu_data(lookup_table_lors.data(),
-                lookup_table_pixel.data(),
-                cpu_prng_seed,
-                number_of_blocks,
-                number_of_threads_per_block,
-                pixels_in_row);
+  gen_prng_seed(cpu_prng_seed, number_of_blocks, number_of_threads_per_block);
 
   GPU::OutputMatrix output_matrix(
       pixels_in_row, n_detectors, *emission_adr, n_tof_positions);
 
   double fulltime = double();
 
-  for (int pixel_i = 0; pixel_i < triangle_pixel_size; ++pixel_i) {
+  for (Pixel<> pixel(0, 0);
+       pixel < Pixel<>::end_for_n_pixels_in_row(pixels_in_row);
+       ++pixel) {
 
     try {
-
-      std::fill(
-          gpu_vector_output.begin(), gpu_vector_output.end(), matrix_element);
-      std::fill(cpu_matrix.begin(), cpu_matrix.end(), matrix_element);
+      std::fill(gpu_vector_output.begin(),  //
+                gpu_vector_output.end(),
+                matrix_element);
+      std::fill(cpu_matrix.begin(),  //
+                cpu_matrix.end(),
+                matrix_element);
     } catch (std::exception e) {
       std::cout << "Fill error:" << e.what() << std::endl;
     }
 
     std::default_random_engine gen;
     std::uniform_int_distribution<unsigned int> dis(1024, 1000000);
-    gen.seed(12344 + 10 * pixel_i);
+    gen.seed(12344 + 10 * pixel.index());
 
     for (int i = 0; i < 4 * number_of_blocks * number_of_threads_per_block;
          ++i) {
-
       cpu_prng_seed[i] = dis(gen);
     }
 
     clock_t start = clock();
 
-    run_gpu_matrix(pixel_i,
-                   n_tof_positions,
-                   number_of_threads_per_block,
-                   number_of_blocks,
-                   iteration_per_thread,
-                   radius,
-                   h_detector,
-                   w_detector,
-                   s_pixel,
-                   lookup_table_lors.data(),
-                   lookup_table_pixel.data(),
-                   cpu_prng_seed,
-                   cpu_matrix.data(),
-                   gpu_vector_output.data());
+    run_matrix(pixel,
+               n_tof_positions,
+               number_of_threads_per_block,
+               number_of_blocks,
+               iteration_per_thread,
+               radius,
+               h_detector,
+               w_detector,
+               s_pixel,
+               cpu_prng_seed,
+               cpu_matrix.data(),
+               gpu_vector_output.data());
 
     clock_t stop = clock();
 
     fulltime += static_cast<double>(stop - start) / CLOCKS_PER_SEC;
 
+    GPU::OutputMatrix::LOR lut_lors[LORS];
+    for (GPU::OutputMatrix::LOR lor(0, 0); lor.index() < LORS; ++lor) {
+      lut_lors[lor.index()] = lor;
+    }
+
 #if NO_TOF > 0
-
     for (int lor_i = 0; lor_i < LORS; ++lor_i) {
-
       if (gpu_vector_output[0].hit[lor_i] > 0) {
-
-        GPU::OutputMatrix::LOR lor(lookup_table_lors[lor_i].lor_a,
-                                   lookup_table_lors[lor_i].lor_b);
-
-        auto pixel = lookup_table_pixel[pixel_i];
-
-        GPU::OutputMatrix::Element element;
-        element.lor = lor;
-        element.pixel = pixel;
-        element.hits = gpu_vector_output[0].hit[lor_i];
-        element.position = 0;
-
-        output_matrix.push_back(element);
+        output_matrix.emplace_back(
+            lut_lors[lor_i], 0, pixel, gpu_vector_output[tof_i].hit[lor_i]);
       }
     }
 #else
-
     for (int tof_i = 0; tof_i < n_tof_positions; ++tof_i) {
       for (int lor_i = 0; lor_i < LORS; ++lor_i) {
-
         if (gpu_vector_output[tof_i].hit[lor_i] > 0) {
-
-          GPU::OutputMatrix::LOR lor(lookup_table_lors[lor_i].lor_a,
-                                     lookup_table_lors[lor_i].lor_b);
-
-          auto pixel = lookup_table_pixel[pixel_i];
-
-          GPU::OutputMatrix::Element element;
-          element.lor = lor;
-          element.pixel = pixel;
-          element.hits = gpu_vector_output[tof_i].hit[lor_i];
-          element.position = tof_i;
-
-          output_matrix.push_back(element);
+          output_matrix.emplace_back(lut_lors[lor_i],
+                                     tof_i,
+                                     pixel,
+                                     gpu_vector_output[tof_i].hit[lor_i]);
         }
       }
     }
-
 #endif
   }
 
@@ -300,3 +229,7 @@ GPU::OutputMatrix run_gpu_matrix(cmdline::parser& cl) {
 
   return output_matrix;
 }
+
+}  // GPU
+}  // Barrel
+}  // PET2D

@@ -6,6 +6,10 @@
 #include "geometry_methods.cuh"
 #include "prng.cuh"
 
+namespace PET2D {
+namespace Barrel {
+namespace GPU {
+
 __device__ int lor_iterator(int& id1, int& id2) {
 
   if (id1 < id2) {
@@ -47,10 +51,9 @@ __global__ void monte_carlo_kernel(int x,
   Hits hit1;
   Hits hit2;
 
-  // float fov_radius = radius / M_SQRT2;
-  // FIXME: will fail for large number of detectors
+  /// \todo FIXME: This will fail for large number of detectors, remove
+  /// hardcoded number of detectors.
   if (threadIdx.x < NUMBER_OF_DETECTORS) {
-
     create_detector_ring(h_detector, w_detector, radius, ring);
   }
 
@@ -208,3 +211,7 @@ __global__ void monte_carlo_kernel(int x,
   gpu_prng_seed[4 * tid + 2] = seed[2];
   gpu_prng_seed[4 * tid + 3] = seed[3];
 }
+
+}  // GPU
+}  // Barrel
+}  // PET2D

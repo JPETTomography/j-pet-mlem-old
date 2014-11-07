@@ -11,23 +11,22 @@
 
 #include "2d/geometry/pixel.h"
 
-using namespace PET2D;
-using namespace PET2D::Barrel;
+namespace PET2D {
+namespace Barrel {
+namespace GPU {
 
-bool run_gpu_matrix(int pixel_i,
-                    int n_tof_positions,
-                    int number_of_threads_per_block,
-                    int number_of_blocks,
-                    int n_emissions,
-                    float radius,
-                    float h_detector,
-                    float w_detector,
-                    float pixel_size,
-                    GPU::LOR* lookup_table_lors,
-                    Pixel<>* lookup_table_pixel,
-                    unsigned int* cpu_prng_seed,
-                    MatrixElement* cpu_matrix,
-                    MatrixElement* gpu_output) {
+bool run_matrix(Pixel<> pixel,
+                int n_tof_positions,
+                int number_of_threads_per_block,
+                int number_of_blocks,
+                int n_emissions,
+                float radius,
+                float h_detector,
+                float w_detector,
+                float pixel_size,
+                unsigned int* cpu_prng_seed,
+                MatrixElement* cpu_matrix,
+                MatrixElement* gpu_output) {
 
   dim3 blocks(number_of_blocks);
   dim3 threads(number_of_threads_per_block);
@@ -66,8 +65,6 @@ bool run_gpu_matrix(int pixel_i,
       cudaMemcpyHostToDevice);
 
   float fov_radius = radius / M_SQRT2;
-
-  Pixel<> pixel = lookup_table_pixel[pixel_i];
 
   int i = pixel.x;
   int j = pixel.y;
@@ -152,28 +149,25 @@ bool run_gpu_matrix(int pixel_i,
 
 #if NO_TOF > 0
   for (int lor_i = 0; lor_i < LORS; ++lor_i) {
-    float temp = 0.f;
+    float temp = 0;
     for (int block_i = 0; block_i < number_of_blocks; ++block_i) {
 
       temp += cpu_matrix[block_i].hit[lor_i];
     }
 
-    if (temp > 0.0f) {
+    if (temp > 0) {
       gpu_output[0].hit[lookup_table_lors[lor_i].index()] = temp;
     }
   }
 #else
   for (int tof_i = 0; tof_i < n_tof_positions; ++tof_i) {
     for (int lor_i = 0; lor_i < LORS; ++lor_i) {
-      float temp_hits = 0.f;
+      float temp_hits = 0;
       for (int block_i = 0; block_i < number_of_blocks; ++block_i) {
-
         temp_hits += cpu_matrix[tof_i + (block_i * n_tof_positions)].hit[lor_i];
       }
-
-      if (temp_hits > 0.0f) {
-
-        gpu_output[tof_i].hit[lookup_table_lors[lor_i].index()] = temp_hits;
+      if (temp_hits > 0) {
+        gpu_output[tof_i].hit[lor_i] = temp_hits;
       }
     }
   }
@@ -184,3 +178,7 @@ bool run_gpu_matrix(int pixel_i,
 
   return 0;
 }
+
+}  // GPU
+}  // Barrel
+}  // PET2D

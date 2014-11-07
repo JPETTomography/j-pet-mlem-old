@@ -13,8 +13,9 @@
 // FIXME: remove me
 #include "2d/geometry/pixel.h"
 
-using namespace PET2D;
-using namespace PET2D::Barrel;
+namespace PET2D {
+namespace Barrel {
+namespace GPU {
 
 void run_gpu_phantom(int number_of_threads_per_block,
                      int number_of_blocks,
@@ -141,3 +142,7 @@ void run_gpu_phantom(int number_of_threads_per_block,
   cudaFree(gpu_prng_seed);
   cudaFree(gpu_MatrixElement);
 }
+
+}  // GPU
+}  // Barrel
+}  // PET2D

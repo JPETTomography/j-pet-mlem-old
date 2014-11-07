@@ -9,8 +9,7 @@ namespace PET2D {
 namespace Barrel {
 namespace GPU {
 using OutputMatrix = SparseMatrix<Pixel<>, LOR<>>;
+OutputMatrix run_matrix(cmdline::parser& cl);
 }  // GPU
 }  // Barrel
 }  // PET2D
-
-PET2D::Barrel::GPU::OutputMatrix run_gpu_matrix(cmdline::parser& cl);
