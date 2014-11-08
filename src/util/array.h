@@ -1,10 +1,7 @@
 #pragma once
 
-#include <cstddef>
 #include <type_traits>
-#if _MSC_VER
-#include <array>
-#endif
+#include <new>
 
 namespace util {
 
