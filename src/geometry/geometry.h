@@ -2,6 +2,10 @@
 
 #include <cmath>
 
+/// `NYI` *Not Yet Implemented*
+
+/// This namespace implementation is not finished, neither used across the
+/// project.
 namespace Geometry {
 namespace {  // keeps Base private
 namespace Base {
