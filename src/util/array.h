@@ -1,7 +1,8 @@
 #pragma once
 
-#include <type_traits>
 #include <new>
+#include <type_traits>
+#include <utility>
 
 namespace util {
 
@@ -38,7 +39,6 @@ class array {
   typedef const T& const_reference;
   typedef T* pointer;
   typedef const T* const_pointer;
-  typedef ptrdiff_t difference;
   typedef std::size_t size_type;
   typedef pointer iterator;
   typedef const_pointer const_iterator;
