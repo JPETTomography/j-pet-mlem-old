@@ -41,8 +41,6 @@ TEST("2d/barrel/detector_ring/math") {
     }
 
     for (int i = 0; i < n_detectors; i++) {
-      double x, y;
-
       in >> x >> y;
       DetectorRing<>::Point p1(x, y);
 

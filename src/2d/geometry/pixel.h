@@ -32,7 +32,7 @@ template <typename SType = int> class Pixel {
     return *this;
   }
 
-  static const constexpr Pixel end_for_n_pixels_in_row(S pixels_in_row) {
+  static const Pixel end_for_n_pixels_in_row(S pixels_in_row) {
     return Pixel(0, pixels_in_row);
   }
 
