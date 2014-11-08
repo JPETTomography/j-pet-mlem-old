@@ -6,6 +6,8 @@ inline Approx operator"" _e13(long double value) {
   return Approx(value).epsilon(1e-13);
 }
 
+/// \cond PRIVATE
+
 class InverseApprox : public Approx {
   using Approx::Approx;
   friend bool operator==(double lhs, InverseApprox const& rhs) {
@@ -31,3 +33,5 @@ inline InverseApprox&& operator-(Approx&& other) {
 // Stupid but working workaround for making syntax highlight working for tests
 // in QtCreator. Use TEST("...") instead TEST_CASE("...").
 #define TEST TEST_CASE
+
+/// \endcond
