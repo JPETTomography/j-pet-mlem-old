@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <cstdlib>
 #if _MSC_VER
 #include <ctime>
@@ -18,9 +19,9 @@ class tausworthe {
   typedef unsigned int state_type[4];
 
   /// Minimum value returned by random number generator
-  static result_type min() { return 0; }
+  _ static result_type min() { return 0; }
   /// Maximum value returned by random number generator
-  static result_type max() { return std::numeric_limits<result_type>::max(); }
+  _ static result_type max() { return compat::numeric_max<result_type>(); }
 
   /// Creates new random number generator with given seed.
   tausworthe(seed_type seed = 121245) { this->seed(seed); }
@@ -36,14 +37,14 @@ class tausworthe {
   }
 
   /// Save generator state
-  _ void save(state_type& state) const {
+  _ void save(state_type state) const {
     for (int i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
       state[i] = seeds[i];
     }
   }
 
   /// Returns random number
-  result_type operator()() {
+  _ result_type operator()() {
     taus_step(seeds[0], 13, 19, 12, 4294967294u);
     taus_step(seeds[1], 2, 25, 4, 4294967288u);
     taus_step(seeds[2], 3, 11, 17, 4294967280u);
@@ -73,12 +74,12 @@ class tausworthe {
  private:
   state_type seeds;
 
-  template <typename T> void taus_step(T& z, int S1, int S2, int S3, T M) {
+  template <typename T> _ void taus_step(T& z, int S1, int S2, int S3, T M) {
     unsigned b = (((z << S1) ^ z) >> S2);
     z = (((z & M) << S3) ^ b);
   }
 
-  template <typename T> void LCG_step(T& z, T A, T C) { z = (A * z + C); }
+  template <typename T> _ void LCG_step(T& z, T A, T C) { z = (A * z + C); }
 };
 
 /// Uniform real distribution for given range and \a RNG
@@ -87,28 +88,28 @@ template <typename FType = double> class uniform_real_distribution {
   typedef FType result_type;
 
   /// Creates new distribution with given [a, b) range
-  uniform_real_distribution(result_type a = 0,  ///< minimum value
-                            result_type b = 1   ///< maxumim value
-                            )
+  _ uniform_real_distribution(result_type a = 0,  ///< minimum value
+                              result_type b = 1   ///< maxumim value
+                              )
       : size_(b - a), offset_(a) {}
 
   /// Returns value from given range using generator
-  template <class Generator> result_type operator()(Generator& g) {
-    return g() * size() * scale<Generator>() + offset() -
+  template <class Generator> _ result_type operator()(Generator& gen) {
+    return gen() * size() * scale<Generator>() + offset() -
            static_cast<result_type>(Generator::min()) / range<Generator>();
   }
 
   /// Return distribution range size
-  result_type size() const { return size_; }
+  _ result_type size() const { return size_; }
   /// Return distribution range offset
-  result_type offset() const { return offset_; }
+  _ result_type offset() const { return offset_; }
 
-  template <class Generator> static result_type range() {
+  template <class Generator> _ static result_type range() {
     return static_cast<result_type>(Generator::max()) -
            static_cast<result_type>(Generator::min());
   }
 
-  template <class Generator> static result_type scale() {
+  template <class Generator> _ static result_type scale() {
     return static_cast<result_type>(1) / range<Generator>();
   }
 

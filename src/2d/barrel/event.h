@@ -11,7 +11,7 @@ template <typename FType = double> struct Event {
   using F = FType;
   using Point = PET2D::Point<F>;
 
-  Event(F x, F y, F phi) : x(x), y(y), phi(phi) {
+  _ Event(F x, F y, F phi) : x(x), y(y), phi(phi) {
     // get line equation coefficients
     // a x + b y == c
     a = std::sin(phi);
@@ -20,11 +20,11 @@ template <typename FType = double> struct Event {
   }
 
  private:
-  Event(F x, F y, F phi, F a, F b) : x(x), y(y), phi(phi), a(a), b(b) {
+  _ Event(F x, F y, F phi, F a, F b) : x(x), y(y), phi(phi), a(a), b(b) {
     precalculate();
   }
 
-  void precalculate() {
+  _ void precalculate() {
     // get line equation coefficients (cont.)
     // a x + b y == c
     c = a * x + b * y;
@@ -38,17 +38,17 @@ template <typename FType = double> struct Event {
   }
 
  public:
-  Event(Point p, F phi) : Event(p.x, p.y, phi) {}
+  _ Event(Point p, F phi) : Event(p.x, p.y, phi) {}
 
   // evaluates line equation side on given point
   // 0 means points lies on the line, -1 left, 1 right
-  F operator()(const Point& p) { return a * p.x + b * p.y - c; }
+  _ F operator()(const Point& p) { return a * p.x + b * p.y - c; }
 
-  Event operator+(const Point& p) const {
+  _ Event operator+(const Point& p) const {
     return Event(x + p.x, y + p.y, phi, a, b);
   }
 
-  Event operator-(const Point& p) const {
+  _ Event operator-(const Point& p) const {
     return Event(x - p.x, y - p.y, phi, a, b);
   }
 

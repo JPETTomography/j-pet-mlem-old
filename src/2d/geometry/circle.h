@@ -6,6 +6,7 @@
 #include "2d/barrel/event.h"
 #include "util/svg_ostream.h"
 #include "util/array.h"
+#include "util/cuda/compat.h"
 
 namespace PET2D {
 
@@ -23,13 +24,13 @@ template <typename FType = double, typename SType = int> class Circle {
   using F = FType;
   using S = SType;
 
-  Circle(F radius)
+  _ Circle(F radius)
       : radius(radius),           // store radius
         radius2(radius * radius)  // store precomputed square
   {}
 
   // allows copying whole object
-  Circle& operator=(const Circle& other) { return *new (this) Circle(other); }
+  _ Circle& operator=(const Circle& other) { return *new (this) Circle(other); }
 
   using Angle = F;
   using Point = PET2D::Point<F>;
@@ -38,7 +39,7 @@ template <typename FType = double, typename SType = int> class Circle {
   using SecantAngles = util::array<2, Angle>;
   using SecantSections = util::array<2, S>;
 
-  Secant secant(const Event& e) {
+  _ Secant secant(const Event& e) {
     auto cabr2 = (-(e.c * e.c) + e.a2_b2 * radius2);
     auto sq2 = e.b2 * cabr2;
     if (sq2 > 0) {
@@ -54,7 +55,7 @@ template <typename FType = double, typename SType = int> class Circle {
     }
   }
 
-  F angle(Point p) { return std::atan2(p.y, p.x); }
+  _ F angle(Point p) { return compat::atan2(p.y, p.x); }
 
   SecantAngles secant_angles(Event& e) {
     SecantAngles sa;
@@ -64,14 +65,14 @@ template <typename FType = double, typename SType = int> class Circle {
     return sa;
   }
 
-  S section(F angle, S n_detectors) {
+  _ S section(F angle, S n_detectors) {
     const F TWO_PI = F(2 * M_PI);
     const F INV_TWO_PI = 1 / TWO_PI;
 
     // converting angles to [0,2 Pi) interval
     F normalised_angle = angle > 0 ? angle : TWO_PI + angle;
     return static_cast<S>(
-               std::round(normalised_angle * n_detectors * INV_TWO_PI)) %
+               compat::round(normalised_angle * n_detectors * INV_TWO_PI)) %
            n_detectors;
   }
 

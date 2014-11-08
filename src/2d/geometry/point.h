@@ -48,9 +48,9 @@ template <typename FType = double, typename SType = int> struct Point {
     return y < p.y || (y == p.y && x < p.x);
   }
 
-  F length2() const { return x * x + y * y; }
+  _ F length2() const { return x * x + y * y; }
 
-  F length() const { return compat::sqrt(x * x + y * y); }
+  _ F length() const { return compat::sqrt(x * x + y * y); }
 
   /// Rotate point around (0, 0) with given angle
 
@@ -73,13 +73,13 @@ template <typename FType = double, typename SType = int> struct Point {
     return tmp.rotate(phi);
   }
 
-  F nearest_distance(const Point& p1, const Point& p2) const {
+  _ F nearest_distance(const Point& p1, const Point& p2) const {
     return compat::min((p1 - *this).length(), (p2 - *this).length());
   }
 
-  Pixel pixel(F pixel_size, S pixel_count_2) {
-    return Pixel(static_cast<S>(std::floor(x / pixel_size + pixel_count_2)),
-                 static_cast<S>(std::floor(y / pixel_size + pixel_count_2)));
+  _ Pixel pixel(F pixel_size, S pixel_count_2) {
+    return Pixel(static_cast<S>(compat::floor(x / pixel_size + pixel_count_2)),
+                 static_cast<S>(compat::floor(y / pixel_size + pixel_count_2)));
   }
 };
 

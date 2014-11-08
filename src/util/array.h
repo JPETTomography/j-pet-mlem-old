@@ -4,6 +4,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "cuda/compat.h"
+
 namespace util {
 
 /// Stack based replacement for \c std::vector
@@ -24,11 +26,11 @@ class array {
   typedef S storage_type;  ///< must be same size and alignment as value_type
 
  public:
-  array() : s(0) {}
+  _ array() : s(0) {}
 
 #if !_MSC_VER || __CUDACC__
   template <typename... Args>
-  array(Args&&... e)
+  _ array(Args&&... e)
       : s(sizeof...(e)), v{ *reinterpret_cast<storage_type*>(&e)... } {}
 #else
  private:
@@ -49,7 +51,7 @@ class array {
 #endif
 
   /// Returns if the array is full (has max number of elements)
-  bool full() const { return (s == MaxSize); }
+  _ bool full() const { return (s == MaxSize); }
 
   // minimal std::vector compatibility
   typedef T value_type;
@@ -67,34 +69,36 @@ class array {
     alignment = Alignment
   };
 
-  iterator begin() { return reinterpret_cast<pointer>(v); }
-  const_iterator begin() const { return reinterpret_cast<const_pointer>(v); }
+  _ iterator begin() { return reinterpret_cast<pointer>(v); }
+  _ const_iterator begin() const { return reinterpret_cast<const_pointer>(v); }
 
-  iterator end() { return reinterpret_cast<pointer>(v + s); }
-  const_iterator end() const { return reinterpret_cast<const_pointer>(v + s); }
+  _ iterator end() { return reinterpret_cast<pointer>(v + s); }
+  _ const_iterator end() const {
+    return reinterpret_cast<const_pointer>(v + s);
+  }
 
-  size_type size() const { return s; }
-  static size_type max_size() { return MaxSize; }
+  _ size_type size() const { return s; }
+  _ static size_type max_size() { return MaxSize; }
 
-  void push_back(const value_type& val) { new (&v[s++]) value_type(val); }
+  _ void push_back(const value_type& val) { new (&v[s++]) value_type(val); }
 
-  template <typename... Args> void emplace_back(Args&&... args) {
+  template <typename... Args> _ void emplace_back(Args&&... args) {
     new (&v[s++]) value_type(std::forward<Args&&>(args)...);
   }
 
-  reference at(size_type i) { return *reinterpret_cast<pointer>(&v[i]); }
-  const_reference at(size_type i) const {
+  _ reference at(size_type i) { return *reinterpret_cast<pointer>(&v[i]); }
+  _ const_reference at(size_type i) const {
     return *reinterpret_cast<const_pointer>(&v[i]);
   }
 
-  reference operator[](size_type i) { return at(i); }
-  const_reference operator[](size_type i) const { at(i); }
+  _ reference operator[](size_type i) { return at(i); }
+  _ const_reference operator[](size_type i) const { return at(i); }
 
-  reference front() { return at(0); }
-  const_reference front() const { at(0); }
+  _ reference front() { return at(0); }
+  _ const_reference front() const { return at(0); }
 
-  reference back() { return at(s - 1); }
-  const_reference back() const { return at(s - 1); }
+  _ reference back() { return at(s - 1); }
+  _ const_reference back() const { return at(s - 1); }
 
  private:
   std::size_t s;

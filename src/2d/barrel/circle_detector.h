@@ -2,8 +2,11 @@
 
 #include "2d/geometry/point.h"
 #include "2d/geometry/circle.h"
-#include "util/svg_ostream.h"
 #include "util/array.h"
+#include "util/cuda/compat.h"
+#if !__CUDACC__
+#include "util/svg_ostream.h"
+#endif
 
 namespace PET2D {
 namespace Barrel {
@@ -17,6 +20,8 @@ template <typename FType = double> class CircleDetector : public Circle<FType> {
   using Point = PET2D::Point<F>;
   using Intersections = util::array<2, Point>;
   using Event = typename Base::Event;
+
+  CircleDetector() = delete;
 
   CircleDetector(F radius) : Circle<F>(radius), center(0, 0) {}
 
@@ -49,7 +54,7 @@ template <typename FType = double> class CircleDetector : public Circle<FType> {
   /// \returns itself
   const CircleDetector& circumscribe_circle() const { return *this; }
 
-  Intersections intersections(typename Base::Event e) {
+  _ Intersections intersections(typename Base::Event e) {
     auto intersections = this->secant(e - center);
     for (auto& p : intersections) {
       p += center;
@@ -57,6 +62,7 @@ template <typename FType = double> class CircleDetector : public Circle<FType> {
     return intersections;
   }
 
+#if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
                                           CircleDetector& cd) {
     svg << "<circle cx=\"" << cd.center.x << "\" cy=\"" << cd.center.y
@@ -70,9 +76,7 @@ template <typename FType = double> class CircleDetector : public Circle<FType> {
     out << std::flush;
     return out;
   }
-
- private:
-  CircleDetector() {}
+#endif
 };
 }  // Barrel
 }  // PET2D

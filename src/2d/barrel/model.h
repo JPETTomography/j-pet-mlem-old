@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/random.h"
+#include "util/cuda/compat.h"
 
 namespace PET2D {
 namespace Barrel {
@@ -11,15 +12,15 @@ template <typename FType = double> class AlwaysAccept {
   using F = FType;
 
   AlwaysAccept() {}
-  template <class RandomGenerator> bool operator()(RandomGenerator&, F) {
+  template <class RandomGenerator> _ bool operator()(RandomGenerator&, F) {
     return true;
   }
 
-  template <typename RandomGenerator> F deposition_depth(RandomGenerator&) {
+  template <typename RandomGenerator> _ F deposition_depth(RandomGenerator&) {
     return static_cast<F>(0);
   }
 
-  static F max_bias() { return static_cast<F>(0); }
+  _ static F max_bias() { return static_cast<F>(0); }
 };
 
 /// Model of scintilator acceptance
@@ -35,22 +36,23 @@ template <typename FType = double> class ScintilatorAccept {
  public:
   using F = FType;
 
-  ScintilatorAccept(F scale)
+  _ ScintilatorAccept(F scale)
       : one_dis(static_cast<F>(0), static_cast<F>(1)),
         scale(scale),
         inv_scale(static_cast<F>(1) / scale) {}
 
   template <class RandomGenerator>
-  bool operator()(RandomGenerator& gen, F length) {
+  _ bool operator()(RandomGenerator& gen, F length) {
     return one_dis(gen) >= exp(-length * inv_scale);
   }
 
-  template <typename RandomGenerator> F deposition_depth(RandomGenerator& gen) {
+  template <typename RandomGenerator>
+  _ F deposition_depth(RandomGenerator& gen) {
     auto r = one_dis(gen);
     return -log(r) * scale;
   }
 
-  static F max_bias() { return static_cast<F>(0); }
+  _ static F max_bias() { return static_cast<F>(0); }
 
  private:
   util::random::uniform_real_distribution<F> one_dis;

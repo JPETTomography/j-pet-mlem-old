@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util/array.h"
 #include "square_detector.h"
 #include "util/svg_ostream.h"
 #include "lor.h"
@@ -14,8 +15,10 @@ namespace Barrel {
 
 /// This is optimized CompoundDetector using assumption all detectors lie on
 /// ring, so some operations like possible secants can be done much quicker.
-template <typename DetectorType = SquareDetector<double>, typename SType = int>
-class DetectorRing : public std::vector<DetectorType> {
+template <typename DetectorType = SquareDetector<double>,
+          typename SType = int,
+          std::size_t MaxDetectors = 512>
+class DetectorRing : public util::array<MaxDetectors, DetectorType> {
  public:
   using S = SType;
   using Detector = DetectorType;
@@ -91,17 +94,19 @@ class DetectorRing : public std::vector<DetectorType> {
   }
 
   /// Quantizes position across lor
-  S quantize_position(F position,    ///< position across lor
-                      F step_size,   ///< step size
-                      S n_positions  ///< number of positions
-                      ) {
+  _ S quantize_position(F position,    ///< position across lor
+                        F step_size,   ///< step size
+                        S n_positions  ///< number of positions
+                        ) {
     // number of positions if always even, lower half are negative positions
     // where 0 means position closests to detector with higher index
     // maximum means position closests to detector with lower index
     if (position < 0)
-      return n_positions / 2 - 1 - static_cast<S>(floor(-position / step_size));
+      return n_positions / 2 - 1 -
+             static_cast<S>(compat::floor(-position / step_size));
     else
-      return static_cast<S>(floor(position / step_size)) + n_positions / 2;
+      return static_cast<S>(compat::floor(position / step_size)) +
+             n_positions / 2;
   }
 
   /// Returns number of position steps (indexes)
@@ -115,15 +120,15 @@ class DetectorRing : public std::vector<DetectorType> {
 
  private:
   template <class RandomGenerator, class AcceptanceModel>
-  bool check_for_hits(RandomGenerator& gen,
-                      AcceptanceModel& model,
-                      S inner,
-                      S outer,
-                      Event e,
-                      S& detector,
-                      F& depth,
-                      Point& p1,
-                      Point& p2) {
+  _ bool check_for_hits(RandomGenerator& gen,
+                        AcceptanceModel& model,
+                        S inner,
+                        S outer,
+                        Event e,
+                        S& detector,
+                        F& depth,
+                        Point& p1,
+                        Point& p2) {
 
     // tells in which direction we got shorter modulo distance
     S step = ((n_detectors + inner - outer) % n_detectors >
@@ -155,13 +160,13 @@ class DetectorRing : public std::vector<DetectorType> {
   }
 
   template <class RandomGenerator, class AcceptanceModel>
-  bool check_for_hits(RandomGenerator& gen,
-                      AcceptanceModel& model,
-                      S inner,
-                      S outer,
-                      Event e,
-                      S& detector,
-                      F& depth) {
+  _ bool check_for_hits(RandomGenerator& gen,
+                        AcceptanceModel& model,
+                        S inner,
+                        S outer,
+                        Event e,
+                        S& detector,
+                        F& depth) {
     Point p1, p2;
     return check_for_hits(gen, model, inner, outer, e, detector, depth, p1, p2);
   }
@@ -171,12 +176,12 @@ class DetectorRing : public std::vector<DetectorType> {
 
   /// \return number of coincidences (detector hits)
   template <class RandomGenerator, class AcceptanceModel>
-  short detect(RandomGenerator& gen,    ///< random number generator
-               AcceptanceModel& model,  ///< acceptance model
-               const Event& e,          ///< event to be detected
-               LOR& lor,                ///<[out] lor of the event
-               F& position              ///<[out] position of the event
-               ) {
+  _ short detect(RandomGenerator& gen,    ///< random number generator
+                 AcceptanceModel& model,  ///< acceptance model
+                 const Event& e,          ///< event to be detected
+                 LOR& lor,                ///<[out] lor of the event
+                 F& position              ///<[out] position of the event
+                 ) {
 
     auto inner_secant = c_inner.secant(e);
     auto outer_secant = c_outer.secant(e);
@@ -205,12 +210,11 @@ class DetectorRing : public std::vector<DetectorType> {
 
     lor = LOR(detector1, detector2);
 
-    if (lor.first == lor.second) {
-      std::ostringstream msg;
-      msg << __FUNCTION__ << " invalid LOR (" << lor.first << ", " << lor.second
-          << ")";
-      throw(msg.str());
-    }
+#if !__CUDACC__
+    // FIXME: consider removing this check
+    if (lor.first == lor.second)
+      throw("invalid LOR");
+#endif
 
     Point origin(e.x, e.y);
     F length1 = origin.nearest_distance(d1_p1, d1_p2) + depth1;
@@ -269,9 +273,13 @@ class DetectorRing : public std::vector<DetectorType> {
  private:
   Circle c_inner;
   Circle c_outer;
-  std::vector<CircleDetector<F>> c_detectors;
-  S n_detectors;
-  S n_lors;
+
+ public:
+  const S n_detectors;
+  const S n_lors;
+
+ private:
+  util::array<MaxDetectors, CircleDetector<F>> c_detectors;
   F fov_radius_;
   F radius_diff;
 };

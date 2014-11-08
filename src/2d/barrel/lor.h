@@ -1,43 +1,71 @@
 #pragma once
 
+#include <utility>
+#if !__CUDACC__
 #include <iostream>
-#include <algorithm>
+#endif
+
+#include "util/cuda/compat.h"
 
 namespace PET2D {
 namespace Barrel {
 
 /// Line of Response
-template <typename SType = int> class LOR : public std::pair<SType, SType> {
+template <typename SType = int> class LOR {
  public:
   using S = SType;
 
-  LOR() : std::pair<S, S>(static_cast<S>(0), static_cast<S>(0)) {}
+  _ LOR(S first, S second) : first(first), second(second) {}
+  _ LOR() = default;
 
-  LOR(S first, S second) : std::pair<S, S>(first, second) {
-    if (this->first < this->second) {
-      std::swap(this->first, this->second);
-    }
-  }
+  S first, second;
 
-  const S index() const {
-    return (this->first * (this->first + 1)) / 2 + this->second;
-  }
+#if !__CUDACC__
+  /// constructs Pixel from stream
+  LOR(std::istream& in) : first(util::read<S>(in)), second(util::read<S>(in)) {}
+#endif
 
-  LOR& operator++() {
-    if (++this->second > this->first) {
-      this->first++;
-      this->second = 0;
+  _ const S index() const { return first * (first + 1) / 2 + second; }
+
+  _ const S index(S width) const { return first * width + second; }
+
+  _ LOR& operator++() {
+    if (++second > first) {
+      first++;
+      second = 0;
     }
     return *this;
   }
 
   static const LOR end_for_detectors(S n_detectors) {
-    return LOR(n_detectors, 0);
+    return LOR(0, n_detectors);
   }
 
-  friend std::ostream& operator<<(std::ostream& out, const LOR& lor) {
-    return out << '(' << lor.first << ", " << lor.second << ')';
+  _ bool operator!=(const LOR& lor) const {
+    return second != lor.second || first != lor.first;
   }
+
+  _ bool operator==(const LOR& lor) const {
+    return second == lor.second && first == lor.first;
+  }
+
+  _ bool operator<(const LOR& lor) const {
+    return first < lor.first || (first == lor.first && second < lor.second);
+  }
+
+  _ bool operator>(const LOR& lor) const { return !(*this < lor); }
 };
 }  // Barrel
 }  // PET2D
+
+#ifdef TEST_CASE
+namespace Catch {
+template <typename SType> struct StringMaker<PET2D::Barrel::LOR<SType>> {
+  static std::string convert(const PET2D::Barrel::LOR<SType>& lor) {
+    std::ostringstream oss;
+    oss << "<" << lor.second << ", " << lor.second << ">";
+    return oss.str();
+  }
+};
+}
+#endif

@@ -4,46 +4,35 @@
 
 #include "util/cuda/debug.h"  // catches all CUDA errors
 
-#include "config.h"
-#include "prng.cuh"
-#include "geometry.h"
-#include "monte_carlo.cuh"
-
-// FIXME: remove me
-#include "2d/geometry/pixel.h"
+#include "phantom.h"
 
 namespace PET2D {
 namespace Barrel {
 namespace GPU {
 
-void run_gpu_phantom(int number_of_threads_per_block,
-                     int number_of_blocks,
+void run_gpu_phantom(int n_threads_per_block,
+                     int n_blocks,
                      int n_emissions,
-                     int pixels_in_row,
-                     float radius,
-                     float h_detector,
-                     float w_detector,
-                     float pixel_size,
-                     Pixel<>* lookup_table_pixel,
-                     GPU::LOR* lookup_table_lors,
-                     MatrixElement* gpu_output) {
-
-  dim3 blocks(number_of_blocks);
-  dim3 threads(number_of_threads_per_block);
+                     int n_pixels_in_row,
+                     float s_size,
+                     Pixel* lookup_table_pixel,
+                     int* pixel_hits) {
+  cudaSetDevice(1);
+#if PHANTOM_IS_BROKEN_FOR_NOW
+  dim3 blocks(n_blocks);
+  dim3 threads(n_threads_per_block);
 
   unsigned int* cpu_prng_seed;
-  cudaSetDevice(1);
 
-  cpu_prng_seed =
-      new unsigned int[number_of_blocks * number_of_threads_per_block * 4];
+  cpu_prng_seed = new unsigned int[n_blocks * n_threads_per_block * 4];
 
-  for (int i = 0; i < 4 * number_of_blocks * number_of_threads_per_block; ++i) {
+  for (int i = 0; i < 4 * n_blocks * n_threads_per_block; ++i) {
 
     cpu_prng_seed[i] = 53445 + i;
   }
 
   int triangular_matrix_size =
-      ((pixels_in_row / 2) * ((pixels_in_row / 2) + 1) / 2);
+      ((n_pixels_in_row / 2) * ((n_pixels_in_row / 2) + 1) / 2);
 
   for (int i = 0; i < triangular_matrix_size; ++i) {
 
@@ -53,29 +42,26 @@ void run_gpu_phantom(int number_of_threads_per_block,
     }
   }
 
-  MatrixElement* cpu_matrix = new MatrixElement[number_of_blocks];
+  MatrixElement* cpu_matrix = new MatrixElement[n_blocks];
 
   unsigned int* gpu_prng_seed;
   MatrixElement* gpu_MatrixElement;
 
   cudaMalloc((void**)&gpu_prng_seed,
-             number_of_blocks * number_of_threads_per_block * 4 *
-                 sizeof(unsigned int));
-  cudaMalloc((void**)&gpu_MatrixElement,
-             number_of_blocks * sizeof(MatrixElement));
+             n_blocks * n_threads_per_block * 4 * sizeof(unsigned int));
+  cudaMalloc((void**)&gpu_MatrixElement, n_blocks * sizeof(MatrixElement));
 
-  cudaMemcpy(
-      gpu_prng_seed,
-      cpu_prng_seed,
-      number_of_blocks * number_of_threads_per_block * 4 * sizeof(unsigned int),
-      cudaMemcpyHostToDevice);
+  cudaMemcpy(gpu_prng_seed,
+             cpu_prng_seed,
+             n_blocks * n_threads_per_block * 4 * sizeof(unsigned int),
+             cudaMemcpyHostToDevice);
 
   printf("GPU kernel start\n");
   printf("DETECTORS %d LORS: %d\n", NUMBER_OF_DETECTORS, LORS);
 
   for (int p = 0; p < triangular_matrix_size; ++p) {
 
-    Pixel<> pixel = lookup_table_pixel[p];
+    Pixel pixel = lookup_table_pixel[p];
 
     int i = pixel.x;
     int j = pixel.y;
@@ -84,11 +70,10 @@ void run_gpu_phantom(int number_of_threads_per_block,
 #endif
     cudaMemcpy(gpu_MatrixElement,
                cpu_matrix,
-               number_of_blocks * sizeof(MatrixElement),
+               n_blocks * sizeof(MatrixElement),
                cudaMemcpyHostToDevice);
 
-    long total_emissions =
-        (long)n_emissions * number_of_blocks * number_of_threads_per_block;
+    long total_emissions = (long)n_emissions * n_blocks * n_threads_per_block;
 
     printf("Pixel(%d,%d) n_emissions: %d %ld\n",
            i,
@@ -97,7 +82,7 @@ void run_gpu_phantom(int number_of_threads_per_block,
            total_emissions);
 
     float fov_radius = radius / M_SQRT2;
-    if ((i * i + j * j) * pixel_size * pixel_size < fov_radius * fov_radius) {
+    if ((i * i + j * j) * s_size * s_size < fov_radius * fov_radius) {
 #if __CUDACC__
 #define gpu_phantom_generation gpu_phantom_generation << <blocks, threads>>>
 #endif
@@ -118,13 +103,13 @@ void run_gpu_phantom(int number_of_threads_per_block,
     }
     cudaMemcpy(cpu_matrix,
                gpu_MatrixElement,
-               number_of_blocks * sizeof(MatrixElement),
+               n_blocks * sizeof(MatrixElement),
                cudaMemcpyDeviceToHost);
 
     if (p == 0) {
       for (int i = 0; i < LORS; i++) {
         float temp = 0.f;
-        for (int j = 0; j < number_of_blocks; ++j) {
+        for (int j = 0; j < n_blocks; ++j) {
 
           temp += cpu_matrix[j].hit[i];
         }
@@ -140,6 +125,7 @@ void run_gpu_phantom(int number_of_threads_per_block,
 
   cudaFree(gpu_prng_seed);
   cudaFree(gpu_MatrixElement);
+#endif
 }
 
 }  // GPU

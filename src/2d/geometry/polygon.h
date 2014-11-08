@@ -5,8 +5,11 @@
 
 #include "point.h"
 #include "2d/barrel/event.h"
-#include "util/svg_ostream.h"
 #include "util/array.h"
+#include "util/cuda/compat.h"
+#if !__CUDACC__
+#include "util/svg_ostream.h"
+#endif
 
 namespace PET2D {
 
@@ -67,7 +70,7 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
     return distance;
   }
 
-  Intersections intersections(Event& e) {
+  _ Intersections intersections(Event& e) {
     auto p1 = this->back();
     auto v1 = e(p1);
     Intersections intersections;
@@ -91,6 +94,7 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
     return intersections;
   }
 
+#if !__CUDACC__
   friend svg_ostream& operator<<(svg_ostream& svg, Polygon& pg) {
     svg << "<polygon points=\"";
     for (auto it = pg.begin(); it != pg.end(); ++it) {
@@ -110,5 +114,6 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
     out << std::flush;
     return out;
   }
+#endif
 };
 }  // PET2D
