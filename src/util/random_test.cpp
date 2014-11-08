@@ -1,8 +1,7 @@
-#include "util/test.h"
-
+#include "test.h"
 #include "random.h"
 
-TEST("random") {
+TEST("util/random") {
   util::random::tausworthe gen;
   util::random::uniform_real_distribution<> one;
   util::random::uniform_real_distribution<> d99to100(99., 100.);
