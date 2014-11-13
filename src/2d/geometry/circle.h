@@ -1,12 +1,12 @@
 #pragma once
 
-#include <initializer_list>
-
 #include "point.h"
 #include "2d/barrel/event.h"
-#include "util/svg_ostream.h"
 #include "util/array.h"
 #include "util/cuda/compat.h"
+#if !__CUDACC__
+#include "util/svg_ostream.h"
+#endif
 
 namespace PET2D {
 
@@ -31,6 +31,9 @@ template <typename FType = double, typename SType = int> class Circle {
 
   // allows copying whole object
   _ Circle& operator=(const Circle& other) { return *new (this) Circle(other); }
+
+  const F radius;
+  const F radius2;
 
   using Angle = F;
   using Point = PET2D::Point<F>;
@@ -84,13 +87,12 @@ template <typename FType = double, typename SType = int> class Circle {
     return ss;
   }
 
+#if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
                                           Circle& c) {
     svg << "<circle cx=\"0\" cy=\"0\" r=\"" << c.radius << "\"/>" << std::endl;
     return svg;
   }
-
-  const F radius;
-  const F radius2;
+#endif
 };
 }  // PET2D

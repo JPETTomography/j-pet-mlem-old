@@ -1,9 +1,6 @@
 #pragma once
 
-#include <cmath>
-
 #include "util/cuda/compat.h"
-
 #include "pixel.h"
 
 namespace PET2D {

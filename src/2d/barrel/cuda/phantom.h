@@ -3,6 +3,7 @@
 #include "2d/geometry/point.h"
 #include "2d/geometry/pixel.h"
 #include "2d/barrel/lor.h"
+#include "2d/barrel/square_detector.h"
 #include "2d/barrel/detector_ring.h"
 #if !__CUDACC__
 #include "cmdline.h"

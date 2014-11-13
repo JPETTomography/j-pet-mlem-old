@@ -1,8 +1,7 @@
 #pragma once
 
-#include <random>
-
 #include "point.h"
+#include "util/random.h"
 #include "util/cuda/compat.h"
 
 namespace PET2D {
@@ -83,7 +82,7 @@ class EllipsePointGenerator {
   using S = SType;
   using Ellipse = PET2D::Ellipse<F, S>;
   using Point = PET2D::Point<F, S>;
-  using Distribution = std::uniform_real_distribution<F>;
+  using Distribution = util::random::uniform_real_distribution<F>;
 
   EllipsePointGenerator(const Ellipse& ellipse)
       : ellipse(ellipse),
@@ -92,7 +91,7 @@ class EllipsePointGenerator {
 
   template <typename Generator> Point operator()(Generator& generator) {
     F angle = 2 * M_PI * distribution(generator);
-    F r = std::sqrt(distribution(generator));
+    F r = compat::sqrt(distribution(generator));
     F x = ellipse.a * r * std::cos(angle);
     F y = ellipse.b * r * std::sin(angle);
 

@@ -1,11 +1,7 @@
 #pragma once
 
-#include <utility>
-#if !__CUDACC__
-#include <iostream>
-#endif
-
 #include "util/cuda/compat.h"
+#include "util/read.h"
 
 namespace PET2D {
 namespace Barrel {

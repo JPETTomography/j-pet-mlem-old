@@ -1,12 +1,16 @@
 #pragma once
 
 #include "util/array.h"
+#include "2d/geometry/point.h"
+#include "2d/geometry/pixel.h"
+#include "2d/geometry/circle.h"
 #include "square_detector.h"
-#include "util/svg_ostream.h"
+#include "circle_detector.h"
 #include "lor.h"
 #include "util/random.h"
-#include "2d/geometry/circle.h"
-#include "circle_detector.h"
+#if !__CUDACC__
+#include "util/svg_ostream.h"
+#endif
 
 namespace PET2D {
 namespace Barrel {
@@ -250,6 +254,7 @@ class DetectorRing : public util::array<MaxDetectors, DetectorType> {
     return 2;
   }
 
+#if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
                                           DetectorRing& dr) {
     svg << dr.c_outer;
@@ -269,6 +274,7 @@ class DetectorRing : public util::array<MaxDetectors, DetectorType> {
 
     return svg;
   }
+#endif
 
  private:
   Circle c_inner;
@@ -283,6 +289,5 @@ class DetectorRing : public util::array<MaxDetectors, DetectorType> {
   F fov_radius_;
   F radius_diff;
 };
-#undef DEBUG
 }  // Barrel
 }  // PET2D

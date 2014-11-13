@@ -18,12 +18,13 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
   PolygonalDetector(F w, F h, F d = F()) {
     (void)h, (void)d;  // unused
 
-    auto radius = w / (4 * std::sin(F(M_PI) / F(NVertices)));
+    auto radius = w / (4 * compat::sin(F(M_PI) / F(NVertices)));
     auto step = 2 * F(M_PI) / F(NVertices);
 
     for (std::size_t i = 0; i < NVertices; ++i) {
       auto angle = step * (i + F(0.5));
-      this->emplace_back(radius * std::cos(angle), radius * std::sin(angle));
+      this->emplace_back(radius * compat::cos(angle),
+                         radius * compat::sin(angle));
     }
   }
 
@@ -32,7 +33,7 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
     Point center = this->center();
     F radius = 0;
     for (const Point& p : *this) {
-      radius = std::max(radius, (p - center).length());
+      radius = compat::max(radius, (p - center).length());
     }
     return CircleDetector(radius, center);
   }

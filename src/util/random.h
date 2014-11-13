@@ -1,8 +1,6 @@
 #pragma once
 
-#include <limits>
-#include <cstdlib>
-#if _MSC_VER
+#if _MSC_VER && !__CUDACC__
 #include <ctime>
 #endif
 

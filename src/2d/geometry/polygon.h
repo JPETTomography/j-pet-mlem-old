@@ -1,8 +1,5 @@
 #pragma once
 
-#include <iostream>
-#include <cmath>
-
 #include "point.h"
 #include "2d/barrel/event.h"
 #include "util/array.h"
@@ -22,7 +19,6 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   using Point = PET2D::Point<F>;
   using Event = Barrel::Event<F>;
   using Intersections = util::array<2, Point>;
-  using svg_ostream = util::svg_ostream<F>;
 
   Polygon& rotate(Angle phi) {
     for (auto& p : *this) {
@@ -65,7 +61,7 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   F max_distance() {
     F distance = 0;
     for (auto& p : *this) {
-      distance = std::max(distance, p.length());
+      distance = compat::max(distance, p.length());
     }
     return distance;
   }
@@ -95,6 +91,8 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   }
 
 #if !__CUDACC__
+  using svg_ostream = util::svg_ostream<F>;
+
   friend svg_ostream& operator<<(svg_ostream& svg, Polygon& pg) {
     svg << "<polygon points=\"";
     for (auto it = pg.begin(); it != pg.end(); ++it) {
