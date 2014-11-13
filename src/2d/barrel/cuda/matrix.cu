@@ -1,7 +1,3 @@
-// FIXME: stupid workaround for GCC or NVCC bug causing errors if this not gets
-// included first
-#include <type_traits>
-
 #include <cuda_runtime.h>
 #include <stdio.h>
 
