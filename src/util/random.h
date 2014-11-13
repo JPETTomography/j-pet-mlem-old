@@ -31,14 +31,14 @@ class tausworthe {
 
   /// Loads generator state
   _ void load(const state_type state) {
-    for (int i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
+    for (size_t i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
       seeds[i] = state[i];
     }
   }
 
   /// Save generator state
   _ void save(state_type state) const {
-    for (int i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
+    for (size_t i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
       state[i] = seeds[i];
     }
   }
@@ -59,7 +59,7 @@ class tausworthe {
 #else
     srand(time(NULL));
 #endif
-    for (int i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
+    for (size_t i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
       result_type r;
 #if !_MSC_VER
       while ((r = static_cast<result_type>(lrand48())) < 128)

@@ -32,10 +32,15 @@ TEST("util/array") {
   }
 
   SECTION("no_non_trivial_desctructors") {
+#if SHOULD_FAIL
     // this will fail with: "no member named"
-    //   using Boos = util::array<3, Boo>;
+    using Boos = util::array<3, Boo>;
+#endif
     // we must explicitly specify storage type and alignment
     using Boos = util::array<3, Boo, alignof(Boo), Boo>;
+    CHECK(Boos::value_size == sizeof(Boo));
+    CHECK(Boos::storage_size == sizeof(Boo));
+    CHECK(Boos::alignment == alignof(Boo));
   }
 
   SECTION("custom_alignment") {
