@@ -11,7 +11,9 @@ template <typename SType = int> class LOR {
  public:
   using S = SType;
 
-  _ LOR(S first, S second) : first(first), second(second) {}
+  _ LOR(S first, S second)
+      : first(compat::max(first, second)),  // first is always greater
+        second(compat::min(first, second)) {}
   _ LOR() = default;
 
   S first, second;
@@ -34,7 +36,7 @@ template <typename SType = int> class LOR {
   }
 
   static const LOR end_for_detectors(S n_detectors) {
-    return LOR(0, n_detectors);
+    return LOR(n_detectors, 0);
   }
 
   _ bool operator!=(const LOR& lor) const {
