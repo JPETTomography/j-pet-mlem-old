@@ -27,16 +27,18 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
 
   auto n_blocks = cl.get<int>("cuda-blocks");
   auto n_threads_per_block = cl.get<int>("cuda-threads");
+  auto n_threads = n_blocks * n_threads_per_block;
 
   auto& n_emissions = cl.get<int>("n-emissions");
-  int iteration_per_thread = n_emissions / (n_blocks * n_threads_per_block);
+  int n_emissions_per_thread = (n_emissions + n_threads - 1) / n_threads;
 
   // Number of emissions will be rounded to block size
-  n_emissions = iteration_per_thread * n_blocks * n_threads_per_block;
+  n_emissions = n_emissions_per_thread * n_blocks * n_threads_per_block;
 
   std::cout << "               blocks = " << n_blocks << std::endl
             << "    threads per block = " << n_threads_per_block << std::endl
-            << " emissions per thread = " << iteration_per_thread << std::endl;
+            << " emissions per thread = " << n_emissions_per_thread << std::endl
+            << "      total emissions = " << n_emissions << std::endl;
 
   auto tof_step = cl.get<double>("tof-step");
   int n_tof_positions = 1;
@@ -86,16 +88,19 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
 
     progress(pixel.index());
 
-    gpu_matrix(pixel, n_emissions, pixel_hits.data());
+    gpu_matrix(pixel, n_emissions_per_thread, pixel_hits.data());
 
-//    for (LOR lor(0, 0); lor.index() < detector_ring.n_lors; ++lor) {
-//      for (int position = 0; position < n_tof_positions; ++position) {
-//        auto hits = pixel_hits[n_tof_positions * lor.index() + position];
-//        if (hits > 0) {
-//          output_matrix.emplace_back(lor, position, pixel, hits);
-//        }
-//      }
-//    }
+#if FIXME_I_AM_BROKEN
+    // FIXME: this is slow and broken!
+    for (LOR lor(0, 0); lor.index() < detector_ring.n_lors; ++lor) {
+      for (int position = 0; position < n_tof_positions; ++position) {
+        auto hits = pixel_hits[n_tof_positions * lor.index() + position];
+        if (hits > 0) {
+          output_matrix.emplace_back(lor, position, pixel, hits);
+        }
+      }
+    }
+#endif
 
     progress(pixel.index(), true);
   }
