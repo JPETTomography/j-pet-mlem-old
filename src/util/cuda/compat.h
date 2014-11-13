@@ -18,7 +18,8 @@
 
 #include <type_traits>  // FIXME: Needed by GCC+NVCC prior including cmath
 #if !__CUDACC__
-#include <cmath>
+#include <algorithm>
+#include <limits>
 #else
 #include <limits.h>
 #include <float.h>

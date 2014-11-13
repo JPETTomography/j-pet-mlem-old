@@ -15,11 +15,6 @@ namespace PET2D {
 namespace Barrel {
 namespace GPU {
 
-#if !__CUDACC__
-using OutputMatrix = SparseMatrix<Pixel<>, LOR<>>;
-OutputMatrix run_matrix(cmdline::parser& cl);
-#endif
-
 /// \cond PRIVATE
 
 using Point = PET2D::Point<float>;
@@ -29,6 +24,47 @@ using Event = Barrel::Event<float>;
 using SquareDetector = Barrel::SquareDetector<float>;
 using DetectorRing = Barrel::DetectorRing<SquareDetector>;
 using Model = ScintilatorAccept<float>;
+#if !__CUDACC__
+using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR>;
+#endif
+
+class Matrix {
+ public:
+  Matrix(const DetectorRing& detector_ring,
+         int n_threads_per_block,
+         int n_blocks,
+         float pixel_size,
+         int n_positions,
+         float tof_step,
+         float length_scale,
+         unsigned int* prng_seed);
+
+  ~Matrix();
+
+  void operator()(const Pixel pixel,  //< pixel to be processed
+                  int n_emissions,    //< numer of emissions
+                  int* pixel_hits     //<[out] result pixel hits
+                  );
+
+#if !__CUDACC__
+  static OutputMatrix run(cmdline::parser& cl);
+#endif
+
+ private:
+  DetectorRing* gpu_detector_ring;
+  const int n_threads_per_block;
+  const int n_blocks;
+  const float pixel_size;
+  const int n_positions;
+  const float tof_step;
+  const float length_scale;
+  unsigned int* gpu_prng_seed;
+  const int pixel_hits_count;
+  const int pixel_hits_size;
+  const int output_size;
+  int* output;
+  int* gpu_output;
+};
 
 /// \endcond
 

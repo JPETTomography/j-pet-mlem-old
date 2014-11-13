@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "util/cuda/debug.h"  // catches all CUDA errors
+#include "util/cuda/memory.h"
 #include "util/random.h"
 
 #include "matrix.h"
@@ -16,6 +17,7 @@ __global__ static void kernel(const Pixel pixel,
                               float pixel_size,
                               int n_positions,
                               float tof_step,
+                              float length_scale,
                               unsigned int* gpu_prng_seed,
                               int* pixel_hits) {
 
@@ -25,18 +27,11 @@ __global__ static void kernel(const Pixel pixel,
   util::random::tausworthe gen(&gpu_prng_seed[4 * tid]);
   util::random::uniform_real_distribution<float> one_dis(0, 1);
 
-  __shared__
-      std::aligned_storage<sizeof(DetectorRing), alignof(DetectorRing)>::type
-          detector_ring_storage;
-  DetectorRing& detector_ring =
-      *reinterpret_cast<DetectorRing*>(&detector_ring_storage);
+  __shared__ util::cuda::copy<DetectorRing> detector_ring_copier;
+  detector_ring_copier = detector_ring_ptr;
+  DetectorRing& detector_ring = *detector_ring_copier;
 
-  if (threadIdx.x == 0) {
-    memcpy(&detector_ring, detector_ring_ptr, sizeof(DetectorRing));
-  }
-  __syncthreads();
-
-  Model model(0);
+  Model model(length_scale);
 
   for (int i = 0; i < n_emissions; ++i) {
     auto rx = (pixel.x + one_dis(gen)) * pixel_size;
@@ -68,65 +63,76 @@ __global__ static void kernel(const Pixel pixel,
   gen.save(&gpu_prng_seed[4 * tid]);
 }
 
-bool run_matrix(Pixel pixel,
-                const DetectorRing& detector_ring,
-                int n_emissions,
-                int n_threads_per_block,
-                int n_blocks,
-                float pixel_size,
-                int n_positions,
-                float tof_step,
-                unsigned int* prng_seed,
-                int* pixel_hits) {
+Matrix::Matrix(const DetectorRing& detector_ring,
+               int n_threads_per_block,
+               int n_blocks,
+               float pixel_size,
+               int n_positions,
+               float tof_step,
+               float length_scale,
+               unsigned int* prng_seed)
+    : n_threads_per_block(n_threads_per_block),
+      n_blocks(n_blocks),
+      pixel_size(pixel_size),
+      n_positions(n_positions),
+      tof_step(tof_step),
+      length_scale(length_scale),
+      pixel_hits_count(detector_ring.n_lors * n_positions),
+      pixel_hits_size(pixel_hits_count * sizeof(int)),
+      output_size(n_blocks * pixel_hits_size) {
 
-  dim3 blocks(n_blocks);
-  dim3 threads(n_threads_per_block);
+  cudaMalloc((void**)&gpu_detector_ring, sizeof(DetectorRing));
+  cudaMemcpy(gpu_detector_ring,
+             &detector_ring,
+             sizeof(DetectorRing),
+             cudaMemcpyHostToDevice);
 
-  int output_size =
-      n_blocks * detector_ring.n_lors * n_positions * sizeof(*pixel_hits);
-  int* gpu_output;
+  output = new int[n_blocks * detector_ring.n_lors * n_positions];
   cudaMalloc((void**)&gpu_output, output_size);
-  cudaMemset(gpu_output, 0, output_size);
 
   int prng_seed_size = n_blocks * n_threads_per_block * 4 * sizeof(*prng_seed);
-  unsigned int* gpu_prng_seed;
   cudaMalloc((void**)&gpu_prng_seed, prng_seed_size);
   cudaMemcpy(gpu_prng_seed, prng_seed, prng_seed_size, cudaMemcpyHostToDevice);
+}
 
-  cudaEvent_t start, stop;
-  cudaEventCreate(&start);
-  cudaEventCreate(&stop);
-  cudaEventRecord(start);
+Matrix::~Matrix() {
+  cudaFree(gpu_prng_seed);
+  cudaFree(gpu_output);
+  delete[] output;
+  cudaFree(gpu_detector_ring);
+}
+
+void Matrix::operator()(Pixel pixel, int n_emissions, int* pixel_hits) {
+
+  cudaMemset(gpu_output, 0, output_size);
 
 #if __CUDACC__
+  dim3 blocks(n_blocks);
+  dim3 threads(n_threads_per_block);
 #define kernel kernel << <blocks, threads>>>
 #endif
   kernel(pixel,
-         &detector_ring,
+         gpu_detector_ring,
          n_emissions,
          pixel_size,
          n_positions,
          tof_step,
+         length_scale,
          gpu_prng_seed,
          gpu_output);
 
   cudaThreadSynchronize();
+  cudaMemcpy(output, gpu_output, output_size, cudaMemcpyDeviceToHost);
 
-  cudaEventRecord(stop);
-  cudaEventSynchronize(stop);
-
-  float milliseconds = 0;
-  cudaEventElapsedTime(&milliseconds, start, stop);
-
-  cudaMemcpy(prng_seed, gpu_prng_seed, prng_seed_size, cudaMemcpyDeviceToHost);
-  cudaFree(gpu_prng_seed);
-
-  int* cpu_output = new int[n_blocks * detector_ring.n_lors * n_positions];
-  cudaMemcpy(cpu_output, gpu_output, output_size, cudaMemcpyDeviceToHost);
-  cudaFree(gpu_output);
-  delete[] cpu_output;
-
-  return 0;
+  // Reduce blocks into pixel hits:
+  // 1. First block can be simply copied
+  memcpy(pixel_hits, output, pixel_hits_size);
+  // 2. Next blocks must be reduced
+  for (int block = 1; block < n_blocks; ++block) {
+    for (int i = 0; i < pixel_hits_count; ++i) {
+      pixel_hits[i] += output[block * pixel_hits_count + i];
+    }
+  }
 }
 
 }  // GPU

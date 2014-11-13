@@ -266,7 +266,7 @@ int main(int argc, char* argv[]) {
 // these are wrappers running actual simulation
 #if HAVE_CUDA
 #define _RUN(cl, detector_ring, model) \
-  cl.exist("gpu") ? GPU::run_matrix(cl) : run_matrix(cl, detector_ring, model)
+  cl.exist("gpu") ? GPU::Matrix::run(cl) : run_matrix(cl, detector_ring, model)
 #else
 #define _RUN(cl, detector_ring, model) run_matrix(cl, detector_ring, model)
 #endif
