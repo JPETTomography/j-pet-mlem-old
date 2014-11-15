@@ -48,11 +48,10 @@ template <typename FType = double, typename SType = int> class Circle {
     if (sq2 > 0) {
       auto sq = sqrt(sq2);
       auto asq = e.a * sq;
-      return Secant(
-          { Point((e.ac - sq) / e.a2_b2, (e.b2c + asq) / e.b_a2_b2),
-            Point((e.ac + sq) / e.a2_b2, (e.b2c - asq) / e.b_a2_b2) });
+      return Secant{ Point((e.ac - sq) / e.a2_b2, (e.b2c + asq) / e.b_a2_b2),
+                     Point((e.ac + sq) / e.a2_b2, (e.b2c - asq) / e.b_a2_b2) };
     } else if (sq2 == 0) {
-      return Secant({ Point(e.ac / e.a2_b2, e.b2c / e.b_a2_b2) });
+      return Secant{ Point(e.ac / e.a2_b2, e.b2c / e.b_a2_b2) };
     } else {
       return Secant();
     }

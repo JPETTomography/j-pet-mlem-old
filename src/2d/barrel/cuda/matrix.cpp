@@ -61,12 +61,10 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
 
   std::vector<unsigned int> prng_seed(n_blocks * n_threads_per_block * 4);
 
-  std::default_random_engine gen;
-  std::uniform_int_distribution<unsigned int> dis(1024, 1000000);
+  util::random::tausworthe gen;
   gen.seed(345555);
   for (int i = 0; i < 4 * n_blocks * n_threads_per_block; ++i) {
-    // prng_seed[i] = 53445 + i; //dis(gen);
-    prng_seed[i] = dis(gen);
+    prng_seed[i] = gen();  // 53445 + i
   }
 
   GPU::Matrix gpu_matrix(detector_ring,
