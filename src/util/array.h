@@ -27,28 +27,9 @@ class array {
 
  public:
   _ array() : s(0) {}
-
-#if !_MSC_VER || __CUDACC__
-  template <typename... Args>
-  _ array(Args&&... e)
-      : s(sizeof...(e)), v{ *reinterpret_cast<storage_type*>(&e)... } {}
-#else
- private:
-  /// Emulates initialization using recursive variadic templates
-  template <std::size_t I, typename Arg, typename... Args>
-  void _init(Arg&& first, Args&&... rest) {
-    new (&v[I]) value_type(std::forward<Arg&&>(first));
-    _init<I + 1>(std::forward<Args&&>(rest)...);
+  template <typename... Args> explicit _ array(Args&&... e) : s(sizeof...(e)) {
+    __init<0>(std::forward<Args>(e)...);
   }
-  template <std::size_t I, typename Arg> void _init(Arg&& last) {
-    new (&v[I]) value_type(std::forward<Arg&&>(last));
-  }
-
- public:
-  template <typename... Args> array(Args&&... e) : s(sizeof...(e)) {
-    _init<0>(std::forward<Args&&>(e)...);
-  }
-#endif
 
   /// Returns if the array is full (has max number of elements)
   _ bool full() const { return (s == MaxSize); }
@@ -101,7 +82,16 @@ class array {
   _ const_reference back() const { return at(s - 1); }
 
  private:
-  std::size_t s;
   storage_type v[MaxSize];
+  std::size_t s;
+
+  template <std::size_t I, typename... Args>
+  _ void __init(T&& first, Args&&... rest) {
+    new (&v[I]) value_type(std::forward<T>(first));
+    __init<I + 1>(std::forward<Args>(rest)...);
+  }
+  template <std::size_t I> _ void __init(T&& last) {
+    new (&v[I]) value_type(std::forward<T>(last));
+  }
 };
 }  // util
