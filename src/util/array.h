@@ -4,7 +4,9 @@
 #include <type_traits>
 #include <utility>
 
+#ifndef _
 #include "cuda/compat.h"
+#endif
 
 namespace util {
 
