@@ -67,9 +67,9 @@ class array {
     new (&v[s++]) value_type(std::forward<Args&&>(args)...);
   }
 
-  _ reference at(size_type i) { return *reinterpret_cast<pointer>(&v[i]); }
+  _ reference at(size_type i) { return reinterpret_cast<reference>(v[i]); }
   _ const_reference at(size_type i) const {
-    return *reinterpret_cast<const_pointer>(&v[i]);
+    return reinterpret_cast<const_reference>(v[i]);
   }
 
   _ reference operator[](size_type i) { return at(i); }
