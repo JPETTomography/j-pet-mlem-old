@@ -61,9 +61,7 @@ class Matrix {
   unsigned int* gpu_prng_seed;
   const int pixel_hits_count;
   const int pixel_hits_size;
-  const int output_size;
-  int* output;
-  int* gpu_output;
+  int* gpu_pixel_hits;
 };
 
 /// \endcond

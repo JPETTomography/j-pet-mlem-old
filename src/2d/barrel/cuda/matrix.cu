@@ -20,12 +20,12 @@ __global__ static void kernel(const Pixel pixel,
                               float length_scale,
                               unsigned int* gpu_prng_seed,
                               int* pixel_hits) {
-
   bool tof = tof_step > 0;
   int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
   util::random::tausworthe gen(&gpu_prng_seed[4 * tid]);
   util::random::uniform_real_distribution<float> one_dis(0, 1);
+  util::random::uniform_real_distribution<float> pi_dis(0, (float)M_PI);
 
   __shared__ util::cuda::copy<DetectorRing> detector_ring_copier;
   detector_ring_copier = detector_ring_ptr;
@@ -36,7 +36,7 @@ __global__ static void kernel(const Pixel pixel,
   for (int i = 0; i < n_emissions; ++i) {
     auto rx = (pixel.x + one_dis(gen)) * pixel_size;
     auto ry = (pixel.y + one_dis(gen)) * pixel_size;
-    auto angle = one_dis(gen) * (float)M_PI;
+    auto angle = pi_dis(gen);
 
     // ensure we are within a triangle
     if (rx > ry)
@@ -54,8 +54,7 @@ __global__ static void kernel(const Pixel pixel,
 
     // do we have hit on both sides?
     if (hits >= 2) {
-      auto pixel_index =
-          blockIdx.x * (lor.index() * n_positions + quantized_position);
+      auto pixel_index = lor.index() * n_positions + quantized_position;
       atomicAdd(&pixel_hits[pixel_index], 1);
     }
   }
@@ -78,8 +77,7 @@ Matrix::Matrix(const DetectorRing& detector_ring,
       tof_step(tof_step),
       length_scale(length_scale),
       pixel_hits_count(detector_ring.n_lors * n_positions),
-      pixel_hits_size(pixel_hits_count * sizeof(int)),
-      output_size(n_blocks * pixel_hits_size) {
+      pixel_hits_size(pixel_hits_count * sizeof(int)) {
 
   cudaMalloc((void**)&gpu_detector_ring, sizeof(DetectorRing));
   cudaMemcpy(gpu_detector_ring,
@@ -87,8 +85,7 @@ Matrix::Matrix(const DetectorRing& detector_ring,
              sizeof(DetectorRing),
              cudaMemcpyHostToDevice);
 
-  output = new int[n_blocks * detector_ring.n_lors * n_positions];
-  cudaMalloc((void**)&gpu_output, output_size);
+  cudaMalloc((void**)&gpu_pixel_hits, pixel_hits_size);
 
   int prng_seed_size = n_blocks * n_threads_per_block * 4 * sizeof(*prng_seed);
   cudaMalloc((void**)&gpu_prng_seed, prng_seed_size);
@@ -97,14 +94,13 @@ Matrix::Matrix(const DetectorRing& detector_ring,
 
 Matrix::~Matrix() {
   cudaFree(gpu_prng_seed);
-  cudaFree(gpu_output);
-  delete[] output;
+  cudaFree(gpu_pixel_hits);
   cudaFree(gpu_detector_ring);
 }
 
 void Matrix::operator()(Pixel pixel, int n_emissions, int* pixel_hits) {
 
-  cudaMemset(gpu_output, 0, output_size);
+  cudaMemset(gpu_pixel_hits, 0, pixel_hits_size);
 
 #if __CUDACC__
   dim3 blocks(n_blocks);
@@ -119,20 +115,11 @@ void Matrix::operator()(Pixel pixel, int n_emissions, int* pixel_hits) {
          tof_step,
          length_scale,
          gpu_prng_seed,
-         gpu_output);
+         gpu_pixel_hits);
 
   cudaThreadSynchronize();
-  cudaMemcpy(output, gpu_output, output_size, cudaMemcpyDeviceToHost);
-
-  // Reduce blocks into pixel hits:
-  // 1. First block can be simply copied
-  memcpy(pixel_hits, output, pixel_hits_size);
-  // 2. Next blocks must be reduced
-  for (int block = 1; block < n_blocks; ++block) {
-    for (int i = 0; i < pixel_hits_count; ++i) {
-      pixel_hits[i] += output[block * pixel_hits_count + i];
-    }
-  }
+  cudaMemcpy(
+      pixel_hits, gpu_pixel_hits, pixel_hits_size, cudaMemcpyDeviceToHost);
 }
 
 }  // GPU
