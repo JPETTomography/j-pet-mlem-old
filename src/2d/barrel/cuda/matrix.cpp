@@ -78,27 +78,31 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
 
   std::vector<int> pixel_hits(detector_ring.n_lors * n_tof_positions, 0);
 
-  util::progress progress(1, Pixel::end_for_n_pixels_in_row(n_pixels).index());
+  std::vector<LOR> lor_map;
+  lor_map.resize(detector_ring.n_lors);
+  for (LOR lor(0, 0); lor < LOR::end_for_detectors(detector_ring.n_detectors);
+       ++lor) {
+    lor_map[lor.index()] = lor;
+  }
 
-  for (Pixel pixel(0, 0);  // start from central pixel
-       pixel < Pixel::end_for_n_pixels_in_row(n_pixels);
-       ++pixel) {
+  auto end_pixel = Pixel::end_for_n_pixels_in_row(n_pixels / 2);
+  auto n_pixels_total = end_pixel.index();
+  util::progress progress(1, n_pixels_total);
 
+  for (Pixel pixel(0, 0); pixel < end_pixel; ++pixel) {
     progress(pixel.index());
 
     gpu_matrix(pixel, n_emissions_per_thread, pixel_hits.data());
 
-#if FIXME_I_AM_BROKEN
-    // FIXME: this is slow and broken!
-    for (LOR lor(0, 0); lor.index() < detector_ring.n_lors; ++lor) {
+    for (int lor_index = 0; lor_index < lor_map.size(); ++lor_index) {
+      auto lor = lor_map[lor_index];
       for (int position = 0; position < n_tof_positions; ++position) {
-        auto hits = pixel_hits[n_tof_positions * lor.index() + position];
+        auto hits = pixel_hits[n_tof_positions * lor_index + position];
         if (hits > 0) {
           output_matrix.emplace_back(lor, position, pixel, hits);
         }
       }
     }
-#endif
 
     progress(pixel.index(), true);
   }
