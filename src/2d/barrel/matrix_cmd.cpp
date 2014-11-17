@@ -46,6 +46,9 @@ using TriangleDetectorRing = DetectorRing<TriangleDetector<>>;
 using HexagonalDetectorRing = DetectorRing<PolygonalDetector<6>>;
 
 template <typename DetectorRing, typename Model>
+void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring);
+
+template <typename DetectorRing, typename Model>
 SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
                                         DetectorRing& detector_ring,
                                         Model& model);
@@ -270,11 +273,12 @@ int main(int argc, char* argv[]) {
 #else
 #define _RUN(cl, detector_ring, model) run_matrix(cl, detector_ring, model)
 #endif
-#define RUN(detector_type, model_type, ...)                     \
-  detector_type detector_ring(                                  \
-      n_detectors, radius, w_detector, h_detector, d_detector); \
-  model_type model{ __VA_ARGS__ };                              \
-  auto sparse_matrix = _RUN(cl, detector_ring, model);          \
+#define RUN(detector_type, model_type, ...)                       \
+  detector_type detector_ring(                                    \
+      n_detectors, radius, w_detector, h_detector, d_detector);   \
+  model_type model{ __VA_ARGS__ };                                \
+  print_parameters<detector_type, model_type>(cl, detector_ring); \
+  auto sparse_matrix = _RUN(cl, detector_ring, model);            \
   post_process(cl, detector_ring, sparse_matrix)
 
     // run simmulation on given detector model & shape
@@ -319,6 +323,33 @@ int main(int argc, char* argv[]) {
     std::cerr << "error: " << ex << std::endl;
   }
   return 1;
+}
+
+template <typename DetectorRing, typename Model>
+void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring) {
+  auto& n_pixels = cl.get<int>("n-pixels");
+  auto& n_emissions = cl.get<int>("n-emissions");
+  auto& tof_step = cl.get<double>("tof-step");
+  auto verbose = cl.exist("verbose");
+  int n_tof_positions = 1;
+  double max_bias = 0;
+  if (cl.exist("tof-step") && tof_step > 0) {
+    max_bias = Model::max_bias();
+    n_tof_positions = detector_ring.n_positions(tof_step, max_bias);
+  }
+  if (verbose) {
+    std::cerr << "Monte-Carlo:" << std::endl;
+#if _OPENMP
+    std::cerr << "   OpenMP threads = " << omp_get_max_threads() << std::endl;
+#endif
+    std::cerr << "    pixels in row = " << n_pixels << std::endl;
+    std::cerr << "     outer radius = " << detector_ring.outer_radius()
+              << std::endl;
+    std::cerr << "         max bias = " << max_bias << std::endl;
+    std::cerr << "         TOF step = " << tof_step << std::endl;
+    std::cerr << "    TOF positions = " << n_tof_positions << std::endl;
+    std::cerr << "        emissions = " << n_emissions << std::endl;
+  }
 }
 
 template <typename DetectorRing, typename Model>
@@ -395,20 +426,6 @@ SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
   if (!sparse_matrix.empty()) {
     matrix << sparse_matrix;
     sparse_matrix.resize(0);
-  }
-
-  if (verbose) {
-    std::cerr << "Monte-Carlo:" << std::endl;
-#if _OPENMP
-    std::cerr << " threads       = " << omp_get_max_threads() << std::endl;
-#endif
-    std::cerr << " pixels in row = " << n_pixels << std::endl;
-    std::cerr << " outer radius  = " << detector_ring.outer_radius()
-              << std::endl;
-    std::cerr << " max bias      = " << max_bias << std::endl;
-    std::cerr << " TOF step      = " << tof_step << std::endl;
-    std::cerr << " TOF positions = " << n_tof_positions << std::endl;
-    std::cerr << " emissions     = " << n_emissions << std::endl;
   }
 
 #ifdef __linux__

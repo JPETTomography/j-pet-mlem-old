@@ -30,15 +30,18 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
   auto n_threads = n_blocks * n_threads_per_block;
 
   auto& n_emissions = cl.get<int>("n-emissions");
-  int n_emissions_per_thread = (n_emissions + n_threads - 1) / n_threads;
+  int n_thread_emissions = (n_emissions + n_threads - 1) / n_threads;
 
   // Number of emissions will be rounded to block size
-  n_emissions = n_emissions_per_thread * n_blocks * n_threads_per_block;
+  n_emissions = n_thread_emissions * n_blocks * n_threads_per_block;
 
-  std::cout << "               blocks = " << n_blocks << std::endl
-            << "    threads per block = " << n_threads_per_block << std::endl
-            << " emissions per thread = " << n_emissions_per_thread << std::endl
-            << "      total emissions = " << n_emissions << std::endl;
+  if (cl.exist("verbose")) {
+    std::cout << "GPU parameters:" << std::endl;
+    std::cout << "           blocks = " << n_blocks << std::endl
+              << "threads per block = " << n_threads_per_block << std::endl
+              << " thread emissions = " << n_thread_emissions << std::endl
+              << "  total emissions = " << n_emissions << std::endl;
+  }
 
   auto tof_step = cl.get<double>("tof-step");
   int n_tof_positions = 1;
@@ -92,7 +95,7 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
   for (Pixel pixel(0, 0); pixel < end_pixel; ++pixel) {
     progress(pixel.index());
 
-    gpu_matrix(pixel, n_emissions_per_thread, pixel_hits.data());
+    gpu_matrix(pixel, n_thread_emissions, pixel_hits.data());
 
     for (int lor_index = 0; lor_index < lor_map.size(); ++lor_index) {
       auto lor = lor_map[lor_index];
