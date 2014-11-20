@@ -97,7 +97,7 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
 
     gpu_matrix(pixel, n_thread_emissions, pixel_hits.data());
 
-    for (int lor_index = 0; lor_index < lor_map.size(); ++lor_index) {
+    for (size_t lor_index = 0; lor_index < lor_map.size(); ++lor_index) {
       auto lor = lor_map[lor_index];
       for (int position = 0; position < n_tof_positions; ++position) {
         auto hits = pixel_hits[n_tof_positions * lor_index + position];
