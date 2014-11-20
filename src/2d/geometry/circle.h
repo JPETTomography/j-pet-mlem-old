@@ -42,8 +42,14 @@ template <typename FType = double, typename SType = int> class Circle {
   using SecantAngles = util::array<2, Angle>;
   using SecantSections = util::array<2, S>;
 
+  _ bool intersects(const Event& e) {
+    auto cabr2 = e.a2_b2 * radius2 - e.c2;
+    auto sq2 = e.b2 * cabr2;
+    return sq2 > 0;
+  }
+
   _ Secant secant(const Event& e) {
-    auto cabr2 = (-(e.c * e.c) + e.a2_b2 * radius2);
+    auto cabr2 = e.a2_b2 * radius2 - e.c2;
     auto sq2 = e.b2 * cabr2;
     if (sq2 > 0) {
       auto sq = sqrt(sq2);

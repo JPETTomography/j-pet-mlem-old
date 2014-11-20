@@ -12,7 +12,8 @@ namespace PET2D {
 namespace Barrel {
 
 /// Circular shape detector
-template <typename FType = double> class CircleDetector : public Circle<FType> {
+template <typename FType = double>
+class CircleDetector : public Circle<FType>, public Point<FType> {
  public:
   using F = FType;
   using Base = Circle<F>;
@@ -23,10 +24,10 @@ template <typename FType = double> class CircleDetector : public Circle<FType> {
 
   CircleDetector() = delete;
 
-  CircleDetector(F radius) : Circle<F>(radius), center(0, 0) {}
+  CircleDetector(F radius) : Base(radius), Point(0, 0) {}
 
   // this is for compatibility with square detector
-  CircleDetector(F w, F h, F d) : Base(w / 2), center(0, 0) {
+  CircleDetector(F w, F h, F d) : Base(w / 2), Point(0, 0) {
     (void)d;  // unused
     if (w != h)
       throw("circle detector height and width must be equal");
@@ -34,30 +35,31 @@ template <typename FType = double> class CircleDetector : public Circle<FType> {
 
   static F default_height_for_width(const F w) { return w; }
 
-  CircleDetector(F radius, const Point& center)
-      : Base(radius), center(center) {}
+  CircleDetector(F radius, const Point& center) : Base(radius), Point(center) {}
 
   CircleDetector& rotate(Angle phi) {
-    center.rotate(phi);
+    Point::rotate(phi);
     return *this;
   }
 
   CircleDetector& operator+=(Point t) {
-    center += t;
+    Point::operator+=(t);
     return *this;
   }
 
-  F max_distance() { return center.length() + this->radius; }
-
-  Point center;
+  F max_distance() { return this->length() + this->radius; }
 
   /// \returns itself
   const CircleDetector& circumscribe_circle() const { return *this; }
 
+  _ bool intersects(typename Base::Event e) {
+    return Base::intersects(e - *this);
+  }
+
   _ Intersections intersections(typename Base::Event e) {
-    auto intersections = this->secant(e - center);
+    auto intersections = this->secant(e - *this);
     for (auto& p : intersections) {
-      p += center;
+      p += *this;
     }
     return intersections;
   }
@@ -65,14 +67,14 @@ template <typename FType = double> class CircleDetector : public Circle<FType> {
 #if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
                                           CircleDetector& cd) {
-    svg << "<circle cx=\"" << cd.center.x << "\" cy=\"" << cd.center.y
-        << "\" r=\"" << cd.radius << "\"/>" << std::endl;
+    svg << "<circle cx=\"" << cd.x << "\" cy=\"" << cd.y << "\" r=\""
+        << cd.radius << "\"/>" << std::endl;
     return svg;
   }
 
   friend std::ostream& operator<<(std::ostream& out, CircleDetector& cd) {
-    out << "circle (" << cd.center.x << ", " << cd.center.y << ") radius "
-        << cd.radius << std::endl;
+    out << "circle (" << cd.x << ", " << cd.y << ") radius " << cd.radius
+        << std::endl;
     out << std::flush;
     return out;
   }
