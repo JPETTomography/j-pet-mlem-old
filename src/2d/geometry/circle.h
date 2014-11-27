@@ -43,6 +43,8 @@ template <typename FType = double, typename SType = int> class Circle {
   using SecantSections = util::array<2, S>;
 
   _ bool intersects(const Event& e) {
+    // distance^2 to event from (0, 0) == e.a2_b2 / e.c2
+    // must be less than radius2
     return e.a2_b2 * radius2 > e.c2;
   }
 

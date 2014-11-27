@@ -41,30 +41,38 @@ class CompoundDetector : public util::array<MaxDetectors, DetectorType> {
   /// \return number of coincidences (detector hits)
   /// \todo FIXME: Now returns first index to closest detector
   template <class RandomGenerator, class AcceptanceModel>
-  short detect(RandomGenerator& gen,    ///< random number generator
-               AcceptanceModel& model,  ///< acceptance model
-               const Event& e,          ///< event to be detected
-               LOR& lor,                ///<[out] lor of the event
-               F& position              ///<[out] position of the event
-               ) {
+  std::pair<S, S> detect(RandomGenerator& gen,    ///< random number generator
+                         AcceptanceModel& model,  ///< acceptance model
+                         const Event& e,          ///< event to be detected
+                         LOR& lor,                ///<[out] lor of the event
+                         F& position  ///<[out] position of the event
+                         ) {
     (void)(gen);       // mark as used
     (void)(model);     // mark as used
     (void)(lor);       // mark as used
     (void)(position);  // mark as used
-    int close_indices[MaxDetectors];
-    int n_close_indices = 0;
+    // represent possible detector indices on both sides
+    using CloseIndices = util::array<MaxDetectors, std::pair<S, F>>;
+    CloseIndices close_indices1, close_indices2;
+    auto pe = e.perpendicular();
+    // select only these crossing circle circumscribed on detector
     for (int i = 0; i < c_detectors.size(); ++i) {
       auto& circle = c_detectors[i];
       if (circle.intersects(e)) {
-        close_indices[n_close_indices++] = i;
+        auto side = pe(circle);
+        if (side < 0)
+          close_indices1.emplace_back(i, -side);
+        else
+          close_indices2.emplace_back(i, side);
       }
     }
-    std::sort(
-        &close_indices[0], &close_indices[n_close_indices], [&](int a, int b) {
-          return (e - c_detectors[close_indices[a]]).length2() <
-                 (e - c_detectors[close_indices[b]]).length2();
-        });
-    return close_indices[0];
+    // sort them so the closest go first
+    auto comparator = [](std::pair<S, F> a, std::pair<S, F> b) {
+      return a.second < b.second;
+    };
+    std::sort(close_indices1.begin(), close_indices1.end(), comparator);
+    std::sort(close_indices2.begin(), close_indices2.end(), comparator);
+    return std::make_pair(close_indices1[0].first, close_indices2[0].first);
   }
 
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
