@@ -31,20 +31,20 @@ TEST("2d/barrel/compound_detector/math") {
 
     SECTION("horizontal") {
       Event<> e1(3, 1, 0);
-      CHECK(0 == detector.detect(e1, e1, e1, lor, position).first);
-      CHECK(2 == detector.detect(e1, e1, e1, lor, position).second);
+      CHECK(0 == detector.close_indices(e1).first[0]);
+      CHECK(2 == detector.close_indices(e1).second[0]);
       Event<> e2(3, 4, 0);
-      CHECK(1 == detector.detect(e2, e2, e2, lor, position).first);
-      CHECK(3 == detector.detect(e2, e2, e2, lor, position).second);
+      CHECK(1 == detector.close_indices(e2).first[0]);
+      CHECK(3 == detector.close_indices(e2).second[0]);
     }
 
     SECTION("vertical") {
       Event<> e1(1, 3, M_PI_2);
-      CHECK(0 == detector.detect(e1, e1, e1, lor, position).first);
-      CHECK(1 == detector.detect(e1, e1, e1, lor, position).second);
+      CHECK(0 == detector.close_indices(e1).first[0]);
+      CHECK(1 == detector.close_indices(e1).second[0]);
       Event<> e2(4, 3, M_PI_2);
-      CHECK(2 == detector.detect(e2, e2, e2, lor, position).first);
-      CHECK(3 == detector.detect(e2, e2, e2, lor, position).second);
+      CHECK(2 == detector.close_indices(e2).first[0]);
+      CHECK(3 == detector.close_indices(e2).second[0]);
     }
   }
 
