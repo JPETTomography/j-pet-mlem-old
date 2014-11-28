@@ -4,6 +4,7 @@
 
 #include "model.h"
 #include "compound_detector.h"
+#include "detector_ring.h"
 
 using namespace PET2D;
 using namespace PET2D::Barrel;
@@ -64,5 +65,51 @@ TEST("2d/barrel/compound_detector/math") {
     CHECK(2. == detector.circumscribed(1).radius);
     CHECK(2. == detector.circumscribed(2).radius);
     CHECK(2. == detector.circumscribed(3).radius);
+  }
+}
+
+TEST("2d/barrel/compound_detector/detect") {
+  SECTION("two_rings") {
+    DetectorRing<SquareDetector<>> inner_ring(16, 1., .1, .1);
+    DetectorRing<SquareDetector<>> outer_ring(16, 1.4, .1, .1);
+    CompoundDetector<SquareDetector<>> detector;
+    for (auto& square_detector : inner_ring) {
+      detector.push_back(square_detector);
+    }
+    for (auto& square_detector : outer_ring) {
+      detector.push_back(square_detector);
+    }
+    CHECK(32 == detector.size());
+
+    DetectorRing<>::LOR lor;
+    AlwaysAccept<> model;
+    double position;
+
+    SECTION("horizontal") {
+      Event<> e1(0, 0, 0);
+      auto i1 = detector.close_indices(e1);
+      CHECK(2 == i1.first.size());
+      CHECK(2 == i1.second.size());
+      CHECK(8 == i1.first[0]);
+      CHECK(0 == i1.second[0]);
+      CHECK(24 == i1.first[1]);
+      CHECK(16 == i1.second[1]);
+
+      CHECK(2 == detector.detect(model, model, e1, lor, position));
+
+      Event<> e2(0, .050001, 0);
+      auto i2 = detector.close_indices(e1);
+      CHECK(2 == i2.first.size());
+      CHECK(2 == i2.second.size());
+      CHECK(8 == i2.first[0]);
+      CHECK(0 == i2.second[0]);
+      CHECK(24 == i2.first[1]);
+      CHECK(16 == i2.second[1]);
+
+      CHECK(0 == detector.detect(model, model, e2, lor, position));
+
+      Event<> e3(0, .049999, 0);
+      CHECK(2 == detector.detect(model, model, e3, lor, position));
+    }
   }
 }
