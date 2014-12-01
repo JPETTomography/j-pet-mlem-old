@@ -245,6 +245,11 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
     c_detectors.push_back(this->back().circumscribe_circle());
   }
 
+  void push_back(Detector&& detector) {
+    Base::push_back(std::forward<Detector>(detector));
+    c_detectors.push_back(this->back().circumscribe_circle());
+  }
+
   template <class... Args> void emplace_back(Args&&... args) {
     Base::emplace_back(std::forward<Args>(args)...);
     c_detectors.push_back(this->back().circumscribe_circle());
