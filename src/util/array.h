@@ -28,9 +28,17 @@ class array {
   typedef S storage_type;  ///< must be same size and alignment as value_type
 
  public:
+  /// Make an empty array.
   _ array() : s(0) {}
-  template <typename... Args> explicit _ array(Args&&... e) : s(sizeof...(e)) {
-    __init<0>(std::forward<Args>(e)...);
+  /// Make one element array with given value.
+  explicit _ array(T&& arg) : s(1) {
+    new (&v[0]) value_type(std::forward<T>(arg));
+  }
+  /// Make n-element array with given values.
+  template <typename... Args>
+  explicit _ array(T&& arg, Args&&... args)
+      : s(sizeof...(args) + 1) {
+    __init<0>(std::forward<T>(arg), std::forward<Args>(args)...);
   }
 
   /// Returns if the array is full (has max number of elements)
