@@ -10,8 +10,8 @@ using namespace PET2D::Barrel;
 TEST("2d/barrel/phantom/phantom") {
 
   Phantom<> phantom;
-  phantom.emplace_back(Point<>(1, 1), 2, 2, 0, 0.5);
-  phantom.emplace_back(Point<>(0, 1), 1, 0.5, M_PI / 3, 0.75);
+  phantom.emplace_back(0, 1, 1, 0.5, M_PI / 3, 0.75);
+  phantom.emplace_back(1, 1, 2, 2, 0, 0.5);
 
   SECTION("intensity") {
     REQUIRE(0.50 == phantom.intensity({ 1, 1 }));
