@@ -29,29 +29,6 @@ class TriangleDetector : public PolygonalDetector<3, FType> {
     return w * std::sqrt(static_cast<F>(3)) / 2;
   }
 
-  TriangleDetector& rotate(Angle phi) {
-    TriangleDetector r;
-    for (auto& p : *this) {
-      p.rotate(phi);
-    }
-    return *this;
-  }
-
-  TriangleDetector rotated(Angle phi) {
-    TriangleDetector r;
-    for (auto& p : *this) {
-      r.push_back(p.rotated(phi));
-    }
-    return r;
-  }
-
-  TriangleDetector& operator+=(Point t) {
-    for (auto& p : *this) {
-      p += t;
-    }
-    return *this;
-  }
-
  private:
   TriangleDetector() {}
 };
