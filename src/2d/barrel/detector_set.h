@@ -24,7 +24,7 @@ namespace Barrel {
 template <typename DetectorType = SquareDetector<double>,
           std::size_t MaxDetectors = MAX_DETECTORS,
           typename SType = int>
-class CompoundDetector : public util::array<MaxDetectors, DetectorType> {
+class DetectorSet : public util::array<MaxDetectors, DetectorType> {
  public:
   using Detector = DetectorType;
   using S = SType;
@@ -39,17 +39,16 @@ class CompoundDetector : public util::array<MaxDetectors, DetectorType> {
   using Indices = util::array<MaxDetectors, S>;
   using SideIndices = std::pair<Indices, Indices>;
 
-  CompoundDetector() : Base(), c_inner(0), c_outer(0) {}
+  DetectorSet() : Base(), c_inner(0), c_outer(0) {}
 
-  CompoundDetector(
-      S n_detectors,      ///< number of detectors on ring
-      F radius,           ///< radius of ring
-      F w_detector,       ///< width of single detector (along ring)
-      F h_detector,       ///< height/depth of single detector
-                          ///< (perpendicular to ring)
-      F d_detector = F()  ///< diameter of circle single detector is
-                          ///< inscribed in
-      )
+  DetectorSet(S n_detectors,      ///< number of detectors on ring
+              F radius,           ///< radius of ring
+              F w_detector,       ///< width of single detector (along ring)
+              F h_detector,       ///< height/depth of single detector
+                                  ///< (perpendicular to ring)
+              F d_detector = F()  ///< diameter of circle single detector is
+                                  ///< inscribed in
+              )
       : c_inner(radius),
         c_outer(radius + (d_detector > F() ? d_detector : h_detector)),
         radius_diff(c_outer.radius - c_inner.radius) {
@@ -186,7 +185,7 @@ class CompoundDetector : public util::array<MaxDetectors, DetectorType> {
  public:
 #if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
-                                          CompoundDetector& cd) {
+                                          DetectorSet& cd) {
     svg << cd.c_outer;
     svg << cd.c_inner;
 

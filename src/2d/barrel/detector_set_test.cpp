@@ -3,15 +3,15 @@
 #include "util/test.h"
 
 #include "model.h"
-#include "compound_detector.h"
+#include "detector_set.h"
 #include "detector_ring.h"
 
 using namespace PET2D;
 using namespace PET2D::Barrel;
 
-TEST("2d/barrel/compound_detector/math") {
+TEST("2d/barrel/detector_set/math") {
   SECTION("square_detector") {
-    CompoundDetector<SquareDetector<>> detector;
+    DetectorSet<SquareDetector<>> detector;
     detector.emplace_back(1., 1., 2., 2.);  // 0
     detector.emplace_back(1., 5., 2., 2.);  // 1
     detector.emplace_back(5., 1., 2., 2.);  // 2
@@ -50,7 +50,7 @@ TEST("2d/barrel/compound_detector/math") {
   }
 
   SECTION("circle_detector") {
-    CompoundDetector<CircleDetector<>> detector;
+    DetectorSet<CircleDetector<>> detector;
     detector.emplace_back(2., Point<>(1., 1.));
     detector.emplace_back(2., Point<>(1., 5.));
     detector.emplace_back(2., Point<>(5., 1.));
@@ -68,11 +68,11 @@ TEST("2d/barrel/compound_detector/math") {
   }
 }
 
-TEST("2d/barrel/compound_detector/detect") {
+TEST("2d/barrel/detector_set/detect") {
   SECTION("two_rings") {
     DetectorRing<SquareDetector<>> inner_ring(16, 1., .1, .1);
     DetectorRing<SquareDetector<>> outer_ring(16, 1.4, .1, .1);
-    CompoundDetector<SquareDetector<>> detector;
+    DetectorSet<SquareDetector<>> detector;
     for (auto& square_detector : inner_ring) {
       detector.push_back(square_detector);
     }

@@ -14,7 +14,7 @@
 
 #include "util/random.h"
 #include "detector_ring.h"
-#include "compound_detector.h"
+#include "detector_set.h"
 #include "circle_detector.h"
 #include "triangle_detector.h"
 #include "polygonal_detector.h"
@@ -42,7 +42,7 @@ using namespace PET2D::Barrel;
 
 // all available detector shapes
 template <typename DetectorType>
-using DetectorModel = CompoundDetector<DetectorType>;
+using DetectorModel = DetectorSet<DetectorType>;
 // using DetectorModel = DetectorRing<DetectorType>;
 using SquareDetectorRing = DetectorModel<SquareDetector<>>;
 using CircleDetectorRing = DetectorModel<CircleDetector<>>;
