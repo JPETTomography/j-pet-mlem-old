@@ -20,8 +20,10 @@ template <typename FType = double> struct Event : public PET2D::Point<FType> {
   using Point = PET2D::Point<F>;
   using Base = Point;
 
+  /// Event requires usage of a concrete constructor.
   Event() = delete;
 
+  /// Make emission event at \f$ (x, y) \f$ point and \f$ \phi \f$ angle.
   _ Event(F x, F y, F phi)
       : Event(x,
               y,
@@ -45,35 +47,39 @@ template <typename FType = double> struct Event : public PET2D::Point<FType> {
         inv_b(1 / b) {}
 
  public:
+  /// Make emission event at \f$ p = (x, y) \f$ point and \f$ \phi \f$ angle.
   _ Event(Base p, F phi) : Event(p.x, p.y, phi) {}
 
   // evaluates line equation side on given point
   // 0 means points lies on the line, -1 left, 1 right
   _ F operator()(const Point& p) const { return a * p.x + b * p.y - c; }
 
+  /// \brief Return perpendicular event line.
   /// \returns perpendicular event line
   _ Event perpendicular() const {
     return Event(this->x, this->y, phi + M_PI_2, -b, a);
   }
 
+  /// Make event translated with given vector.
   _ Event operator+(const Point& p) const {
     return Event(this->x + p.x, this->y + p.y, phi, a, b);
   }
 
+  /// Make event translated with given vector.
   _ Event operator-(const Point& p) const {
     return Event(this->x - p.x, this->y - p.y, phi, a, b);
   }
 
-  const F phi;
+  const F phi;  ///< \f$ \phi \f$ angle
 
-  const F a;  ///< line equation coefficient \c a
-  const F b;  ///< line equation coefficient \c b
-  const F c;  ///< line equation coefficient \c c
+  const F a;  ///< line equation coefficient \f$ a \f$
+  const F b;  ///< line equation coefficient \f$ b \f$
+  const F c;  ///< line equation coefficient \f$ c \f$
 
-  const F b2c;    ///< // precalculated \f$ b^2 * c \f$
-  const F ac;     ///< // precalculated \f$ b * c \f$
-  const F c2;     ///< // precalculated \f$ b^2 \f$
-  const F inv_b;  ///< // precalculated \f$ 1 / b \f$
+  const F b2c;    ///< precalculated \f$ b^2 c \f$
+  const F ac;     ///< precalculated \f$ a c \f$
+  const F c2;     ///< precalculated \f$ c^2 \f$
+  const F inv_b;  ///< precalculated \f$ \frac{1}{b} \f$
 };
 }  // Barrel
 }  // PET2D
