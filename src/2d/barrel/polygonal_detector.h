@@ -10,6 +10,7 @@ namespace Barrel {
 template <std::size_t NVertices, typename FType = double>
 class PolygonalDetector : public Polygon<NVertices, FType> {
  public:
+  using Base = Polygon<NVertices, FType>;
   using F = FType;
   using Angle = F;
   using Point = typename Polygon<NVertices, F>::Point;
@@ -27,6 +28,8 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
                          radius * compat::sin(angle));
     }
   }
+
+  PolygonalDetector(Base&& base) : Base(std::forward<Base>(base)) {}
 
   /// \returns circumscribed circular detector
   CircleDetector circumscribe_circle() const {

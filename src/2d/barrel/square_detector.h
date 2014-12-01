@@ -9,6 +9,7 @@ namespace Barrel {
 template <typename FType = double>
 class SquareDetector : public PolygonalDetector<4, FType> {
  public:
+  using Base = PolygonalDetector<4, FType>;
   using F = FType;
   using Point = typename Polygon<4, F>::Point;
 
@@ -26,6 +27,10 @@ class SquareDetector : public PolygonalDetector<4, FType> {
     this->emplace_back(x - w / 2, y - h / 2);
     this->emplace_back(x - w / 2, y + h / 2);
   }
+
+  SquareDetector(Base&& base) : Base(std::forward<Base>(base)) {}
+  SquareDetector(typename Base::Base&& base)
+      : Base(std::forward<typename Base::Base>(base)) {}
 
   static F default_height_for_width(const F w) { return w; }
 
