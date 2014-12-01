@@ -92,10 +92,7 @@ class DetectorRing : public util::array<MaxDetectors, DetectorType> {
   S lors() const { return n_lors; }
   S detectors() const { return n_detectors; }
   F fov_radius() const { return fov_radius_; }
-
-  F max_dl(F max_bias_size) const {
-    return 2.0 * c_outer.radius + max_bias_size;
-  }
+  F max_dl(F max_bias_size) const { return 2 * c_outer.radius + max_bias_size; }
 
   /// Quantizes position across lor
   _ S quantize_position(F position,    ///< position across lor

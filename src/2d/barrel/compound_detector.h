@@ -32,11 +32,59 @@ class CompoundDetector : public util::array<MaxDetectors, DetectorType> {
   using LOR = Barrel::LOR<S>;
   using Pixel = PET2D::Pixel<S>;
   using Point = PET2D::Point<F>;
+  using Circle = PET2D::Circle<F>;
   using Event = Barrel::Event<F>;
   using Base = util::array<MaxDetectors, Detector>;
   using CircleDetector = Barrel::CircleDetector<F>;
   using Indices = util::array<MaxDetectors, S>;
   using SideIndices = std::pair<Indices, Indices>;
+
+  CompoundDetector() : Base(), c_inner(0), c_outer(0) {}
+
+  CompoundDetector(
+      S n_detectors,      ///< number of detectors on ring
+      F radius,           ///< radius of ring
+      F w_detector,       ///< width of single detector (along ring)
+      F h_detector,       ///< height/depth of single detector
+                          ///< (perpendicular to ring)
+      F d_detector = F()  ///< diameter of circle single detector is
+                          ///< inscribed in
+      )
+      : c_inner(radius),
+        c_outer(radius + (d_detector > F() ? d_detector : h_detector)),
+        radius_diff(c_outer.radius - c_inner.radius) {
+    if (radius <= 0)
+      throw("invalid radius");
+    if (w_detector > 0 && h_detector == 0)
+      h_detector = Detector::default_height_for_width(w_detector);
+    // NOTE: detector may return 0 for default height, which means we need to
+    // have height given explicitely
+    if (w_detector <= 0 || h_detector <= 0)
+      throw("invalid detector size");
+    if (n_detectors % 4)
+      throw("number of detectors must be multiple of 4");
+
+    fov_radius_ = radius / M_SQRT2;
+
+    Detector detector_base(w_detector, h_detector, d_detector);
+
+    // move detector to the right edge of inner ring
+    // along zero angle polar coordinate
+    detector_base +=
+        Point(0, radius + (d_detector > F() ? d_detector : h_detector) / 2);
+
+    // fix up outer circle
+    if (d_detector == F()) {
+      c_outer = Circle(detector_base.max_distance());
+    }
+
+    // produce detector ring rotating base detector n times
+    for (auto n = 0; n < n_detectors; ++n) {
+      auto detector = detector_base;
+      detector.rotate(2 * F(M_PI) * n / n_detectors - F(M_PI_2));
+      this->push_back(detector);
+    }
+  }
 
   /// Tries to detect given event.
 
@@ -136,14 +184,27 @@ class CompoundDetector : public util::array<MaxDetectors, DetectorType> {
   }
 
  public:
+#if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
                                           CompoundDetector& cd) {
+    svg << cd.c_outer;
+    svg << cd.c_inner;
+
+    svg << "<g id=\"photomultipiers\">" << std::endl;
+    for (auto& detector : cd.c_detectors) {
+      svg << detector;
+    }
+    svg << "</g>" << std::endl;
+
+    svg << "<g id=\"scintillators\">" << std::endl;
     for (auto& detector : cd) {
       svg << detector;
     }
+    svg << "</g>" << std::endl;
 
     return svg;
   }
+#endif
 
   void push_back(const Detector& detector) {
     Base::push_back(detector);
@@ -157,8 +218,20 @@ class CompoundDetector : public util::array<MaxDetectors, DetectorType> {
 
   const CircleDetector& circumscribed(int i) { return c_detectors[i]; }
 
+  // DetectorRing compatibility
+  _ S quantize_position(F, F, S) { return 0; }
+  S n_positions(F, F) const { return 1; }
+  F radius() const { return c_inner.radius; }
+  F fov_radius() const { return fov_radius_; }
+  F outer_radius() const { return c_outer.radius; }
+  F max_dl(F max_bias_size) const { return 2 * c_outer.radius + max_bias_size; }
+
  private:
+  Circle c_inner;
+  Circle c_outer;
   util::array<MaxDetectors, CircleDetector> c_detectors;
+  F fov_radius_;
+  F radius_diff;
 };
 }
 }
