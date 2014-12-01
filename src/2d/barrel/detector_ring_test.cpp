@@ -7,7 +7,8 @@
 #include "detector_ring.h"
 
 using namespace PET2D;
-using namespace PET2D::Barrel;
+using DetectorRing = Barrel::DetectorRing<Barrel::SquareDetector<>, 512>;
+using Model = Barrel::AlwaysAccept<>;
 
 TEST("2d/barrel/detector_ring/math") {
 
@@ -24,13 +25,13 @@ TEST("2d/barrel/detector_ring/math") {
 
   in >> r >> n_detectors >> w >> h >> n_events;
 
-  DetectorRing<> ring(n_detectors, r, w, h);
+  DetectorRing ring(n_detectors, r, w, h);
 
   for (int i_event = 0; i_event < n_events; ++i_event) {
     double x, y, phi;
     in >> x >> y >> phi;
 
-    DetectorRing<>::Event event(x, y, phi);
+    DetectorRing::Event event(x, y, phi);
 
     in >> n_detectors;
 
@@ -42,10 +43,10 @@ TEST("2d/barrel/detector_ring/math") {
 
     for (int i = 0; i < n_detectors; i++) {
       in >> x >> y;
-      DetectorRing<>::Point p1(x, y);
+      DetectorRing::Point p1(x, y);
 
       in >> x >> y;
-      DetectorRing<>::Point p2(x, y);
+      DetectorRing::Point p2(x, y);
 
       auto inters = ring[detector[i]].intersections(event);
       CHECK(inters.size() == 2);
@@ -57,8 +58,8 @@ TEST("2d/barrel/detector_ring/math") {
     }
 
     // this is not yet a complete tests....
-    DetectorRing<>::LOR lor;
-    AlwaysAccept<> model;
+    DetectorRing::LOR lor;
+    Model model;
     double position;
     auto hits = ring.detect(model, model, event, lor, position);
 

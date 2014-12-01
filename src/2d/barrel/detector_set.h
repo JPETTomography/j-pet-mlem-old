@@ -55,9 +55,12 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
               F d_detector = F()  ///< diameter of circle single detector is
                                   ///< inscribed in
               )
-      : fov_radius(radius / M_SQRT2),
+      : Base(),
+        fov_radius(radius / M_SQRT2),
         c_inner(radius),
         c_outer(radius + (d_detector > F() ? d_detector : h_detector)) {
+    if (n_detectors > static_cast<S>(MaxDetectors))
+      throw("too many detectors");
     if (radius <= 0)
       throw("invalid radius");
     if (w_detector > 0 && h_detector == 0)
@@ -159,7 +162,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
     S distances[MaxDetectors];
     auto pe = e.perpendicular();
     // select only these crossing circle circumscribed on detector
-    for (int i = 0; i < c_detectors.size(); ++i) {
+    for (int i = 0; i < static_cast<int>(c_detectors.size()); ++i) {
       auto& circle = c_detectors[i];
       if (circle.intersects(e)) {
         auto distance = pe(circle);
