@@ -7,6 +7,14 @@ namespace PET2D {
 namespace Barrel {
 
 /// Model for 2D barrel PET event
+
+/// Event is described generally by point \f$ (x, y) \f$ and \f$ \phi \f$ angle,
+/// however for purpose of various intersection calculations this class holds
+/// general line equation \f$ a x + b y + c = 1 \f$ coefficients.
+/// This also stores several precalculated variables.
+///
+/// \note Since \f$ a = sin(\phi), b = -cos(\phi) \f$ then
+/// \f$ a^2 + b^2 = 1 \f$.
 template <typename FType = double> struct Event : public PET2D::Point<FType> {
   using F = FType;
   using Point = PET2D::Point<F>;
@@ -58,10 +66,14 @@ template <typename FType = double> struct Event : public PET2D::Point<FType> {
 
   const F phi;
 
-  // line equation coefficients
-  const F a, b, c;
-  // precalculated variables
-  const F b2c, ac, c2, inv_b;
+  const F a;  ///< line equation coefficient \c a
+  const F b;  ///< line equation coefficient \c b
+  const F c;  ///< line equation coefficient \c c
+
+  const F b2c;    ///< // precalculated \f$ b^2 * c \f$
+  const F ac;     ///< // precalculated \f$ b * c \f$
+  const F c2;     ///< // precalculated \f$ b^2 \f$
+  const F inv_b;  ///< // precalculated \f$ 1 / b \f$
 };
 }  // Barrel
 }  // PET2D

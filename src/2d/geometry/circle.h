@@ -42,10 +42,13 @@ template <typename FType = double, typename SType = int> class Circle {
   using SecantAngles = util::array<2, Angle>;
   using SecantSections = util::array<2, S>;
 
-  _ bool intersects(const Event& e) const {
-    return radius2 > e.c2;
-  }
+  _ bool intersects(const Event& e) const { return radius2 > e.c2; }
 
+  /// \brief Returns secant for given event line
+  ///
+  /// Event line is described with line equation:
+  /// \f$ ax + by + c = 0 \f$ with assumption \f$ a^2 + b^2 = 1 \f$ which is
+  /// satisfied for Event since \f$ a = sin(\phi), b = -cos(\phi) \f$.
   _ Secant secant(const Event& e) const {
     auto diff = radius2 - e.c2;
     if (diff > 0) {
