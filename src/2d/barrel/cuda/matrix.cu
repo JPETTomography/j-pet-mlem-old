@@ -50,7 +50,7 @@ __global__ static void kernel(const Pixel pixel,
     int quantized_position = 0;
     if (tof)
       quantized_position =
-          detector_ring.quantize_position(position, tof_step, n_positions);
+          DetectorRing::quantize_tof_position(position, tof_step, n_positions);
 
     // do we have hit on both sides?
     if (hits >= 2) {

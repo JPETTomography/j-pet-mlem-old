@@ -304,7 +304,7 @@ void run(cmdline::parser& cl, Model& model) {
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
     max_bias = Model::max_bias();
-    n_tof_positions = dr.n_positions(tof_step, max_bias);
+    n_tof_positions = dr.n_tof_positions(tof_step, max_bias);
   }
 
   int* tubes = new int[n_detectors * n_detectors * n_tof_positions]();
@@ -390,8 +390,8 @@ void run(cmdline::parser& cl, Model& model) {
             std::swap(lor.first, lor.second);
           int quantized_position = 0;
           if (n_tof_positions > 1) {
-            quantized_position =
-                dr.quantize_position(position, tof_step, n_tof_positions);
+            quantized_position = DetectorRing::quantize_tof_position(
+                position, tof_step, n_tof_positions);
           }
           tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
                 quantized_position]++;
@@ -435,8 +435,8 @@ void run(cmdline::parser& cl, Model& model) {
           std::swap(lor.first, lor.second);
         int quantized_position = 0;
         if (n_tof_positions > 1) {
-          quantized_position =
-              dr.quantize_position(position, tof_step, n_tof_positions);
+          quantized_position = DetectorRing::quantize_tof_position(
+              position, tof_step, n_tof_positions);
         }
         tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
               quantized_position]++;

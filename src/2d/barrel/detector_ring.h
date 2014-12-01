@@ -95,10 +95,10 @@ class DetectorRing : public util::array<MaxDetectors, DetectorType> {
   F max_dl(F max_bias_size) const { return 2 * c_outer.radius + max_bias_size; }
 
   /// Quantizes position across lor
-  _ S quantize_position(F position,    ///< position across lor
-                        F step_size,   ///< step size
-                        S n_positions  ///< number of positions
-                        ) {
+  _ static S quantize_tof_position(F position,    ///< position across lor
+                                   F step_size,   ///< step size
+                                   S n_positions  ///< number of positions
+                                   ) {
     // number of positions if always even, lower half are negative positions
     // where 0 means position closests to detector with higher index
     // maximum means position closests to detector with lower index
@@ -111,11 +111,11 @@ class DetectorRing : public util::array<MaxDetectors, DetectorType> {
   }
 
   /// Returns number of position steps (indexes)
-  S n_positions(F step_size,     ///< step size
-                F max_bias_size  ///< possible bias (fuzz) maximum size
-                ) const {
+  S n_tof_positions(F step_size,     ///< step size
+                    F max_bias_size  ///< possible bias (fuzz) maximum size
+                    ) const {
     // since position needs to be symmetric against (0,0) number must be even
-    return (static_cast<S>(ceil(2.0 * max_dl(max_bias_size) / step_size)) + 1) /
+    return (static_cast<S>(ceil(2 * max_dl(max_bias_size) / step_size)) + 1) /
            2 * 2;
   }
 

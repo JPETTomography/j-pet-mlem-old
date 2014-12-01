@@ -2,6 +2,7 @@
 
 #include "triangular_pixel_map.h"
 #include "sparse_matrix.h"
+#include "util/cuda/compat.h"
 
 namespace PET2D {
 namespace Barrel {

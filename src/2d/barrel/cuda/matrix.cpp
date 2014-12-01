@@ -48,7 +48,7 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
     max_bias = Model::max_bias();
-    n_tof_positions = detector_ring.n_positions(tof_step, max_bias);
+    n_tof_positions = detector_ring.n_tof_positions(tof_step, max_bias);
   }
 
   auto n_pixels = cl.get<int>("n-pixels");
