@@ -34,6 +34,8 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
     return *this;
   }
 
+  Polygon operator+(Point t) const { return Polygon(*this) += t; }
+
   /// Returns center point of the polygon
   Point center() const {
     Point center_point(0, 0);

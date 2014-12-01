@@ -47,6 +47,10 @@ class CircleDetector : public Circle<FType>, public Point<FType> {
     return *this;
   }
 
+  CircleDetector operator+(Point t) const {
+    return reinterpret_cast<CircleDetector&&>(CircleDetector(*this) += t);
+  }
+
   F max_distance() { return this->length() + this->radius; }
 
   /// \returns itself
