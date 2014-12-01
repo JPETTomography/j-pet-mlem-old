@@ -43,20 +43,18 @@ template <typename FType = double, typename SType = int> class Circle {
   using SecantSections = util::array<2, S>;
 
   _ bool intersects(const Event& e) const {
-    // distance^2 to event from (0, 0) == e.a2_b2 / e.c2
-    // must be less than radius2
-    return e.a2_b2 * radius2 > e.c2;
+    return radius2 > e.c2;
   }
 
   _ Secant secant(const Event& e) const {
-    auto cabr2 = e.a2_b2 * radius2 - e.c2;
-    if (cabr2 > 0) {
-      auto sq = compat::sqrt(e.b2 * cabr2);
+    auto diff = radius2 - e.c2;
+    if (diff > 0) {
+      auto sq = e.b * compat::sqrt(diff);
       auto asq = e.a * sq;
-      return Secant{ Point((e.ac - sq) / e.a2_b2, (e.b2c + asq) / e.b_a2_b2),
-                     Point((e.ac + sq) / e.a2_b2, (e.b2c - asq) / e.b_a2_b2) };
-    } else if (cabr2 == 0) {
-      return Secant{ Point(e.ac / e.a2_b2, e.b2c / e.b_a2_b2) };
+      return Secant{ Point(e.ac - sq, (e.b2c + asq) * e.inv_b),
+                     Point(e.ac + sq, (e.b2c - asq) * e.inv_b) };
+    } else if (diff == 0) {
+      return Secant{ Point(e.ac, e.b2c * e.inv_b) };
     } else {
       return Secant();
     }

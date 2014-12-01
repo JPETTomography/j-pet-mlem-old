@@ -31,12 +31,10 @@ template <typename FType = double> struct Event : public PET2D::Point<FType> {
         // line equation c coefficient: a x + b y == c
         c(a * x + b * y),
         // helper variables
-        b2(b * b),
-        b2c(b2 * c),
+        b2c(b * b * c),
         ac(a * c),
-        a2_b2(a * a + b2),
-        b_a2_b2(b * a2_b2),
-        c2(c * c) {}
+        c2(c * c),
+        inv_b(1 / b) {}
 
  public:
   _ Event(Base p, F phi) : Event(p.x, p.y, phi) {}
@@ -58,12 +56,12 @@ template <typename FType = double> struct Event : public PET2D::Point<FType> {
     return Event(this->x - p.x, this->y - p.y, phi, a, b);
   }
 
-  F phi;
+  const F phi;
 
   // line equation coefficients
-  F a, b, c;
+  const F a, b, c;
   // precalculated variables
-  F b2, b2c, ac, a2_b2, b_a2_b2, c2, inv_c;
+  const F b2c, ac, c2, inv_b;
 };
 }  // Barrel
 }  // PET2D
