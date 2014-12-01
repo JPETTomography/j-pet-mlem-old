@@ -52,11 +52,11 @@ class CircleDetector : public Circle<FType>, public Point<FType> {
   /// \returns itself
   const CircleDetector& circumscribe_circle() const { return *this; }
 
-  _ bool intersects(typename Base::Event e) {
+  _ bool intersects(typename Base::Event e) const {
     return Base::intersects(e - *this);
   }
 
-  _ Intersections intersections(typename Base::Event e) {
+  _ Intersections intersections(typename Base::Event e) const {
     auto intersections = this->secant(e - *this);
     for (auto& p : intersections) {
       p += *this;

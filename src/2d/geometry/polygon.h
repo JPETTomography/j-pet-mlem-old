@@ -46,7 +46,7 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   }
 
   // tests for intersection with generic form line equation
-  bool intersects(Event& e) {
+  bool intersects(Event& e) const {
     auto p1 = this->back();
     auto v1 = e(p1);
     for (auto& p2 : *this) {
@@ -66,7 +66,7 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
     return distance;
   }
 
-  _ Intersections intersections(Event& e) {
+  _ Intersections intersections(Event& e) const {
     auto p1 = this->back();
     auto v1 = e(p1);
     Intersections intersections;

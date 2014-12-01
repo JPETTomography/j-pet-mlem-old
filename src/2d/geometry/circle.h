@@ -42,13 +42,13 @@ template <typename FType = double, typename SType = int> class Circle {
   using SecantAngles = util::array<2, Angle>;
   using SecantSections = util::array<2, S>;
 
-  _ bool intersects(const Event& e) {
+  _ bool intersects(const Event& e) const {
     // distance^2 to event from (0, 0) == e.a2_b2 / e.c2
     // must be less than radius2
     return e.a2_b2 * radius2 > e.c2;
   }
 
-  _ Secant secant(const Event& e) {
+  _ Secant secant(const Event& e) const {
     auto cabr2 = e.a2_b2 * radius2 - e.c2;
     if (cabr2 > 0) {
       auto sq = compat::sqrt(e.b2 * cabr2);
@@ -62,9 +62,9 @@ template <typename FType = double, typename SType = int> class Circle {
     }
   }
 
-  _ F angle(Point p) { return compat::atan2(p.y, p.x); }
+  _ F angle(Point p) const { return compat::atan2(p.y, p.x); }
 
-  SecantAngles secant_angles(Event& e) {
+  SecantAngles secant_angles(Event& e) const {
     SecantAngles sa;
     for (auto& p : secant(e)) {
       sa.push_back(angle(p));
@@ -72,7 +72,7 @@ template <typename FType = double, typename SType = int> class Circle {
     return sa;
   }
 
-  _ S section(F angle, S n_detectors) {
+  _ S section(F angle, S n_detectors) const {
     const F TWO_PI = F(2 * M_PI);
     const F INV_TWO_PI = 1 / TWO_PI;
 
@@ -83,7 +83,7 @@ template <typename FType = double, typename SType = int> class Circle {
            n_detectors;
   }
 
-  SecantSections secant_sections(Event& e, S n_detectors) {
+  SecantSections secant_sections(Event& e, S n_detectors) const {
     SecantSections ss;
     for (auto& sa : secant_angles(e)) {
       ss.push_back(section(sa, n_detectors));

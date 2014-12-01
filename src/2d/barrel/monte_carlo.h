@@ -8,13 +8,13 @@ namespace PET2D {
 namespace Barrel {
 
 /// Drives Monte-Carlo system matrix construction
-template <typename DetectorRingType,
+template <typename DetectorType,
           typename MatrixType,
           typename FType = double,
           typename SType = int>
 class MonteCarlo {
-  using DetectorRing = DetectorRingType;
-  using Event = typename DetectorRing::Event;
+  using Detector = DetectorType;
+  using Event = typename Detector::Event;
   using Matrix = MatrixType;
   using F = FType;
   using S = SType;
@@ -22,12 +22,12 @@ class MonteCarlo {
   using LOR = typename Matrix::LOR;
 
  public:
-  MonteCarlo(DetectorRing& detector_ring,
+  MonteCarlo(Detector& detector,
              Matrix& matrix,
              F pixel_size,
              F tof_step,
              S start_pixel = static_cast<S>(0))
-      : detector_ring(detector_ring),
+      : detector(detector),
         matrix(matrix),
         pixel_size(pixel_size),
         tof_step(tof_step),
@@ -48,7 +48,7 @@ class MonteCarlo {
     if (n_emissions <= 0)
       return;
 
-    auto n_positions = detector_ring.n_positions(tof_step, model.max_bias());
+    auto n_positions = detector.n_tof_positions(tof_step, model.max_bias());
     bool tof = (tof_step > static_cast<F>(0));
     util::random::uniform_real_distribution<F> one_dis(0, 1);
     util::random::uniform_real_distribution<F> phi_dis(0, F(M_PI));
@@ -80,7 +80,7 @@ class MonteCarlo {
 
       if (pixel.x < start_pixel || pixel.y < start_pixel ||
           (pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
-              detector_ring.fov_radius() * detector_ring.fov_radius())
+              detector.fov_radius * detector.fov_radius)
         continue;
 
       int pixel_hit_count = 0;
@@ -101,12 +101,12 @@ class MonteCarlo {
         LOR lor;
         F position = 0;
         Event event(rx, ry, angle);
-        auto hits = detector_ring.detect(l_gen, model, event, lor, position);
+        auto hits = detector.detect(l_gen, model, event, lor, position);
 
         S quantized_position = 0;
         if (tof)
           quantized_position =
-              detector_ring.quantize_position(position, tof_step, n_positions);
+              Detector::quantize_tof_position(position, tof_step, n_positions);
 #ifdef DEBUG
         std::cerr << "quantized_position " << quantized_position << std::endl;
 #endif
@@ -133,63 +133,8 @@ class MonteCarlo {
     }
   }
 
-#ifdef GPU_TOF_TEST
-
-  template <typename RandomGenerator, typename AcceptanceModel>
-  void test(RandomGenerator& gen, AcceptanceModel model, S n_emissions) {
-    if (n_emissions <= 0)
-      return;
-
-    auto n_positions = detector_ring.n_positions(tof_step, model.max_bias());
-    bool tof = (tof_step > static_cast<F>(0));
-    uniform_real_distribution<F> one_dis(0, 1);
-    uniform_real_distribution<F> phi_dis(0, F(M_PI));
-
-    matrix.add_emissions(n_emissions);
-
-    for (auto i_pixel = 0; i_pixel < matrix.total_n_pixels_in_triangle();
-         ++i_pixel) {
-
-      auto pixel = matrix.pixel_at_index(i_pixel);
-
-      printf("PIXEL(%d,%d)\n", pixel.x, pixel.y);
-      printf("N_POSITIONS: %d\n", n_positions);
-
-      if ((pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
-          detector_ring.fov_radius() * detector_ring.fov_radius())
-        continue;
-
-      for (auto n = 0; n < n_emissions; ++n) {
-
-        auto& l_gen = gen;
-
-        auto rx = pixel.x * pixel_size;
-        auto ry = pixel.y * pixel_size;
-
-        for (auto angle = 0.0; angle < 3.14; angle += 0.1) {
-          LOR lor;
-          F position = 0;
-          Event event(rx, ry, angle);
-          auto hits = detector_ring.detect(l_gen, model, event, lor, position);
-
-          S quantized_position = 0;
-          if (tof)
-            quantized_position = detector_ring.quantize_position(
-                position, tof_step, n_positions);
-
-          if (hits > 1) {
-            printf("TOF: %d Position: %f \n", quantized_position, position);
-          }
-          // matrix.hit_lor(lor, quantized_position, i_pixel, 1);
-        }
-      }  // loop over emmisions from pixel
-    }
-  }
-
-#endif
-
  private:
-  DetectorRing& detector_ring;
+  Detector& detector;
   Matrix& matrix;
   F pixel_size;
   F tof_step;

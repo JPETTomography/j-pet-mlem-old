@@ -339,7 +339,7 @@ void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring) {
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
     max_bias = Model::max_bias();
-    n_tof_positions = detector_ring.n_positions(tof_step, max_bias);
+    n_tof_positions = detector_ring.n_tof_positions(tof_step, max_bias);
   }
   if (verbose) {
     std::cerr << "Monte-Carlo:" << std::endl;
@@ -379,7 +379,7 @@ SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
     max_bias = Model::max_bias();
-    n_tof_positions = detector_ring.n_positions(tof_step, max_bias);
+    n_tof_positions = detector_ring.n_tof_positions(tof_step, max_bias);
   }
 
   using ComputeMatrix = MatrixPixelMajor<Pixel<>, LOR<>>;

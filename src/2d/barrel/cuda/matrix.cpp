@@ -14,6 +14,8 @@ namespace PET2D {
 namespace Barrel {
 namespace GPU {
 
+/// \cond PRIVATE
+
 OutputMatrix Matrix::run(cmdline::parser& cl) {
 
   DetectorRing detector_ring(cl.get<int>("n-detectors"),
@@ -112,6 +114,8 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
 
   return output_matrix;
 }
+
+/// \endcond
 
 }  // GPU
 }  // Barrel

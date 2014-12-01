@@ -39,8 +39,14 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
   using Indices = util::array<MaxDetectors, S>;
   using SideIndices = std::pair<Indices, Indices>;
 
-  DetectorSet() : Base(), c_inner(0), c_outer(0) {}
+  /// Makes an empty detector set.
+  DetectorSet(F radius = 1, F h_detector = 1)
+      : Base(),
+        fov_radius(radius / M_SQRT2),
+        c_inner(radius),
+        c_outer(radius + h_detector) {}
 
+  /// Makes new detector set with detectors placed on the ring of given radius.
   DetectorSet(S n_detectors,      ///< number of detectors on ring
               F radius,           ///< radius of ring
               F w_detector,       ///< width of single detector (along ring)
@@ -49,9 +55,9 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
               F d_detector = F()  ///< diameter of circle single detector is
                                   ///< inscribed in
               )
-      : c_inner(radius),
-        c_outer(radius + (d_detector > F() ? d_detector : h_detector)),
-        radius_diff(c_outer.radius - c_inner.radius) {
+      : fov_radius(radius / M_SQRT2),
+        c_inner(radius),
+        c_outer(radius + (d_detector > F() ? d_detector : h_detector)) {
     if (radius <= 0)
       throw("invalid radius");
     if (w_detector > 0 && h_detector == 0)
@@ -62,8 +68,6 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
       throw("invalid detector size");
     if (n_detectors % 4)
       throw("number of detectors must be multiple of 4");
-
-    fov_radius_ = radius / M_SQRT2;
 
     Detector detector_base(w_detector, h_detector, d_detector);
 
@@ -85,8 +89,11 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
     }
   }
 
-  /// Tries to detect given event.
+  F radius() const { return c_inner.radius; }
+  F outer_radius() const { return c_outer.radius; }
+  F max_dl(F max_bias_size) const { return 2 * c_outer.radius + max_bias_size; }
 
+  /// \brief Tries to detect given event.
   /// \return number of coincidences (detector hits)
   template <class RandomGenerator, class AcceptanceModel>
   _ short detect(RandomGenerator& gen,    ///< random number generator
@@ -94,7 +101,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
                  const Event& e,          ///< event to be detected
                  LOR& lor,                ///<[out] lor of the event
                  F& position              ///<[out] position of the event
-                 ) {
+                 ) const {
     auto indices = close_indices(e);
     S detector1, detector2;
     F depth1, depth2;
@@ -120,9 +127,34 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
     return 2;
   }
 
+  /// Quantizes position across lor
+  _ static S quantize_tof_position(F position,    ///< position across lor
+                                   F step_size,   ///< step size
+                                   S n_positions  ///< number of positions
+                                   ) {
+    // number of positions if always even, lower half are negative positions
+    // where 0 means position closests to detector with higher index
+    // maximum means position closests to detector with lower index
+    if (position < 0)
+      return n_positions / 2 - 1 -
+             static_cast<S>(compat::floor(-position / step_size));
+    else
+      return static_cast<S>(compat::floor(position / step_size)) +
+             n_positions / 2;
+  }
+
+  /// Returns number of position steps (indexes)
+  S n_tof_positions(F step_size,     ///< step size
+                    F max_bias_size  ///< possible bias (fuzz) maximum size
+                    ) const {
+    // since position needs to be symmetric against (0,0) number must be even
+    return (static_cast<S>(ceil(2 * max_dl(max_bias_size) / step_size)) + 1) /
+           2 * 2;
+  }
+
   /// \return indices of detectors close to given event
   SideIndices close_indices(const Event& e  ///< event to be detected
-                            ) {
+                            ) const {
     SideIndices indices;
     S distances[MaxDetectors];
     auto pe = e.perpendicular();
@@ -157,7 +189,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
                         S& detector,
                         F& depth,
                         Point& p1,
-                        Point& p2) {
+                        Point& p2) const {
 
     for (auto i : indices) {
       auto intersections = (*this)[i].intersections(e);
@@ -215,22 +247,14 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
     c_detectors.push_back(this->back().circumscribe_circle());
   }
 
-  const CircleDetector& circumscribed(int i) { return c_detectors[i]; }
+  const CircleDetector& circumscribed(int i) const { return c_detectors[i]; }
 
-  // DetectorRing compatibility
-  _ S quantize_position(F, F, S) { return 0; }
-  S n_positions(F, F) const { return 1; }
-  F radius() const { return c_inner.radius; }
-  F fov_radius() const { return fov_radius_; }
-  F outer_radius() const { return c_outer.radius; }
-  F max_dl(F max_bias_size) const { return 2 * c_outer.radius + max_bias_size; }
+  const F fov_radius;
 
- private:
+ protected:
+  util::array<MaxDetectors, CircleDetector> c_detectors;
   Circle c_inner;
   Circle c_outer;
-  util::array<MaxDetectors, CircleDetector> c_detectors;
-  F fov_radius_;
-  F radius_diff;
 };
 }
 }
