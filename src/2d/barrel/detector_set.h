@@ -47,18 +47,21 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
         c_outer(radius + h_detector) {}
 
   /// Makes new detector set with detectors placed on the ring of given radius.
-  DetectorSet(S n_detectors,      ///< number of detectors on ring
-              F radius,           ///< radius of ring
-              F w_detector,       ///< width of single detector (along ring)
-              F h_detector,       ///< height/depth of single detector
-                                  ///< (perpendicular to ring)
-              F d_detector = F()  ///< diameter of circle single detector is
-                                  ///< inscribed in
+  DetectorSet(S n_detectors,        ///< number of detectors on ring
+              F radius,             ///< radius of ring
+              F w_detector,         ///< width of single detector (along ring)
+              F h_detector,         ///< height/depth of single detector
+                                    ///< (perpendicular to ring)
+              F d_detector = 0,     ///< diameter of circle single detector is
+                                    ///< inscribed in
+              F ring_rotation = 0,  ///< next ring rotation
+              F radius2 = 0,        ///< 2nd ring radius (for testing purposes)
+              F radius3 = 0         ///< 3rd ring radius (for testing purposes)
               )
       : Base(),
         fov_radius(radius / M_SQRT2),
         c_inner(radius),
-        c_outer(radius + (d_detector > F() ? d_detector : h_detector)) {
+        c_outer(radius + (d_detector > 0 ? d_detector : h_detector)) {
     if (n_detectors > static_cast<S>(MaxDetectors))
       throw("too many detectors");
     if (radius <= 0)
@@ -77,10 +80,10 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
     // move detector to the right edge of inner ring
     // along zero angle polar coordinate
     detector_base +=
-        Point(0, radius + (d_detector > F() ? d_detector : h_detector) / 2);
+        Point(0, radius + (d_detector > 0 ? d_detector : h_detector) / 2);
 
     // fix up outer circle
-    if (d_detector == F()) {
+    if (d_detector == 0) {
       c_outer = Circle(detector_base.max_distance());
     }
 
@@ -89,6 +92,70 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
       auto detector = detector_base;
       detector.rotate(2 * F(M_PI) * n / n_detectors - F(M_PI_2));
       this->push_back(detector);
+    }
+
+    // add other 2 rings
+    if (radius2 > 0) {
+      if (this->size() + n_detectors > static_cast<S>(MaxDetectors))
+        throw("too many detectors");
+      DetectorSet detector_ring2(
+          n_detectors, radius2, w_detector, h_detector, d_detector);
+      if (radius2 > radius) {
+        c_outer = detector_ring2.c_outer;
+      }
+      for (auto& detector : detector_ring2) {
+        detector.rotate(2 * F(M_PI) * ring_rotation / n_detectors);
+        this->push_back(detector);
+      }
+    }
+    if (radius3 > 0) {
+      if (this->size() + n_detectors > static_cast<S>(MaxDetectors))
+        throw("too many detectors");
+      DetectorSet detector_ring3(
+          n_detectors, radius3, w_detector, h_detector, d_detector);
+      if (radius3 > radius && radius3 > radius2) {
+        c_outer = detector_ring3.c_outer;
+      }
+      for (auto& detector : detector_ring3) {
+        detector.rotate(4 * F(M_PI) * ring_rotation / n_detectors);
+        this->push_back(detector);
+      }
+    }
+  }
+
+  enum class TestCase {
+    TEST_8_SQUARE_DETECTORS,
+  };
+
+  /// Makes new detector using hardcoded test case
+  DetectorSet(TestCase test_case,  ///< test case
+              F radius,            ///< radius of ring
+              F w_detector,        ///< width of single detector (along ring)
+              F h_detector,        ///< height/depth of single detector
+                                   ///< (perpendicular to ring)
+              F d_detector = 0     ///< diameter of circle single detector is
+                                   ///< inscribed in
+              )
+      : Base(),
+        fov_radius(radius / M_SQRT2),
+        c_inner(radius),
+        c_outer(radius + (d_detector > 0 ? d_detector : h_detector)) {
+
+    Detector detector_base(w_detector, h_detector, d_detector);
+
+    switch (test_case) {
+      case TestCase::TEST_8_SQUARE_DETECTORS:
+        this->push_back(detector_base + Point(-radius, -radius));
+        this->push_back(detector_base + Point(-radius, 0));
+        this->push_back(detector_base + Point(-radius, radius));
+        this->push_back(detector_base + Point(radius, -radius));
+        this->push_back(detector_base + Point(radius, 0));
+        this->push_back(detector_base + Point(radius, radius));
+        this->push_back(detector_base + Point(0, -radius));
+        this->push_back(detector_base + Point(0, radius));
+        break;
+      default:
+        throw("unknown test case");
     }
   }
 

@@ -90,6 +90,9 @@ int main(int argc, char* argv[]) {
                 0,
                 cmdline::not_from_file);
     cl.add<double>("radius", 'r', "inner detector ring radius", false);
+    cl.add<double>("ring-rotation", 0, "next ring rotation (0-1)", false);
+    cl.add<double>("radius2", 0, "2nd detector ring radius", false);
+    cl.add<double>("radius3", 0, "3rd detector ring radius", false);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
     cl.add<double>(
         "tof-step", 't', "TOF quantisation step for distance delta", false);
@@ -179,6 +182,9 @@ int main(int argc, char* argv[]) {
     auto& n_pixels = cl.get<int>("n-pixels");
     auto& n_detectors = cl.get<int>("n-detectors");
     auto& radius = cl.get<double>("radius");
+    auto& ring_rotation = cl.get<double>("ring-rotation");
+    auto& radius2 = cl.get<double>("radius2");
+    auto& radius3 = cl.get<double>("radius3");
     auto& s_pixel = cl.get<double>("s-pixel");
     auto& w_detector = cl.get<double>("w-detector");
     auto& h_detector = cl.get<double>("h-detector");
@@ -278,8 +284,14 @@ int main(int argc, char* argv[]) {
 #define _RUN(cl, detector_ring, model) run(cl, detector_ring, model)
 #endif
 #define RUN(detector_type, model_type, ...)                       \
-  detector_type detector_ring(                                    \
-      n_detectors, radius, w_detector, h_detector, d_detector);   \
+  detector_type detector_ring(n_detectors,                        \
+                              radius,                             \
+                              w_detector,                         \
+                              h_detector,                         \
+                              d_detector,                         \
+                              ring_rotation,                      \
+                              radius2,                            \
+                              radius3);                           \
   model_type model{ __VA_ARGS__ };                                \
   print_parameters<detector_type, model_type>(cl, detector_ring); \
   auto sparse_matrix = _RUN(cl, detector_ring, model);            \
