@@ -32,6 +32,7 @@ __global__ static void kernel(const Pixel pixel,
   DetectorRing& detector_ring = *detector_ring_copier;
 
   Model model(length_scale);
+  auto fov_radius2 = detector_ring.fov_radius * detector_ring.fov_radius;
 
   for (int i = 0; i < n_emissions; ++i) {
     auto rx = (pixel.x + one_dis(gen)) * pixel_size;
@@ -40,6 +41,10 @@ __global__ static void kernel(const Pixel pixel,
 
     // ensure we are within a triangle
     if (rx > ry)
+      continue;
+
+    // ensure we are within FOV
+    if (rx * rx + ry * ry > fov_radius2)
       continue;
 
     LOR lor;
