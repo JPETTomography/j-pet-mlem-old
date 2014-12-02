@@ -364,7 +364,6 @@ SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
   auto& s_pixel = cl.get<double>("s-pixel");
-  auto& n_detectors = cl.get<int>("n-detectors");
   auto& n_emissions = cl.get<int>("n-emissions");
   auto& tof_step = cl.get<double>("tof-step");
   auto verbose = cl.exist("verbose");
@@ -384,7 +383,7 @@ SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
 
   using ComputeMatrix = MatrixPixelMajor<Pixel<>, LOR<>>;
   ComputeMatrix::SparseMatrix sparse_matrix(
-      n_pixels, n_detectors, n_tof_positions);
+      n_pixels, detector_ring.size(), n_tof_positions);
 
   for (auto& fn : cl.rest()) {
     util::ibstream in(fn, std::ios::binary);
@@ -407,8 +406,6 @@ SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
         // if we don't have stuff set, set it using matrix
         if (!cl.exist("n-pixels"))
           n_pixels = sparse_matrix.n_pixels_in_row();
-        if (!cl.exist("n-detectors"))
-          n_detectors = sparse_matrix.n_detectors();
         if (!cl.exist("tof-step")) {
           n_tof_positions = sparse_matrix.n_tof_positions();
           if (n_emissions > 0) {
@@ -426,7 +423,7 @@ SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
     }
   }
 
-  ComputeMatrix matrix(n_pixels, n_detectors, n_tof_positions);
+  ComputeMatrix matrix(n_pixels, detector_ring.size(), n_tof_positions);
   if (!sparse_matrix.empty()) {
     matrix << sparse_matrix;
     sparse_matrix.resize(0);
