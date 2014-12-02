@@ -53,7 +53,9 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
               F d_detector = 0,     ///< diameter of circle single detector is
                                     ///< inscribed in
               F ring_rotation = 0,  ///< next ring rotation
+              S n_detectors2 = 0,   ///< 2nd ring number of detectors
               F radius2 = 0,        ///< 2nd ring radius (for testing purposes)
+              S n_detectors3 = 0,   ///< 3rd ring number of detectors
               F radius3 = 0         ///< 3rd ring radius (for testing purposes)
               )
       : Base(),
@@ -94,10 +96,12 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
 
     // add other 2 rings
     if (radius2 > 0) {
-      if (this->size() + n_detectors > static_cast<S>(MaxDetectors))
+      if (!n_detectors2)
+        n_detectors2 = n_detectors;
+      if (this->size() + n_detectors2 > static_cast<S>(MaxDetectors))
         throw("too many detectors");
       DetectorSet detector_ring2(
-          n_detectors, radius2, w_detector, h_detector, d_detector);
+          n_detectors2, radius2, w_detector, h_detector, d_detector);
       if (radius2 > radius) {
         c_outer = detector_ring2.c_outer;
       }
@@ -107,10 +111,12 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
       }
     }
     if (radius3 > 0) {
-      if (this->size() + n_detectors > static_cast<S>(MaxDetectors))
+      if (!n_detectors3)
+        n_detectors3 = n_detectors2 ?: n_detectors;
+      if (this->size() + n_detectors3 > static_cast<S>(MaxDetectors))
         throw("too many detectors");
       DetectorSet detector_ring3(
-          n_detectors, radius3, w_detector, h_detector, d_detector);
+          n_detectors3, radius3, w_detector, h_detector, d_detector);
       if (radius3 > radius && radius3 > radius2) {
         c_outer = detector_ring3.c_outer;
       }

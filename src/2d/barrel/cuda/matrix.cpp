@@ -24,7 +24,9 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
                              cl.get<double>("h-detector"),
                              cl.get<double>("d-detector"),
                              cl.get<double>("ring-rotation"),
+                             cl.get<int>("n-detectors2"),
                              cl.get<double>("radius2"),
+                             cl.get<int>("n-detectors3"),
                              cl.get<double>("radius3"));
 
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -

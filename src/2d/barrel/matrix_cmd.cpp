@@ -83,6 +83,8 @@ int main(int argc, char* argv[]) {
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
     cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
     cl.add<int>("n-detectors", 'd', "number of detectors in ring", false);
+    cl.add<int>("n-detectors2", 0, "number of detectors in 2nd ring", false);
+    cl.add<int>("n-detectors3", 0, "number of detectors in 3rd ring", false);
     cl.add<int>("n-emissions",
                 'e',
                 "emissions per pixel",
@@ -181,6 +183,8 @@ int main(int argc, char* argv[]) {
 
     auto& n_pixels = cl.get<int>("n-pixels");
     auto& n_detectors = cl.get<int>("n-detectors");
+    auto& n_detectors2 = cl.get<int>("n-detectors2");
+    auto& n_detectors3 = cl.get<int>("n-detectors3");
     auto& radius = cl.get<double>("radius");
     auto& ring_rotation = cl.get<double>("ring-rotation");
     auto& radius2 = cl.get<double>("radius2");
@@ -290,7 +294,9 @@ int main(int argc, char* argv[]) {
                               h_detector,                         \
                               d_detector,                         \
                               ring_rotation,                      \
+                              n_detectors2,                       \
                               radius2,                            \
+                              n_detectors3,                       \
                               radius3);                           \
   model_type model{ __VA_ARGS__ };                                \
   print_parameters<detector_type, model_type>(cl, detector_ring); \
