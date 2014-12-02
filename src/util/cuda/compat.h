@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <type_traits>  // FIXME: Needed by GCC+NVCC prior including cmath
 #if !__CUDACC__
 #include <cmath>
 #include <algorithm>
@@ -31,7 +30,6 @@ namespace compat {
 #if __CUDACC__
 
 #define _ __device__ __host__
-#define constexpr
 
 _ int min(const int a, const int b) { return ::min(a, b); }
 _ int max(const int a, const int b) { return ::max(a, b); }
