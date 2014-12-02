@@ -85,7 +85,7 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
 
   std::vector<LOR> lor_map;
   lor_map.resize(detector_ring.n_lors);
-  for (LOR lor(0, 0); lor < LOR::end_for_detectors(detector_ring.n_detectors);
+  for (LOR lor(0, 0); lor < LOR::end_for_detectors(detector_ring.size());
        ++lor) {
     lor_map[lor.index()] = lor;
   }

@@ -8,9 +8,6 @@
 #include "circle_detector.h"
 #include "lor.h"
 #include "util/random.h"
-#if !__CUDACC__
-#include "util/svg_ostream.h"
-#endif
 
 namespace PET2D {
 namespace Barrel {
@@ -43,8 +40,7 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
                                    ///< inscribed in
                )
       : Base(n_detectors, radius, w_detector, h_detector, d_detector),
-        n_detectors(n_detectors),
-        n_lors(n_detectors * (n_detectors + 1) / 2) {
+        n_lors(this->size() * (this->size() + 1) / 2) {
     if (n_detectors % 4)
       throw("number of detectors must be multiple of 4");
   }
@@ -61,6 +57,7 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
                         Point& p1,
                         Point& p2) const {
 
+    const auto n_detectors = this->size();
     // tells in which direction we got shorter modulo distance
     S step = ((n_detectors + inner - outer) % n_detectors >
               (n_detectors + outer - inner) % n_detectors)
@@ -102,6 +99,7 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
                  F& position              ///<[out] position of the event
                  ) const {
 
+    const auto n_detectors = this->size();
     const auto& c_inner = this->c_inner;
     const auto& c_outer = this->c_outer;
     auto inner_secant = c_inner.secant(e);
@@ -151,7 +149,6 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
   }
 
  public:
-  const S n_detectors;
   const S n_lors;
 };
 }  // Barrel

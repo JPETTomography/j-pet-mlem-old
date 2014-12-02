@@ -52,9 +52,9 @@ using HexagonalDetectorRing = DetectorModel<PolygonalDetector<6>>;
 template <typename DetectorRing, typename Model>
 void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring);
 
-template <typename DetectorRing, typename Model>
-SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
-                                        DetectorRing& detector_ring,
+template <typename Detector, typename Model>
+static SparseMatrix<Pixel<>, LOR<>> run(cmdline::parser& cl,
+                                        Detector& detector_ring,
                                         Model& model);
 
 template <typename DetectorRing>
@@ -90,6 +90,9 @@ int main(int argc, char* argv[]) {
                 0,
                 cmdline::not_from_file);
     cl.add<double>("radius", 'r', "inner detector ring radius", false);
+    cl.add<double>("ring-rotation", 0, "next ring rotation (0-1)", false);
+    cl.add<double>("radius2", 0, "2nd detector ring radius", false);
+    cl.add<double>("radius3", 0, "3rd detector ring radius", false);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
     cl.add<double>(
         "tof-step", 't', "TOF quantisation step for distance delta", false);
@@ -179,6 +182,9 @@ int main(int argc, char* argv[]) {
     auto& n_pixels = cl.get<int>("n-pixels");
     auto& n_detectors = cl.get<int>("n-detectors");
     auto& radius = cl.get<double>("radius");
+    auto& ring_rotation = cl.get<double>("ring-rotation");
+    auto& radius2 = cl.get<double>("radius2");
+    auto& radius3 = cl.get<double>("radius3");
     auto& s_pixel = cl.get<double>("s-pixel");
     auto& w_detector = cl.get<double>("w-detector");
     auto& h_detector = cl.get<double>("h-detector");
@@ -273,13 +279,19 @@ int main(int argc, char* argv[]) {
 // these are wrappers running actual simulation
 #if HAVE_CUDA
 #define _RUN(cl, detector_ring, model) \
-  cl.exist("gpu") ? GPU::Matrix::run(cl) : run_matrix(cl, detector_ring, model)
+  cl.exist("gpu") ? GPU::Matrix::run(cl) : run(cl, detector_ring, model)
 #else
-#define _RUN(cl, detector_ring, model) run_matrix(cl, detector_ring, model)
+#define _RUN(cl, detector_ring, model) run(cl, detector_ring, model)
 #endif
 #define RUN(detector_type, model_type, ...)                       \
-  detector_type detector_ring(                                    \
-      n_detectors, radius, w_detector, h_detector, d_detector);   \
+  detector_type detector_ring(n_detectors,                        \
+                              radius,                             \
+                              w_detector,                         \
+                              h_detector,                         \
+                              d_detector,                         \
+                              ring_rotation,                      \
+                              radius2,                            \
+                              radius3);                           \
   model_type model{ __VA_ARGS__ };                                \
   print_parameters<detector_type, model_type>(cl, detector_ring); \
   auto sparse_matrix = _RUN(cl, detector_ring, model);            \
@@ -356,15 +368,14 @@ void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring) {
   }
 }
 
-template <typename DetectorRing, typename Model>
-SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
-                                        DetectorRing& detector_ring,
+template <typename Detector, typename Model>
+static SparseMatrix<Pixel<>, LOR<>> run(cmdline::parser& cl,
+                                        Detector& detector_ring,
                                         Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
   auto& s_pixel = cl.get<double>("s-pixel");
-  auto& n_detectors = cl.get<int>("n-detectors");
   auto& n_emissions = cl.get<int>("n-emissions");
   auto& tof_step = cl.get<double>("tof-step");
   auto verbose = cl.exist("verbose");
@@ -384,7 +395,7 @@ SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
 
   using ComputeMatrix = MatrixPixelMajor<Pixel<>, LOR<>>;
   ComputeMatrix::SparseMatrix sparse_matrix(
-      n_pixels, n_detectors, n_tof_positions);
+      n_pixels, detector_ring.size(), n_tof_positions);
 
   for (auto& fn : cl.rest()) {
     util::ibstream in(fn, std::ios::binary);
@@ -407,8 +418,6 @@ SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
         // if we don't have stuff set, set it using matrix
         if (!cl.exist("n-pixels"))
           n_pixels = sparse_matrix.n_pixels_in_row();
-        if (!cl.exist("n-detectors"))
-          n_detectors = sparse_matrix.n_detectors();
         if (!cl.exist("tof-step")) {
           n_tof_positions = sparse_matrix.n_tof_positions();
           if (n_emissions > 0) {
@@ -426,7 +435,7 @@ SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
     }
   }
 
-  ComputeMatrix matrix(n_pixels, n_detectors, n_tof_positions);
+  ComputeMatrix matrix(n_pixels, detector_ring.size(), n_tof_positions);
   if (!sparse_matrix.empty()) {
     matrix << sparse_matrix;
     sparse_matrix.resize(0);
@@ -437,7 +446,7 @@ SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
   clock_gettime(CLOCK_REALTIME, &start);
 #endif
 
-  MonteCarlo<DetectorRing, ComputeMatrix> monte_carlo(
+  MonteCarlo<Detector, ComputeMatrix> monte_carlo(
       detector_ring, matrix, s_pixel, tof_step, m_pixel);
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
   monte_carlo(gen, model, n_emissions, progress);

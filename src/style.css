@@ -1,0 +1,119 @@
+table.pageheader {
+  background: none;
+}
+#titlearea {
+  border-bottom: 1px solid #EEF;
+  padding: 10px;
+}
+#top {
+  border-bottom: 1px solid #5E9AD5;
+  box-shadow: none;
+}
+
+.tabs, .tablist li, .tablist li a, .tablist li a:hover {
+  background: none;
+  text-shadow: none;
+  color: #333;
+}
+.tabs, .tabs2, .tabs3 {
+  position: relative;
+}
+.tabs {
+  background: white;
+}
+.tabs2 {
+  background: #5E9AD5;
+  font-size: 11px;
+}
+.tabs2 .tablist li a {
+  color: white;
+}
+.tabs2 .tablist li, .tabs3 .tablist li {
+  line-height: 28px;
+}
+.tabs3 {
+  background: #EEE;
+}
+.tablist li a:hover {
+  background: black;
+  color: white;
+}
+.tablist li.current a,
+.tabs .tablist li a:hover {
+  background: #1B3D5F;
+  text-shadow: none;
+}
+.tablist li.current a:hover {
+  color: white;
+}
+.tabs .tablist li.current a {
+  background: #5E9AD5;
+}
+
+.header, div.header {
+  background: none;
+  border: none;
+}
+
+.ah, div.ah,
+.directory, div.directory {
+  background-image: none;
+  border: none;
+  box-shadow: none;
+}
+
+.memproto, dl.reflist dt,
+.memdoc, dl.reflist dd,
+.fieldtable, table.fieldtable,
+.fieldtable th, table.fieldtable th {
+  background-image: none;
+  box-shadow: none;
+  /* firefox specific markup */
+  -moz-border-radius: 0;
+  -moz-box-shadow: none;
+  /* webkit specific markup */
+  -webkit-border-radius: 0;
+  -webkit-box-shadow: none;
+  text-shadow: none;
+}
+.memSeparator {
+  display: none;
+}
+
+.mdescLeft, .mdescRight,
+.memItemLeft, .memItemRight,
+.memTemplItemLeft, .memTemplItemRight, .memTemplParams {
+  background-color: white;
+}
+.memproto, .memitem,
+.directory .even, .directory tr.even {
+  background-color: #F6F6F6;
+}
+div.title {
+  margin-top: 0.75em;
+}
+tr.heading h2, h2.groupheader {
+  margin-top: 1.25em;
+}
+
+.memproto, .memdoc,
+hr.footer {
+  border-color: #CCC;
+}
+.memtemplate, .memTemplParams {
+  color: #999;
+}
+address.footer {
+  color: #AAA;
+}
+div.memitem {
+  margin-left: 2%;
+  width: 96%;
+}
+
+.navpath ul {
+  background: none;
+  border: none;
+  padding-left: .5em;
+  margin-top: -1px;
+}
