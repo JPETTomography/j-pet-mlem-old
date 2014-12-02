@@ -52,9 +52,9 @@ using HexagonalDetectorRing = DetectorModel<PolygonalDetector<6>>;
 template <typename DetectorRing, typename Model>
 void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring);
 
-template <typename DetectorRing, typename Model>
-SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
-                                        DetectorRing& detector_ring,
+template <typename Detector, typename Model>
+static SparseMatrix<Pixel<>, LOR<>> run(cmdline::parser& cl,
+                                        Detector& detector_ring,
                                         Model& model);
 
 template <typename DetectorRing>
@@ -273,9 +273,9 @@ int main(int argc, char* argv[]) {
 // these are wrappers running actual simulation
 #if HAVE_CUDA
 #define _RUN(cl, detector_ring, model) \
-  cl.exist("gpu") ? GPU::Matrix::run(cl) : run_matrix(cl, detector_ring, model)
+  cl.exist("gpu") ? GPU::Matrix::run(cl) : run(cl, detector_ring, model)
 #else
-#define _RUN(cl, detector_ring, model) run_matrix(cl, detector_ring, model)
+#define _RUN(cl, detector_ring, model) run(cl, detector_ring, model)
 #endif
 #define RUN(detector_type, model_type, ...)                       \
   detector_type detector_ring(                                    \
@@ -356,9 +356,9 @@ void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring) {
   }
 }
 
-template <typename DetectorRing, typename Model>
-SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
-                                        DetectorRing& detector_ring,
+template <typename Detector, typename Model>
+static SparseMatrix<Pixel<>, LOR<>> run(cmdline::parser& cl,
+                                        Detector& detector_ring,
                                         Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
@@ -434,7 +434,7 @@ SparseMatrix<Pixel<>, LOR<>> run_matrix(cmdline::parser& cl,
   clock_gettime(CLOCK_REALTIME, &start);
 #endif
 
-  MonteCarlo<DetectorRing, ComputeMatrix> monte_carlo(
+  MonteCarlo<Detector, ComputeMatrix> monte_carlo(
       detector_ring, matrix, s_pixel, tof_step, m_pixel);
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
   monte_carlo(gen, model, n_emissions, progress);
