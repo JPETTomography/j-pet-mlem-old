@@ -3,6 +3,7 @@
 #if _OPENMP
 #include <omp.h>
 #endif
+#include <iostream>
 
 namespace PET2D {
 namespace Barrel {
@@ -55,7 +56,10 @@ class MonteCarlo {
 
     matrix.add_emissions(n_emissions);
 
-#if _OPENMP
+#if !_OPENMP
+#define TRY
+#define CATCH
+#else
     // OpenMP uses passed random generator as seed source for
     // thread local random generators
     RandomGenerator* mp_gens =
@@ -64,6 +68,16 @@ class MonteCarlo {
     for (auto t = 0; t < omp_get_max_threads(); ++t) {
       mp_gens[t].seed(gen());
     }
+
+// We need to try catch inside OpenMP thread, otherwise we will not see the
+// error thrown.
+#define TRY try {
+#define CATCH                     \
+  }                               \
+  catch (std::string & ex) {      \
+    std::cerr << ex << std::endl; \
+    throw(ex);                    \
+  }
 
 #pragma omp parallel for schedule(dynamic)
 // #pragma omp parallel for
@@ -75,7 +89,7 @@ class MonteCarlo {
     for (auto i_pixel = 0; i_pixel < matrix.total_n_pixels_in_triangle();
          ++i_pixel) {
       progress(i_pixel);
-
+      TRY;
       auto pixel = matrix.pixel_at_index(i_pixel);
 
       if (pixel.x < start_pixel || pixel.y < start_pixel ||
@@ -130,6 +144,7 @@ class MonteCarlo {
         }  // if (hits>=2)
       }    // loop over emmisions from pixel
       matrix.compact_pixel_index(i_pixel);
+      CATCH;
     }
   }
 
