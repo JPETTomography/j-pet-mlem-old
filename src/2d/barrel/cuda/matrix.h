@@ -22,7 +22,7 @@ using Pixel = PET2D::Pixel<>;
 using LOR = Barrel::LOR<>;
 using Event = Barrel::Event<float>;
 using SquareDetector = Barrel::SquareDetector<float>;
-using DetectorRing = Barrel::DetectorRing<SquareDetector>;
+using DetectorRing = Barrel::DetectorSet<SquareDetector>;
 using Model = ScintilatorAccept<float>;
 #if !__CUDACC__
 using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR>;

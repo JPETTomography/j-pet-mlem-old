@@ -223,8 +223,8 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
   }
 
   /// \return indices of detectors close to given event
-  SideIndices close_indices(const Event& e  ///< event to be detected
-                            ) const {
+  _ SideIndices close_indices(const Event& e  ///< event to be detected
+                              ) const {
     SideIndices indices;
     S distances[MaxDetectors];
     auto pe = e.perpendicular();

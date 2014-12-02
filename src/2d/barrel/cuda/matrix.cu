@@ -76,7 +76,8 @@ Matrix::Matrix(const DetectorRing& detector_ring,
       n_positions(n_positions),
       tof_step(tof_step),
       length_scale(length_scale),
-      pixel_hits_count(detector_ring.n_lors * n_positions),
+      pixel_hits_count(LOR::end_for_detectors(detector_ring.size()).index() *
+                       n_positions),
       pixel_hits_size(pixel_hits_count * sizeof(int)) {
 
   cudaMalloc((void**)&gpu_detector_ring, sizeof(DetectorRing));

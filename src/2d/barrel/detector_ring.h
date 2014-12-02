@@ -39,8 +39,7 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
                F d_detector = F()  ///< diameter of circle single detector is
                                    ///< inscribed in
                )
-      : Base(n_detectors, radius, w_detector, h_detector, d_detector),
-        n_lors(this->size() * (this->size() + 1) / 2) {
+      : Base(n_detectors, radius, w_detector, h_detector, d_detector) {
     if (n_detectors % 4)
       throw("number of detectors must be multiple of 4");
   }
@@ -147,9 +146,6 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
 
     return 2;
   }
-
- public:
-  const S n_lors;
 };
 }  // Barrel
 }  // PET2D

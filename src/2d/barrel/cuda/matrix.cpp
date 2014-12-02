@@ -81,10 +81,11 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
                          length_scale,
                          prng_seed.data());
 
-  std::vector<int> pixel_hits(detector_ring.n_lors * n_tof_positions, 0);
+  const auto n_lors = LOR::end_for_detectors(detector_ring.size()).index();
+  std::vector<int> pixel_hits(n_lors * n_tof_positions, 0);
 
   std::vector<LOR> lor_map;
-  lor_map.resize(detector_ring.n_lors);
+  lor_map.resize(n_lors);
   for (LOR lor(0, 0); lor < LOR::end_for_detectors(detector_ring.size());
        ++lor) {
     lor_map[lor.index()] = lor;
