@@ -86,4 +86,11 @@ template <typename F> constexpr F numeric_max() {
 }
 
 #endif
+
+template <typename Assignable1, typename Assignable2>
+_ inline void swap(Assignable1& a, Assignable2& b) {
+  Assignable1 temp = a;
+  a = b;
+  b = temp;
+}
 }

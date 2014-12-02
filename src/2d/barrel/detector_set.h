@@ -1,10 +1,9 @@
 #pragma once
 
-#include <algorithm>
-
 #include "square_detector.h"
 #include "circle_detector.h"
 #include "util/array.h"
+#include "util/sort.h"
 #include "lor.h"
 #if !__CUDACC__
 #include "util/svg_ostream.h"
@@ -37,7 +36,6 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
   using Base = util::array<MaxDetectors, Detector>;
   using CircleDetector = Barrel::CircleDetector<F>;
   using Indices = util::array<MaxDetectors, S>;
-  using SideIndices = std::pair<Indices, Indices>;
 
   /// Makes an empty detector set.
   DetectorSet(F radius = 1, F h_detector = 1)
@@ -172,14 +170,13 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
                  LOR& lor,                ///<[out] lor of the event
                  F& position              ///<[out] position of the event
                  ) const {
-    auto indices = close_indices(e);
+    Indices left, right;
+    close_indices(e, left, right);
     S detector1, detector2;
     F depth1, depth2;
     Point d1_p1, d1_p2, d2_p1, d2_p2;
-    if (!check_for_hits(
-            gen, model, indices.first, e, detector1, depth1, d1_p1, d1_p2) ||
-        !check_for_hits(
-            gen, model, indices.second, e, detector2, depth2, d2_p1, d2_p2))
+    if (!check_for_hits(gen, model, left, e, detector1, depth1, d1_p1, d1_p2) ||
+        !check_for_hits(gen, model, right, e, detector2, depth2, d2_p1, d2_p2))
       return 0;
 
     lor = LOR(detector1, detector2);
@@ -222,10 +219,11 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
            2 * 2;
   }
 
-  /// \return indices of detectors close to given event
-  _ SideIndices close_indices(const Event& e  ///< event to be detected
-                              ) const {
-    SideIndices indices;
+  /// Produce indices of detectors close to given event
+  _ void close_indices(const Event& e,  ///< event to be detected
+                       Indices& left,   ///<[out] indices on one side
+                       Indices& right   ///<[out] indices other side
+                       ) const {
     S distances[MaxDetectors];
     auto pe = e.perpendicular();
     // select only these crossing circle circumscribed on detector
@@ -235,19 +233,18 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
         auto distance = pe(circle);
         distances[i] = distance;
         if (distance < 0)
-          indices.first.emplace_back(i);
+          left.emplace_back(i);
         else
-          indices.second.emplace_back(i);
+          right.emplace_back(i);
       }
     }
     // sort them so the closest go first
-    std::sort(indices.first.begin(), indices.first.end(), [&](S a, S b) {
+    util::heap_sort(left.begin(), left.end(), [&](S a, S b) {
       return distances[a] > distances[b];
     });
-    std::sort(indices.second.begin(), indices.second.end(), [&](S a, S b) {
+    util::heap_sort(right.begin(), right.end(), [&](S a, S b) {
       return distances[a] < distances[b];
     });
-    return indices;
   }
 
  private:
