@@ -513,13 +513,13 @@ void post_process(cmdline::parser& cl,
                             detector_ring.outer_radius(),
                             1024.,
                             1024.);
-    svg << detector_ring;
-
     svg.link_image(fn_wo_path + ".png",
                    -(s_pixel * n_pixels) / 2,
                    -(s_pixel * n_pixels) / 2,
                    s_pixel * n_pixels,
                    s_pixel * n_pixels);
+
+    svg << detector_ring;
   }
 
   // visual debugging output
@@ -551,12 +551,12 @@ void post_process(cmdline::parser& cl,
                             detector_ring.outer_radius(),
                             1024.,
                             1024.);
-    svg << detector_ring;
-
     svg.link_image(fn_wo_path + ".png",
                    -(s_pixel * n_pixels) / 2,
                    -(s_pixel * n_pixels) / 2,
                    s_pixel * n_pixels,
                    s_pixel * n_pixels);
+
+    svg << detector_ring;
   }
 }
