@@ -47,7 +47,7 @@ template <typename FType = double> class svg_ostream : public std::ofstream {
           << " fill: #f99;"
           << " stroke: red;"
           << " }" << std::endl;
-    *this << "    circle  { fill: white;"
+    *this << "    circle  { fill-opacity: 0.0;"
           << " stroke: green;"
           << " }" << std::endl;
     *this << "    #photomultipiers circle { fill: #ddd;"
