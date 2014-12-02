@@ -1,17 +1,17 @@
 #pragma once
 
-#include <vector>
+#include <algorithm>
 
 #include "square_detector.h"
 #include "circle_detector.h"
-#include "util/svg_ostream.h"
 #include "util/array.h"
 #include "lor.h"
+#if !__CUDACC__
+#include "util/svg_ostream.h"
+#endif
 #ifndef MAX_DETECTORS
 #define MAX_DETECTORS 256
 #endif
-
-#include <iostream>  // DEBUG
 
 namespace PET2D {
 namespace Barrel {

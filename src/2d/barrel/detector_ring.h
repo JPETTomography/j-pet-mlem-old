@@ -8,9 +8,6 @@
 #include "circle_detector.h"
 #include "lor.h"
 #include "util/random.h"
-#if !__CUDACC__
-#include "util/svg_ostream.h"
-#endif
 
 namespace PET2D {
 namespace Barrel {
