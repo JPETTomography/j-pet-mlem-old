@@ -14,8 +14,8 @@ class TriangleDetector : public PolygonalDetector<3, FType> {
   using Angle = F;
   using Point = typename Polygon<3, F>::Point;
 
-  TriangleDetector(F w, F h, F d = F()) {
-    if (d > F()) {
+  TriangleDetector(F w, F h, F d = 0) {
+    if (d > 0) {
       this->emplace_back(w / 2, d / 2 - h);
       this->emplace_back(-w / 2, d / 2 - h);
       this->emplace_back(0, d / 2);

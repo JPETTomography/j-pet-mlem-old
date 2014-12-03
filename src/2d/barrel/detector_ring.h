@@ -31,13 +31,13 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
   using Point = PET2D::Point<F>;
   using Event = Barrel::Event<F>;
 
-  DetectorRing(S n_detectors,      ///< number of detectors on ring
-               F radius,           ///< radius of ring
-               F w_detector,       ///< width of single detector (along ring)
-               F h_detector,       ///< height/depth of single detector
-                                   ///< (perpendicular to ring)
-               F d_detector = F()  ///< diameter of circle single detector is
-                                   ///< inscribed in
+  DetectorRing(S n_detectors,    ///< number of detectors on ring
+               F radius,         ///< radius of ring
+               F w_detector,     ///< width of single detector (along ring)
+               F h_detector,     ///< height/depth of single detector
+                                 ///< (perpendicular to ring)
+               F d_detector = 0  ///< diameter of circle single detector is
+                                 ///< inscribed in
                )
       : Base(n_detectors, radius, w_detector, h_detector, d_detector) {
     if (n_detectors % 4)

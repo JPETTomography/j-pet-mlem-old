@@ -16,7 +16,7 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
   using Point = typename Polygon<NVertices, F>::Point;
   using CircleDetector = Barrel::CircleDetector<F>;
 
-  PolygonalDetector(F w, F h, F d = F()) {
+  PolygonalDetector(F w, F h, F d = 0) {
     (void)h, (void)d;  // unused
 
     auto radius = w / (4 * compat::sin(F(M_PI) / F(NVertices)));
