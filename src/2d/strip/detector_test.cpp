@@ -12,7 +12,7 @@ using Detector = PET2D::Strip::Detector<>;
 using Point = PET2D::Point<>;
 using Pixel = PET2D::Pixel<>;
 
-TEST("strip/detector/pixel_at") {
+TEST("2d/strip/detector/pixel_at") {
 
   Detector d(500, 1000, 200, 200, 5, 5, 10, 63);
 
@@ -36,7 +36,7 @@ TEST("strip/detector/pixel_at") {
   }
 }
 
-TEST("strip/detector/pixel_center") {
+TEST("2d/strip/detector/pixel_center") {
 
   // space->image_space  y: [  R,  -R ] -> [0, n_pixels_y],
   //                     z: [-L/2, L/2] -> [0, n_pixels_z]
