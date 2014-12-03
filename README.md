@@ -3,12 +3,12 @@ PET playground project
 
 This projects contains tools & test scripts for supporting PET project.
 
-Members
+Authors
 -------
 
 * Piotr Bialas <pbialas@th.if.uj.edu.pl> (professor, project lead)
-* Jakub Kowal <jakub.kowal@uj.edu.pl> (PhD student)
 * Adam Strzelecki <adam.strzelecki@uj.edu.pl> (PhD student, code maintainer)
+* Jakub Kowal <jakub.kowal@uj.edu.pl> (PhD student)
 
 Prerequisites
 -------------

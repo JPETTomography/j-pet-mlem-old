@@ -1,4 +1,14 @@
+/// \page @2db 2D Barrel
+/// \brief 2D Barrel Monte-Carlo & reconstruction tools
+///
+/// Available tools
+/// ---------------
+/// - \subpage _2d_barrel_matrix
+/// - \subpage _2d_barrel_phantom
+/// - \subpage _2d_barrel_reconstruction
+
 #pragma once
+
 #include <iomanip>
 #if _OPENMP
 #include <omp.h>

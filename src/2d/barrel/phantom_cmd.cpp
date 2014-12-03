@@ -1,10 +1,15 @@
-// PET Phantom
-// Authors:
-//   Piotr Bialas    <piotr.bialas@uj.edu.pl>
-//   Jakub Kowal     <jakub.kowal@uj.edu.pl>
-//   Adam Strzelecki <adam.strzlecki@uj.edu.pl>
-//
-// Generates phantom measurements using Monte Carlo.
+/// \page _2d_barrel_phantom 2d_barrel_phantom
+/// \brief 2D Barrel PET phantom generation tool
+///
+/// Authors
+/// -------
+/// - Piotr Bialas    <piotr.bialas@uj.edu.pl>
+/// - Jakub Kowal     <jakub.kowal@uj.edu.pl>
+/// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+///
+/// Usage
+/// -----
+/// \verbinclude src/2d/barrel/phantom_cmd.txt
 
 #include <random>
 #include <iostream>

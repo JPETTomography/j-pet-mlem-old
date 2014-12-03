@@ -1,9 +1,14 @@
-// PET System Matrix Calculator
-// Authors:
-//   Adam Strzelecki <adam.strzelecki@uj.edu.pl>
-//   Piotr Bialas    <piotr.bialas@uj.edu.pl>
-//
-// Using Monte Carlo method and square detector scintilators.
+/// \page _2d_barrel_matrix 2d_barrel_matrix
+/// \brief 2D Barrel PET system matrix construction tool
+///
+/// Authors
+/// -------
+/// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+/// - Piotr Bialas    <piotr.bialas@uj.edu.pl>
+///
+/// Usage
+/// -----
+/// \verbinclude src/2d/barrel/matrix_cmd.txt
 
 #include <iostream>
 #include <random>

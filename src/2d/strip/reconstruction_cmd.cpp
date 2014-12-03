@@ -1,3 +1,15 @@
+/// \page _2d_strip_reconstruction 2d_strip_reconstruction
+/// \brief 2D Strip PET reconstruction tool
+///
+/// Authors
+/// -------
+/// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+/// - Jakub Kowal     <jakub.kowal@uj.edu.pl>
+///
+/// Usage
+/// -----
+/// \verbinclude src/2d/strip/reconstruction_cmd.txt
+
 #include <iostream>
 #include <ostream>
 
