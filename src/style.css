@@ -11,6 +11,15 @@ h4 {
   font-size: 1.1em;
 }
 
+a#details + h2,
+div.textblock > h3 {
+  display: none;
+}
+div.summary {
+  width: auto;
+  margin-top: -2.2em;
+}
+
 table.pageheader {
   background: none;
 }
