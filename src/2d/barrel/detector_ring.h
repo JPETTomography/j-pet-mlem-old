@@ -103,8 +103,10 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
                  ) const {
 
     const auto n_detectors = this->size();
+#if !_MSC_VER
     const auto& c_inner = this->c_inner;
     const auto& c_outer = this->c_outer;
+#endif
     auto inner_secant = c_inner.secant(e);
     auto outer_secant = c_outer.secant(e);
 

@@ -66,19 +66,7 @@ class MonteCarlo {
 
     matrix.add_emissions(n_emissions);
 
-#if !_OPENMP
-#define TRY
-#define CATCH
-#else
-    // OpenMP uses passed random generator as seed source for
-    // thread local random generators
-    RandomGenerator* mp_gens =
-        new (alloca(sizeof(RandomGenerator) * omp_get_max_threads()))
-            RandomGenerator[omp_get_max_threads()];
-    for (auto t = 0; t < omp_get_max_threads(); ++t) {
-      mp_gens[t].seed(gen());
-    }
-
+#if _OPENMP && !_MSC_VER
 // We need to try catch inside OpenMP thread, otherwise we will not see the
 // error thrown.
 #define TRY try {
@@ -88,6 +76,20 @@ class MonteCarlo {
     std::cerr << ex << std::endl; \
     throw(ex);                    \
   }
+#else
+#define TRY
+#define CATCH
+#endif
+
+#if _OPENMP
+    // OpenMP uses passed random generator as seed source for
+    // thread local random generators
+    RandomGenerator* mp_gens =
+        new (alloca(sizeof(RandomGenerator) * omp_get_max_threads()))
+            RandomGenerator[omp_get_max_threads()];
+    for (auto t = 0; t < omp_get_max_threads(); ++t) {
+      mp_gens[t].seed(gen());
+    }
 
 #pragma omp parallel for schedule(dynamic)
 // #pragma omp parallel for

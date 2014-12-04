@@ -32,8 +32,10 @@ class SquareDetector : public PolygonalDetector<4, FType> {
   }
 
   SquareDetector(Base&& base) : Base(std::forward<Base>(base)) {}
+#if !_MSC_VER
   SquareDetector(typename Base::Base&& base)
       : Base(std::forward<typename Base::Base>(base)) {}
+#endif
 
   static F default_height_for_width(const F w) { return w; }
 

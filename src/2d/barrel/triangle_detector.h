@@ -30,8 +30,10 @@ class TriangleDetector : public PolygonalDetector<3, FType> {
   }
 
   TriangleDetector(Base&& base) : Base(std::forward<Base>(base)) {}
+#if !_MSC_VER
   TriangleDetector(typename Base::Base&& base)
       : Base(std::forward<typename Base::Base>(base)) {}
+#endif
 
   static F default_height_for_width(const F w) {
     return w * std::sqrt(static_cast<F>(3)) / 2;
