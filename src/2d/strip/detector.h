@@ -1,10 +1,10 @@
-/// \page _2d_strip 2D Strip
+/// \page cmd_2d_strip 2D Strip
 /// \brief 2D Strip Monte-Carlo & reconstruction tools
 ///
 /// Available tools
 /// ---------------
-/// - \subpage _2d_strip_phantom
-/// - \subpage _2d_strip_reconstruction
+/// - \subpage cmd_2d_strip_phantom
+/// - \subpage cmd_2d_strip_reconstruction
 
 #pragma once
 

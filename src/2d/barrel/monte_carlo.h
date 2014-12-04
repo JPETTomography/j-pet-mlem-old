@@ -3,9 +3,9 @@
 ///
 /// Available tools
 /// ---------------
-/// - \subpage _2d_barrel_matrix
-/// - \subpage _2d_barrel_phantom
-/// - \subpage _2d_barrel_reconstruction
+/// - \subpage cmd_2d_barrel_matrix
+/// - \subpage cmd_2d_barrel_phantom
+/// - \subpage cmd_2d_barrel_reconstruction
 
 #pragma once
 

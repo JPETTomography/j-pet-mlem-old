@@ -1,8 +1,8 @@
-/// \page _2d_barrel_phantom 2d_barrel_phantom
+/// \page cmd_2d_barrel_phantom 2d_barrel_phantom
 /// \brief 2D Barrel PET phantom generation tool
 ///
 /// Simulates detector response for given virtual phantom and produces mean file
-/// for \ref _2d_barrel_reconstruction.
+/// for \ref cmd_2d_barrel_reconstruction.
 ///
 /// Example phantom descriptions
 /// ----------------------------
@@ -24,7 +24,7 @@
 /// -----
 /// \verbinclude src/2d/barrel/phantom_cmd.txt
 ///
-/// \sa \ref _2d_barrel_matrix, \ref _2d_barrel_reconstruction
+/// \sa \ref cmd_2d_barrel_matrix, \ref cmd_2d_barrel_reconstruction
 
 #include <random>
 #include <iostream>

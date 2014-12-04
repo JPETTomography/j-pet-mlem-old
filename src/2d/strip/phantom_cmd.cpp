@@ -1,8 +1,8 @@
-/// \page _2d_strip_phantom 2d_strip_phantom
+/// \page cmd_2d_strip_phantom 2d_strip_phantom
 /// \brief 2D Strip PET phantom tool
 ///
 /// Simulates detector response for given virtual phantom and produces mean file
-/// for \ref _2d_strip_reconstruction.
+/// for \ref cmd_2d_strip_reconstruction.
 ///
 /// Example phantom descriptions
 /// ----------------------------
@@ -23,7 +23,7 @@
 /// -----
 /// \verbinclude src/2d/strip/phantom_cmd.txt
 ///
-/// \sa \ref _2d_strip_reconstruction
+/// \sa \ref cmd_2d_strip_reconstruction
 
 #include <iostream>
 #include <vector>

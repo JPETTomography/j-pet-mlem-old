@@ -1,8 +1,8 @@
-/// \page _2d_barrel_matrix 2d_barrel_matrix
+/// \page cmd_2d_barrel_matrix 2d_barrel_matrix
 /// \brief 2D Barrel PET system matrix construction tool
 ///
 /// Creates system matrix file and accomanying SVG & PNG files for
-/// reconstruction \ref _2d_barrel_reconstruction.
+/// reconstruction \ref cmd_2d_barrel_reconstruction.
 ///
 /// Example
 /// -------
@@ -23,7 +23,7 @@
 /// -----
 /// \verbinclude src/2d/barrel/matrix_cmd.txt
 ///
-/// \sa \ref _2d_barrel_phantom, \ref _2d_barrel_reconstruction
+/// \sa \ref cmd_2d_barrel_phantom, \ref cmd_2d_barrel_reconstruction
 
 #include <iostream>
 #include <random>
