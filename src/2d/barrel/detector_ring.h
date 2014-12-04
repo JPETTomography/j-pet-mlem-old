@@ -14,8 +14,12 @@ namespace Barrel {
 
 /// Detector made of 2D ring of single detectors
 
-/// This is optimized DetectorSet using assumption all detectors lie on
-/// ring, so some operations like possible secants can be done much quicker.
+/// This is optimized DetectorSet using assumption \b all detectors lie on
+/// ring, so some operations like possible secants can be done much quicker,
+/// approximately 2x faster than using DetectorSet.
+///
+/// \image html detector_ring.pdf.png
+
 template <typename DetectorType = SquareDetector<double>,
           std::size_t MaxDetectors = MAX_DETECTORS,
           typename SType = int>

@@ -12,6 +12,9 @@ namespace PET2D {
 namespace Barrel {
 
 /// Circular shape detector
+
+/// Represents single detector with round shape:
+/// \image html shape_circle.pdf.png
 template <typename FType = double>
 class CircleDetector : public Circle<FType>, public Point<FType> {
  public:

@@ -7,6 +7,9 @@ namespace PET2D {
 namespace Barrel {
 
 /// Single detector with shape of custom polygon
+
+/// Represents single detector with convex polygonal shape, i.e. such ashexagon:
+/// \image html shape_hexagon.pdf.png
 template <std::size_t NVertices, typename FType = double>
 class PolygonalDetector : public Polygon<NVertices, FType> {
  public:

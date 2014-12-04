@@ -7,6 +7,8 @@ namespace PET2D {
 namespace Barrel {
 
 /// Model which always produces a decay
+
+/// This model always produces a decay opposite to ScintillatorAccept.
 template <typename FType = double> class AlwaysAccept {
  public:
   using F = FType;
@@ -26,11 +28,20 @@ template <typename FType = double> class AlwaysAccept {
 /// Model of scintilator acceptance
 
 /// Represents model of scintilator where CDF of decay is given by:
-/// F = 1-e^(-scale * length), where for length l we get:
-/// l = 0:           F(l) = 0
-/// l = 1/2 * scale: F(l) = 1 - 1/sqrt(e)
-/// l = 1/scale:     F(l) = 1 - 1/e
-/// l = 2/scale:     F(l) = 1 - 1/e^2
+/// \f[
+///     F = 1-e^{-scale * length}
+/// \f]
+/// where for given length \f$l\f$ we get:
+/// \f[
+///     F(l) = \begin{cases}
+///        0             & l = 0           \\&
+///        1 - 1/sqrt(e) & l = 1/2 * scale \\&
+///        1 - 1/e       & l = 1/scale     \\&
+///        1 - 1/e^2     & l = 2/scale
+///     \end{cases}
+/// \f]
+///
+/// \sa AlwaysAccept
 
 template <typename FType = double> class ScintillatorAccept {
  public:

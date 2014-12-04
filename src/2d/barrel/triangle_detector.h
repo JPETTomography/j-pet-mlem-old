@@ -6,6 +6,9 @@ namespace PET2D {
 namespace Barrel {
 
 /// Single triangular detector
+
+/// Represents single detector with triangular shape:
+/// \image html shape_triangle.pdf.png
 template <typename FType = double>
 class TriangleDetector : public PolygonalDetector<3, FType> {
  public:

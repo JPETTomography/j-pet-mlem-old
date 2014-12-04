@@ -18,9 +18,23 @@ namespace Barrel {
 
 /// Detector made of several other detectors
 
+/// Represents detector compound made of several detectors (scintillators)
+/// using any geometry, particuallary it may be one or several rings of
+/// detectors, or even detectors organized into other shapes.
+///
 /// No assumptions are made for how geometry of this detector looks like in
 /// comparison to DetectorRing where are single detectors are placed on the
 /// ring.
+///
+/// \image html config_4x48.pdf.png
+///
+/// This class is a template that accepts custom DetectorType which can be any
+/// shape of:
+/// - SquareDetector
+/// - CircleDetector
+/// - TriangleDetector
+/// - PolygonalDetector
+
 template <typename DetectorType = SquareDetector<double>,
           std::size_t MaxDetectors = MAX_DETECTORS,
           typename SType = int>
@@ -113,7 +127,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
       throw("number of numbers of detectors must be less or equal radiuses");
 
     // Now create all following rings
-    for (int i = 1; i < radius.size(); ++i) {
+    for (size_t i = 1; i < radius.size(); ++i) {
       if (!radius[i])
         break;
       if (!n_detectors[i])

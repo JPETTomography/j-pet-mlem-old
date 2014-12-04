@@ -6,6 +6,9 @@ namespace PET2D {
 namespace Barrel {
 
 /// Single square detector
+
+/// Represents single detector with rectangular shape:
+/// \image html shape_rectangle.pdf.png
 template <typename FType = double>
 class SquareDetector : public PolygonalDetector<4, FType> {
  public:
