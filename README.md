@@ -53,7 +53,6 @@ Prerequisites
 
 ##### Optional
 
-* [CUDA][cuda] 6.5 (automatically detected by `cmake`)
 * [CMake Tools][cmaketools] for editing *CMake* in *Visual Studio*
 
 [cmaketools]: http://cmaketools.codeplex.com
