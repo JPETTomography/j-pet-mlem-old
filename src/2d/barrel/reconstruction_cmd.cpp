@@ -1,6 +1,10 @@
 /// \page _2d_barrel_reconstruction 2d_barrel_reconstruction
 /// \brief 2D Barrel PET reconstruction tool
 ///
+/// Reconstructs image using given system matrix produced by \ref
+/// _2d_barrel_matrix and mean file representing physical detector response or
+/// simulated response output from \ref _2d_barrel_phantom.
+///
 /// Authors
 /// -------
 /// - Piotr Bialas    <piotr.bialas@uj.edu.pl>

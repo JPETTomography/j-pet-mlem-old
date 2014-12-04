@@ -1,6 +1,12 @@
 /// \page _2d_strip_reconstruction 2d_strip_reconstruction
 /// \brief 2D Strip PET reconstruction tool
 ///
+/// Reconstructs image using List-Mode with analytic kernel approximation from
+/// physical detector response or simulated response output from \ref
+/// _2d_strip_phantom.
+///
+/// \image html cs000_ev.pdf.png
+///
 /// Authors
 /// -------
 /// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
@@ -9,6 +15,8 @@
 /// Usage
 /// -----
 /// \verbinclude src/2d/strip/reconstruction_cmd.txt
+///
+/// \sa \ref _2d_strip_phantom
 
 #include <iostream>
 #include <ostream>

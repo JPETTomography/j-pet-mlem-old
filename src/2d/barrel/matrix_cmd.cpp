@@ -1,6 +1,19 @@
 /// \page _2d_barrel_matrix 2d_barrel_matrix
 /// \brief 2D Barrel PET system matrix construction tool
 ///
+/// Creates system matrix file and accomanying SVG & PNG files for
+/// reconstruction \ref _2d_barrel_reconstruction.
+///
+/// Example
+/// -------
+///
+/// - Create system matrix for 2 rings of 48 detectors using 1 million emissions
+///   from each pixel:
+///
+///        2d_barrel_matrix -s square -w 0.007 -h 0.017
+///                         -r 0.360 -d 48 --radius2 0.400
+///                         -e 1000000 -o data/201412_rings/gpu_2rings
+///
 /// Authors
 /// -------
 /// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
@@ -9,6 +22,8 @@
 /// Usage
 /// -----
 /// \verbinclude src/2d/barrel/matrix_cmd.txt
+///
+/// \sa \ref _2d_barrel_phantom, \ref _2d_barrel_reconstruction
 
 #include <iostream>
 #include <random>

@@ -1,6 +1,19 @@
 /// \page _2d_barrel_phantom 2d_barrel_phantom
 /// \brief 2D Barrel PET phantom generation tool
 ///
+/// Simulates detector response for given virtual phantom and produces mean file
+/// for \ref _2d_barrel_reconstruction.
+///
+/// Example phantom descriptions
+/// ----------------------------
+/// - Shepp like phantom
+///
+///   \verbinclude phantom/s_shepp
+///
+/// - Small Shepp like phantom
+///
+///   \verbinclude phantom/s_shepp_small
+///
 /// Authors
 /// -------
 /// - Piotr Bialas    <piotr.bialas@uj.edu.pl>
@@ -10,6 +23,8 @@
 /// Usage
 /// -----
 /// \verbinclude src/2d/barrel/phantom_cmd.txt
+///
+/// \sa \ref _2d_barrel_matrix, \ref _2d_barrel_reconstruction
 
 #include <random>
 #include <iostream>
