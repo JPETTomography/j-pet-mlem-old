@@ -12,7 +12,7 @@ h4 {
 }
 
 a#details + h2,
-div.textblock > h3 {
+a#details + h2 + div.textblock > h3:first-child {
   display: none;
 }
 div.summary {
