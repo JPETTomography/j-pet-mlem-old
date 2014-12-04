@@ -87,19 +87,24 @@ int main(int argc, char* argv[]) {
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in one dimension", false, 256);
     cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
+    cl.add<double>("radius", 'r', "inner detector ring radius", false);
+    cl.add<double>("radius2", 0, " ... 2nd ring", false);
+    cl.add<double>("radius3", 0, " ... 3rd ring", false);
+    cl.add<double>("radius4", 0, " ... 4th ring", false);
+    cl.add<double>("rotation", 0, "ring rotation (0-1)", false);
+    cl.add<double>("rotation2", 0, " ... 2nd ring", false);
+    cl.add<double>("rotation3", 0, " ... 3rd ring", false);
+    cl.add<double>("rotation4", 0, " ... 4th ring", false);
     cl.add<int>("n-detectors", 'd', "number of detectors in ring", false);
-    cl.add<int>("n-detectors2", 0, "number of detectors in 2nd ring", false);
-    cl.add<int>("n-detectors3", 0, "number of detectors in 3rd ring", false);
+    cl.add<int>("n-detectors2", 0, " ... 2nd ring", false);
+    cl.add<int>("n-detectors3", 0, " ... 3rd ring", false);
+    cl.add<int>("n-detectors4", 0, " ... 4th ring", false);
     cl.add<int>("n-emissions",
                 'e',
                 "emissions per pixel",
                 false,
                 0,
                 cmdline::not_from_file);
-    cl.add<double>("radius", 'r', "inner detector ring radius", false);
-    cl.add<double>("ring-rotation", 0, "next ring rotation (0-1)", false);
-    cl.add<double>("radius2", 0, "2nd detector ring radius", false);
-    cl.add<double>("radius3", 0, "3rd detector ring radius", false);
     cl.add<double>("s-pixel", 'p', "pixel size", false);
     cl.add<double>(
         "tof-step", 't', "TOF quantisation step for distance delta", false);
@@ -187,16 +192,10 @@ int main(int argc, char* argv[]) {
     }
 
     auto& n_pixels = cl.get<int>("n-pixels");
-    auto& n_detectors = cl.get<int>("n-detectors");
-    auto& n_detectors2 = cl.get<int>("n-detectors2");
-    auto& n_detectors3 = cl.get<int>("n-detectors3");
     auto& radius = cl.get<double>("radius");
-    auto& ring_rotation = cl.get<double>("ring-rotation");
-    auto& radius2 = cl.get<double>("radius2");
-    auto& radius3 = cl.get<double>("radius3");
+    auto& n_detectors = cl.get<int>("n-detectors");
     auto& s_pixel = cl.get<double>("s-pixel");
     auto& w_detector = cl.get<double>("w-detector");
-    auto& h_detector = cl.get<double>("h-detector");
     auto& d_detector = cl.get<double>("d-detector");
     auto& shape = cl.get<std::string>("shape");
     auto verbose = cl.exist("verbose");
@@ -293,16 +292,21 @@ int main(int argc, char* argv[]) {
 #define _RUN(cl, detector_ring, model) run(cl, detector_ring, model)
 #endif
 #define RUN(detector_type, model_type, ...)                       \
-  detector_type detector_ring(n_detectors,                        \
-                              radius,                             \
-                              w_detector,                         \
-                              h_detector,                         \
-                              d_detector,                         \
-                              ring_rotation,                      \
-                              n_detectors2,                       \
-                              radius2,                            \
-                              n_detectors3,                       \
-                              radius3);                           \
+  detector_type detector_ring({ cl.get<double>("radius"),         \
+                                cl.get<double>("radius2"),        \
+                                cl.get<double>("radius3"),        \
+                                cl.get<double>("radius4") },      \
+                              { cl.get<double>("rotation"),       \
+                                cl.get<double>("rotation2"),      \
+                                cl.get<double>("rotation3"),      \
+                                cl.get<double>("rotation4") },    \
+                              { cl.get<int>("n-detectors"),       \
+                                cl.get<int>("n-detectors2"),      \
+                                cl.get<int>("n-detectors3"),      \
+                                cl.get<int>("n-detectors4") },    \
+                              cl.get<double>("w-detector"),       \
+                              cl.get<double>("h-detector"),       \
+                              cl.get<double>("d-detector"));      \
   model_type model{ __VA_ARGS__ };                                \
   print_parameters<detector_type, model_type>(cl, detector_ring); \
   auto sparse_matrix = _RUN(cl, detector_ring, model);            \
