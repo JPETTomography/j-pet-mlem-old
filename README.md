@@ -48,7 +48,10 @@ Prerequisites
 
 ### Windows build requirements
 
-* *Visual Studio* 2013 (aka *MSVC* 12)
+[vs2013]: http://www.microsoft.com/en-us/download/details.aspx?id=41151
+[vs2015]: http://www.visualstudio.com/en-us/downloads/visual-studio-2015-downloads-vs
+
+* [Visual Studio 2013 Nov 2013 CTP][vs2013] or [Visual Studio 2015][vs2015]
 * *CMake* 3.0 for build script generation
 
 ##### Optional
