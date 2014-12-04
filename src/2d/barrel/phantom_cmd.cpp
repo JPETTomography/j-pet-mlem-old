@@ -233,7 +233,7 @@ int main(int argc, char* argv[]) {
         run<HexagonalDetectorRing>(cl, model);
       }
     } else if (model_name == "scintillator") {
-      ScintilatorAccept<> model(length_scale);
+      ScintillatorAccept<> model(length_scale);
       if (shape == "square") {
         run<SquareDetectorRing>(cl, model);
       } else if (shape == "circle") {

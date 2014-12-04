@@ -23,7 +23,7 @@ using LOR = Barrel::LOR<>;
 using Event = Barrel::Event<float>;
 using SquareDetector = Barrel::SquareDetector<float>;
 using DetectorRing = Barrel::DetectorSet<SquareDetector>;
-using Model = ScintilatorAccept<float>;
+using Model = ScintillatorAccept<float>;
 #if !__CUDACC__
 using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR>;
 #endif

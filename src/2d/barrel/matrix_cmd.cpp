@@ -325,13 +325,13 @@ int main(int argc, char* argv[]) {
       }
     } else if (model_name == "scintillator") {
       if (shape == "square") {
-        RUN(SquareDetectorRing, ScintilatorAccept<>, length_scale);
+        RUN(SquareDetectorRing, ScintillatorAccept<>, length_scale);
       } else if (shape == "circle") {
-        RUN(CircleDetectorRing, ScintilatorAccept<>, length_scale);
+        RUN(CircleDetectorRing, ScintillatorAccept<>, length_scale);
       } else if (shape == "triangle") {
-        RUN(TriangleDetectorRing, ScintilatorAccept<>, length_scale);
+        RUN(TriangleDetectorRing, ScintillatorAccept<>, length_scale);
       } else if (shape == "hexagon") {
-        RUN(HexagonalDetectorRing, ScintilatorAccept<>, length_scale);
+        RUN(HexagonalDetectorRing, ScintillatorAccept<>, length_scale);
       }
     }
 

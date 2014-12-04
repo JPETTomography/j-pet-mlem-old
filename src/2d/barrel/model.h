@@ -32,11 +32,11 @@ template <typename FType = double> class AlwaysAccept {
 /// l = 1/scale:     F(l) = 1 - 1/e
 /// l = 2/scale:     F(l) = 1 - 1/e^2
 
-template <typename FType = double> class ScintilatorAccept {
+template <typename FType = double> class ScintillatorAccept {
  public:
   using F = FType;
 
-  _ ScintilatorAccept(F scale)
+  _ ScintillatorAccept(F scale)
       : one_dis(static_cast<F>(0), static_cast<F>(1)),
         scale(scale),
         inv_scale(static_cast<F>(1) / scale) {}
