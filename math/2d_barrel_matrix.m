@@ -1,6 +1,9 @@
+(* ::Package:: *)
+
 (* 2D PET matrix Mathematica reading functions *)
 
 (* Author: Adam Strzelecki <adam.strzelecki@uj.edu.pl> *)
+
 
 (* read 2D PET binary matrix into Mathematica structure *)
 ReadPETMatrix[fileName_] := Module[{
@@ -75,17 +78,20 @@ ImagePETMatrix[m_, lors___] := Module[{
   total
 ];
 
+
 (* NYI: convert triangular matrix into full matrix *)
 FullPETMatrix[m_] := Module[{}, 
   If["Full" /. m, m];
   m
 ]
 
+
 (* PlotPETMatrix options *)
 Options[PlotPETMatrix] = Join[
   {Combine -> False, LOR -> {}}, 
   Options[ArrayPlot]
 ];
+
 
 (* plot 2D PET matrix read by ReadPETMatrix *)
 PlotPETMatrix[m_, opts:OptionsPattern[]] := Module[{
