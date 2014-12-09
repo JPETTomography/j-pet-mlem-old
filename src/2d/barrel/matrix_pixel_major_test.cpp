@@ -32,12 +32,12 @@ TEST("2d/barrel/lor/iterator") {
 }
 
 TEST("2d/barrel/pix_major_system_matrix/ctor") {
-  DetectorRing<> dr(140, 0.450, 0.006, 0.020);
+  DetectorRing<> dr(0.450, 140, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 }
 
 TEST("2d/barrel/pix_major_system_matrix/add") {
-  DetectorRing<> dr(140, 0.450, 0.006, 0.020);
+  DetectorRing<> dr(0.450, 140, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);
@@ -56,7 +56,7 @@ TEST("2d/barrel/pix_major_system_matrix/add") {
 }
 
 TEST("2d/barrel/pix_major_system_matrix/add_twice") {
-  DetectorRing<> dr(140, 0.450, 0.006, 0.020);
+  DetectorRing<> dr(0.450, 140, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);
@@ -71,7 +71,7 @@ TEST("2d/barrel/pix_major_system_matrix/add_twice") {
 }
 
 TEST("2d/barrel/pix_major_system_matrix/add_to_all") {
-  DetectorRing<> dr(140, 0.450, 0.006, 0.020);
+  DetectorRing<> dr(0.450, 140, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);
@@ -89,7 +89,7 @@ TEST("2d/barrel/pix_major_system_matrix/add_to_all") {
 }
 
 TEST("2d/barrel/pix_major_system_matrix/to_sparse") {
-  DetectorRing<> dr(140, 0.450, 0.006, 0.020);
+  DetectorRing<> dr(0.450, 140, 0.006, 0.020);
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);

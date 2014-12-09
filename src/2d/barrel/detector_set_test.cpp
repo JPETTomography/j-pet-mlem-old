@@ -83,8 +83,8 @@ TEST("2d/barrel/detector_set/math") {
 
 TEST("2d/barrel/detector_set/detect") {
   SECTION("two_rings") {
-    DetectorRing<SquareDetector<>> inner_ring(16, 1., .1, .1);
-    DetectorRing<SquareDetector<>> outer_ring(16, 1.4, .1, .1);
+    DetectorRing<SquareDetector<>> inner_ring(1., 16, .1, .1);
+    DetectorRing<SquareDetector<>> outer_ring(1.4, 16, .1, .1);
     DetectorSet<SquareDetector<>> detector;
     for (auto& square_detector : inner_ring) {
       detector.push_back(square_detector);
