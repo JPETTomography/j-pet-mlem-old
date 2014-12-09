@@ -248,7 +248,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
                        Indices& left,   ///<[out] indices on one side
                        Indices& right   ///<[out] indices other side
                        ) const {
-    S distances[MaxDetectors];
+    F distances[MaxDetectors];
     auto pe = e.perpendicular();
     // select only these crossing circle circumscribed on detector
     for (int i = 0; i < static_cast<int>(c_detectors.size()); ++i) {
