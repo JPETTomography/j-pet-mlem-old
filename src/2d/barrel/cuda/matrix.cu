@@ -27,9 +27,9 @@ __global__ static void kernel(const Pixel pixel,
   util::random::uniform_real_distribution<float> one_dis(0, 1);
   util::random::uniform_real_distribution<float> pi_dis(0, (float)M_PI);
 
-  __shared__ util::cuda::copy<DetectorRing> detector_ring_copier;
-  detector_ring_copier = detector_ring_ptr;
-  DetectorRing& detector_ring = *detector_ring_copier;
+  __shared__ util::cuda::copy<DetectorRing> detector_ring_shared_storage;
+  detector_ring_shared_storage = detector_ring_ptr;
+  DetectorRing& detector_ring = *detector_ring_shared_storage;
 
   Model model(length_scale);
   auto fov_radius2 = detector_ring.fov_radius * detector_ring.fov_radius;
