@@ -91,6 +91,16 @@ class array {
   _ reference back() { return at(s - 1); }
   _ const_reference back() const { return at(s - 1); }
 
+  _ bool operator==(const array& other) const {
+    if (other.size() != s)
+      return false;
+    for (size_type i = 0; i < s; ++i) {
+      if (other[i] != at(i))
+        return false;
+    }
+    return true;
+  }
+
  private:
   storage_type v[MaxSize];
   std::size_t s;
@@ -105,3 +115,24 @@ class array {
   }
 };
 }  // util
+
+#ifdef TEST_CASE
+namespace Catch {
+template <std::size_t MaxSize, typename T, std::size_t Alignment, typename S>
+struct StringMaker<util::array<MaxSize, T, Alignment, S>> {
+  using Array = util::array<MaxSize, T, Alignment, S>;
+  using size_type = typename Array::size_type;
+  static std::string convert(const Array& array) {
+    std::ostringstream oss;
+    oss << "[";
+    for (size_type i = 0; i < array.size(); ++i) {
+      if (i)
+        oss << ", ";
+      oss << array[i];
+    }
+    oss << "]";
+    return oss.str();
+  }
+};
+}
+#endif
