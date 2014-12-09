@@ -79,7 +79,7 @@ __global__ void reconstruction(Detector<F> detector,
     const int bb_width = bb_br.x - bb_tl.x;
     const int bb_height = bb_br.y - bb_tl.y;
     const int bb_size = bb_width * bb_height;
-    F inv_bb_width = F(1) / bb_width;
+    F inv_bb_width = 1 / bb_width;
 
 #if CACHE_ELLIPSE_PIXELS
     int n_ellipse_pixels = 0;

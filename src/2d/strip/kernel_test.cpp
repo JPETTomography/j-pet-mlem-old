@@ -22,7 +22,7 @@ void check(F ref, F y, F angle, F dy, F dz, F R, const Kernel<F>& kernel) {
   CHECK(kernel(y, tangent, secant, R, delta) == Approx(ref).epsilon(1e-13));
 }
 
-TEST("strip/sensitivity/square") {
+TEST("2d/strip/sensitivity/square") {
 
   Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
@@ -32,7 +32,7 @@ TEST("strip/sensitivity/square") {
   CHECK(detector.sensitivity({ -450, -200 }) == 0.07526632771111386_e13);
 }
 
-TEST("strip/sensitivity/non_square") {
+TEST("2d/strip/sensitivity/non_square") {
 
   Detector<> detector(450, 200, 200, 200, 5, 5, 10, 63);
 
@@ -43,7 +43,7 @@ TEST("strip/sensitivity/non_square") {
 }
 
 #if DONT_TEST
-TEST("strip/kernel/ctor1") {
+TEST("2d/strip/kernel/ctor1") {
 
   Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
   Kernel<> kernel(detector.sigma_z, detector.sigma_dl);
@@ -57,7 +57,7 @@ TEST("strip/kernel/ctor1") {
 }
 #endif
 
-TEST("strip/kernel/ctor2") {
+TEST("2d/strip/kernel/ctor2") {
 
   Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
   Kernel<> kernel(detector.sigma_z, detector.sigma_dl);
@@ -72,7 +72,7 @@ TEST("strip/kernel/ctor2") {
 #endif
 }
 
-TEST("strip/kernel/bbox") {
+TEST("2d/strip/kernel/bbox") {
 
   Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
   Kernel<> kernel(detector.sigma_z, detector.sigma_dl);

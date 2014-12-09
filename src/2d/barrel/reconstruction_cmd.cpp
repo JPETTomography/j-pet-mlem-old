@@ -1,13 +1,26 @@
-// PET Reconstruction
-// Authors:
-//   Piotr Bialas    <piotr.bialas@uj.edu.pl>
-//   Jakub Kowal     <jakub.kowal@uj.edu.pl>
-//   Adam Strzelecki <adam.strzlecki@uj.edu.pl>
-//
-// Based on:
-//   "Implementing and Accelerating the EM Algorithm for Positron Emission
-// Tomography"
-//   by Linda Kaufman
+/// \page cmd_2d_barrel_reconstruction 2d_barrel_reconstruction
+/// \brief 2D Barrel PET reconstruction tool
+///
+/// Reconstructs image using given system matrix produced by \ref
+/// cmd_2d_barrel_matrix and mean file representing physical detector response
+/// or
+/// simulated response output from \ref cmd_2d_barrel_phantom.
+///
+/// Authors
+/// -------
+/// - Piotr Bialas    <piotr.bialas@uj.edu.pl>
+/// - Jakub Kowal     <jakub.kowal@uj.edu.pl>
+/// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+///
+/// References
+/// ----------
+/// Based on:
+///  "Implementing and Accelerating the EM Algorithm for Positron Emission
+///   Tomography" by Linda Kaufman
+///
+/// Usage
+/// -----
+/// \verbinclude src/2d/barrel/reconstruction_cmd.txt
 
 #ifdef __SSE3__
 #include <xmmintrin.h>

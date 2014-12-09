@@ -1,0 +1,44 @@
+usage: ./2d_barrel_matrix [options] ... matrix_file ...
+build: OpenMP/CUDA WARP
+note: All length options below should be expressed in meters.
+options:
+  -c, --config          load config file (file [=])
+  -n, --n-pixels        number of pixels in one dimension (size [=256])
+      --m-pixel         starting pixel for partial matrix (size [=0])
+  -r, --radius          inner detector ring radius (float [=auto])
+      --radius2          ... 2nd ring (float [=auto])
+      --radius3          ... 3rd ring (float [=auto])
+      --radius4          ... 4th ring (float [=auto])
+      --rotation        ring rotation (0-1) (float [=auto])
+      --rotation2        ... 2nd ring (float [=auto])
+      --rotation3        ... 3rd ring (float [=auto])
+      --rotation4        ... 4th ring (float [=auto])
+  -d, --n-detectors     number of detectors in ring (size [=0])
+      --n-detectors2     ... 2nd ring (size [=0])
+      --n-detectors3     ... 3rd ring (size [=0])
+      --n-detectors4     ... 4th ring (size [=0])
+  -e, --n-emissions     emissions per pixel (size [=0])
+  -p, --s-pixel         pixel size (float [=auto])
+  -t, --tof-step        TOF quantisation step for distance delta (float [=auto])
+  -s, --shape           detector (scintillator) shape (square, circle, triangle, hexagon) (string [=square])
+  -w, --w-detector      detector width (float [=auto])
+  -h, --h-detector      detector height (float [=auto])
+      --d-detector      inscribe detector shape into circle of given diameter (float [=auto])
+  -m, --model           acceptance model (always, scintillator) (string [=scintillator])
+  -l, --base-length     scintillator emission base length P(l)=1-e^(-1) (float [=0.1])
+  -o, --output          output binary triangular/full sparse system matrix (file [=])
+  -f, --full            output full non-triangular sparse system matrix
+      --png             output lor to png (file [=])
+      --from            lor start detector to output (size [=-1])
+      --to              lor end detector to output (size [=-1])
+      --pos             position to output (size [=-1])
+      --print           print triangular sparse system matrix
+      --stats           show stats
+      --wait            wait before exit
+  -v, --verbose         prints the iterations information on std::out
+  -S, --seed            random number generator seed (seed [=0])
+  -G, --gpu             run on GPU (via CUDA)
+  -B, --cuda-blocks     CUDA blocks (size [=64])
+  -W, --cuda-threads    CUDA threads per block (size [=512])
+  -T, --n-threads       number of OpenMP threads (size [=0])
+  -?, --help            print this message

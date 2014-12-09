@@ -1,3 +1,30 @@
+/// \page cmd_2d_strip_phantom 2d_strip_phantom
+/// \brief 2D Strip PET phantom tool
+///
+/// Simulates detector response for given virtual phantom and produces mean file
+/// for \ref cmd_2d_strip_reconstruction.
+///
+/// Example phantom descriptions
+/// ----------------------------
+/// - Shepp like phantom
+///
+///   \verbinclude phantom/s_shepp
+///
+/// - Small Shepp like phantom
+///
+///   \verbinclude phantom/s_shepp_small
+///
+/// Authors
+/// -------
+/// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+/// - Jakub Kowal     <jakub.kowal@uj.edu.pl>
+///
+/// Usage
+/// -----
+/// \verbinclude src/2d/strip/phantom_cmd.txt
+///
+/// \sa \ref cmd_2d_strip_reconstruction
+
 #include <iostream>
 #include <vector>
 #include <ctime>

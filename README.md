@@ -3,12 +3,12 @@ PET playground project
 
 This projects contains tools & test scripts for supporting PET project.
 
-Members
+Authors
 -------
 
 * Piotr Bialas <pbialas@th.if.uj.edu.pl> (professor, project lead)
-* Jakub Kowal <jakub.kowal@uj.edu.pl> (PhD student)
 * Adam Strzelecki <adam.strzelecki@uj.edu.pl> (PhD student, code maintainer)
+* Jakub Kowal <jakub.kowal@uj.edu.pl> (PhD student)
 
 Prerequisites
 -------------
@@ -48,12 +48,14 @@ Prerequisites
 
 ### Windows build requirements
 
-* *Visual Studio* 2013 (aka *MSVC* 12)
+[vs2013]: http://www.microsoft.com/en-us/download/details.aspx?id=41151
+[vs2015]: http://www.visualstudio.com/en-us/downloads/visual-studio-2015-downloads-vs
+
+* [Visual Studio 2013 Nov 2013 CTP][vs2013] or [Visual Studio 2015][vs2015]
 * *CMake* 3.0 for build script generation
 
 ##### Optional
 
-* [CUDA][cuda] 6.5 (automatically detected by `cmake`)
 * [CMake Tools][cmaketools] for editing *CMake* in *Visual Studio*
 
 [cmaketools]: http://cmaketools.codeplex.com

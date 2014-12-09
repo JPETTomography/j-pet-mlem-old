@@ -6,6 +6,9 @@ namespace PET2D {
 namespace Barrel {
 
 /// Single square detector
+
+/// Represents single detector with rectangular shape:
+/// \image html shape_rectangle.pdf.png
 template <typename FType = double>
 class SquareDetector : public PolygonalDetector<4, FType> {
  public:
@@ -29,8 +32,10 @@ class SquareDetector : public PolygonalDetector<4, FType> {
   }
 
   SquareDetector(Base&& base) : Base(std::forward<Base>(base)) {}
+#if !_MSC_VER
   SquareDetector(typename Base::Base&& base)
       : Base(std::forward<typename Base::Base>(base)) {}
+#endif
 
   static F default_height_for_width(const F w) { return w; }
 

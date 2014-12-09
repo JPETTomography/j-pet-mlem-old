@@ -1,3 +1,25 @@
+h1 {
+  font-size: 1.5em;
+}
+h2 {
+  font-size: 1.3em;
+}
+h3 {
+  font-size: 1.2em;
+}
+h4 {
+  font-size: 1.1em;
+}
+
+a#details + h2,
+a#details + h2 + div.textblock > h3:first-child {
+  display: none;
+}
+div.summary {
+  width: auto;
+  margin-top: -2.2em;
+}
+
 table.pageheader {
   background: none;
 }
@@ -60,6 +82,13 @@ table.pageheader {
   background-image: none;
   border: none;
   box-shadow: none;
+}
+table.directory td {
+  line-height: 1.8em;
+}
+table.directory td span.icon {
+  line-height: normal;
+  padding: 1px 0;
 }
 
 .memproto, dl.reflist dt,

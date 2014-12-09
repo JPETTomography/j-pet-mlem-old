@@ -8,10 +8,10 @@ _ void heap_sort_sift_down(T* a, int start, int end, Comparator compare) {
   int root = start;
   while (root * 2 + 1 < end) {
     int child = 2 * root + 1;
-    if (child + 1 < end && compare(a[child], a[child + 1])) {
+    if (child + 1 < end && !compare(a[child], a[child + 1])) {
       ++child;
     }
-    if (compare(a[root], a[child])) {
+    if (!compare(a[root], a[child])) {
       compat::swap(a[child], a[root]);
       root = child;
     } else {

@@ -1,0 +1,16 @@
+usage: ./2d_strip_phantom [options] ... phantom_description
+options:
+  -c, --config        load config file (file [=])
+  -r, --r-distance    R distance between scintillator (float [=500])
+  -l, --s-length      scintillator length (float [=1000])
+  -p, --p-size        pixel size (float [=5])
+  -n, --n-pixels      number of pixels (size [=200])
+      --n-z-pixels    number of z pixels (size [=0])
+      --n-y-pixels    number of y pixels (size [=0])
+  -s, --s-z           Sigma z error (float [=10])
+  -d, --s-dl          Sigma dl error (float [=42])
+  -e, --emissions     number of emissions (size [=0])
+  -v, --verbose       print progress information (-v) or benchmark (-vv)
+  -T, --n-threads     number of OpenMP threads (size [=0])
+  -o, --output        output events file (file [=phantom.bin])
+  -?, --help          print this message

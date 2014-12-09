@@ -14,8 +14,12 @@ namespace Barrel {
 
 /// Detector made of 2D ring of single detectors
 
-/// This is optimized DetectorSet using assumption all detectors lie on
-/// ring, so some operations like possible secants can be done much quicker.
+/// This is optimized DetectorSet using assumption \b all detectors lie on
+/// ring, so some operations like possible secants can be done much quicker,
+/// approximately 2x faster than using DetectorSet.
+///
+/// \image html detector_ring.pdf.png
+
 template <typename DetectorType = SquareDetector<double>,
           std::size_t MaxDetectors = MAX_DETECTORS,
           typename SType = int>
@@ -31,15 +35,15 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
   using Point = PET2D::Point<F>;
   using Event = Barrel::Event<F>;
 
-  DetectorRing(S n_detectors,      ///< number of detectors on ring
-               F radius,           ///< radius of ring
-               F w_detector,       ///< width of single detector (along ring)
-               F h_detector,       ///< height/depth of single detector
-                                   ///< (perpendicular to ring)
-               F d_detector = F()  ///< diameter of circle single detector is
-                                   ///< inscribed in
+  DetectorRing(F radius,         ///< radius of ring
+               S n_detectors,    ///< number of detectors on ring
+               F w_detector,     ///< width of single detector (along ring)
+               F h_detector,     ///< height/depth of single detector
+                                 ///< (perpendicular to ring)
+               F d_detector = 0  ///< diameter of circle single detector is
+                                 ///< inscribed in
                )
-      : Base(n_detectors, radius, w_detector, h_detector, d_detector) {
+      : Base(radius, n_detectors, w_detector, h_detector, d_detector) {
     if (n_detectors % 4)
       throw("number of detectors must be multiple of 4");
   }
@@ -99,8 +103,10 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
                  ) const {
 
     const auto n_detectors = this->size();
+#if !_MSC_VER
     const auto& c_inner = this->c_inner;
     const auto& c_outer = this->c_outer;
+#endif
     auto inner_secant = c_inner.secant(e);
     auto outer_secant = c_outer.secant(e);
 

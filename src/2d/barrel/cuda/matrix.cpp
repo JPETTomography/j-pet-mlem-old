@@ -18,16 +18,21 @@ namespace GPU {
 
 OutputMatrix Matrix::run(cmdline::parser& cl) {
 
-  DetectorRing detector_ring(cl.get<int>("n-detectors"),
-                             cl.get<double>("radius"),
+  DetectorRing detector_ring({ (DetectorRing::F)cl.get<double>("radius"),
+                               (DetectorRing::F)cl.get<double>("radius2"),
+                               (DetectorRing::F)cl.get<double>("radius3"),
+                               (DetectorRing::F)cl.get<double>("radius4") },
+                             { (DetectorRing::F)cl.get<double>("rotation"),
+                               (DetectorRing::F)cl.get<double>("rotation2"),
+                               (DetectorRing::F)cl.get<double>("rotation3"),
+                               (DetectorRing::F)cl.get<double>("rotation4") },
+                             { cl.get<int>("n-detectors"),
+                               cl.get<int>("n-detectors2"),
+                               cl.get<int>("n-detectors3"),
+                               cl.get<int>("n-detectors4") },
                              cl.get<double>("w-detector"),
                              cl.get<double>("h-detector"),
-                             cl.get<double>("d-detector"),
-                             cl.get<double>("ring-rotation"),
-                             cl.get<int>("n-detectors2"),
-                             cl.get<double>("radius2"),
-                             cl.get<int>("n-detectors3"),
-                             cl.get<double>("radius3"));
+                             cl.get<double>("d-detector"));
 
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -
   // each SMX can use 8 active blocks,

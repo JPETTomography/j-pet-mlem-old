@@ -27,25 +27,38 @@ TEST("2d/barrel/detector_set/math") {
     CHECK(std::sqrt(2.) == detector.circumscribed(2).radius);
     CHECK(std::sqrt(2.) == detector.circumscribed(3).radius);
 
-    LOR<> lor;
-    double position;
-
     SECTION("horizontal") {
-      Event<> e1(3, 1, 0);
-      CHECK(0 == detector.close_indices(e1).first[0]);
-      CHECK(2 == detector.close_indices(e1).second[0]);
-      Event<> e2(3, 4, 0);
-      CHECK(1 == detector.close_indices(e2).first[0]);
-      CHECK(3 == detector.close_indices(e2).second[0]);
+      {
+        Event<> e(3, 1, 0);
+        DetectorSet<SquareDetector<>>::Indices left, right;
+        detector.close_indices(e, left, right);
+        CHECK(0 == left[0]);
+        CHECK(2 == right[0]);
+      }
+      {
+        Event<> e(3, 4, 0);
+        DetectorSet<SquareDetector<>>::Indices left, right;
+        detector.close_indices(e, left, right);
+        CHECK(1 == left[0]);
+        CHECK(3 == right[0]);
+      }
     }
 
     SECTION("vertical") {
-      Event<> e1(1, 3, M_PI_2);
-      CHECK(0 == detector.close_indices(e1).first[0]);
-      CHECK(1 == detector.close_indices(e1).second[0]);
-      Event<> e2(4, 3, M_PI_2);
-      CHECK(2 == detector.close_indices(e2).first[0]);
-      CHECK(3 == detector.close_indices(e2).second[0]);
+      {
+        Event<> e(1, 3, M_PI_2);
+        DetectorSet<SquareDetector<>>::Indices left, right;
+        detector.close_indices(e, left, right);
+        CHECK(0 == left[0]);
+        CHECK(1 == right[0]);
+      }
+      {
+        Event<> e(4, 3, M_PI_2);
+        DetectorSet<SquareDetector<>>::Indices left, right;
+        detector.close_indices(e, left, right);
+        CHECK(2 == left[0]);
+        CHECK(3 == right[0]);
+      }
     }
   }
 
@@ -86,30 +99,36 @@ TEST("2d/barrel/detector_set/detect") {
     double position;
 
     SECTION("horizontal") {
-      Event<> e1(0, 0, 0);
-      auto i1 = detector.close_indices(e1);
-      CHECK(2 == i1.first.size());
-      CHECK(2 == i1.second.size());
-      CHECK(8 == i1.first[0]);
-      CHECK(0 == i1.second[0]);
-      CHECK(24 == i1.first[1]);
-      CHECK(16 == i1.second[1]);
+      {
+        Event<> e(0, 0, 0);
+        DetectorSet<SquareDetector<>>::Indices left, right;
+        detector.close_indices(e, left, right);
+        CHECK(2 == left.size());
+        CHECK(2 == right.size());
+        CHECK(8 == left[0]);
+        CHECK(0 == right[0]);
+        CHECK(24 == left[1]);
+        CHECK(16 == right[1]);
 
-      CHECK(2 == detector.detect(model, model, e1, lor, position));
+        CHECK(2 == detector.detect(model, model, e, lor, position));
+      }
+      {
+        Event<> e(0, .050001, 0);
+        DetectorSet<SquareDetector<>>::Indices left, right;
+        detector.close_indices(e, left, right);
+        CHECK(2 == left.size());
+        CHECK(2 == right.size());
+        CHECK(8 == left[0]);
+        CHECK(0 == right[0]);
+        CHECK(24 == left[1]);
+        CHECK(16 == right[1]);
 
-      Event<> e2(0, .050001, 0);
-      auto i2 = detector.close_indices(e1);
-      CHECK(2 == i2.first.size());
-      CHECK(2 == i2.second.size());
-      CHECK(8 == i2.first[0]);
-      CHECK(0 == i2.second[0]);
-      CHECK(24 == i2.first[1]);
-      CHECK(16 == i2.second[1]);
-
-      CHECK(0 == detector.detect(model, model, e2, lor, position));
-
-      Event<> e3(0, .049999, 0);
-      CHECK(2 == detector.detect(model, model, e3, lor, position));
+        CHECK(0 == detector.detect(model, model, e, lor, position));
+      }
+      {
+        Event<> e(0, .049999, 0);
+        CHECK(2 == detector.detect(model, model, e, lor, position));
+      }
     }
   }
 }

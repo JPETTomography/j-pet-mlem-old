@@ -7,6 +7,9 @@ namespace PET2D {
 namespace Barrel {
 
 /// Single detector with shape of custom polygon
+
+/// Represents single detector with convex polygonal shape, such as hexagon:
+/// \image html shape_hexagon.pdf.png
 template <std::size_t NVertices, typename FType = double>
 class PolygonalDetector : public Polygon<NVertices, FType> {
  public:
@@ -16,7 +19,7 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
   using Point = typename Polygon<NVertices, F>::Point;
   using CircleDetector = Barrel::CircleDetector<F>;
 
-  PolygonalDetector(F w, F h, F d = F()) {
+  PolygonalDetector(F w, F h, F d = 0) {
     (void)h, (void)d;  // unused
 
     auto radius = w / (4 * compat::sin(F(M_PI) / F(NVertices)));

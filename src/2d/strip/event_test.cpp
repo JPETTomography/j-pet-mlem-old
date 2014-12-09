@@ -8,7 +8,7 @@ using namespace PET2D::Strip;
 
 const double degree = M_PI / 180.0;
 
-TEST("strip/event/conversions1") {
+TEST("2d/strip/event/conversions1") {
   Detector<> detector(450.0, 200.0, 200, 200, 5.0, 5.0, 10, 63);
 
   ImageSpaceEventAngle<> img_angle(10.0, 20.0, 7.0 * degree);
@@ -31,7 +31,7 @@ TEST("strip/event/conversions1") {
   CHECK(re_img_angle.angle == Approx(img_angle.angle).epsilon(1e-13));
 }
 
-TEST("strip/event/conversions2") {
+TEST("2d/strip/event/conversions2") {
   Detector<> detector(450.0, 200.0, 200, 200, 5.0, 5.0, 10, 63);
 
   ImageSpaceEventAngle<> img_angle(-10.0, 37.0, -5.0 * degree);

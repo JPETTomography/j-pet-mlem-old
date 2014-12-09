@@ -1,10 +1,30 @@
-// PET Phantom
-// Authors:
-//   Piotr Bialas    <piotr.bialas@uj.edu.pl>
-//   Jakub Kowal     <jakub.kowal@uj.edu.pl>
-//   Adam Strzelecki <adam.strzlecki@uj.edu.pl>
-//
-// Generates phantom measurements using Monte Carlo.
+/// \page cmd_2d_barrel_phantom 2d_barrel_phantom
+/// \brief 2D Barrel PET phantom generation tool
+///
+/// Simulates detector response for given virtual phantom and produces mean file
+/// for \ref cmd_2d_barrel_reconstruction.
+///
+/// Example phantom descriptions
+/// ----------------------------
+/// - Shepp like phantom
+///
+///   \verbinclude phantom/s_shepp
+///
+/// - Small Shepp like phantom
+///
+///   \verbinclude phantom/s_shepp_small
+///
+/// Authors
+/// -------
+/// - Piotr Bialas    <piotr.bialas@uj.edu.pl>
+/// - Jakub Kowal     <jakub.kowal@uj.edu.pl>
+/// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+///
+/// Usage
+/// -----
+/// \verbinclude src/2d/barrel/phantom_cmd.txt
+///
+/// \sa \ref cmd_2d_barrel_matrix, \ref cmd_2d_barrel_reconstruction
 
 #include <random>
 #include <iostream>
@@ -228,7 +248,7 @@ int main(int argc, char* argv[]) {
         run<HexagonalDetectorRing>(cl, model);
       }
     } else if (model_name == "scintillator") {
-      ScintilatorAccept<> model(length_scale);
+      ScintillatorAccept<> model(length_scale);
       if (shape == "square") {
         run<SquareDetectorRing>(cl, model);
       } else if (shape == "circle") {

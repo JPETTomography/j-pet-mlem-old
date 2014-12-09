@@ -7,6 +7,7 @@
 #include "lor.h"
 #if !__CUDACC__
 #include "util/svg_ostream.h"
+#include <vector>  // multi-ring detector construction
 #endif
 #ifndef MAX_DETECTORS
 #define MAX_DETECTORS 256
@@ -17,9 +18,23 @@ namespace Barrel {
 
 /// Detector made of several other detectors
 
+/// Represents detector compound made of several detectors (scintillators)
+/// using any geometry, particuallary it may be one or several rings of
+/// detectors, or even detectors organized into other shapes.
+///
 /// No assumptions are made for how geometry of this detector looks like in
 /// comparison to DetectorRing where are single detectors are placed on the
 /// ring.
+///
+/// \image html config_4x48.pdf.png
+///
+/// This class is a template that accepts custom DetectorType which can be any
+/// shape of:
+/// - SquareDetector
+/// - CircleDetector
+/// - TriangleDetector
+/// - PolygonalDetector
+
 template <typename DetectorType = SquareDetector<double>,
           std::size_t MaxDetectors = MAX_DETECTORS,
           typename SType = int>
@@ -45,18 +60,13 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
         c_outer(radius + h_detector) {}
 
   /// Makes new detector set with detectors placed on the ring of given radius.
-  DetectorSet(S n_detectors,        ///< number of detectors on ring
-              F radius,             ///< radius of ring
-              F w_detector,         ///< width of single detector (along ring)
-              F h_detector,         ///< height/depth of single detector
-                                    ///< (perpendicular to ring)
-              F d_detector = 0,     ///< diameter of circle single detector is
-                                    ///< inscribed in
-              F ring_rotation = 0,  ///< next ring rotation
-              S n_detectors2 = 0,   ///< 2nd ring number of detectors
-              F radius2 = 0,        ///< 2nd ring radius (for testing purposes)
-              S n_detectors3 = 0,   ///< 3rd ring number of detectors
-              F radius3 = 0         ///< 3rd ring radius (for testing purposes)
+  DetectorSet(F radius,         ///< radius of ring
+              S n_detectors,    ///< number of detectors on ring
+              F w_detector,     ///< width of single detector (along ring)
+              F h_detector,     ///< height/depth of single detector
+                                ///< (perpendicular to ring)
+              F d_detector = 0  ///< diameter of circle single detector is
+                                ///< inscribed in
               )
       : Base(),
         fov_radius(radius / M_SQRT2),
@@ -93,39 +103,47 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
       detector.rotate(2 * F(M_PI) * n / n_detectors - F(M_PI_2));
       this->push_back(detector);
     }
+  }
 
-    // add other 2 rings
-    if (radius2 > 0) {
-      if (!n_detectors2)
-        n_detectors2 = n_detectors;
-      if (this->size() + n_detectors2 > static_cast<S>(MaxDetectors))
+#if !__CUDACC__
+  /// Makes new detector set with several rings.
+  DetectorSet(const std::vector<F> radius,    ///< radiuses of ring
+              const std::vector<F> rotation,  ///< rotation of each ring (0-1)
+              std::vector<S> n_detectors,     ///< numbers of detectors on ring
+              F w_detector,     ///< width of single detector (along ring)
+              F h_detector,     ///< height/depth of single detector
+                                ///< (perpendicular to ring)
+              F d_detector = 0  ///< diameter of circle single detector is
+                                ///< inscribed in
+              )
+      : DetectorSet(radius[0],
+                    n_detectors[0],
+                    w_detector,
+                    h_detector,
+                    d_detector) {
+    if (!radius.size())
+      throw("must specify at least one radius");
+    if (n_detectors.size() > radius.size())
+      throw("number of numbers of detectors must be less or equal radiuses");
+
+    // Now create all following rings
+    for (size_t i = 1; i < radius.size(); ++i) {
+      if (!radius[i])
+        break;
+      if (!n_detectors[i])
+        n_detectors[i] = n_detectors[i - 1];
+      if (n_detectors[i] + this->size() > MaxDetectors)
         throw("too many detectors");
-      DetectorSet detector_ring2(
-          n_detectors2, radius2, w_detector, h_detector, d_detector);
-      if (radius2 > radius) {
-        c_outer = detector_ring2.c_outer;
-      }
-      for (auto& detector : detector_ring2) {
-        detector.rotate(2 * F(M_PI) * ring_rotation / n_detectors);
+      DetectorSet ring(radius[i], n_detectors[i], w_detector, d_detector);
+      for (auto& detector : ring) {
+        detector.rotate(2 * F(M_PI) * rotation[i] / ring.size());
         this->push_back(detector);
       }
-    }
-    if (radius3 > 0) {
-      if (!n_detectors3)
-        n_detectors3 = n_detectors2 ?: n_detectors;
-      if (this->size() + n_detectors3 > static_cast<S>(MaxDetectors))
-        throw("too many detectors");
-      DetectorSet detector_ring3(
-          n_detectors3, radius3, w_detector, h_detector, d_detector);
-      if (radius3 > radius && radius3 > radius2) {
-        c_outer = detector_ring3.c_outer;
-      }
-      for (auto& detector : detector_ring3) {
-        detector.rotate(4 * F(M_PI) * ring_rotation / n_detectors);
-        this->push_back(detector);
-      }
+      if (ring.outer_radius() > outer_radius())
+        c_outer = ring.c_outer;
     }
   }
+#endif
 
   enum class TestCase {
     TEST_8_SQUARE_DETECTORS,
