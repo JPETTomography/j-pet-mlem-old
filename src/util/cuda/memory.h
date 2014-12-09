@@ -6,6 +6,19 @@
 namespace util {
 namespace cuda {
 
+/// Provides underlying storage and fast copy using \c = operator
+
+/// This can for example provide `__shared__` storage and copy data from global
+/// memory with:
+/// \code
+/// __shared__ cuda::copy<Data> data_shared_storage;
+///
+/// // (1) copy Data from global memory
+/// data_shared_storage = data_global_ptr;
+///
+/// // (2) get reference to data in shared memory
+/// Data& data = *data_shared_storage;
+/// \endcode
 template <typename T> class copy {
   using storage_type =
       typename std::aligned_storage<sizeof(T), alignof(T)>::type;
