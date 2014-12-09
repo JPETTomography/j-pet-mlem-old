@@ -4,6 +4,9 @@
 #include <type_traits>
 
 namespace util {
+
+/// CUDA related utility classes and functions
+
 namespace cuda {
 
 /// Provides underlying storage and fast copy using \c = operator

@@ -18,7 +18,9 @@
 #include "2d/geometry/point.h"
 #include "util/cuda/compat.h"
 
+/// Two-dimensional PET
 namespace PET2D {
+/// Two-dimensional strip PET
 namespace Strip {
 
 /// Strip-detector made of two strip scintillators and pixel grid

@@ -13,6 +13,7 @@
 
 namespace PET2D {
 namespace Barrel {
+/// CUDA optimized subimplementation
 namespace GPU {
 
 /// \cond PRIVATE
@@ -28,6 +29,9 @@ using Model = ScintillatorAccept<float>;
 using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR>;
 #endif
 
+/// \endcond
+
+/// CUDA optimized Monte-Carlo implementation
 class Matrix {
  public:
   Matrix(const DetectorRing& detector_ring,
@@ -41,9 +45,9 @@ class Matrix {
 
   ~Matrix();
 
-  void operator()(const Pixel pixel,  //< pixel to be processed
-                  int n_emissions,    //< numer of emissions
-                  int* pixel_hits     //<[out] result pixel hits
+  void operator()(const Pixel pixel,  ///< pixel to be processed
+                  int n_emissions,    ///< numer of emissions
+                  int* pixel_hits     ///<[out] result pixel hits
                   );
 
 #if !__CUDACC__
@@ -63,8 +67,6 @@ class Matrix {
   const int pixel_hits_size;
   int* gpu_pixel_hits;
 };
-
-/// \endcond
 
 }  // GPU
 }  // Barrel

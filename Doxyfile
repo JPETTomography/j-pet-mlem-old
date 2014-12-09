@@ -649,7 +649,7 @@ SHOW_FILES             = NO
 # Folder Tree View (if specified).
 # The default value is: YES.
 
-SHOW_NAMESPACES        = NO
+SHOW_NAMESPACES        = YES
 
 # The FILE_VERSION_FILTER tag can be used to specify a program or script that
 # doxygen should invoke to get the current version for each file (typically from
@@ -864,7 +864,7 @@ IMAGE_PATH             = pubs/figures
 # code is scanned, but not when the output code is generated. If lines are added
 # or removed, the anchors will not be placed correctly.
 
-INPUT_FILTER           = "sed 's,[[:<:]]_[[:>:]],/*!\\remark Compatible with CUDA*/,'"
+INPUT_FILTER           = "sed '/^\/\//!s,[[:<:]]_[[:>:]],/*!\\remark Compatible with CUDA*/,'"
 
 # The FILTER_PATTERNS tag can be used to specify filters on a per file pattern
 # basis. Doxygen will compare the file name with each pattern and apply the
@@ -873,7 +873,7 @@ INPUT_FILTER           = "sed 's,[[:<:]]_[[:>:]],/*!\\remark Compatible with CUD
 # filters are used. If the FILTER_PATTERNS tag is empty or if none of the
 # patterns match the file name, INPUT_FILTER is applied.
 
-FILTER_PATTERNS        = */compat.h=cat
+FILTER_PATTERNS        =
 
 # If the FILTER_SOURCE_FILES tag is set to YES, the input filter (if set using
 # INPUT_FILTER ) will also be used to filter the input files that are used for

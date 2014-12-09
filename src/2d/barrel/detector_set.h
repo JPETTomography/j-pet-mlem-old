@@ -13,7 +13,9 @@
 #define MAX_DETECTORS 256
 #endif
 
+/// Two-dimensional PET
 namespace PET2D {
+/// Two-dimensional PET barrel
 namespace Barrel {
 
 /// Detector made of several other detectors
