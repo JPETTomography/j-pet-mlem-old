@@ -22,17 +22,28 @@ _ void heap_sort_sift_down(T* a, int root, int count, Comparator compare) {
 }
 }
 
+/// Sorts given data using \c begin and \c end iterators
+
+/// This implements heapsort was invented by J. W. J. Williams with
+/// \f$ O(n \log n) \f$ worst and \f$ \Omega(n), O(n \log n) \f$ best case
+/// performance.
+///
+/// This is somehow drop-in repleacement for \c std::sort that is compatible
+/// with CUDA and requires no additional memory (sorts in-place).
 template <typename T, class Comparator>
-_ void heap_sort(T* a, T* b, Comparator compare) {
-  int count = static_cast<int>(b - a);
+_ void heap_sort(T* begin,           ///< data begin iterator
+                 T* end,             ///< data end iterator
+                 Comparator compare  ///< comparator
+                 ) {
+  int count = static_cast<int>(end - begin);
   // heapify
   for (int root = (count - 2) / 2; root >= 0; --root) {
-    heap_sort_sift_down(a, root, count, compare);
+    heap_sort_sift_down(begin, root, count, compare);
   }
   // sort
-  for (int end = count - 1; end > 0; --end) {
-    compat::swap(a[end], a[0]);  // move largest value to the end
-    heap_sort_sift_down(a, 0, end, compare);
+  for (int last = count - 1; last > 0; --last) {
+    compat::swap(begin[last], begin[0]);  // move largest value to the end
+    heap_sort_sift_down(begin, 0, last, compare);
   }
 }
 }  // util
