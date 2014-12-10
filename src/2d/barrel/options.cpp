@@ -13,7 +13,7 @@
 namespace PET2D {
 namespace Barrel {
 
-static void add_detector_options(cmdline::parser& cl) {
+void add_detector_options(cmdline::parser& cl) {
   cl.add<double>("radius", 'r', "inner detector ring radius", false);
   cl.add<double>("radius2", 0, " ... 2nd ring", false);
   cl.add<double>("radius3", 0, " ... 3rd ring", false);

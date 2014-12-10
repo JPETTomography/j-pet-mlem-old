@@ -178,6 +178,11 @@ function(pet_target DIM TYPE CMD)
       list(APPEND OTHER ${other})
     endif()
   endforeach()
+  # add extra files
+  foreach(extra_glob ${ARGN})
+    file(GLOB extras src/${extra_glob})
+    list(APPEND OTHER ${extras})
+  endforeach()
   # add target specific headers
   file(GLOB HEADERS src/${DIM}/${TYPE}/*.h)
   # add target executable
@@ -209,7 +214,9 @@ pet_target(2d barrel phantom)
 pet_target(2d barrel reconstruction)
 pet_target(2d strip phantom)
 pet_target(2d strip reconstruction)
-pet_target(3d hybrid matrix)
+pet_target(3d hybrid matrix
+  2d/barrel/options.cpp
+  2d/strip/options.cpp)
 
 # custom documentation and config files to be shown in project tree
 file(GLOB EXTRA scripts/* cmake/*)

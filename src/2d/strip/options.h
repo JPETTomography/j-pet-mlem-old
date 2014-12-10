@@ -5,10 +5,13 @@
 namespace PET2D {
 namespace Strip {
 
-/// adds reconstruction specific command line options
+/// adds detector specific command line options
+void add_detector_options(cmdline::parser& parser);
+
+/// adds reconstruction command specific command line options
 void add_reconstruction_options(cmdline::parser& parser);
 
-/// adds phantom specific command line options
+/// adds phantom command specific command line options
 void add_phantom_options(cmdline::parser& parser);
 
 /// calculates all empty values from existing other parameters

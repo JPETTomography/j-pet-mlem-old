@@ -2,28 +2,28 @@
 
 #include "cmdline.h"
 
-namespace PET2D {
-namespace Barrel {
+namespace PET3D {
+namespace Hybrid {
 
 /// adds detector specific command line options
 void add_detector_options(cmdline::parser& parser);
 
-/// adds matrix command specific command line options
+/// adds matrix specific command line options
 void add_matrix_options(cmdline::parser& parser);
 
-/// adds phantom command specific command line options
+/// adds phantom specific command line options
 void add_phantom_options(cmdline::parser& parser);
 
-/// adds reconstruction command specific command line options
+/// adds reconstruction specific command line options
 void add_reconstruction_options(cmdline::parser& parser);
 
 /// calculates all empty values from existing other parameters
 void calculate_detector_options(cmdline::parser& parser);
 
 /// provides initialization list for creating detector
-#define __PET2D_BARREL(...) __VA_ARGS__  // just pass-through
-#define PET2D_BARREL_DETECTOR_CL(cl, ftype)              \
-  __PET2D_BARREL({ (ftype)cl.get<double>("radius"),      \
+#define __PET3D_HYBRID(...) __VA_ARGS__  // just pass-through
+#define PET3D_HYBRID_DETECTOR_CL(cl, ftype)              \
+  __PET3D_HYBRID({ (ftype)cl.get<double>("radius"),      \
                    (ftype)cl.get<double>("radius2"),     \
                    (ftype)cl.get<double>("radius3"),     \
                    (ftype)cl.get<double>("radius4") },   \
