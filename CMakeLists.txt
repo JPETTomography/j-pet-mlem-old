@@ -209,6 +209,7 @@ pet_target(2d barrel phantom)
 pet_target(2d barrel reconstruction)
 pet_target(2d strip phantom)
 pet_target(2d strip reconstruction)
+pet_target(3d hybrid matrix)
 
 # custom documentation and config files to be shown in project tree
 file(GLOB EXTRA scripts/* cmake/*)
