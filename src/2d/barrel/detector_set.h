@@ -13,7 +13,9 @@
 #define MAX_DETECTORS 256
 #endif
 
+/// Two-dimensional PET
 namespace PET2D {
+/// Two-dimensional PET barrel
 namespace Barrel {
 
 /// Detector made of several other detectors
@@ -244,11 +246,11 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
   }
 
   /// Produce indices of detectors close to given event
-  _ void close_indices(const Event& e,  ///< event to be detected
-                       Indices& left,   ///<[out] indices on one side
-                       Indices& right   ///<[out] indices other side
+  _ void close_indices(const Event& e,     ///< event to be detected
+                       Indices& negative,  ///<[out] indices on one side
+                       Indices& positive   ///<[out] indices other side
                        ) const {
-    S distances[MaxDetectors];
+    F distances[MaxDetectors];
     auto pe = e.perpendicular();
     // select only these crossing circle circumscribed on detector
     for (int i = 0; i < static_cast<int>(c_detectors.size()); ++i) {
@@ -256,17 +258,20 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
       if (circle.intersects(e)) {
         auto distance = pe(circle);
         distances[i] = distance;
-        if (distance < 0)
-          left.emplace_back(i);
-        else
-          right.emplace_back(i);
+        if (distance < 0) {
+          negative.emplace_back(i);
+        } else {
+          positive.emplace_back(i);
+        }
       }
     }
     // sort them so the closest go first
-    util::heap_sort(left.begin(), left.end(), [&](S a, S b) {
+    // (1) negative distances (one side)
+    util::heap_sort(negative.begin(), negative.end(), [&](S a, S b) {
       return distances[a] > distances[b];
     });
-    util::heap_sort(right.begin(), right.end(), [&](S a, S b) {
+    // (2) positive distances (other side)
+    util::heap_sort(positive.begin(), positive.end(), [&](S a, S b) {
       return distances[a] < distances[b];
     });
   }

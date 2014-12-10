@@ -25,7 +25,7 @@ TEST("2d/barrel/detector_ring/math") {
 
   in >> r >> n_detectors >> w >> h >> n_events;
 
-  DetectorRing ring(n_detectors, r, w, h);
+  DetectorRing ring(r, n_detectors, w, h);
 
   for (int i_event = 0; i_event < n_events; ++i_event) {
     double x, y, phi;

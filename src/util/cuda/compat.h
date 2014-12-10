@@ -1,19 +1,3 @@
-// CUDA generic code compatibility macros & functions
-//
-// Author:
-//   Adam Strzelecki <adam.strzelecki@uj.edu.pl>
-//
-// Discussion:
-//   Purpose of this header is to provide maximum share-ability between generic
-//   CPU implementation and CUDA implementation. This is done using following:
-//
-//   (1) All mathematical function are exposed via compat:: namespace i.e.
-//       compat::cos which map to stdlib or CUDA depending on build context.
-//
-//   (2) Special underscore macro _ is used to mark functions and methods
-//       compatible with CUDA and it is replaced with __device__ __host__ when
-//       building using CUDA.
-
 #pragma once
 
 #if !__CUDACC__
@@ -24,6 +8,24 @@
 #include <limits.h>
 #include <float.h>
 #endif
+
+/// CUDA generic code compatibility macros & functions
+
+/// Author
+/// ------
+/// Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+///
+/// Discussion
+/// ----------
+/// Purpose of this header is to provide maximum share-ability between generic
+/// CPU implementation and CUDA implementation. This is done using following:
+///
+/// 1. All mathematical function are exposed via compat namespace i.e.
+///    compat::cos which map to stdlib or CUDA depending on build context.
+///
+/// 2. Special underscore macro `_` is used to mark functions and methods
+///    compatible with CUDA and it is replaced with `__device__ __host__` when
+///    building using CUDA.
 
 namespace compat {
 
@@ -58,7 +60,7 @@ template <> _ constexpr unsigned long numeric_max<unsigned long>() {
   return ULONG_MAX;
 }
 
-#else
+#else  // __CUDACC__
 
 #define _
 
@@ -89,8 +91,13 @@ template <typename F> constexpr F numeric_max() {
 template <typename F> F numeric_max() { return std::numeric_limits<F>::max(); }
 #endif
 
-#endif
+/// \cond PRIVATE
 
+#endif  // __CUDACC__
+
+/// \endcond
+
+/// Drop-in replacement for `std::swap`
 template <typename Assignable1, typename Assignable2>
 _ inline void swap(Assignable1& a, Assignable2& b) {
   Assignable1 temp = a;

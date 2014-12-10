@@ -14,9 +14,10 @@
 
 namespace PET2D {
 namespace Strip {
+/// CUDA optimized subimplementation
 namespace GPU {
 
-// this is forward declaration of CUDA side entry-point function
+/// CUDA entry-point function
 template <typename F>
 void run_reconstruction(Detector<F>& detector,
                         Event<F>* events,

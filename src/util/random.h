@@ -6,7 +6,12 @@
 
 #include "cuda/compat.h"
 
+/// Various utility classes and functions
+
 namespace util {
+
+/// Custom random generators and drop-in `std` replacements
+
 namespace random {
 
 /// \a Tausworthe random number generator
