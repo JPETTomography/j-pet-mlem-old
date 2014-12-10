@@ -50,3 +50,6 @@
 /.ninja_log
 /cmake_install.cmake
 /PET.cbp
+
+# ignore OS X specific mess
+.DS_Store
