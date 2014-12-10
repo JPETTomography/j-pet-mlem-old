@@ -223,7 +223,12 @@ pet_target(3d hybrid reconstruction ${CL_2D_OPTIONS})
 
 # custom documentation and config files to be shown in project tree
 file(GLOB EXTRA scripts/* cmake/*)
-add_custom_target(extra SOURCES README.md Doxyfile .clang-format ${EXTRA})
+add_custom_target(extra SOURCES
+  README.md
+  Doxyfile
+  DoxygenLayout.xml
+  .clang-format
+  ${EXTRA})
 
 # tests
 file(GLOB_RECURSE TESTS src/*_test.cpp)
