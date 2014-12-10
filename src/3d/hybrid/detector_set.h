@@ -6,7 +6,15 @@ namespace PET3D {
 /// Three-dimensional PET hybrid barrel & strip
 namespace Hybrid {
 
-/// Detector made of several other detectors
+/// 3D detector made of several scintillators
+
+/// This represents fusion of PET2D::Barrel:DetectorSet in `x-y` axis and
+/// PET2D::Strip::Detector in `y-z` asis.
+///
+/// \image html detector3Daxis.pdf.png
+///
+/// \sa PET2D::Barrel:DetectorSet, PET2D::Strip::Detector
+
 template <typename DetectorType = PET2D::Barrel::SquareDetector<double>,
           std::size_t MaxDetectors = MAX_DETECTORS,
           typename SType = int>
