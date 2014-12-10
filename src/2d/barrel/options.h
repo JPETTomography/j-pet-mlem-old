@@ -1,3 +1,12 @@
+/// \page @2db 2D Barrel
+/// \brief 2D Barrel Monte-Carlo & reconstruction tools
+///
+/// Available tools
+/// ---------------
+/// - \subpage cmd_2d_barrel_matrix
+/// - \subpage cmd_2d_barrel_phantom
+/// - \subpage cmd_2d_barrel_reconstruction
+
 #pragma once
 
 #include "cmdline.h"
@@ -5,22 +14,22 @@
 namespace PET2D {
 namespace Barrel {
 
-/// adds detector specific command line options
+/// Adds DetectorSet specific command line options.
 void add_detector_options(cmdline::parser& parser);
 
-/// adds matrix command specific command line options
+/// Adds \ref cmd_2d_barrel_matrix specific command line options.
 void add_matrix_options(cmdline::parser& parser);
 
-/// adds phantom command specific command line options
+/// Adds \ref cmd_2d_barrel_phantom specific command line options.
 void add_phantom_options(cmdline::parser& parser);
 
-/// adds reconstruction command specific command line options
+/// Adds \ref cmd_2d_barrel_reconstruction specific command line options.
 void add_reconstruction_options(cmdline::parser& parser);
 
-/// calculates all empty values from existing other parameters
+/// Calculates all empty values from existing other parameters.
 void calculate_detector_options(cmdline::parser& parser);
 
-/// provides initialization list for creating detector
+/// Provides initialization list for creating detector.
 #define __PET2D_BARREL(...) __VA_ARGS__  // just pass-through
 #define PET2D_BARREL_DETECTOR_CL(cl, ftype)              \
   __PET2D_BARREL({ (ftype)cl.get<double>("radius"),      \

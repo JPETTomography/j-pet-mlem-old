@@ -1,5 +1,5 @@
-/// \page cmd_3d_hybrid_matrix 3d_hybrid_matrix
-/// \brief 3D Hybrid PET system matrix construction tool
+/// \page cmd_3d_hybrid_phantom 3d_hybrid_phantom
+/// \brief 3D Hybrid PET system phantom construction tool
 ///
 /// NYI
 /// ===
@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    add_matrix_options(cl);
+    add_phantom_options(cl);
     cl.try_parse(argc, argv);
 
 #if _OPENMP

@@ -1,3 +1,12 @@
+/// \page cmd_3d_hybrid 3D Hybrid
+/// \brief 3D Hybrid Monte-Carlo & reconstruction tools
+///
+/// Available tools
+/// ---------------
+/// - \subpage cmd_3d_hybrid_matrix
+/// - \subpage cmd_3d_hybrid_phantom
+/// - \subpage cmd_3d_hybrid_reconstruction
+
 #pragma once
 
 #include "cmdline.h"
@@ -5,22 +14,22 @@
 namespace PET3D {
 namespace Hybrid {
 
-/// adds detector specific command line options
+/// Adds DetectorSet specific command line options.
 void add_detector_options(cmdline::parser& parser);
 
-/// adds matrix specific command line options
+/// Adds \ref cmd_3d_hybrid_matrix specific command line options.
 void add_matrix_options(cmdline::parser& parser);
 
-/// adds phantom specific command line options
+/// Adds \ref cmd_3d_hybrid_phantom specific command line options.
 void add_phantom_options(cmdline::parser& parser);
 
-/// adds reconstruction specific command line options
+/// Adds \ref cmd_3d_hybrid_reconstruction specific command line options.
 void add_reconstruction_options(cmdline::parser& parser);
 
-/// calculates all empty values from existing other parameters
+/// Calculates all empty values from existing other parameters.
 void calculate_detector_options(cmdline::parser& parser);
 
-/// provides initialization list for creating detector
+/// Provides initialization list for creating detector.
 #define __PET3D_HYBRID(...) __VA_ARGS__  // just pass-through
 #define PET3D_HYBRID_DETECTOR_CL(cl, ftype)              \
   __PET3D_HYBRID({ (ftype)cl.get<double>("radius"),      \

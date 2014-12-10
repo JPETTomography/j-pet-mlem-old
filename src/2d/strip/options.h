@@ -1,3 +1,11 @@
+/// \page cmd_2d_strip 2D Strip
+/// \brief 2D Strip Monte-Carlo & reconstruction tools
+///
+/// Available tools
+/// ---------------
+/// - \subpage cmd_2d_strip_phantom
+/// - \subpage cmd_2d_strip_reconstruction
+
 #pragma once
 
 #include "cmdline.h"
@@ -5,13 +13,13 @@
 namespace PET2D {
 namespace Strip {
 
-/// adds detector specific command line options
+/// Adds Detector specific command line options.
 void add_detector_options(cmdline::parser& parser);
 
-/// adds reconstruction command specific command line options
+/// Adds \ref cmd_2d_strip_reconstruction specific command line options.
 void add_reconstruction_options(cmdline::parser& parser);
 
-/// adds phantom command specific command line options
+/// Adds \ref cmd_2d_strip_phantom specific command line options.
 void add_phantom_options(cmdline::parser& parser);
 
 /// calculates all empty values from existing other parameters
