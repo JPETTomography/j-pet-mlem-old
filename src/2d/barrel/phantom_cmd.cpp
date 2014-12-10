@@ -45,6 +45,7 @@
 #include "model.h"
 #include "util/png_writer.h"
 #include "util/progress.h"
+#include "options.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -66,78 +67,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    cl.footer("phantom_description");
-
-    cl.add<cmdline::path>("config",
-                          'c',
-                          "load config file",
-                          cmdline::dontsave,
-                          cmdline::path(),
-                          cmdline::default_reader<cmdline::path>(),
-                          cmdline::load);
-    cl.add<int>(
-        "n-pixels", 'n', "number of pixels in one dimension", false, 256);
-    cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
-    cl.add<int>("n-detectors", 'd', "number of ring detectors", false, 64);
-    cl.add<int>("n-emissions",
-                'e',
-                "emissions",
-                cmdline::optional,
-                0,
-                cmdline::default_reader<int>(),
-                cmdline::not_from_file);
-    cl.add<double>("radius", 'r', "inner detector ring radius", false);
-    cl.add<double>("s-pixel", 'p', "pixel size", false);
-    cl.add<double>(
-        "tof-step", 't', "TOF quantisation step for distance delta", false);
-    cl.add<std::string>(
-        "shape",
-        's',
-        "detector (scintillator) shape (square, circle, triangle, hexagon)",
-        false,
-        "square",
-        cmdline::oneof<std::string>("square", "circle", "triangle", "hexagon"));
-    cl.add<double>("w-detector", 'w', "detector width", false);
-    cl.add<double>("h-detector", 'h', "detector height", false);
-    cl.add<double>("d-detector",
-                   0,
-                   "inscribe detector shape into circle of given diameter",
-                   false);
-    cl.add<std::string>(
-        "model",
-        'm',
-        "acceptance model",
-        false,
-        "scintillator",
-        cmdline::oneof<std::string>("always",
-                                    "scintillator",
-                                    /* obsolete */ "scintilator"));
-    // NOTE: this options is obsolete (use base-length instead)
-    cl.add<double>("acceptance",
-                   'a',
-                   "acceptance probability factor",
-                   cmdline::dontsave | cmdline::hidden,
-                   10.);
-    cl.add<double>("base-length",
-                   'l',
-                   "scintillator emission base length P(l)=1-e^(-1)",
-                   false,
-                   0.1);
-    cl.add<cmdline::path>("output",
-                          'o',
-                          "output lor hits for supplied phantom",
-                          cmdline::dontsave);
-    cl.add("detected", 0, "collects detected emissions");
-
-    // printing & stats params
-    cl.add("verbose", 'v', "prints the iterations information on std::out");
-    cl.add<std::mt19937::result_type>(
-        "seed", 'S', "random number generator seed", cmdline::dontsave);
-#if _OPENMP
-    cl.add<int>(
-        "n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
-#endif
-
+    add_phantom_options(cl);
     cl.try_parse(argc, argv);
 
 #if _OPENMP
@@ -146,94 +76,11 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    // convert obsolete acceptance option to length scale
-    auto& length_scale = cl.get<double>("base-length");
-    if (cl.exist("acceptance") && !cl.exist("base-length")) {
-      length_scale = 1.0 / cl.get<double>("acceptance");
-    }
-    // FIXME: fixup for spelling mistake, present in previous versions
-    auto& model_name = cl.get<std::string>("model");
-    if (model_name == "scintilator") {
-      model_name = "scintillator";
-    }
+    calculate_detector_options(cl);
 
-    auto& n_pixels = cl.get<int>("n-pixels");
-    auto& n_detectors = cl.get<int>("n-detectors");
-    auto& radius = cl.get<double>("radius");
-    auto& s_pixel = cl.get<double>("s-pixel");
-    auto& w_detector = cl.get<double>("w-detector");
-    auto& d_detector = cl.get<double>("d-detector");
-    auto& shape = cl.get<std::string>("shape");
-    auto verbose = cl.exist("verbose");
-
-    if (verbose) {
-      std::cerr << "assumed:" << std::endl;
-    }
-
-    // automatic radius size
-    if (!cl.exist("radius")) {
-      if (!cl.exist("s-pixel")) {
-        radius = M_SQRT2;  // exact result
-      } else {
-        radius = s_pixel * n_pixels / M_SQRT2;
-      }
-      std::cerr << "--radius=" << radius << std::endl;
-    }
-
-    // automatic pixel size
-    if (!cl.exist("s-pixel")) {
-      if (!cl.exist("radius")) {
-        s_pixel = 2. / n_pixels;  // exact result
-      } else {
-        s_pixel = M_SQRT2 * radius / n_pixels;
-      }
-      std::cerr << "--s-pixel=" << s_pixel << std::endl;
-    }
-
-    if (!cl.exist("w-detector")) {
-      if (cl.exist("n-detectors")) {
-        w_detector = 2 * M_PI * .9 * radius / n_detectors;
-      } else if (cl.exist("d-detector")) {
-        if (shape == "circle") {
-          w_detector = d_detector;
-        } else {
-          auto mult = 1.;
-          auto sides = 0.;
-          if (shape == "triangle") {
-            sides = 3.;
-          } else if (shape == "square") {
-            sides = 4.;
-          } else if (shape == "hexagon") {
-            sides = 6.;
-            mult = 2.;
-          } else {
-            throw("cannot determine detector width for given shape");
-          }
-          w_detector = d_detector * std::sin(M_PI / sides) * mult;
-        }
-      }
-      std::cerr << "--w-detector=" << w_detector << std::endl;
-    }
-
-    // automatic detector size
-    // NOTE: detector height will be determined per shape
-    if (!cl.exist("n-detectors")) {
-      if (cl.exist("d-detector")) {
-        n_detectors =
-            ((int)std::floor(
-                 M_PI / std::atan2(d_detector, 2 * radius + d_detector / 2)) /
-             4) *
-            4;
-      } else {
-        n_detectors =
-            ((int)std::floor(M_PI / std::atan2(w_detector, 2 * radius)) / 4) *
-            4;
-      }
-      if (!n_detectors) {
-        throw("detector width is too big for given detector ring radius");
-      }
-      std::cerr << "--n-detectors=" << n_detectors << std::endl;
-    }
+    const auto& shape = cl.get<std::string>("shape");
+    const auto& model_name = cl.get<std::string>("model");
+    const auto& length_scale = cl.get<double>("base-length");
 
     // run simmulation on given detector model & shape
     if (model_name == "always") {

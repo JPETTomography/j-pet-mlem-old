@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    Detector<double> strip_detector(CL_DETECTOR_PARAMETERS(cl));
+    Detector<double> strip_detector(PET2D_STRIP_DETECTOR_CL(cl));
     Reconstruction<double> reconstruction(strip_detector);
 
     auto verbose = cl.exist("verbose");

@@ -36,6 +36,7 @@
 #include "util/cmdline_types.h"
 #include "reconstruction.h"
 #include "util/png_writer.h"
+#include "options.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -68,22 +69,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-
-    cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
-    cl.add<int>(
-        "iterations", 'I', "number of iterations (per block)", false, 1);
-    cl.add<cmdline::path>("system", 's', "system matrix file", true);
-    cl.add<cmdline::path>("mean", 'm', "mean file", true);
-    cl.add<cmdline::path>("output", 'o', "output reconstruction", false);
-    cl.add<double>("threshold", 0, "discretisation treshold", false, 0.0);
-
-    // additional options
-    cl.add("verbose", 'v', "prints the iterations information on std::out");
-
-#if _OPENMP
-    cl.add<int>("n-threads", 'T', "number of OpenMP threads", false);
-#endif
-
+    add_reconstruction_options(cl);
     cl.parse_check(argc, argv);
 
 #if _OPENMP
