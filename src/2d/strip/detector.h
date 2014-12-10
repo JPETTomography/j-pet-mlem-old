@@ -24,6 +24,11 @@ namespace PET2D {
 namespace Strip {
 
 /// Strip-detector made of two strip scintillators and pixel grid
+
+/// Represents detector made of two scintillator strips and pixel grid
+///
+/// \image html detector_frame.pdf.png
+
 template <typename FType = double> class Detector {
  public:
   using F = FType;
