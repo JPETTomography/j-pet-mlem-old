@@ -6,6 +6,8 @@
 /// - \subpage cmd_3d_hybrid_matrix
 /// - \subpage cmd_3d_hybrid_phantom
 /// - \subpage cmd_3d_hybrid_reconstruction
+///
+/// \sa \ref cmd_2d_barrel, \ref cmd_2d_strip
 
 #pragma once
 

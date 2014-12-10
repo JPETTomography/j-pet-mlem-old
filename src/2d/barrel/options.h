@@ -1,4 +1,4 @@
-/// \page @2db 2D Barrel
+/// \page cmd_2d_barrel 2D Barrel
 /// \brief 2D Barrel Monte-Carlo & reconstruction tools
 ///
 /// Available tools
