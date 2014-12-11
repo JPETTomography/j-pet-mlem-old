@@ -6,6 +6,9 @@
 
 #include "detector_set.h"
 #include "options.h"
+#if _OPENMP
+#include <omp.h>
+#endif
 
 using namespace PET3D::Hybrid;
 
