@@ -61,10 +61,11 @@
 using namespace PET2D;
 using namespace PET2D::Barrel;
 
-// all available detector shapes
 template <typename DetectorType>
 using DetectorModel = DetectorSet<DetectorType>;
 // using DetectorModel = DetectorRing<DetectorType>;
+
+// all available detector shapes
 using SquareDetectorRing = DetectorModel<SquareDetector<>>;
 using CircleDetectorRing = DetectorModel<CircleDetector<>>;
 using TriangleDetectorRing = DetectorModel<TriangleDetector<>>;

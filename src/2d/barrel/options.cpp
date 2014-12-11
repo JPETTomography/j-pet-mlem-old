@@ -129,7 +129,7 @@ void add_phantom_options(cmdline::parser& cl) {
                         cmdline::load);
   cl.add<int>("n-pixels", 'n', "number of pixels in one dimension", false, 256);
   cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
-  cl.add<int>("n-detectors", 'd', "number of ring detectors", false, 64);
+  add_detector_options(cl);
   cl.add<int>("n-emissions",
               'e',
               "emissions",
@@ -137,7 +137,6 @@ void add_phantom_options(cmdline::parser& cl) {
               0,
               cmdline::default_reader<int>(),
               cmdline::not_from_file);
-  cl.add<double>("radius", 'r', "inner detector ring radius", false);
   cl.add<double>("s-pixel", 'p', "pixel size", false);
   cl.add<double>(
       "tof-step", 't', "TOF quantisation step for distance delta", false);
