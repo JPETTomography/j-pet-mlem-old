@@ -10,7 +10,7 @@
 namespace PET2D {
 namespace Strip {
 
-static void add_detector_options(cmdline::parser& cl) {
+void add_detector_options(cmdline::parser& cl) {
   cl.add<cmdline::path>("config",
                         'c',
                         "load config file",

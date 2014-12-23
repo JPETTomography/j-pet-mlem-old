@@ -10,6 +10,7 @@
 
 # Doxygen output
 /doc/html/
+/doc/doxygen_sqlite3.db
 
 # LaTeX output
 /pubs/*/*.pdf
@@ -50,3 +51,6 @@
 /.ninja_log
 /cmake_install.cmake
 /PET.cbp
+
+# ignore OS X specific mess
+.DS_Store

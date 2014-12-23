@@ -178,6 +178,11 @@ function(pet_target DIM TYPE CMD)
       list(APPEND OTHER ${other})
     endif()
   endforeach()
+  # add extra files
+  foreach(extra_glob ${ARGN})
+    file(GLOB extras src/${extra_glob})
+    list(APPEND OTHER ${extras})
+  endforeach()
   # add target specific headers
   file(GLOB HEADERS src/${DIM}/${TYPE}/*.h)
   # add target executable
@@ -210,9 +215,20 @@ pet_target(2d barrel reconstruction)
 pet_target(2d strip phantom)
 pet_target(2d strip reconstruction)
 
+set(CL_2D_OPTIONS 2d/barrel/options.cpp 2d/strip/options.cpp)
+
+pet_target(3d hybrid matrix ${CL_2D_OPTIONS})
+pet_target(3d hybrid phantom ${CL_2D_OPTIONS})
+pet_target(3d hybrid reconstruction ${CL_2D_OPTIONS})
+
 # custom documentation and config files to be shown in project tree
 file(GLOB EXTRA scripts/* cmake/*)
-add_custom_target(extra SOURCES README.md Doxyfile .clang-format ${EXTRA})
+add_custom_target(extra SOURCES
+  README.md
+  Doxyfile
+  DoxygenLayout.xml
+  .clang-format
+  ${EXTRA})
 
 # tests
 file(GLOB_RECURSE TESTS src/*_test.cpp)

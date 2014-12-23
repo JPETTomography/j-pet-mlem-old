@@ -1,12 +1,3 @@
-/// \page @2db 2D Barrel
-/// \brief 2D Barrel Monte-Carlo & reconstruction tools
-///
-/// Available tools
-/// ---------------
-/// - \subpage cmd_2d_barrel_matrix
-/// - \subpage cmd_2d_barrel_phantom
-/// - \subpage cmd_2d_barrel_reconstruction
-
 #pragma once
 
 #include <iomanip>

@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<PhantomRegion<double>> ellipse_list;
 
-    Detector<double> detector(CL_DETECTOR_PARAMETERS(cl));
+    Detector<double> detector(PET2D_STRIP_DETECTOR_CL(cl));
 
     if (verbose) {
       std::cerr << "size: " << detector.n_z_pixels << "x" << detector.n_y_pixels

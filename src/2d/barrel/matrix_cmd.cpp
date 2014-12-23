@@ -46,6 +46,7 @@
 #include "util/svg_ostream.h"
 #include "util/progress.h"
 #include "util/variant.h"
+#include "options.h"
 
 #include "monte_carlo.h"
 
@@ -60,10 +61,11 @@
 using namespace PET2D;
 using namespace PET2D::Barrel;
 
-// all available detector shapes
 template <typename DetectorType>
 using DetectorModel = DetectorSet<DetectorType>;
 // using DetectorModel = DetectorRing<DetectorType>;
+
+// all available detector shapes
 using SquareDetectorRing = DetectorModel<SquareDetector<>>;
 using CircleDetectorRing = DetectorModel<CircleDetector<>>;
 using TriangleDetectorRing = DetectorModel<TriangleDetector<>>;
@@ -86,107 +88,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    std::ostringstream msg;
-    msg << "matrix_file ..." << std::endl;
-    msg << "build: " << VARIANT << std::endl;
-    msg << "note: All length options below should be expressed in meters.";
-    cl.footer(msg.str());
-
-    cl.add<cmdline::path>("config",
-                          'c',
-                          "load config file",
-                          cmdline::dontsave,
-                          cmdline::path(),
-                          cmdline::default_reader<cmdline::path>(),
-                          cmdline::load);
-    cl.add<int>(
-        "n-pixels", 'n', "number of pixels in one dimension", false, 256);
-    cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
-    cl.add<double>("radius", 'r', "inner detector ring radius", false);
-    cl.add<double>("radius2", 0, " ... 2nd ring", false);
-    cl.add<double>("radius3", 0, " ... 3rd ring", false);
-    cl.add<double>("radius4", 0, " ... 4th ring", false);
-    cl.add<double>("rotation", 0, "ring rotation (0-1)", false);
-    cl.add<double>("rotation2", 0, " ... 2nd ring", false);
-    cl.add<double>("rotation3", 0, " ... 3rd ring", false);
-    cl.add<double>("rotation4", 0, " ... 4th ring", false);
-    cl.add<int>("n-detectors", 'd', "number of detectors in ring", false);
-    cl.add<int>("n-detectors2", 0, " ... 2nd ring", false);
-    cl.add<int>("n-detectors3", 0, " ... 3rd ring", false);
-    cl.add<int>("n-detectors4", 0, " ... 4th ring", false);
-    cl.add<int>("n-emissions",
-                'e',
-                "emissions per pixel",
-                false,
-                0,
-                cmdline::not_from_file);
-    cl.add<double>("s-pixel", 'p', "pixel size", false);
-    cl.add<double>(
-        "tof-step", 't', "TOF quantisation step for distance delta", false);
-    cl.add<std::string>(
-        "shape",
-        's',
-        "detector (scintillator) shape (square, circle, triangle, hexagon)",
-        false,
-        "square",
-        cmdline::oneof<std::string>("square", "circle", "triangle", "hexagon"));
-    cl.add<double>("w-detector", 'w', "detector width", false);
-    cl.add<double>("h-detector", 'h', "detector height", false);
-    cl.add<double>("d-detector",
-                   0,
-                   "inscribe detector shape into circle of given diameter",
-                   false);
-    cl.add<std::string>(
-        "model",
-        'm',
-        "acceptance model (always, scintillator)",
-        false,
-        "scintillator",
-        cmdline::oneof<std::string>("always",
-                                    "scintillator",
-                                    /* obsolete */ "scintilator"));
-    // NOTE: this options is obsolete (use base-length instead)
-    cl.add<double>("acceptance",
-                   'a',
-                   "acceptance probability factor",
-                   cmdline::dontsave | cmdline::hidden,
-                   10.);
-    cl.add<double>("base-length",
-                   'l',
-                   "scintillator emission base length P(l)=1-e^(-1)",
-                   false,
-                   0.1);
-    cl.add<cmdline::path>("output",
-                          'o',
-                          "output binary triangular/full sparse system matrix",
-                          cmdline::dontsave);
-    cl.add("full", 'f', "output full non-triangular sparse system matrix");
-
-    // visual debugging params
-    cl.add<cmdline::path>("png", 0, "output lor to png", cmdline::dontsave);
-    cl.add<int>(
-        "from", 0, "lor start detector to output", cmdline::dontsave, -1);
-    cl.add<int>("to", 0, "lor end detector to output", cmdline::dontsave, -1);
-    cl.add<int>("pos", 0, "position to output", cmdline::dontsave, -1);
-
-    // printing & stats params
-    cl.add("print", 0, "print triangular sparse system matrix");
-    cl.add("stats", 0, "show stats");
-    cl.add("wait", 0, "wait before exit");
-    cl.add("verbose", 'v', "prints the iterations information on std::out");
-    cl.add<util::random::tausworthe::seed_type>(
-        "seed", 'S', "random number generator seed", cmdline::dontsave);
-#if HAVE_CUDA
-    cl.add("gpu", 'G', "run on GPU (via CUDA)");
-    cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 64);
-    cl.add<int>(
-        "cuda-threads", 'W', "CUDA threads per block", cmdline::dontsave, 512);
-#endif
-#if _OPENMP
-    cl.add<int>(
-        "n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
-#endif
-
+    add_matrix_options(cl);
     cl.try_parse(argc, argv);
 
 #if _OPENMP
@@ -194,26 +96,6 @@ int main(int argc, char* argv[]) {
       omp_set_num_threads(cl.get<int>("n-threads"));
     }
 #endif
-
-    // convert obsolete acceptance option to length scale
-    auto& length_scale = cl.get<double>("base-length");
-    if (cl.exist("acceptance") && !cl.exist("base-length")) {
-      length_scale = 1.0 / cl.get<double>("acceptance");
-    }
-    // FIXME: fixup for spelling mistake, present in previous versions
-    auto& model_name = cl.get<std::string>("model");
-    if (model_name == "scintilator") {
-      model_name = "scintillator";
-    }
-
-    auto& n_pixels = cl.get<int>("n-pixels");
-    auto& radius = cl.get<double>("radius");
-    auto& n_detectors = cl.get<int>("n-detectors");
-    auto& s_pixel = cl.get<double>("s-pixel");
-    auto& w_detector = cl.get<double>("w-detector");
-    auto& d_detector = cl.get<double>("d-detector");
-    auto& shape = cl.get<std::string>("shape");
-    auto verbose = cl.exist("verbose");
 
     // check options
     if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
@@ -229,75 +111,11 @@ int main(int argc, char* argv[]) {
     }
 
     cmdline::load_accompanying_config(cl, false);
+    calculate_detector_options(cl);
 
-    if (verbose) {
-      std::cerr << "assumed:" << std::endl;
-    }
-
-    // automatic radius size
-    if (!cl.exist("radius")) {
-      if (!cl.exist("s-pixel")) {
-        radius = M_SQRT2;  // exact result
-      } else {
-        radius = s_pixel * n_pixels / M_SQRT2;
-      }
-      std::cerr << "--radius=" << radius << std::endl;
-    }
-
-    // automatic pixel size
-    if (!cl.exist("s-pixel")) {
-      if (!cl.exist("radius")) {
-        s_pixel = 2. / n_pixels;  // exact result
-      } else {
-        s_pixel = M_SQRT2 * radius / n_pixels;
-      }
-      std::cerr << "--s-pixel=" << s_pixel << std::endl;
-    }
-
-    if (!cl.exist("w-detector")) {
-      if (cl.exist("n-detectors")) {
-        w_detector = 2 * M_PI * .9 * radius / n_detectors;
-      } else if (cl.exist("d-detector")) {
-        if (shape == "circle") {
-          w_detector = d_detector;
-        } else {
-          auto mult = 1.;
-          auto sides = 0.;
-          if (shape == "triangle") {
-            sides = 3.;
-          } else if (shape == "square") {
-            sides = 4.;
-          } else if (shape == "hexagon") {
-            sides = 6.;
-            mult = 2.;
-          } else {
-            throw("cannot determine detector width for given shape");
-          }
-          w_detector = d_detector * std::sin(M_PI / sides) * mult;
-        }
-      }
-      std::cerr << "--w-detector=" << w_detector << std::endl;
-    }
-
-    // automatic detector size
-    // NOTE: detector height will be determined per shape
-    if (!cl.exist("n-detectors")) {
-      if (cl.exist("d-detector")) {
-        n_detectors =
-            ((int)std::floor(
-                 M_PI / std::atan2(d_detector, 2 * radius + d_detector / 2)) /
-             4) *
-            4;
-      } else {
-        n_detectors =
-            ((int)std::floor(M_PI / std::atan2(w_detector, 2 * radius)) / 4) *
-            4;
-      }
-      if (!n_detectors) {
-        throw("detector width is too big for given detector ring radius");
-      }
-      std::cerr << "--n-detectors=" << n_detectors << std::endl;
-    }
+    const auto& shape = cl.get<std::string>("shape");
+    const auto& model_name = cl.get<std::string>("model");
+    const auto& length_scale = cl.get<double>("base-length");
 
 // these are wrappers running actual simulation
 #if HAVE_CUDA
@@ -306,25 +124,11 @@ int main(int argc, char* argv[]) {
 #else
 #define _RUN(cl, detector_ring, model) run(cl, detector_ring, model)
 #endif
-#define RUN(detector_type, model_type, ...)                       \
-  detector_type detector_ring({ cl.get<double>("radius"),         \
-                                cl.get<double>("radius2"),        \
-                                cl.get<double>("radius3"),        \
-                                cl.get<double>("radius4") },      \
-                              { cl.get<double>("rotation"),       \
-                                cl.get<double>("rotation2"),      \
-                                cl.get<double>("rotation3"),      \
-                                cl.get<double>("rotation4") },    \
-                              { cl.get<int>("n-detectors"),       \
-                                cl.get<int>("n-detectors2"),      \
-                                cl.get<int>("n-detectors3"),      \
-                                cl.get<int>("n-detectors4") },    \
-                              cl.get<double>("w-detector"),       \
-                              cl.get<double>("h-detector"),       \
-                              cl.get<double>("d-detector"));      \
-  model_type model{ __VA_ARGS__ };                                \
-  print_parameters<detector_type, model_type>(cl, detector_ring); \
-  auto sparse_matrix = _RUN(cl, detector_ring, model);            \
+#define RUN(detector_type, model_type, ...)                                    \
+  detector_type detector_ring(PET2D_BARREL_DETECTOR_CL(cl, detector_type::F)); \
+  model_type model{ __VA_ARGS__ };                                             \
+  print_parameters<detector_type, model_type>(cl, detector_ring);              \
+  auto sparse_matrix = _RUN(cl, detector_ring, model);                         \
   post_process(cl, detector_ring, sparse_matrix)
 
     // run simmulation on given detector model & shape
