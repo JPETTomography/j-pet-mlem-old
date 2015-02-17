@@ -1,6 +1,6 @@
 [submodule "lib/catch"]
 	path = lib/catch
-	url = ../Catch.git
+	url = ../catch.git
 [submodule "lib/cmdline"]
 	path = lib/cmdline
 	url = ../cmdline.git
