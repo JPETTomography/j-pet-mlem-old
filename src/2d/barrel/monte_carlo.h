@@ -24,7 +24,7 @@ class MonteCarlo {
   using LOR = typename Matrix::LOR;
 
  public:
-  MonteCarlo(Detector& detector,
+  MonteCarlo(const Detector& detector,
              Matrix& matrix,
              F pixel_size,
              F tof_step,
@@ -152,7 +152,7 @@ class MonteCarlo {
   }
 
  private:
-  Detector& detector;
+  const Detector& detector;
   Matrix& matrix;
   F pixel_size;
   F tof_step;
