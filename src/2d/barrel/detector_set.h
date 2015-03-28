@@ -46,7 +46,6 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
   using S = SType;
   using F = typename Detector::F;
   using LOR = Barrel::LOR<S>;
-  using Pixel = PET2D::Pixel<S>;
   using Point = PET2D::Point<F>;
   using Circle = PET2D::Circle<F>;
   using Event = Barrel::Event<F>;
@@ -267,16 +266,47 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
     }
     // sort them so the closest go first
     // (1) negative distances (one side)
-    util::heap_sort(negative.begin(), negative.end(), [&](S a, S b) {
-      return distances[a] > distances[b];
-    });
+    util::heap_sort(negative.begin(),
+                    negative.end(),
+                    [&](S a, S b) { return distances[a] > distances[b]; });
     // (2) positive distances (other side)
-    util::heap_sort(positive.begin(), positive.end(), [&](S a, S b) {
-      return distances[a] < distances[b];
-    });
+    util::heap_sort(positive.begin(),
+                    positive.end(),
+                    [&](S a, S b) { return distances[a] < distances[b]; });
   }
 
  private:
+  _ bool did_intersect(Event e, S detector, Point& p1, Point& p2) const {
+
+    auto intersections = (*this)[detector].intersections(e);
+    // check if we got 2 point intersection
+    // then test the model against these points distance
+    if (intersections.size() == 2) {
+
+      p1 = intersections[0];
+      p2 = intersections[1];
+      return true;
+    }
+
+    return false;
+  }
+
+  template <class RandomGenerator, class AcceptanceModel>
+  _ bool did_deposit(RandomGenerator& gen,
+                     AcceptanceModel& model,
+                     const Point& p1,
+                     const Point& p2,
+                     F& depth) const {
+    depth = model.deposition_depth(gen);
+#if DEBUG
+    std::cerr << "dep " << depth << " " << (p2 - p1).length() << std::endl;
+#endif
+    if (depth < (p2 - p1).length()) {
+      return true;
+    }
+    return false;
+  }
+
   template <class RandomGenerator, class AcceptanceModel>
   _ bool check_for_hits(RandomGenerator& gen,
                         AcceptanceModel& model,
@@ -288,21 +318,9 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
                         Point& p2) const {
 
     for (auto i : indices) {
-      auto intersections = (*this)[i].intersections(e);
-      // check if we got 2 point intersection
-      // then test the model against these points distance
-      if (intersections.size() == 2) {
-        auto deposition_depth = model.deposition_depth(gen);
-#if DEBUG
-        std::cerr << "dep " << deposition_depth << " "
-                  << (intersections[1] - intersections[0]).length()
-                  << std::endl;
-#endif
-        if (deposition_depth < (intersections[1] - intersections[0]).length()) {
+      if (did_intersect(e, i, p1, p2)) {
+        if (did_deposit(gen, model, p1, p2, depth)) {
           detector = i;
-          depth = deposition_depth;
-          p1 = intersections[0];
-          p2 = intersections[1];
           return true;
         }
       }
