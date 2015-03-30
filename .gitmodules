@@ -1,9 +1,9 @@
 [submodule "lib/catch"]
 	path = lib/catch
-	url = ../catch.git
+	url = ../../ujhpc/Catch.git
 [submodule "lib/cmdline"]
 	path = lib/cmdline
-	url = ../cmdline.git
+	url = ../../ujhpc/cmdline.git
 [submodule "pubs/beamer"]
 	path = pubs/beamer
-	url = ../beamer-torino-theme.git
+	url = ../../ujhpc/beamer-torino-theme.git
