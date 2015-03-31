@@ -221,6 +221,8 @@ pet_target(3d hybrid matrix ${CL_2D_OPTIONS})
 pet_target(3d hybrid phantom ${CL_2D_OPTIONS})
 pet_target(3d hybrid reconstruction ${CL_2D_OPTIONS})
 
+pet_target(3d longitudinal matrix ${CL_2D_OPTIONS})
+
 # custom documentation and config files to be shown in project tree
 file(GLOB EXTRA scripts/* cmake/*)
 add_custom_target(extra SOURCES
