@@ -69,7 +69,9 @@ file(GLOB COMMON
   src/math/*.h
   src/util/*.h
   src/util/png_writer.cpp
-  src/util/cmdline_hooks.cpp)
+  src/util/cmdline_hooks.cpp
+  src/3d/geometry/*.h
+  src/3d/geometry/*.cpp)
 
 # OpenMP support
 find_package(OpenMP)
