@@ -25,8 +25,11 @@ template <typename FType = double, typename SType = int> struct Point {
 #endif
 
   _ Point operator+(const Point& p) const { return Point(x + p.x, y + p.y); }
+  _ Point operator+(const Vector& v) const { return Point(x + v.x, y + v.y); }
 
   _ Vector operator-(const Point& p) const { return Vector(x - p.x, y - p.y); }
+
+  _ Point operator-(const Vector& v) const { return Point(x - v.x, y - v.y); }
 
   _ Point& operator+=(const Point& p) {
     x += p.x;

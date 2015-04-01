@@ -31,6 +31,7 @@ class Reconstruction {
   using Detector = Strip::Detector<FType>;
   using Pixel = typename Detector::Pixel;
   using Point = typename Detector::Point;
+  using Vector = typename Detector::Vector;
 
   Detector detector;
 
@@ -237,13 +238,13 @@ class Reconstruction {
         Point point = detector.pixel_center(pixel);
 
         if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
-          point -= ellipse_center;
+          Vector r = point - ellipse_center;
 
           int i = pixel.y * detector.n_z_pixels + pixel.x;
 
           F pixel_sensitivity = use_sensitivity ? sensitivity[i] : 1;
           stats_.n_kernel_calls_by();
-          F event_kernel = kernel(y, tan, sec, detector.radius, point);
+          F event_kernel = kernel(y, tan, sec, detector.radius, r);
           F event_kernel_mul_rho = event_kernel * rho[i];
           denominator += event_kernel_mul_rho * pixel_sensitivity;
           ellipse_pixels[n_ellipse_pixels] = pixel;

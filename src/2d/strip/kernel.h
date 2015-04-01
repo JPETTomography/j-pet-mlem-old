@@ -13,6 +13,7 @@ template <typename FType = double> class Kernel {
  public:
   using F = FType;
   using Point = PET2D::Point<F>;
+  using Vector = PET2D::Vector<F>;
 
  private:
   const F inv_pow_sigma_z;
@@ -49,7 +50,7 @@ template <typename FType = double> class Kernel {
                  const F tan,
                  const F sec,
                  const F R,
-                 const Point pixel_center) const {
+                 const Vector pixel_center) const {
 
     F sec_sq = sec * sec;
 

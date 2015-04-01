@@ -24,6 +24,7 @@ __global__ void reconstruction(Detector<F> detector,
                                const int n_blocks,
                                const int n_threads_per_block) {
   using Point = PET2D::Point<F>;
+  using Vector = PET2D::Vector<F>;
   using Pixel = PET2D::Pixel<>;
   using Event = Strip::Event<F>;
 
@@ -97,13 +98,13 @@ __global__ void reconstruction(Detector<F> detector,
       Point point = detector.pixel_center(pixel);
 
       if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
-        point -= ellipse_center;
+        Vector r = point - ellipse_center;
 
         F pixel_sensitivity =
             USE_SENSITIVITY ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
 
         F event_kernel =
-            USE_KERNEL ? kernel(y, tan, sec, detector.radius, point) : 1;
+            USE_KERNEL ? kernel(y, tan, sec, detector.radius, r) : 1;
 
         F event_kernel_mul_rho =
             event_kernel * tex2D(tex_rho, pixel.x, pixel.y);

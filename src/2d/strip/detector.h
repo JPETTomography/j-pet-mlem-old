@@ -26,6 +26,7 @@ template <typename FType = double> class Detector {
   using F = FType;
   using Pixel = PET2D::Pixel<>;
   using Point = PET2D::Point<F>;
+  using Vector = PET2D::Vector<F>;
 
   /// Creates strip-detector with given parameters.
   Detector(F radius,               //< radius of strip-detector along y-axis
@@ -165,8 +166,8 @@ template <typename FType = double> class Detector {
   _ F pixel_sensitivity(Pixel p) const {
 
     Point point = this->pixel_center(p);
-    Point ur(pixel_width / 2, pixel_height / 2);
-    Point ul(-pixel_width / 2, pixel_height / 2);
+    Vector ur(pixel_width / 2, pixel_height / 2);
+    Vector ul(-pixel_width / 2, pixel_height / 2);
 
     return this->sensitivity(point) / 3 +       // center
            this->sensitivity(point + ur) / 6 +  // top-right
