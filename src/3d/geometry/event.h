@@ -16,9 +16,7 @@ template <typename FType> class Event {
   ~Event();
 
   Event2D to_barrel_event() const {
-    FType x = origin[0];
-    FType y = origin[1];
-    return Event2D(x, y, std::atan2(1.0,0.0));
+    return Event2D(origin[0], origin[1], std::atan2(direction[1], direction[0]));
   }
 
  private:
