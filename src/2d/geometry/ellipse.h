@@ -30,8 +30,8 @@ template <typename FType = double, typename SType = int> struct Ellipse {
 
   /// checks if ellipse contains given point
   bool contains(Point p) const {
-    p -= center;
-    return A * p.x * p.x + 2 * C * p.x * p.y + B * p.y * p.y <= 1;
+    auto r = p - center;
+    return A * r.x * r.x + 2 * C * r.x * r.y + B * r.y * r.y <= 1;
   }
 
   const Point center;  ///< ellipse center
