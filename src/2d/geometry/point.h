@@ -3,6 +3,8 @@
 #include "util/cuda/compat.h"
 #include "pixel.h"
 
+#include "2d/geometry/vector.h"
+
 namespace PET2D {
 
 /// 2D point with given coordinates

@@ -174,6 +174,7 @@ namespace Geometry {
 
       (*this)[0] = x * c - y * s;
       (*this)[1] = y * c + x * s;
+      return *this;
     }
 
     Vector& operator=(const Vector& rhs) {
