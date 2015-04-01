@@ -67,7 +67,7 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   F max_distance() {
     F distance = 0;
     for (auto& p : *this) {
-      distance = compat::max(distance, p.length());
+      distance = compat::max(distance, p.distance_from_origin());
     }
     return distance;
   }

@@ -57,7 +57,7 @@ template <typename FType = double> class CircleDetector : public Circle<FType> {
     return reinterpret_cast<CircleDetector&&>(result);
   }
 
-  F max_distance() { return center.length() + this->radius; }
+  F max_distance() { return center.distance_from_origin() + this->radius; }
 
   /// \returns itself
   const CircleDetector& circumscribe_circle() const { return *this; }

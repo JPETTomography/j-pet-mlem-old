@@ -222,7 +222,7 @@ void run(cmdline::parser& cl, Model& model) {
 
       Point<> p(point_dis(gen), point_dis(gen));
 
-      if (p.length2() >= fov_radius2)
+      if (p.distance_from_origin2() >= fov_radius2)
         continue;
 
       if (phantom.test_emit(p, one_dis(gen))) {
@@ -268,7 +268,7 @@ void run(cmdline::parser& cl, Model& model) {
       auto rng = one_dis(gen);
       auto p = point_phantom.draw(rng);
 
-      if (p.length2() >= fov_radius2)
+      if (p.distance_from_origin2() >= fov_radius2)
         continue;
 
       auto pixel = p.pixel(s_pixel, n_pixels / 2);
