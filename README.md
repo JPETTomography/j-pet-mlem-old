@@ -3,6 +3,13 @@ PET playground project
 
 This projects contains tools & test scripts for supporting PET project.
 
+Warning: Death Ahead
+--------------------
+
+This `master` branch is development branch and will likely fail to compile on
+your computer. We strongly recommend switching to `stable` branch once you clone
+this project.
+
 Authors
 -------
 
