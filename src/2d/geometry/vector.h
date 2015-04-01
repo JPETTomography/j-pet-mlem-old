@@ -95,5 +95,4 @@ _ Vector<FType> operator-(const Vector<FType>& lhs, const Vector<FType>& rhs) {
   vec -= rhs;
   return vec;
 }
-
 }

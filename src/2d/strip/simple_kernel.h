@@ -121,5 +121,4 @@ template <typename FType = double> class SimpleKernel {
 }  // Strip
 }  // PET2D
 
-#endif // SIMPLE_KERNEL
-
+#endif  // SIMPLE_KERNEL

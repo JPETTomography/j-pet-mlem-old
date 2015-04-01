@@ -256,7 +256,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
     for (int i = 0; i < static_cast<int>(c_detectors.size()); ++i) {
       auto& circle = c_detectors[i];
       if (circle.intersects(e)) {
-        auto distance = pe(circle);
+        auto distance = pe(circle.center);
         distances[i] = distance;
         if (distance < 0) {
           negative.emplace_back(i);
