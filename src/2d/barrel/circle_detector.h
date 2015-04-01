@@ -22,6 +22,7 @@ class CircleDetector : public Circle<FType>, public Point<FType> {
   using Base = Circle<F>;
   using Angle = F;
   using Point = PET2D::Point<F>;
+  using Vector = PET2D::Vector<F>;
   using Intersections = util::array<2, Point>;
   using Event = typename Base::Event;
 
@@ -45,12 +46,12 @@ class CircleDetector : public Circle<FType>, public Point<FType> {
     return *this;
   }
 
-  CircleDetector& operator+=(Point t) {
+  CircleDetector& operator+=(Vector t) {
     Point::operator+=(t);
     return *this;
   }
 
-  CircleDetector operator+(Point t) const {
+  CircleDetector operator+(Vector t) const {
     return reinterpret_cast<CircleDetector&&>(CircleDetector(*this) += t);
   }
 
@@ -60,13 +61,14 @@ class CircleDetector : public Circle<FType>, public Point<FType> {
   const CircleDetector& circumscribe_circle() const { return *this; }
 
   _ bool intersects(typename Base::Event e) const {
-    return Base::intersects(e - *this);
+    return Base::intersects(e - this->as_vector());
   }
 
   _ Intersections intersections(typename Base::Event e) const {
-    auto intersections = this->secant(e - *this);
+    Vector v=this->as_vector();
+    auto intersections = this->secant(e - v);
     for (auto& p : intersections) {
-      p += *this;
+      p += v;
     }
     return intersections;
   }

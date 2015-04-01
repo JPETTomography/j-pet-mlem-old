@@ -24,18 +24,12 @@ template <typename FType = double, typename SType = int> struct Point {
   Point(std::istream& in) : x(util::read<F>(in)), y(util::read<F>(in)) {}
 #endif
 
-  _ Point operator+(const Point& p) const { return Point(x + p.x, y + p.y); }
+
   _ Point operator+(const Vector& v) const { return Point(x + v.x, y + v.y); }
 
   _ Vector operator-(const Point& p) const { return Vector(x - p.x, y - p.y); }
 
   _ Point operator-(const Vector& v) const { return Point(x - v.x, y - v.y); }
-
-  _ Point& operator+=(const Point& p) {
-    x += p.x;
-    y += p.y;
-    return *this;
-  }
 
   _ Point& operator+=(const Vector& v) {
     x += v.x;
@@ -90,6 +84,8 @@ template <typename FType = double, typename SType = int> struct Point {
     return Pixel(static_cast<S>(compat::floor(x / pixel_size + pixel_count_2)),
                  static_cast<S>(compat::floor(y / pixel_size + pixel_count_2)));
   }
+
+  _ Vector as_vector() const {return Vector(x,y);}
 };
 
 /// Single point source

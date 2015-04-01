@@ -47,6 +47,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
   using F = typename Detector::F;
   using LOR = Barrel::LOR<S>;
   using Point = PET2D::Point<F>;
+  using Vector = PET2D::Vector<F>;
   using Circle = PET2D::Circle<F>;
   using Event = Barrel::Event<F>;
   using Base = util::array<MaxDetectors, Detector>;
@@ -91,7 +92,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
     // move detector to the right edge of inner ring
     // along zero angle polar coordinate
     detector_base +=
-        Point(0, radius + (d_detector > 0 ? d_detector : h_detector) / 2);
+        Vector(0, radius + (d_detector > 0 ? d_detector : h_detector) / 2);
 
     // fix up outer circle
     if (d_detector == 0) {

@@ -17,6 +17,7 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   using F = FType;
   using Angle = F;
   using Point = PET2D::Point<F>;
+  using Vector = PET2D::Vector<F>;
   using Event = Barrel::Event<F>;
   using Intersections = util::array<2, Point>;
 
@@ -27,24 +28,27 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
     return *this;
   }
 
-  Polygon& operator+=(Point t) {
+  Polygon& operator+=(Vector t) {
     for (auto& p : *this) {
       p += t;
     }
     return *this;
   }
 
-  Polygon operator+(Point t) const { return Polygon(*this) += t; }
+  Polygon operator+(Vector t) const { return Polygon(*this) += t; }
 
   /// Returns center point of the polygon
   Point center() const {
-    Point center_point(0, 0);
+    //  Point center_point(0, 0);
+    FType c_x = 0.0;
+    FType c_y = 0.0;
     for (auto& p : *this) {
-      center_point += p;
+      c_x += p.x;
+      c_y += p.y;
     }
-    center_point.x /= this->size();
-    center_point.y /= this->size();
-    return center_point;
+    c_x /= this->size();
+    c_y /= this->size();
+    return Point(c_x, c_y);
   }
 
   // tests for intersection with generic form line equation

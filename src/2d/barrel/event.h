@@ -18,6 +18,7 @@ namespace Barrel {
 template <typename FType = double> struct Event : public PET2D::Point<FType> {
   using F = FType;
   using Point = PET2D::Point<F>;
+  using Vector = PET2D::Vector<F>;
   using Base = Point;
 
   /// Event requires usage of a concrete constructor.
@@ -61,12 +62,12 @@ template <typename FType = double> struct Event : public PET2D::Point<FType> {
   }
 
   /// Make event translated with given vector.
-  _ Event operator+(const Point& p) const {
+  _ Event operator+(const Vector& p) const {
     return Event(this->x + p.x, this->y + p.y, phi, a, b);
   }
 
   /// Make event translated with given vector.
-  _ Event operator-(const Point& p) const {
+  _ Event operator-(const Vector& p) const {
     return Event(this->x - p.x, this->y - p.y, phi, a, b);
   }
 
