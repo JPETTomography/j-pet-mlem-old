@@ -46,10 +46,6 @@ template <typename FType = double, typename SType = int> struct Point {
 
   _ bool operator==(const Point& p) const { return x == p.x && y == p.y; }
 
-  _ bool operator<(const Point& p) const {
-    return y < p.y || (y == p.y && x < p.x);
-  }
-
   _ F distance_from_origin2() const { return x * x + y * y; }
 
   _ F distance_from_origin() const { return compat::sqrt(x * x + y * y); }

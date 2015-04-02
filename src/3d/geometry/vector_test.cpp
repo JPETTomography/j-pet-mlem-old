@@ -80,4 +80,5 @@ TEST("3d/geometry/vector/arithmetics", "vector arithmetic  operators") {
     CHECK(vec.y == 1.8_e7);
     CHECK(vec.z == 2.7_e7);
   }
+
 }

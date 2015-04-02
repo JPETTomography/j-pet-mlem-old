@@ -48,10 +48,6 @@ template <typename FType = double, typename SType = int> struct Vector {
 
   _ bool operator==(const Vector& p) const { return x == p.x && y == p.y; }
 
-  _ bool operator<(const Vector& p) const {
-    return y < p.y || (y == p.y && x < p.x);
-  }
-
   _ F length2() const { return x * x + y * y; }
 
   _ F length() const { return compat::sqrt(x * x + y * y); }
