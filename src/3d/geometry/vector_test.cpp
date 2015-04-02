@@ -80,5 +80,40 @@ TEST("3d/geometry/vector/arithmetics", "vector arithmetic  operators") {
     CHECK(vec.y == 1.8_e7);
     CHECK(vec.z == 2.7_e7);
   }
+}
 
+TEST("3d/geometry/vector/logical", "vector arithmetic  logical") {
+  using Vector = PET3D::Vector<float>;
+
+  {
+    Vector lhs(1.0f, 2.0f, 3.0f);
+    Vector rhs(1.0f, 2.0f, 3.0f);
+
+    CHECK(lhs == rhs);
+    CHECK(!(lhs != rhs));
+  }
+
+  {
+    Vector lhs(1.0f, 2.0f, 4.0f);
+    Vector rhs(1.0f, 2.0f, 3.0f);
+
+    CHECK(!(lhs == rhs));
+    CHECK((lhs != rhs));
+  }
+
+  {
+    Vector lhs(1.0f, 5.0f, 3.0f);
+    Vector rhs(1.0f, 2.0f, 3.0f);
+
+    CHECK(!(lhs == rhs));
+    CHECK((lhs != rhs));
+  }
+
+  {
+    Vector lhs(5.0f, 2.0f, 3.0f);
+    Vector rhs(1.0f, 2.0f, 3.0f);
+
+    CHECK(!(lhs == rhs));
+    CHECK((lhs != rhs));
+  }
 }

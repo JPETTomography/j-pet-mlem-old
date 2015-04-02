@@ -55,30 +55,11 @@ template <typename FType = double, typename SType = int> struct Vector {
   _ bool operator==(const Vector& v) const { return x == v.x && y == v.y && z == v.z; }
 
 
-  _ F length2() const { return x * x + y * y; }
+  _ F length2() const { return x * x + y * y +z*z; }
 
-  _ F length() const { return compat::sqrt(x * x + y * y); }
+  _ F length() const { return compat::sqrt(length2()); }
 
-  /// Rotate Vector around (0, 0) with given angle
 
-  /// \note
-  /// I know it is bad idea to count all over again
-  /// \c sin/cos for given Vector, but this will be used
-  /// only for initialization.
-  Vector& rotate(F phi) {
-    F sin_phi = compat::sin(phi);
-    F cos_phi = compat::cos(phi);
-    F tx = x * cos_phi - y * sin_phi;
-    F ty = x * sin_phi + y * cos_phi;
-    x = tx;
-    y = ty;
-    return *this;
-  }
-
-  Vector rotated(F phi) const {
-    Vector tmp(*this);
-    return tmp.rotate(phi);
-  }
 };
 
 template <typename FType>
