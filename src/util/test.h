@@ -6,6 +6,10 @@ inline Approx operator"" _e13(long double value) {
   return Approx(value).epsilon(1e-13);
 }
 
+inline Approx operator"" _e7(long double value) {
+  return Approx(value).epsilon(1e-7);
+}
+
 /// \cond PRIVATE
 
 class InverseApprox : public Approx {

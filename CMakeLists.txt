@@ -66,12 +66,11 @@ include_directories(src lib/cmdline)
 file(GLOB COMMON
   src/geometry/*.h
   src/2d/geometry/*.h
+  src/3d/geometry/*.h
   src/math/*.h
   src/util/*.h
   src/util/png_writer.cpp
-  src/util/cmdline_hooks.cpp
-  src/3d/geometry/*.h
-  src/3d/geometry/*.cpp)
+  src/util/cmdline_hooks.cpp)
 
 # OpenMP support
 find_package(OpenMP)
