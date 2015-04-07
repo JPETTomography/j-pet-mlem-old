@@ -49,7 +49,7 @@ template <typename FType = double, typename SType = int> struct Point {
     return compat::min((p1 - *this).length(), (p2 - *this).length());
   }
 
-  _ Vector as_vector() const { return Vector(x, y); }
+  _ Vector as_vector() const { return Vector(x, y, z); }
 };
 
 /// Single point source
