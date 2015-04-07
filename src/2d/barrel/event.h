@@ -26,19 +26,16 @@ template <typename FType = double> struct Event : public PET2D::Point<FType> {
 
   /// Make emission event at \f$ (x, y) \f$ point and \f$ \phi \f$ angle.
   _ Event(F x, F y, F phi)
-      : Event(x,
-              y,
-              phi,
-              // line equation a b coefficients: a x + b y == c
-              std::sin(phi),
-              -std::cos(phi)) {}
+      : Event(x,y, Vector(std::cos(phi), std::sin(phi))) {}
 
- private:
-  _ Event(F x, F y, F phi, F a, F b)
+  _ Event(F x, F y, F dx, F dy)
+      : Event(x,y, Vector(dx, dy)) {}
+
+  _ Event(F x, F y, const Vector& direction)
       : Base(x, y),
-        phi(phi),
-        a(a),
-        b(b),
+        direction(direction),
+        a(direction.y),
+        b(-direction.x),
         // line equation c coefficient: a x + b y == c
         c(a * x + b * y),
         // helper variables
@@ -46,6 +43,9 @@ template <typename FType = double> struct Event : public PET2D::Point<FType> {
         ac(a * c),
         c2(c * c),
         inv_b(1 / b) {}
+
+ private:
+
 
  public:
   /// Make emission event at \f$ p = (x, y) \f$ point and \f$ \phi \f$ angle.
@@ -58,21 +58,23 @@ template <typename FType = double> struct Event : public PET2D::Point<FType> {
   /// \brief Return perpendicular event line.
   /// \returns perpendicular event line
   _ Event perpendicular() const {
-    return Event(this->x, this->y, phi + M_PI_2, -b, a);
+    return Event(this->x, this->y, -direction.y, direction.x);
   }
 
   /// Make event translated with given vector.
   _ Event operator+(const Vector& p) const {
-    return Event(this->x + p.x, this->y + p.y, phi, a, b);
+    return Event(this->x + p.x, this->y + p.y, direction);
   }
 
   /// Make event translated with given vector.
   _ Event operator-(const Vector& p) const {
-    return Event(this->x - p.x, this->y - p.y, phi, a, b);
+    return Event(this->x - p.x, this->y - p.y, direction);
   }
 
-  const F phi;  ///< \f$ \phi \f$ angle
+  const Vector direction;
 
+  //const F phi;  ///< \f$ \phi \f$ angle
+  /// line equation a b coefficients: a x + b y == c
   const F a;  ///< line equation coefficient \f$ a \f$
   const F b;  ///< line equation coefficient \f$ b \f$
   const F c;  ///< line equation coefficient \f$ c \f$

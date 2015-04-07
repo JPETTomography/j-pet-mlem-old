@@ -19,7 +19,7 @@ template <typename FType> class Event {
 
   Event2D to_barrel_event() const {
     return Event2D(
-        origin[0], origin[1], std::atan2(direction[1], direction[0]));
+        origin.x, origin.y, std::atan2(direction[1], direction[0]));
   }
 
   Plane z_plane() const { return Plane(1.0, 0.0, 0.0, 1.0); }
