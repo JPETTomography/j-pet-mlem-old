@@ -22,12 +22,6 @@ template <typename FType = double, typename SType = int> struct Point {
   Point(std::istream& in) : x(util::read<F>(in)), y(util::read<F>(in)) {}
 #endif
 
-  _ Point operator+(const Vector& v) const { return Point(x + v.x, y + v.y); }
-
-  _ Vector operator-(const Point& p) const { return Vector(x - p.x, y - p.y); }
-
-  _ Point operator-(const Vector& v) const { return Point(x - v.x, y - v.y); }
-
   _ Point& operator+=(const Vector& v) {
     x += v.x;
     y += v.y;
