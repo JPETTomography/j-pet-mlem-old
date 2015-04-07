@@ -25,12 +25,14 @@ template <typename FType = double, typename SType = int> struct Point {
   _ Point& operator+=(const Vector& v) {
     x += v.x;
     y += v.y;
+    z += v.z;
     return *this;
   }
 
   _ Point& operator-=(const Vector& v) {
     x -= v.x;
     y -= v.y;
+    z -= v.z;
     return *this;
   }
 
@@ -66,6 +68,27 @@ struct PointSource : public Point<FType, SType> {
       : Point::Point(in), intensity(util::read<F>(in)) {}
 #endif
 };
+
+template <typename F>
+_ Point<F> operator+(const Point<F>& lhs, const Vector<F>& rhs) {
+  Point<F> p(lhs);
+  p += rhs;
+  return p;
+}
+
+template <typename F>
+_ Point<F> operator-(const Point<F>& lhs, const Vector<F>& rhs) {
+  Point<F> p(lhs);
+  p -= rhs;
+  return p;
+}
+
+template <typename F>
+_ Vector<F> operator-(const Point<F>& lhs, const Point<F>& rhs) {
+  return Vector<F>(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z-rhs.z);
+}
+
+
 }  // PET2D
 
 template <typename F> F deg(F rad) { return rad * 180 / F(M_PI); }
