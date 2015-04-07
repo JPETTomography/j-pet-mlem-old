@@ -53,3 +53,5 @@ TEST("3d/geometry/point/difference", "point differencet") {
     CHECK(v.z == 2.7_e7);
 
 }
+
+

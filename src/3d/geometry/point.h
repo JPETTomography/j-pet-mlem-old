@@ -36,9 +36,10 @@ template <typename FType = double, typename SType = int> struct Point {
     return *this;
   }
 
-  _ bool operator!=(const Point& p) const { return x != p.x || y != p.y; }
-
-  _ bool operator==(const Point& p) const { return x == p.x && y == p.y; }
+  _ bool operator==(const Point& p) const {
+    return x == p.x && y == p.y && z == p.z;
+  }
+  _ bool operator!=(const Point& p) const { return !this->operator==(p); }
 
   _ F distance_from_origin2() const { return as_vector().length2(); }
 
@@ -85,9 +86,8 @@ _ Point<F> operator-(const Point<F>& lhs, const Vector<F>& rhs) {
 
 template <typename F>
 _ Vector<F> operator-(const Point<F>& lhs, const Point<F>& rhs) {
-  return Vector<F>(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z-rhs.z);
+  return Vector<F>(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
-
 
 }  // PET2D
 
