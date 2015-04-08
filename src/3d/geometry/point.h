@@ -91,8 +91,7 @@ _ Vector<F> operator-(const Point<F>& lhs, const Point<F>& rhs) {
 
 }  // PET2D
 
-template <typename F> F deg(F rad) { return rad * 180 / F(M_PI); }
-template <typename F> F rad(F deg) { return deg * F(M_PI) / 180; }
+
 
 #ifdef TEST_CASE
 namespace Catch {

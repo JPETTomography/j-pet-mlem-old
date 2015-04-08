@@ -44,6 +44,12 @@ template <typename FType = double, typename SType = int> struct Vector {
     return *this;
   }
 
+  Vector& normalize() {
+    FType length=length();
+    (*this/=length);
+    return *this;
+  }
+
   _ bool operator!=(const Vector& p) const { return x != p.x || y != p.y; }
 
   _ bool operator==(const Vector& p) const { return x == p.x && y == p.y; }

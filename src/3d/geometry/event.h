@@ -1,30 +1,33 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-#include "geometry/geometry.h"
 #include "3d/geometry/plane.h"
+#include "3d/geometry/vector.h"
+#include "3d/geometry/point.h"
 #include "2d/barrel/event.h"
 
 namespace PET3D {
 
 template <typename FType> class Event {
-  using Vector = Geometry::Vector<3, FType>;
-  using Point = Geometry::Point<3, FType>;
-  using Event2D = PET2D::Barrel::Event<FType>;
+  using Vector = PET3D::Vector<FType>;
+  using Vector2D = PET2D::Vector<FType>;
+  using Point = PET3D::Point<FType>;
+  using BarrelEvent = PET2D::Barrel::Event<FType>;
   using Plane = PET3D::Plane<FType>;
 
  public:
-  Event();
-  ~Event();
+  Event(const Point& origin, const Vector& direction)
+      : origin(origin), direction(direction){};
 
-  Event2D to_barrel_event() const {
-    return Event2D(
-        origin.x, origin.y, std::atan2(direction[1], direction[0]));
+
+  BarrelEvent to_barrel_event() const {
+    auto dir_2d = Vector2D(direction.x, direction.y);
+    dir_2d.normalize();
+    return BarrelEvent(origin.x, origin.y, direction.x, direction.y);
   }
 
   Plane z_plane() const { return Plane(1.0, 0.0, 0.0, 1.0); }
 
- private:
   const Point origin;
   const Vector direction;
 };
