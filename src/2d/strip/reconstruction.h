@@ -150,10 +150,7 @@ class Reconstruction {
   std::vector<Event<F>>& get_event_list() { return events; }
 
   template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
-    int size;
-    in >> size;
-
-    for (int it = 0; it < size; ++it) {
+    while (!in.eof()) {
       F z_u, z_d, dl;
       in >> z_u >> z_d >> dl;
       Event<F> temp_event(z_u, z_d, dl);
