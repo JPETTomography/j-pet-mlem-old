@@ -90,11 +90,19 @@ int main(int argc, char* argv[]) {
     }
 
     for (auto& fn : cl.rest()) {
-      util::ibstream events(fn);
-      if (!events.is_open()) {
-        throw("cannot open phantom events file: " + fn);
+      if (cmdline::path(fn).ext() == ".txt") {
+        std::ifstream events(fn);
+        if (!events.is_open()) {
+          throw("cannot open phantom events file: " + fn);
+        }
+        reconstruction << events;
+      } else {
+        util::ibstream events(fn);
+        if (!events.is_open()) {
+          throw("cannot open phantom events file: " + fn);
+        }
+        reconstruction << events;
       }
-      reconstruction << events;
     }
 
     auto n_blocks = cl.get<int>("blocks");
