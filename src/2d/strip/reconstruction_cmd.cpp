@@ -107,6 +107,24 @@ int main(int argc, char* argv[]) {
         std::cerr << "read " << reconstruction.events.size() << " events from "
                   << fn << std::endl;
       }
+
+      auto dl_is_time = cl.exist("dl-is-time");
+      if (cl.exist("scale-length")) {
+        auto scale = cl.get<double>("scale-length");
+        for (auto& event : reconstruction.events) {
+          event.z_u *= scale;
+          event.z_d *= scale;
+          if (!dl_is_time)
+            event.dl *= scale;
+        }
+      }
+      if (dl_is_time) {
+        auto scale = cl.get<double>("scale-time");
+        auto speed_of_light = cl.get<double>("speed-of-light");
+        for (auto& event : reconstruction.events) {
+          event.dl = event.dl * speed_of_light * scale;
+        }
+      }
     }
 
     auto n_blocks = cl.get<int>("blocks");
