@@ -185,7 +185,7 @@ class Reconstruction {
 
  private:
   int n_pixels_in_line(F length, F pixel_size) const {
-    return static_cast<int>((length + F(0.5)) / pixel_size);
+    return static_cast<int>(length / pixel_size + F(0.5));
   }
 
   void bb_update(Point ellipse_center, F y, F tan, std::vector<F>& output_rho) {
