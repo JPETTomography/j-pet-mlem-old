@@ -103,6 +103,10 @@ int main(int argc, char* argv[]) {
         }
         reconstruction << events;
       }
+      if (verbose) {
+        std::cerr << "read " << reconstruction.events.size() << " events from "
+                  << fn << std::endl;
+      }
     }
 
     auto n_blocks = cl.get<int>("blocks");
