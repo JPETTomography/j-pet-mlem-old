@@ -105,8 +105,8 @@ int main(int argc, char* argv[]) {
         reconstruction << events;
       }
       if (verbose) {
-        std::cerr << "read " << reconstruction.events.size() << " events from "
-                  << fn << std::endl;
+        std::cerr << "# read " << reconstruction.events.size()
+                  << " events from " << fn << std::endl;
       }
 
       auto dl_is_time = cl.exist("dl-is-time");
