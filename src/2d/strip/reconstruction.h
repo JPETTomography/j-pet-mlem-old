@@ -36,7 +36,6 @@ class Reconstruction {
 
  private:
   const int n_threads;
-  std::vector<Event<F>> events;
   std::vector<F> rho;
   std::vector<F> acc_log;
   std::vector<std::vector<F>> thread_rhos;
@@ -46,6 +45,7 @@ class Reconstruction {
 
  public:
   const ReconstructionStats<size_t>& stats;
+  std::vector<Event<F>> events;
 
   Reconstruction(const Detector& detector)
       : detector(detector),
@@ -145,9 +145,6 @@ class Reconstruction {
     }
     stats_.collect();
   }
-
-  // accessor for CUDA compatibility
-  std::vector<Event<F>>& get_event_list() { return events; }
 
   template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
     while (!in.eof()) {

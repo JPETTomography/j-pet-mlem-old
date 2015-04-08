@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
       Detector<float> single_precision_strip_detector(strip_detector);
 
       GPU::run_reconstruction(single_precision_strip_detector,
-                              reconstruction.get_event_list(),
+                              reconstruction.events,
                               n_blocks,
                               n_iterations,
                               cl.get<int>("cuda-device"),
