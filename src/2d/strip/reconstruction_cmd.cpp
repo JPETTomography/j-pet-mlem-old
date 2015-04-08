@@ -66,6 +66,7 @@ int main(int argc, char* argv[]) {
     cmdline::parser cl;
     add_reconstruction_options(cl);
     cl.parse_check(argc, argv);
+    calculate_detector_options(cl);
 
     if (!cl.rest().size()) {
       throw("at least one events input file expected, consult --help");
