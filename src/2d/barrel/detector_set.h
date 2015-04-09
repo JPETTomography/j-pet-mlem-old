@@ -280,7 +280,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
                     [&](S a, S b) { return distances[a] < distances[b]; });
   }
 
- private:
+
   _ bool did_intersect(Event e, S detector, Point& p1, Point& p2) const {
 
     auto intersections = (*this)[detector].intersections(e);
@@ -295,7 +295,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
 
     return false;
   }
-
+private:
   template <class RandomGenerator, class AcceptanceModel>
   _ bool did_deposit(RandomGenerator& gen,
                      AcceptanceModel& model,

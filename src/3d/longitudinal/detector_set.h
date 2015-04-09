@@ -31,11 +31,10 @@ class DetectorSet {
     FType dl;
   };
 
-
   DetectorSet(const DetectorSet2D& barrel_a, FType length_a)
       : barrel(barrel_a), length(length_a), half_length(length / 2) {}
 
-  bool escapes_through_endcap(const Event& event) {
+  bool escapes_through_endcap(const Event& event) const {
     if (event.direction.z == 0.0)
       return false;
 
@@ -63,16 +62,24 @@ class DetectorSet {
   _ short detect(RandomGenerator& gen,    ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
                  const Event& e,          ///< event to be detected
-                 LOR& lor,                ///<[out] lor of the event
-                 FType& position          ///<[out] position of the event
-                 ) const {
+                 Response response) const {
+
+    if (escapes_through_endcap(e))
+      return false;
 
     Indices left, right;
     BarrelEvent event_xy = e.to_barrel_event();
-
     barrel.close_indices(event_xy, left, right);
+    SType detector1, detector2;
+    FType depth1, depth2;
+    Point d1_p1, d1_p2, d2_p1, d2_p2;
+    if (!check_for_hits(
+            gen, model, left, e, event_xy, detector1, depth1, d1_p1, d1_p2) ||
+        !check_for_hits(
+            gen, model, right, e, event_xy, detector2, depth2, d2_p1, d2_p2))
+      return false;
 
-    return 0;
+    return false;
   }
 
   template <class RandomGenerator, class AcceptanceModel>
@@ -89,7 +96,7 @@ class DetectorSet {
     for (auto i : indices) {
       Point2D p1_xy, p2_xy;
       if (barrel.did_intersect(e_xy, i, p1_xy, p2_xy)) {
-        if (did_deposit(gen, model, p1, p2, depth)) {
+        if (/*did_deposit(gen, model, p1, p2, depth)*/false) {
           detector = i;
           return true;
         }

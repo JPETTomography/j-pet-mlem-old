@@ -9,7 +9,6 @@
 #include "3d/geometry/vector.h"
 #include "2d/barrel/model.h"
 
-
 TEST("3d/longitudinal/detector_set/escape_through_endcap") {
   using SquareDetector = PET2D::Barrel::SquareDetector<float>;
   using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareDetector>;
@@ -64,10 +63,8 @@ TEST("3d/longitudinal/detector_set/detect", "detect") {
   DetectorSet detector_set(detector_set_2D, 0.5f);
   PET2D::Barrel::AlwaysAccept<> model;
   PET3D::Event<float> event(Point(0.0f, 0.0f, 0.0f), Vector(0.0f, 0.0f, 1.0f));
-  PET2D::Barrel::LOR<> lor;
-  float position;
-  if(!detector_set.escapes_through_endcap(event)) {
 
-  }
+  DetectorSet::Response response;
 
+  CHECK(!detector_set.detect(model, model, event, response));
 }

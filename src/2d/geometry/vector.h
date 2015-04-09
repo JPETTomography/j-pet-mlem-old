@@ -45,7 +45,7 @@ template <typename FType = double, typename SType = int> struct Vector {
   }
 
   Vector& normalize() {
-    FType length=length();
+    FType length=this->length();
     (*this/=length);
     return *this;
   }
