@@ -93,7 +93,11 @@ TEST("3d/longitudinal/detector_set/detect", "detect") {
 
     DetectorSet::Response response;
 
-    CHECK(detector_set.detect(model, model, event, response));
+    REQUIRE(detector_set.detect(model, model, event, response));
+    auto lor = response.lor;
+    CHECK(lor.first == 12);
+    CHECK(lor.second == 0);
+    //std::cerr << lor.first << " " << lor.second << "\n";
   }
 
   {

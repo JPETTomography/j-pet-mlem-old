@@ -64,7 +64,7 @@ class DetectorSet {
   _ short detect(RandomGenerator& gen,    ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
                  const Event& e,          ///< event to be detected
-                 Response response) const {
+                 Response& response) const {
 
     if (escapes_through_endcap(e))
       return false;
