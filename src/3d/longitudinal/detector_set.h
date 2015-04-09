@@ -1,4 +1,4 @@
-#include<iostream>
+#include <iostream>
 
 #include "2d/barrel/detector_set.h"
 #include "3d/geometry/event.h"
@@ -13,12 +13,24 @@ namespace Longitudinal {
 
 template <typename DetectorSet2D,
           std::size_t MaxDetectors,
-          typename FType = float,
-          typename SType = int>
+          typename FType = typename DetectorSet2D::F,
+          typename SType = typename DetectorSet2D::S>
 class DetectorSet {
  public:
+  using Point = PET3D::Point<FType>;
+  using Point2D = PET2D::Point<FType>;
   using Event = PET3D::Event<FType>;
-  using BarrelEvent = PET2D::Barrel::Event<FType>;
+  using LOR = typename DetectorSet2D::LOR;
+  using Indices = typename DetectorSet2D::Indices;
+  using BarrelEvent = typename DetectorSet2D::Event;
+
+  struct Response {
+    LOR lor;
+    FType z_up;
+    FType z_dn;
+    FType dl;
+  };
+
 
   DetectorSet(const DetectorSet2D& barrel_a, FType length_a)
       : barrel(barrel_a), length(length_a), half_length(length / 2) {}
@@ -44,6 +56,45 @@ class DetectorSet {
         return true;
     }
 
+    return false;
+  }
+
+  template <class RandomGenerator, class AcceptanceModel>
+  _ short detect(RandomGenerator& gen,    ///< random number generator
+                 AcceptanceModel& model,  ///< acceptance model
+                 const Event& e,          ///< event to be detected
+                 LOR& lor,                ///<[out] lor of the event
+                 FType& position          ///<[out] position of the event
+                 ) const {
+
+    Indices left, right;
+    BarrelEvent event_xy = e.to_barrel_event();
+
+    barrel.close_indices(event_xy, left, right);
+
+    return 0;
+  }
+
+  template <class RandomGenerator, class AcceptanceModel>
+  _ bool check_for_hits(RandomGenerator& gen,
+                        AcceptanceModel& model,
+                        const Indices& indices,
+                        Event e,
+                        BarrelEvent e_xy,
+                        SType& detector,
+                        FType& depth,
+                        Point& p1,
+                        Point& p2) const {
+
+    for (auto i : indices) {
+      Point2D p1_xy, p2_xy;
+      if (barrel.did_intersect(e_xy, i, p1_xy, p2_xy)) {
+        if (did_deposit(gen, model, p1, p2, depth)) {
+          detector = i;
+          return true;
+        }
+      }
+    }
     return false;
   }
 

@@ -115,28 +115,30 @@ class MonteCarlo {
           continue;
 
         auto angle = phi_dis(l_gen);
-        LOR lor;
-        F position = 0;
+        //        LOR lor;
+        //        F position = 0;
+        typename DetectorType::Response response;
+
         Event event(rx, ry, angle);
-        auto hits = detector.detect(l_gen, model, event, lor, position);
+        auto hits = detector.detect(l_gen, model, event, response);
 
         S quantized_position = 0;
         if (tof)
           quantized_position =
-              Detector::quantize_tof_position(position, tof_step, n_positions);
+              Detector::quantize_tof_position(response.dl, tof_step, n_positions);
 #ifdef DEBUG
         std::cerr << "quantized_position " << quantized_position << std::endl;
 #endif
         // do we have hit on both sides?
         if (hits >= 2) {
           if (o_collect_mc_matrix) {
-            if (lor.first == lor.second) {
+            if (response.lor.first == response.lor.second) {
               std::ostringstream msg;
               msg << __FUNCTION__ << " invalid LOR in Monte-Carlo ("
-                  << lor.first << ", " << lor.second << ")";
+                  << response.lor.first << ", " <<response.lor.second << ")";
               throw(msg.str());
             }
-            matrix.hit_lor(lor, quantized_position, i_pixel, 1);
+            matrix.hit_lor(response.lor, quantized_position, i_pixel, 1);
           }
 
           if (o_collect_pixel_stats) {

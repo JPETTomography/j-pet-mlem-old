@@ -232,21 +232,23 @@ void run(cmdline::parser& cl, Model& model) {
             pixel.y <= m_pixel)
           continue;
 
-        typename Detector::LOR lor;
+        // typename Detector::LOR lor;
         pixels[pixel.y * n_pixels + pixel.x]++;
         auto angle = phi_dis(gen);
-        double position;
+        // double position;
         typename Detector::Event event(p, angle);
-        auto hits = dr.detect(gen, model, event, lor, position);
+        typename Detector::Response response;
+        auto hits = dr.detect(gen, model, event, response);
         if (hits == 2) {
-          if (lor.first > lor.second)
-            std::swap(lor.first, lor.second);
+          if (response.lor.first > response.lor.second)
+            std::swap(response.lor.first, response.lor.second);
           int quantized_position = 0;
           if (n_tof_positions > 1) {
             quantized_position = Detector::quantize_tof_position(
-                position, tof_step, n_tof_positions);
+                response.dl, tof_step, n_tof_positions);
           }
-          tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
+          tubes[(response.lor.first * n_detectors + response.lor.second) *
+                    n_tof_positions +
                 quantized_position]++;
           pixels_detected[pixel.y * n_pixels + pixel.x]++;
           if (only_detected)
@@ -279,19 +281,20 @@ void run(cmdline::parser& cl, Model& model) {
 
       pixels[pixel.y * n_pixels + pixel.x]++;
       auto angle = phi_dis(gen);
-      typename Detector::LOR lor;
-      double position;
+      //typename Detector::LOR lor;
+      //double position;
       typename Detector::Event event(p, angle);
-      auto hits = dr.detect(gen, model, event, lor, position);
+      typename Detector::Response response;
+      auto hits = dr.detect(gen, model, event, response);
       if (hits == 2) {
-        if (lor.first > lor.second)
-          std::swap(lor.first, lor.second);
+        if (response.lor.first > response.lor.second)
+          std::swap(response.lor.first, response.lor.second);
         int quantized_position = 0;
         if (n_tof_positions > 1) {
           quantized_position = Detector::quantize_tof_position(
-              position, tof_step, n_tof_positions);
+              response.dl, tof_step, n_tof_positions);
         }
-        tubes[(lor.first * n_detectors + lor.second) * n_tof_positions +
+        tubes[(response.lor.first * n_detectors + response.lor.second) * n_tof_positions +
               quantized_position]++;
         pixels_detected[pixel.y * n_pixels + pixel.x]++;
         if (only_detected)

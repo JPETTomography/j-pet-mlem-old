@@ -47,19 +47,19 @@ __global__ static void kernel(const Pixel pixel,
     if (rx * rx + ry * ry > fov_radius2)
       continue;
 
-    LOR lor;
-    float position = 0;
+
     Event event(rx, ry, angle);
-    auto hits = detector_ring.detect(gen, model, event, lor, position);
+    DetectorRing::Response response;
+    auto hits = detector_ring.detect(gen, model, event, response);
 
     int quantized_position = 0;
     if (tof)
       quantized_position =
-          DetectorRing::quantize_tof_position(position, tof_step, n_positions);
+          DetectorRing::quantize_tof_position(response.dl, tof_step, n_positions);
 
     // do we have hit on both sides?
     if (hits >= 2) {
-      auto pixel_index = lor.index() * n_positions + quantized_position;
+      auto pixel_index = response.lor.index() * n_positions + quantized_position;
       atomicAdd(&pixel_hits[pixel_index], 1);
     }
   }

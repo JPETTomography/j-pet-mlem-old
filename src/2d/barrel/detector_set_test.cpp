@@ -83,6 +83,7 @@ TEST("2d/barrel/detector_set/math") {
 
 TEST("2d/barrel/detector_set/detect") {
   SECTION("two_rings") {
+    using Response = typename DetectorRing<SquareDetector<>>::Response;
     DetectorRing<SquareDetector<>> inner_ring(1., 16, .1, .1);
     DetectorRing<SquareDetector<>> outer_ring(1.4, 16, .1, .1);
     DetectorSet<SquareDetector<>> detector;
@@ -94,10 +95,9 @@ TEST("2d/barrel/detector_set/detect") {
     }
     CHECK(32 == detector.size());
 
-    DetectorRing<>::LOR lor;
-    AlwaysAccept<> model;
-    double position;
 
+    AlwaysAccept<> model;
+    Response response;
     SECTION("horizontal") {
       {
         Event<> e(0, 0, 0);
@@ -110,7 +110,7 @@ TEST("2d/barrel/detector_set/detect") {
         CHECK(24 == left[1]);
         CHECK(16 == right[1]);
 
-        CHECK(2 == detector.detect(model, model, e, lor, position));
+        CHECK(2 == detector.detect(model, model, e, response));
       }
       {
         Event<> e(0, .050001, 0);
@@ -123,11 +123,11 @@ TEST("2d/barrel/detector_set/detect") {
         CHECK(24 == left[1]);
         CHECK(16 == right[1]);
 
-        CHECK(0 == detector.detect(model, model, e, lor, position));
+        CHECK(0 == detector.detect(model, model, e, response));
       }
       {
         Event<> e(0, .049999, 0);
-        CHECK(2 == detector.detect(model, model, e, lor, position));
+        CHECK(2 == detector.detect(model, model, e, response));
       }
     }
   }

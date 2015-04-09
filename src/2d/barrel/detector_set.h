@@ -54,6 +54,11 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
   using CircleDetector = Barrel::CircleDetector<F>;
   using Indices = util::array<MaxDetectors, S>;
 
+  struct Response {
+    LOR lor;
+    F dl;
+  };
+
   /// Makes an empty detector set.
   DetectorSet(F radius = 1, F h_detector = 1)
       : Base(),
@@ -193,8 +198,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
   _ short detect(RandomGenerator& gen,    ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
                  const Event& e,          ///< event to be detected
-                 LOR& lor,                ///<[out] lor of the event
-                 F& position              ///<[out] position of the event
+                 Response& response
                  ) const {
     Indices left, right;
     close_indices(e, left, right);
@@ -205,16 +209,16 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
         !check_for_hits(gen, model, right, e, detector2, depth2, d2_p1, d2_p2))
       return 0;
 
-    lor = LOR(detector1, detector2);
+    response.lor = LOR(detector1, detector2);
 
     Point origin(e.x, e.y);
     F length1 = origin.nearest_distance(d1_p1, d1_p2) + depth1;
     F length2 = origin.nearest_distance(d2_p1, d2_p2) + depth2;
 
     if (detector1 > detector2) {
-      position = length1 - length2;
+      response.dl = length1 - length2;
     } else {
-      position = length2 - length1;
+      response.dl = length2 - length1;
     }
 
     return 2;
