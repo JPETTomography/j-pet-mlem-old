@@ -69,17 +69,36 @@ class DetectorSet {
 
     Indices left, right;
     BarrelEvent event_xy = e.to_barrel_event();
+//    std::cerr << event_xy.x << " " << event_xy.y << " " << event_xy.direction.x
+//              << " " << event_xy.direction.y << std::endl;
     barrel.close_indices(event_xy, left, right);
+    //    for(auto indx : left)
+    //        std::cerr<<"left  : "<<(indx)<<"\n";
+    //    for(auto indx : right)
+    //        std::cerr<<"right : "<<(indx)<<"\n";
+
     SType detector1, detector2;
-    FType depth1, depth2;
+
     Point d1_p1, d1_p2, d2_p1, d2_p2;
+    Point deposit_d1, deposit_d2;
+
     if (!check_for_hits(
-            gen, model, left, e, event_xy, detector1, depth1, d1_p1, d1_p2) ||
+            gen, model, left, e, event_xy, detector1, d1_p1, d1_p2, deposit_d1) ||
         !check_for_hits(
-            gen, model, right, e, event_xy, detector2, depth2, d2_p1, d2_p2))
+            gen, model, right, e, event_xy, detector2, d2_p1, d2_p2, deposit_d2))
       return false;
 
-    return false;
+    return true;
+  }
+
+  template <class RandomGenerator, class AcceptanceModel>
+  _ bool did_deposit(RandomGenerator& gen,
+                     AcceptanceModel& model,
+                     const Point& entry,
+                     const Point& exit,
+                     Point& deposit) const {
+
+    return true;
   }
 
   template <class RandomGenerator, class AcceptanceModel>
@@ -89,14 +108,17 @@ class DetectorSet {
                         Event e,
                         BarrelEvent e_xy,
                         SType& detector,
-                        FType& depth,
                         Point& p1,
-                        Point& p2) const {
+                        Point& p2,
+                        Point& deposit) const {
 
     for (auto i : indices) {
       Point2D p1_xy, p2_xy;
+      Point2D origin_2d = e_xy;
       if (barrel.did_intersect(e_xy, i, p1_xy, p2_xy)) {
-        if (/*did_deposit(gen, model, p1, p2, depth)*/false) {
+        Point entry(p1_xy.x, p1_xy.y, 0.0);
+        Point exit(p2_xy.x, p2_xy.y, 0.0);
+        if (did_deposit(gen, model, p1, p2, deposit)) {
           detector = i;
           return true;
         }

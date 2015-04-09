@@ -23,7 +23,7 @@ template <typename FType> class Event {
   BarrelEvent to_barrel_event() const {
     auto dir_2d = Vector2D(direction.x, direction.y);
     dir_2d.normalize();
-    return BarrelEvent(origin.x, origin.y, direction.x, direction.y);
+    return BarrelEvent(origin.x, origin.y, dir_2d.x, dir_2d.y);
   }
 
   Plane z_plane() const { return Plane(1.0, 0.0, 0.0, 1.0); }
