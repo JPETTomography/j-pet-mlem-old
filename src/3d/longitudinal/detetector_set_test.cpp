@@ -4,6 +4,7 @@
 
 #include "3d/longitudinal/detector_set.h"
 #include "2d/barrel/detector_set.h"
+#include "2d/barrel/detectorsetbuilder.h"
 #include "2d/barrel/square_detector.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/vector.h"
@@ -68,13 +69,14 @@ TEST("3d/longitudinal/detector_set/escape_through_endcap") {
 
 TEST("3d/longitudinal/detector_set/detect", "detect") {
   using SquareDetector = PET2D::Barrel::SquareDetector<float>;
-  using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareDetector>;
+  using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareDetector,24>;
   using DetectorSet = PET3D::Longitudinal::DetectorSet<DetectorSet2D, 24>;
   using Vector = PET3D::Vector<float>;
   using Point = PET3D::Point<float>;
 
-  DetectorSet2D detector_set_2D(
-      inner_radius, 24, scintillator_height, scintillator_width);
+  DetectorSet2D detector_set_2D =
+      PET2D::Barrel::DetectorSetBuilder<SquareDetector,24,int>::buildSingleRing(
+          inner_radius, 24, scintillator_height, scintillator_width);
   DetectorSet detector_set(detector_set_2D, length);
   PET2D::Barrel::AlwaysAccept<> model;
 
