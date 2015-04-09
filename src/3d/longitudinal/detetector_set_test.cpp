@@ -74,7 +74,7 @@ TEST("3d/longitudinal/detector_set/detect", "detect") {
   using Point = PET3D::Point<float>;
 
   DetectorSet2D detector_set_2D(
-      center_radius, 24, scintillator_height, scintillator_width);
+      inner_radius, 24, scintillator_height, scintillator_width);
   DetectorSet detector_set(detector_set_2D, length);
   PET2D::Barrel::AlwaysAccept<> model;
 
@@ -97,7 +97,10 @@ TEST("3d/longitudinal/detector_set/detect", "detect") {
     auto lor = response.lor;
     CHECK(lor.first == 12);
     CHECK(lor.second == 0);
-    //std::cerr << lor.first << " " << lor.second << "\n";
+    // std::cerr << lor.first << " " << lor.second << "\n";
+    CHECK(response.z_up == 0.0_e7);
+    CHECK(response.z_dn == 0.0_e7);
+    CHECK(response.dl == 0.0_e7);
   }
 
   {
@@ -107,5 +110,15 @@ TEST("3d/longitudinal/detector_set/detect", "detect") {
     DetectorSet::Response response;
 
     CHECK(detector_set.detect(model, model, event, response));
+
+    auto lor = response.lor;
+    CHECK(lor.first == 12);
+    CHECK(lor.second == 0);
+    // std::cerr << lor.first << " " << lor.second << "\n";
+    float z = inner_radius / std::tan(M_PI / 2.5);
+    //    std::cerr<<z<<"\n";
+    CHECK(response.z_up == Approx(-z).epsilon(1e-7));
+    CHECK(response.z_dn == Approx(z).epsilon(1e-7));
+    CHECK(response.dl == 0.0_e7);
   }
 }

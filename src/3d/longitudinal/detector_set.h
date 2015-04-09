@@ -89,6 +89,7 @@ class DetectorSet {
                         model,
                         left,
                         e,
+                        -1.0,
                         event_xy,
                         detector1,
                         d1_p1,
@@ -98,6 +99,7 @@ class DetectorSet {
                         model,
                         right,
                         e,
+                        1.0f,
                         event_xy,
                         detector2,
                         d2_p1,
@@ -119,17 +121,21 @@ class DetectorSet {
       response.z_dn = deposit_d1.z;
     }
 
+//    std::cerr << "entry   " << d1_p1 << " " << d2_p1 << "\n";
+//    std::cerr << "deposit " << deposit_d1 << " " << deposit_d2 << "\n";
+
     return true;
   }
 
   void reconstruct_3d_intersection_points(const Event& event,
+                                          FType dir,
                                           const Point2D& entry_xy,
                                           const Point2D& exit_xy,
                                           Point& entry,
                                           Point& exit) const {
     Vector2D dir_xy = event.direction.xy();
     Point2D origin_xy = event.origin.xy();
-    FType dz_over_dx_dxy = event.direction.z / dir_xy.length();
+    FType dz_over_dx_dxy = dir * event.direction.z / dir_xy.length();
 
     Vector2D displacement_entry = entry_xy - origin_xy;
     FType displacement_entry_length = displacement_entry.length();
@@ -168,6 +174,7 @@ class DetectorSet {
                         AcceptanceModel& model,
                         const Indices& indices,
                         Event e,
+                        FType dir,
                         BarrelEvent e_xy,
                         SType& detector,
                         Point& entry,
@@ -179,7 +186,7 @@ class DetectorSet {
       Point2D origin_2d = e_xy;
       FType depth;
       if (barrel.did_intersect(e_xy, i, p1_xy, p2_xy)) {
-        reconstruct_3d_intersection_points(e, p1_xy, p2_xy, entry, exit);
+        reconstruct_3d_intersection_points(e, dir, p1_xy, p2_xy, entry, exit);
         if (did_deposit(gen, model, entry, exit, depth)) {
           Vector v = exit - entry;
           deposit = entry + v * (depth / v.length());
