@@ -15,5 +15,3 @@ TEST("2d/barrel/event/set") {
   REQUIRE(0.5 == event.y);
   REQUIRE(event.direction.x == std::cos(2.0));
 }
-
-

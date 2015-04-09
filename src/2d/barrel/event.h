@@ -26,10 +26,9 @@ template <typename FType = double> struct Event : public PET2D::Point<FType> {
 
   /// Make emission event at \f$ (x, y) \f$ point and \f$ \phi \f$ angle.
   _ Event(F x, F y, F phi)
-      : Event(x,y, Vector(std::cos(phi), std::sin(phi))) {}
+      : Event(x, y, Vector(std::cos(phi), std::sin(phi))) {}
 
-  _ Event(F x, F y, F dx, F dy)
-      : Event(x,y, Vector(dx, dy)) {}
+  _ Event(F x, F y, F dx, F dy) : Event(x, y, Vector(dx, dy)) {}
 
   _ Event(F x, F y, const Vector& direction)
       : Base(x, y),
@@ -45,8 +44,6 @@ template <typename FType = double> struct Event : public PET2D::Point<FType> {
         inv_b(1 / b) {}
 
  private:
-
-
  public:
   /// Make emission event at \f$ p = (x, y) \f$ point and \f$ \phi \f$ angle.
   _ Event(Base p, F phi) : Event(p.x, p.y, phi) {}
@@ -73,7 +70,7 @@ template <typename FType = double> struct Event : public PET2D::Point<FType> {
 
   const Vector direction;
 
-  //const F phi;  ///< \f$ \phi \f$ angle
+  // const F phi;  ///< \f$ \phi \f$ angle
   /// line equation a b coefficients: a x + b y == c
   const F a;  ///< line equation coefficient \f$ a \f$
   const F b;  ///< line equation coefficient \f$ b \f$

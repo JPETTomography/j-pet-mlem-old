@@ -124,8 +124,8 @@ class MonteCarlo {
 
         S quantized_position = 0;
         if (tof)
-          quantized_position =
-              Detector::quantize_tof_position(response.dl, tof_step, n_positions);
+          quantized_position = Detector::quantize_tof_position(
+              response.dl, tof_step, n_positions);
 #ifdef DEBUG
         std::cerr << "quantized_position " << quantized_position << std::endl;
 #endif
@@ -135,7 +135,7 @@ class MonteCarlo {
             if (response.lor.first == response.lor.second) {
               std::ostringstream msg;
               msg << __FUNCTION__ << " invalid LOR in Monte-Carlo ("
-                  << response.lor.first << ", " <<response.lor.second << ")";
+                  << response.lor.first << ", " << response.lor.second << ")";
               throw(msg.str());
             }
             matrix.hit_lor(response.lor, quantized_position, i_pixel, 1);

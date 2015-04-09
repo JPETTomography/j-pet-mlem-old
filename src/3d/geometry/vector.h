@@ -2,17 +2,17 @@
 
 #include "util/cuda/compat.h"
 #include "util/read.h"
+#include "2d/geometry/vector.h"
 
 namespace PET3D {
 
-/// 2D Vector with given coordinates
+/// 3D Vector with given coordinates
 template <typename FType = double, typename SType = int> struct Vector {
 
-    static Vector from_euler_angles(FType phi, FType theta) {
-      FType r_xy=std::sin(theta);
-      return Vector(r_xy*std::cos(phi), r_xy*std::sin(phi), std::cos(theta));
-    }
-
+  static Vector from_euler_angles(FType phi, FType theta) {
+    FType r_xy = std::sin(theta);
+    return Vector(r_xy * std::cos(phi), r_xy * std::sin(phi), std::cos(theta));
+  }
 
   using F = FType;
   using S = SType;
@@ -55,18 +55,19 @@ template <typename FType = double, typename SType = int> struct Vector {
     return *this;
   }
 
+  _ bool operator!=(const Vector& v) const {
+    return x != v.x || y != v.y || z != v.z;
+  }
 
+  _ bool operator==(const Vector& v) const {
+    return x == v.x && y == v.y && z == v.z;
+  }
 
-  _ bool operator!=(const Vector& v) const { return x != v.x || y != v.y || z != v.z; }
-
-  _ bool operator==(const Vector& v) const { return x == v.x && y == v.y && z == v.z; }
-
-
-  _ F length2() const { return x * x + y * y +z*z; }
+  _ F length2() const { return x * x + y * y + z * z; }
 
   _ F length() const { return compat::sqrt(length2()); }
 
-
+  _ PET2D::Vector<FType> xy() const { return PET2D::Vector<FType>(x, y); }
 };
 
 template <typename FType>
@@ -80,6 +81,20 @@ template <typename FType>
 _ Vector<FType> operator-(const Vector<FType>& lhs, const Vector<FType>& rhs) {
   Vector<FType> vec(lhs);
   vec -= rhs;
+  return vec;
+}
+
+template <typename FType>
+_ Vector<FType> operator*(const Vector<FType>& lhs, FType rhs) {
+  Vector<FType> vec(lhs);
+  vec *= rhs;
+  return vec;
+}
+
+template <typename FType>
+_ Vector<FType> operator*(FType lhs, const Vector<FType>& rhs) {
+  Vector<FType> vec(rhs);
+  vec *= lhs;
   return vec;
 }
 }

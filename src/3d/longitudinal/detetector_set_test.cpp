@@ -11,7 +11,7 @@
 
 float center_radius = 0.180f;
 float scintillator_height = 0.019f;
-float scintillator_width=0.05f;
+float scintillator_width = 0.05f;
 float inner_radius = center_radius - scintillator_height / 2;
 float length = 0.30;
 
@@ -73,7 +73,8 @@ TEST("3d/longitudinal/detector_set/detect", "detect") {
   using Vector = PET3D::Vector<float>;
   using Point = PET3D::Point<float>;
 
-  DetectorSet2D detector_set_2D(center_radius, 24, scintillator_height, scintillator_width);
+  DetectorSet2D detector_set_2D(
+      center_radius, 24, scintillator_height, scintillator_width);
   DetectorSet detector_set(detector_set_2D, length);
   PET2D::Barrel::AlwaysAccept<> model;
 
@@ -88,7 +89,7 @@ TEST("3d/longitudinal/detector_set/detect", "detect") {
 
   {
     PET3D::Event<float> event(Point(0.0f, 0.0f, 0.0f),
-                              Vector::from_euler_angles(0.0f, M_PI/2.0));
+                              Vector::from_euler_angles(0.0f, M_PI / 2.0));
 
     DetectorSet::Response response;
 
@@ -97,11 +98,10 @@ TEST("3d/longitudinal/detector_set/detect", "detect") {
 
   {
     PET3D::Event<float> event(Point(0.0f, 0.0f, 0.0f),
-                              Vector::from_euler_angles(0.0f, M_PI/2.5f));
+                              Vector::from_euler_angles(0.0f, M_PI / 2.5f));
 
     DetectorSet::Response response;
 
     CHECK(detector_set.detect(model, model, event, response));
   }
-
 }

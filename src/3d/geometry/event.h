@@ -19,7 +19,6 @@ template <typename FType> class Event {
   Event(const Point& origin, const Vector& direction)
       : origin(origin), direction(direction){};
 
-
   BarrelEvent to_barrel_event() const {
     auto dir_2d = Vector2D(direction.x, direction.y);
     dir_2d.normalize();

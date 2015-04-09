@@ -3,6 +3,7 @@
 #include "util/cuda/compat.h"
 
 #include "3d/geometry/vector.h"
+#include "2d/geometry/point.h"
 
 namespace PET3D {
 
@@ -50,6 +51,8 @@ template <typename FType = double, typename SType = int> struct Point {
   }
 
   _ Vector as_vector() const { return Vector(x, y, z); }
+
+  _ PET2D::Point<F> xy() const { return PET2D::Point<F>(x, y); }
 };
 
 /// Single point source
@@ -90,8 +93,6 @@ _ Vector<F> operator-(const Point<F>& lhs, const Point<F>& rhs) {
 }
 
 }  // PET2D
-
-
 
 #ifdef TEST_CASE
 namespace Catch {

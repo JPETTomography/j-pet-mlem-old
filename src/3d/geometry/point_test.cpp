@@ -68,5 +68,5 @@ TEST("3d/geometry/point/nearest_distance", "point nearest distance") {
   Point p2(1.0f, 3.0f, 3.30f);
   Point p3(1.0f, 2.2f, 4.0f);
 
-    CHECK(p1.nearest_distance(p2,p3)==Approx(std::sqrt(1.04f)).epsilon(1e-7));
+  CHECK(p1.nearest_distance(p2, p3) == Approx(std::sqrt(1.04f)).epsilon(1e-7));
 }

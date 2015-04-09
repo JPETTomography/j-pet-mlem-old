@@ -198,8 +198,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
   _ short detect(RandomGenerator& gen,    ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
                  const Event& e,          ///< event to be detected
-                 Response& response
-                 ) const {
+                 Response& response) const {
     Indices left, right;
     close_indices(e, left, right);
     S detector1, detector2;
@@ -280,7 +279,6 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
                     [&](S a, S b) { return distances[a] < distances[b]; });
   }
 
-
   _ bool did_intersect(Event e, S detector, Point& p1, Point& p2) const {
 
     auto intersections = (*this)[detector].intersections(e);
@@ -295,7 +293,8 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
 
     return false;
   }
-private:
+
+ private:
   template <class RandomGenerator, class AcceptanceModel>
   _ bool did_deposit(RandomGenerator& gen,
                      AcceptanceModel& model,

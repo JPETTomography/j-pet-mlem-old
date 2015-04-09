@@ -95,7 +95,6 @@ TEST("2d/barrel/detector_set/detect") {
     }
     CHECK(32 == detector.size());
 
-
     AlwaysAccept<> model;
     Response response;
     SECTION("horizontal") {

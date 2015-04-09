@@ -281,8 +281,8 @@ void run(cmdline::parser& cl, Model& model) {
 
       pixels[pixel.y * n_pixels + pixel.x]++;
       auto angle = phi_dis(gen);
-      //typename Detector::LOR lor;
-      //double position;
+      // typename Detector::LOR lor;
+      // double position;
       typename Detector::Event event(p, angle);
       typename Detector::Response response;
       auto hits = dr.detect(gen, model, event, response);
@@ -294,7 +294,8 @@ void run(cmdline::parser& cl, Model& model) {
           quantized_position = Detector::quantize_tof_position(
               response.dl, tof_step, n_tof_positions);
         }
-        tubes[(response.lor.first * n_detectors + response.lor.second) * n_tof_positions +
+        tubes[(response.lor.first * n_detectors + response.lor.second) *
+                  n_tof_positions +
               quantized_position]++;
         pixels_detected[pixel.y * n_pixels + pixel.x]++;
         if (only_detected)
