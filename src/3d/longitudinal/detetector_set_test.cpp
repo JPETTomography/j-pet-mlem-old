@@ -74,8 +74,8 @@ TEST("3d/longitudinal/detector_set/detect", "detect") {
   using Vector = PET3D::Vector<float>;
   using Point = PET3D::Point<float>;
 
-  DetectorSet2D detector_set_2D = PET2D::Barrel::
-      DetectorSetBuilder<SquareDetector, 24, int>::buildSingleRing(
+  DetectorSet2D detector_set_2D =
+      PET2D::Barrel::DetectorSetBuilder<DetectorSet2D>::buildSingleRing(
           inner_radius, 24, scintillator_height, scintillator_width);
   DetectorSet detector_set(detector_set_2D, length);
   PET2D::Barrel::AlwaysAccept<> model;

@@ -18,9 +18,9 @@ namespace PET2D {
 namespace Barrel {
 
 template <typename DetectorType = SquareDetector<double>,
-          std::size_t MaxDetectors = MAX_DETECTORS,
+          std::size_t MaxDet = MAX_DETECTORS,
           typename SType = int>
-class DetectorSetLayout : public util::array<MaxDetectors, DetectorType> {
+class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
  public:
   using Detector = DetectorType;
   using S = SType;
@@ -29,23 +29,25 @@ class DetectorSetLayout : public util::array<MaxDetectors, DetectorType> {
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
   using Circle = PET2D::Circle<F>;
-  using Base = util::array<MaxDetectors, Detector>;
+  using Base = util::array<MaxDet, Detector>;
   using CircleDetector = Barrel::CircleDetector<F>;
-  using Indices = util::array<MaxDetectors, S>;
+  using Indices = util::array<MaxDet, S>;
 
+  static const size_t MaxDetectors = MaxDet;
   struct Response {
     LOR lor;
     F dl;
   };
 
   /// Makes an empty detector set.
-  DetectorSetLayout(F radius = 1, F h_detector = 1)
+  DetectorSetLayout(F radius = 1, F outer_radius = F(1.5))
       : Base(),
         fov_radius(radius / M_SQRT2),
         c_inner(radius),
-        c_outer(radius + h_detector) {}
+        c_outer(outer_radius) {}
 
-  /// Makes new detector set with detectors placed on the ring of given radius.
+/// Makes new detector set with detectors placed on the ring of given radius.
+#if 1
   DetectorSetLayout(F radius,         ///< radius of ring
                     S n_detectors,    ///< number of detectors on ring
                     F w_detector,     ///< width of single detector (along ring)
@@ -58,7 +60,7 @@ class DetectorSetLayout : public util::array<MaxDetectors, DetectorType> {
         fov_radius(radius / M_SQRT2),
         c_inner(radius),
         c_outer(radius + (d_detector > 0 ? d_detector : h_detector)) {
-    if (n_detectors > static_cast<S>(MaxDetectors))
+    if (n_detectors > static_cast<S>(MaxDet))
       throw("too many detectors");
     if (radius <= 0)
       throw("invalid radius");
@@ -90,6 +92,7 @@ class DetectorSetLayout : public util::array<MaxDetectors, DetectorType> {
       this->push_back(detector);
     }
   }
+#endif
 
 #if !__CUDACC__
   /// Makes new detector set with several rings.
@@ -119,7 +122,7 @@ class DetectorSetLayout : public util::array<MaxDetectors, DetectorType> {
         break;
       if (!n_detectors[i])
         n_detectors[i] = n_detectors[i - 1];
-      if (n_detectors[i] + this->size() > MaxDetectors)
+      if (n_detectors[i] + this->size() > MaxDet)
         throw("too many detectors");
       DetectorSetLayout ring(radius[i], n_detectors[i], w_detector, d_detector);
       for (auto& detector : ring) {
@@ -239,7 +242,7 @@ class DetectorSetLayout : public util::array<MaxDetectors, DetectorType> {
   const F fov_radius;
 
  protected:
-  util::array<MaxDetectors, CircleDetector> c_detectors;
+  util::array<MaxDet, CircleDetector> c_detectors;
   Circle c_inner;
   Circle c_outer;
 };

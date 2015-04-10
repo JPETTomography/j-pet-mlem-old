@@ -51,6 +51,9 @@ class DetectorRing
   }
 
  private:
+  DetectorRing(F radius = 1, F outer_radius = F(1.5))
+      : Base(radius, outer_radius) {}
+
   template <class RandomGenerator, class AcceptanceModel>
   _ bool check_for_hits(RandomGenerator& gen,
                         AcceptanceModel& model,

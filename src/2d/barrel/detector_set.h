@@ -59,7 +59,8 @@ class DetectorSet
   using Response = typename Base::Response;
 
   /// Makes an empty detector set.
-  DetectorSet(F radius = 1, F h_detector = 1) : Base(radius, h_detector) {}
+  DetectorSet(F radius = 1, F outer_radius = F(1.5))
+      : Base(radius, outer_radius) {}
 
   /// Makes new detector set with detectors placed on the ring of given radius.
   DetectorSet(F radius,         ///< radius of ring
