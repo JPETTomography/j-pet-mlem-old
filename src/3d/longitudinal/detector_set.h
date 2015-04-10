@@ -121,8 +121,8 @@ class DetectorSet {
       response.z_dn = deposit_d1.z;
     }
 
-//    std::cerr << "entry   " << d1_p1 << " " << d2_p1 << "\n";
-//    std::cerr << "deposit " << deposit_d1 << " " << deposit_d2 << "\n";
+    //    std::cerr << "entry   " << d1_p1 << " " << d2_p1 << "\n";
+    //    std::cerr << "deposit " << deposit_d1 << " " << deposit_d2 << "\n";
 
     return true;
   }

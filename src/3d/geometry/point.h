@@ -1,6 +1,6 @@
 #pragma once
 
-#include<ostream>
+#include <ostream>
 
 #include "util/cuda/compat.h"
 
@@ -94,10 +94,10 @@ _ Vector<F> operator-(const Point<F>& lhs, const Point<F>& rhs) {
   return Vector<F>(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
 
-
-template<typename FType> std::ostream& operator<<(std::ostream& out, const Point<FType>& p) {
-    out<<"("<<p.x<<", "<<p.y<<", "<<p.z<<")";
-    return out;
+template <typename FType>
+std::ostream& operator<<(std::ostream& out, const Point<FType>& p) {
+  out << "(" << p.x << ", " << p.y << ", " << p.z << ")";
+  return out;
 }
 }  // PET2D
 
@@ -112,4 +112,3 @@ template <typename FType> struct StringMaker<PET3D::Point<FType>> {
 };
 }
 #endif
-

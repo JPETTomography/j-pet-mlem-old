@@ -18,10 +18,10 @@ namespace PET2D {
 /// Two-dimensional PET barrel
 namespace Barrel {
 
-template<typename DetectorType = SquareDetector<double>,
-        std::size_t MaxDetectors = MAX_DETECTORS,
-        typename SType = int> class DetectorSetLayout
-    : public util::array<MaxDetectors, DetectorType> {
+template <typename DetectorType = SquareDetector<double>,
+          std::size_t MaxDetectors = MAX_DETECTORS,
+          typename SType = int>
+class DetectorSetLayout : public util::array<MaxDetectors, DetectorType> {
  public:
   using Detector = DetectorType;
   using S = SType;
@@ -49,13 +49,13 @@ template<typename DetectorType = SquareDetector<double>,
 
   /// Makes new detector set with detectors placed on the ring of given radius.
   DetectorSetLayout(F radius,         ///< radius of ring
-              S n_detectors,    ///< number of detectors on ring
-              F w_detector,     ///< width of single detector (along ring)
-              F h_detector,     ///< height/depth of single detector
-                                ///< (perpendicular to ring)
-              F d_detector = 0  ///< diameter of circle single detector is
-                                ///< inscribed in
-              )
+                    S n_detectors,    ///< number of detectors on ring
+                    F w_detector,     ///< width of single detector (along ring)
+                    F h_detector,     ///< height/depth of single detector
+                                      ///< (perpendicular to ring)
+                    F d_detector = 0  ///< diameter of circle single detector is
+                                      ///< inscribed in
+                    )
       : Base(),
         fov_radius(radius / M_SQRT2),
         c_inner(radius),
@@ -95,20 +95,21 @@ template<typename DetectorType = SquareDetector<double>,
 
 #if !__CUDACC__
   /// Makes new detector set with several rings.
-  DetectorSetLayout(const std::vector<F> radius,    ///< radiuses of ring
-              const std::vector<F> rotation,  ///< rotation of each ring (0-1)
-              std::vector<S> n_detectors,     ///< numbers of detectors on ring
-              F w_detector,     ///< width of single detector (along ring)
-              F h_detector,     ///< height/depth of single detector
-                                ///< (perpendicular to ring)
-              F d_detector = 0  ///< diameter of circle single detector is
-                                ///< inscribed in
-              )
+  DetectorSetLayout(
+      const std::vector<F> radius,    ///< radiuses of ring
+      const std::vector<F> rotation,  ///< rotation of each ring (0-1)
+      std::vector<S> n_detectors,     ///< numbers of detectors on ring
+      F w_detector,                   ///< width of single detector (along ring)
+      F h_detector,                   ///< height/depth of single detector
+                                      ///< (perpendicular to ring)
+      F d_detector = 0                ///< diameter of circle single detector is
+                                      ///< inscribed in
+      )
       : DetectorSetLayout(radius[0],
-                    n_detectors[0],
-                    w_detector,
-                    h_detector,
-                    d_detector) {
+                          n_detectors[0],
+                          w_detector,
+                          h_detector,
+                          d_detector) {
     if (!radius.size())
       throw("must specify at least one radius");
     if (n_detectors.size() > radius.size())
@@ -139,13 +140,13 @@ template<typename DetectorType = SquareDetector<double>,
 
   /// Makes new detector using hardcoded test case
   DetectorSetLayout(TestCase test_case,  ///< test case
-              F radius,            ///< radius of ring
-              F w_detector,        ///< width of single detector (along ring)
-              F h_detector,        ///< height/depth of single detector
-                                   ///< (perpendicular to ring)
-              F d_detector = 0     ///< diameter of circle single detector is
-                                   ///< inscribed in
-              )
+                    F radius,            ///< radius of ring
+                    F w_detector,     ///< width of single detector (along ring)
+                    F h_detector,     ///< height/depth of single detector
+                                      ///< (perpendicular to ring)
+                    F d_detector = 0  ///< diameter of circle single detector is
+                                      ///< inscribed in
+                    )
       : Base(),
         fov_radius(radius / M_SQRT2),
         c_inner(radius),
@@ -228,7 +229,6 @@ template<typename DetectorType = SquareDetector<double>,
     return (static_cast<S>(ceil(2 * max_dl(max_bias_size) / step_size)) + 1) /
            2 * 2;
   }
-
 
 #if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,

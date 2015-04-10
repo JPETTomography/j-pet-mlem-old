@@ -17,8 +17,8 @@ class DetectorSetBuilder {
                                      SType n_detectors,
                                      FType w_detector,
                                      FType h_detector,
-                                     FType d_detector =0) {
-      return DetectorSet(radius, n_detectors, w_detector, h_detector, d_detector);
+                                     FType d_detector = 0) {
+    return DetectorSet(radius, n_detectors, w_detector, h_detector, d_detector);
   }
 };
 }
