@@ -39,6 +39,7 @@
 #include "2d/geometry/point.h"
 #include "phantom.h"
 #include "detector_ring.h"
+#include "detector_set.h"
 #include "circle_detector.h"
 #include "triangle_detector.h"
 #include "polygonal_detector.h"

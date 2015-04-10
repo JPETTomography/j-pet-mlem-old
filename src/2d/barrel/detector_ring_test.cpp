@@ -58,15 +58,15 @@ TEST("2d/barrel/detector_ring/math") {
     }
 
     // this is not yet a complete tests....
-    DetectorRing::LOR lor;
     Model model;
     double position;
-    auto hits = ring.detect(model, model, event, lor, position);
+    typename DetectorRing::Response response;
+    auto hits = ring.detect(model, model, event, response);
 
     if (hits >= 2) {
-      CHECK(std::find(detector.begin(), detector.end(), lor.first) !=
+      CHECK(std::find(detector.begin(), detector.end(), response.lor.first) !=
             detector.end());
-      CHECK(std::find(detector.begin(), detector.end(), lor.second) !=
+      CHECK(std::find(detector.begin(), detector.end(), response.lor.second) !=
             detector.end());
     }
   }

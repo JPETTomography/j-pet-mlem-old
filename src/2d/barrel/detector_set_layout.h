@@ -3,7 +3,6 @@
 #include "square_detector.h"
 #include "circle_detector.h"
 #include "util/array.h"
-#include "util/sort.h"
 #include "lor.h"
 #if !__CUDACC__
 #include "util/svg_ostream.h"

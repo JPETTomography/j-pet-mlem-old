@@ -56,11 +56,7 @@ class DetectorSet
   using Base = DetectorSetLayout<DetectorType, MaxDetectors, SType>;
   using CircleDetector = Barrel::CircleDetector<F>;
   using Indices = util::array<MaxDetectors, S>;
-
-  struct Response {
-    LOR lor;
-    F dl;
-  };
+  using Response = typename Base::Response;
 
   /// Makes an empty detector set.
   DetectorSet(F radius = 1, F h_detector = 1) : Base(radius, h_detector) {}

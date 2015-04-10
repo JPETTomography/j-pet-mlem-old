@@ -1,6 +1,6 @@
 #pragma once
 
-#include "detector_set.h"
+#include "detector_set_layout.h"
 #include "2d/geometry/point.h"
 #include "2d/geometry/pixel.h"
 #include "2d/geometry/circle.h"
@@ -23,9 +23,10 @@ namespace Barrel {
 template <typename DetectorType = SquareDetector<double>,
           std::size_t MaxDetectors = MAX_DETECTORS,
           typename SType = int>
-class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
+class DetectorRing
+    : public DetectorSetLayout<DetectorType, MaxDetectors, SType> {
  public:
-  using Base = DetectorSet<DetectorType, MaxDetectors, SType>;
+  using Base = DetectorSetLayout<DetectorType, MaxDetectors, SType>;
   using S = SType;
   using Detector = DetectorType;
   using F = typename Detector::F;
@@ -34,6 +35,7 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
   using Circle = PET2D::Circle<F>;
   using Point = PET2D::Point<F>;
   using Event = Barrel::Event<F>;
+  using Response = typename Base::Response;
 
   DetectorRing(F radius,         ///< radius of ring
                S n_detectors,    ///< number of detectors on ring
@@ -98,9 +100,7 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
   _ short detect(RandomGenerator& gen,    ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
                  const Event& e,          ///< event to be detected
-                 LOR& lor,                ///<[out] lor of the event
-                 F& position              ///<[out] position of the event
-                 ) const {
+                 Response& response) const {
 
     const auto n_detectors = this->size();
 #if !_MSC_VER
@@ -132,11 +132,11 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
             gen, model, i_inner, i_outer, e, detector2, depth2, d2_p1, d2_p2))
       return 0;
 
-    lor = LOR(detector1, detector2);
+    response.lor = LOR(detector1, detector2);
 
 #if !__CUDACC__
     // FIXME: consider removing this check
-    if (lor.first == lor.second)
+    if (response.lor.first == response.lor.second)
       throw("invalid LOR");
 #endif
 
@@ -145,9 +145,9 @@ class DetectorRing : public DetectorSet<DetectorType, MaxDetectors, SType> {
     F length2 = origin.nearest_distance(d2_p1, d2_p2) + depth2;
 
     if (detector1 > detector2) {
-      position = length1 - length2;
+      response.dl = length1 - length2;
     } else {
-      position = length2 - length1;
+      response.dl = length2 - length1;
     }
 
     return 2;
