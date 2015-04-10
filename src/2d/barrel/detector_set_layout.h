@@ -5,8 +5,6 @@
 #include "util/array.h"
 #include "util/sort.h"
 #include "lor.h"
-#include "detector_set_layout.h"
-
 #if !__CUDACC__
 #include "util/svg_ostream.h"
 #include <vector>  // multi-ring detector construction
@@ -20,29 +18,10 @@ namespace PET2D {
 /// Two-dimensional PET barrel
 namespace Barrel {
 
-/// Detector made of several other detectors
-
-/// Represents detector compound made of several detectors (scintillators)
-/// using any geometry, particuallary it may be one or several rings of
-/// detectors, or even detectors organized into other shapes.
-///
-/// No assumptions are made for how geometry of this detector looks like in
-/// comparison to DetectorRing where are single detectors are placed on the
-/// ring.
-///
-/// \image html config_4x48.pdf.png
-///
-/// This class is a template that accepts custom DetectorType which can be any
-/// shape of:
-/// - SquareDetector
-/// - CircleDetector
-/// - TriangleDetector
-/// - PolygonalDetector
-
-template <typename DetectorType = SquareDetector<double>,
-          std::size_t MaxDetectors = MAX_DETECTORS,
-          typename SType = int>
-class DetectorSet : public util::array<MaxDetectors, DetectorType> {
+template<typename DetectorType = SquareDetector<double>,
+        std::size_t MaxDetectors = MAX_DETECTORS,
+        typename SType = int> class DetectorSetLayout
+    : public util::array<MaxDetectors, DetectorType> {
  public:
   using Detector = DetectorType;
   using S = SType;
@@ -62,14 +41,14 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
   };
 
   /// Makes an empty detector set.
-  DetectorSet(F radius = 1, F h_detector = 1)
+  DetectorSetLayout(F radius = 1, F h_detector = 1)
       : Base(),
         fov_radius(radius / M_SQRT2),
         c_inner(radius),
         c_outer(radius + h_detector) {}
 
   /// Makes new detector set with detectors placed on the ring of given radius.
-  DetectorSet(F radius,         ///< radius of ring
+  DetectorSetLayout(F radius,         ///< radius of ring
               S n_detectors,    ///< number of detectors on ring
               F w_detector,     ///< width of single detector (along ring)
               F h_detector,     ///< height/depth of single detector
@@ -116,7 +95,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
 
 #if !__CUDACC__
   /// Makes new detector set with several rings.
-  DetectorSet(const std::vector<F> radius,    ///< radiuses of ring
+  DetectorSetLayout(const std::vector<F> radius,    ///< radiuses of ring
               const std::vector<F> rotation,  ///< rotation of each ring (0-1)
               std::vector<S> n_detectors,     ///< numbers of detectors on ring
               F w_detector,     ///< width of single detector (along ring)
@@ -125,7 +104,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
               F d_detector = 0  ///< diameter of circle single detector is
                                 ///< inscribed in
               )
-      : DetectorSet(radius[0],
+      : DetectorSetLayout(radius[0],
                     n_detectors[0],
                     w_detector,
                     h_detector,
@@ -143,7 +122,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
         n_detectors[i] = n_detectors[i - 1];
       if (n_detectors[i] + this->size() > MaxDetectors)
         throw("too many detectors");
-      DetectorSet ring(radius[i], n_detectors[i], w_detector, d_detector);
+      DetectorSetLayout ring(radius[i], n_detectors[i], w_detector, d_detector);
       for (auto& detector : ring) {
         detector.rotate(2 * F(M_PI) * rotation[i] / ring.size());
         this->push_back(detector);
@@ -159,7 +138,7 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
   };
 
   /// Makes new detector using hardcoded test case
-  DetectorSet(TestCase test_case,  ///< test case
+  DetectorSetLayout(TestCase test_case,  ///< test case
               F radius,            ///< radius of ring
               F w_detector,        ///< width of single detector (along ring)
               F h_detector,        ///< height/depth of single detector
@@ -250,94 +229,10 @@ class DetectorSet : public util::array<MaxDetectors, DetectorType> {
            2 * 2;
   }
 
-  /// Produce indices of detectors close to given event
-  _ void close_indices(const Event& e,     ///< event to be detected
-                       Indices& negative,  ///<[out] indices on one side
-                       Indices& positive   ///<[out] indices other side
-                       ) const {
-    F distances[MaxDetectors];
-    auto pe = e.perpendicular();
-    // select only these crossing circle circumscribed on detector
-    for (int i = 0; i < static_cast<int>(c_detectors.size()); ++i) {
-      auto& circle = c_detectors[i];
-      if (circle.intersects(e)) {
-        auto distance = pe(circle.center);
-        distances[i] = distance;
-        if (distance < 0) {
-          negative.emplace_back(i);
-        } else {
-          positive.emplace_back(i);
-        }
-      }
-    }
-    // sort them so the closest go first
-    // (1) negative distances (one side)
-    util::heap_sort(negative.begin(),
-                    negative.end(),
-                    [&](S a, S b) { return distances[a] > distances[b]; });
-    // (2) positive distances (other side)
-    util::heap_sort(positive.begin(),
-                    positive.end(),
-                    [&](S a, S b) { return distances[a] < distances[b]; });
-  }
 
-  _ bool did_intersect(Event e, S detector, Point& p1, Point& p2) const {
-
-    auto intersections = (*this)[detector].intersections(e);
-    // check if we got 2 point intersection
-    // then test the model against these points distance
-    if (intersections.size() == 2) {
-
-      p1 = intersections[0];
-      p2 = intersections[1];
-      return true;
-    }
-
-    return false;
-  }
-
- private:
-  template <class RandomGenerator, class AcceptanceModel>
-  _ bool did_deposit(RandomGenerator& gen,
-                     AcceptanceModel& model,
-                     const Point& p1,
-                     const Point& p2,
-                     F& depth) const {
-    depth = model.deposition_depth(gen);
-#if DEBUG
-    std::cerr << "dep " << depth << " " << (p2 - p1).length() << std::endl;
-#endif
-    if (depth < (p2 - p1).length()) {
-      return true;
-    }
-    return false;
-  }
-
-  template <class RandomGenerator, class AcceptanceModel>
-  _ bool check_for_hits(RandomGenerator& gen,
-                        AcceptanceModel& model,
-                        const Indices& indices,
-                        Event e,
-                        S& detector,
-                        F& depth,
-                        Point& p1,
-                        Point& p2) const {
-
-    for (auto i : indices) {
-      if (did_intersect(e, i, p1, p2)) {
-        if (did_deposit(gen, model, p1, p2, depth)) {
-          detector = i;
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
- public:
 #if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
-                                          DetectorSet& cd) {
+                                          DetectorSetLayout& cd) {
     svg << cd.c_outer;
     svg << cd.c_inner;
 

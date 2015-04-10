@@ -6,7 +6,7 @@ using namespace PET3D;
 
 TEST("3d/geometry/point/init", "point construction") {
   using Point = PET3D::Point<float>;
-  using Vector = PET3D::Vector<float>;
+
 
   Point p(1.0f, 2.0f, 3.0f);
 

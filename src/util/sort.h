@@ -1,3 +1,4 @@
+#pragma once
 #include "cuda/compat.h"
 
 namespace util {
