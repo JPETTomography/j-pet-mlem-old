@@ -54,6 +54,46 @@ template <typename DetectorSetType> class DetectorSetBuilder {
 
     return detector_set;
   }
+
+  static DetectorSetType buildMultipleRings(
+      const std::vector<F> radius,    ///< radiuses of ring
+      const std::vector<F> rotation,  ///< rotation of each ring (0-1)
+      std::vector<S> n_detectors,     ///< numbers of detectors on ring
+      F w_detector,                   ///< width of single detector (along ring)
+      F h_detector,                   ///< height/depth of single detector
+                                      ///< (perpendicular to ring)
+      F d_detector = 0                ///< diameter of circle single detector is
+                                      ///< inscribed in
+      ) {
+
+    if (!radius.size())
+      throw("must specify at least one radius");
+    if (n_detectors.size() > radius.size())
+      throw("number of numbers of detectors must be less or equal radiuses");
+
+    DetectorSetType detector_set = buildSingleRing(
+        radius[0], n_detectors[0], w_detector, h_detector, d_detector);
+
+    // Now create all following rings
+    for (size_t i = 1; i < radius.size(); ++i) {
+      if (!radius[i])
+        break;
+      if (!n_detectors[i])
+        n_detectors[i] = n_detectors[i - 1];
+      if (n_detectors[i] + detector_set.size() > DetectorSetType::MaxDetectors)
+        throw("too many detectors");
+      DetectorSetLayout<Detector, DetectorSetType::MaxDetectors, S> ring =
+          buildSingleRing(radius[i], n_detectors[i], w_detector, d_detector);
+      for (auto& detector : ring) {
+        detector.rotate(2 * F(M_PI) * rotation[i] / ring.size());
+        detector_set.push_back(detector);
+      }
+      if (ring.outer_radius() > detector_set.outer_radius())
+        detector_set.c_outer = ring.c_outer;
+    }
+
+    return detector_set;
+  }
 };
 }
 }

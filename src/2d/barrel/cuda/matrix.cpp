@@ -8,6 +8,7 @@
 #include "2d/barrel/model.h"
 #include "2d/geometry/point.h"
 #include "2d/barrel/options.h"
+#include "2d/barrel/detectorsetbuilder.h"
 
 #include "util/progress.h"
 
@@ -19,7 +20,9 @@ namespace GPU {
 
 OutputMatrix Matrix::run(cmdline::parser& cl) {
 
-  DetectorRing detector_ring(PET2D_BARREL_DETECTOR_CL(cl, DetectorRing::F));
+  DetectorRing detector_ring =
+      DetectorSetBuilder<DetectorRing>::buildMultipleRings(
+          PET2D_BARREL_DETECTOR_CL(cl, DetectorRing::F));
 
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -
   // each SMX can use 8 active blocks,

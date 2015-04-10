@@ -17,6 +17,8 @@ namespace PET2D {
 /// Two-dimensional PET barrel
 namespace Barrel {
 
+template <typename D> class DetectorSetBuilder;
+
 template <typename DetectorType = SquareDetector<double>,
           std::size_t MaxDet = MAX_DETECTORS,
           typename SType = int>
@@ -47,7 +49,7 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
         c_outer(outer_radius) {}
 
 /// Makes new detector set with detectors placed on the ring of given radius.
-#if 1
+#if 0
   DetectorSetLayout(F radius,         ///< radius of ring
                     S n_detectors,    ///< number of detectors on ring
                     F w_detector,     ///< width of single detector (along ring)
@@ -94,6 +96,7 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
   }
 #endif
 
+#if 0
 #if !__CUDACC__
   /// Makes new detector set with several rings.
   DetectorSetLayout(
@@ -133,6 +136,7 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
         c_outer = ring.c_outer;
     }
   }
+#endif
 #endif
 
   enum class TestCase {
@@ -240,6 +244,8 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
   const CircleDetector& circumscribed(int i) const { return c_detectors[i]; }
 
   const F fov_radius;
+
+  template <typename D> friend class DetectorSetBuilder;
 
  protected:
   util::array<MaxDet, CircleDetector> c_detectors;

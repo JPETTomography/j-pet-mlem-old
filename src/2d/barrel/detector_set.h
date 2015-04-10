@@ -72,7 +72,7 @@ class DetectorSet
                                 ///< inscribed in
               )
       : Base(radius, n_detectors, w_detector, h_detector, d_detector) {}
-
+#if 0
 #if !__CUDACC__
   /// Makes new detector set with several rings.
   DetectorSet(const std::vector<F> radius,    ///< radiuses of ring
@@ -90,6 +90,7 @@ class DetectorSet
              w_detector,
              h_detector,
              d_detector) {}
+#endif
 #endif
 
   enum class TestCase {

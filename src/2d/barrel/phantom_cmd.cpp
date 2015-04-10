@@ -37,6 +37,7 @@
 #include "util/cmdline_hooks.h"
 
 #include "2d/geometry/point.h"
+#include "2d/barrel/detectorsetbuilder.h"
 #include "phantom.h"
 #include "detector_ring.h"
 #include "detector_set.h"
@@ -152,7 +153,8 @@ void run(cmdline::parser& cl, Model& model) {
     gen.seed(cl.get<std::mt19937::result_type>("seed"));
   }
 
-  Detector dr(PET2D_BARREL_DETECTOR_CL(cl, typename Detector::F));
+  Detector dr = DetectorSetBuilder<Detector>::buildMultipleRings(
+      PET2D_BARREL_DETECTOR_CL(cl, typename Detector::F));
 
   int n_tof_positions = 1;
   double max_bias = 0;

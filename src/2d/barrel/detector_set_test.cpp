@@ -5,6 +5,7 @@
 #include "model.h"
 #include "detector_set.h"
 #include "detector_ring.h"
+#include "detectorsetbuilder.h"
 
 using namespace PET2D;
 using namespace PET2D::Barrel;
@@ -84,9 +85,15 @@ TEST("2d/barrel/detector_set/math") {
 TEST("2d/barrel/detector_set/detect") {
   SECTION("two_rings") {
     using Response = typename DetectorRing<SquareDetector<>>::Response;
-    DetectorRing<SquareDetector<>> inner_ring(1., 16, .1, .1);
-    DetectorRing<SquareDetector<>> outer_ring(1.4, 16, .1, .1);
+
+    DetectorRing<SquareDetector<>> inner_ring =
+        DetectorSetBuilder<DetectorRing<SquareDetector<>>>::buildSingleRing(
+            1., 16, .1, .1);
+    DetectorRing<SquareDetector<>> outer_ring =
+        DetectorSetBuilder<DetectorRing<SquareDetector<>>>::buildSingleRing(
+            1.4, 16, .1, .1);
     DetectorSet<SquareDetector<>> detector;
+
     for (auto& square_detector : inner_ring) {
       detector.push_back(square_detector);
     }

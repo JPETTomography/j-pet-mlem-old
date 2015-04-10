@@ -37,6 +37,7 @@ class DetectorRing
   using Event = Barrel::Event<F>;
   using Response = typename Base::Response;
 
+#if 0
   DetectorRing(F radius,         ///< radius of ring
                S n_detectors,    ///< number of detectors on ring
                F w_detector,     ///< width of single detector (along ring)
@@ -49,11 +50,12 @@ class DetectorRing
     if (n_detectors % 4)
       throw("number of detectors must be multiple of 4");
   }
+#endif
 
- private:
   DetectorRing(F radius = 1, F outer_radius = F(1.5))
       : Base(radius, outer_radius) {}
 
+ private:
   template <class RandomGenerator, class AcceptanceModel>
   _ bool check_for_hits(RandomGenerator& gen,
                         AcceptanceModel& model,

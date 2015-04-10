@@ -31,7 +31,7 @@
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
-
+#include "detectorsetbuilder.h"
 #include "util/random.h"
 #include "detector_ring.h"
 #include "detector_set.h"
@@ -124,11 +124,13 @@ int main(int argc, char* argv[]) {
 #else
 #define _RUN(cl, detector_ring, model) run(cl, detector_ring, model)
 #endif
-#define RUN(detector_type, model_type, ...)                                    \
-  detector_type detector_ring(PET2D_BARREL_DETECTOR_CL(cl, detector_type::F)); \
-  model_type model{ __VA_ARGS__ };                                             \
-  print_parameters<detector_type, model_type>(cl, detector_ring);              \
-  auto sparse_matrix = _RUN(cl, detector_ring, model);                         \
+#define RUN(detector_type, model_type, ...)                       \
+  detector_type detector_ring =                                   \
+      DetectorSetBuilder<detector_type>::buildMultipleRings(      \
+          PET2D_BARREL_DETECTOR_CL(cl, detector_type::F));        \
+  model_type model{ __VA_ARGS__ };                                \
+  print_parameters<detector_type, model_type>(cl, detector_ring); \
+  auto sparse_matrix = _RUN(cl, detector_ring, model);            \
   post_process(cl, detector_ring, sparse_matrix)
 
     // run simmulation on given detector model & shape
