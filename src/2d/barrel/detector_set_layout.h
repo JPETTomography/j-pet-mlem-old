@@ -29,7 +29,6 @@ class DetectorSetLayout : public util::array<MaxDetectors, DetectorType> {
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
   using Circle = PET2D::Circle<F>;
-  using Event = Barrel::Event<F>;
   using Base = util::array<MaxDetectors, Detector>;
   using CircleDetector = Barrel::CircleDetector<F>;
   using Indices = util::array<MaxDetectors, S>;
@@ -172,37 +171,6 @@ class DetectorSetLayout : public util::array<MaxDetectors, DetectorType> {
   F radius() const { return c_inner.radius; }
   F outer_radius() const { return c_outer.radius; }
   F max_dl(F max_bias_size) const { return 2 * c_outer.radius + max_bias_size; }
-
-  /// \brief Tries to detect given event.
-  /// \return number of coincidences (detector hits)
-  template <class RandomGenerator, class AcceptanceModel>
-  _ short detect(RandomGenerator& gen,    ///< random number generator
-                 AcceptanceModel& model,  ///< acceptance model
-                 const Event& e,          ///< event to be detected
-                 Response& response) const {
-    Indices left, right;
-    close_indices(e, left, right);
-    S detector1, detector2;
-    F depth1, depth2;
-    Point d1_p1, d1_p2, d2_p1, d2_p2;
-    if (!check_for_hits(gen, model, left, e, detector1, depth1, d1_p1, d1_p2) ||
-        !check_for_hits(gen, model, right, e, detector2, depth2, d2_p1, d2_p2))
-      return 0;
-
-    response.lor = LOR(detector1, detector2);
-
-    Point origin(e.x, e.y);
-    F length1 = origin.nearest_distance(d1_p1, d1_p2) + depth1;
-    F length2 = origin.nearest_distance(d2_p1, d2_p2) + depth2;
-
-    if (detector1 > detector2) {
-      response.dl = length1 - length2;
-    } else {
-      response.dl = length2 - length1;
-    }
-
-    return 2;
-  }
 
   /// Quantizes position across lor
   _ static S quantize_tof_position(F position,    ///< position across lor
