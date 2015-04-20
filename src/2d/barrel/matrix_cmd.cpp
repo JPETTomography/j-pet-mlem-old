@@ -31,7 +31,7 @@
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
-#include "detectorsetbuilder.h"
+#include "detector_set_builder.h"
 #include "util/random.h"
 #include "detector_ring.h"
 #include "detector_set.h"

@@ -8,7 +8,7 @@
 #include "2d/barrel/model.h"
 #include "2d/geometry/point.h"
 #include "2d/barrel/options.h"
-#include "2d/barrel/detectorsetbuilder.h"
+#include "2d/barrel/detector_set_builder.h"
 
 #include "util/progress.h"
 

@@ -4,7 +4,7 @@
 
 #include "3d/longitudinal/detector_set.h"
 #include "2d/barrel/detector_set.h"
-#include "2d/barrel/detectorsetbuilder.h"
+#include "2d/barrel/detector_set_builder.h"
 #include "2d/barrel/square_detector.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/vector.h"

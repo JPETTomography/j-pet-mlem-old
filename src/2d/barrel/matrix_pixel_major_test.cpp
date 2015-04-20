@@ -5,8 +5,6 @@
 
 #include "2d/geometry/pixel.h"
 #include "lor.h"
-#include "detector_ring.h"
-#include "detectorsetbuilder.h"
 
 #include "matrix_pixel_major.h"
 
@@ -33,14 +31,12 @@ TEST("2d/barrel/lor/iterator") {
 }
 
 TEST("2d/barrel/pix_major_system_matrix/ctor") {
-  DetectorRing<> dr = DetectorSetBuilder<DetectorRing<>>::buildSingleRing(
-      0.450, 140, 0.006, 0.020);
+
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 }
 
 TEST("2d/barrel/pix_major_system_matrix/add") {
-  DetectorRing<> dr = DetectorSetBuilder<DetectorRing<>>::buildSingleRing(
-      0.450, 140, 0.006, 0.020);
+
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);
@@ -59,8 +55,7 @@ TEST("2d/barrel/pix_major_system_matrix/add") {
 }
 
 TEST("2d/barrel/pix_major_system_matrix/add_twice") {
-  DetectorRing<> dr = DetectorSetBuilder<DetectorRing<>>::buildSingleRing(
-      0.450, 140, 0.006, 0.020);
+
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);
@@ -75,8 +70,7 @@ TEST("2d/barrel/pix_major_system_matrix/add_twice") {
 }
 
 TEST("2d/barrel/pix_major_system_matrix/add_to_all") {
-  DetectorRing<> dr = DetectorSetBuilder<DetectorRing<>>::buildSingleRing(
-      0.450, 140, 0.006, 0.020);
+
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);
@@ -94,8 +88,7 @@ TEST("2d/barrel/pix_major_system_matrix/add_to_all") {
 }
 
 TEST("2d/barrel/pix_major_system_matrix/to_sparse") {
-  DetectorRing<> dr = DetectorSetBuilder<DetectorRing<>>::buildSingleRing(
-      0.450, 140, 0.006, 0.020);
+
   MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
   LOR<> lor(9, 7);

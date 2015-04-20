@@ -5,7 +5,7 @@
 #include "model.h"
 #include "detector_set.h"
 #include "detector_ring.h"
-#include "detectorsetbuilder.h"
+#include "detector_set_builder.h"
 
 using namespace PET2D;
 using namespace PET2D::Barrel;

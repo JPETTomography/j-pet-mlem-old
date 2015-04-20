@@ -37,7 +37,7 @@
 #include "util/cmdline_hooks.h"
 
 #include "2d/geometry/point.h"
-#include "2d/barrel/detectorsetbuilder.h"
+#include "2d/barrel/detector_set_builder.h"
 #include "phantom.h"
 #include "detector_ring.h"
 #include "detector_set.h"
