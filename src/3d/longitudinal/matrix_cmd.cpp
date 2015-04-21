@@ -1,16 +1,25 @@
-/// \page cmd_3d_hybrid_matrix 3d_hybrid_matrix
-/// \brief 3D Hybrid PET system matrix construction tool
+/// \page cmd_3d_longitudinal_matrix 3d_longitudinal_matrix
+/// \brief 3D Longitudinal PET system matrix construction tool
 ///
 /// NYI
 /// ===
 
 #include "detector_set.h"
+#include "2d/barrel/detector_set.h"
+#include "2d/barrel/square_detector.h"
+
 #include "options.h"
 #if _OPENMP
 #include <omp.h>
 #endif
 
 using namespace PET3D::Longitudinal;
+
+using SquareScintillator = PET2D::Barrel::SquareDetector<float>;
+
+using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareScintillator, 24>;
+using LongitudinalDetectorSet = DetectorSet<DetectorSet2D>;
+
 
 int main(int argc, char* argv[]) {
 

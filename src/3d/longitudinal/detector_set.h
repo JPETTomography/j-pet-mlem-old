@@ -12,7 +12,7 @@ namespace Longitudinal {
 /// 3D detector made of several scintillators
 
 template <typename DetectorSet2D,
-          std::size_t MaxDetectors,
+        //  std::size_t MaxDetectors,
           typename FType = typename DetectorSet2D::F,
           typename SType = typename DetectorSet2D::S>
 class DetectorSet {

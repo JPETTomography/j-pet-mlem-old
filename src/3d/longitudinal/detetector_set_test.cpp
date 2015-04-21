@@ -20,8 +20,8 @@ float minimal_angle = std::atan2(inner_radius, length / 2);
 
 TEST("3d/longitudinal/detector_set/escape_through_endcap") {
   using SquareDetector = PET2D::Barrel::SquareDetector<float>;
-  using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareDetector>;
-  using DetectorSet = PET3D::Longitudinal::DetectorSet<DetectorSet2D, 24>;
+  using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareDetector,24>;
+  using DetectorSet = PET3D::Longitudinal::DetectorSet<DetectorSet2D>;
   using Vector = PET3D::Vector<float>;
   using Point = PET3D::Point<float>;
 
@@ -70,7 +70,7 @@ TEST("3d/longitudinal/detector_set/escape_through_endcap") {
 TEST("3d/longitudinal/detector_set/detect", "detect") {
   using SquareDetector = PET2D::Barrel::SquareDetector<float>;
   using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareDetector, 24>;
-  using DetectorSet = PET3D::Longitudinal::DetectorSet<DetectorSet2D, 24>;
+  using DetectorSet = PET3D::Longitudinal::DetectorSet<DetectorSet2D>;
   using Vector = PET3D::Vector<float>;
   using Point = PET3D::Point<float>;
 
