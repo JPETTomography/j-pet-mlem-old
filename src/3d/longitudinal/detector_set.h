@@ -33,8 +33,8 @@ class DetectorSet {
     FType dl;
   };
 
-  DetectorSet(const DetectorSet2D& barrel_a, FType length_a)
-      : barrel(barrel_a), length(length_a), half_length(length / 2) {}
+  DetectorSet(const DetectorSet2D& barrel, FType length)
+      : barrel(barrel), length(length), half_length(length / 2) {}
 
   bool escapes_through_endcap(const Event& event) const {
     if (event.direction.z == 0.0)
@@ -42,20 +42,17 @@ class DetectorSet {
 
     FType r2 = barrel.radius() * barrel.radius();
 
-    {
-      FType t_right = (half_length - event.origin.z) / event.direction.z;
-      FType x_right = event.origin.x + t_right * event.direction.x;
-      FType y_right = event.origin.y + t_right * event.direction.y;
-      if (x_right * x_right + y_right * y_right < r2)
-        return true;
-    }
-    {
-      FType t_left = -(half_length + event.origin.z) / event.direction.z;
-      FType x_left = event.origin.x + t_left * event.direction.x;
-      FType y_left = event.origin.y + t_left * event.direction.y;
-      if (x_left * x_left + y_left * y_left < r2)
-        return true;
-    }
+    FType t_right = (half_length - event.origin.z) / event.direction.z;
+    FType x_right = event.origin.x + t_right * event.direction.x;
+    FType y_right = event.origin.y + t_right * event.direction.y;
+    if (x_right * x_right + y_right * y_right < r2)
+      return true;
+
+    FType t_left = -(half_length + event.origin.z) / event.direction.z;
+    FType x_left = event.origin.x + t_left * event.direction.x;
+    FType y_left = event.origin.y + t_left * event.direction.y;
+    if (x_left * x_left + y_left * y_left < r2)
+      return true;
 
     return false;
   }
@@ -67,18 +64,12 @@ class DetectorSet {
                  Response& response) const {
 
     if (escapes_through_endcap(e))
-      return false;
+      return 0;
 
     Indices left, right;
     BarrelEvent event_xy = e.to_barrel_event();
-    //    std::cerr << event_xy.x << " " << event_xy.y << " " <<
-    //    event_xy.direction.x
-    //              << " " << event_xy.direction.y << std::endl;
+
     barrel.close_indices(event_xy, left, right);
-    //    for(auto indx : left)
-    //        std::cerr<<"left  : "<<(indx)<<"\n";
-    //    for(auto indx : right)
-    //        std::cerr<<"right : "<<(indx)<<"\n";
 
     SType detector1, detector2;
 
@@ -105,7 +96,7 @@ class DetectorSet {
                         d2_p1,
                         d2_p2,
                         deposit_d2))
-      return false;
+      return 0;
 
     response.lor = LOR(detector1, detector2);
     FType length1 = (deposit_d1 - e.origin).length();
@@ -120,11 +111,7 @@ class DetectorSet {
       response.z_up = deposit_d2.z;
       response.z_dn = deposit_d1.z;
     }
-
-    //    std::cerr << "entry   " << d1_p1 << " " << d2_p1 << "\n";
-    //    std::cerr << "deposit " << deposit_d1 << " " << deposit_d2 << "\n";
-
-    return true;
+    return 2;
   }
 
   void reconstruct_3d_intersection_points(const Event& event,

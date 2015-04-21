@@ -8,7 +8,7 @@ namespace Barrel {
 /// Pixel-major memory ordered matrix
 
 /// This class represents a system matrix that stores the content in
-/// "pixel major" mode. That is for each pixel a list w lors is kept.
+/// "pixel major" mode. That is for each pixel a list of lors is kept.
 ///
 /// The idea behind it is that the MC simulations are done on per pixel basis.
 /// That means that in the same time only few pixels are processed in parallel.

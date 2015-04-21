@@ -115,8 +115,6 @@ class MonteCarlo {
           continue;
 
         auto angle = phi_dis(l_gen);
-        //        LOR lor;
-        //        F position = 0;
         typename DetectorType::Response response;
 
         Event event(rx, ry, angle);

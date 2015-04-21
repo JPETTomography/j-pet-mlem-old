@@ -62,36 +62,17 @@ class DetectorSet
   DetectorSet(F radius = 1, F outer_radius = F(1.5))
       : Base(radius, outer_radius) {}
 
-  /// Makes new detector set with detectors placed on the ring of given radius.
-  DetectorSet(F radius,         ///< radius of ring
-              S n_detectors,    ///< number of detectors on ring
-              F w_detector,     ///< width of single detector (along ring)
-              F h_detector,     ///< height/depth of single detector
-                                ///< (perpendicular to ring)
-              F d_detector = 0  ///< diameter of circle single detector is
-                                ///< inscribed in
-              )
-      : Base(radius, n_detectors, w_detector, h_detector, d_detector) {}
-#if 0
-#if !__CUDACC__
-  /// Makes new detector set with several rings.
-  DetectorSet(const std::vector<F> radius,    ///< radiuses of ring
-              const std::vector<F> rotation,  ///< rotation of each ring (0-1)
-              std::vector<S> n_detectors,     ///< numbers of detectors on ring
-              F w_detector,     ///< width of single detector (along ring)
-              F h_detector,     ///< height/depth of single detector
-                                ///< (perpendicular to ring)
-              F d_detector = 0  ///< diameter of circle single detector is
-                                ///< inscribed in
-              )
-      : Base(radius,
-             rotation,
-             n_detectors,
-             w_detector,
-             h_detector,
-             d_detector) {}
-#endif
-#endif
+//  /// Makes new detector set with detectors placed on the ring of given radius.
+//  DetectorSet(F radius,         ///< radius of ring
+//              S n_detectors,    ///< number of detectors on ring
+//              F w_detector,     ///< width of single detector (along ring)
+//              F h_detector,     ///< height/depth of single detector
+//                                ///< (perpendicular to ring)
+//              F d_detector = 0  ///< diameter of circle single detector is
+//                                ///< inscribed in
+//              )
+//      : Base(radius, n_detectors, w_detector, h_detector, d_detector) {}
+
 
   enum class TestCase {
     TEST_8_SQUARE_DETECTORS,
