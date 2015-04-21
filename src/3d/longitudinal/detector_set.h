@@ -17,6 +17,7 @@ template <typename DetectorSet2D,
           typename SType = typename DetectorSet2D::S>
 class DetectorSet {
  public:
+  using F = FType;
   using Point = PET3D::Point<FType>;
   using Point2D = PET2D::Point<FType>;
   using Vector = PET3D::Vector<FType>;
@@ -185,7 +186,6 @@ class DetectorSet {
     }
     return false;
   }
-
 
   const DetectorSet2D& barrel;
   const FType length;
