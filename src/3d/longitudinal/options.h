@@ -1,11 +1,11 @@
-/// \page cmd_3d_hybrid 3D Hybrid
-/// \brief 3D Hybrid Monte-Carlo & reconstruction tools
+/// \page cmd_3d_longitudinal 3D longitudinal
+/// \brief 3D longitudinal Monte-Carlo & reconstruction tools
 ///
 /// Available tools
 /// ---------------
-/// - \subpage cmd_3d_hybrid_matrix
-/// - \subpage cmd_3d_hybrid_phantom
-/// - \subpage cmd_3d_hybrid_reconstruction
+/// - \subpage cmd_3d_longitudinal_matrix
+/// - \subpage cmd_3d_longitudinal_phantom
+/// - \subpage cmd_3d_longitudinal_reconstruction
 ///
 /// \sa \ref cmd_2d_barrel, \ref cmd_2d_strip
 
@@ -19,22 +19,22 @@ namespace Longitudinal {
 /// Adds DetectorSet specific command line options.
 void add_detector_options(cmdline::parser& parser);
 
-/// Adds \ref cmd_3d_hybrid_matrix specific command line options.
+/// Adds \ref cmd_3d_longitudinal_matrix specific command line options.
 void add_matrix_options(cmdline::parser& parser);
 
-/// Adds \ref cmd_3d_hybrid_phantom specific command line options.
+/// Adds \ref cmd_3d_longitudinal_phantom specific command line options.
 void add_phantom_options(cmdline::parser& parser);
 
-/// Adds \ref cmd_3d_hybrid_reconstruction specific command line options.
+/// Adds \ref cmd_3d_longitudinal_reconstruction specific command line options.
 void add_reconstruction_options(cmdline::parser& parser);
 
 /// Calculates all empty values from existing other parameters.
 void calculate_detector_options(cmdline::parser& parser);
 
 /// Provides initialization list for creating detector.
-#define __PET3D_HYBRID(...) __VA_ARGS__  // just pass-through
-#define PET3D_HYBRID_DETECTOR_CL(cl, ftype)              \
-  __PET3D_HYBRID({ (ftype)cl.get<double>("radius"),      \
+#define __PET3D_LONGITUDINAL(...) __VA_ARGS__  // just pass-through
+#define PET3D_LONGITUDINAL_DETECTOR_CL(cl, ftype)              \
+  __PET3D_LONGITUDINAL({ (ftype)cl.get<double>("radius"),      \
                    (ftype)cl.get<double>("radius2"),     \
                    (ftype)cl.get<double>("radius3"),     \
                    (ftype)cl.get<double>("radius4") },   \
