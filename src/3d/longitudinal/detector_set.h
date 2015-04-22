@@ -18,6 +18,7 @@ template <typename DetectorSet2D,
 class DetectorSet {
  public:
   using F = FType;
+  using S = SType;
   using Point = PET3D::Point<FType>;
   using Point2D = PET2D::Point<FType>;
   using Vector = PET3D::Vector<FType>;

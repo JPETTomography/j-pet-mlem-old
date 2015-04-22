@@ -24,15 +24,15 @@ namespace Strip {
 namespace GPU {
 
 template <typename F>
-void fill_with_sensitivity(F* sensitivity, Detector<F>& detector);
+void fill_with_sensitivity(F* sensitivity, Detector<F,short>& detector);
 
 template <typename F>
-void run_reconstruction(Detector<F>& detector,
+void run_reconstruction(Detector<F, short>& detector,
                         Event<F>* events,
                         int n_events,
                         int n_iteration_blocks,
                         int n_iterations_in_block,
-                        void (*output_callback)(Detector<F>& detector,
+                        void (*output_callback)(Detector<F, short>& detector,
                                                 int iteration,
                                                 F* image,
                                                 void* context),
@@ -187,14 +187,14 @@ void run_reconstruction(Detector<F>& detector,
 }
 
 template <typename F>
-void fill_with_sensitivity(F* sensitivity, Detector<F>& detector) {
+void fill_with_sensitivity(F* sensitivity, Detector<F, short>& detector) {
 
   size_t width = detector.n_z_pixels;
   size_t height = detector.n_y_pixels;
 
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      sensitivity[y * width + x] = detector.pixel_sensitivity(Pixel<>(x, y));
+      sensitivity[y * width + x] = detector.pixel_sensitivity(Pixel<short>(x, y));
     }
   }
 }
@@ -202,12 +202,12 @@ void fill_with_sensitivity(F* sensitivity, Detector<F>& detector) {
 // Explicit template instantiation
 
 template void run_reconstruction<float>(
-    Detector<float>& detector,
+    Detector<float, short>& detector,
     Event<float>* events,
     int n_events,
     int n_iteration_blocks,
     int n_iterations_in_block,
-    void (*output_callback)(Detector<float>& detector,
+    void (*output_callback)(Detector<float, short>& detector,
                             int iteration,
                             float* image,
                             void* context),

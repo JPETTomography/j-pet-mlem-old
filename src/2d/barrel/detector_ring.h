@@ -20,9 +20,9 @@ namespace Barrel {
 ///
 /// \image html detector_ring.pdf.png
 
-template <typename DetectorType = SquareDetector<double>,
-          std::size_t MaxDetectors = MAX_DETECTORS,
-          typename SType = int>
+template <typename DetectorType ,
+          std::size_t MaxDetectors ,
+          typename SType >
 class DetectorRing
     : public DetectorSetLayout<DetectorType, MaxDetectors, SType> {
  public:

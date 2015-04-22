@@ -15,7 +15,7 @@ namespace GPU {
 template <typename F> __device__ void reduce(F& value);
 
 template <template <typename Float> class Kernel, typename F>
-__global__ void reconstruction(Detector<F> detector,
+__global__ void reconstruction(Detector<F, short> detector,
                                F* events_z_u,
                                F* events_z_d,
                                F* events_dl,
@@ -25,7 +25,7 @@ __global__ void reconstruction(Detector<F> detector,
                                const int n_threads_per_block) {
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
-  using Pixel = PET2D::Pixel<>;
+  using Pixel = PET2D::Pixel<short>;
   using Event = Strip::Event<F>;
 
   const int n_warps_per_block = n_threads_per_block / WARP_SIZE;
@@ -161,14 +161,14 @@ template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
 }
 
 template <typename F>
-__device__ Pixel<> warp_space_pixel(int offset,
-                                    Pixel<> tl,
+__device__ Pixel<short> warp_space_pixel(int offset,
+                                    Pixel<short> tl,
                                     int width,
                                     F inv_width,
                                     int& index) {
   // threadIdx.x % WARP_SIZE + offset : works for WARP_SIZE = 2^n
   index = (threadIdx.x & (WARP_SIZE - 1)) + offset;
-  Pixel<> pixel;
+  Pixel<short> pixel;
   pixel.y = index * inv_width;  // index/width but faster
   pixel.x = index - width * pixel.y;
   pixel.x += tl.x;

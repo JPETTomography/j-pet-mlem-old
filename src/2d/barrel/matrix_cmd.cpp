@@ -62,27 +62,27 @@ using namespace PET2D;
 using namespace PET2D::Barrel;
 
 template <typename DetectorType>
-using DetectorModel = DetectorSet<DetectorType>;
+using DetectorModel = DetectorSet<DetectorType,MAX_DETECTORS,short>;
 // using DetectorModel = DetectorRing<DetectorType>;
 
 // all available detector shapes
-using SquareDetectorRing = DetectorModel<SquareDetector<>>;
-using CircleDetectorRing = DetectorModel<CircleDetector<>>;
-using TriangleDetectorRing = DetectorModel<TriangleDetector<>>;
-using HexagonalDetectorRing = DetectorModel<PolygonalDetector<6>>;
+using SquareDetectorRing = DetectorModel<SquareDetector<float>>;
+using CircleDetectorRing = DetectorModel<CircleDetector<float>>;
+using TriangleDetectorRing = DetectorModel<TriangleDetector<float>>;
+using HexagonalDetectorRing = DetectorModel<PolygonalDetector<6,float>>;
 
 template <typename DetectorRing, typename Model>
 void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring);
 
 template <typename Detector, typename Model>
-static SparseMatrix<Pixel<>, LOR<>> run(cmdline::parser& cl,
+static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
                                         Detector& detector_ring,
                                         Model& model);
 
 template <typename DetectorRing>
 void post_process(cmdline::parser& cl,
                   DetectorRing& detector_ring,
-                  SparseMatrix<Pixel<>, LOR<>>& sparse_matrix);
+                  SparseMatrix<Pixel<short>, LOR<short>>& sparse_matrix);
 
 int main(int argc, char* argv[]) {
 
@@ -205,7 +205,7 @@ void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring) {
 }
 
 template <typename Detector, typename Model>
-static SparseMatrix<Pixel<>, LOR<>> run(cmdline::parser& cl,
+static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
                                         Detector& detector_ring,
                                         Model& model) {
 
@@ -229,7 +229,7 @@ static SparseMatrix<Pixel<>, LOR<>> run(cmdline::parser& cl,
     n_tof_positions = detector_ring.n_tof_positions(tof_step, max_bias);
   }
 
-  using ComputeMatrix = MatrixPixelMajor<Pixel<>, LOR<>>;
+  using ComputeMatrix = MatrixPixelMajor<Pixel<short>, LOR<short>>;
   ComputeMatrix::SparseMatrix sparse_matrix(
       n_pixels, detector_ring.size(), n_tof_positions);
 
@@ -307,7 +307,7 @@ static SparseMatrix<Pixel<>, LOR<>> run(cmdline::parser& cl,
 template <typename DetectorRing>
 void post_process(cmdline::parser& cl,
                   DetectorRing& detector_ring,
-                  SparseMatrix<Pixel<>, LOR<>>& sparse_matrix) {
+                  SparseMatrix<Pixel<short>, LOR<short>>& sparse_matrix) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& s_pixel = cl.get<double>("s-pixel");
@@ -338,7 +338,7 @@ void post_process(cmdline::parser& cl,
       std::cerr << "warning: " << ex << std::endl;
     }
 
-    util::svg_ostream<> svg(fn_wo_ext + ".svg",
+    util::svg_ostream<float> svg(fn_wo_ext + ".svg",
                             detector_ring.outer_radius(),
                             detector_ring.outer_radius(),
                             1024.,
@@ -354,7 +354,7 @@ void post_process(cmdline::parser& cl,
 
   // visual debugging output
   if (cl.exist("png")) {
-    LOR<> lor(0, 0);
+    LOR<short> lor(0, 0);
     lor.first = cl.get<int>("from");
     if (cl.exist("to")) {
       lor.second = cl.get<int>("to");
@@ -376,7 +376,7 @@ void post_process(cmdline::parser& cl,
       sparse_matrix.output_bitmap(png, lor, position);
     }
 
-    util::svg_ostream<> svg(fn_wo_ext + ".svg",
+    util::svg_ostream<float> svg(fn_wo_ext + ".svg",
                             detector_ring.outer_radius(),
                             detector_ring.outer_radius(),
                             1024.,

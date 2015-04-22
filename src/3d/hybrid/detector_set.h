@@ -15,12 +15,12 @@ namespace Hybrid {
 ///
 /// \sa PET2D::Barrel:DetectorSet, PET2D::Strip::Detector
 
-template <typename DetectorType = PET2D::Barrel::SquareDetector<double>,
-          std::size_t MaxDetectors = MAX_DETECTORS,
-          typename SType = int>
+template <typename DetectorType ,
+          std::size_t MaxDetectors,
+          typename SType>
 class DetectorSet
     : public PET2D::Barrel::DetectorSet<DetectorType, MaxDetectors, SType>,
-      public PET2D::Strip::Detector<typename DetectorType::F> {
+      public PET2D::Strip::Detector<typename DetectorType::F, typename DetectorType::S> {
   // FIXME: implement me!
 };
 }

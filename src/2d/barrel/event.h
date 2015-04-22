@@ -15,8 +15,10 @@ namespace Barrel {
 ///
 /// \note Since \f$ a = sin(\phi), b = -cos(\phi) \f$ then
 /// \f$ a^2 + b^2 = 1 \f$.
-template <typename FType = double> struct Event : public PET2D::Point<FType> {
+template <typename FType>
+struct Event : public PET2D::Point<FType> {
   using F = FType;
+
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
   using Base = Point;

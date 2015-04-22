@@ -34,7 +34,7 @@ using namespace PET3D::Longitudinal;
 
 using SquareScintillator = PET2D::Barrel::SquareDetector<float>;
 
-using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareScintillator, 24>;
+using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareScintillator, 24, short>;
 using LongitudinalDetectorSet = DetectorSet<DetectorSet2D>;
 
 using Pixel = PET2D::Pixel<short>;
@@ -193,10 +193,13 @@ static SparseMatrix run(cmdline::parser& cl,
   clock_gettime(CLOCK_REALTIME, &start);
 #endif
 
-  PET2D::Barrel::MonteCarlo<LongitudinalDetectorSet, ComputeMatrix> monte_carlo(
-      detector_ring, matrix, s_pixel, m_pixel);
+  PET3D::Barrel::MonteCarlo<LongitudinalDetectorSet,
+                            ComputeMatrix,
+                            typename LongitudinalDetectorSet::F,
+                            typename LongitudinalDetectorSet::S>
+      monte_carlo(detector_ring, matrix, s_pixel, m_pixel);
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
-  monte_carlo(gen, model, n_emissions, progress);
+  monte_carlo(0.0f, gen, model, n_emissions, progress);
 
 #ifdef __linux__
   if (verbose) {

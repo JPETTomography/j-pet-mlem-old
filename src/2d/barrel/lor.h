@@ -7,7 +7,7 @@ namespace PET2D {
 namespace Barrel {
 
 /// Line of Response
-template <typename SType = int> class LOR {
+template <typename SType> class LOR {
  public:
   using S = SType;
 

@@ -21,10 +21,11 @@ namespace Strip {
 ///
 /// \image html detector_frame.pdf.png
 
-template <typename FType = double> class Detector {
+template <typename FType, typename SType> class Detector {
  public:
   using F = FType;
-  using Pixel = PET2D::Pixel<>;
+  using S = SType;
+  using Pixel = PET2D::Pixel<S>;
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
 
@@ -82,8 +83,8 @@ template <typename FType = double> class Detector {
 
   /// Copy-construct strip-detector from other detector using different float
   /// representation.
-  template <typename OtherFType>
-  Detector(const Detector<OtherFType>& other)
+  template <typename OtherFType, typename OtherSType>
+  Detector(const Detector<OtherFType, OtherSType>& other)
       : Detector(other.radius,
                  other.scintillator_length,
                  other.n_y_pixels,

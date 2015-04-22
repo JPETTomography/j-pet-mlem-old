@@ -10,9 +10,8 @@
 namespace PET3D {
 
 /// 3D point with given coordinates
-template <typename FType = double, typename SType = int> struct Point {
+template <typename FType> struct Point {
   using F = FType;
-  using S = SType;
   using Vector = PET3D::Vector<FType>;
 
   _ Point(F x, F y, F z) : x(x), y(y), z(z) {}
@@ -58,11 +57,10 @@ template <typename FType = double, typename SType = int> struct Point {
 };
 
 /// Single point source
-template <typename FType = double, typename SType = int>
-struct PointSource : public Point<FType, SType> {
+template <typename FType>
+struct PointSource : public Point<FType> {
   using F = FType;
-  using S = SType;
-  using Point = PET3D::Point<F, S>;
+  using Point = PET3D::Point<F>;
 
   const F intensity;
 

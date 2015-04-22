@@ -7,7 +7,7 @@
 namespace PET3D {
 
 /// 3D Vector with given coordinates
-template <typename FType = double, typename SType = int> struct Vector {
+template <typename FType> struct Vector {
 
   static Vector from_euler_angles(FType phi, FType theta) {
     FType r_xy = std::sin(theta);
@@ -15,7 +15,6 @@ template <typename FType = double, typename SType = int> struct Vector {
   }
 
   using F = FType;
-  using S = SType;
 
   _ Vector(F x, F y, F z) : x(x), y(y), z(z) {}
   _ Vector() = default;

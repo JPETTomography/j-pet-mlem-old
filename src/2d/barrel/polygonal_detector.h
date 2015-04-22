@@ -10,7 +10,7 @@ namespace Barrel {
 
 /// Represents single detector with convex polygonal shape, such as hexagon:
 /// \image html shape_hexagon.pdf.png
-template <std::size_t NVertices, typename FType = double>
+template <std::size_t NVertices, typename FType>
 class PolygonalDetector : public Polygon<NVertices, FType> {
  public:
   using Base = Polygon<NVertices, FType>;
