@@ -4,7 +4,7 @@
 /// NYI
 /// ===
 
-#include<random>
+#include <random>
 
 #include "cmdline.h"
 #include "util/cmdline_types.h"
@@ -19,6 +19,8 @@
 #include "2d/geometry/pixel.h"
 #include "2d/barrel/lor.h"
 #include "2d/barrel/model.h"
+#include "monte_carlo.h"
+#include "util/progress.h"
 
 #include "util/png_writer.h"
 #include "util/svg_ostream.h"
@@ -184,12 +186,17 @@ static SparseMatrix run(cmdline::parser& cl,
     }
   }
 
-  //  MonteCarlo<Detector, ComputeMatrix> monte_carlo(
-  //      detector_ring, matrix, s_pixel, tof_step, m_pixel);
-  //  util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
-  //  monte_carlo(gen, model, n_emissions, progress);
-
   ComputeMatrix matrix(n_pixels, detector_ring.barrel.size(), n_tof_positions);
+
+#ifdef __linux__
+  struct timespec start, stop;
+  clock_gettime(CLOCK_REALTIME, &start);
+#endif
+
+  PET2D::Barrel::MonteCarlo<LongitudinalDetectorSet, ComputeMatrix> monte_carlo(
+      detector_ring, matrix, s_pixel, m_pixel);
+  util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
+  monte_carlo(gen, model, n_emissions, progress);
 
 #ifdef __linux__
   if (verbose) {
@@ -200,12 +207,6 @@ static SparseMatrix run(cmdline::parser& cl,
                      1.0e9 << std::endl;
   }
 #endif
-
-#ifdef __linux__
-  struct timespec start, stop;
-  clock_gettime(CLOCK_REALTIME, &start);
-#endif
-
   return matrix.to_sparse();
 }
 
@@ -243,11 +244,12 @@ void post_process(cmdline::parser& cl,
       std::cerr << "warning: " << ex << std::endl;
     }
 
-    util::svg_ostream<typename DetectorRing::F> svg(fn_wo_ext + ".svg",
-                            detector_ring.barrel.outer_radius(),
-                            detector_ring.barrel.outer_radius(),
-                            1024.,
-                            1024.);
+    util::svg_ostream<typename DetectorRing::F> svg(
+        fn_wo_ext + ".svg",
+        detector_ring.barrel.outer_radius(),
+        detector_ring.barrel.outer_radius(),
+        1024.,
+        1024.);
     svg.link_image(fn_wo_path + ".png",
                    -(s_pixel * n_pixels) / 2,
                    -(s_pixel * n_pixels) / 2,
@@ -281,11 +283,12 @@ void post_process(cmdline::parser& cl,
       sparse_matrix.output_bitmap(png, lor, position);
     }
 
-    util::svg_ostream<typename DetectorRing::F> svg(fn_wo_ext + ".svg",
-                            detector_ring.barrel.outer_radius(),
-                            detector_ring.barrel.outer_radius(),
-                            1024.,
-                            1024.);
+    util::svg_ostream<typename DetectorRing::F> svg(
+        fn_wo_ext + ".svg",
+        detector_ring.barrel.outer_radius(),
+        detector_ring.barrel.outer_radius(),
+        1024.,
+        1024.);
     svg.link_image(fn_wo_path + ".png",
                    -(s_pixel * n_pixels) / 2,
                    -(s_pixel * n_pixels) / 2,

@@ -27,12 +27,10 @@ class MonteCarlo {
   MonteCarlo(const Detector& detector,
              Matrix& matrix,
              F pixel_size,
-             F tof_step,
              S start_pixel = static_cast<S>(0))
       : detector(detector),
         matrix(matrix),
         pixel_size(pixel_size),
-        tof_step(tof_step),
         start_pixel(start_pixel) {}
 
   /// Executes Monte-Carlo system matrix generation for given detector ring
@@ -50,7 +48,6 @@ class MonteCarlo {
     if (n_emissions <= 0)
       return;
 
-    auto n_positions = detector.n_tof_positions(tof_step, model.max_bias());
     bool tof = (tof_step > static_cast<F>(0));
     util::random::uniform_real_distribution<F> one_dis(0, 1);
     util::random::uniform_real_distribution<F> phi_dis(0, F(M_PI));
@@ -97,9 +94,9 @@ class MonteCarlo {
 
       if (pixel.x < start_pixel || pixel.y < start_pixel ||
           (pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
-              detector.fov_radius * detector.fov_radius)
+              detector.barrel.fov_radius * detector.barrel.fov_radius)
         continue;
-
+#if 0
       int pixel_hit_count = 0;
       for (auto n = 0; n < n_emissions; ++n) {
 #if _OPENMP
@@ -120,13 +117,6 @@ class MonteCarlo {
         Event event(rx, ry, angle);
         auto hits = detector.detect(l_gen, model, event, response);
 
-        S quantized_position = 0;
-        if (tof)
-          quantized_position = Detector::quantize_tof_position(
-              response.dl, tof_step, n_positions);
-#ifdef DEBUG
-        std::cerr << "quantized_position " << quantized_position << std::endl;
-#endif
         // do we have hit on both sides?
         if (hits >= 2) {
           if (o_collect_mc_matrix) {
@@ -136,7 +126,7 @@ class MonteCarlo {
                   << response.lor.first << ", " << response.lor.second << ")";
               throw(msg.str());
             }
-            matrix.hit_lor(response.lor, quantized_position, i_pixel, 1);
+            matrix.hit_lor(response.lor, 0, i_pixel, 1);
           }
 
           if (o_collect_pixel_stats) {
@@ -146,6 +136,7 @@ class MonteCarlo {
 
         }  // if (hits>=2)
       }    // loop over emmisions from pixel
+#endif
       matrix.compact_pixel_index(i_pixel);
       CATCH;
     }
