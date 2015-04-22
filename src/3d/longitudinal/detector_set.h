@@ -177,6 +177,8 @@ class DetectorSet {
       FType depth;
       if (barrel.did_intersect(e_xy, i, p1_xy, p2_xy)) {
         reconstruct_3d_intersection_points(e, dir, p1_xy, p2_xy, entry, exit);
+        if(entry.z>half_length || entry.z<-half_length)
+            return false;
         if (did_deposit(gen, model, entry, exit, depth)) {
           Vector v = exit - entry;
           deposit = entry + v * (depth / v.length());

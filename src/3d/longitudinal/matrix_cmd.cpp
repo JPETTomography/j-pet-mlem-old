@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
   try {
     cmdline::parser cl;
     add_matrix_options(cl);
+    cl.add<double>("z-position",'z',"position of the z plane", false, 0);
     cl.try_parse(argc, argv);
 
 #if _OPENMP
@@ -92,13 +93,17 @@ int main(int argc, char* argv[]) {
             PET3D_LONGITUDINAL_DETECTOR_CL(cl, DetectorSet2D::F));
     LongitudinalDetectorSet detector_set = LongitudinalDetectorSet(barrel, 0.5);
 
+
     if (model_name == "always") {
       PET2D::Barrel::AlwaysAccept<float> model;
       auto sparse_matrix = run(cl, detector_set, model);
       post_process(cl, detector_set, sparse_matrix);
     } else if (model_name == "scintillator") {
+
       PET2D::Barrel::ScintillatorAccept<float> model(length_scale);
+
       auto sparse_matrix = run(cl, detector_set, model);
+
       post_process(cl, detector_set, sparse_matrix);
     } else {
       std::cerr << "unknown model : `" << model_name << "'\n";
@@ -136,6 +141,7 @@ static SparseMatrix run(cmdline::parser& cl,
   auto& s_pixel = cl.get<double>("s-pixel");
   auto& n_emissions = cl.get<int>("n-emissions");
   auto verbose = cl.exist("verbose");
+  auto& z_position = cl.get<double>("z-position");
 
   std::random_device rd;
   util::random::tausworthe gen(rd());
@@ -186,6 +192,7 @@ static SparseMatrix run(cmdline::parser& cl,
     }
   }
 
+
   ComputeMatrix matrix(n_pixels, detector_ring.barrel.size(), n_tof_positions);
 
 #ifdef __linux__
@@ -198,8 +205,10 @@ static SparseMatrix run(cmdline::parser& cl,
                             typename LongitudinalDetectorSet::F,
                             typename LongitudinalDetectorSet::S>
       monte_carlo(detector_ring, matrix, s_pixel, m_pixel);
+
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
-  monte_carlo(0.0f, gen, model, n_emissions, progress);
+  monte_carlo(z_position, gen, model, n_emissions, progress);
+
 
 #ifdef __linux__
   if (verbose) {
