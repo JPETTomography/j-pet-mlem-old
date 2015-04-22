@@ -16,8 +16,8 @@ namespace Barrel {
 /// Drives Monte-Carlo system matrix construction
 template <typename DetectorType,
           typename MatrixType,
-          typename FType ,
-          typename SType >
+          typename FType,
+          typename SType>
 class MonteCarlo {
   using Detector = DetectorType;
   using Event = typename Detector::Event;
@@ -46,11 +46,12 @@ class MonteCarlo {
       F z,
       RandomGenerator& gen,              ///< random number generator
       AcceptanceModel model,             ///< acceptance model
-      S n_emissions,                     ///< number of emissions generated
+      int n_emissions,                   ///< number of emissions generated
       ProgressCallback progress,         ///< progress callback
       bool o_collect_mc_matrix = true,   ///< enable matrix generation
       bool o_collect_pixel_stats = true  ///< enable pixel stats
       ) {
+
     if (n_emissions <= 0)
       return;
 
@@ -119,7 +120,6 @@ class MonteCarlo {
         if (rx > ry)
           continue;
 
-        auto angle = phi_dis(l_gen);
         typename DetectorType::Response response;
 
         Event event(PET3D::Point<float>(rx, ry, rz), direction(l_gen));
@@ -134,7 +134,7 @@ class MonteCarlo {
                   << response.lor.first << ", " << response.lor.second << ")";
               throw(msg.str());
             }
-            // matrix.hit_lor(response.lor, 0, i_pixel, 1);
+            matrix.hit_lor(response.lor, 0, i_pixel, 1);
           }
 
           if (o_collect_pixel_stats) {
