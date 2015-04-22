@@ -79,8 +79,8 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    Detector<double> strip_detector(PET2D_STRIP_DETECTOR_CL(cl));
-    Reconstruction<double> reconstruction(strip_detector);
+    Detector<float, short> strip_detector(PET2D_STRIP_DETECTOR_CL(cl));
+    Reconstruction<float> reconstruction(strip_detector);
 
     auto verbose = cl.exist("verbose");
     auto verbosity = cl.count("verbose");
@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-      Detector<float> single_precision_strip_detector(strip_detector);
+      Detector<float, short> single_precision_strip_detector(strip_detector);
 
       GPU::run_reconstruction(single_precision_strip_detector,
                               reconstruction.get_event_list(),

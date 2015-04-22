@@ -8,7 +8,7 @@
 #include "point.h"
 
 namespace PET3D {
-template <typename F = float> class spherical_distribution {
+template <typename F> class spherical_distribution {
  public:
   using Vector = PET3D::Vector<F>;
 
@@ -18,9 +18,10 @@ template <typename F = float> class spherical_distribution {
   const F R2;
 
   template <typename RNG> Vector operator()(RNG& rng) {
-    F phi = phi_dist(rng);
+
     F z = z_dist(rng);
     F r = std::sqrt(R2 - z * z);
+    F phi = phi_dist(rng);
     F x = r * cos(phi);
     F y = r * sin(phi);
     return Vector(x, y, z);
@@ -48,10 +49,7 @@ template <typename F> class voxel_event_generator {
     F y = lover_left_corner.y + uni_y(rng);
     F z = lover_left_corner.z + uni_z(rng);
 
-    return Event(
-                Point(x, y, z),
-                spherical_distribution(rng)
-                );
+    return Event(Point(x, y, z), spherical_distribution(rng));
   }
 
  private:
@@ -59,7 +57,7 @@ template <typename F> class voxel_event_generator {
   std::uniform_real_distribution<F> uni_x;
   std::uniform_real_distribution<F> uni_y;
   std::uniform_real_distribution<F> uni_z;
-  PET3D::spherical_distribution<F>  spherical_distribution;
+  PET3D::spherical_distribution<F> spherical_distribution;
 };
 }
 #endif  // EVENT_GENERATOR

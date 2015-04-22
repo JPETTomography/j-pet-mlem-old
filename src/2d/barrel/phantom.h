@@ -9,7 +9,7 @@ namespace PET2D {
 namespace Barrel {
 
 /// Virtual phantom made of elliptical regions
-template <typename FType = double>
+template <typename FType>
 class Phantom : public std::vector<EllipticalSource<FType>> {
  public:
   using F = FType;
@@ -29,7 +29,7 @@ class Phantom : public std::vector<EllipticalSource<FType>> {
 };
 
 /// Virtual phantom made of point sources
-template <typename FType = double>
+template <typename FType>
 class PointPhantom : public std::vector<PointSource<FType>> {
  public:
   using F = FType;

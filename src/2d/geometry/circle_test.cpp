@@ -127,11 +127,11 @@ TEST("2d/geometry/circle/secant/math") {
     CHECK(std::min(angles[0], angles[1]) == Approx(std::min(angle1, angle2)));
     CHECK(std::max(angles[0], angles[1]) == Approx(std::max(angle1, angle2)));
 
-    int section1, section2;
-    in >> section1 >> section2;
-    auto sections = c.secant_sections(event, n_detectors);
+//    int section1, section2;
+//    in >> section1 >> section2;
+//    auto sections = c.secant_sections(event, n_detectors);
 
-    CHECK(std::min(sections[0], sections[1]) == std::min(section1, section2));
-    CHECK(std::max(sections[0], sections[1]) == std::max(section1, section2));
+//    CHECK(std::min(sections[0], sections[1]) == std::min(section1, section2));
+//    CHECK(std::max(sections[0], sections[1]) == std::max(section1, section2));
   }
 }

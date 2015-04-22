@@ -28,7 +28,7 @@ class Reconstruction {
  public:
   using F = FType;
   using Kernel = KernelType;
-  using Detector = Strip::Detector<FType>;
+  using Detector = Strip::Detector<FType, short>;
   using Pixel = typename Detector::Pixel;
   using Point = typename Detector::Point;
   using Vector = typename Detector::Vector;

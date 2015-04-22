@@ -14,7 +14,7 @@ template <typename DetectorSetType> class DetectorSetBuilder {
   using Vector = PET2D::Vector<F>;
 
   static DetectorSetType buildSingleRing(F radius,
-                                         S n_detectors,
+                                         int n_detectors,
                                          F w_detector,
                                          F h_detector,
                                          F d_detector = 0) {
@@ -58,7 +58,7 @@ template <typename DetectorSetType> class DetectorSetBuilder {
   static DetectorSetType buildMultipleRings(
       const std::vector<F> radius,    ///< radiuses of ring
       const std::vector<F> rotation,  ///< rotation of each ring (0-1)
-      std::vector<S> n_detectors,     ///< numbers of detectors on ring
+      std::vector<int> n_detectors,     ///< numbers of detectors on ring
       F w_detector,                   ///< width of single detector (along ring)
       F h_detector,                   ///< height/depth of single detector
                                       ///< (perpendicular to ring)

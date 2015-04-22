@@ -6,7 +6,7 @@
 namespace PET2D {
 
 /// Discreete coordinates pixel
-template <typename SType = int> class Pixel {
+template <typename SType> class Pixel {
  public:
   using S = SType;
 

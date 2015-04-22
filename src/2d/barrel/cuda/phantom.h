@@ -17,10 +17,10 @@ namespace GPU {
 /// \cond PRIVATE
 
 using Point = PET2D::Point<float>;
-using Pixel = PET2D::Pixel<>;
-using LOR = Barrel::LOR<>;
+using Pixel = PET2D::Pixel<short>;
+using LOR = Barrel::LOR<short>;
 using SquareDetector = Barrel::SquareDetector<float>;
-using DetectorRing = Barrel::DetectorRing<SquareDetector>;
+using DetectorRing = Barrel::DetectorRing<SquareDetector, MAX_DETECTORS, short>;
 
 /// \endcond
 

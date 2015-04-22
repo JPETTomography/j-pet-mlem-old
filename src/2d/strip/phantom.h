@@ -36,9 +36,10 @@ template <typename FType> struct PhantomRegion {
 };
 
 /// Virtual phantom made of elliptical regions
-template <typename D, typename FType = double> class Phantom {
+template <typename D, typename FType, typename SType> class Phantom {
   using F = FType;
-  using Pixel = PET2D::Pixel<>;
+  using S = SType;
+  using Pixel = PET2D::Pixel<S>;
   using rng = std::minstd_rand0;
 
  private:

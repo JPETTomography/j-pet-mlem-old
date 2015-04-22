@@ -9,7 +9,7 @@ namespace Barrel {
 
 /// Represents single detector with rectangular shape:
 /// \image html shape_rectangle.pdf.png
-template <typename FType = double>
+template <typename FType>
 class SquareDetector : public PolygonalDetector<4, FType> {
  public:
   using Base = PolygonalDetector<4, FType>;

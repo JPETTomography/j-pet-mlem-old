@@ -6,14 +6,18 @@
 #endif
 #include <iostream>
 
-namespace PET2D {
+#include "3d/geometry/event_generator.h"
+#include "3d/geometry/event.h"
+#include "3d/geometry/point.h"
+
+namespace PET3D {
 namespace Barrel {
 
 /// Drives Monte-Carlo system matrix construction
 template <typename DetectorType,
           typename MatrixType,
-          typename FType = double,
-          typename SType = int>
+          typename FType ,
+          typename SType >
 class MonteCarlo {
   using Detector = DetectorType;
   using Event = typename Detector::Event;
@@ -22,6 +26,7 @@ class MonteCarlo {
   using S = SType;
   using SS = typename std::make_signed<S>::type;
   using LOR = typename Matrix::LOR;
+  using Point = PET3D::Point<F>;
 
  public:
   MonteCarlo(const Detector& detector,
@@ -38,6 +43,7 @@ class MonteCarlo {
             typename AcceptanceModel,
             typename ProgressCallback>
   void operator()(
+      F z,
       RandomGenerator& gen,              ///< random number generator
       AcceptanceModel model,             ///< acceptance model
       S n_emissions,                     ///< number of emissions generated
@@ -51,6 +57,7 @@ class MonteCarlo {
     bool tof = (tof_step > static_cast<F>(0));
     util::random::uniform_real_distribution<F> one_dis(0, 1);
     util::random::uniform_real_distribution<F> phi_dis(0, F(M_PI));
+    spherical_distribution<F> direction;
 
     matrix.add_emissions(n_emissions);
 
@@ -96,17 +103,18 @@ class MonteCarlo {
           (pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
               detector.barrel.fov_radius * detector.barrel.fov_radius)
         continue;
-#if 0
+
       int pixel_hit_count = 0;
       for (auto n = 0; n < n_emissions; ++n) {
+
 #if _OPENMP
         auto& l_gen = mp_gens[omp_get_thread_num()];
 #else
         auto& l_gen = gen;
 #endif
-        auto rx = (pixel.x + one_dis(l_gen)) * pixel_size;
-        auto ry = (pixel.y + one_dis(l_gen)) * pixel_size;
-
+        F rx = (pixel.x + one_dis(l_gen)) * pixel_size;
+        F ry = (pixel.y + one_dis(l_gen)) * pixel_size;
+        F rz = z + one_dis(l_gen) * pixel_size;
         // ensure we are within a triangle
         if (rx > ry)
           continue;
@@ -114,7 +122,7 @@ class MonteCarlo {
         auto angle = phi_dis(l_gen);
         typename DetectorType::Response response;
 
-        Event event(rx, ry, angle);
+        Event event(PET3D::Point<float>(rx, ry, rz), direction(l_gen));
         auto hits = detector.detect(l_gen, model, event, response);
 
         // do we have hit on both sides?
@@ -126,7 +134,7 @@ class MonteCarlo {
                   << response.lor.first << ", " << response.lor.second << ")";
               throw(msg.str());
             }
-            matrix.hit_lor(response.lor, 0, i_pixel, 1);
+            // matrix.hit_lor(response.lor, 0, i_pixel, 1);
           }
 
           if (o_collect_pixel_stats) {
@@ -135,8 +143,9 @@ class MonteCarlo {
           pixel_hit_count++;
 
         }  // if (hits>=2)
-      }    // loop over emmisions from pixel
-#endif
+
+      }  // loop over emmisions from pixel
+
       matrix.compact_pixel_index(i_pixel);
       CATCH;
     }

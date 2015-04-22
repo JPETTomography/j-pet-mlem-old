@@ -11,7 +11,7 @@
 namespace PET2D {
 
 /// Closed polygon described by set of points
-template <std::size_t NumPoints, typename FType = double>
+template <std::size_t NumPoints, typename FType>
 class Polygon : public util::array<NumPoints, Point<FType>> {
  public:
   using F = FType;

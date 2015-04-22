@@ -19,9 +19,9 @@ namespace Barrel {
 
 template <typename D> class DetectorSetBuilder;
 
-template <typename DetectorType = SquareDetector<double>,
-          std::size_t MaxDet = MAX_DETECTORS,
-          typename SType = int>
+template <typename DetectorType,
+          std::size_t MaxDet,
+          typename SType >
 class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
  public:
   using Detector = DetectorType;

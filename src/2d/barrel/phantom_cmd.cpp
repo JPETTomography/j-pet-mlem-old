@@ -57,14 +57,15 @@ using namespace PET2D;
 using namespace PET2D::Barrel;
 
 template <typename DetectorType>
-using DetectorModel = DetectorSet<DetectorType>;
+using DetectorModel = DetectorSet<DetectorType, MAX_DETECTORS, short>;
 // using DetectorModel = DetectorRing<DetectorType>;
 
 // all available detector shapes
-using SquareDetectorRing = DetectorModel<SquareDetector<>>;
-using CircleDetectorRing = DetectorModel<CircleDetector<>>;
-using TriangleDetectorRing = DetectorModel<TriangleDetector<>>;
-using HexagonalDetectorRing = DetectorModel<PolygonalDetector<6>>;
+using SquareDetectorRing = DetectorModel<SquareDetector<float>>;
+using CircleDetectorRing = DetectorModel<CircleDetector<float>>;
+using TriangleDetectorRing = DetectorModel<TriangleDetector<float>>;
+using HexagonalDetectorRing = DetectorModel<PolygonalDetector<6, float>>;
+using PixelType = PET2D::Pixel<short>;
 
 template <typename DetectorRing, typename Model>
 void run(cmdline::parser& cl, Model& model);
@@ -176,8 +177,8 @@ void run(cmdline::parser& cl, Model& model) {
   if (cl.exist("detected"))
     only_detected = true;
 
-  PointPhantom<> point_phantom;
-  Phantom<> phantom;
+  PointPhantom<float> point_phantom;
+  Phantom<float> phantom;
 
   for (auto& fn : cl.rest()) {
     std::ifstream in(fn);
@@ -223,13 +224,13 @@ void run(cmdline::parser& cl, Model& model) {
     while (n_emitted < n_emissions) {
       progress(n_emitted);
 
-      Point<> p(point_dis(gen), point_dis(gen));
+      Point<float> p(point_dis(gen), point_dis(gen));
 
       if (p.distance_from_origin2() >= fov_radius2)
         continue;
 
       if (phantom.test_emit(p, one_dis(gen))) {
-        auto pixel = p.pixel(s_pixel, n_pixels / 2);
+        auto pixel = p.pixel<PixelType>(s_pixel, n_pixels / 2);
         // ensure we are inside pixel matrix
         if (pixel.x >= n_pixels || pixel.y >= n_pixels || pixel.x <= m_pixel ||
             pixel.y <= m_pixel)
@@ -276,7 +277,7 @@ void run(cmdline::parser& cl, Model& model) {
       if (p.distance_from_origin2() >= fov_radius2)
         continue;
 
-      auto pixel = p.pixel(s_pixel, n_pixels / 2);
+      auto pixel = p.pixel<PixelType>(s_pixel, n_pixels / 2);
       // ensure we are inside pixel matrix
       if (pixel.x >= n_pixels || pixel.y >= n_pixels || pixel.x <= m_pixel ||
           pixel.y <= m_pixel)

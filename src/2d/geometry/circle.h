@@ -19,10 +19,9 @@ namespace PET2D {
 ///   /math/secant.nb
 /// \note
 ///   This circle has only radius specified and center point lies in (0, 0).
-template <typename FType = double, typename SType = int> class Circle {
+template <typename FType> class Circle {
  public:
   using F = FType;
-  using S = SType;
 
   _ Circle(F radius)
       : radius(radius),           // store radius
@@ -40,7 +39,7 @@ template <typename FType = double, typename SType = int> class Circle {
   using Event = Barrel::Event<F>;
   using Secant = util::array<2, Point>;
   using SecantAngles = util::array<2, Angle>;
-  using SecantSections = util::array<2, S>;
+
 
   _ bool intersects(const Event& e) const { return radius2 > e.c2; }
 
@@ -73,7 +72,7 @@ template <typename FType = double, typename SType = int> class Circle {
     return sa;
   }
 
-  _ S section(F angle, S n_detectors) const {
+  template <typename S> _ S section(F angle, S n_detectors) const {
     const F TWO_PI = F(2 * M_PI);
     const F INV_TWO_PI = 1 / TWO_PI;
 
@@ -84,13 +83,13 @@ template <typename FType = double, typename SType = int> class Circle {
            n_detectors;
   }
 
-  SecantSections secant_sections(Event& e, S n_detectors) const {
-    SecantSections ss;
-    for (auto& sa : secant_angles(e)) {
-      ss.push_back(section(sa, n_detectors));
-    }
-    return ss;
-  }
+//  SecantSections secant_sections(Event& e, S n_detectors) const {
+//    SecantSections ss;
+//    for (auto& sa : secant_angles(e)) {
+//      ss.push_back(section(sa, n_detectors));
+//    }
+//    return ss;
+//  }
 
 #if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,

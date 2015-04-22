@@ -20,11 +20,11 @@ namespace GPU {
 /// \cond PRIVATE
 
 using Point = PET2D::Point<float>;
-using Pixel = PET2D::Pixel<>;
-using LOR = Barrel::LOR<>;
+using Pixel = PET2D::Pixel<short>;
+using LOR = Barrel::LOR<short>;
 using Event = Barrel::Event<float>;
 using SquareDetector = Barrel::SquareDetector<float>;
-using DetectorRing = Barrel::DetectorSet<SquareDetector>;
+using DetectorRing = Barrel::DetectorSet<SquareDetector,MAX_DETECTORS,short>;
 using Model = ScintillatorAccept<float>;
 #if !__CUDACC__
 using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR>;
