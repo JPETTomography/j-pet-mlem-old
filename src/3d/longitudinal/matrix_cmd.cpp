@@ -22,6 +22,8 @@
 #include "monte_carlo.h"
 #include "util/progress.h"
 
+#include "barrel_builder.h"
+
 #include "util/png_writer.h"
 #include "util/svg_ostream.h"
 
@@ -34,13 +36,27 @@ using namespace PET3D::Longitudinal;
 
 using SquareScintillator = PET2D::Barrel::SquareDetector<float>;
 
-using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareScintillator, 24, short>;
+using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareScintillator, 192, int>;
+using F = DetectorSet2D::F;
 using LongitudinalDetectorSet = DetectorSet<DetectorSet2D>;
 
-using Pixel = PET2D::Pixel<short>;
-using LOR = PET2D::Barrel::LOR<short>;
+using Pixel = PET2D::Pixel<DetectorSet2D::S>;
+using LOR = DetectorSet2D::LOR;
 using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR>;
 using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR>;
+
+LongitudinalDetectorSet buildDetectorFromCommandLineParameter(
+    const cmdline::parser& cl) {
+  if (cl.exist("small"))
+    return buildSmallBarrel();
+  if (cl.exist("big"))
+    return buildBigBarrel();
+
+  DetectorSet2D barrel =
+      PET2D::Barrel::DetectorSetBuilder<DetectorSet2D>::buildMultipleRings(
+          PET3D_LONGITUDINAL_DETECTOR_CL(cl, DetectorSet2D::F));
+  return LongitudinalDetectorSet(barrel, F(cl.get<double>("length")));
+}
 
 template <typename DetectorRing, typename Model>
 void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring);
@@ -60,8 +76,10 @@ int main(int argc, char* argv[]) {
   try {
     cmdline::parser cl;
     add_matrix_options(cl);
-    cl.add<double>("z-position",'z',"position of the z plane", false, 0);
-    cl.add<double>("length",0,"length of the detector", false, 0.3);
+    cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
+    cl.add<double>("length", 0, "length of the detector", false, 0.3);
+    cl.add("small", 0, "small barrel");
+    cl.add("big", 0, "big barrel");
     cl.try_parse(argc, argv);
 
 #if _OPENMP
@@ -72,9 +90,10 @@ int main(int argc, char* argv[]) {
 
     // check options
     if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
-        !cl.exist("n-detectors")) {
+        !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
       throw(
-          "need to specify either --w-detector, --d-detector or --n-detectors");
+          "need to specify either --w-detector, --d-detector or --n-detectors "
+          "or --small or --big");
     }
     if (cl.exist("png") && !cl.exist("from")) {
       throw("need to specify --from lor when output --png option is specified");
@@ -89,11 +108,14 @@ int main(int argc, char* argv[]) {
     const auto& model_name = cl.get<std::string>("model");
     const auto& length_scale = cl.get<double>("base-length");
 
-    DetectorSet2D barrel =
-        PET2D::Barrel::DetectorSetBuilder<DetectorSet2D>::buildMultipleRings(
-            PET3D_LONGITUDINAL_DETECTOR_CL(cl, DetectorSet2D::F));
-    LongitudinalDetectorSet detector_set = LongitudinalDetectorSet(barrel, 0.5);
+    //    DetectorSet2D barrel =
+    //        PET2D::Barrel::DetectorSetBuilder<DetectorSet2D>::buildMultipleRings(
+    //            PET3D_LONGITUDINAL_DETECTOR_CL(cl, DetectorSet2D::F));
+    //    LongitudinalDetectorSet detector_set =
+    //        LongitudinalDetectorSet(barrel, F(cl.get<double>("length")));
 
+    LongitudinalDetectorSet detector_set =
+        buildDetectorFromCommandLineParameter(cl);
 
     if (model_name == "always") {
       PET2D::Barrel::AlwaysAccept<float> model;
@@ -193,7 +215,6 @@ static SparseMatrix run(cmdline::parser& cl,
     }
   }
 
-
   ComputeMatrix matrix(n_pixels, detector_ring.barrel.size(), n_tof_positions);
 
 #ifdef __linux__
@@ -209,7 +230,6 @@ static SparseMatrix run(cmdline::parser& cl,
 
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
   monte_carlo(z_position, gen, model, n_emissions, progress);
-
 
 #ifdef __linux__
   if (verbose) {

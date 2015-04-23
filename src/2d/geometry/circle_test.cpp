@@ -123,7 +123,6 @@ TEST("2d/geometry/circle/secant/math") {
 
     double angle1, angle2;
     in >> angle1 >> angle2;
-    auto angles = c.secant_angles(event);
 
     int section1, section2;
     in >> section1 >> section2;

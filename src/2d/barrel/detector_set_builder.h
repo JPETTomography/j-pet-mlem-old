@@ -94,6 +94,7 @@ template <typename DetectorSetType> class DetectorSetBuilder {
 
     return detector_set;
   }
+
 };
 }
 }
