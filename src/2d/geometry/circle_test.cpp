@@ -115,7 +115,7 @@ TEST("2d/geometry/circle/secant/math") {
 
     auto secant = c.secant(event);
 
-    CHECK(std::min(secant[0].x, secant[1].x) == Approx(std::min(x1, x2)));
+    REQUIRE(std::min(secant[0].x, secant[1].x) == Approx(std::min(x1, x2)));
     //    CHECK(std::max(secant[0].x, secant[1].x) == Approx(std::max(x1, x2)));
 
     //    CHECK(std::min(secant[0].y, secant[1].y) == Approx(std::min(y1, y2)));
@@ -125,9 +125,8 @@ TEST("2d/geometry/circle/secant/math") {
     in >> angle1 >> angle2;
     auto angles = c.secant_angles(event);
 
-    //    CHECK(std::min(angles[0], angles[1]) == Approx(std::min(angle1,
-    //    angle2)));
-    //    CHECK(std::max(angles[0], angles[1]) == Approx(std::max(angle1,
-    //    angle2)));
+    int section1, section2;
+    in >> section1 >> section2;
+
   }
 }
