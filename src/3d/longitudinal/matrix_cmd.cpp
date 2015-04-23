@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
     cmdline::parser cl;
     add_matrix_options(cl);
     cl.add<double>("z-position",'z',"position of the z plane", false, 0);
+    cl.add<double>("length",0,"length of the detector", false, 0.3);
     cl.try_parse(argc, argv);
 
 #if _OPENMP

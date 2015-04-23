@@ -9,7 +9,7 @@ using namespace PET2D::Barrel;
 
 TEST("2d/barrel/phantom/phantom") {
 
-  Phantom<> phantom;
+  Phantom<float> phantom;
   phantom.emplace_back(0, 1, 1, 0.5, M_PI / 3, 0.75);
   phantom.emplace_back(1, 1, 2, 2, 0, 0.5);
 

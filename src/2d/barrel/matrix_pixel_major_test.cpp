@@ -8,12 +8,13 @@
 
 #include "matrix_pixel_major.h"
 
-using namespace PET2D;
-using namespace PET2D::Barrel;
+using Pixel = PET2D::Pixel<float>;
+using LOR =PET2D::Barrel::LOR<short>;
+using Matrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR>;
 
 TEST("2d/barrel/lor/ctor") {
 
-  LOR<> lor(9, 7);
+  LOR lor(9, 7);
 
   CHECK(lor.first == 9);
   CHECK(lor.second == 7);
@@ -24,7 +25,7 @@ TEST("2d/barrel/lor/ctor") {
 TEST("2d/barrel/lor/iterator") {
 
   int count = 0;
-  for (auto lor = LOR<>(); lor != LOR<>::end_for_detectors(10); ++lor) {
+  for (auto lor = LOR(); lor != LOR::end_for_detectors(10); ++lor) {
     count++;
   }
   CHECK(count == 10 * (10 + 1) / 2);
@@ -32,14 +33,15 @@ TEST("2d/barrel/lor/iterator") {
 
 TEST("2d/barrel/pix_major_system_matrix/ctor") {
 
-  MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
+  Matrix matrix(128, 140);
 }
 
 TEST("2d/barrel/pix_major_system_matrix/add") {
 
-  MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
 
-  LOR<> lor(9, 7);
+  Matrix matrix(128, 140);
+
+  LOR lor(9, 7);
   matrix.hit_lor(lor, 0, 13);
   matrix.compact_pixel_index(13);
 
@@ -50,15 +52,15 @@ TEST("2d/barrel/pix_major_system_matrix/add") {
 
   hits = matrix.lor_hits_at_pixel_index(lor, 12);
   CHECK(hits == 0);
-  hits = matrix.lor_hits_at_pixel_index(LOR<>(9, 8), 13);
+  hits = matrix.lor_hits_at_pixel_index(LOR(9, 8), 13);
   CHECK(hits == 0);
 }
 
 TEST("2d/barrel/pix_major_system_matrix/add_twice") {
 
-  MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
+  Matrix matrix(128, 140);
 
-  LOR<> lor(9, 7);
+  LOR lor(9, 7);
   matrix.hit_lor(lor, 0, 13);
   matrix.hit_lor(lor, 0, 13);
   matrix.compact_pixel_index(13);
@@ -71,9 +73,9 @@ TEST("2d/barrel/pix_major_system_matrix/add_twice") {
 
 TEST("2d/barrel/pix_major_system_matrix/add_to_all") {
 
-  MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
+  Matrix matrix(128, 140);
 
-  LOR<> lor(9, 7);
+  LOR lor(9, 7);
   for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
     matrix.hit_lor(lor, 0, i_pixel);
     matrix.compact_pixel_index(i_pixel);
@@ -89,9 +91,9 @@ TEST("2d/barrel/pix_major_system_matrix/add_to_all") {
 
 TEST("2d/barrel/pix_major_system_matrix/to_sparse") {
 
-  MatrixPixelMajor<Pixel<>, LOR<>> matrix(128, 140);
+  Matrix matrix(128, 140);
 
-  LOR<> lor(9, 7);
+  LOR lor(9, 7);
   for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
     matrix.hit_lor(lor, 0, i_pixel);
     matrix.compact_pixel_index(i_pixel);

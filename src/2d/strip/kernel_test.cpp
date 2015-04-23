@@ -24,7 +24,7 @@ void check(F ref, F y, F angle, F dy, F dz, F R, const Kernel<F>& kernel) {
 
 TEST("2d/strip/sensitivity/square") {
 
-  Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  Detector<double, short> detector(500, 1000, 200, 200, 5, 5, 10, 63);
 
   CHECK(detector.sensitivity({ 0, 0 }) == 0.5_e13);
   CHECK(detector.sensitivity({ 50, 0 }) == 0.46652458328685176_e13);
@@ -34,7 +34,7 @@ TEST("2d/strip/sensitivity/square") {
 
 TEST("2d/strip/sensitivity/non_square") {
 
-  Detector<> detector(450, 200, 200, 200, 5, 5, 10, 63);
+  Detector<double, short> detector(450, 200, 200, 200, 5, 5, 10, 63);
 
   CHECK(detector.sensitivity({ 0, 0 }) == 0.1392089745461279_e13);
   CHECK(detector.sensitivity({ 50, 0 }) == 0.07044657495455454_e13);
@@ -59,8 +59,8 @@ TEST("2d/strip/kernel/ctor1") {
 
 TEST("2d/strip/kernel/ctor2") {
 
-  Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
-  Kernel<> kernel(detector.sigma_z, detector.sigma_dl);
+  Detector<double, short> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  Kernel<double> kernel(detector.sigma_z, detector.sigma_dl);
   double R = detector.radius;
 
 #if DONT_TEST
@@ -74,8 +74,8 @@ TEST("2d/strip/kernel/ctor2") {
 
 TEST("2d/strip/kernel/bbox") {
 
-  Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
-  Kernel<> kernel(detector.sigma_z, detector.sigma_dl);
+  Detector<double, short> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  Kernel<double> kernel(detector.sigma_z, detector.sigma_dl);
   double R = detector.radius;
 
   struct {

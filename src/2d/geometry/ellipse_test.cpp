@@ -8,8 +8,8 @@ using namespace PET2D;
 
 TEST("2d/geometry/ellipse/elliptical_region") {
 
-  EllipticalSource<> s1(1, 1, 2, 2, 0, 0.5);
-  EllipticalSource<> s2(0, 1, 1, 0.5, M_PI / 3, 0.75);
+  EllipticalSource<float> s1(1, 1, 2, 2, 0, 0.5);
+  EllipticalSource<float> s2(0, 1, 1, 0.5, M_PI / 3, 0.75);
 
   SECTION("getter") {
     REQUIRE(s1.intensity == 0.5);

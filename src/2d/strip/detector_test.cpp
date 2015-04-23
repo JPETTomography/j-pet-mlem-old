@@ -8,9 +8,9 @@
 
 #include "detector.h"
 
-using Detector = PET2D::Strip::Detector<>;
-using Point = PET2D::Point<>;
-using Pixel = PET2D::Pixel<>;
+using Detector = PET2D::Strip::Detector<double, short>;
+using Point = PET2D::Point<double>;
+using Pixel = PET2D::Pixel<short>;
 
 TEST("2d/strip/detector/pixel_at") {
 

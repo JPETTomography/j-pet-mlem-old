@@ -7,7 +7,7 @@ using namespace PET2D::Barrel;
 
 TEST("2d/barrel/circle_detector/ctor") {
 
-  CircleDetector<> circle(0.01);
+  CircleDetector<float> circle(0.01);
 
   CHECK(circle.center.x == 0);
   CHECK(circle.center.y == 0);
@@ -15,16 +15,16 @@ TEST("2d/barrel/circle_detector/ctor") {
 
 TEST("2d/barrel/circle_detector/move") {
 
-  CircleDetector<> circle(0.01);
+  CircleDetector<float> circle(0.01);
 
-  CircleDetector<>::Vector v(0.5, 0.7);
+  CircleDetector<float>::Vector v(0.5, 0.7);
   circle.center += v;
 
-  CHECK(circle.center.x == 0.5);
-  CHECK(circle.center.y == 0.7);
+  CHECK(circle.center.x == 0.5f);
+  CHECK(circle.center.y == 0.7f);
   auto phi = M_PI / 6.0;
 
-  CircleDetector<> rcircle = circle;
+  CircleDetector<float> rcircle = circle;
   rcircle.rotate(phi);
 
   auto x = circle.center.x;
@@ -40,20 +40,20 @@ TEST("2d/barrel/circle_detector/move") {
 
 TEST("2d/barrel/circle_detector/intersection") {
 
-  CircleDetector<> circle(1, Point<>(1, 1));
+  CircleDetector<float> circle(1, Point<float>(1, 1));
 
   CHECK(circle.center.x == 1);
   CHECK(circle.center.y == 1);
 
   // horizontal
-  CHECK(true == circle.intersects(Event<>(1, 1.999, 0)));
-  CHECK(true == circle.intersects(Event<>(9999, 1.999, 0)));
-  CHECK(false == circle.intersects(Event<>(1, 2.001, 0)));
-  CHECK(false == circle.intersects(Event<>(9999, 2.001, 0)));
+  CHECK(true == circle.intersects(Event<float>(1, 1.999, 0)));
+  CHECK(true == circle.intersects(Event<float>(9999, 1.999, 0)));
+  CHECK(false == circle.intersects(Event<float>(1, 2.001, 0)));
+  CHECK(false == circle.intersects(Event<float>(9999, 2.001, 0)));
 
   // vertical
-  CHECK(true == circle.intersects(Event<>(1.999, 1, M_PI_2)));
-  CHECK(true == circle.intersects(Event<>(1.999, 9999, M_PI_2)));
-  CHECK(false == circle.intersects(Event<>(2.001, 1, M_PI_2)));
-  CHECK(false == circle.intersects(Event<>(2.001, 9999, M_PI_2)));
+  CHECK(true == circle.intersects(Event<float>(1.999, 1, M_PI_2)));
+  CHECK(true == circle.intersects(Event<float>(1.999, 9999, M_PI_2)));
+  CHECK(false == circle.intersects(Event<float>(2.001, 1, M_PI_2)));
+  CHECK(false == circle.intersects(Event<float>(2.001, 9999, M_PI_2)));
 }
