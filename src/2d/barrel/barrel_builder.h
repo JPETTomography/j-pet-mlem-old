@@ -18,6 +18,9 @@ SmallBarrelType buildSmallBarrel() {
 
   SmallBarrelType barrel = PET2D::Barrel::DetectorSetBuilder<SmallBarrelType>::buildSingleRing(
       r, 24, width, height);
+  barrel.set_fov_radius(0.150);
+
+  return barrel;
 }
 
 BigBarrelType buildBigBarrel() {
@@ -27,8 +30,11 @@ BigBarrelType buildBigBarrel() {
   float r2 = 0.475 - height / 2;
   float r3 = 0.575 - height / 2;
 
-  return PET2D::Barrel::DetectorSetBuilder<BigBarrelType>::buildMultipleRings(
+  BigBarrelType barrel= PET2D::Barrel::DetectorSetBuilder<BigBarrelType>::buildMultipleRings(
       { r1, r2, r3 }, { 0, 0.5f, 0 }, { 48, 48, 96 },width, height);
+
+  barrel.set_fov_radius(0.400);
+  return barrel;
 }
 
 }
