@@ -1,5 +1,7 @@
 #pragma once
 
+#include<ostream>
+
 #include "circle_detector.h"
 #include "2d/geometry/polygon.h"
 
@@ -45,6 +47,19 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
   }
 
   static F default_height_for_width(const F w) { return w; }
+
+
+  void to_mathematica(std::ostream& m_out) const {
+      std::string delimiter;
+      m_out<<"{ \"Polygon\" , { ";
+      for(int i=0;i<NVertices;i++) {
+          auto vertex=(*this)[i];
+          m_out<< delimiter<<"{"<<vertex.x<<", "<<vertex.y;
+          m_out<<"}";
+          delimiter=",";
+      }
+      m_out<<"}}";
+  }
 
  protected:
   PolygonalDetector() {}

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "square_detector.h"
 #include "circle_detector.h"
 #include "util/array.h"
@@ -126,21 +128,29 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
     svg << "</g>" << std::endl;
 
     svg << "<g id=\"scintillators\">" << std::endl;
+
     for (auto& detector : cd) {
       svg << detector;
+
     }
+
     svg << "</g>" << std::endl;
 
     return svg;
   }
 
-
-  void to_mathematica(std::ostream& m_out) {
-        for(int i=0;i<this->size();i++) {
-            m_out<<"{ "<<i<<" ";
-            (*this)[i].to_mathematica(m_out);
-            m_out<<"}";
-        }
+  void to_mathematica(std::ostream& m_out) const {
+    int i = 0;
+    std::string delimiter;
+    m_out<<"{\n";
+    for (auto& detector : (*this)) {
+      m_out << delimiter<<"{ " << i << " , ";
+      detector.to_mathematica(m_out);
+      m_out << "}\n";
+      i++;
+      delimiter=",";
+    }
+    m_out<<"}";
   }
 
 #endif

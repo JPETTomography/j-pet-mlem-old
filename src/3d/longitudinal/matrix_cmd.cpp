@@ -113,6 +113,7 @@ int main(int argc, char* argv[]) {
     LongitudinalDetectorSet detector_set =
         buildDetectorFromCommandLineParameter(cl);
 
+
     if (model_name == "always") {
       PET2D::Barrel::AlwaysAccept<float> model;
       auto sparse_matrix = run(cl, detector_set, model);
@@ -269,6 +270,9 @@ void post_process(cmdline::parser& cl,
 
     std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
     os << cl;
+    std::ofstream m_out(fn_wo_ext + ".m", std::ios::trunc);
+
+    detector_ring.barrel.to_mathematica(m_out);
 
     try {
       util::png_writer png(fn_wo_ext + ".png");
