@@ -133,6 +133,16 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
 
     return svg;
   }
+
+
+  void to_mathematica(std::ostream& m_out) {
+        for(int i=0;i<this->size();i++) {
+            m_out<<"{ "<<i<<" ";
+            (*this)[i].to_mathematica(m_out);
+            m_out<<"}";
+        }
+  }
+
 #endif
 
   void push_back(const Detector& detector) {
