@@ -106,6 +106,9 @@ void add_matrix_options(cmdline::parser& cl) {
   cl.add("verbose", 'v', "prints the iterations information on std::out");
   cl.add<util::random::tausworthe::seed_type>(
       "seed", 'S', "random number generator seed", cmdline::dontsave);
+
+  cl.add("small", 0, "small barrel");
+  cl.add("big", 0, "big barrel");
 #if HAVE_CUDA
   cl.add("gpu", 'G', "run on GPU (via CUDA)");
   cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 64);
@@ -208,11 +211,8 @@ void calculate_detector_options(cmdline::parser& cl) {
   if (cl.exist("acceptance") && !cl.exist("base-length")) {
     length_scale = 1.0 / cl.get<double>("acceptance");
   }
-  // FIXME: fixup for spelling mistake, present in previous versions
-  auto& model_name = cl.get<std::string>("model");
-  if (model_name == "scintilator") {
-    model_name = "scintillator";
-  }
+
+
 
   if (cl.exist("verbose")) {
     std::cerr << "assumed:" << std::endl;
@@ -225,16 +225,6 @@ void calculate_detector_options(cmdline::parser& cl) {
   auto& w_detector = cl.get<double>("w-detector");
   auto& d_detector = cl.get<double>("d-detector");
   auto& shape = cl.get<std::string>("shape");
-
-  // automatic radius size
-  if (!cl.exist("radius")) {
-    if (!cl.exist("s-pixel")) {
-      radius = M_SQRT2;  // exact result
-    } else {
-      radius = s_pixel * n_pixels / M_SQRT2;
-    }
-    std::cerr << "--radius=" << radius << std::endl;
-  }
 
   // automatic pixel size
   if (!cl.exist("s-pixel")) {

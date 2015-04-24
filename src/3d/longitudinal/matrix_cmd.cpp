@@ -78,8 +78,7 @@ int main(int argc, char* argv[]) {
     add_matrix_options(cl);
     cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
     cl.add<double>("length", 0, "length of the detector", false, 0.3);
-    cl.add("small", 0, "small barrel");
-    cl.add("big", 0, "big barrel");
+
     cl.try_parse(argc, argv);
 
 #if _OPENMP
@@ -107,12 +106,6 @@ int main(int argc, char* argv[]) {
 
     const auto& model_name = cl.get<std::string>("model");
     const auto& length_scale = cl.get<double>("base-length");
-
-    //    DetectorSet2D barrel =
-    //        PET2D::Barrel::DetectorSetBuilder<DetectorSet2D>::buildMultipleRings(
-    //            PET3D_LONGITUDINAL_DETECTOR_CL(cl, DetectorSet2D::F));
-    //    LongitudinalDetectorSet detector_set =
-    //        LongitudinalDetectorSet(barrel, F(cl.get<double>("length")));
 
     LongitudinalDetectorSet detector_set =
         buildDetectorFromCommandLineParameter(cl);
