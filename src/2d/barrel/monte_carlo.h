@@ -97,7 +97,7 @@ class MonteCarlo {
 
       if (pixel.x < start_pixel || pixel.y < start_pixel ||
           (pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
-              detector.fov_radius * detector.fov_radius)
+              detector.fov_radius() * detector.fov_radius())
         continue;
 
       int pixel_hit_count = 0;

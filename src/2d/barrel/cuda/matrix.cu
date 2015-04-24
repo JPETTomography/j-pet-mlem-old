@@ -32,7 +32,7 @@ __global__ static void kernel(const Pixel pixel,
   DetectorRing& detector_ring = *detector_ring_shared_storage;
 
   Model model(length_scale);
-  auto fov_radius2 = detector_ring.fov_radius * detector_ring.fov_radius;
+  auto fov_radius2 = detector_ring.fov_radius() * detector_ring.fov_radius();
 
   for (int i = 0; i < n_emissions; ++i) {
     auto rx = (pixel.x + one_dis(gen)) * pixel_size;

@@ -19,9 +19,7 @@ namespace Barrel {
 
 template <typename D> class DetectorSetBuilder;
 
-template <typename DetectorType,
-          std::size_t MaxDet,
-          typename SType >
+template <typename DetectorType, std::size_t MaxDet, typename SType>
 class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
  public:
   using Detector = DetectorType;
@@ -44,7 +42,7 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
   /// Makes an empty detector set.
   DetectorSetLayout(F radius = 1, F outer_radius = F(1.5))
       : Base(),
-        fov_radius(radius / M_SQRT2),
+        fov_radius_(radius / M_SQRT2),
         c_inner(radius),
         c_outer(outer_radius) {}
 
@@ -62,7 +60,7 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
                                       ///< inscribed in
                     )
       : Base(),
-        fov_radius(radius / M_SQRT2),
+        fov_radius_(radius / M_SQRT2),
         c_inner(radius),
         c_outer(radius + (d_detector > 0 ? d_detector : h_detector)) {
 
@@ -83,6 +81,8 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
         throw("unknown test case");
     }
   }
+
+  void set_fov_radius(F fov_radius) { this->fov_radius_ = fov_radius; }
 
   F radius() const { return c_inner.radius; }
   F outer_radius() const { return c_outer.radius; }
@@ -152,14 +152,17 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
 
   const CircleDetector& circumscribed(int i) const { return c_detectors[i]; }
 
-  const F fov_radius;
+  _ F fov_radius() const { return fov_radius_; }
 
   template <typename D> friend class DetectorSetBuilder;
 
  protected:
+  F fov_radius_;
   util::array<MaxDet, CircleDetector> c_detectors;
   Circle c_inner;
   Circle c_outer;
+
+ private:
 };
 }
 }

@@ -16,7 +16,7 @@ SmallBarrelType buildSmallBarrel() {
   float height = 0.019;
   float r = 0.180 - height / 2;
 
-  return PET2D::Barrel::DetectorSetBuilder<SmallBarrelType>::buildSingleRing(
+  SmallBarrelType barrel = PET2D::Barrel::DetectorSetBuilder<SmallBarrelType>::buildSingleRing(
       r, 24, width, height);
 }
 

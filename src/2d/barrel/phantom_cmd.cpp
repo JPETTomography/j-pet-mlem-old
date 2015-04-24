@@ -218,7 +218,7 @@ void run(cmdline::parser& cl, Model& model) {
   util::progress progress(
       verbose, n_emissions, only_detected ? 10000 : 1000000);
 
-  auto fov_radius2 = dr.fov_radius * dr.fov_radius;
+  auto fov_radius2 = dr.fov_radius() * dr.fov_radius();
 
   if (phantom.n_regions() > 0) {
     while (n_emitted < n_emissions) {
