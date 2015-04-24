@@ -92,7 +92,7 @@ void add_matrix_options(cmdline::parser& cl) {
                         "output binary triangular/full sparse system matrix",
                         cmdline::dontsave);
   cl.add("full", 'f', "output full non-triangular sparse system matrix");
-
+  cl.add<double>("fov-radius", 0, "field of view radius", false);
   // visual debugging params
   cl.add<cmdline::path>("png", 0, "output lor to png", cmdline::dontsave);
   cl.add<int>("from", 0, "lor start detector to output", cmdline::dontsave, -1);
@@ -212,8 +212,6 @@ void calculate_detector_options(cmdline::parser& cl) {
     length_scale = 1.0 / cl.get<double>("acceptance");
   }
 
-
-
   if (cl.exist("verbose")) {
     std::cerr << "assumed:" << std::endl;
   }
@@ -225,13 +223,22 @@ void calculate_detector_options(cmdline::parser& cl) {
   auto& w_detector = cl.get<double>("w-detector");
   auto& d_detector = cl.get<double>("d-detector");
   auto& shape = cl.get<std::string>("shape");
+  auto& fov_radius = cl.get<double>("fov-radius");
+
+  if (!cl.exist("small") && !cl.exist("big") && !cl.exist("fov-radius")) {
+    fov_radius = radius / std::sqrt(2);
+  }
+
+  if(cl.exist("s-pixel") &&!cl.exist("n-pixels")) {
+      cl.get<int>("n-pixels") = (int)std::floor(2*fov_radius/s_pixel);
+  }
 
   // automatic pixel size
   if (!cl.exist("s-pixel")) {
     if (!cl.exist("radius")) {
       s_pixel = 2. / n_pixels;  // exact result
     } else {
-      s_pixel = M_SQRT2 * radius / n_pixels;
+      s_pixel = 2 * fov_radius / n_pixels;
     }
     std::cerr << "--s-pixel=" << s_pixel << std::endl;
   }
@@ -261,24 +268,50 @@ void calculate_detector_options(cmdline::parser& cl) {
     std::cerr << "--w-detector=" << w_detector << std::endl;
   }
 
-  // automatic detector size
-  // NOTE: detector height will be determined per shape
-  if (!cl.exist("n-detectors")) {
-    if (cl.exist("d-detector")) {
-      n_detectors =
-          ((int)std::floor(
-               M_PI / std::atan2(d_detector, 2 * radius + d_detector / 2)) /
-           4) *
-          4;
-    } else {
-      n_detectors =
-          ((int)std::floor(M_PI / std::atan2(w_detector, 2 * radius)) / 4) * 4;
-    }
-    if (!n_detectors) {
-      throw("detector width is too big for given detector ring radius");
-    }
-    std::cerr << "--n-detectors=" << n_detectors << std::endl;
-  }
+
+}
+
+void set_small_barrel_options(cmdline::parser& cl) {
+  std::cerr << "setting small barrel\n";
+  auto& radius = cl.get<double>("radius");
+  auto& n_detectors = cl.get<int>("n-detectors");
+
+  auto& w_detector = cl.get<double>("w-detector");
+  auto& h_detector = cl.get<double>("h-detector");
+
+  auto& shape = cl.get<std::string>("shape");
+  auto& fov_radius = cl.get<double>("fov-radius");
+  fov_radius = 0.150;
+
+  w_detector = 0.005;
+  h_detector = 0.019;
+  radius = 0.180 - h_detector / 2;
+  n_detectors = 24;
+}
+
+void set_big_barrel_options(cmdline::parser& cl) {
+  double width = 0.007;
+  double height = 0.019;
+  double r1 = 0.430 - height / 2;
+  double r2 = 0.475 - height / 2;
+  double r3 = 0.575 - height / 2;
+
+  cl.get<double>("w-detector") = width;
+  cl.get<double>("h-detector") = height;
+
+  cl.get<double>("radius") = r1;
+  cl.get<double>("radius2") = r2;
+  cl.get<double>("radius3") = r3;
+
+  cl.get<double>("rotation") = 0.0;
+  cl.get<double>("rotation2") = 0.5;
+  cl.get<double>("rotation3") = 0.0;
+
+  cl.get<int>("n-detectors") = 48;
+  cl.get<int>("n-detectors2") = 48;
+  cl.get<int>("n-detectors3") = 92;
+
+  cl.get<double>("fov-radius")=0.400;
 }
 }
 }

@@ -46,15 +46,13 @@ using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR>;
 using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR>;
 
 LongitudinalDetectorSet buildDetectorFromCommandLineParameter(
-    const cmdline::parser& cl) {
-  if (cl.exist("small"))
-    return buildSmallBarrel();
-  if (cl.exist("big"))
-    return buildBigBarrel();
+   const  cmdline::parser& cl) {
+
 
   DetectorSet2D barrel =
       PET2D::Barrel::DetectorSetBuilder<DetectorSet2D>::buildMultipleRings(
           PET3D_LONGITUDINAL_DETECTOR_CL(cl, DetectorSet2D::F));
+  barrel.set_fov_radius(cl.get<double>("fov-radius"));
   return LongitudinalDetectorSet(barrel, F(cl.get<double>("length")));
 }
 
@@ -102,6 +100,11 @@ int main(int argc, char* argv[]) {
     }
 
     cmdline::load_accompanying_config(cl, false);
+    if (cl.exist("small"))
+      set_small_barrel_options(cl);
+    if (cl.exist("big"))
+      set_big_barrel_options(cl);
+
     calculate_detector_options(cl);
 
     const auto& model_name = cl.get<std::string>("model");
@@ -159,6 +162,11 @@ static SparseMatrix run(cmdline::parser& cl,
   auto verbose = cl.exist("verbose");
   auto& z_position = cl.get<double>("z-position");
 
+
+  if (verbose) {
+      std::cerr<<"n pixels   : "<<n_pixels<<"\n";
+      std::cerr<<"pixel size : "<<s_pixel<<"\n";
+  }
   std::random_device rd;
   util::random::tausworthe gen(rd());
   if (cl.exist("seed")) {

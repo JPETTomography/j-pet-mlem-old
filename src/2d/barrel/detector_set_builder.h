@@ -20,7 +20,7 @@ template <typename DetectorSetType> class DetectorSetBuilder {
                                          F d_detector = 0) {
 
     if (n_detectors > static_cast<S>(DetectorSetType::MaxDetectors))
-      throw("too many detectors");
+      throw("buld single ring: too many detectors");
     if (radius <= 0)
       throw("invalid radius");
     if (w_detector > 0 && h_detector == 0)
@@ -81,9 +81,9 @@ template <typename DetectorSetType> class DetectorSetBuilder {
       if (!n_detectors[i])
         n_detectors[i] = n_detectors[i - 1];
       if (n_detectors[i] + detector_set.size() > DetectorSetType::MaxDetectors)
-        throw("too many detectors");
+        throw("build multiple rings :too many detectors");
       DetectorSetLayout<Detector, DetectorSetType::MaxDetectors, S> ring =
-          buildSingleRing(radius[i], n_detectors[i], w_detector, d_detector);
+          buildSingleRing(radius[i], n_detectors[i], w_detector, h_detector, d_detector);
       for (auto& detector : ring) {
         detector.rotate(2 * F(M_PI) * rotation[i] / ring.size());
         detector_set.push_back(detector);
