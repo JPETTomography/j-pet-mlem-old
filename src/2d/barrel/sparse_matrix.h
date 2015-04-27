@@ -4,6 +4,10 @@
 
 #include <vector>
 #include <cstdint>
+#include <fstream>
+#include <sstream>
+#include <limits>
+#include <algorithm>
 
 namespace PET2D {
 namespace Barrel {
@@ -501,22 +505,26 @@ class SparseMatrix
     }
   };
 
+ public:
+  S symmetric_detector(S detector, S symmetry) const {
+    if (symmetry & 1) {
+      detector = (n_detectors_ - detector) % n_detectors_;      // x-axis
+    }
+    if (symmetry & 2) {
+      detector = (n_1_detectors_2_ - detector) % n_detectors_;  // y-axis
+    }
+    if (symmetry & 4) {
+      detector = (n_1_detectors_4_ - detector) % n_detectors_;  // xy-axis
+    }
+    return detector;
+  }
+
   /// Computes LOR based on given symmetry (1 out 8)
   LOR symmetric_lor(LOR lor,    ///< base lor for symmetry
                     S symmetry  ///< symmetry number (0..7)
                     ) const {
-    if (symmetry & 1) {
-      lor.first = (n_2_detectors_ - lor.first) % n_detectors_;
-      lor.second = (n_2_detectors_ - lor.second) % n_detectors_;
-    }
-    if (symmetry & 2) {
-      lor.first = (n_1_detectors_2_ - lor.first) % n_detectors_;
-      lor.second = (n_1_detectors_2_ - lor.second) % n_detectors_;
-    }
-    if (symmetry & 4) {
-      lor.first = (n_1_detectors_4_ - lor.first) % n_detectors_;
-      lor.second = (n_1_detectors_4_ - lor.second) % n_detectors_;
-    }
+    lor.first = symmetric_detector(lor.first, symmetry);
+    lor.second = symmetric_detector(lor.second, symmetry);
     return lor;
   }
 

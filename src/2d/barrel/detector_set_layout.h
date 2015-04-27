@@ -46,7 +46,7 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
       : Base(),
         fov_radius_(radius / M_SQRT2),
         c_inner(radius),
-        c_outer(outer_radius) {}
+        c_outer(outer_radius), n_symmetries_(0) {}
 
   enum class TestCase {
     TEST_8_SQUARE_DETECTORS,
@@ -83,6 +83,8 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
         throw("unknown test case");
     }
   }
+
+  int n_symmetries() const {return n_symmetries_;}
 
   void set_fov_radius(F fov_radius) { this->fov_radius_ = fov_radius; }
 
@@ -182,7 +184,10 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
   Circle c_inner;
   Circle c_outer;
 
+  int n_symmetries_;
+
  private:
+
 };
 }
 }
