@@ -58,7 +58,7 @@ template <typename DetectorSetType> class DetectorSetBuilder {
   static DetectorSetType buildMultipleRings(
       const std::vector<F> radius,    ///< radiuses of ring
       const std::vector<F> rotation,  ///< rotation of each ring (0-1)
-      std::vector<int> n_detectors,     ///< numbers of detectors on ring
+      std::vector<int> n_detectors,   ///< numbers of detectors on ring
       F w_detector,                   ///< width of single detector (along ring)
       F h_detector,                   ///< height/depth of single detector
                                       ///< (perpendicular to ring)
@@ -70,6 +70,25 @@ template <typename DetectorSetType> class DetectorSetBuilder {
       throw("must specify at least one radius");
     if (n_detectors.size() > radius.size())
       throw("number of numbers of detectors must be less or equal radiuses");
+
+    int total_n_detectors = 0;
+    for (int i = 0; i < radius.size(); ++i)
+      total_n_detectors += n_detectors[i];
+
+    bool symmetry_broken = false;
+    for (int i = 0; i < radius.size(); ++i) {
+
+      if (std::abs(rotation[i]) >= 1e-6 &&
+          std::abs(rotation[i] - F(0.5)) > 1e-6) {
+        std::cerr << "rotation = " << rotation[i] << "\n";
+        symmetry_broken = true;
+        break;
+      }
+    }
+
+    if (symmetry_broken) {
+      std::cerr << "Waring : symmetry is broken\n";
+    }
 
     DetectorSetType detector_set = buildSingleRing(
         radius[0], n_detectors[0], w_detector, h_detector, d_detector);
@@ -83,7 +102,8 @@ template <typename DetectorSetType> class DetectorSetBuilder {
       if (n_detectors[i] + detector_set.size() > DetectorSetType::MaxDetectors)
         throw("build multiple rings :too many detectors");
       DetectorSetLayout<Detector, DetectorSetType::MaxDetectors, S> ring =
-          buildSingleRing(radius[i], n_detectors[i], w_detector, h_detector, d_detector);
+          buildSingleRing(
+              radius[i], n_detectors[i], w_detector, h_detector, d_detector);
       for (auto& detector : ring) {
         detector.rotate(2 * F(M_PI) * rotation[i] / ring.size());
         detector_set.push_back(detector);
@@ -94,7 +114,6 @@ template <typename DetectorSetType> class DetectorSetBuilder {
 
     return detector_set;
   }
-
 };
 }
 }
