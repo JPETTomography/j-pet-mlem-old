@@ -4,7 +4,7 @@
 namespace PET2D {
 namespace Barrel {
 
-enum class Axis { X, Y, XY };
+enum  Axis { X=1, Y=2, XY=4 };
 
 template <typename SType> class SymmetryDescriptor {
  public:
@@ -12,7 +12,7 @@ template <typename SType> class SymmetryDescriptor {
   SymmetryDescriptor(int n_detectors, int n_symetries) {
     detectors_ = new S[n_detectors * n_symetries];
   }
-
+  static const S EIGHT=8;
   /**
    * @brief symmetric_detector
    * Returns symmetric detector on a ring of n_detectors, assuming that detector
@@ -20,11 +20,11 @@ template <typename SType> class SymmetryDescriptor {
    * positive X-axis (rotation=0).
    */
   S symmetric_detector(S detector, S symmetry) const {
-    return detectors_[detector * symmetry + symmetry];
+    return detectors_[detector * EIGHT + symmetry];
   };
   Pixel<S> pixel(Pixel<S> pixel, S symmetry);
 
-  S ring_symmetric_detector(S n_detectors, S detector, S symmetry) const {
+  static S ring_symmetric_detector(S n_detectors, S detector, S symmetry)  {
     if (symmetry & Axis::X) {
       detector = (n_detectors - detector) % n_detectors;  // x-axis
     }
@@ -45,9 +45,9 @@ template <typename SType> class SymmetryDescriptor {
    * zero is
    * at the angle Pi/n_detectors (rotation = 0.5).
    */
-  S rotated_ring_symmetric_detector(S n_detectors,
+  static S rotated_ring_symmetric_detector(S n_detectors,
                                     S detector,
-                                    S symmetry) const {
+                                    S symmetry)  {
     if (symmetry & Axis::X) {
       detector = (n_detectors - (detector + 1)) % n_detectors;  // x-axis
     }
@@ -60,6 +60,10 @@ template <typename SType> class SymmetryDescriptor {
                  n_detectors;  // xy-axis
     }
     return detector;
+  }
+
+  void set_symmetric_detector(S detector, S symmetry, S symmetric_detector) {
+      detectors_[detector * EIGHT + symmetry]=symmetric_detector;
   }
 
  private:

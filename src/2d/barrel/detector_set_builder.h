@@ -1,6 +1,8 @@
 #ifndef DETECTORSETBUILDER_H
 #define DETECTORSETBUILDER_H
 
+#include <functional>
+
 #include "2d/barrel/detector_set.h"
 #include "symmetry_descriptor.h"
 
@@ -72,8 +74,6 @@ template <typename DetectorSetType> class DetectorSetBuilder {
     if (n_detectors.size() > radius.size())
       throw("number of numbers of detectors must be less or equal radiuses");
 
-
-
     bool symmetry_broken = false;
     for (int i = 0; i < radius.size(); ++i) {
 
@@ -90,16 +90,48 @@ template <typename DetectorSetType> class DetectorSetBuilder {
     }
 
     int total_n_detectors = 0;
-    for (int i = 0; i < radius.size(); ++i)
+
+    for (size_t i = 0; i < radius.size(); ++i) {
+      if (!radius[i])
+        break;
+      if (!n_detectors[i])
+        n_detectors[i] = n_detectors[i - 1];
+
       total_n_detectors += n_detectors[i];
+    }
 
+    auto symmetry_descriptor = new SymmetryDescriptor<S>(total_n_detectors, 8);
 
-    SymmetryDescriptor<S> symmetry_descriptor(total_n_detectors, 8);
+    S start_detector = 0;
 
-    S detector =  0;
     DetectorSetType detector_set = buildSingleRing(
         radius[0], n_detectors[0], w_detector, h_detector, d_detector);
 
+    std::function<S(S, S)> symmetric_detector;
+
+    if (std::abs(rotation[0]) < 1e-6) {
+      symmetric_detector = [=](S d, S s) -> S {
+        return symmetry_descriptor->ring_symmetric_detector(
+            n_detectors[0], d, s);
+      };
+    } else if (std::abs(rotation[0] - 0.5) < 1e-6) {
+      symmetric_detector = [=](S d, S s) -> S {
+        return symmetry_descriptor->rotated_ring_symmetric_detector(
+            n_detectors[0], d, s);
+      };
+    } else {
+      symmetric_detector = [=](S d, S s) -> S { return 0; };
+    }
+
+    for (S d = 0; d < n_detectors[0]; ++d) {
+      for (S s = 0; s < SymmetryDescriptor<S>::EIGHT; ++s) {
+        // std::cerr << d << " " << s << " " << symmetric_detector(d, s) <<
+        // "\n";
+        symmetry_descriptor->set_symmetric_detector(
+            d, s, symmetric_detector(d, s));
+      }
+    }
+    start_detector += n_detectors[0];
     // Now create all following rings
     for (size_t i = 1; i < radius.size(); ++i) {
       if (!radius[i])
@@ -108,17 +140,46 @@ template <typename DetectorSetType> class DetectorSetBuilder {
         n_detectors[i] = n_detectors[i - 1];
       if (n_detectors[i] + detector_set.size() > DetectorSetType::MaxDetectors)
         throw("build multiple rings :too many detectors");
+
       DetectorSetLayout<Detector, DetectorSetType::MaxDetectors, S> ring =
           buildSingleRing(
               radius[i], n_detectors[i], w_detector, h_detector, d_detector);
+      S detector_i = 0;
+
+      if (std::abs(rotation[i]) < 1e-6) {
+        symmetric_detector = [=](S d, S s) -> S {
+          return symmetry_descriptor->ring_symmetric_detector(
+              n_detectors[i], d, s);
+        };
+      } else if (std::abs(rotation[i] - 0.5) < 1e-6) {
+        symmetric_detector = [=](S d, S s) -> S {
+          return symmetry_descriptor->rotated_ring_symmetric_detector(
+              n_detectors[i], d, s);
+        };
+      } else {
+        symmetric_detector = [=](S d, S s) -> S { return 0; };
+      }
+
       for (auto& detector : ring) {
         detector.rotate(2 * F(M_PI) * rotation[i] / ring.size());
         detector_set.push_back(detector);
+
+        for (S s = 0; s < SymmetryDescriptor<S>::EIGHT; ++s) {
+//          std::cerr << start_detector << " " << detector_i << " " << s << " "
+//                    << symmetric_detector(detector_i, s) << "\n";
+          symmetry_descriptor->set_symmetric_detector(
+              start_detector + detector_i,
+              s,
+              start_detector + symmetric_detector(detector_i, s));
+        }
+        detector_i++;
       }
       if (ring.outer_radius() > detector_set.outer_radius())
         detector_set.c_outer = ring.c_outer;
+      start_detector += n_detectors[i];
     }
 
+    detector_set.symmetry_descriptor_ = symmetry_descriptor;
     return detector_set;
   }
 };

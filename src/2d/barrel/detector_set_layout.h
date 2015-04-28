@@ -6,6 +6,9 @@
 #include "circle_detector.h"
 #include "util/array.h"
 #include "lor.h"
+
+#include "symmetry_descriptor.h"
+
 #if !__CUDACC__
 #include "util/svg_ostream.h"
 #include <vector>  // multi-ring detector construction
@@ -117,6 +120,8 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
            2 * 2;
   }
 
+  SymmetryDescriptor<S>* symmetry_descriptor() const {return symmetry_descriptor_;}
+
 #if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
                                           DetectorSetLayout& cd) {
@@ -185,6 +190,7 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
   Circle c_outer;
 
   int n_symmetries_;
+  SymmetryDescriptor<S>* symmetry_descriptor_;
 
  private:
 
