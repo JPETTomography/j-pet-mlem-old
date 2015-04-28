@@ -9,8 +9,8 @@ enum  Axis { X=1, Y=2, XY=4 };
 template <typename SType> class SymmetryDescriptor {
  public:
   using S = SType;
-  SymmetryDescriptor(int n_detectors, int n_symetries) {
-    detectors_ = new S[n_detectors * n_symetries];
+  SymmetryDescriptor(int n_detectors, int n_symmetries):n_detectors(n_detectors), n_symmetries(n_symmetries) {
+    detectors_ = new S[n_detectors * n_symmetries];
   }
   static const S EIGHT=8;
   /**
@@ -67,6 +67,8 @@ template <typename SType> class SymmetryDescriptor {
   }
 
  private:
+  const S n_detectors;
+  const S n_symmetries;
   S* detectors_;
 };
 }
