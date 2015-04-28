@@ -15,7 +15,7 @@ TEST("DetectorSetBuilder/Symmetry") {
 
   auto symmetry_descriptor = detector.symmetry_descriptor();
 
-  //First ring
+  // First ring
   for (short d = 0; d < 8; d++)
     REQUIRE(symmetry_descriptor->symmetric_detector(d, 0) == d);
 
@@ -27,7 +27,6 @@ TEST("DetectorSetBuilder/Symmetry") {
   REQUIRE(symmetry_descriptor->symmetric_detector(1, 6) == 7);
   REQUIRE(symmetry_descriptor->symmetric_detector(1, 7) == 5);
 
-
   REQUIRE(symmetry_descriptor->symmetric_detector(6, 1) == 2);
   REQUIRE(symmetry_descriptor->symmetric_detector(6, 2) == 6);
   REQUIRE(symmetry_descriptor->symmetric_detector(6, 3) == 2);
@@ -36,12 +35,10 @@ TEST("DetectorSetBuilder/Symmetry") {
   REQUIRE(symmetry_descriptor->symmetric_detector(6, 6) == 4);
   REQUIRE(symmetry_descriptor->symmetric_detector(6, 7) == 0);
 
+  // Second ring
 
-  //Second ring
-
-  for (short d = 8; d < 8+12; d++)
+  for (short d = 8; d < 8 + 12; d++)
     REQUIRE(symmetry_descriptor->symmetric_detector(d, 0) == d);
-
 
   REQUIRE(symmetry_descriptor->symmetric_detector(8, 1) == 19);
   REQUIRE(symmetry_descriptor->symmetric_detector(8, 2) == 13);
@@ -50,7 +47,6 @@ TEST("DetectorSetBuilder/Symmetry") {
   REQUIRE(symmetry_descriptor->symmetric_detector(8, 5) == 11);
   REQUIRE(symmetry_descriptor->symmetric_detector(8, 6) == 17);
   REQUIRE(symmetry_descriptor->symmetric_detector(8, 7) == 16);
-
 
   REQUIRE(symmetry_descriptor->symmetric_detector(15, 1) == 12);
   REQUIRE(symmetry_descriptor->symmetric_detector(15, 2) == 18);
@@ -62,7 +58,14 @@ TEST("DetectorSetBuilder/Symmetry") {
 
   //`third ring
 
-  for (short d = 20; d < 8+12+24; d++)
+  for (short d = 20; d < 8 + 12 + 24; d++)
     REQUIRE(symmetry_descriptor->symmetric_detector(d, 0) == d);
 
+  REQUIRE(symmetry_descriptor->symmetric_detector(20, 1) == 20);
+  REQUIRE(symmetry_descriptor->symmetric_detector(20, 2) == 32);
+  REQUIRE(symmetry_descriptor->symmetric_detector(20, 3) == 32);
+  REQUIRE(symmetry_descriptor->symmetric_detector(20, 4) == 26);
+  REQUIRE(symmetry_descriptor->symmetric_detector(20, 5) == 26);
+  REQUIRE(symmetry_descriptor->symmetric_detector(20, 6) == 38);
+  REQUIRE(symmetry_descriptor->symmetric_detector(20, 7) == 38);
 }
