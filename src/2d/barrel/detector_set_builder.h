@@ -132,7 +132,7 @@ template <typename DetectorSetType> class DetectorSetBuilder {
             n_detectors[0], d, s);
       };
     } else {
-      symmetric_detector = [=](S d, S s) -> S { return 0; };
+      symmetric_detector = [=](S, S) -> S { return 0; };
     }
 
     for (S d = 0; d < n_detectors[0]; ++d) {
@@ -169,7 +169,7 @@ template <typename DetectorSetType> class DetectorSetBuilder {
               n_detectors[i], d, s);
         };
       } else {
-        symmetric_detector = [=](S d, S s) -> S { return 0; };
+        symmetric_detector = [=](S, S) -> S { return 0; };
       }
 
       for (auto& detector : ring) {

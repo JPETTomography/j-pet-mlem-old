@@ -4,15 +4,16 @@
 namespace PET2D {
 namespace Barrel {
 
-enum  Axis { X=1, Y=2, XY=4 };
+enum Axis { X = 1, Y = 2, XY = 4 };
 
 template <typename SType> class SymmetryDescriptor {
  public:
   using S = SType;
-  SymmetryDescriptor(int n_detectors, int n_symmetries):n_detectors(n_detectors), n_symmetries(n_symmetries) {
+  SymmetryDescriptor(int n_detectors, int n_symmetries)
+      : n_detectors(n_detectors), n_symmetries(n_symmetries) {
     detectors_ = new S[n_detectors * n_symmetries];
   }
-  static const S EIGHT=8;
+  static const S EIGHT = 8;
   /**
    * @brief symmetric_detector
    * Returns symmetric detector on a ring of n_detectors, assuming that detector
@@ -24,7 +25,7 @@ template <typename SType> class SymmetryDescriptor {
   };
   Pixel<S> pixel(Pixel<S> pixel, S symmetry);
 
-  static S ring_symmetric_detector(S n_detectors, S detector, S symmetry)  {
+  static S ring_symmetric_detector(S n_detectors, S detector, S symmetry) {
     if (symmetry & Axis::X) {
       detector = (n_detectors - detector) % n_detectors;  // x-axis
     }
@@ -46,8 +47,8 @@ template <typename SType> class SymmetryDescriptor {
    * at the angle Pi/n_detectors (rotation = 0.5).
    */
   static S rotated_ring_symmetric_detector(S n_detectors,
-                                    S detector,
-                                    S symmetry)  {
+                                           S detector,
+                                           S symmetry) {
     if (symmetry & Axis::X) {
       detector = (n_detectors - (detector + 1)) % n_detectors;  // x-axis
     }
@@ -63,8 +64,24 @@ template <typename SType> class SymmetryDescriptor {
   }
 
   void set_symmetric_detector(S detector, S symmetry, S symmetric_detector) {
-      detectors_[detector * EIGHT + symmetry]=symmetric_detector;
+    detectors_[detector * EIGHT + symmetry] = symmetric_detector;
   }
+
+#if !__CUDACC__
+     void to_mathematica(std::ostream& m_out) const {
+         auto out_delimiter="";
+            for(S i=0;i<n_detectors;i++) {
+                auto in_delimiter="";
+                m_out<<out_delimiter<<"{"<<i<<"->{";
+                for(S s=0;s<n_symmetries;s++) {
+                    m_out<<in_delimiter<<symmetric_detector(i,s);
+                    in_delimiter=",";
+                }
+                m_out<<"}}\n";
+                out_delimiter=",";
+            }
+     }
+#endif
 
  private:
   const S n_detectors;

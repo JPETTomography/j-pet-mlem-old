@@ -49,7 +49,8 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
       : Base(),
         fov_radius_(radius / M_SQRT2),
         c_inner(radius),
-        c_outer(outer_radius), n_symmetries_(0) {}
+        c_outer(outer_radius),
+        n_symmetries_(0) {}
 
   enum class TestCase {
     TEST_8_SQUARE_DETECTORS,
@@ -87,7 +88,7 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
     }
   }
 
-  int n_symmetries() const {return n_symmetries_;}
+  int n_symmetries() const { return n_symmetries_; }
 
   void set_fov_radius(F fov_radius) { this->fov_radius_ = fov_radius; }
 
@@ -120,7 +121,9 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
            2 * 2;
   }
 
-  SymmetryDescriptor<S>* symmetry_descriptor() const {return symmetry_descriptor_;}
+  SymmetryDescriptor<S>* symmetry_descriptor() const {
+    return symmetry_descriptor_;
+  }
 
 #if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
@@ -138,7 +141,6 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
 
     for (auto& detector : cd) {
       svg << detector;
-
     }
 
     svg << "</g>" << std::endl;
@@ -149,15 +151,21 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
   void to_mathematica(std::ostream& m_out) const {
     int i = 0;
     std::string delimiter;
-    m_out<<"{\n";
+    m_out << "{\"Detector\"->";
+    m_out << "{\n";
+
     for (auto& detector : (*this)) {
-      m_out << delimiter<<"{ " << i << " , ";
+      m_out << delimiter << "{ " << i << " , ";
       detector.to_mathematica(m_out);
       m_out << "}\n";
       i++;
-      delimiter=",";
+      delimiter = ",";
     }
-    m_out<<"}";
+    m_out << "},";
+    m_out << "\"Symmetries\"->{";
+    symmetry_descriptor()->to_mathematica(m_out);
+    m_out << "}";
+     m_out << "}";
   }
 
 #endif
@@ -193,7 +201,6 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
   SymmetryDescriptor<S>* symmetry_descriptor_;
 
  private:
-
 };
 }
 }
