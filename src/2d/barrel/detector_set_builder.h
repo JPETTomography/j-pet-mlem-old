@@ -55,6 +55,18 @@ template <typename DetectorSetType> class DetectorSetBuilder {
       detector_set.push_back(detector);
     }
 
+    auto symmetry_descriptor = new SymmetryDescriptor<S>(n_detectors, 8);
+    for (S d = 0; d < n_detectors; ++d) {
+      for (S s = 0; s < SymmetryDescriptor<S>::EIGHT; ++s) {
+        // std::cerr << d << " " << s << " " << symmetric_detector(d, s) <<
+        // "\n";
+        symmetry_descriptor->set_symmetric_detector(
+            d,
+            s,
+            symmetry_descriptor->ring_symmetric_detector(n_detectors, d, s));
+      }
+    }
+    detector_set.symmetry_descriptor_ = symmetry_descriptor;
     return detector_set;
   }
 
@@ -165,8 +177,9 @@ template <typename DetectorSetType> class DetectorSetBuilder {
         detector_set.push_back(detector);
 
         for (S s = 0; s < SymmetryDescriptor<S>::EIGHT; ++s) {
-//          std::cerr << start_detector << " " << detector_i << " " << s << " "
-//                    << symmetric_detector(detector_i, s) << "\n";
+          //          std::cerr << start_detector << " " << detector_i << " " <<
+          //          s << " "
+          //                    << symmetric_detector(detector_i, s) << "\n";
           symmetry_descriptor->set_symmetric_detector(
               start_detector + detector_i,
               s,
