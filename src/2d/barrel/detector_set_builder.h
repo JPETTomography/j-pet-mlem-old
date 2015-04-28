@@ -2,6 +2,7 @@
 #define DETECTORSETBUILDER_H
 
 #include "2d/barrel/detector_set.h"
+#include "symmetry_descriptor.h"
 
 namespace PET2D {
 namespace Barrel {
@@ -71,9 +72,7 @@ template <typename DetectorSetType> class DetectorSetBuilder {
     if (n_detectors.size() > radius.size())
       throw("number of numbers of detectors must be less or equal radiuses");
 
-    int total_n_detectors = 0;
-    for (int i = 0; i < radius.size(); ++i)
-      total_n_detectors += n_detectors[i];
+
 
     bool symmetry_broken = false;
     for (int i = 0; i < radius.size(); ++i) {
@@ -90,6 +89,14 @@ template <typename DetectorSetType> class DetectorSetBuilder {
       std::cerr << "Waring : symmetry is broken\n";
     }
 
+    int total_n_detectors = 0;
+    for (int i = 0; i < radius.size(); ++i)
+      total_n_detectors += n_detectors[i];
+
+
+    SymmetryDescriptor<S> symmetry_descriptor(total_n_detectors, 8);
+
+    S detector =  0;
     DetectorSetType detector_set = buildSingleRing(
         radius[0], n_detectors[0], w_detector, h_detector, d_detector);
 
