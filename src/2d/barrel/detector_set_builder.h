@@ -67,6 +67,7 @@ template <typename DetectorSetType> class DetectorSetBuilder {
       }
     }
     detector_set.symmetry_descriptor_ = symmetry_descriptor;
+
     return detector_set;
   }
 

@@ -59,5 +59,32 @@ template <typename F> class voxel_event_generator {
   std::uniform_real_distribution<F> uni_z;
   PET3D::spherical_distribution<F> spherical_distribution;
 };
+
+template <typename F> class cylinder_point_generator {
+ public:
+  using Point = PET3D::Point<F>;
+  cylinder_point_generator(F radius, F height)
+      : radius(radius),
+        height(height),
+        uni_h(-height / 2, height / 2),
+        uni_phi(0, 2 * M_PI),
+        uni_r(0, 1) {}
+
+  template <typename RNG> Point operator()(RNG& rng) {
+    F phi = uni_phi(rng);
+    F r   = radius*std::sqrt(uni_r(rng));
+    F x   = r*cos(phi);
+    F y   = r*sin(phi);
+    F h = uni_h(rng);
+    return Point(x,y,h);
+  }
+
+ private:
+  const F radius;
+  const F height;
+  std::uniform_real_distribution<F> uni_h;
+  std::uniform_real_distribution<F> uni_phi;
+  std::uniform_real_distribution<F> uni_r;
+};
 }
 #endif  // EVENT_GENERATOR
