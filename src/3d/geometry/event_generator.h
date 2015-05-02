@@ -12,15 +12,13 @@ template <typename F> class spherical_distribution {
  public:
   using Vector = PET3D::Vector<F>;
 
-  spherical_distribution(F R = 1)
-      : R(R), R2(R * R), phi_dist(-M_PI, M_PI), z_dist(-R, R) {}
-  const F R;
-  const F R2;
+  spherical_distribution(F theta_min = -M_PI / 2, F theta_max = M_PI / 2)
+      : phi_dist(-M_PI, M_PI), z_dist(sin(theta_min), sin(theta_max)) {}
 
   template <typename RNG> Vector operator()(RNG& rng) {
 
     F z = z_dist(rng);
-    F r = std::sqrt(R2 - z * z);
+    F r = std::sqrt(1 - z * z);
     F phi = phi_dist(rng);
     F x = r * cos(phi);
     F y = r * sin(phi);
@@ -72,11 +70,11 @@ template <typename F> class cylinder_point_generator {
 
   template <typename RNG> Point operator()(RNG& rng) {
     F phi = uni_phi(rng);
-    F r   = radius*std::sqrt(uni_r(rng));
-    F x   = r*cos(phi);
-    F y   = r*sin(phi);
+    F r = radius * std::sqrt(uni_r(rng));
+    F x = r * cos(phi);
+    F y = r * sin(phi);
     F h = uni_h(rng);
-    return Point(x,y,h);
+    return Point(x, y, h);
   }
 
  private:
