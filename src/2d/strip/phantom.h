@@ -201,9 +201,6 @@ template <typename D, typename FType, typename SType> class Phantom {
   }
 
   template <typename StreamType> Phantom& operator>>(StreamType& out) {
-
-    int size = events.size();
-    out << size;
     for (auto& event : events) {
       out << event.z_u << event.z_d << event.dl;
     }

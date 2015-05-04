@@ -37,7 +37,6 @@ class Reconstruction {
 
  private:
   const int n_threads;
-  std::vector<Event<F>> events;
   std::vector<F> rho;
   std::vector<F> acc_log;
   std::vector<std::vector<F>> thread_rhos;
@@ -47,6 +46,7 @@ class Reconstruction {
 
  public:
   const ReconstructionStats<size_t>& stats;
+  std::vector<Event<F>> events;
 
   Reconstruction(const Detector& detector)
       : detector(detector),
@@ -147,14 +147,8 @@ class Reconstruction {
     stats_.collect();
   }
 
-  // accessor for CUDA compatibility
-  std::vector<Event<F>>& get_event_list() { return events; }
-
   template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
-    int size;
-    in >> size;
-
-    for (int it = 0; it < size; ++it) {
+    while (!in.eof()) {
       F z_u, z_d, dl;
       in >> z_u >> z_d >> dl;
       Event<F> temp_event(z_u, z_d, dl);
@@ -192,7 +186,7 @@ class Reconstruction {
 
  private:
   int n_pixels_in_line(F length, F pixel_size) const {
-    return static_cast<int>((length + F(0.5)) / pixel_size);
+    return static_cast<int>(length / pixel_size + F(0.5));
   }
 
   void bb_update(Point ellipse_center, F y, F tan, std::vector<F>& output_rho) {

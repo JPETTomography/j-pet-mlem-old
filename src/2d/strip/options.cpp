@@ -53,6 +53,10 @@ void add_reconstruction_options(cmdline::parser& cl) {
   msg << "note: All length options below should be expressed in milimeters.";
   cl.footer(msg.str());
 
+  cl.add("dl-is-time", 0, "delta is time, convert using speed of light");
+  cl.add<double>("speed-of-light", 0, "speed of light", false, 299792458.);
+  cl.add<double>("scale-length", 0, "scale input length values", false, 1.);
+  cl.add<double>("scale-time", 0, "scale input time values", false, 1.);
   cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
   cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
   cl.add<cmdline::path>("output",

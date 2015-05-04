@@ -66,6 +66,7 @@ int main(int argc, char* argv[]) {
     cmdline::parser cl;
     add_reconstruction_options(cl);
     cl.parse_check(argc, argv);
+    calculate_detector_options(cl);
 
     if (!cl.rest().size()) {
       throw("at least one events input file expected, consult --help");
@@ -90,11 +91,41 @@ int main(int argc, char* argv[]) {
     }
 
     for (auto& fn : cl.rest()) {
-      util::ibstream events(fn);
-      if (!events.is_open()) {
-        throw("cannot open phantom events file: " + fn);
+      if (cmdline::path(fn).ext() == ".txt") {
+        std::ifstream events(fn);
+        if (!events.is_open()) {
+          throw("cannot open phantom events file: " + fn);
+        }
+        reconstruction << events;
+      } else {
+        util::ibstream events(fn);
+        if (!events.is_open()) {
+          throw("cannot open phantom events file: " + fn);
+        }
+        reconstruction << events;
       }
-      reconstruction << events;
+      if (verbose) {
+        std::cerr << "# read " << reconstruction.events.size()
+                  << " events from " << fn << std::endl;
+      }
+
+      auto dl_is_time = cl.exist("dl-is-time");
+      if (cl.exist("scale-length")) {
+        auto scale = cl.get<double>("scale-length");
+        for (auto& event : reconstruction.events) {
+          event.z_u *= scale;
+          event.z_d *= scale;
+          if (!dl_is_time)
+            event.dl *= scale;
+        }
+      }
+      if (dl_is_time) {
+        auto scale = cl.get<double>("scale-time");
+        auto speed_of_light = cl.get<double>("speed-of-light");
+        for (auto& event : reconstruction.events) {
+          event.dl = event.dl * speed_of_light * scale;
+        }
+      }
     }
 
     auto n_blocks = cl.get<int>("blocks");
@@ -110,7 +141,7 @@ int main(int argc, char* argv[]) {
       Detector<float, short> single_precision_strip_detector(strip_detector);
 
       GPU::run_reconstruction(single_precision_strip_detector,
-                              reconstruction.get_event_list(),
+                              reconstruction.events,
                               n_blocks,
                               n_iterations,
                               cl.get<int>("cuda-device"),
