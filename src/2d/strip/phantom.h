@@ -19,7 +19,7 @@
 namespace PET2D {
 namespace Strip {
 
-template <typename F> int sgn(F val) { return (0 < val) - (val < 0); }
+//template <typename F> int sgn(F val) { return (0 < val) - (val < 0); }
 
 /// Virtual phantom region made of ellipse and intensity
 template <typename FType> struct PhantomRegion {
