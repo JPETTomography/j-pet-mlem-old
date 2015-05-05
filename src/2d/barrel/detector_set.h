@@ -39,9 +39,7 @@ namespace Barrel {
 /// - TriangleDetector
 /// - PolygonalDetector
 
-template <typename DetectorType,
-          std::size_t MaxDetectors,
-          typename SType>
+template <typename DetectorType, std::size_t MaxDetectors, typename SType>
 class DetectorSet
     : public DetectorSetLayout<DetectorType, MaxDetectors, SType> {
  public:
@@ -55,7 +53,7 @@ class DetectorSet
   using Event = Barrel::Event<F>;
   using Base = DetectorSetLayout<DetectorType, MaxDetectors, SType>;
   using CircleDetector = Barrel::CircleDetector<F>;
-  using Indices = util::array<MaxDetectors,S>;
+  using Indices = util::array<MaxDetectors, S>;
   using Response = typename Base::Response;
 
   /// Makes an empty detector set.

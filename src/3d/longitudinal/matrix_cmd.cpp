@@ -22,8 +22,6 @@
 #include "monte_carlo.h"
 #include "util/progress.h"
 
-
-
 #include "util/png_writer.h"
 #include "util/svg_ostream.h"
 
@@ -46,8 +44,7 @@ using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR>;
 using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR>;
 
 LongitudinalDetectorSet buildDetectorFromCommandLineParameter(
-   const  cmdline::parser& cl) {
-
+    const cmdline::parser& cl) {
 
   DetectorSet2D barrel =
       PET2D::Barrel::DetectorSetBuilder<DetectorSet2D>::buildMultipleRings(
@@ -113,7 +110,6 @@ int main(int argc, char* argv[]) {
     LongitudinalDetectorSet detector_set =
         buildDetectorFromCommandLineParameter(cl);
 
-
     if (model_name == "always") {
       PET2D::Barrel::AlwaysAccept<float> model;
       auto sparse_matrix = run(cl, detector_set, model);
@@ -163,10 +159,9 @@ static SparseMatrix run(cmdline::parser& cl,
   auto verbose = cl.exist("verbose");
   auto& z_position = cl.get<double>("z-position");
 
-
   if (verbose) {
-      std::cerr<<"n pixels   : "<<n_pixels<<"\n";
-      std::cerr<<"pixel size : "<<s_pixel<<"\n";
+    std::cerr << "n pixels   : " << n_pixels << "\n";
+    std::cerr << "pixel size : " << s_pixel << "\n";
   }
   std::random_device rd;
   util::random::tausworthe gen(rd());

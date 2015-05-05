@@ -9,7 +9,7 @@ using namespace PET2D::Strip;
 const double degree = M_PI / 180.0;
 
 TEST("2d/strip/event/conversions1") {
-  Detector<double,short> detector(450.0, 200.0, 200, 200, 5.0, 5.0, 10, 63);
+  Detector<double, short> detector(450.0, 200.0, 200, 200, 5.0, 5.0, 10, 63);
 
   ImageSpaceEventAngle<double> img_angle(10.0, 20.0, 7.0 * degree);
   ImageSpaceEventTan<double> img_tan = img_angle.to_tan();

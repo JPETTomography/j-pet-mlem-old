@@ -115,7 +115,8 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    Phantom<Detector<double, short>, double, short> phantom(detector, ellipse_list);
+    Phantom<Detector<double, short>, double, short> phantom(detector,
+                                                            ellipse_list);
 
     if (verbose) {
       std::cerr << "detector: " << detector.size_y << " "

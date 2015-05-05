@@ -24,7 +24,7 @@ namespace Strip {
 namespace GPU {
 
 template <typename F>
-void fill_with_sensitivity(F* sensitivity, Detector<F,short>& detector);
+void fill_with_sensitivity(F* sensitivity, Detector<F, short>& detector);
 
 template <typename F>
 void run_reconstruction(Detector<F, short>& detector,
@@ -194,7 +194,8 @@ void fill_with_sensitivity(F* sensitivity, Detector<F, short>& detector) {
 
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      sensitivity[y * width + x] = detector.pixel_sensitivity(Pixel<short>(x, y));
+      sensitivity[y * width + x] =
+          detector.pixel_sensitivity(Pixel<short>(x, y));
     }
   }
 }

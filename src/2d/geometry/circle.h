@@ -40,7 +40,6 @@ template <typename FType> class Circle {
   using Secant = util::array<2, Point>;
   using SecantAngles = util::array<2, Angle>;
 
-
   _ bool intersects(const Event& e) const { return radius2 > e.c2; }
 
   /// \brief Returns secant for given event line

@@ -109,7 +109,8 @@ TEST("2d/barrel/detector_set/detect") {
         PET2D::Barrel::DetectorSetBuilder<Detector>::buildSingleRing(
             1., 16, .1, .1);
     Detector outer_ring =
-        PET2D::Barrel::DetectorSetBuilder<Detector>::buildSingleRing(1.4, 16, .1, .1);
+        PET2D::Barrel::DetectorSetBuilder<Detector>::buildSingleRing(
+            1.4, 16, .1, .1);
 
     Detector detector;
 

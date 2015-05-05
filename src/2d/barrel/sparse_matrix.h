@@ -508,7 +508,7 @@ class SparseMatrix
  public:
   S symmetric_detector(S detector, S symmetry) const {
     if (symmetry & 1) {
-      detector = (n_detectors_ - detector) % n_detectors_;      // x-axis
+      detector = (n_detectors_ - detector) % n_detectors_;  // x-axis
     }
     if (symmetry & 2) {
       detector = (n_1_detectors_2_ - detector) % n_detectors_;  // y-axis

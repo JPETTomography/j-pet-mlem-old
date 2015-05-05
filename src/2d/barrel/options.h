@@ -32,7 +32,6 @@ void calculate_detector_options(cmdline::parser& parser);
 void set_small_barrel_options(cmdline::parser& parser);
 void set_big_barrel_options(cmdline::parser& parser);
 
-
 /// Provides initialization list for creating detector.
 #define __PET2D_BARREL(...) __VA_ARGS__  // just pass-through
 #define PET2D_BARREL_DETECTOR_CL(cl, ftype)              \

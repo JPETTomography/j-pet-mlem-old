@@ -126,6 +126,5 @@ TEST("2d/geometry/circle/secant/math") {
 
     int section1, section2;
     in >> section1 >> section2;
-
   }
 }

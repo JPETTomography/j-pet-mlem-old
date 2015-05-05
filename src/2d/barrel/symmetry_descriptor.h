@@ -68,19 +68,19 @@ template <typename SType> class SymmetryDescriptor {
   }
 
 #if !__CUDACC__
-     void to_mathematica(std::ostream& m_out) const {
-         auto out_delimiter="";
-            for(S i=0;i<n_detectors;i++) {
-                auto in_delimiter="";
-                m_out<<out_delimiter<<"{"<<i<<"->{";
-                for(S s=0;s<n_symmetries;s++) {
-                    m_out<<in_delimiter<<symmetric_detector(i,s);
-                    in_delimiter=",";
-                }
-                m_out<<"}}\n";
-                out_delimiter=",";
-            }
-     }
+  void to_mathematica(std::ostream& m_out) const {
+    auto out_delimiter = "";
+    for (S i = 0; i < n_detectors; i++) {
+      auto in_delimiter = "";
+      m_out << out_delimiter << "{" << i << "->{";
+      for (S s = 0; s < n_symmetries; s++) {
+        m_out << in_delimiter << symmetric_detector(i, s);
+        in_delimiter = ",";
+      }
+      m_out << "}}\n";
+      out_delimiter = ",";
+    }
+  }
 #endif
 
  private:

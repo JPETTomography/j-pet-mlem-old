@@ -62,22 +62,22 @@ using namespace PET2D;
 using namespace PET2D::Barrel;
 
 template <typename DetectorType>
-using DetectorModel = DetectorSet<DetectorType,MAX_DETECTORS,short>;
+using DetectorModel = DetectorSet<DetectorType, MAX_DETECTORS, short>;
 // using DetectorModel = DetectorRing<DetectorType>;
 
 // all available detector shapes
 using SquareDetectorRing = DetectorModel<SquareDetector<float>>;
 using CircleDetectorRing = DetectorModel<CircleDetector<float>>;
 using TriangleDetectorRing = DetectorModel<TriangleDetector<float>>;
-using HexagonalDetectorRing = DetectorModel<PolygonalDetector<6,float>>;
+using HexagonalDetectorRing = DetectorModel<PolygonalDetector<6, float>>;
 
 template <typename DetectorRing, typename Model>
 void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring);
 
 template <typename Detector, typename Model>
 static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
-                                        Detector& detector_ring,
-                                        Model& model);
+                                                  Detector& detector_ring,
+                                                  Model& model);
 
 template <typename DetectorRing>
 void post_process(cmdline::parser& cl,
@@ -206,8 +206,8 @@ void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring) {
 
 template <typename Detector, typename Model>
 static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
-                                        Detector& detector_ring,
-                                        Model& model) {
+                                                  Detector& detector_ring,
+                                                  Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
@@ -339,10 +339,10 @@ void post_process(cmdline::parser& cl,
     }
 
     util::svg_ostream<float> svg(fn_wo_ext + ".svg",
-                            detector_ring.outer_radius(),
-                            detector_ring.outer_radius(),
-                            1024.,
-                            1024.);
+                                 detector_ring.outer_radius(),
+                                 detector_ring.outer_radius(),
+                                 1024.,
+                                 1024.);
     svg.link_image(fn_wo_path + ".png",
                    -(s_pixel * n_pixels) / 2,
                    -(s_pixel * n_pixels) / 2,
@@ -377,10 +377,10 @@ void post_process(cmdline::parser& cl,
     }
 
     util::svg_ostream<float> svg(fn_wo_ext + ".svg",
-                            detector_ring.outer_radius(),
-                            detector_ring.outer_radius(),
-                            1024.,
-                            1024.);
+                                 detector_ring.outer_radius(),
+                                 detector_ring.outer_radius(),
+                                 1024.,
+                                 1024.);
     svg.link_image(fn_wo_path + ".png",
                    -(s_pixel * n_pixels) / 2,
                    -(s_pixel * n_pixels) / 2,

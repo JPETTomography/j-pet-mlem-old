@@ -8,11 +8,9 @@ using Builder = PET2D::Barrel::DetectorSetBuilder<
     PET2D::Barrel::
         DetectorSet<PET2D::Barrel::SquareDetector<float>, 128, short>>;
 
-
 TEST("DetectorSetBuilder/SingleRing/Symmetry") {
 
-  auto detector = Builder::buildSingleRing(
-     200.0, 8,  0.007, 0.019);
+  auto detector = Builder::buildSingleRing(200.0, 8, 0.007, 0.019);
 
   auto symmetry_descriptor = detector.symmetry_descriptor();
 
@@ -35,7 +33,6 @@ TEST("DetectorSetBuilder/SingleRing/Symmetry") {
   REQUIRE(symmetry_descriptor->symmetric_detector(6, 5) == 0);
   REQUIRE(symmetry_descriptor->symmetric_detector(6, 6) == 4);
   REQUIRE(symmetry_descriptor->symmetric_detector(6, 7) == 0);
-
 }
 
 TEST("DetectorSetBuilder/Multiring/Symmetry") {

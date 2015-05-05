@@ -15,8 +15,7 @@ namespace Barrel {
 
 /// Represents single detector with round shape:
 /// \image html shape_circle.pdf.png
-template <typename FType>
-class CircleDetector : public Circle<FType> {
+template <typename FType> class CircleDetector : public Circle<FType> {
  public:
   using F = FType;
   using Base = Circle<F>;

@@ -229,8 +229,8 @@ void calculate_detector_options(cmdline::parser& cl) {
     fov_radius = radius / std::sqrt(2);
   }
 
-  if(cl.exist("s-pixel") &&!cl.exist("n-pixels")) {
-      cl.get<int>("n-pixels") = (int)std::floor(2*fov_radius/s_pixel);
+  if (cl.exist("s-pixel") && !cl.exist("n-pixels")) {
+    cl.get<int>("n-pixels") = (int)std::floor(2 * fov_radius / s_pixel);
   }
 
   // automatic pixel size
@@ -267,8 +267,6 @@ void calculate_detector_options(cmdline::parser& cl) {
     }
     std::cerr << "--w-detector=" << w_detector << std::endl;
   }
-
-
 }
 
 void set_small_barrel_options(cmdline::parser& cl) {
@@ -311,7 +309,7 @@ void set_big_barrel_options(cmdline::parser& cl) {
   cl.get<int>("n-detectors2") = 48;
   cl.get<int>("n-detectors3") = 96;
 
-  cl.get<double>("fov-radius")=0.400;
+  cl.get<double>("fov-radius") = 0.400;
 }
 }
 }

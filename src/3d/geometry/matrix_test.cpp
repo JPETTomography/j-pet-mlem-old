@@ -52,16 +52,16 @@ TEST("3d/geometry/matrix/arithmetic_assignment_operators") {
   {
     Matrix mat{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     mat += rhs;
-    for(int i=0;i<9;i++) {
-      REQUIRE(mat(i)==Approx(2*(i+1)).epsilon(1e-7));
+    for (int i = 0; i < 9; i++) {
+      REQUIRE(mat(i) == Approx(2 * (i + 1)).epsilon(1e-7));
     }
   }
 
   {
     Matrix mat{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     mat -= rhs;
-    for(int i=0;i<9;i++) {
-      REQUIRE(mat(i)==Approx(0).epsilon(1e-7));
+    for (int i = 0; i < 9; i++) {
+      REQUIRE(mat(i) == Approx(0).epsilon(1e-7));
     }
   }
 }
@@ -74,17 +74,40 @@ TEST("3d/geometry/matrix/arithmetic_operators") {
   {
     Matrix mat;
 
-    mat = lhs+rhs;
-    for(int i=0;i<9;i++) {
-      REQUIRE(mat(i)==Approx(2*(i+1)).epsilon(1e-7));
+    mat = lhs + rhs;
+    for (int i = 0; i < 9; i++) {
+      REQUIRE(mat(i) == Approx(2 * (i + 1)).epsilon(1e-7));
     }
   }
 
   {
     Matrix mat;
-    mat = lhs-rhs;
-    for(int i=0;i<9;i++) {
-      REQUIRE(mat(i)==Approx(0).epsilon(1e-7));
+    mat = lhs - rhs;
+    for (int i = 0; i < 9; i++) {
+      REQUIRE(mat(i) == Approx(0).epsilon(1e-7));
+    }
+  }
+}
+
+TEST("3d/geometry/matrix/scalar_multiplication") {
+  using Vector = PET3D::Vector<Matrix::F>;
+
+  Matrix rhs{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+  {
+    Matrix mat;
+
+    mat = rhs * 3.0f;
+    for (int i = 0; i < 9; i++) {
+      REQUIRE(mat(i) == Approx(3 * (i + 1)).epsilon(1e-7));
+    }
+  }
+
+  {
+    Matrix mat;
+    mat = 3.0f * rhs;
+    for (int i = 0; i < 9; i++) {
+      REQUIRE(mat(i) == Approx(3 * (i + 1)).epsilon(1e-7));
     }
   }
 }

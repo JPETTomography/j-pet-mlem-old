@@ -55,7 +55,6 @@ class MonteCarlo {
     if (n_emissions <= 0)
       return;
 
-
     util::random::uniform_real_distribution<F> one_dis(0, 1);
     util::random::uniform_real_distribution<F> phi_dis(0, F(M_PI));
     spherical_distribution<F> direction;

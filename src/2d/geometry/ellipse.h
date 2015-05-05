@@ -53,8 +53,7 @@ template <typename FType> struct Ellipse {
 };
 
 /// Elliptical emmission source
-template <typename FType >
-struct EllipticalSource : public Ellipse<FType> {
+template <typename FType> struct EllipticalSource : public Ellipse<FType> {
   using F = FType;
 
   using Ellipse = PET2D::Ellipse<F>;
@@ -75,8 +74,7 @@ struct EllipticalSource : public Ellipse<FType> {
 };
 
 /// Generates random points from given ellipse
-template <typename FType >
-class EllipsePointGenerator {
+template <typename FType> class EllipsePointGenerator {
  public:
   using F = FType;
   using Ellipse = PET2D::Ellipse<F>;

@@ -11,7 +11,7 @@ namespace PET2D {
 template <typename FType> struct Point {
   using F = FType;
 
- // using Pixel = PET2D::Pixel<S>;
+  // using Pixel = PET2D::Pixel<S>;
   using Vector = PET2D::Vector<FType>;
 
   _ Point(F x, F y) : x(x), y(y) {}
@@ -69,18 +69,18 @@ template <typename FType> struct Point {
     return compat::min((p1 - *this).length(), (p2 - *this).length());
   }
 
-  template<typename PType>
-  _ PType pixel(F pixel_size, int pixel_count_2) {
-    return PType(static_cast<typename PType::S>(compat::floor(x / pixel_size + pixel_count_2)),
-                 static_cast<typename PType::S>(compat::floor(y / pixel_size + pixel_count_2)));
+  template <typename PType> _ PType pixel(F pixel_size, int pixel_count_2) {
+    return PType(static_cast<typename PType::S>(
+                     compat::floor(x / pixel_size + pixel_count_2)),
+                 static_cast<typename PType::S>(
+                     compat::floor(y / pixel_size + pixel_count_2)));
   }
 
   _ Vector as_vector() const { return Vector(x, y); }
 };
 
 /// Single point source
-template <typename FType >
-struct PointSource : public Point<FType> {
+template <typename FType> struct PointSource : public Point<FType> {
   using F = FType;
   using Point = PET2D::Point<F>;
 

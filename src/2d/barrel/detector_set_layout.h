@@ -165,7 +165,7 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
     m_out << "\"Symmetries\"->{";
     symmetry_descriptor()->to_mathematica(m_out);
     m_out << "}";
-     m_out << "}";
+    m_out << "}";
   }
 
 #endif

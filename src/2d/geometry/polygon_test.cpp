@@ -16,7 +16,7 @@ TEST("2d/geometry/polygon/center") {
 
   CHECK(ps.center() == Point<float>(1.5, 1.5));
 
-  Polygon<3,float> pt;
+  Polygon<3, float> pt;
   pt.emplace_back(1., 1.);
   pt.emplace_back(2., 1.);
   pt.emplace_back(1.5, 2.);
@@ -88,7 +88,7 @@ TEST("2d/geometry/polygon/intersection/math") {
     size_t n_iters;
     in >> n_iters;
 
-    Polygon<4,float>::Event event(x, y, phi);
+    Polygon<4, float>::Event event(x, y, phi);
     bool intersects = n_iters > 0;
 
     CHECKED_IF(poly.intersects(event) == intersects) {

@@ -57,8 +57,7 @@ template <typename FType> struct Point {
 };
 
 /// Single point source
-template <typename FType>
-struct PointSource : public Point<FType> {
+template <typename FType> struct PointSource : public Point<FType> {
   using F = FType;
   using Point = PET3D::Point<F>;
 

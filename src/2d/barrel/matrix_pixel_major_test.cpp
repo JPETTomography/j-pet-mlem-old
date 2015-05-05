@@ -9,7 +9,7 @@
 #include "matrix_pixel_major.h"
 
 using Pixel = PET2D::Pixel<float>;
-using LOR =PET2D::Barrel::LOR<short>;
+using LOR = PET2D::Barrel::LOR<short>;
 using Matrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR>;
 
 TEST("2d/barrel/lor/ctor") {
@@ -31,13 +31,9 @@ TEST("2d/barrel/lor/iterator") {
   CHECK(count == 10 * (10 + 1) / 2);
 }
 
-TEST("2d/barrel/pix_major_system_matrix/ctor") {
-
-  Matrix matrix(128, 140);
-}
+TEST("2d/barrel/pix_major_system_matrix/ctor") { Matrix matrix(128, 140); }
 
 TEST("2d/barrel/pix_major_system_matrix/add") {
-
 
   Matrix matrix(128, 140);
 

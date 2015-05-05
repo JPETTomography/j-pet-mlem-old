@@ -162,10 +162,10 @@ template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
 
 template <typename F>
 __device__ Pixel<short> warp_space_pixel(int offset,
-                                    Pixel<short> tl,
-                                    int width,
-                                    F inv_width,
-                                    int& index) {
+                                         Pixel<short> tl,
+                                         int width,
+                                         F inv_width,
+                                         int& index) {
   // threadIdx.x % WARP_SIZE + offset : works for WARP_SIZE = 2^n
   index = (threadIdx.x & (WARP_SIZE - 1)) + offset;
   Pixel<short> pixel;
