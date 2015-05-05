@@ -13,8 +13,7 @@ namespace Longitudinal {
 
 /// 3D detector made of several scintillators
 
-template <typename DetectorSet2D>
-class DetectorSet {
+template <typename DetectorSet2D> class DetectorSet {
  public:
   using F = typename DetectorSet2D::F;
   using S = typename DetectorSet2D::S;
@@ -27,6 +26,19 @@ class DetectorSet {
   using Indices = typename DetectorSet2D::Indices;
   using BarrelEvent = typename DetectorSet2D::Event;
   using BarrelType = DetectorSet2D;
+
+  /**
+ * @brief The FullResponse struct
+ *
+ * contains the full(redundant) information information about event and detector
+ * response.
+ */
+  struct FullResponse {
+    S detector1, detector2;
+    Point d1_entry, d1_exit, d1_deposition;
+    Point d2_entry, d2_exit, d2_deposition;
+    Point origin;
+  };
 
   struct Response {
     LOR lor;
@@ -60,10 +72,10 @@ class DetectorSet {
   }
 
   template <class RandomGenerator, class AcceptanceModel>
-  _ short detect(RandomGenerator& gen,    ///< random number generator
-                 AcceptanceModel& model,  ///< acceptance model
-                 const Event& e,          ///< event to be detected
-                 Response& response) const {
+  _ short exact_detect(RandomGenerator& gen,    ///< random number generator
+                       AcceptanceModel& model,  ///< acceptance model
+                       const Event& e,          ///< event to be detected
+                       FullResponse& response) const {
 
     if (escapes_through_endcap(e))
       return 0;
@@ -76,7 +88,7 @@ class DetectorSet {
     S detector1, detector2;
 
     Point d1_p1, d1_p2, d2_p1, d2_p2;
-    Point deposit_d1, deposit_d2;
+    Point d1_deposit, d2_deposit;
 
     if (!check_for_hits(gen,
                         model,
@@ -87,7 +99,7 @@ class DetectorSet {
                         detector1,
                         d1_p1,
                         d1_p2,
-                        deposit_d1) ||
+                        d1_deposit) ||
         !check_for_hits(gen,
                         model,
                         right,
@@ -97,23 +109,56 @@ class DetectorSet {
                         detector2,
                         d2_p1,
                         d2_p2,
-                        deposit_d2))
+                        d2_deposit))
       return 0;
 
-    response.lor = LOR(detector1, detector2);
-    F length1 = (deposit_d1 - e.origin).length();
-    F length2 = (deposit_d2 - e.origin).length();
+    response.detector1 = detector1;
+    response.detector2 = detector2;
 
-    if (detector1 > detector2) {
+    response.d1_entry = d1_p1;
+    response.d1_exit = d1_p2;
+    response.d1_deposition = d1_deposit;
+
+    response.d2_entry = d2_p1;
+    response.d2_exit = d2_p2;
+    response.d2_deposition = d2_deposit;
+    response.origin = e.origin;
+
+    return 2;
+  }
+
+  Response noErrorResponse(const FullResponse& full_response) const {
+    Response response;
+    F length1 = (full_response.d1_deposition - full_response.origin).length();
+    F length2 = (full_response.d2_deposition - full_response.origin).length();
+
+    response.lor = LOR(full_response.detector1, full_response.detector2);
+
+    if (full_response.detector1 > full_response.detector2) {
       response.dl = length1 - length2;
-      response.z_up = deposit_d1.z;
-      response.z_dn = deposit_d2.z;
+      response.z_up = full_response.d1_deposition.z;
+      response.z_dn = full_response.d2_deposition.z;
     } else {
       response.dl = length2 - length1;
-      response.z_up = deposit_d2.z;
-      response.z_dn = deposit_d1.z;
+      response.z_up = full_response.d2_deposition.z;
+      response.z_dn = full_response.d1_deposition.z;
     }
-    return 2;
+    return response;
+  }
+
+  template <class RandomGenerator, class AcceptanceModel>
+  _ short detect(RandomGenerator& gen,    ///< random number generator
+                 AcceptanceModel& model,  ///< acceptance model
+                 const Event& e,          ///< event to be detected
+                 Response& response) const {
+
+    FullResponse full_response;
+    if (exact_detect(gen, model, e, full_response) == 2) {
+
+      response = noErrorResponse(full_response);
+      return 2;
+    }
+    return 0;
   }
 
   void reconstruct_3d_intersection_points(const Event& event,
@@ -176,8 +221,8 @@ class DetectorSet {
       F depth;
       if (barrel.did_intersect(e_xy, i, p1_xy, p2_xy)) {
         reconstruct_3d_intersection_points(e, dir, p1_xy, p2_xy, entry, exit);
-        if(entry.z>half_length || entry.z<-half_length)
-            return false;
+        if (entry.z > half_length || entry.z < -half_length)
+          return false;
         if (did_deposit(gen, model, entry, exit, depth)) {
           Vector v = exit - entry;
           deposit = entry + v * (depth / v.length());

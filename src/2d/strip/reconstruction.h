@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 #include "event.h"
 #include "kernel.h"
@@ -148,11 +149,15 @@ class Reconstruction {
   }
 
   template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
+    int i = 0;
     while (!in.eof()) {
+
       F z_u, z_d, dl;
       in >> z_u >> z_d >> dl;
+      //std::cout << i << " "<< z_u << " " << z_d << " " << dl << "\n";
       Event<F> temp_event(z_u, z_d, dl);
       events.push_back(temp_event);
+      i++;
     }
     return *this;
   }
