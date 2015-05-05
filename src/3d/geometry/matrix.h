@@ -34,9 +34,36 @@ template <typename FType> class Matrix {
   F& operator()(int i, int j) { return rep_[i * 3 + j]; }
   F operator()(int i, int j) const { return rep_[i * 3 + j]; }
 
+  Matrix& operator+=(const Matrix& rhs) {
+    for(int i=0;i<9;i++)
+        rep_[i]+=rhs(i);
+    return *this;
+  }
+
+  Matrix& operator-=(const Matrix& rhs) {
+    for(int i=0;i<9;i++)
+        rep_[i]-=rhs(i);
+    return *this;
+  }
+
  private:
   F rep_[3 * 3];
 };
+
+  template <typename FType>
+  Matrix<FType> operator+(Matrix<FType> lhs, Matrix<FType> rhs) {
+    Matrix<FType> res(lhs);
+    res+=rhs;
+    return res;
+  }
+
+  template <typename FType>
+  Matrix<FType> operator-(Matrix<FType> lhs, Matrix<FType> rhs) {
+    Matrix<FType> res(lhs);
+    res-=rhs;
+    return res;
+  }
+
 
 template <typename FType>
 Vector<FType> operator*(Matrix<FType> mat, Vector<FType> vec) {

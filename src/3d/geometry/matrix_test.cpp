@@ -40,8 +40,51 @@ TEST("3d/geometry/matrix/vector_multiplication") {
 
   Vector res = mat * vec;
 
-  REQUIRE(res.x==14.0_e7);
-  REQUIRE(res.y==32.0_e7);
-  REQUIRE(res.z==50.0_e7);
+  REQUIRE(res.x == 14.0_e7);
+  REQUIRE(res.y == 32.0_e7);
+  REQUIRE(res.z == 50.0_e7);
+}
 
+TEST("3d/geometry/matrix/arithmetic_assignment_operators") {
+  using Vector = PET3D::Vector<Matrix::F>;
+
+  Matrix rhs{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+  {
+    Matrix mat{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    mat += rhs;
+    for(int i=0;i<9;i++) {
+      REQUIRE(mat(i)==Approx(2*(i+1)).epsilon(1e-7));
+    }
+  }
+
+  {
+    Matrix mat{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    mat -= rhs;
+    for(int i=0;i<9;i++) {
+      REQUIRE(mat(i)==Approx(0).epsilon(1e-7));
+    }
+  }
+}
+
+TEST("3d/geometry/matrix/arithmetic_operators") {
+  using Vector = PET3D::Vector<Matrix::F>;
+
+  Matrix rhs{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+  Matrix lhs{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+  {
+    Matrix mat;
+
+    mat = lhs+rhs;
+    for(int i=0;i<9;i++) {
+      REQUIRE(mat(i)==Approx(2*(i+1)).epsilon(1e-7));
+    }
+  }
+
+  {
+    Matrix mat;
+    mat = lhs-rhs;
+    for(int i=0;i<9;i++) {
+      REQUIRE(mat(i)==Approx(0).epsilon(1e-7));
+    }
+  }
 }
