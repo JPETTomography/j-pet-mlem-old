@@ -58,10 +58,11 @@ template <typename F> class voxel_event_generator {
   PET3D::spherical_distribution<F> spherical_distribution;
 };
 
-template <typename F> class cylinder_point_generator {
+template <typename FType> class cylinder_point_distribution {
  public:
+  using F = FType;
   using Point = PET3D::Point<F>;
-  cylinder_point_generator(F radius, F height)
+  cylinder_point_distribution(F radius, F height)
       : radius(radius),
         height(height),
         uni_h(-height / 2, height / 2),
@@ -83,6 +84,50 @@ template <typename F> class cylinder_point_generator {
   std::uniform_real_distribution<F> uni_h;
   std::uniform_real_distribution<F> uni_phi;
   std::uniform_real_distribution<F> uni_r;
+};
+
+template <typename FType> class ball_point_distribution {
+ public:
+  using F = FType;
+  using Point = PET3D::Point<F>;
+  ball_point_distribution(F radius = 1)
+      : radius(radius), uni(-radius, radius) {}
+
+  template <typename RNG> Point operator()(RNG& rng) {
+    F x, y, z;
+    do {
+      x = uni(rng);
+      y = uni(rng);
+      z = uni(rng);
+    } while (x * x + y * y + z * z > F(1.0));
+    return Point(x, y, z);
+  }
+
+  const F radius;
+
+ private:
+  std::uniform_real_distribution<F> uni;
+};
+
+template <typename FType> class ellipsoid_point_distribution {
+ public:
+  using F = FType;
+  using Point = PET3D::Point<F>;
+  ellipsoid_point_distribution(F rx, F ry, F rz)
+      : rx(rx), ry(ry), rz(rz), ball(1) {}
+
+  const F rx, ry, rz;
+
+  template <typename RNG> Point operator()(RNG& rng) {
+    Point p = ball(rng);
+    p.x *= rx;
+    p.y *= ry;
+    p.z *= rz;
+    return p;
+  }
+
+ private:
+  ball_point_distribution<F> ball;
 };
 }
 #endif  // EVENT_GENERATOR

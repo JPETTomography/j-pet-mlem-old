@@ -46,3 +46,52 @@ TEST("3d/geometry/event_generator/voxel_event_generator") {
     CHECK((dir.x * dir.x + dir.y * dir.y + dir.z * dir.z) == 1.0_e7);
   }
 }
+
+TEST("3d/geometry/event_generator/cylinder_event_generator") {
+  using Generator = PET3D::cylinder_point_distribution<float>;
+  using Point = Generator::Point;
+  using F = Generator::F;
+
+  std::mt19937 rng;
+
+  F radius = 2.0;
+  F height = 3.0;
+  Generator generator(radius, height);
+  for (int i = 0; i < 100; i++) {
+    Point p = generator(rng);
+    REQUIRE((p.x * p.x + p.y * p.y) <= radius * radius);
+    REQUIRE(p.z <= height / 2);
+    REQUIRE(p.z >= -height / 2);
+  }
+}
+
+TEST("3d/geometry/event_generator/ball_event_generator") {
+  using Generator = PET3D::ball_point_distribution<float>;
+  using Point = Generator::Point;
+  using F = Generator::F;
+
+  std::mt19937 rng;
+
+  F radius = 2.0;
+  Generator generator(radius);
+  for (int i = 0; i < 100; i++) {
+    Point p = generator(rng);
+    REQUIRE((p.x * p.x + p.y * p.y + p.z * p.z) <= radius * radius);
+  }
+}
+
+TEST("3d/geometry/event_generator/ellipsoid_event_generator") {
+  using Generator = PET3D::ellipsoid_point_distribution<float>;
+  using Point = Generator::Point;
+  using F = Generator::F;
+
+  std::mt19937 rng;
+
+  F a = 3.0, b = 4.0, c = 5.0;
+  Generator generator(a, b, c);
+  for (int i = 0; i < 100; i++) {
+    Point p = generator(rng);
+    REQUIRE((p.x * p.x / (a * a) + p.y * p.y / (b * b) + p.z * p.z / (c * c)) <=
+            1);
+  }
+}
