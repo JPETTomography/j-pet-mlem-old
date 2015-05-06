@@ -8,7 +8,8 @@ namespace Barrel {
 /// Triangular pixel map
 
 /// Provides efficient storage for triangular map of pixels.
-/// \image html detector2.pdf.png
+/// \image html detector_ring2.pdf.png
+
 template <typename PixelType, typename SType = int, typename HitType = int>
 class TriangularPixelMap {
  public:

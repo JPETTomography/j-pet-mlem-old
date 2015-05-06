@@ -18,7 +18,7 @@ namespace Barrel {
 /// ring, so some operations like possible secants can be done much quicker,
 /// approximately 2x faster than using GenericScanner.
 ///
-/// \image html detector.pdf.png
+/// \image html detector_ring.pdf.png
 
 template <typename DetectorType, std::size_t MaxDetectors, typename SType>
 class RingScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
