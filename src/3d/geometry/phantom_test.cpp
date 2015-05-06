@@ -7,7 +7,7 @@
 TEST("PET3D/Geometry/CylinderRegion") {
   using F = float;
   using Region =
-      CylinderRegion<F, std::mt19937, PET3D::spherical_distribution<F>>;
+      PET3D::CylinderRegion<F, std::mt19937, PET3D::spherical_distribution<F>>;
   using Point = Region::Point;
 
   Region region(
@@ -32,4 +32,9 @@ TEST("PET3D/Geometry/CylinderRegion") {
     REQUIRE(((direction.z <= std::sqrt(3) / 2) &&
              (direction.z >= -std::sqrt(3) / 2)));
   }
+}
+
+
+TEST("PE3D/Geometry/Phantom") {
+   // Phantom phantom;
 }
