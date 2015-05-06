@@ -5,9 +5,9 @@
 using namespace PET3D;
 
 TEST("3d/geometry/event_generator/spherical_distribution") {
-  using Vector = spherical_distribution<float>::Vector;
+  using Vector = SphericalDistribution<float>::Vector;
 
-  spherical_distribution<float> random_direction;
+  SphericalDistribution<float> random_direction;
   std::mt19937 rng;
 
   for (int i = 0; i < 256; i++) {
@@ -22,13 +22,13 @@ TEST("3d/geometry/event_generator/spherical_distribution") {
 
 TEST("3d/geometry/event_generator/voxel_event_generator") {
 
-  using Event = voxel_event_generator<float>::Event;
-  using Vector = voxel_event_generator<float>::Vector;
-  using Point = voxel_event_generator<float>::Point;
+  using Event = VoxelEventGenerator<float>::Event;
+  using Vector = VoxelEventGenerator<float>::Vector;
+  using Point = VoxelEventGenerator<float>::Point;
 
   std::mt19937 rng;
-  voxel_event_generator<float> event_generator(Point(1.0f, 2.0f, 3.0f),
-                                               Vector(0.1f, 0.2f, 0.3f));
+  VoxelEventGenerator<float> event_generator(Point(1.0f, 2.0f, 3.0f),
+                                             Vector(0.1f, 0.2f, 0.3f));
 
   for (int i = 0; i < 256; i++) {
     Event event = event_generator(rng);
@@ -48,7 +48,7 @@ TEST("3d/geometry/event_generator/voxel_event_generator") {
 }
 
 TEST("3d/geometry/event_generator/cylinder_event_generator") {
-  using Generator = PET3D::cylinder_point_distribution<float>;
+  using Generator = PET3D::CylinderPointDistribution<float>;
   using Point = Generator::Point;
   using F = Generator::F;
 
@@ -66,7 +66,7 @@ TEST("3d/geometry/event_generator/cylinder_event_generator") {
 }
 
 TEST("3d/geometry/event_generator/ball_event_generator") {
-  using Generator = PET3D::ball_point_distribution<float>;
+  using Generator = PET3D::BallPointDistribution<float>;
   using Point = Generator::Point;
   using F = Generator::F;
 
@@ -81,7 +81,7 @@ TEST("3d/geometry/event_generator/ball_event_generator") {
 }
 
 TEST("3d/geometry/event_generator/ellipsoid_event_generator") {
-  using Generator = PET3D::ellipsoid_point_distribution<float>;
+  using Generator = PET3D::EllipsoidPointDistribution<float>;
   using Point = Generator::Point;
   using F = Generator::F;
 

@@ -10,11 +10,11 @@
 TEST("3d/geometry/phantom/cylinder_region") {
   using F = float;
   using Region =
-      PET3D::CylinderRegion<F, std::mt19937, PET3D::spherical_distribution<F>>;
+      PET3D::CylinderRegion<F, std::mt19937, PET3D::SphericalDistribution<F>>;
   using Point = Region::Point;
 
   Region region(
-      2.0f, 3.0f, 1.0f, PET3D::spherical_distribution<F>(-M_PI / 3, M_PI / 3));
+      2.0f, 3.0f, 1.0f, PET3D::SphericalDistribution<F>(-M_PI / 3, M_PI / 3));
 
   REQUIRE(region.volume() == Approx(4.0 * M_PI * 3.0).epsilon(1e-7));
   REQUIRE(region.intensity == 1.0_e7);
@@ -43,7 +43,7 @@ TEST("3d/geometry/phantom") {
   std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
   float angle = std::atan2(0.0025f, 0.400f);
   auto cylinder = new PET3D::CylinderRegion<float, RNG>(
-      0.0015, 0.001, 1, PET3D::spherical_distribution<float>(-angle, angle));
+      0.0015, 0.001, 1, PET3D::SphericalDistribution<float>(-angle, angle));
   PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
   auto rotated_cylinder =

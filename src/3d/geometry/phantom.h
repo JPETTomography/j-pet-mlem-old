@@ -55,7 +55,7 @@ class AbstractPhantomRegion : public PhantomRegion<FType, RNG> {
 
 template <typename FType,
           typename RNG,
-          typename AngularDistribution = PET3D::spherical_distribution<FType>>
+          typename AngularDistribution = PET3D::SphericalDistribution<FType>>
 class CylinderRegion
     : public AbstractPhantomRegion<FType, RNG, AngularDistribution> {
  public:
@@ -66,7 +66,7 @@ class CylinderRegion
       F radius,
       F height,
       F intensity,
-      AngularDistribution angular = PET3D::spherical_distribution<F>())
+      AngularDistribution angular = PET3D::SphericalDistribution<F>())
       : AbstractPhantomRegion<FType, RNG, AngularDistribution>(intensity,
                                                                angular),
         radius(radius),
@@ -85,7 +85,7 @@ class CylinderRegion
   const F height;
 
  private:
-  PET3D::cylinder_point_distribution<F> dist;
+  PET3D::CylinderPointDistribution<F> dist;
 };
 
 template <typename FType, typename SType, typename RNG> class Phantom {
