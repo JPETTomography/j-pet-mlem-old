@@ -22,9 +22,11 @@ class tausworthe {
   typedef unsigned int state_type[4];
 
   /// Minimum value returned by random number generator
-  _ static result_type min() { return 0; }
+  _ static constexpr result_type min() { return 0; }
   /// Maximum value returned by random number generator
-  _ static result_type max() { return compat::numeric_max<result_type>(); }
+  _ static constexpr result_type max() {
+    return compat::numeric_max<result_type>();
+  }
 
   /// Creates new random number generator with given seed.
   tausworthe(seed_type seed = 121245) { this->seed(seed); }
