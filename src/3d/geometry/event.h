@@ -1,5 +1,4 @@
-#ifndef EVENT_H
-#define EVENT_H
+#pragma once
 
 #include "3d/geometry/plane.h"
 #include "3d/geometry/vector.h"
@@ -31,5 +30,3 @@ template <typename FType> class Event {
   const Vector direction;
 };
 }
-
-#endif  // EVENT_H

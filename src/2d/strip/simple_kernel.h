@@ -1,5 +1,4 @@
-#ifndef SIMPLE_KERNEL
-#define SIMPLE_KERNEL
+#pragma once
 
 #include <cmath>
 
@@ -120,5 +119,3 @@ template <typename FType = double> class SimpleKernel {
 };
 }  // Strip
 }  // PET2D
-
-#endif  // SIMPLE_KERNEL

@@ -1,5 +1,4 @@
-#ifndef PLANE
-#define PLANE
+#pragma once
 
 #include "geometry/geometry.h"
 
@@ -30,5 +29,3 @@ template <typename FType> class ZPlane : public Plane<FType> {
   }
 };
 }
-
-#endif  // PLANE

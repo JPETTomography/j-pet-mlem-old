@@ -1,5 +1,4 @@
-#ifndef EVENT_GENERATOR
-#define EVENT_GENERATOR
+#pragma once
 
 #include <random>
 
@@ -130,4 +129,3 @@ template <typename FType> class ellipsoid_point_distribution {
   ball_point_distribution<F> ball;
 };
 }
-#endif  // EVENT_GENERATOR
