@@ -2,7 +2,7 @@
 
 #include "matrix.h"
 
-#include "2d/barrel/detector_ring.h"
+#include "2d/barrel/ring_scanner.h"
 #include "2d/barrel/square_detector.h"
 #include "2d/barrel/monte_carlo.h"
 #include "2d/barrel/model.h"

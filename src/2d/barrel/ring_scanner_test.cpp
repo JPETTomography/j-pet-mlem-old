@@ -4,11 +4,11 @@
 #include "util/test.h"
 
 #include "model.h"
-#include "detector_ring.h"
+#include "ring_scanner.h"
 #include "detector_set_builder.h"
 
 using SquareDetector = PET2D::Barrel::SquareDetector<float>;
-using DetectorRing = PET2D::Barrel::DetectorRing<SquareDetector, 512, short>;
+using DetectorRing = PET2D::Barrel::RingScanner<SquareDetector, 512, short>;
 using Model = PET2D::Barrel::AlwaysAccept<float>;
 
 TEST("2d/barrel/detector_ring/math") {

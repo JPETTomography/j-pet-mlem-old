@@ -21,7 +21,7 @@ namespace Barrel {
 /// \image html detector_ring.pdf.png
 
 template <typename DetectorType, std::size_t MaxDetectors, typename SType>
-class DetectorRing
+class RingScanner
     : public DetectorSetLayout<DetectorType, MaxDetectors, SType> {
  public:
   using Base = DetectorSetLayout<DetectorType, MaxDetectors, SType>;
@@ -50,7 +50,7 @@ class DetectorRing
   }
 #endif
 
-  DetectorRing(F radius = 1, F outer_radius = F(1.5))
+  RingScanner(F radius = 1, F outer_radius = F(1.5))
       : Base(radius, outer_radius) {}
 
  private:

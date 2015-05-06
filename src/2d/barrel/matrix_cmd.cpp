@@ -33,7 +33,7 @@
 #include "util/cmdline_hooks.h"
 #include "detector_set_builder.h"
 #include "util/random.h"
-#include "detector_ring.h"
+#include "ring_scanner.h"
 #include "detector_set.h"
 #include "circle_detector.h"
 #include "triangle_detector.h"

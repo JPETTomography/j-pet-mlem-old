@@ -4,7 +4,7 @@
 #include "2d/geometry/pixel.h"
 #include "2d/barrel/lor.h"
 #include "2d/barrel/square_detector.h"
-#include "2d/barrel/detector_ring.h"
+#include "2d/barrel/ring_scanner.h"
 #if !__CUDACC__
 #include "cmdline.h"
 #include "2d/barrel/sparse_matrix.h"
@@ -20,7 +20,7 @@ using Point = PET2D::Point<float>;
 using Pixel = PET2D::Pixel<short>;
 using LOR = Barrel::LOR<short>;
 using SquareDetector = Barrel::SquareDetector<float>;
-using DetectorRing = Barrel::DetectorRing<SquareDetector, MAX_DETECTORS, short>;
+using DetectorRing = Barrel::RingScanner<SquareDetector, MAX_DETECTORS, short>;
 
 /// \endcond
 

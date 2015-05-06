@@ -4,7 +4,7 @@
 #include "2d/geometry/pixel.h"
 #include "2d/barrel/lor.h"
 #include "2d/barrel/square_detector.h"
-#include "2d/barrel/detector_ring.h"
+#include "2d/barrel/ring_scanner.h"
 #include "2d/barrel/detector_set.h"
 #include "2d/barrel/model.h"
 #if !__CUDACC__

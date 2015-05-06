@@ -4,7 +4,7 @@
 
 #include "model.h"
 #include "detector_set.h"
-#include "detector_ring.h"
+#include "ring_scanner.h"
 #include "detector_set_builder.h"
 
 // using namespace PET2D;

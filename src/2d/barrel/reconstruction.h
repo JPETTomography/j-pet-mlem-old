@@ -5,7 +5,7 @@
 #include <list>
 #include <algorithm>
 
-#include "detector_ring.h"
+#include "ring_scanner.h"
 #include "sparse_matrix.h"
 #include "2d/geometry/pixel.h"
 #include "lor.h"
