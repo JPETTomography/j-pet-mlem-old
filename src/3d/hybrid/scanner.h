@@ -26,12 +26,10 @@ template <typename Scanner2D> class Scanner {
   using Indices = typename Scanner2D::Indices;
   using Event2D = typename Scanner2D::Event;
 
-  /**
- * @brief The FullResponse struct
- *
- * contains the full(redundant) information information about event and detector
- * response.
- */
+  /// Scanner full response
+  ///
+  /// Contains the full(redundant) information information about event and
+  /// scanner response.
   struct FullResponse {
     S detector1, detector2;
     Point d1_entry, d1_exit, d1_deposition;
@@ -39,6 +37,9 @@ template <typename Scanner2D> class Scanner {
     Point origin;
   };
 
+  /// Scanner response
+  ///
+  /// Represents information actually detected by the scanner on single event.
   struct Response {
     LOR lor;
     F z_up;

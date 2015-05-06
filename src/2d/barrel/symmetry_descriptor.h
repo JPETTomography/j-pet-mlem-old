@@ -14,15 +14,15 @@ template <typename SType> class SymmetryDescriptor {
     detectors_ = new S[n_detectors * n_symmetries];
   }
   static const S EIGHT = 8;
-  /**
-   * @brief symmetric_detector
-   * Returns symmetric detector on a ring of n_detectors, assuming that detector
-   * zero is on the
-   * positive X-axis (rotation=0).
-   */
+
+  /// Symmetric detector
+  ///
+  /// Returns symmetric detector on a ring of n_detectors, assuming that
+  /// detector zero is on the positive X-axis (rotation=0).
   S symmetric_detector(S detector, S symmetry) const {
     return detectors_[detector * EIGHT + symmetry];
-  };
+  }
+
   Pixel<S> pixel(Pixel<S> pixel, S symmetry);
 
   static S ring_symmetric_detector(S n_detectors, S detector, S symmetry) {
@@ -40,12 +40,10 @@ template <typename SType> class SymmetryDescriptor {
     return detector;
   }
 
-  /**
-   * @brief symmetric_detector
-   * Returns symmetric detector on a ring of n_detectors, assuming that detector
-   * zero is
-   * at the angle Pi/n_detectors (rotation = 0.5).
-   */
+  /// Rotated symmetric detector
+  ///
+  /// Returns symmetric detector on a ring of n_detectors, assuming that
+  /// detector zero is at the angle Pi/n_detectors (rotation = 0.5).
   static S rotated_ring_symmetric_detector(S n_detectors,
                                            S detector,
                                            S symmetry) {
