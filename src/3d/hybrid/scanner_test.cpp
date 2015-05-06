@@ -2,7 +2,7 @@
 
 #include "util/test.h"
 
-#include "3d/longitudinal/detector_set.h"
+#include "3d/hybrid/scanner.h"
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/square_detector.h"
@@ -18,86 +18,78 @@ float length = 0.30;
 
 float minimal_angle = std::atan2(inner_radius, length / 2);
 
-TEST("3d/longitudinal/detector_set/escape_through_endcap") {
-  using SquareDetector = PET2D::Barrel::SquareDetector<float>;
-  using DetectorSet2D =
-      PET2D::Barrel::GenericScanner<SquareDetector, 24, short>;
-  using DetectorSet = PET3D::Longitudinal::Scanner<DetectorSet2D>;
-  using Vector = PET3D::Vector<float>;
-  using Point = PET3D::Point<float>;
+using SquareDetector = PET2D::Barrel::SquareDetector<float>;
+using Scanner2D = PET2D::Barrel::GenericScanner<SquareDetector, 24, short>;
+using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
+using Vector = PET3D::Vector<float>;
+using Point = PET3D::Point<float>;
 
-  DetectorSet2D detector_set_2D(inner_radius, scintillator_height);
-  DetectorSet detector_set(detector_set_2D, length);
+TEST("3d/hybrid/detector_set/escape_through_endcap") {
+  Scanner2D scanner_2d(inner_radius, scintillator_height);
+  Scanner scanner(scanner_2d, length);
 
   {
     PET3D::Event<float> event(Point(0.0f, 0.0f, 0.0f),
                               Vector(0.0f, 0.0f, 1.0f));
-    CHECK(detector_set.escapes_through_endcap(event));
+    CHECK(scanner.escapes_through_endcap(event));
   }
 
   {
     PET3D::Event<float> event(Point(0.0f, 0.0f, 0.0f),
                               Vector::from_euler_angles(0.0f, M_PI / 2.0));
-    CHECK(!detector_set.escapes_through_endcap(event));
+    CHECK(!scanner.escapes_through_endcap(event));
   }
 
   {
     PET3D::Event<float> event(Point(0.0f, 0.0f, 0.0f),
                               Vector::from_euler_angles(1.0f, M_PI / 2.0));
-    CHECK(!detector_set.escapes_through_endcap(event));
+    CHECK(!scanner.escapes_through_endcap(event));
   }
 
   {
     PET3D::Event<float> event(Point(0.0f, 0.0f, 0.0f),
                               Vector::from_euler_angles(0.0f, M_PI / 4.0));
-    CHECK(detector_set.escapes_through_endcap(event));
+    CHECK(scanner.escapes_through_endcap(event));
   }
 
   {
     PET3D::Event<float> event(
         Point(0.0f, 0.0f, 0.0f),
         Vector::from_euler_angles(0.0f, 0.99f * minimal_angle));
-    CHECK(detector_set.escapes_through_endcap(event));
+    CHECK(scanner.escapes_through_endcap(event));
   }
 
   {
     PET3D::Event<float> event(
         Point(0.0f, 0.0f, 0.0f),
         Vector::from_euler_angles(0.0f, 1.01f * minimal_angle));
-    CHECK(!detector_set.escapes_through_endcap(event));
+    CHECK(!scanner.escapes_through_endcap(event));
   }
 }
 
-TEST("3d/longitudinal/detector_set/detect", "detect") {
-  using SquareDetector = PET2D::Barrel::SquareDetector<float>;
-  using DetectorSet2D =
-      PET2D::Barrel::GenericScanner<SquareDetector, 24, short>;
-  using DetectorSet = PET3D::Longitudinal::Scanner<DetectorSet2D>;
-  using Vector = PET3D::Vector<float>;
-  using Point = PET3D::Point<float>;
-
-  DetectorSet2D detector_set_2D =
-      PET2D::Barrel::ScannerBuilder<DetectorSet2D>::buildSingleRing(
+TEST("3d/hybrid/detector_set/detect", "detect") {
+  Scanner2D scanner_2d =
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::buildSingleRing(
           inner_radius, 24, scintillator_height, scintillator_width);
-  DetectorSet detector_set(detector_set_2D, length);
+  Scanner scanner(scanner_2d, length);
   PET2D::Barrel::AlwaysAccept<> model;
 
   {
     PET3D::Event<float> event(Point(0.0f, 0.0f, 0.0f),
                               Vector(0.0f, 0.0f, 1.0f));
 
-    DetectorSet::Response response;
+    Scanner::Response response;
 
-    CHECK(!detector_set.detect(model, model, event, response));
+    CHECK(!scanner.detect(model, model, event, response));
   }
 
   {
     PET3D::Event<float> event(Point(0.0f, 0.0f, 0.0f),
                               Vector::from_euler_angles(0.0f, M_PI / 2.0));
 
-    DetectorSet::Response response;
+    Scanner::Response response;
 
-    REQUIRE(detector_set.detect(model, model, event, response));
+    REQUIRE(scanner.detect(model, model, event, response));
     auto lor = response.lor;
     CHECK(lor.first == 12);
     CHECK(lor.second == 0);
@@ -111,16 +103,16 @@ TEST("3d/longitudinal/detector_set/detect", "detect") {
     PET3D::Event<float> event(Point(0.0f, 0.0f, 0.0f),
                               Vector::from_euler_angles(0.0f, M_PI / 2.5f));
 
-    DetectorSet::Response response;
+    Scanner::Response response;
 
-    CHECK(detector_set.detect(model, model, event, response));
+    CHECK(scanner.detect(model, model, event, response));
 
     auto lor = response.lor;
     CHECK(lor.first == 12);
     CHECK(lor.second == 0);
     // std::cerr << lor.first << " " << lor.second << "\n";
     float z = inner_radius / std::tan(M_PI / 2.5);
-    //    std::cerr<<z<<"\n";
+    // std::cerr <<z << "\n";
     CHECK(response.z_up == Approx(-z).epsilon(1e-7));
     CHECK(response.z_dn == Approx(z).epsilon(1e-7));
     CHECK(response.dl == 0.0_e7);

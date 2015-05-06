@@ -1,4 +1,4 @@
-/// \page cmd_3d_longitudinal_matrix 3d_longitudinal_matrix
+/// \page cmd_3d_hybrid_matrix 3d_hybrid_matrix
 /// \brief 3D Longitudinal PET system matrix construction tool
 ///
 /// NYI
@@ -34,7 +34,7 @@ using SquareScintillator = PET2D::Barrel::SquareDetector<float>;
 
 using Scanner2D = PET2D::Barrel::GenericScanner<SquareScintillator, 192, int>;
 using F = Scanner2D::F;
-using Scanner = PET3D::Longitudinal::Scanner<Scanner2D>;
+using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 
 using Pixel = PET2D::Pixel<Scanner2D::S>;
 using LOR = Scanner2D::LOR;
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    PET3D::Longitudinal::add_matrix_options(cl);
+    PET3D::Hybrid::add_matrix_options(cl);
     cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
     cl.add<double>("length", 0, "length of the detector", false, 0.3);
 
@@ -92,11 +92,11 @@ int main(int argc, char* argv[]) {
 
     cmdline::load_accompanying_config(cl, false);
     if (cl.exist("small"))
-      PET3D::Longitudinal::set_small_barrel_options(cl);
+      PET3D::Hybrid::set_small_barrel_options(cl);
     if (cl.exist("big"))
-      PET3D::Longitudinal::set_big_barrel_options(cl);
+      PET3D::Hybrid::set_big_barrel_options(cl);
 
-    PET3D::Longitudinal::calculate_scanner_options(cl);
+    PET3D::Hybrid::calculate_scanner_options(cl);
 
     const auto& model_name = cl.get<std::string>("model");
     const auto& length_scale = cl.get<double>("base-length");

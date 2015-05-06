@@ -3,7 +3,7 @@
 #include "2d/barrel/options.h"
 
 namespace PET3D {
-namespace Longitudinal {
+namespace Hybrid {
 
 void add_scanner_options(cmdline::parser& cl) {
   PET2D::Barrel::add_scanner_options(cl);

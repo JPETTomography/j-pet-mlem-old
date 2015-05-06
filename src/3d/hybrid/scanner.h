@@ -9,7 +9,7 @@
 namespace PET3D {
 /// Three-dimensional PET with longitudinal direction(z) added to the barrel
 /// detector
-namespace Longitudinal {
+namespace Hybrid {
 
 /// 3D scanner made of several scintillators
 

@@ -1,11 +1,11 @@
-/// \page cmd_3d_longitudinal 3D longitudinal
-/// \brief 3D longitudinal Monte-Carlo & reconstruction tools
+/// \page cmd_3d_hybrid 3D hybrid
+/// \brief 3D hybrid Monte-Carlo & reconstruction tools
 ///
 /// Available tools
 /// ---------------
-/// - \subpage cmd_3d_longitudinal_matrix
-/// - \subpage cmd_3d_longitudinal_phantom
-/// - \subpage cmd_3d_longitudinal_reconstruction
+/// - \subpage cmd_3d_hybrid_matrix
+/// - \subpage cmd_3d_hybrid_phantom
+/// - \subpage cmd_3d_hybrid_reconstruction
 ///
 /// \sa \ref cmd_2d_barrel, \ref cmd_2d_strip
 
@@ -14,18 +14,18 @@
 #include "cmdline.h"
 
 namespace PET3D {
-namespace Longitudinal {
+namespace Hybrid {
 
 /// Adds DetectorSet specific command line options.
 void add_scanner_options(cmdline::parser& parser);
 
-/// Adds \ref cmd_3d_longitudinal_matrix specific command line options.
+/// Adds \ref cmd_3d_hybrid_matrix specific command line options.
 void add_matrix_options(cmdline::parser& parser);
 
-/// Adds \ref cmd_3d_longitudinal_phantom specific command line options.
+/// Adds \ref cmd_3d_hybrid_phantom specific command line options.
 void add_phantom_options(cmdline::parser& parser);
 
-/// Adds \ref cmd_3d_longitudinal_reconstruction specific command line options.
+/// Adds \ref cmd_3d_hybrid_reconstruction specific command line options.
 void add_reconstruction_options(cmdline::parser& parser);
 
 /// Calculates all empty values from existing other parameters.
