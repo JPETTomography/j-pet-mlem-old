@@ -25,7 +25,7 @@ namespace Barrel {
 template <typename D> class DetectorSetBuilder;
 
 template <typename DetectorType, std::size_t MaxDet, typename SType>
-class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
+class DetectorSet : public util::array<MaxDet, DetectorType> {
  public:
   using Detector = DetectorType;
   using S = SType;
@@ -45,7 +45,7 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
   };
 
   /// Makes an empty detector set.
-  DetectorSetLayout(F radius = 1, F outer_radius = F(1.5))
+  DetectorSet(F radius = 1, F outer_radius = F(1.5))
       : Base(),
         fov_radius_(radius / M_SQRT2),
         c_inner(radius),
@@ -57,14 +57,14 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
   };
 
   /// Makes new detector using hardcoded test case
-  DetectorSetLayout(TestCase test_case,  ///< test case
-                    F radius,            ///< radius of ring
-                    F w_detector,     ///< width of single detector (along ring)
-                    F h_detector,     ///< height/depth of single detector
-                                      ///< (perpendicular to ring)
-                    F d_detector = 0  ///< diameter of circle single detector is
-                                      ///< inscribed in
-                    )
+  DetectorSet(TestCase test_case,  ///< test case
+              F radius,            ///< radius of ring
+              F w_detector,        ///< width of single detector (along ring)
+              F h_detector,        ///< height/depth of single detector
+                                   ///< (perpendicular to ring)
+              F d_detector = 0     ///< diameter of circle single detector is
+                                   ///< inscribed in
+              )
       : Base(),
         fov_radius_(radius / M_SQRT2),
         c_inner(radius),
@@ -127,7 +127,7 @@ class DetectorSetLayout : public util::array<MaxDet, DetectorType> {
 
 #if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
-                                          DetectorSetLayout& cd) {
+                                          DetectorSet& cd) {
     svg << cd.c_outer;
     svg << cd.c_inner;
 

@@ -5,7 +5,7 @@
 #include "util/array.h"
 #include "util/sort.h"
 #include "lor.h"
-#include "detector_set_layout.h"
+#include "detector_set.h"
 
 #if !__CUDACC__
 #include "util/svg_ostream.h"
@@ -41,7 +41,7 @@ namespace Barrel {
 
 template <typename DetectorType, std::size_t MaxDetectors, typename SType>
 class GenericScanner
-    : public DetectorSetLayout<DetectorType, MaxDetectors, SType> {
+    : public DetectorSet<DetectorType, MaxDetectors, SType> {
  public:
   using Detector = DetectorType;
   using S = SType;
@@ -51,7 +51,7 @@ class GenericScanner
   using Vector = PET2D::Vector<F>;
   using Circle = PET2D::Circle<F>;
   using Event = Barrel::Event<F>;
-  using Base = DetectorSetLayout<DetectorType, MaxDetectors, SType>;
+  using Base = DetectorSet<DetectorType, MaxDetectors, SType>;
   using CircleDetector = Barrel::CircleDetector<F>;
   using Indices = util::array<MaxDetectors, S>;
   using Response = typename Base::Response;

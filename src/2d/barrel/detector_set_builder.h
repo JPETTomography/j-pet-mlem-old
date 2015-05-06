@@ -154,7 +154,7 @@ template <typename DetectorSetType> class DetectorSetBuilder {
       if (n_detectors[i] + detector_set.size() > DetectorSetType::MaxDetectors)
         throw("build multiple rings :too many detectors");
 
-      DetectorSetLayout<Detector, DetectorSetType::MaxDetectors, S> ring =
+      DetectorSet<Detector, DetectorSetType::MaxDetectors, S> ring =
           buildSingleRing(
               radius[i], n_detectors[i], w_detector, h_detector, d_detector);
       S detector_i = 0;

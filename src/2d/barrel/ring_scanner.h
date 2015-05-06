@@ -1,6 +1,6 @@
 #pragma once
 
-#include "detector_set_layout.h"
+#include "detector_set.h"
 #include "2d/geometry/point.h"
 #include "2d/geometry/pixel.h"
 #include "2d/geometry/circle.h"
@@ -22,9 +22,9 @@ namespace Barrel {
 
 template <typename DetectorType, std::size_t MaxDetectors, typename SType>
 class RingScanner
-    : public DetectorSetLayout<DetectorType, MaxDetectors, SType> {
+    : public DetectorSet<DetectorType, MaxDetectors, SType> {
  public:
-  using Base = DetectorSetLayout<DetectorType, MaxDetectors, SType>;
+  using Base = DetectorSet<DetectorType, MaxDetectors, SType>;
   using S = SType;
   using Detector = DetectorType;
   using F = typename Detector::F;
