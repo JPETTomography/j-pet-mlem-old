@@ -12,7 +12,7 @@
 
 #include "detector_set.h"
 #include "2d/barrel/detector_set_builder.h"
-#include "2d/barrel/detector_set.h"
+#include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/square_detector.h"
 #include "2d/barrel/sparse_matrix.h"
 #include "2d/barrel/matrix_pixel_major.h"
@@ -34,7 +34,8 @@ using namespace PET3D::Longitudinal;
 
 using SquareScintillator = PET2D::Barrel::SquareDetector<float>;
 
-using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareScintillator, 192, int>;
+using DetectorSet2D =
+    PET2D::Barrel::GenericScanner<SquareScintillator, 192, int>;
 using F = DetectorSet2D::F;
 using LongitudinalDetectorSet = DetectorSet<DetectorSet2D>;
 

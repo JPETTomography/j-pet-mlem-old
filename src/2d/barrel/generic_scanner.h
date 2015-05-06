@@ -40,7 +40,7 @@ namespace Barrel {
 /// - PolygonalDetector
 
 template <typename DetectorType, std::size_t MaxDetectors, typename SType>
-class DetectorSet
+class GenericScanner
     : public DetectorSetLayout<DetectorType, MaxDetectors, SType> {
  public:
   using Detector = DetectorType;
@@ -57,7 +57,7 @@ class DetectorSet
   using Response = typename Base::Response;
 
   /// Makes an empty detector set.
-  DetectorSet(F radius = 1, F outer_radius = F(1.5))
+  GenericScanner(F radius = 1, F outer_radius = F(1.5))
       : Base(radius, outer_radius) {}
 
   enum class TestCase {
@@ -65,14 +65,14 @@ class DetectorSet
   };
 
   /// Makes new detector using hardcoded test case
-  DetectorSet(TestCase test_case,  ///< test case
-              F radius,            ///< radius of ring
-              F w_detector,        ///< width of single detector (along ring)
-              F h_detector,        ///< height/depth of single detector
-                                   ///< (perpendicular to ring)
-              F d_detector = 0     ///< diameter of circle single detector is
-                                   ///< inscribed in
-              )
+  GenericScanner(TestCase test_case,  ///< test case
+                 F radius,            ///< radius of ring
+                 F w_detector,        ///< width of single detector (along ring)
+                 F h_detector,        ///< height/depth of single detector
+                                      ///< (perpendicular to ring)
+                 F d_detector = 0     ///< diameter of circle single detector is
+                                      ///< inscribed in
+                 )
       : Base(test_case, radius, w_detector, h_detector, d_detector) {}
 
   /// \brief Tries to detect given event.

@@ -1,12 +1,12 @@
 #include "util/test.h"
 
 #include "detector_set_builder.h"
-#include "detector_set.h"
+#include "generic_scanner.h"
 #include "square_detector.h"
 
 using Builder = PET2D::Barrel::DetectorSetBuilder<
     PET2D::Barrel::
-        DetectorSet<PET2D::Barrel::SquareDetector<float>, 128, short>>;
+        GenericScanner<PET2D::Barrel::SquareDetector<float>, 128, short>>;
 
 TEST("DetectorSetBuilder/SingleRing/Symmetry") {
 

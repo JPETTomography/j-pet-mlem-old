@@ -3,7 +3,7 @@
 #include "util/test.h"
 
 #include "model.h"
-#include "detector_set.h"
+#include "generic_scanner.h"
 #include "ring_scanner.h"
 #include "detector_set_builder.h"
 
@@ -11,7 +11,7 @@
 // using namespace PET2D::Barrel;
 
 template <typename ScintillatorType>
-using DetectorSet = PET2D::Barrel::DetectorSet<ScintillatorType, 24, short>;
+using DetectorSet = PET2D::Barrel::GenericScanner<ScintillatorType, 24, short>;
 
 TEST("2d/barrel/detector_set/math") {
   SECTION("square_detector") {
@@ -99,7 +99,7 @@ TEST("2d/barrel/detector_set/detect") {
   SECTION("two_rings") {
 
     using SquareDetector = PET2D::Barrel::SquareDetector<float>;
-    using Detector = PET2D::Barrel::DetectorSet<SquareDetector, 128, short>;
+    using Detector = PET2D::Barrel::GenericScanner<SquareDetector, 128, short>;
     using Event = Detector::Event;
     using Point = Detector::Point;
 

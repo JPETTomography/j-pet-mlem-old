@@ -3,7 +3,7 @@
 
 #include <functional>
 
-#include "2d/barrel/detector_set.h"
+#include "2d/barrel/generic_scanner.h"
 #include "symmetry_descriptor.h"
 
 namespace PET2D {

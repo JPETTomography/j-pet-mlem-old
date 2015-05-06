@@ -40,7 +40,7 @@
 #include "2d/barrel/detector_set_builder.h"
 #include "phantom.h"
 #include "ring_scanner.h"
-#include "detector_set.h"
+#include "generic_scanner.h"
 #include "circle_detector.h"
 #include "triangle_detector.h"
 #include "polygonal_detector.h"
@@ -57,7 +57,7 @@ using namespace PET2D;
 using namespace PET2D::Barrel;
 
 template <typename DetectorType>
-using DetectorModel = DetectorSet<DetectorType, MAX_DETECTORS, short>;
+using DetectorModel = GenericScanner<DetectorType, MAX_DETECTORS, short>;
 // using DetectorModel = DetectorRing<DetectorType>;
 
 // all available detector shapes

@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "2d/barrel/detector_set.h"
+#include "2d/barrel/generic_scanner.h"
 #include "3d/geometry/event.h"
 
 /// Three-dimensional PET

@@ -5,7 +5,7 @@
 #include "2d/barrel/lor.h"
 #include "2d/barrel/square_detector.h"
 #include "2d/barrel/ring_scanner.h"
-#include "2d/barrel/detector_set.h"
+#include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/model.h"
 #if !__CUDACC__
 #include "cmdline.h"
@@ -24,7 +24,8 @@ using Pixel = PET2D::Pixel<short>;
 using LOR = Barrel::LOR<short>;
 using Event = Barrel::Event<float>;
 using SquareDetector = Barrel::SquareDetector<float>;
-using DetectorRing = Barrel::DetectorSet<SquareDetector, MAX_DETECTORS, short>;
+using DetectorRing =
+    Barrel::GenericScanner<SquareDetector, MAX_DETECTORS, short>;
 using Model = ScintillatorAccept<float>;
 #if !__CUDACC__
 using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR>;

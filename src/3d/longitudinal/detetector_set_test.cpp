@@ -3,7 +3,7 @@
 #include "util/test.h"
 
 #include "3d/longitudinal/detector_set.h"
-#include "2d/barrel/detector_set.h"
+#include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/detector_set_builder.h"
 #include "2d/barrel/square_detector.h"
 #include "3d/geometry/point.h"
@@ -20,7 +20,8 @@ float minimal_angle = std::atan2(inner_radius, length / 2);
 
 TEST("3d/longitudinal/detector_set/escape_through_endcap") {
   using SquareDetector = PET2D::Barrel::SquareDetector<float>;
-  using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareDetector, 24, short>;
+  using DetectorSet2D =
+      PET2D::Barrel::GenericScanner<SquareDetector, 24, short>;
   using DetectorSet = PET3D::Longitudinal::DetectorSet<DetectorSet2D>;
   using Vector = PET3D::Vector<float>;
   using Point = PET3D::Point<float>;
@@ -69,7 +70,8 @@ TEST("3d/longitudinal/detector_set/escape_through_endcap") {
 
 TEST("3d/longitudinal/detector_set/detect", "detect") {
   using SquareDetector = PET2D::Barrel::SquareDetector<float>;
-  using DetectorSet2D = PET2D::Barrel::DetectorSet<SquareDetector, 24, short>;
+  using DetectorSet2D =
+      PET2D::Barrel::GenericScanner<SquareDetector, 24, short>;
   using DetectorSet = PET3D::Longitudinal::DetectorSet<DetectorSet2D>;
   using Vector = PET3D::Vector<float>;
   using Point = PET3D::Point<float>;
