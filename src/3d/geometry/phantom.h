@@ -209,9 +209,7 @@ class TranslatedPhantomRegion : public PhantomRegion<FType, RNG> {
 
   Vector random_direction(RNG& rng) { return region->random_direction(rng); }
 
-  bool in(const Point& p) const {
-    return region->in(p-displacement);
-  }
+  bool in(const Point& p) const { return region->in(p - displacement); }
 
  private:
   PhantomRegion<F, RNG>* region;

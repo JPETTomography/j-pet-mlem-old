@@ -103,8 +103,6 @@ template <typename F> _ Point<F> from_vector(const Vector<F>& vec) {
 
 }  // PET2D
 
-
-
 #ifdef TEST_CASE
 namespace Catch {
 template <typename FType> struct StringMaker<PET3D::Point<FType>> {
@@ -114,7 +112,6 @@ template <typename FType> struct StringMaker<PET3D::Point<FType>> {
     return oss.str();
   }
 };
-
 }
 
 #endif
