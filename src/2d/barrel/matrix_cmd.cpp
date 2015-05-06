@@ -124,12 +124,12 @@ int main(int argc, char* argv[]) {
 #else
 #define _RUN(cl, scanner, model) run(cl, scanner, model)
 #endif
-#define RUN(detector_type, model_type, ...)                                  \
-  detector_type scanner = ScannerBuilder<detector_type>::buildMultipleRings( \
-      PET2D_BARREL_SCANNER_CL(cl, detector_type::F));                        \
-  model_type model{ __VA_ARGS__ };                                           \
-  print_parameters<detector_type, model_type>(cl, scanner);                  \
-  auto sparse_matrix = _RUN(cl, scanner, model);                             \
+#define RUN(detector_type, model_type, ...)                                    \
+  detector_type scanner = ScannerBuilder<detector_type>::build_multiple_rings( \
+      PET2D_BARREL_SCANNER_CL(cl, detector_type::F));                          \
+  model_type model{ __VA_ARGS__ };                                             \
+  print_parameters<detector_type, model_type>(cl, scanner);                    \
+  auto sparse_matrix = _RUN(cl, scanner, model);                               \
   post_process(cl, scanner, sparse_matrix)
 
     // run simmulation on given detector model & shape

@@ -20,7 +20,7 @@ namespace GPU {
 
 OutputMatrix Matrix::run(cmdline::parser& cl) {
 
-  Scanner scanner = ScannerBuilder<Scanner>::buildMultipleRings(
+  Scanner scanner = ScannerBuilder<Scanner>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, Scanner::F));
 
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -

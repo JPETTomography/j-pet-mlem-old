@@ -69,7 +69,7 @@ TEST("3d/hybrid/detector_set/escape_through_endcap") {
 
 TEST("3d/hybrid/detector_set/detect", "detect") {
   Scanner2D scanner_2d =
-      PET2D::Barrel::ScannerBuilder<Scanner2D>::buildSingleRing(
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_single_ring(
           inner_radius, 24, scintillator_height, scintillator_width);
   Scanner scanner(scanner_2d, length);
   PET2D::Barrel::AlwaysAccept<> model;

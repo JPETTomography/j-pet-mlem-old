@@ -154,7 +154,7 @@ void run(cmdline::parser& cl, Model& model) {
     gen.seed(cl.get<std::mt19937::result_type>("seed"));
   }
 
-  Detector dr = ScannerBuilder<Detector>::buildMultipleRings(
+  Detector dr = ScannerBuilder<Detector>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, typename Detector::F));
 
   int n_tof_positions = 1;

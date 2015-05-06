@@ -10,7 +10,7 @@ using Builder = PET2D::Barrel::ScannerBuilder<
 
 TEST("2d/barrel/scanner_builder/single_ring/symmetry") {
 
-  auto detector = Builder::buildSingleRing(200.0, 8, 0.007, 0.019);
+  auto detector = Builder::build_single_ring(200.0, 8, 0.007, 0.019);
 
   auto symmetry_descriptor = detector.symmetry_descriptor();
 
@@ -37,7 +37,7 @@ TEST("2d/barrel/scanner_builder/single_ring/symmetry") {
 
 TEST("2d/barrel/scanner_builder/multi_ring/symmetry") {
 
-  auto detector = Builder::buildMultipleRings(
+  auto detector = Builder::build_multiple_rings(
       { 425, 475, 525 }, { 0.0, 0.5, 0.0 }, { 8, 12, 24 }, 0.007, 0.019);
 
   auto symmetry_descriptor = detector.symmetry_descriptor();

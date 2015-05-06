@@ -26,7 +26,7 @@ TEST("2d/barrel/scanner/math") {
 
   in >> r >> n_detectors >> w >> h >> n_events;
 
-  Scanner ring = PET2D::Barrel::ScannerBuilder<Scanner>::buildSingleRing(
+  Scanner ring = PET2D::Barrel::ScannerBuilder<Scanner>::build_single_ring(
       r, n_detectors, w, h);
 
   for (int i_event = 0; i_event < n_events; ++i_event) {
