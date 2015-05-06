@@ -216,7 +216,6 @@ template <typename Scanner2D> class Scanner {
 
     for (auto i : indices) {
       Point2D p1_xy, p2_xy;
-      Point2D origin_2d = e_xy;
       F depth;
       if (barrel.did_intersect(e_xy, i, p1_xy, p2_xy)) {
         reconstruct_3d_intersection_points(e, dir, p1_xy, p2_xy, entry, exit);

@@ -21,7 +21,7 @@ template <typename FType, typename RNG> class PhantomRegion {
   using Event = PET3D::Event<F>;
   using Vector = PET3D::Vector<F>;
 
-  PhantomRegion(F intensity) : intensity(intensity){};
+  PhantomRegion(F intensity) : intensity(intensity) {}
   virtual bool in(const Point&) const = 0;
   virtual Point random_point(RNG&) = 0;
   virtual Vector random_direction(RNG& rng) = 0;
@@ -30,7 +30,7 @@ template <typename FType, typename RNG> class PhantomRegion {
     return Event(this->random_point(rng), this->random_direction(rng));
   }
 
-  Point operator()(RNG& rng) { return random_event(rng); };
+  Point operator()(RNG& rng) { return random_event(rng); }
 
   virtual F volume() const = 0;
   F weight() const { return intensity * volume(); }
@@ -163,9 +163,9 @@ class RotatedPhantomRegion : public PhantomRegion<FType, RNG> {
 
   RotatedPhantomRegion(PhantomRegion<F, RNG>* region, const Matrix<FType>& R)
       : PhantomRegion<F, RNG>(region->intensity),
+        region(region),
         R(R),
-        transposed_R(transpose(R)),
-        region(region) {}
+        transposed_R(transpose(R)) {}
 
   F volume() const { return region->volume(); }
   Point random_point(RNG& rng) {

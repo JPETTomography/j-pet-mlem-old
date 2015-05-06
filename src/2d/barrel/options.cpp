@@ -277,7 +277,6 @@ void set_small_barrel_options(cmdline::parser& cl) {
   auto& w_detector = cl.get<double>("w-detector");
   auto& h_detector = cl.get<double>("h-detector");
 
-  auto& shape = cl.get<std::string>("shape");
   auto& fov_radius = cl.get<double>("fov-radius");
   fov_radius = 0.150;
 
