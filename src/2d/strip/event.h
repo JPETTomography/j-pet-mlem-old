@@ -7,7 +7,7 @@
 namespace PET2D {
 namespace Strip {
 
-/// Detector-space event
+/// Scanner-space event
 template <typename FType> struct Event {
   using F = FType;
   F z_u;

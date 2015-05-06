@@ -17,11 +17,11 @@ namespace Strip {
 
 /// Strip-scanner made of two strip detectors (scintillators) and pixel grid
 
-/// Represents detector made of two scintillator strips and pixel grid
+/// Represents scanner made of two scintillator strips and pixel grid
 ///
 /// \image html detector_frame.pdf.png
 
-template <typename FType, typename SType> class Detector {
+template <typename FType, typename SType> class Scanner {
  public:
   using F = FType;
   using S = SType;
@@ -29,18 +29,18 @@ template <typename FType, typename SType> class Detector {
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
 
-  /// Creates strip-detector with given parameters.
-  Detector(F radius,               //< radius of strip-detector along y-axis
-           F scintillator_length,  //< lenght of strip along z-axis
-           int n_y_pixels,         //< number of pixels along y-axis
-           int n_z_pixels,         //< number of pixels along z-axis
-           F pixel_height,         //< pixel size along y-axis
-           F pixel_width,          //< pixel size along z-axis
-           F sigma_z,              //< sigma z
-           F sigma_dl,             //< sigma dl
-           F center_y = 0,         //< center of detector y coordinate
-           F center_z = 0          //< center of detector z coordinate
-           )
+  /// Creates strip-scanner with given parameters.
+  Scanner(F radius,               //< radius of strip-scanner along y-axis
+          F scintillator_length,  //< lenght of strip along z-axis
+          int n_y_pixels,         //< number of pixels along y-axis
+          int n_z_pixels,         //< number of pixels along z-axis
+          F pixel_height,         //< pixel size along y-axis
+          F pixel_width,          //< pixel size along z-axis
+          F sigma_z,              //< sigma z
+          F sigma_dl,             //< sigma dl
+          F center_y = 0,         //< center of scanner y coordinate
+          F center_z = 0          //< center of scanner z coordinate
+          )
       : radius(radius),
         scintillator_length(scintillator_length),
         n_y_pixels(n_y_pixels),
@@ -61,40 +61,40 @@ template <typename FType, typename SType> class Detector {
         half_scintillator_length(scintillator_length / 2) {}
 
 #ifndef __CUDACC__
-  /// Creates strip-detector determining pixel size from given detector
+  /// Creates strip-scanner determining pixel size from given scanner
   /// dimensions and number of pixels.
-  Detector(F radius,               //< radius of strip-detector along y-axis
-           F scintillator_length,  //< lenght of strip along z-axis
-           int n_y_pixels,         //< number of pixels along y-axis
-           int n_z_pixels,         //< number of pixels along z-axis
-           F sigma_z,              //< sigma z
-           F sigma_dl              //< sigma dl
-           )
-      : Detector(radius,
-                 scintillator_length,
-                 n_y_pixels,
-                 n_z_pixels,
-                 2 * radius / n_y_pixels,
-                 scintillator_length / n_z_pixels,
-                 sigma_z,
-                 sigma_dl,
-                 0,
-                 0) {}
+  Scanner(F radius,               //< radius of strip-scanner along y-axis
+          F scintillator_length,  //< lenght of strip along z-axis
+          int n_y_pixels,         //< number of pixels along y-axis
+          int n_z_pixels,         //< number of pixels along z-axis
+          F sigma_z,              //< sigma z
+          F sigma_dl              //< sigma dl
+          )
+      : Scanner(radius,
+                scintillator_length,
+                n_y_pixels,
+                n_z_pixels,
+                2 * radius / n_y_pixels,
+                scintillator_length / n_z_pixels,
+                sigma_z,
+                sigma_dl,
+                0,
+                0) {}
 
-  /// Copy-construct strip-detector from other detector using different float
+  /// Copy-construct strip-scanner from other scanner using different float
   /// representation.
   template <typename OtherFType, typename OtherSType>
-  Detector(const Detector<OtherFType, OtherSType>& other)
-      : Detector(other.radius,
-                 other.scintillator_length,
-                 other.n_y_pixels,
-                 other.n_z_pixels,
-                 other.pixel_width,
-                 other.pixel_height,
-                 other.sigma_z,
-                 other.sigma_dl,
-                 other.center_y,
-                 other.center_z) {}
+  Scanner(const Scanner<OtherFType, OtherSType>& other)
+      : Scanner(other.radius,
+                other.scintillator_length,
+                other.n_y_pixels,
+                other.n_z_pixels,
+                other.pixel_width,
+                other.pixel_height,
+                other.sigma_z,
+                other.sigma_dl,
+                other.center_y,
+                other.center_z) {}
 #endif
 
   /// Convert image space event tangent to projection space.
@@ -136,7 +136,7 @@ template <typename FType, typename SType> class Detector {
     return Pixel((p.x - tl_z) / pixel_width, (tl_y - p.y) / pixel_height);
   }
 
-  /// Returns sensitiviy of detector at given point.
+  /// Returns sensitiviy of scanner at given point.
   _ F sensitivity(Point p) const {
     F L_plus = half_scintillator_length + p.x;
     F L_minus = half_scintillator_length - p.x;
@@ -177,7 +177,7 @@ template <typename FType, typename SType> class Detector {
            this->sensitivity(point - ul) / 6;   // bottom-right
   }
 
-  /// Checks if pixel is in the detector.
+  /// Checks if pixel is in the scanner.
   bool contains_pixel(Pixel p) {
     return p.x >= 0 && p.x < (this->n_z_pixels) &&  //
            p.y >= 0 && p.y < (this->n_y_pixels);

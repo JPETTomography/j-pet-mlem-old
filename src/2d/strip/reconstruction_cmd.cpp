@@ -2,7 +2,7 @@
 /// \brief 2D Strip PET reconstruction tool
 ///
 /// Reconstructs image using List-Mode with analytic kernel approximation from
-/// physical detector response or simulated response output from \ref
+/// physical scanner response or simulated response output from \ref
 /// cmd_2d_strip_phantom.
 ///
 /// \image html cs000_ev.pdf.png
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
     cmdline::parser cl;
     add_reconstruction_options(cl);
     cl.parse_check(argc, argv);
-    calculate_detector_options(cl);
+    calculate_scanner_options(cl);
 
     if (!cl.rest().size()) {
       throw("at least one events input file expected, consult --help");
@@ -80,14 +80,14 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    Detector<float, short> strip_detector(PET2D_STRIP_SCANNER_CL(cl));
-    Reconstruction<float> reconstruction(strip_detector);
+    Scanner<float, short> scanner(PET2D_STRIP_SCANNER_CL(cl));
+    Reconstruction<float> reconstruction(scanner);
 
     auto verbose = cl.exist("verbose");
     auto verbosity = cl.count("verbose");
     if (verbose) {
-      std::cout << "# image: " << strip_detector.n_y_pixels << "x"
-                << strip_detector.n_z_pixels << std::endl;
+      std::cout << "# image: " << scanner.n_y_pixels << "x"
+                << scanner.n_z_pixels << std::endl;
     }
 
     for (auto& fn : cl.rest()) {
@@ -138,9 +138,9 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-      Detector<float, short> single_precision_strip_detector(strip_detector);
+      Scanner<float, short> single_precision_scanner(scanner);
 
-      GPU::run_reconstruction(single_precision_strip_detector,
+      GPU::run_reconstruction(single_precision_scanner,
                               reconstruction.events,
                               n_blocks,
                               n_iterations,

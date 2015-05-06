@@ -14,8 +14,8 @@
 namespace PET2D {
 namespace Barrel {
 
-/// Adds DetectorSet specific command line options.
-void add_detector_options(cmdline::parser& parser);
+/// Adds scanner specific command line options.
+void add_scanner_options(cmdline::parser& parser);
 
 /// Adds \ref cmd_2d_barrel_matrix specific command line options.
 void add_matrix_options(cmdline::parser& parser);
@@ -27,7 +27,7 @@ void add_phantom_options(cmdline::parser& parser);
 void add_reconstruction_options(cmdline::parser& parser);
 
 /// Calculates all empty values from existing other parameters.
-void calculate_detector_options(cmdline::parser& parser);
+void calculate_scanner_options(cmdline::parser& parser);
 
 void set_small_barrel_options(cmdline::parser& parser);
 void set_big_barrel_options(cmdline::parser& parser);

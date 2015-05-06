@@ -13,7 +13,7 @@
 namespace PET2D {
 namespace Barrel {
 
-void add_detector_options(cmdline::parser& cl) {
+void add_scanner_options(cmdline::parser& cl) {
   cl.add<double>("radius", 'r', "inner detector ring radius", false);
   cl.add<double>("radius2", 0, " ... 2nd ring", false);
   cl.add<double>("radius3", 0, " ... 3rd ring", false);
@@ -44,7 +44,7 @@ void add_matrix_options(cmdline::parser& cl) {
                         cmdline::load);
   cl.add<int>("n-pixels", 'n', "number of pixels in one dimension", false, 256);
   cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
-  add_detector_options(cl);
+  add_scanner_options(cl);
   cl.add<int>("n-emissions",
               'e',
               "emissions per pixel",
@@ -132,7 +132,7 @@ void add_phantom_options(cmdline::parser& cl) {
                         cmdline::load);
   cl.add<int>("n-pixels", 'n', "number of pixels in one dimension", false, 256);
   cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
-  add_detector_options(cl);
+  add_scanner_options(cl);
   cl.add<int>("n-emissions",
               'e',
               "emissions",
@@ -205,7 +205,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
 #endif
 }
 
-void calculate_detector_options(cmdline::parser& cl) {
+void calculate_scanner_options(cmdline::parser& cl) {
   // convert obsolete acceptance option to length scale
   auto& length_scale = cl.get<double>("base-length");
   if (cl.exist("acceptance") && !cl.exist("base-length")) {

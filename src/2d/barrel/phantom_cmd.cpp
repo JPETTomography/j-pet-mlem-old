@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    calculate_detector_options(cl);
+    calculate_scanner_options(cl);
 
     const auto& shape = cl.get<std::string>("shape");
     const auto& model_name = cl.get<std::string>("model");

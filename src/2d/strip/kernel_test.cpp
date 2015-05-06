@@ -24,30 +24,30 @@ void check(F ref, F y, F angle, F dy, F dz, F R, const Kernel<F>& kernel) {
 
 TEST("2d/strip/sensitivity/square") {
 
-  Detector<double, short> detector(500, 1000, 200, 200, 5, 5, 10, 63);
+  Scanner<double, short> scanner(500, 1000, 200, 200, 5, 5, 10, 63);
 
-  CHECK(detector.sensitivity({ 0, 0 }) == 0.5_e13);
-  CHECK(detector.sensitivity({ 50, 0 }) == 0.46652458328685176_e13);
-  CHECK(detector.sensitivity({ -50, 100 }) == 0.4410019151324715_e13);
-  CHECK(detector.sensitivity({ -450, -200 }) == 0.07526632771111386_e13);
+  CHECK(scanner.sensitivity({ 0, 0 }) == 0.5_e13);
+  CHECK(scanner.sensitivity({ 50, 0 }) == 0.46652458328685176_e13);
+  CHECK(scanner.sensitivity({ -50, 100 }) == 0.4410019151324715_e13);
+  CHECK(scanner.sensitivity({ -450, -200 }) == 0.07526632771111386_e13);
 }
 
 TEST("2d/strip/sensitivity/non_square") {
 
-  Detector<double, short> detector(450, 200, 200, 200, 5, 5, 10, 63);
+  Scanner<double, short> scanner(450, 200, 200, 200, 5, 5, 10, 63);
 
-  CHECK(detector.sensitivity({ 0, 0 }) == 0.1392089745461279_e13);
-  CHECK(detector.sensitivity({ 50, 0 }) == 0.07044657495455454_e13);
-  CHECK(detector.sensitivity({ -50, 100 }) == 0.07402517367717103_e13);
-  CHECK(detector.sensitivity({ -70, -200 }) == 0.05269621503719814_e13);
+  CHECK(scanner.sensitivity({ 0, 0 }) == 0.1392089745461279_e13);
+  CHECK(scanner.sensitivity({ 50, 0 }) == 0.07044657495455454_e13);
+  CHECK(scanner.sensitivity({ -50, 100 }) == 0.07402517367717103_e13);
+  CHECK(scanner.sensitivity({ -70, -200 }) == 0.05269621503719814_e13);
 }
 
 #if DONT_TEST
 TEST("2d/strip/kernel/ctor1") {
 
-  Detector<> detector(500, 1000, 200, 200, 5, 5, 10, 63);
-  Kernel<> kernel(detector.sigma_z, detector.sigma_dl);
-  double R = detector.radius;
+  Scanner<> s(500, 1000, 200, 200, 5, 5, 10, 63);
+  Kernel<> kernel(s.sigma_z, s.sigma_dl);
+  double R = s.radius;
 
   check(1.1372205719261035e-7, 0.0, 0.0, 0.0, 0.0, R, kernel);
   check(1.99620227633633e-8, 0.0, 0.0, 10.0, 13.0, R, kernel);
@@ -59,9 +59,9 @@ TEST("2d/strip/kernel/ctor1") {
 
 TEST("2d/strip/kernel/ctor2") {
 
-  Detector<double, short> detector(500, 1000, 200, 200, 5, 5, 10, 63);
-  Kernel<double> kernel(detector.sigma_z, detector.sigma_dl);
-  double R = detector.radius;
+  Scanner<double, short> scanner(500, 1000, 200, 200, 5, 5, 10, 63);
+  Kernel<double> kernel(scanner.sigma_z, scanner.sigma_dl);
+  double R = scanner.radius;
 
 #if DONT_TEST
   check(1.1372205719261035e-7, 0.0, 0.0, 0.0, 0.0, R, kernel);
@@ -74,9 +74,9 @@ TEST("2d/strip/kernel/ctor2") {
 
 TEST("2d/strip/kernel/bbox") {
 
-  Detector<double, short> detector(500, 1000, 200, 200, 5, 5, 10, 63);
-  Kernel<double> kernel(detector.sigma_z, detector.sigma_dl);
-  double R = detector.radius;
+  Scanner<double, short> scanner(500, 1000, 200, 200, 5, 5, 10, 63);
+  Kernel<double> kernel(scanner.sigma_z, scanner.sigma_dl);
+  double R = scanner.radius;
 
   struct {
     double angle;
@@ -89,8 +89,8 @@ TEST("2d/strip/kernel/bbox") {
             { -0.420542, 86.266, 44.0276 } };
 
   for (size_t i = 0; i < sizeof(v) / sizeof(*v); ++i) {
-    auto inv_pow_sigma_dl = (1.0 / (detector.sigma_dl * detector.sigma_dl));
-    auto inv_pow_sigma_z = (1.0 / (detector.sigma_z * detector.sigma_z));
+    auto inv_pow_sigma_dl = (1.0 / (scanner.sigma_dl * scanner.sigma_dl));
+    auto inv_pow_sigma_z = (1.0 / (scanner.sigma_z * scanner.sigma_z));
     auto angle = v[i].angle;
     auto bby_value = v[i].bby_value;
     auto bbz_value = v[i].bbz_value;

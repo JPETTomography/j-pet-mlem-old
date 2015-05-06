@@ -6,7 +6,7 @@ namespace PET3D {
 namespace Longitudinal {
 
 void add_detector_options(cmdline::parser& cl) {
-  PET2D::Barrel::add_detector_options(cl);
+  PET2D::Barrel::add_scanner_options(cl);
 }
 
 void add_matrix_options(cmdline::parser& cl) {
@@ -22,7 +22,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
 }
 
 void calculate_detector_options(cmdline::parser& cl) {
-  PET2D::Barrel::calculate_detector_options(cl);
+  PET2D::Barrel::calculate_scanner_options(cl);
 }
 
 void set_small_barrel_options(cmdline::parser& parser) {

@@ -1,7 +1,7 @@
 /// \page cmd_2d_strip_phantom 2d_strip_phantom
 /// \brief 2D Strip PET phantom tool
 ///
-/// Simulates detector response for given virtual phantom and produces mean file
+/// Simulates scanner response for given virtual phantom and produces mean file
 /// for \ref cmd_2d_strip_reconstruction.
 ///
 /// Example phantom descriptions
@@ -44,7 +44,7 @@
 #include "options.h"
 
 #include "phantom.h"
-#include "detector.h"
+#include "scanner.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
     cmdline::parser cl;
     add_phantom_options(cl);
     cl.parse_check(argc, argv);
-    calculate_detector_options(cl);
+    calculate_scanner_options(cl);
 
     if (!cl.rest().size()) {
       throw(
@@ -84,10 +84,10 @@ int main(int argc, char* argv[]) {
 
     std::vector<PhantomRegion<double>> ellipse_list;
 
-    Detector<double, short> detector(PET2D_STRIP_SCANNER_CL(cl));
+    Scanner<double, short> scanner(PET2D_STRIP_SCANNER_CL(cl));
 
     if (verbose) {
-      std::cerr << "size: " << detector.n_z_pixels << "x" << detector.n_y_pixels
+      std::cerr << "size: " << scanner.n_z_pixels << "x" << scanner.n_y_pixels
                 << std::endl;
     }
 
@@ -115,12 +115,11 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    Phantom<Detector<double, short>, double, short> phantom(detector,
-                                                            ellipse_list);
+    Phantom<Scanner<double, short>> phantom(scanner, ellipse_list);
 
     if (verbose) {
-      std::cerr << "detector: " << detector.size_y << " "
-                << detector.tl_y_half_h << std::endl;
+      std::cerr << "scanner: " << scanner.size_y << " " << scanner.tl_y_half_h
+                << std::endl;
     }
 
     phantom(emissions);

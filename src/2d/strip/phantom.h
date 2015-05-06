@@ -36,14 +36,15 @@ template <typename FType> struct PhantomRegion {
 };
 
 /// Virtual phantom made of elliptical regions
-template <typename D, typename FType, typename SType> class Phantom {
-  using F = FType;
-  using S = SType;
+template <typename ScannerType> class Phantom {
+  using Scanner = ScannerType;
+  using F = typename Scanner::F;
+  using S = typename Scanner::S;
   using Pixel = PET2D::Pixel<S>;
   using rng = std::minstd_rand0;
 
  private:
-  D detector;
+  ScannerType scanner;
 
   std::vector<PhantomRegion<F>> region_list;
   std::vector<F> CDF;
@@ -57,8 +58,8 @@ template <typename D, typename FType, typename SType> class Phantom {
   std::uniform_real_distribution<F> uniform_angle;
 
  public:
-  Phantom(const D& detector, const std::vector<PhantomRegion<F>>& el)
-      : detector(detector),
+  Phantom(const ScannerType& scanner, const std::vector<PhantomRegion<F>>& el)
+      : scanner(scanner),
         region_list(el),
         CDF(el.size(), 0),
         uniform_angle(-1, 1) {
@@ -75,9 +76,9 @@ template <typename D, typename FType, typename SType> class Phantom {
     for (size_t i = 0; i < el.size(); ++i)
       point_generators.emplace_back(el[i].shape);
 
-    output.assign(detector.n_y_pixels, std::vector<F>(detector.n_z_pixels, 0));
-    output_without_errors.assign(detector.n_y_pixels,
-                                 std::vector<F>(detector.n_z_pixels, 0));
+    output.assign(scanner.n_y_pixels, std::vector<F>(scanner.n_z_pixels, 0));
+    output_without_errors.assign(scanner.n_y_pixels,
+                                 std::vector<F>(scanner.n_z_pixels, 0));
   }
 
   size_t n_events() { return events.size(); }
@@ -136,20 +137,20 @@ template <typename D, typename FType, typename SType> class Phantom {
 
       auto event = gen_event(rng_list[omp_get_thread_num()]);
 
-      auto res = detector.detect_event(event, rng_list[omp_get_thread_num()]);
+      auto res = scanner.detect_event(event, rng_list[omp_get_thread_num()]);
       if (res.second) {
 
         ImageSpaceEventTan<F> revent =
-            detector.from_projection_space_tan(res.first);
+            scanner.from_projection_space_tan(res.first);
 
-        if (std::abs(revent.y) >= detector.radius)
+        if (std::abs(revent.y) >= scanner.radius)
           continue;
 
-        Pixel pp = detector.pixel_at(Point<F>(event.z, event.y));
+        Pixel pp = scanner.pixel_at(Point<F>(event.z, event.y));
 
-        if (detector.contains_pixel(pp)) {
+        if (scanner.contains_pixel(pp)) {
 
-          Pixel p = detector.pixel_at(Point<F>(revent.z, revent.y));
+          Pixel p = scanner.pixel_at(Point<F>(revent.z, revent.y));
 
           output[p.y][p.x]++;
           output_without_errors[pp.y][pp.x]++;
@@ -169,7 +170,7 @@ template <typename D, typename FType, typename SType> class Phantom {
   template <class FileWriter>
   void output_bitmap(FileWriter& fw, bool wo_errors = false) {
 
-    fw.template write_header<>(detector.n_z_pixels, detector.n_y_pixels);
+    fw.template write_header<>(scanner.n_z_pixels, scanner.n_y_pixels);
 
     auto& target_output = wo_errors ? output_without_errors : output;
     F output_max = 0;
@@ -181,9 +182,9 @@ template <typename D, typename FType, typename SType> class Phantom {
     auto output_gain =
         static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-    uint8_t* row = (uint8_t*)alloca(detector.n_z_pixels);
-    for (int y = 0; y < detector.n_y_pixels; ++y) {
-      for (auto x = 0; x < detector.n_z_pixels; ++x) {
+    uint8_t* row = (uint8_t*)alloca(scanner.n_z_pixels);
+    for (int y = 0; y < scanner.n_y_pixels; ++y) {
+      for (auto x = 0; x < scanner.n_z_pixels; ++x) {
         row[x] = std::numeric_limits<uint8_t>::max() -
                  output_gain * target_output[y][x];
       }

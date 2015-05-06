@@ -10,7 +10,7 @@
 namespace PET2D {
 namespace Strip {
 
-void add_detector_options(cmdline::parser& cl) {
+void add_scanner_options(cmdline::parser& cl) {
   cl.add<cmdline::path>("config",
                         'c',
                         "load config file",
@@ -44,7 +44,7 @@ static void add_common_options(cmdline::parser& cl) {
 }
 
 void add_reconstruction_options(cmdline::parser& cl) {
-  add_detector_options(cl);
+  add_scanner_options(cl);
   add_common_options(cl);
 
   std::ostringstream msg;
@@ -76,7 +76,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
 }
 
 void add_phantom_options(cmdline::parser& cl) {
-  add_detector_options(cl);
+  add_scanner_options(cl);
   add_common_options(cl);
 
   cl.footer("phantom_description");
@@ -88,7 +88,7 @@ void add_phantom_options(cmdline::parser& cl) {
                         cmdline::not_from_file);
 }
 
-void calculate_detector_options(cmdline::parser& parser) {
+void calculate_scanner_options(cmdline::parser& parser) {
   if (parser.exist("n-pixels")) {
     parser.get<int>("n-z-pixels") = parser.get<int>("n-pixels");
     parser.get<int>("n-y-pixels") = parser.get<int>("n-pixels");

@@ -5,14 +5,14 @@
 #include "2d/geometry/point.h"
 #include "../event.h"
 #include "../kernel.h"
-#include "../detector.h"
+#include "../scanner.h"
 
 namespace PET2D {
 namespace Strip {
 namespace GPU {
 
 template <template <typename Float> class Kernel, typename F>
-__global__ void reconstruction(Detector<F> detector,
+__global__ void reconstruction(Scanner<F> scanner,
                                F* events_z_u,
                                F* events_z_d,
                                F* events_dl,
@@ -44,20 +44,20 @@ __global__ void reconstruction(Detector<F> detector,
     z = events_z_d[i];
     F denominator = 0;
 
-    int y_step = 3 * (detector.sigma_dl / detector.pixel_height);
-    int z_step = 3 * (detector.sigma_z / detector.pixel_width);
+    int y_step = 3 * (scanner.sigma_dl / scanner.pixel_height);
+    int z_step = 3 * (scanner.sigma_z / scanner.pixel_width);
 
     Point ellipse_center(y, z);
-    Pixel center_pixel = detector.pixel_at(ellipse_center);
+    Pixel center_pixel = scanner.pixel_at(ellipse_center);
 
     for (int iy = center_pixel.y - y_step; iy < center_pixel.y + y_step; ++iy) {
       for (int iz = center_pixel.x - z_step; iz < center_pixel.x + z_step;
            ++iz) {
         Pixel pixel(iz, iy);
-        Point point = detector.pixel_center(pixel);
+        Point point = scanner.pixel_center(pixel);
         Kernel kernel;
         float event_kernel =
-            kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
+            kernel.test(y, z, point, scanner.sigma_dl, scanner.sigma_z);
 
         denominator += event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
       }
@@ -69,11 +69,11 @@ __global__ void reconstruction(Detector<F> detector,
       for (int iz = center_pixel.x - z_step; iz < center_pixel.x + z_step;
            ++iz) {
         Pixel pixel(iz, iy);
-        Point point = detector.pixel_center(pixel);
+        Point point = scanner.pixel_center(pixel);
 
         Kernel kernel;
         F event_kernel =
-            kernel.test(y, z, point, detector.sigma_dl, detector.sigma_z);
+            kernel.test(y, z, point, scanner.sigma_dl, scanner.sigma_z);
 
         atomicAdd(
             &output_rho[PIXEL_INDEX(pixel)],

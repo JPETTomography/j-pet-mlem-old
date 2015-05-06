@@ -24,15 +24,15 @@ namespace Strip {
 namespace GPU {
 
 template <typename F>
-void fill_with_sensitivity(F* sensitivity, Detector<F, short>& detector);
+void fill_with_sensitivity(F* sensitivity, Scanner<F, short>& scanner);
 
 template <typename F>
-void run_reconstruction(Detector<F, short>& detector,
+void run_reconstruction(Scanner<F, short>& scanner,
                         Event<F>* events,
                         int n_events,
                         int n_iteration_blocks,
                         int n_iterations_in_block,
-                        void (*output_callback)(Detector<F, short>& detector,
+                        void (*output_callback)(Scanner<F, short>& scanner,
                                                 int iteration,
                                                 F* image,
                                                 void* context),
@@ -58,18 +58,18 @@ void run_reconstruction(Detector<F, short>& detector,
   dim3 threads(n_threads_per_block);
 #endif
 
-  size_t image_size = detector.total_n_pixels * sizeof(F);
+  size_t image_size = scanner.total_n_pixels * sizeof(F);
 
-  const int width = detector.n_z_pixels;
-  const int height = detector.n_y_pixels;
+  const int width = scanner.n_z_pixels;
+  const int height = scanner.n_y_pixels;
 
   cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
 
-  F* cpu_sensitivity = new F[detector.total_n_pixels];
+  F* cpu_sensitivity = new F[scanner.total_n_pixels];
 
-  fill_with_sensitivity(cpu_sensitivity, detector);
+  fill_with_sensitivity(cpu_sensitivity, scanner);
 
-  output_callback(detector, -1, cpu_sensitivity, context);
+  output_callback(scanner, -1, cpu_sensitivity, context);
 
   F* gpu_sensitivity;
   size_t pitch_sensitivity;
@@ -92,8 +92,8 @@ void run_reconstruction(Detector<F, short>& detector,
                     height,
                     pitch_sensitivity);
 
-  F* cpu_rho = new F[detector.total_n_pixels];
-  for (int i = 0; i < detector.total_n_pixels; ++i) {
+  F* cpu_rho = new F[scanner.total_n_pixels];
+  for (int i = 0; i < scanner.total_n_pixels; ++i) {
     cpu_rho[i] = 100;
   }
 
@@ -110,7 +110,7 @@ void run_reconstruction(Detector<F, short>& detector,
 #if USE_RHO_PER_WARP
   cudaMalloc((void**)&gpu_output_rho, n_blocks * image_size);
   F* cpu_output_rho;
-  cpu_output_rho = new F[n_blocks * detector.total_n_pixels];
+  cpu_output_rho = new F[n_blocks * scanner.total_n_pixels];
 #else
   cudaMalloc((void**)&gpu_output_rho, image_size);
 #endif
@@ -135,7 +135,7 @@ void run_reconstruction(Detector<F, short>& detector,
 #if __CUDACC__
 #define reconstruction reconstruction<Kernel><<<blocks, threads>>>
 #endif
-      reconstruction(detector,
+      reconstruction(scanner,
                      gpu_events.z_u,
                      gpu_events.z_d,
                      gpu_events.dl,
@@ -152,14 +152,14 @@ void run_reconstruction(Detector<F, short>& detector,
                  n_blocks * image_size,
                  cudaMemcpyDeviceToHost);
 
-      for (int i = 0; i < detector.n_y_pixels; ++i) {
-        for (int j = 0; j < detector.n_z_pixels; ++j) {
-          int pixel_adr = i * detector.n_y_pixels + j;
+      for (int i = 0; i < scanner.n_y_pixels; ++i) {
+        for (int j = 0; j < scanner.n_z_pixels; ++j) {
+          int pixel_adr = i * scanner.n_y_pixels + j;
           cpu_rho[pixel_adr] = 0;
           for (int block_id = 0; block_id < n_blocks; ++block_id) {
 
-            cpu_rho[i * detector.n_y_pixels + j] +=
-                cpu_output_rho[block_id * detector.n_y_pixels + pixel_adr];
+            cpu_rho[i * scanner.n_y_pixels + j] +=
+                cpu_output_rho[block_id * scanner.n_y_pixels + pixel_adr];
           }
         }
       }
@@ -170,7 +170,7 @@ void run_reconstruction(Detector<F, short>& detector,
       progress_callback(ib * n_iterations_in_block + it, context, true);
     }
 
-    output_callback(detector, ib * n_iterations_in_block, cpu_rho, context);
+    output_callback(scanner, ib * n_iterations_in_block, cpu_rho, context);
   }
 
   progress_callback(n_iteration_blocks * n_iterations_in_block, context, false);
@@ -187,15 +187,15 @@ void run_reconstruction(Detector<F, short>& detector,
 }
 
 template <typename F>
-void fill_with_sensitivity(F* sensitivity, Detector<F, short>& detector) {
+void fill_with_sensitivity(F* sensitivity, Scanner<F, short>& scanner) {
 
-  size_t width = detector.n_z_pixels;
-  size_t height = detector.n_y_pixels;
+  size_t width = scanner.n_z_pixels;
+  size_t height = scanner.n_y_pixels;
 
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       sensitivity[y * width + x] =
-          detector.pixel_sensitivity(Pixel<short>(x, y));
+          scanner.pixel_sensitivity(Pixel<short>(x, y));
     }
   }
 }
@@ -203,12 +203,12 @@ void fill_with_sensitivity(F* sensitivity, Detector<F, short>& detector) {
 // Explicit template instantiation
 
 template void run_reconstruction<float>(
-    Detector<float, short>& detector,
+    Scanner<float, short>& scanner,
     Event<float>* events,
     int n_events,
     int n_iteration_blocks,
     int n_iterations_in_block,
-    void (*output_callback)(Detector<float, short>& detector,
+    void (*output_callback)(Scanner<float, short>& scanner,
                             int iteration,
                             float* image,
                             void* context),

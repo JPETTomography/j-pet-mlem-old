@@ -10,7 +10,7 @@
 #include "util/progress.h"
 
 #include "../event.h"
-#include "../detector.h"
+#include "../scanner.h"
 
 namespace PET2D {
 namespace Strip {
@@ -19,12 +19,12 @@ namespace GPU {
 
 /// CUDA entry-point function
 template <typename F>
-void run_reconstruction(Detector<F, short>& detector,
+void run_reconstruction(Scanner<F, short>& scanner,
                         Event<F>* events,
                         int n_events,
                         int n_iteration_blocks,
                         int n_iterations_in_block,
-                        void (*output_callback)(Detector<F, short>& detector,
+                        void (*output_callback)(Scanner<F, short>& scanner,
                                                 int iteration,
                                                 F* image,
                                                 void* context),
@@ -44,7 +44,7 @@ struct Context {
   std::string& output_file_name;
 };
 
-void output(Detector<float, short>& detector,
+void output(Scanner<float, short>& scanner,
             int iteration,
             float* output,
             void* ptr) {
@@ -64,24 +64,24 @@ void output(Detector<float, short>& detector,
   }
 
   util::obstream bin(base_name.str() + ".bin");
-  bin.write(output, detector.total_n_pixels);
+  bin.write(output, scanner.total_n_pixels);
 
   util::png_writer png(base_name.str() + ".png");
-  png.write_header<>(detector.n_z_pixels, detector.n_y_pixels);
+  png.write_header<>(scanner.n_z_pixels, scanner.n_y_pixels);
 
   float output_max = 0;
-  for (int i = 0; i < detector.total_n_pixels; ++i) {
+  for (int i = 0; i < scanner.total_n_pixels; ++i) {
     output_max = std::max(output_max, output[i]);
   }
 
   auto output_gain =
       static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
 
-  uint8_t* row = (uint8_t*)alloca(detector.n_z_pixels);
-  for (int y = 0; y < detector.n_y_pixels; ++y) {
-    for (auto x = 0; x < detector.n_z_pixels; ++x) {
+  uint8_t* row = (uint8_t*)alloca(scanner.n_z_pixels);
+  for (int y = 0; y < scanner.n_y_pixels; ++y) {
+    for (auto x = 0; x < scanner.n_z_pixels; ++x) {
       row[x] = std::numeric_limits<uint8_t>::max() -
-               output_gain * output[y * detector.n_z_pixels + x];
+               output_gain * output[y * scanner.n_z_pixels + x];
     }
     png.write_row(row);
   }
@@ -93,7 +93,7 @@ void progress(int iteration, void* ptr, bool finished) {
 }
 
 // wraps progress and output into abstract context ptr and run CUDA code
-void run_reconstruction(Detector<float, short>& detector,
+void run_reconstruction(Scanner<float, short>& scanner,
                         std::vector<Event<float>>& events,
                         int n_iteration_blocks,
                         int n_iterations_per_block,
@@ -105,7 +105,7 @@ void run_reconstruction(Detector<float, short>& detector,
                         std::string output) {
 
   Context context(progress, output);
-  run_reconstruction(detector,
+  run_reconstruction(scanner,
                      events.data(),
                      events.size(),
                      n_iteration_blocks,
@@ -120,7 +120,7 @@ void run_reconstruction(Detector<float, short>& detector,
 }
 
 // convert double (DP) events into float (SP) events and run SP kernel
-void run_reconstruction(Detector<float, short>& detector,
+void run_reconstruction(Scanner<float, short>& scanner,
                         std::vector<Event<double>>& events,
                         int n_iteration_blocks,
                         int n_iterations_per_block,
@@ -135,7 +135,7 @@ void run_reconstruction(Detector<float, short>& detector,
     Event<float> sp_event(event.z_u, event.z_d, event.dl);
     sp_event_list.push_back(sp_event);
   }
-  run_reconstruction(detector,
+  run_reconstruction(scanner,
                      sp_event_list,
                      n_iteration_blocks,
                      n_iterations_per_block,
