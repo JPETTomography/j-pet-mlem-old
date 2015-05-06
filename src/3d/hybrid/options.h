@@ -4,8 +4,8 @@
 /// Available tools
 /// ---------------
 /// - \subpage cmd_3d_hybrid_matrix
-/// - \subpage cmd_3d_hybrid_phantom
-/// - \subpage cmd_3d_hybrid_reconstruction
+// (disabled) - \subpage cmd_3d_hybrid_phantom
+// (disabled) - \subpage cmd_3d_hybrid_reconstruction
 ///
 /// \sa \ref cmd_2d_barrel, \ref cmd_2d_strip
 
@@ -22,10 +22,11 @@ void add_scanner_options(cmdline::parser& parser);
 /// Adds \ref cmd_3d_hybrid_matrix specific command line options.
 void add_matrix_options(cmdline::parser& parser);
 
-/// Adds \ref cmd_3d_hybrid_phantom specific command line options.
+// (disabled) Adds \ref cmd_3d_hybrid_phantom specific command line options.
 void add_phantom_options(cmdline::parser& parser);
 
-/// Adds \ref cmd_3d_hybrid_reconstruction specific command line options.
+// (disabled) Adds \ref cmd_3d_hybrid_reconstruction specific command line
+// options.
 void add_reconstruction_options(cmdline::parser& parser);
 
 /// Calculates all empty values from existing other parameters.
