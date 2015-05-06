@@ -4,22 +4,24 @@
 
 template <typename Phantom, typename Detector> class PhantomMonteCarlo {
  public:
-  using F = Phantom::F;
-  using Event = Phantom::Event;
-  using RNG = Phantom::RNG;
-  using Response = Detector::Response;
+  using F = typename Phantom::F;
+  using Event = typename Phantom::Event;
+  using RNG = typename Phantom::RNG;
+  using Response = typename Detector::Response;
 
-  PhantomMonteCarlo(Phantom& phantom, const Detector& detctor)
-      : phantom_(phantom) detector_(detector) {}
+  PhantomMonteCarlo(Phantom& phantom, const Detector& detector)
+      : phantom_(phantom), detector_(detector) {}
 
-  int generate(size_t n_emisions) {
+  template<typename ModelType>
+  int generate(RNG& rng, ModelType model, size_t n_emisions) {
     for (size_t i = 0; i < n_emisions; ++i) {
       auto event = phantom_.gen_event(rng);
+
     }
+    return 0;
   }
 
  private:
-  RNG rng;
   Phantom& phantom_;
   Detector detector_;
 };

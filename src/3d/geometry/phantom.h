@@ -88,16 +88,18 @@ class CylinderRegion
   PET3D::CylinderPointDistribution<F> dist;
 };
 
-template <typename FType, typename SType, typename RNG> class Phantom {
+template <typename FType, typename SType, typename RNGType> class Phantom {
+ public:
   using F = FType;
   using S = SType;
-  using Pixel = PET2D::Pixel<S>;
+  using Event = PET3D::Event<F>;
+  using RNG = RNGType;
 
  private:
   std::vector<PhantomRegion<F, RNG>*> region_list;
   std::vector<F> CDF;
 
-  std::vector<Event<F>> events;
+  std::vector<Event> events;
   std::vector<std::vector<F>> output;
   std::vector<std::vector<F>> output_without_errors;
 
@@ -141,7 +143,7 @@ template <typename FType, typename SType, typename RNG> class Phantom {
     return p;
   }
 
-  template <typename Generator> Event<F> gen_event(Generator& generator) {
+  template <typename Generator> Event gen_event(Generator& generator) {
   again:
     size_t i_region = choose_region(generator);
     Point<F> p = region_list[i_region]->random_point(generator);
@@ -149,7 +151,7 @@ template <typename FType, typename SType, typename RNG> class Phantom {
       if (region_list[j]->in(p))
         goto again;
     }
-    return Event<F>(p, region_list[i_region]->random_direction(generator));
+    return Event(p, region_list[i_region]->random_direction(generator));
   }
 };
 

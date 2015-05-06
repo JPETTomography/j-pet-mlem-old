@@ -31,8 +31,8 @@ template <typename ScannerType> class ScannerBuilder {
     // have height given explicitely
     if (w_detector <= 0 || h_detector <= 0)
       throw("invalid detector size");
-    if (n_detectors % 4)
-      throw("number of detectors must be multiple of 4");
+//    if (n_detectors % 4)
+//      throw("number of detectors must be multiple of 4");
 
     Detector detector_base(w_detector, h_detector, d_detector);
 
