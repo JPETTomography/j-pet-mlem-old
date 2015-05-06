@@ -10,7 +10,7 @@
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 
-#include "detector_set.h"
+#include "scanner.h"
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/square_detector.h"
@@ -30,35 +30,30 @@
 #include <omp.h>
 #endif
 
-using namespace PET3D::Longitudinal;
-
 using SquareScintillator = PET2D::Barrel::SquareDetector<float>;
 
-using DetectorSet2D =
-    PET2D::Barrel::GenericScanner<SquareScintillator, 192, int>;
-using F = DetectorSet2D::F;
-using LongitudinalDetectorSet = DetectorSet<DetectorSet2D>;
+using Scanner2D = PET2D::Barrel::GenericScanner<SquareScintillator, 192, int>;
+using F = Scanner2D::F;
+using Scanner = PET3D::Longitudinal::Scanner<Scanner2D>;
 
-using Pixel = PET2D::Pixel<DetectorSet2D::S>;
-using LOR = DetectorSet2D::LOR;
+using Pixel = PET2D::Pixel<Scanner2D::S>;
+using LOR = Scanner2D::LOR;
 using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR>;
 using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR>;
 
-LongitudinalDetectorSet buildDetectorFromCommandLineParameter(
-    const cmdline::parser& cl) {
-
-  DetectorSet2D barrel =
-      PET2D::Barrel::ScannerBuilder<DetectorSet2D>::buildMultipleRings(
-          PET3D_LONGITUDINAL_SCANNER_CL(cl, DetectorSet2D::F));
+Scanner buildDetectorFromCommandLineParameter(const cmdline::parser& cl) {
+  Scanner2D barrel =
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::buildMultipleRings(
+          PET3D_LONGITUDINAL_SCANNER_CL(cl, Scanner2D::F));
   barrel.set_fov_radius(cl.get<double>("fov-radius"));
-  return LongitudinalDetectorSet(barrel, F(cl.get<double>("length")));
+  return Scanner(barrel, F(cl.get<double>("length")));
 }
 
 template <typename Scanner, typename Model>
 void print_parameters(cmdline::parser& cl, const Scanner& scanner);
 
-template <typename Detector, typename Model>
-static SparseMatrix run(cmdline::parser& cl, Detector& scanner, Model& model);
+template <typename Scanner, typename Model>
+static SparseMatrix run(cmdline::parser& cl, Scanner& scanner, Model& model);
 
 template <typename Scanner>
 void post_process(cmdline::parser& cl,
@@ -69,7 +64,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    add_matrix_options(cl);
+    PET3D::Longitudinal::add_matrix_options(cl);
     cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
     cl.add<double>("length", 0, "length of the detector", false, 0.3);
 
@@ -97,29 +92,28 @@ int main(int argc, char* argv[]) {
 
     cmdline::load_accompanying_config(cl, false);
     if (cl.exist("small"))
-      set_small_barrel_options(cl);
+      PET3D::Longitudinal::set_small_barrel_options(cl);
     if (cl.exist("big"))
-      set_big_barrel_options(cl);
+      PET3D::Longitudinal::set_big_barrel_options(cl);
 
-    calculate_detector_options(cl);
+    PET3D::Longitudinal::calculate_scanner_options(cl);
 
     const auto& model_name = cl.get<std::string>("model");
     const auto& length_scale = cl.get<double>("base-length");
 
-    LongitudinalDetectorSet detector_set =
-        buildDetectorFromCommandLineParameter(cl);
+    Scanner scanner = buildDetectorFromCommandLineParameter(cl);
 
     if (model_name == "always") {
       PET2D::Barrel::AlwaysAccept<float> model;
-      auto sparse_matrix = run(cl, detector_set, model);
-      post_process(cl, detector_set, sparse_matrix);
+      auto sparse_matrix = run(cl, scanner, model);
+      post_process(cl, scanner, sparse_matrix);
     } else if (model_name == "scintillator") {
 
       PET2D::Barrel::ScintillatorAccept<float> model(length_scale);
 
-      auto sparse_matrix = run(cl, detector_set, model);
+      auto sparse_matrix = run(cl, scanner, model);
 
-      post_process(cl, detector_set, sparse_matrix);
+      post_process(cl, scanner, sparse_matrix);
     } else {
       std::cerr << "unknown model : `" << model_name << "'\n";
       exit(-1);
@@ -146,8 +140,8 @@ int main(int argc, char* argv[]) {
   return 1;
 }
 
-template <typename Detector, typename Model>
-static SparseMatrix run(cmdline::parser& cl, Detector& scanner, Model& model) {
+template <typename Scanner, typename Model>
+static SparseMatrix run(cmdline::parser& cl, Scanner& scanner, Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
@@ -216,11 +210,13 @@ static SparseMatrix run(cmdline::parser& cl, Detector& scanner, Model& model) {
   clock_gettime(CLOCK_REALTIME, &start);
 #endif
 
-  PET3D::Barrel::MonteCarlo<LongitudinalDetectorSet,
+  PET3D::Barrel::MonteCarlo<Scanner,
                             ComputeMatrix,
-                            typename LongitudinalDetectorSet::F,
-                            typename LongitudinalDetectorSet::S>
-      monte_carlo(scanner, matrix, s_pixel, m_pixel);
+                            typename Scanner::F,
+                            typename Scanner::S> monte_carlo(scanner,
+                                                             matrix,
+                                                             s_pixel,
+                                                             m_pixel);
 
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
   monte_carlo(z_position, gen, model, n_emissions, progress);
@@ -285,7 +281,7 @@ void post_process(cmdline::parser& cl,
                    s_pixel * n_pixels,
                    s_pixel * n_pixels);
 
-    svg << const_cast<DetectorSet2D&>(scanner.barrel);
+    svg << const_cast<Scanner2D&>(scanner.barrel);
   }
 
   // visual debugging output
@@ -323,6 +319,6 @@ void post_process(cmdline::parser& cl,
                    s_pixel * n_pixels,
                    s_pixel * n_pixels);
 
-    svg << const_cast<DetectorSet2D&>(scanner.barrel);
+    svg << const_cast<Scanner2D&>(scanner.barrel);
   }
 }

@@ -22,7 +22,7 @@ TEST("3d/longitudinal/detector_set/escape_through_endcap") {
   using SquareDetector = PET2D::Barrel::SquareDetector<float>;
   using DetectorSet2D =
       PET2D::Barrel::GenericScanner<SquareDetector, 24, short>;
-  using DetectorSet = PET3D::Longitudinal::DetectorSet<DetectorSet2D>;
+  using DetectorSet = PET3D::Longitudinal::Scanner<DetectorSet2D>;
   using Vector = PET3D::Vector<float>;
   using Point = PET3D::Point<float>;
 
@@ -72,7 +72,7 @@ TEST("3d/longitudinal/detector_set/detect", "detect") {
   using SquareDetector = PET2D::Barrel::SquareDetector<float>;
   using DetectorSet2D =
       PET2D::Barrel::GenericScanner<SquareDetector, 24, short>;
-  using DetectorSet = PET3D::Longitudinal::DetectorSet<DetectorSet2D>;
+  using DetectorSet = PET3D::Longitudinal::Scanner<DetectorSet2D>;
   using Vector = PET3D::Vector<float>;
   using Point = PET3D::Point<float>;
 

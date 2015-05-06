@@ -11,21 +11,20 @@ namespace PET3D {
 /// detector
 namespace Longitudinal {
 
-/// 3D detector made of several scintillators
+/// 3D scanner made of several scintillators
 
-template <typename DetectorSet2D> class DetectorSet {
+template <typename Scanner2D> class Scanner {
  public:
-  using F = typename DetectorSet2D::F;
-  using S = typename DetectorSet2D::S;
+  using F = typename Scanner2D::F;
+  using S = typename Scanner2D::S;
   using Point = PET3D::Point<F>;
   using Point2D = PET2D::Point<F>;
   using Vector = PET3D::Vector<F>;
   using Vector2D = PET2D::Vector<F>;
   using Event = PET3D::Event<F>;
-  using LOR = typename DetectorSet2D::LOR;
-  using Indices = typename DetectorSet2D::Indices;
-  using BarrelEvent = typename DetectorSet2D::Event;
-  using BarrelType = DetectorSet2D;
+  using LOR = typename Scanner2D::LOR;
+  using Indices = typename Scanner2D::Indices;
+  using Event2D = typename Scanner2D::Event;
 
   /**
  * @brief The FullResponse struct
@@ -47,7 +46,7 @@ template <typename DetectorSet2D> class DetectorSet {
     F dl;
   };
 
-  DetectorSet(const DetectorSet2D& barrel, F length)
+  Scanner(const Scanner2D& barrel, F length)
       : barrel(barrel), length(length), half_length(length / 2) {}
 
   bool escapes_through_endcap(const Event& event) const {
@@ -81,7 +80,7 @@ template <typename DetectorSet2D> class DetectorSet {
       return 0;
 
     Indices left, right;
-    BarrelEvent event_xy = e.to_barrel_event();
+    Event2D event_xy = e.to_barrel_event();
 
     barrel.close_indices(event_xy, left, right);
 
@@ -209,7 +208,7 @@ template <typename DetectorSet2D> class DetectorSet {
                         const Indices& indices,
                         Event e,
                         F dir,
-                        BarrelEvent e_xy,
+                        Event2D e_xy,
                         S& detector,
                         Point& entry,
                         Point& exit,
@@ -234,7 +233,7 @@ template <typename DetectorSet2D> class DetectorSet {
     return false;
   }
 
-  const DetectorSet2D barrel;
+  const Scanner2D barrel;
   const F length;
   const F half_length;
 };
