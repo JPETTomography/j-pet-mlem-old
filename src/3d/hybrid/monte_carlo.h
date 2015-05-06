@@ -43,7 +43,7 @@ class MonteCarlo {
             typename AcceptanceModel,
             typename ProgressCallback>
   void operator()(
-      F z,
+      F z,                               ///< z position for calculations
       RandomGenerator& gen,              ///< random number generator
       AcceptanceModel model,             ///< acceptance model
       int n_emissions,                   ///< number of emissions generated

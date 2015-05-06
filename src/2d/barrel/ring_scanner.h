@@ -34,15 +34,15 @@ class RingScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
   using Event = Barrel::Event<F>;
   using Response = typename Base::Response;
 
-#if 0
+#if DISABLE_CONSTRUCTOR
   Scanner(F radius,         ///< radius of ring
-               S n_detectors,    ///< number of detectors on ring
-               F w_detector,     ///< width of single detector (along ring)
-               F h_detector,     ///< height/depth of single detector
-                                 ///< (perpendicular to ring)
-               F d_detector = 0  ///< diameter of circle single detector is
-                                 ///< inscribed in
-               )
+          S n_detectors,    ///< number of detectors on ring
+          F w_detector,     ///< width of single detector (along ring)
+          F h_detector,     ///< height/depth of single detector
+                            ///< (perpendicular to ring)
+          F d_detector = 0  ///< diameter of circle single detector is
+                            ///< inscribed in
+          )
       : Base(radius, n_detectors, w_detector, h_detector, d_detector) {
     if (n_detectors % 4)
       throw("number of detectors must be multiple of 4");
@@ -102,7 +102,8 @@ class RingScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
   _ short detect(RandomGenerator& gen,    ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
                  const Event& e,          ///< event to be detected
-                 Response& response) const {
+                 Response& response       ///< scanner response (LOR+length)
+                 ) const {
 
     const auto n_detectors = this->size();
 #if !_MSC_VER

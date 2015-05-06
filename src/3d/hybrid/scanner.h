@@ -74,7 +74,8 @@ template <typename Scanner2D> class Scanner {
   _ short exact_detect(RandomGenerator& gen,    ///< random number generator
                        AcceptanceModel& model,  ///< acceptance model
                        const Event& e,          ///< event to be detected
-                       FullResponse& response) const {
+                       FullResponse& response   ///< response (LOR+zu+zd+dl)
+                       ) const {
 
     if (escapes_through_endcap(e))
       return 0;
@@ -149,7 +150,8 @@ template <typename Scanner2D> class Scanner {
   _ short detect(RandomGenerator& gen,    ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
                  const Event& e,          ///< event to be detected
-                 Response& response) const {
+                 Response& response       ///< response (LOR+zu+zd+dl)
+                 ) const {
 
     FullResponse full_response;
     if (exact_detect(gen, model, e, full_response) == 2) {

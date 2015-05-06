@@ -80,7 +80,8 @@ class GenericScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
   _ short detect(RandomGenerator& gen,    ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
                  const Event& e,          ///< event to be detected
-                 Response& response) const {
+                 Response& response       ///< scanner response (LOR+length)
+                 ) const {
     Indices left, right;
     close_indices(e, left, right);
     S detector1, detector2;
