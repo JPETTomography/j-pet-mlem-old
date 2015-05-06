@@ -6,7 +6,7 @@
 #include "2d/geometry/pixel.h"
 #include "2d/barrel/lor.h"
 
-TEST("SparseMatrix/symmetric_lor") {
+TEST("2d/barrel/sparse_matrix/symmetric_lor") {
 
   PET2D::Barrel::SparseMatrix<PET2D::Pixel<short>,
                               PET2D::Barrel::LOR<short>,

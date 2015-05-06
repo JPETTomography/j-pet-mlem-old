@@ -8,13 +8,13 @@ using Builder = PET2D::Barrel::ScannerBuilder<
     PET2D::Barrel::
         GenericScanner<PET2D::Barrel::SquareDetector<float>, 128, short>>;
 
-TEST("scanner_builder/single_ring/symmetry") {
+TEST("2d/barrel/scanner_builder/single_ring/symmetry") {
 
   auto detector = Builder::buildSingleRing(200.0, 8, 0.007, 0.019);
 
   auto symmetry_descriptor = detector.symmetry_descriptor();
 
-  // First ring
+  // first ring
   for (short d = 0; d < 8; d++)
     REQUIRE(symmetry_descriptor->symmetric_detector(d, 0) == d);
 
@@ -35,14 +35,14 @@ TEST("scanner_builder/single_ring/symmetry") {
   REQUIRE(symmetry_descriptor->symmetric_detector(6, 7) == 0);
 }
 
-TEST("scanner_builder/multi_ring/symmetry") {
+TEST("2d/barrel/scanner_builder/multi_ring/symmetry") {
 
   auto detector = Builder::buildMultipleRings(
       { 425, 475, 525 }, { 0.0, 0.5, 0.0 }, { 8, 12, 24 }, 0.007, 0.019);
 
   auto symmetry_descriptor = detector.symmetry_descriptor();
 
-  // First ring
+  // first ring
   for (short d = 0; d < 8; d++)
     REQUIRE(symmetry_descriptor->symmetric_detector(d, 0) == d);
 
@@ -62,8 +62,7 @@ TEST("scanner_builder/multi_ring/symmetry") {
   REQUIRE(symmetry_descriptor->symmetric_detector(6, 6) == 4);
   REQUIRE(symmetry_descriptor->symmetric_detector(6, 7) == 0);
 
-  // Second ring
-
+  // second ring
   for (short d = 8; d < 8 + 12; d++)
     REQUIRE(symmetry_descriptor->symmetric_detector(d, 0) == d);
 
@@ -83,8 +82,7 @@ TEST("scanner_builder/multi_ring/symmetry") {
   REQUIRE(symmetry_descriptor->symmetric_detector(15, 6) == 12);
   REQUIRE(symmetry_descriptor->symmetric_detector(15, 7) == 9);
 
-  //`third ring
-
+  // third ring
   for (short d = 20; d < 8 + 12 + 24; d++)
     REQUIRE(symmetry_descriptor->symmetric_detector(d, 0) == d);
 

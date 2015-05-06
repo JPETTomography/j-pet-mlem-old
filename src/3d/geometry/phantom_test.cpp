@@ -7,7 +7,7 @@
 #include "matrix.h"
 #include "phantom.h"
 
-TEST("PET3D/Geometry/CylinderRegion") {
+TEST("3d/geometry/phantom/cylinder_region") {
   using F = float;
   using Region =
       PET3D::CylinderRegion<F, std::mt19937, PET3D::spherical_distribution<F>>;
@@ -37,7 +37,7 @@ TEST("PET3D/Geometry/CylinderRegion") {
   }
 }
 
-TEST("PE3D/Geometry/Phantom") {
+TEST("3d/geometry/phantom") {
   using RNG = std::mt19937;
   RNG rng;
   std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
