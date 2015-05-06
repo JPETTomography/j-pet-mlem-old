@@ -111,7 +111,7 @@ void Matrix::operator()(Pixel pixel, int n_emissions, int* pixel_hits) {
 #if __CUDACC__
   dim3 blocks(n_blocks);
   dim3 threads(n_threads_per_block);
-#define kernel kernel << <blocks, threads>>>
+#define kernel kernel<<<blocks, threads>>>
 #endif
   kernel(pixel,
          gpu_detector_ring,

@@ -133,7 +133,7 @@ void run_reconstruction(Detector<F, short>& detector,
                    cudaMemcpyHostToDevice);
 
 #if __CUDACC__
-#define reconstruction reconstruction<Kernel> << <blocks, threads>>>
+#define reconstruction reconstruction<Kernel><<<blocks, threads>>>
 #endif
       reconstruction(detector,
                      gpu_events.z_u,
