@@ -22,7 +22,7 @@ namespace PET2D {
 /// Two-dimensional PET barrel
 namespace Barrel {
 
-template <typename D> class DetectorSetBuilder;
+template <typename D> class ScannerBuilder;
 
 template <typename DetectorType, std::size_t MaxDet, typename SType>
 class DetectorSet : public util::array<MaxDet, DetectorType> {
@@ -189,7 +189,7 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
 
   _ F fov_radius() const { return fov_radius_; }
 
-  template <typename D> friend class DetectorSetBuilder;
+  template <typename D> friend class ScannerBuilder;
 
  protected:
   F fov_radius_;

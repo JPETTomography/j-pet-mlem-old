@@ -4,7 +4,7 @@
 
 #include "3d/longitudinal/detector_set.h"
 #include "2d/barrel/generic_scanner.h"
-#include "2d/barrel/detector_set_builder.h"
+#include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/square_detector.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/vector.h"
@@ -77,7 +77,7 @@ TEST("3d/longitudinal/detector_set/detect", "detect") {
   using Point = PET3D::Point<float>;
 
   DetectorSet2D detector_set_2D =
-      PET2D::Barrel::DetectorSetBuilder<DetectorSet2D>::buildSingleRing(
+      PET2D::Barrel::ScannerBuilder<DetectorSet2D>::buildSingleRing(
           inner_radius, 24, scintillator_height, scintillator_width);
   DetectorSet detector_set(detector_set_2D, length);
   PET2D::Barrel::AlwaysAccept<> model;

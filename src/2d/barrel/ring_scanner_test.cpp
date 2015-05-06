@@ -5,7 +5,7 @@
 
 #include "model.h"
 #include "ring_scanner.h"
-#include "detector_set_builder.h"
+#include "scanner_builder.h"
 
 using SquareDetector = PET2D::Barrel::SquareDetector<float>;
 using DetectorRing = PET2D::Barrel::RingScanner<SquareDetector, 512, short>;
@@ -27,7 +27,7 @@ TEST("2d/barrel/detector_ring/math") {
   in >> r >> n_detectors >> w >> h >> n_events;
 
   DetectorRing ring =
-      PET2D::Barrel::DetectorSetBuilder<DetectorRing>::buildSingleRing(
+      PET2D::Barrel::ScannerBuilder<DetectorRing>::buildSingleRing(
           r, n_detectors, w, h);
 
   for (int i_event = 0; i_event < n_events; ++i_event) {

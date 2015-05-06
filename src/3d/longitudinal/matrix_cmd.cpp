@@ -11,7 +11,7 @@
 #include "util/cmdline_hooks.h"
 
 #include "detector_set.h"
-#include "2d/barrel/detector_set_builder.h"
+#include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/square_detector.h"
 #include "2d/barrel/sparse_matrix.h"
@@ -48,7 +48,7 @@ LongitudinalDetectorSet buildDetectorFromCommandLineParameter(
     const cmdline::parser& cl) {
 
   DetectorSet2D barrel =
-      PET2D::Barrel::DetectorSetBuilder<DetectorSet2D>::buildMultipleRings(
+      PET2D::Barrel::ScannerBuilder<DetectorSet2D>::buildMultipleRings(
           PET3D_LONGITUDINAL_DETECTOR_CL(cl, DetectorSet2D::F));
   barrel.set_fov_radius(cl.get<double>("fov-radius"));
   return LongitudinalDetectorSet(barrel, F(cl.get<double>("length")));

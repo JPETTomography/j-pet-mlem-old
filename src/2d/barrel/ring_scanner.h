@@ -21,8 +21,7 @@ namespace Barrel {
 /// \image html detector_ring.pdf.png
 
 template <typename DetectorType, std::size_t MaxDetectors, typename SType>
-class RingScanner
-    : public DetectorSet<DetectorType, MaxDetectors, SType> {
+class RingScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
  public:
   using Base = DetectorSet<DetectorType, MaxDetectors, SType>;
   using S = SType;

@@ -5,7 +5,7 @@
 #include "model.h"
 #include "generic_scanner.h"
 #include "ring_scanner.h"
-#include "detector_set_builder.h"
+#include "scanner_builder.h"
 
 // using namespace PET2D;
 // using namespace PET2D::Barrel;
@@ -106,10 +106,10 @@ TEST("2d/barrel/detector_set/detect") {
     using Response = typename Detector::Response;
 
     Detector inner_ring =
-        PET2D::Barrel::DetectorSetBuilder<Detector>::buildSingleRing(
+        PET2D::Barrel::ScannerBuilder<Detector>::buildSingleRing(
             1., 16, .1, .1);
     Detector outer_ring =
-        PET2D::Barrel::DetectorSetBuilder<Detector>::buildSingleRing(
+        PET2D::Barrel::ScannerBuilder<Detector>::buildSingleRing(
             1.4, 16, .1, .1);
 
     Detector detector;

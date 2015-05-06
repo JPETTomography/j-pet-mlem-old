@@ -1,14 +1,14 @@
 #include "util/test.h"
 
-#include "detector_set_builder.h"
+#include "scanner_builder.h"
 #include "generic_scanner.h"
 #include "square_detector.h"
 
-using Builder = PET2D::Barrel::DetectorSetBuilder<
+using Builder = PET2D::Barrel::ScannerBuilder<
     PET2D::Barrel::
         GenericScanner<PET2D::Barrel::SquareDetector<float>, 128, short>>;
 
-TEST("DetectorSetBuilder/SingleRing/Symmetry") {
+TEST("scanner_builder/single_ring/symmetry") {
 
   auto detector = Builder::buildSingleRing(200.0, 8, 0.007, 0.019);
 
@@ -35,7 +35,7 @@ TEST("DetectorSetBuilder/SingleRing/Symmetry") {
   REQUIRE(symmetry_descriptor->symmetric_detector(6, 7) == 0);
 }
 
-TEST("DetectorSetBuilder/Multiring/Symmetry") {
+TEST("scanner_builder/multi_ring/symmetry") {
 
   auto detector = Builder::buildMultipleRings(
       { 425, 475, 525 }, { 0.0, 0.5, 0.0 }, { 8, 12, 24 }, 0.007, 0.019);

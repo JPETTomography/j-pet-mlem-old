@@ -31,7 +31,7 @@
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
-#include "detector_set_builder.h"
+#include "scanner_builder.h"
 #include "util/random.h"
 #include "ring_scanner.h"
 #include "generic_scanner.h"
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
 #endif
 #define RUN(detector_type, model_type, ...)                       \
   detector_type detector_ring =                                   \
-      DetectorSetBuilder<detector_type>::buildMultipleRings(      \
+      ScannerBuilder<detector_type>::buildMultipleRings(          \
           PET2D_BARREL_DETECTOR_CL(cl, detector_type::F));        \
   model_type model{ __VA_ARGS__ };                                \
   print_parameters<detector_type, model_type>(cl, detector_ring); \
