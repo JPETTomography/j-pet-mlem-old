@@ -1,4 +1,6 @@
 #include <random>
+#include <iostream>
+#include <fstream>
 
 #include "util/test.h"
 
@@ -34,7 +36,24 @@ TEST("PET3D/Geometry/CylinderRegion") {
   }
 }
 
-
 TEST("PE3D/Geometry/Phantom") {
-   // Phantom phantom;
+  using RNG = std::mt19937;
+  RNG rng;
+  std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
+  float angle=std::atan2(0.0025f,0.400f);
+  auto cylinder = new PET3D::CylinderRegion<float, RNG>(
+      0.0015, 0.001, 1, PET3D::spherical_distribution<float>(-angle, angle));
+  regions.push_back(cylinder);
+  PET3D::Phantom<float, short, RNG> phantom(regions);
+
+  std::ofstream out("test_output/cylinder.txt");
+
+  for (int i = 0; i < 10000; i++) {
+    auto event = phantom.gen_event(rng);
+    auto p = event.origin;
+    auto v = event.direction;
+    out << p.x << " " << p.y << " " << p.z;
+    out << v.x << " " << v.y << " " << v.z << "\n";
+  }
+  out.close();
 }
