@@ -4,6 +4,7 @@
 
 #include "util/test.h"
 
+#include "matrix.h"
 #include "phantom.h"
 
 TEST("PET3D/Geometry/CylinderRegion") {
@@ -40,10 +41,14 @@ TEST("PE3D/Geometry/Phantom") {
   using RNG = std::mt19937;
   RNG rng;
   std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
-  float angle=std::atan2(0.0025f,0.400f);
+  float angle = std::atan2(0.0025f, 0.400f);
   auto cylinder = new PET3D::CylinderRegion<float, RNG>(
       0.0015, 0.001, 1, PET3D::spherical_distribution<float>(-angle, angle));
-  regions.push_back(cylinder);
+  PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
+
+  auto rotated_cylinder =
+      new PET3D::RotatedPhantomRegion<float, RNG>(cylinder, R);
+  regions.push_back(rotated_cylinder);
   PET3D::Phantom<float, short, RNG> phantom(regions);
 
   std::ofstream out("test_output/cylinder.txt");

@@ -105,4 +105,14 @@ template <typename FType> Matrix<FType> operator*(FType s, Matrix<FType> mat) {
   result *= s;
   return result;
 }
+
+template <typename FType> Matrix<FType> transpose(const Matrix<FType>& mat) {
+    Matrix<FType> result;
+    for(int i=0;i<3;i++)
+        for(int j=0;j<3;j++)
+            result(i,j)=mat(j,i);
+
+    return result;
+}
+
 }

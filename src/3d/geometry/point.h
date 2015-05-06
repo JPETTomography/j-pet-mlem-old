@@ -96,7 +96,14 @@ std::ostream& operator<<(std::ostream& out, const Point<FType>& p) {
   out << "(" << p.x << ", " << p.y << ", " << p.z << ")";
   return out;
 }
+
+template <typename F> _ Point<F> from_vector(const Vector<F>& vec) {
+  return Point<F>(vec.x, vec.y, vec.z);
+}
+
 }  // PET2D
+
+
 
 #ifdef TEST_CASE
 namespace Catch {
@@ -107,5 +114,7 @@ template <typename FType> struct StringMaker<PET3D::Point<FType>> {
     return oss.str();
   }
 };
+
 }
+
 #endif

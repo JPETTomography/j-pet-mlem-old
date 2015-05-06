@@ -10,6 +10,7 @@
 #include "3d/geometry/point.h"
 #include "3d/geometry/event.h"
 #include "3d/geometry/event_generator.h"
+#include "3d/geometry/matrix.h"
 
 namespace PET3D {
 
@@ -21,7 +22,7 @@ template <typename FType, typename RNG> class PhantomRegion {
   using Vector = PET3D::Vector<F>;
 
   PhantomRegion(F intensity) : intensity(intensity){};
-  virtual bool in(const Point&) = 0;
+  virtual bool in(const Point&) const = 0;
   virtual Point random_point(RNG&) = 0;
   virtual Vector random_direction(RNG& rng) = 0;
 
@@ -34,8 +35,6 @@ template <typename FType, typename RNG> class PhantomRegion {
   virtual F volume() const = 0;
   F weight() const { return intensity * volume(); }
   const F intensity;
-
- protected:
 };
 
 template <typename FType, typename RNG, typename AngularDistribution>
@@ -75,7 +74,7 @@ class CylinderRegion
 
         dist(radius, height){};
 
-  bool in(const Point& p) {
+  bool in(const Point& p) const {
     return ((p.x * p.x + p.y * p.y < radius * radius) && (p.z <= height / 2) &&
             (p.z >= -height / 2));
   }
@@ -152,5 +151,70 @@ template <typename FType, typename SType, typename RNG> class Phantom {
     }
     return Event<F>(p, region_list[i_region]->random_direction(generator));
   }
+};
+
+template <typename FType, typename RNG>
+class RotatedPhantomRegion : public PhantomRegion<FType, RNG> {
+ public:
+  using F = FType;
+  using Point = PET3D::Point<F>;
+  using Event = PET3D::Event<F>;
+  using Vector = PET3D::Vector<F>;
+
+  RotatedPhantomRegion(PhantomRegion<F, RNG>* region, const Matrix<FType>& R)
+      : PhantomRegion<F, RNG>(region->intensity),
+        R(R),
+        transposed_R(transpose(R)),
+        region(region) {}
+
+  F volume() const { return region->volume(); }
+  Point random_point(RNG& rng) {
+    Point p = region->random_point(rng);
+    return from_vector(R * p.as_vector());
+  }
+
+  Vector random_direction(RNG& rng) {
+    Vector v = region->random_direction(rng);
+    return R * v;
+  }
+
+  bool in(const Point& p) const {
+    return region->in(from_vector(transposed_R * p.as_vector()));
+  }
+
+ private:
+  PhantomRegion<F, RNG>* region;
+  Matrix<F> R;
+  Matrix<F> transposed_R;
+};
+
+template <typename FType, typename RNG>
+class TranslatedPhantomRegion : public PhantomRegion<FType, RNG> {
+ public:
+  using F = FType;
+  using Point = PET3D::Point<F>;
+  using Event = PET3D::Event<F>;
+  using Vector = PET3D::Vector<F>;
+
+  TranslatedPhantomRegion(PhantomRegion<F, RNG>* region,
+                          const Vector displacement)
+      : PhantomRegion<F, RNG>(region->intensity),
+        displacement(displacement),
+        region(region) {}
+
+  F volume() const { return region->volume(); }
+  Point random_point(RNG& rng) {
+    return region->random_point(rng) + displacement;
+  }
+
+  Vector random_direction(RNG& rng) { return region->random_direction(rng); }
+
+  bool in(const Point& p) const {
+    return region->in(p-displacement);
+  }
+
+ private:
+  PhantomRegion<F, RNG>* region;
+  Vector displacement;
 };
 }
