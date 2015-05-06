@@ -20,14 +20,14 @@ namespace PET2D {
 /// Two-dimensional PET barrel
 namespace Barrel {
 
-/// Detector made of several other detectors
+/// Scanner made of several detectors
 
-/// Represents detector compound made of several detectors (scintillators)
+/// Represents scanner (PET) made of several detectors (scintillators)
 /// using any geometry, particuallary it may be one or several rings of
 /// detectors, or even detectors organized into other shapes.
 ///
-/// No assumptions are made for how geometry of this detector looks like in
-/// comparison to Scanner where are single detectors are placed on the
+/// No assumptions are made for how geometry of this scanner looks like in
+/// comparison to ScannerRing where are single detectors are placed on the
 /// ring.
 ///
 /// \image html config_4x48.pdf.png

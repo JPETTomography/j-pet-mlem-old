@@ -12,13 +12,13 @@
 namespace PET2D {
 namespace Barrel {
 
-/// Detector made of 2D ring of single detectors
+/// Scanner made of one 2D ring of detectors
 
-/// This is optimized DetectorSet using assumption \b all detectors lie on
+/// This is optimized GenericScanner using assumption \b all detectors lie on
 /// ring, so some operations like possible secants can be done much quicker,
-/// approximately 2x faster than using DetectorSet.
+/// approximately 2x faster than using GenericScanner.
 ///
-/// \image html scanner.pdf.png
+/// \image html detector.pdf.png
 
 template <typename DetectorType, std::size_t MaxDetectors, typename SType>
 class RingScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {

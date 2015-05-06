@@ -67,12 +67,12 @@ constexpr uint32_t operator"" _4cc(const char* str, size_t) {
 /// \b Note: TOF position has no particular meaning without quantisation
 /// definition. However this is not needed for reconstruction.
 ///
-/// \image html scanner2.pdf.png
+/// \image html detector2.pdf.png
 
 /// Sparse 2D barrel PET system matrix
 
 /// Made for efficient storage of large PET system matrix.
-/// \image html scanner2.pdf.png
+/// \image html detector2.pdf.png
 /// \see \ref sparse_format
 template <typename PixelType,
           typename LORType,
