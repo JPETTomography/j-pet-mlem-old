@@ -49,22 +49,20 @@ LongitudinalDetectorSet buildDetectorFromCommandLineParameter(
 
   DetectorSet2D barrel =
       PET2D::Barrel::ScannerBuilder<DetectorSet2D>::buildMultipleRings(
-          PET3D_LONGITUDINAL_DETECTOR_CL(cl, DetectorSet2D::F));
+          PET3D_LONGITUDINAL_SCANNER_CL(cl, DetectorSet2D::F));
   barrel.set_fov_radius(cl.get<double>("fov-radius"));
   return LongitudinalDetectorSet(barrel, F(cl.get<double>("length")));
 }
 
-template <typename DetectorRing, typename Model>
-void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring);
+template <typename Scanner, typename Model>
+void print_parameters(cmdline::parser& cl, const Scanner& scanner);
 
 template <typename Detector, typename Model>
-static SparseMatrix run(cmdline::parser& cl,
-                        Detector& detector_ring,
-                        Model& model);
+static SparseMatrix run(cmdline::parser& cl, Detector& scanner, Model& model);
 
-template <typename DetectorRing>
+template <typename Scanner>
 void post_process(cmdline::parser& cl,
-                  DetectorRing& detector_ring,
+                  Scanner& scanner,
                   SparseMatrix& sparse_matrix);
 
 int main(int argc, char* argv[]) {
@@ -149,9 +147,7 @@ int main(int argc, char* argv[]) {
 }
 
 template <typename Detector, typename Model>
-static SparseMatrix run(cmdline::parser& cl,
-                        Detector& detector_ring,
-                        Model& model) {
+static SparseMatrix run(cmdline::parser& cl, Detector& scanner, Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
@@ -173,7 +169,7 @@ static SparseMatrix run(cmdline::parser& cl,
   int n_tof_positions = 1;
 
   ComputeMatrix::SparseMatrix sparse_matrix(
-      n_pixels, detector_ring.barrel.size(), n_tof_positions);
+      n_pixels, scanner.barrel.size(), n_tof_positions);
 
   for (auto& fn : cl.rest()) {
     util::ibstream in(fn, std::ios::binary);
@@ -213,7 +209,7 @@ static SparseMatrix run(cmdline::parser& cl,
     }
   }
 
-  ComputeMatrix matrix(n_pixels, detector_ring.barrel.size(), n_tof_positions);
+  ComputeMatrix matrix(n_pixels, scanner.barrel.size(), n_tof_positions);
 
 #ifdef __linux__
   struct timespec start, stop;
@@ -224,7 +220,7 @@ static SparseMatrix run(cmdline::parser& cl,
                             ComputeMatrix,
                             typename LongitudinalDetectorSet::F,
                             typename LongitudinalDetectorSet::S>
-      monte_carlo(detector_ring, matrix, s_pixel, m_pixel);
+      monte_carlo(scanner, matrix, s_pixel, m_pixel);
 
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
   monte_carlo(z_position, gen, model, n_emissions, progress);
@@ -241,9 +237,9 @@ static SparseMatrix run(cmdline::parser& cl,
   return matrix.to_sparse();
 }
 
-template <typename DetectorRing>
+template <typename Scanner>
 void post_process(cmdline::parser& cl,
-                  DetectorRing& detector_ring,
+                  Scanner& scanner,
                   SparseMatrix& sparse_matrix) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
@@ -268,7 +264,7 @@ void post_process(cmdline::parser& cl,
     os << cl;
     std::ofstream m_out(fn_wo_ext + ".m", std::ios::trunc);
 
-    detector_ring.barrel.to_mathematica(m_out);
+    scanner.barrel.to_mathematica(m_out);
 
     try {
       util::png_writer png(fn_wo_ext + ".png");
@@ -278,19 +274,18 @@ void post_process(cmdline::parser& cl,
       std::cerr << "warning: " << ex << std::endl;
     }
 
-    util::svg_ostream<typename DetectorRing::F> svg(
-        fn_wo_ext + ".svg",
-        detector_ring.barrel.outer_radius(),
-        detector_ring.barrel.outer_radius(),
-        1024.,
-        1024.);
+    util::svg_ostream<typename Scanner::F> svg(fn_wo_ext + ".svg",
+                                               scanner.barrel.outer_radius(),
+                                               scanner.barrel.outer_radius(),
+                                               1024.,
+                                               1024.);
     svg.link_image(fn_wo_path + ".png",
                    -(s_pixel * n_pixels) / 2,
                    -(s_pixel * n_pixels) / 2,
                    s_pixel * n_pixels,
                    s_pixel * n_pixels);
 
-    svg << const_cast<DetectorSet2D&>(detector_ring.barrel);
+    svg << const_cast<DetectorSet2D&>(scanner.barrel);
   }
 
   // visual debugging output
@@ -317,18 +312,17 @@ void post_process(cmdline::parser& cl,
       sparse_matrix.output_bitmap(png, lor, position);
     }
 
-    util::svg_ostream<typename DetectorRing::F> svg(
-        fn_wo_ext + ".svg",
-        detector_ring.barrel.outer_radius(),
-        detector_ring.barrel.outer_radius(),
-        1024.,
-        1024.);
+    util::svg_ostream<typename Scanner::F> svg(fn_wo_ext + ".svg",
+                                               scanner.barrel.outer_radius(),
+                                               scanner.barrel.outer_radius(),
+                                               1024.,
+                                               1024.);
     svg.link_image(fn_wo_path + ".png",
                    -(s_pixel * n_pixels) / 2,
                    -(s_pixel * n_pixels) / 2,
                    s_pixel * n_pixels,
                    s_pixel * n_pixels);
 
-    svg << const_cast<DetectorSet2D&>(detector_ring.barrel);
+    svg << const_cast<DetectorSet2D&>(scanner.barrel);
   }
 }

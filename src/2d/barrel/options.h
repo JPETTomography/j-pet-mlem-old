@@ -34,7 +34,7 @@ void set_big_barrel_options(cmdline::parser& parser);
 
 /// Provides initialization list for creating detector.
 #define __PET2D_BARREL(...) __VA_ARGS__  // just pass-through
-#define PET2D_BARREL_DETECTOR_CL(cl, ftype)              \
+#define PET2D_BARREL_SCANNER_CL(cl, ftype)               \
   __PET2D_BARREL({ (ftype)cl.get<double>("radius"),      \
                    (ftype)cl.get<double>("radius2"),     \
                    (ftype)cl.get<double>("radius3"),     \

@@ -20,7 +20,7 @@
 ///  - 2d/barrel/circle_detector/ctor
 ///  - 2d/barrel/circle_detector/move
 ///  - 2d/barrel/circle_detector/intersection
-///  - 2d/barrel/detector_ring/math
+///  - 2d/barrel/scanner/math
 ///  - 2d/barrel/detector_set/math
 ///  - 2d/barrel/detector_set/detect
 ///  - 2d/barrel/event/set

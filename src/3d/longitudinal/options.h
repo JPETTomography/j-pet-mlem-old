@@ -36,7 +36,7 @@ void set_big_barrel_options(cmdline::parser& parser);
 
 /// Provides initialization list for creating detector.
 #define __PET3D_LONGITUDINAL(...) __VA_ARGS__  // just pass-through
-#define PET3D_LONGITUDINAL_DETECTOR_CL(cl, ftype)              \
+#define PET3D_LONGITUDINAL_SCANNER_CL(cl, ftype)               \
   __PET3D_LONGITUDINAL({ (ftype)cl.get<double>("radius"),      \
                          (ftype)cl.get<double>("radius2"),     \
                          (ftype)cl.get<double>("radius3"),     \

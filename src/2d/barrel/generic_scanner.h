@@ -27,7 +27,7 @@ namespace Barrel {
 /// detectors, or even detectors organized into other shapes.
 ///
 /// No assumptions are made for how geometry of this detector looks like in
-/// comparison to DetectorRing where are single detectors are placed on the
+/// comparison to Scanner where are single detectors are placed on the
 /// ring.
 ///
 /// \image html config_4x48.pdf.png

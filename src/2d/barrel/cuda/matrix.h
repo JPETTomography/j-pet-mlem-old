@@ -24,8 +24,7 @@ using Pixel = PET2D::Pixel<short>;
 using LOR = Barrel::LOR<short>;
 using Event = Barrel::Event<float>;
 using SquareDetector = Barrel::SquareDetector<float>;
-using DetectorRing =
-    Barrel::GenericScanner<SquareDetector, MAX_DETECTORS, short>;
+using Scanner = Barrel::GenericScanner<SquareDetector, MAX_DETECTORS, short>;
 using Model = ScintillatorAccept<float>;
 #if !__CUDACC__
 using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR>;
@@ -36,7 +35,7 @@ using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR>;
 /// CUDA optimized Monte-Carlo implementation
 class Matrix {
  public:
-  Matrix(const DetectorRing& detector_ring,
+  Matrix(const Scanner& scanner,
          int n_threads_per_block,
          int n_blocks,
          float pixel_size,
@@ -57,7 +56,7 @@ class Matrix {
 #endif
 
  private:
-  DetectorRing* gpu_detector_ring;
+  Scanner* gpu_scanner;
   const int n_threads_per_block;
   const int n_blocks;
   const float pixel_size;

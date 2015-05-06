@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    Detector<float, short> strip_detector(PET2D_STRIP_DETECTOR_CL(cl));
+    Detector<float, short> strip_detector(PET2D_STRIP_SCANNER_CL(cl));
     Reconstruction<float> reconstruction(strip_detector);
 
     auto verbose = cl.exist("verbose");

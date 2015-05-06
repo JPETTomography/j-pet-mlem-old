@@ -20,7 +20,7 @@ using Point = PET2D::Point<float>;
 using Pixel = PET2D::Pixel<short>;
 using LOR = Barrel::LOR<short>;
 using SquareDetector = Barrel::SquareDetector<float>;
-using DetectorRing = Barrel::RingScanner<SquareDetector, MAX_DETECTORS, short>;
+using Scanner = Barrel::RingScanner<SquareDetector, MAX_DETECTORS, short>;
 
 /// \endcond
 

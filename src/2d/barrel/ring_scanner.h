@@ -18,7 +18,7 @@ namespace Barrel {
 /// ring, so some operations like possible secants can be done much quicker,
 /// approximately 2x faster than using DetectorSet.
 ///
-/// \image html detector_ring.pdf.png
+/// \image html scanner.pdf.png
 
 template <typename DetectorType, std::size_t MaxDetectors, typename SType>
 class RingScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
@@ -35,7 +35,7 @@ class RingScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
   using Response = typename Base::Response;
 
 #if 0
-  DetectorRing(F radius,         ///< radius of ring
+  Scanner(F radius,         ///< radius of ring
                S n_detectors,    ///< number of detectors on ring
                F w_detector,     ///< width of single detector (along ring)
                F h_detector,     ///< height/depth of single detector

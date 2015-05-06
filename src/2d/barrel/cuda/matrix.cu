@@ -12,7 +12,7 @@ namespace Barrel {
 namespace GPU {
 
 __global__ static void kernel(const Pixel pixel,
-                              const DetectorRing* detector_ring_ptr,
+                              const Scanner* scanner_ptr,
                               int n_emissions,
                               float pixel_size,
                               int n_positions,
@@ -27,12 +27,12 @@ __global__ static void kernel(const Pixel pixel,
   util::random::uniform_real_distribution<float> one_dis(0, 1);
   util::random::uniform_real_distribution<float> pi_dis(0, (float)M_PI);
 
-  __shared__ util::cuda::copy<DetectorRing> detector_ring_shared_storage;
-  detector_ring_shared_storage = detector_ring_ptr;
-  DetectorRing& detector_ring = *detector_ring_shared_storage;
+  __shared__ util::cuda::copy<Scanner> scanner_shared_storage;
+  scanner_shared_storage = scanner_ptr;
+  Scanner& scanner = *scanner_shared_storage;
 
   Model model(length_scale);
-  auto fov_radius2 = detector_ring.fov_radius() * detector_ring.fov_radius();
+  auto fov_radius2 = scanner.fov_radius() * scanner.fov_radius();
 
   for (int i = 0; i < n_emissions; ++i) {
     auto rx = (pixel.x + one_dis(gen)) * pixel_size;
@@ -48,13 +48,13 @@ __global__ static void kernel(const Pixel pixel,
       continue;
 
     Event event(rx, ry, angle);
-    DetectorRing::Response response;
-    auto hits = detector_ring.detect(gen, model, event, response);
+    Scanner::Response response;
+    auto hits = scanner.detect(gen, model, event, response);
 
     int quantized_position = 0;
     if (tof)
-      quantized_position = DetectorRing::quantize_tof_position(
-          response.dl, tof_step, n_positions);
+      quantized_position =
+          Scanner::quantize_tof_position(response.dl, tof_step, n_positions);
 
     // do we have hit on both sides?
     if (hits >= 2) {
@@ -67,7 +67,7 @@ __global__ static void kernel(const Pixel pixel,
   gen.save(&gpu_prng_seed[4 * tid]);
 }
 
-Matrix::Matrix(const DetectorRing& detector_ring,
+Matrix::Matrix(const Scanner& scanner,
                int n_threads_per_block,
                int n_blocks,
                float pixel_size,
@@ -81,15 +81,12 @@ Matrix::Matrix(const DetectorRing& detector_ring,
       n_positions(n_positions),
       tof_step(tof_step),
       length_scale(length_scale),
-      pixel_hits_count(LOR::end_for_detectors(detector_ring.size()).index() *
+      pixel_hits_count(LOR::end_for_detectors(scanner.size()).index() *
                        n_positions),
       pixel_hits_size(pixel_hits_count * sizeof(int)) {
 
-  cudaMalloc((void**)&gpu_detector_ring, sizeof(DetectorRing));
-  cudaMemcpy(gpu_detector_ring,
-             &detector_ring,
-             sizeof(DetectorRing),
-             cudaMemcpyHostToDevice);
+  cudaMalloc((void**)&gpu_scanner, sizeof(Scanner));
+  cudaMemcpy(gpu_scanner, &scanner, sizeof(Scanner), cudaMemcpyHostToDevice);
 
   cudaMalloc((void**)&gpu_pixel_hits, pixel_hits_size);
 
@@ -101,7 +98,7 @@ Matrix::Matrix(const DetectorRing& detector_ring,
 Matrix::~Matrix() {
   cudaFree(gpu_prng_seed);
   cudaFree(gpu_pixel_hits);
-  cudaFree(gpu_detector_ring);
+  cudaFree(gpu_scanner);
 }
 
 void Matrix::operator()(Pixel pixel, int n_emissions, int* pixel_hits) {
@@ -114,7 +111,7 @@ void Matrix::operator()(Pixel pixel, int n_emissions, int* pixel_hits) {
 #define kernel kernel<<<blocks, threads>>>
 #endif
   kernel(pixel,
-         gpu_detector_ring,
+         gpu_scanner,
          n_emissions,
          pixel_size,
          n_positions,

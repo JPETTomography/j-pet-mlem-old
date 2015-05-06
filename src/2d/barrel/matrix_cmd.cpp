@@ -63,25 +63,25 @@ using namespace PET2D::Barrel;
 
 template <typename DetectorType>
 using DetectorModel = GenericScanner<DetectorType, MAX_DETECTORS, short>;
-// using DetectorModel = DetectorRing<DetectorType>;
+// using DetectorModel = Scanner<DetectorType>;
 
 // all available detector shapes
-using SquareDetectorRing = DetectorModel<SquareDetector<float>>;
-using CircleDetectorRing = DetectorModel<CircleDetector<float>>;
-using TriangleDetectorRing = DetectorModel<TriangleDetector<float>>;
-using HexagonalDetectorRing = DetectorModel<PolygonalDetector<6, float>>;
+using SquareScanner = DetectorModel<SquareDetector<float>>;
+using CircleScanner = DetectorModel<CircleDetector<float>>;
+using TriangleScanner = DetectorModel<TriangleDetector<float>>;
+using HexagonalScanner = DetectorModel<PolygonalDetector<6, float>>;
 
-template <typename DetectorRing, typename Model>
-void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring);
+template <typename Scanner, typename Model>
+void print_parameters(cmdline::parser& cl, const Scanner& scanner);
 
 template <typename Detector, typename Model>
 static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
-                                                  Detector& detector_ring,
+                                                  Detector& scanner,
                                                   Model& model);
 
-template <typename DetectorRing>
+template <typename Scanner>
 void post_process(cmdline::parser& cl,
-                  DetectorRing& detector_ring,
+                  Scanner& scanner,
                   SparseMatrix<Pixel<short>, LOR<short>>& sparse_matrix);
 
 int main(int argc, char* argv[]) {
@@ -119,40 +119,39 @@ int main(int argc, char* argv[]) {
 
 // these are wrappers running actual simulation
 #if HAVE_CUDA
-#define _RUN(cl, detector_ring, model) \
-  cl.exist("gpu") ? GPU::Matrix::run(cl) : run(cl, detector_ring, model)
+#define _RUN(cl, scanner, model) \
+  cl.exist("gpu") ? GPU::Matrix::run(cl) : run(cl, scanner, model)
 #else
-#define _RUN(cl, detector_ring, model) run(cl, detector_ring, model)
+#define _RUN(cl, scanner, model) run(cl, scanner, model)
 #endif
-#define RUN(detector_type, model_type, ...)                       \
-  detector_type detector_ring =                                   \
-      ScannerBuilder<detector_type>::buildMultipleRings(          \
-          PET2D_BARREL_DETECTOR_CL(cl, detector_type::F));        \
-  model_type model{ __VA_ARGS__ };                                \
-  print_parameters<detector_type, model_type>(cl, detector_ring); \
-  auto sparse_matrix = _RUN(cl, detector_ring, model);            \
-  post_process(cl, detector_ring, sparse_matrix)
+#define RUN(detector_type, model_type, ...)                                  \
+  detector_type scanner = ScannerBuilder<detector_type>::buildMultipleRings( \
+      PET2D_BARREL_SCANNER_CL(cl, detector_type::F));                        \
+  model_type model{ __VA_ARGS__ };                                           \
+  print_parameters<detector_type, model_type>(cl, scanner);                  \
+  auto sparse_matrix = _RUN(cl, scanner, model);                             \
+  post_process(cl, scanner, sparse_matrix)
 
     // run simmulation on given detector model & shape
     if (model_name == "always") {
       if (shape == "square") {
-        RUN(SquareDetectorRing, AlwaysAccept<>);
+        RUN(SquareScanner, AlwaysAccept<>);
       } else if (shape == "circle") {
-        RUN(CircleDetectorRing, AlwaysAccept<>);
+        RUN(CircleScanner, AlwaysAccept<>);
       } else if (shape == "triangle") {
-        RUN(TriangleDetectorRing, AlwaysAccept<>);
+        RUN(TriangleScanner, AlwaysAccept<>);
       } else if (shape == "hexagon") {
-        RUN(HexagonalDetectorRing, AlwaysAccept<>);
+        RUN(HexagonalScanner, AlwaysAccept<>);
       }
     } else if (model_name == "scintillator") {
       if (shape == "square") {
-        RUN(SquareDetectorRing, ScintillatorAccept<>, length_scale);
+        RUN(SquareScanner, ScintillatorAccept<>, length_scale);
       } else if (shape == "circle") {
-        RUN(CircleDetectorRing, ScintillatorAccept<>, length_scale);
+        RUN(CircleScanner, ScintillatorAccept<>, length_scale);
       } else if (shape == "triangle") {
-        RUN(TriangleDetectorRing, ScintillatorAccept<>, length_scale);
+        RUN(TriangleScanner, ScintillatorAccept<>, length_scale);
       } else if (shape == "hexagon") {
-        RUN(HexagonalDetectorRing, ScintillatorAccept<>, length_scale);
+        RUN(HexagonalScanner, ScintillatorAccept<>, length_scale);
       }
     }
 
@@ -177,8 +176,8 @@ int main(int argc, char* argv[]) {
   return 1;
 }
 
-template <typename DetectorRing, typename Model>
-void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring) {
+template <typename Scanner, typename Model>
+void print_parameters(cmdline::parser& cl, const Scanner& scanner) {
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& n_emissions = cl.get<int>("n-emissions");
   auto& tof_step = cl.get<double>("tof-step");
@@ -187,7 +186,7 @@ void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring) {
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
     max_bias = Model::max_bias();
-    n_tof_positions = detector_ring.n_tof_positions(tof_step, max_bias);
+    n_tof_positions = scanner.n_tof_positions(tof_step, max_bias);
   }
   if (verbose) {
     std::cerr << "Monte-Carlo:" << std::endl;
@@ -195,8 +194,7 @@ void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring) {
     std::cerr << "   OpenMP threads = " << omp_get_max_threads() << std::endl;
 #endif
     std::cerr << "    pixels in row = " << n_pixels << std::endl;
-    std::cerr << "     outer radius = " << detector_ring.outer_radius()
-              << std::endl;
+    std::cerr << "     outer radius = " << scanner.outer_radius() << std::endl;
     std::cerr << "         max bias = " << max_bias << std::endl;
     std::cerr << "         TOF step = " << tof_step << std::endl;
     std::cerr << "    TOF positions = " << n_tof_positions << std::endl;
@@ -206,7 +204,7 @@ void print_parameters(cmdline::parser& cl, const DetectorRing& detector_ring) {
 
 template <typename Detector, typename Model>
 static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
-                                                  Detector& detector_ring,
+                                                  Detector& scanner,
                                                   Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
@@ -226,12 +224,12 @@ static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
     max_bias = Model::max_bias();
-    n_tof_positions = detector_ring.n_tof_positions(tof_step, max_bias);
+    n_tof_positions = scanner.n_tof_positions(tof_step, max_bias);
   }
 
   using ComputeMatrix = MatrixPixelMajor<Pixel<short>, LOR<short>>;
   ComputeMatrix::SparseMatrix sparse_matrix(
-      n_pixels, detector_ring.size(), n_tof_positions);
+      n_pixels, scanner.size(), n_tof_positions);
 
   for (auto& fn : cl.rest()) {
     util::ibstream in(fn, std::ios::binary);
@@ -271,7 +269,7 @@ static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
     }
   }
 
-  ComputeMatrix matrix(n_pixels, detector_ring.size(), n_tof_positions);
+  ComputeMatrix matrix(n_pixels, scanner.size(), n_tof_positions);
   if (!sparse_matrix.empty()) {
     matrix << sparse_matrix;
     sparse_matrix.resize(0);
@@ -283,7 +281,7 @@ static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
 #endif
 
   MonteCarlo<Detector, ComputeMatrix> monte_carlo(
-      detector_ring, matrix, s_pixel, tof_step, m_pixel);
+      scanner, matrix, s_pixel, tof_step, m_pixel);
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
   monte_carlo(gen, model, n_emissions, progress);
 
@@ -304,9 +302,9 @@ static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
   return matrix.to_sparse();
 }
 
-template <typename DetectorRing>
+template <typename Scanner>
 void post_process(cmdline::parser& cl,
-                  DetectorRing& detector_ring,
+                  Scanner& scanner,
                   SparseMatrix<Pixel<short>, LOR<short>>& sparse_matrix) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
@@ -339,8 +337,8 @@ void post_process(cmdline::parser& cl,
     }
 
     util::svg_ostream<float> svg(fn_wo_ext + ".svg",
-                                 detector_ring.outer_radius(),
-                                 detector_ring.outer_radius(),
+                                 scanner.outer_radius(),
+                                 scanner.outer_radius(),
                                  1024.,
                                  1024.);
     svg.link_image(fn_wo_path + ".png",
@@ -349,7 +347,7 @@ void post_process(cmdline::parser& cl,
                    s_pixel * n_pixels,
                    s_pixel * n_pixels);
 
-    svg << detector_ring;
+    svg << scanner;
   }
 
   // visual debugging output
@@ -377,8 +375,8 @@ void post_process(cmdline::parser& cl,
     }
 
     util::svg_ostream<float> svg(fn_wo_ext + ".svg",
-                                 detector_ring.outer_radius(),
-                                 detector_ring.outer_radius(),
+                                 scanner.outer_radius(),
+                                 scanner.outer_radius(),
                                  1024.,
                                  1024.);
     svg.link_image(fn_wo_path + ".png",
@@ -387,6 +385,6 @@ void post_process(cmdline::parser& cl,
                    s_pixel * n_pixels,
                    s_pixel * n_pixels);
 
-    svg << detector_ring;
+    svg << scanner;
   }
 }

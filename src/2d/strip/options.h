@@ -27,7 +27,7 @@ void calculate_detector_options(cmdline::parser& parser);
 
 /// provides initialization list for creating detector
 #define __PET2D_STRIP(...) __VA_ARGS__  // just pass-through
-#define PET2D_STRIP_DETECTOR_CL(cl)           \
+#define PET2D_STRIP_SCANNER_CL(cl)            \
   __PET2D_STRIP(cl.get<double>("r-distance"), \
                 cl.get<double>("s-length"),   \
                 cl.get<int>("n-y-pixels"),    \

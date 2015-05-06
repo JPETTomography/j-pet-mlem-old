@@ -58,16 +58,16 @@ using namespace PET2D::Barrel;
 
 template <typename DetectorType>
 using DetectorModel = GenericScanner<DetectorType, MAX_DETECTORS, short>;
-// using DetectorModel = DetectorRing<DetectorType>;
+// using DetectorModel = Scanner<DetectorType>;
 
 // all available detector shapes
-using SquareDetectorRing = DetectorModel<SquareDetector<float>>;
-using CircleDetectorRing = DetectorModel<CircleDetector<float>>;
-using TriangleDetectorRing = DetectorModel<TriangleDetector<float>>;
-using HexagonalDetectorRing = DetectorModel<PolygonalDetector<6, float>>;
+using SquareScanner = DetectorModel<SquareDetector<float>>;
+using CircleScanner = DetectorModel<CircleDetector<float>>;
+using TriangleScanner = DetectorModel<TriangleDetector<float>>;
+using HexagonalScanner = DetectorModel<PolygonalDetector<6, float>>;
 using PixelType = PET2D::Pixel<short>;
 
-template <typename DetectorRing, typename Model>
+template <typename Scanner, typename Model>
 void run(cmdline::parser& cl, Model& model);
 
 int main(int argc, char* argv[]) {
@@ -93,24 +93,24 @@ int main(int argc, char* argv[]) {
     if (model_name == "always") {
       AlwaysAccept<> model;
       if (shape == "square") {
-        run<SquareDetectorRing>(cl, model);
+        run<SquareScanner>(cl, model);
       } else if (shape == "circle") {
-        run<CircleDetectorRing>(cl, model);
+        run<CircleScanner>(cl, model);
       } else if (shape == "triangle") {
-        run<TriangleDetectorRing>(cl, model);
+        run<TriangleScanner>(cl, model);
       } else if (shape == "hexagon") {
-        run<HexagonalDetectorRing>(cl, model);
+        run<HexagonalScanner>(cl, model);
       }
     } else if (model_name == "scintillator") {
       ScintillatorAccept<> model(length_scale);
       if (shape == "square") {
-        run<SquareDetectorRing>(cl, model);
+        run<SquareScanner>(cl, model);
       } else if (shape == "circle") {
-        run<CircleDetectorRing>(cl, model);
+        run<CircleScanner>(cl, model);
       } else if (shape == "triangle") {
-        run<TriangleDetectorRing>(cl, model);
+        run<TriangleScanner>(cl, model);
       } else if (shape == "hexagon") {
-        run<HexagonalDetectorRing>(cl, model);
+        run<HexagonalScanner>(cl, model);
       }
     }
 
@@ -155,7 +155,7 @@ void run(cmdline::parser& cl, Model& model) {
   }
 
   Detector dr = ScannerBuilder<Detector>::buildMultipleRings(
-      PET2D_BARREL_DETECTOR_CL(cl, typename Detector::F));
+      PET2D_BARREL_SCANNER_CL(cl, typename Detector::F));
 
   int n_tof_positions = 1;
   double max_bias = 0;

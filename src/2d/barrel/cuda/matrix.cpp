@@ -20,8 +20,8 @@ namespace GPU {
 
 OutputMatrix Matrix::run(cmdline::parser& cl) {
 
-  DetectorRing detector_ring = ScannerBuilder<DetectorRing>::buildMultipleRings(
-      PET2D_BARREL_DETECTOR_CL(cl, DetectorRing::F));
+  Scanner scanner = ScannerBuilder<Scanner>::buildMultipleRings(
+      PET2D_BARREL_SCANNER_CL(cl, Scanner::F));
 
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -
   // each SMX can use 8 active blocks,
@@ -49,7 +49,7 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
     max_bias = Model::max_bias();
-    n_tof_positions = detector_ring.n_tof_positions(tof_step, max_bias);
+    n_tof_positions = scanner.n_tof_positions(tof_step, max_bias);
   }
 
   auto n_pixels = cl.get<int>("n-pixels");
@@ -71,7 +71,7 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
     prng_seed[i] = gen();  // 53445 + i
   }
 
-  GPU::Matrix gpu_matrix(detector_ring,
+  GPU::Matrix gpu_matrix(scanner,
                          n_threads_per_block,
                          n_blocks,
                          s_pixel,
@@ -80,13 +80,12 @@ OutputMatrix Matrix::run(cmdline::parser& cl) {
                          length_scale,
                          prng_seed.data());
 
-  const auto n_lors = LOR::end_for_detectors(detector_ring.size()).index();
+  const auto n_lors = LOR::end_for_detectors(scanner.size()).index();
   std::vector<int> pixel_hits(n_lors * n_tof_positions, 0);
 
   std::vector<LOR> lor_map;
   lor_map.resize(n_lors);
-  for (LOR lor(0, 0); lor < LOR::end_for_detectors(detector_ring.size());
-       ++lor) {
+  for (LOR lor(0, 0); lor < LOR::end_for_detectors(scanner.size()); ++lor) {
     lor_map[lor.index()] = lor;
   }
 
