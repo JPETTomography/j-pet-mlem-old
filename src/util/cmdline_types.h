@@ -7,37 +7,35 @@ namespace cmdline {
 
 class path : public std::string {
  public:
-  path() : std::string(), fn_ext(path::npos), fn_sep(path::npos) {}
+  path() : std::string() {}
 
-  path(const char* s)
-      : std::string(s),
-        fn_ext(find_last_of(".")),
-        fn_sep(find_last_of("\\/")) {}
+  path(const char* s) : std::string(s) {}
 
-  path(const std::string str)
-      : std::string(str),
-        fn_ext(find_last_of(".")),
-        fn_sep(find_last_of("\\/")) {}
+  path(const std::string& str) : std::string(str) {}
 
-  path wo_ext() const {
-    return substr(0,
-                  fn_ext != std::string::npos &&
-                          (fn_sep == std::string::npos || fn_sep < fn_ext)
-                      ? fn_ext
-                      : std::string::npos);
-  }
+  path(const std::string&& str) : std::string(str) {}
+
+  path wo_ext() const { return substr(0, ext_pos(sep_pos())); }
 
   path wo_path() const {
+    auto fn_sep = sep_pos();
     return substr(fn_sep != std::string::npos ? fn_sep + 1 : 0);
   }
 
   path ext() const {
+    auto fn_ext = ext_pos(sep_pos());
     return substr(fn_ext != std::string::npos ? fn_ext : size(), size());
   }
 
  private:
-  size_t fn_ext;
-  size_t fn_sep;
+  std::string::size_type sep_pos() const { return find_last_of("\\/"); }
+
+  std::string::size_type ext_pos(const std::string::size_type fn_sep) const {
+    auto fn_ext = find_last_of(".");
+    if (fn_sep != std::string::npos && fn_sep > fn_ext)
+      fn_ext = std::string::npos;
+    return fn_ext;
+  }
 };
 
 namespace detail {
