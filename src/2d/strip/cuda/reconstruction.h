@@ -38,11 +38,14 @@ void run_reconstruction(Scanner<F, short>& scanner,
                         bool verbose);
 
 struct Context {
-  Context(util::progress& progress, std::string& output_file_name, bool text_output)
-      : progress(progress), output_file_name(output_file_name), text_output(text_output) {}
+  Context(util::progress& progress, std::string& output_file_name,
+          bool text_output, int n_file_digits)
+      : progress(progress), output_file_name(output_file_name),
+        text_output(text_output), n_file_digits(n_file_digits) {}
   util::progress& progress;
   std::string& output_file_name;
   bool text_output;
+  int n_file_digits;
 };
 
 void output(Scanner<float, short>& scanner,
@@ -58,7 +61,8 @@ void output(Scanner<float, short>& scanner,
   std::stringstream base_name;
   base_name << context->output_file_name << "_";  // phantom_
   if (iteration >= 0) {
-    base_name << std::setw(3) << std::setfill('0')  //
+    base_name << std::setw(context->n_file_digits)  //
+              << std::setfill('0')                  //
               << iteration + 1 << std::setw(0);     // 001
   } else {
     base_name << "sensitivity";
@@ -118,9 +122,10 @@ void run_reconstruction(Scanner<float, short>& scanner,
                         bool verbose,
                         util::progress& progress,
                         std::string output_base_name,
-                        bool text_output) {
+                        bool text_output,
+                        int n_file_digits) {
 
-  Context context(progress, output_base_name, text_output);
+  Context context(progress, output_base_name, text_output, n_file_digits);
   run_reconstruction(scanner,
                      events.data(),
                      events.size(),
@@ -146,7 +151,8 @@ void run_reconstruction(Scanner<float, short>& scanner,
                         bool verbose,
                         util::progress& progress,
                         std::string output_file_name,
-                        bool text_output) {
+                        bool text_output,
+                        int n_file_digits) {
   std::vector<Event<float>> sp_event_list;
   for (auto& event : events) {
     Event<float> sp_event(event.z_u, event.z_d, event.dl);
@@ -162,7 +168,8 @@ void run_reconstruction(Scanner<float, short>& scanner,
                      verbose,
                      progress,
                      output_file_name,
-                     text_output);
+                     text_output,
+                     n_file_digits);
 }
 }  // GPU
 }  // Strip

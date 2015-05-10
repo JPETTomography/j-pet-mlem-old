@@ -136,6 +136,10 @@ int main(int argc, char* argv[]) {
 
     util::progress progress(verbosity, n_blocks * n_iterations, 1);
 
+    int n_file_digits = n_blocks * n_iterations >= 1000 ? 4 :
+                        n_blocks * n_iterations >= 100 ? 3 :
+                        n_blocks * n_iterations >= 10 ? 2 : 1;
+
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
       Scanner<float, short> single_precision_scanner(scanner);
@@ -150,7 +154,8 @@ int main(int argc, char* argv[]) {
                               cl.exist("verbose"),
                               progress,
                               output_base_name,
-                              output_txt);
+                              output_txt,
+                              n_file_digits);
     } else
 #endif
     {
@@ -165,7 +170,8 @@ int main(int argc, char* argv[]) {
         if (output_base_name.length()) {
           std::stringstream fn;
           fn << output_base_name << "_"            // phantom_
-             << std::setw(3) << std::setfill('0')  //
+             << std::setw(n_file_digits)           //
+             << std::setfill('0')                  //
              << block * n_iterations + 1;          // 001
 
           util::png_writer png(fn.str() + ".png");
