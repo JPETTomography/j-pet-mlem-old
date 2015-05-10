@@ -168,9 +168,14 @@ void run_reconstruction(Scanner<F, short>& scanner,
       cudaMemcpy(cpu_rho, gpu_output_rho, image_size, cudaMemcpyDeviceToHost);
 #endif
       progress_callback(ib * n_iterations_in_block + it, context, true);
+
+      // always output first 5 iterations
+      if (!ib && it < n_iterations_in_block - 1 && it < 5) {
+        output_callback(scanner, it + 1, cpu_rho, context);
+      }
     }
 
-    output_callback(scanner, ib * n_iterations_in_block, cpu_rho, context);
+    output_callback(scanner, (ib + 1) * n_iterations_in_block, cpu_rho, context);
   }
 
   progress_callback(n_iteration_blocks * n_iterations_in_block, context, false);

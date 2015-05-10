@@ -169,10 +169,10 @@ int main(int argc, char* argv[]) {
 
         if (output_base_name.length()) {
           std::stringstream fn;
-          fn << output_base_name << "_"            // phantom_
-             << std::setw(n_file_digits)           //
-             << std::setfill('0')                  //
-             << block * n_iterations + 1;          // 001
+          fn << output_base_name << "_"      // phantom_
+             << std::setw(n_file_digits)     //
+             << std::setfill('0')            //
+             << (block + 1) * n_iterations;  // 001
 
           util::png_writer png(fn.str() + ".png");
           reconstruction.output_bitmap(png);

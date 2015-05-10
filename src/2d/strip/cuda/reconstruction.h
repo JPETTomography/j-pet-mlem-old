@@ -63,7 +63,7 @@ void output(Scanner<float, short>& scanner,
   if (iteration >= 0) {
     base_name << std::setw(context->n_file_digits)  //
               << std::setfill('0')                  //
-              << iteration + 1 << std::setw(0);     // 001
+              << iteration << std::setw(0);         // 001
   } else {
     base_name << "sensitivity";
   }
