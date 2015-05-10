@@ -167,6 +167,19 @@ class Reconstruction {
     return out << rho;
   }
 
+  template <typename StreamType>
+  void output_tuples(StreamType& out, bool output_sensitivity = false) {
+    auto& output = output_sensitivity ? sensitivity : rho;
+    for (int y = 0; y < scanner.n_y_pixels; ++y) {
+      for (auto x = 0; x < scanner.n_z_pixels; ++x) {
+        auto value = output[y * scanner.n_z_pixels + x];
+        if (value != 0) {
+          out << x << ' ' << y << ' ' << value << std::endl;
+        }
+      }
+    }
+  }
+
   template <class FileWriter>
   void output_bitmap(FileWriter& fw, bool output_sensitivity = false) {
     fw.template write_header<>(scanner.n_z_pixels, scanner.n_y_pixels);
