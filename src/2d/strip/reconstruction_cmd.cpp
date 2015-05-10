@@ -130,9 +130,9 @@ int main(int argc, char* argv[]) {
 
     auto n_blocks = cl.get<int>("blocks");
     auto n_iterations = cl.get<int>("iterations");
-    auto output_base_name = cl.exist("output")
-                                ? cl.get<cmdline::path>("output").wo_ext()
-                                : cmdline::path();
+    auto output_name = cl.get<cmdline::path>("output");
+    auto output_base_name = output_name.wo_ext();
+    auto output_txt = output_name.ext() == ".txt";
 
     util::progress progress(verbosity, n_blocks * n_iterations, 1);
 
@@ -170,8 +170,13 @@ int main(int argc, char* argv[]) {
           util::png_writer png(fn.str() + ".png");
           reconstruction.output_bitmap(png);
 
-          util::obstream bin(fn.str() + ".bin");
-          reconstruction >> bin;
+          if (output_txt) {
+            std::ofstream txt(fn.str() + ".txt");
+            reconstruction.output_tuples(txt);
+          } else {
+            util::obstream bin(fn.str() + ".bin");
+            reconstruction >> bin;
+          }
         }
       }
 #if USE_STATISTICS
