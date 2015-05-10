@@ -135,18 +135,18 @@ __global__ void reconstruction(Scanner<F, short> scanner,
     for (int offset = 0; offset < bb_size; offset += WARP_SIZE) {
       int index;
       Pixel pixel =
-          warp_space_pixel(offset, top_left, bb_width, inv_bb_width, index);
+          warp_space_pixel(offset, bb_tl, bb_width, inv_bb_width, index);
 
       if (index >= bb_size)
         break;
 
       Point point = scanner.pixel_center(pixel);
 
-      if (scanner.in_ellipse(A, B, C, ellipse_center, point)) {
-        point -= ellipse_center;
+      if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
+        Vector r = point - ellipse_center;
 
         F event_kernel =
-            USE_KERNEL ? kernel(y, tan, sec, scanner.radius, point) : 1;
+            USE_KERNEL ? kernel(y, tan, sec, scanner.radius, r) : 1;
 
         atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
                   event_kernel * tex2D(tex_rho, pixel.x, pixel.y) * inv_acc);

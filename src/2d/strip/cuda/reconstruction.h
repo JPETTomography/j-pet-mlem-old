@@ -38,10 +38,11 @@ void run_reconstruction(Scanner<F, short>& scanner,
                         bool verbose);
 
 struct Context {
-  Context(util::progress& progress, std::string& output_file_name)
-      : progress(progress), output_file_name(output_file_name) {}
+  Context(util::progress& progress, std::string& output_file_name, bool text_output)
+      : progress(progress), output_file_name(output_file_name), text_output(text_output) {}
   util::progress& progress;
   std::string& output_file_name;
+  bool text_output;
 };
 
 void output(Scanner<float, short>& scanner,
@@ -63,8 +64,22 @@ void output(Scanner<float, short>& scanner,
     base_name << "sensitivity";
   }
 
-  util::obstream bin(base_name.str() + ".bin");
-  bin.write(output, scanner.total_n_pixels);
+  if (context->text_output) {
+    std::ofstream txt(base_name.str() + ".txt");
+    txt.precision(12);
+    txt << std::fixed;
+    for (int y = 0; y < scanner.n_y_pixels; ++y) {
+      for (auto x = 0; x < scanner.n_z_pixels; ++x) {
+        auto value = output[y * scanner.n_z_pixels + x];
+        if (value != 0) {
+          txt << x << ' ' << y << ' ' << value << std::endl;
+        }
+      }
+    }
+  } else {
+    util::obstream bin(base_name.str() + ".bin");
+    bin.write(output, scanner.total_n_pixels);
+  }
 
   util::png_writer png(base_name.str() + ".png");
   png.write_header<>(scanner.n_z_pixels, scanner.n_y_pixels);
@@ -102,9 +117,10 @@ void run_reconstruction(Scanner<float, short>& scanner,
                         int n_threads_per_block,
                         bool verbose,
                         util::progress& progress,
-                        std::string output) {
+                        std::string output_base_name,
+                        bool text_output) {
 
-  Context context(progress, output);
+  Context context(progress, output_base_name, text_output);
   run_reconstruction(scanner,
                      events.data(),
                      events.size(),
@@ -129,7 +145,8 @@ void run_reconstruction(Scanner<float, short>& scanner,
                         int n_threads_per_block,
                         bool verbose,
                         util::progress& progress,
-                        std::string output_file_name) {
+                        std::string output_file_name,
+                        bool text_output) {
   std::vector<Event<float>> sp_event_list;
   for (auto& event : events) {
     Event<float> sp_event(event.z_u, event.z_d, event.dl);
@@ -144,7 +161,8 @@ void run_reconstruction(Scanner<float, short>& scanner,
                      n_threads_per_block,
                      verbose,
                      progress,
-                     output_file_name);
+                     output_file_name,
+                     text_output);
 }
 }  // GPU
 }  // Strip

@@ -149,7 +149,8 @@ int main(int argc, char* argv[]) {
                               cl.get<int>("cuda-threads"),
                               cl.exist("verbose"),
                               progress,
-                              output_base_name);
+                              output_base_name,
+                              output_txt);
     } else
 #endif
     {
