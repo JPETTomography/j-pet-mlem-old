@@ -172,6 +172,8 @@ int main(int argc, char* argv[]) {
 
           if (output_txt) {
             std::ofstream txt(fn.str() + ".txt");
+            txt.precision(12);
+            txt << std::fixed;
             reconstruction.output_tuples(txt);
           } else {
             util::obstream bin(fn.str() + ".bin");
