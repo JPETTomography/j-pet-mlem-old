@@ -36,8 +36,18 @@ template <typename Scanner2D> class Scanner {
     Point d1_entry, d1_exit, d1_deposition;
     Point d2_entry, d2_exit, d2_deposition;
     Point origin;
-  };
 
+    friend std::ostream& operator<<(std::ostream& out,
+                                    const FullResponse& response) {
+
+      out << response.detector1 << " " << response.detector2;
+      out << " " << response.d1_entry << " " << response.d1_exit << " "
+          << response.d1_deposition;
+      out << " " << response.d2_entry << " " << response.d2_exit << " "
+          << response.d2_deposition;
+      return out;
+    };
+  };
   /// Scanner response
   ///
   /// Represents information actually detected by the scanner on single event.
@@ -130,16 +140,29 @@ template <typename Scanner2D> class Scanner {
                         d2_deposit))
       return 0;
 
-    response.detector1 = detector1;
-    response.detector2 = detector2;
+    if (detector1 > detector2) {
+      response.detector1 = detector1;
+      response.detector2 = detector2;
 
-    response.d1_entry = d1_p1;
-    response.d1_exit = d1_p2;
-    response.d1_deposition = d1_deposit;
+      response.d1_entry = d1_p1;
+      response.d1_exit = d1_p2;
+      response.d1_deposition = d1_deposit;
 
-    response.d2_entry = d2_p1;
-    response.d2_exit = d2_p2;
-    response.d2_deposition = d2_deposit;
+      response.d2_entry = d2_p1;
+      response.d2_exit = d2_p2;
+      response.d2_deposition = d2_deposit;
+    } else {
+      response.detector1 = detector2;
+      response.detector2 = detector1;
+
+      response.d1_entry = d2_p1;
+      response.d1_exit = d2_p2;
+      response.d1_deposition = d2_deposit;
+
+      response.d2_entry = d1_p1;
+      response.d2_exit = d1_p2;
+      response.d2_deposition = d1_deposit;
+    }
     response.origin = e.origin;
 
     return 2;
@@ -152,15 +175,10 @@ template <typename Scanner2D> class Scanner {
 
     response.lor = LOR(full_response.detector1, full_response.detector2);
 
-    if (full_response.detector1 > full_response.detector2) {
-      response.dl = length1 - length2;
-      response.z_up = full_response.d1_deposition.z;
-      response.z_dn = full_response.d2_deposition.z;
-    } else {
-      response.dl = length2 - length1;
-      response.z_up = full_response.d2_deposition.z;
-      response.z_dn = full_response.d1_deposition.z;
-    }
+    response.dl = length1 - length2;
+    response.z_up = full_response.d1_deposition.z;
+    response.z_dn = full_response.d2_deposition.z;
+
     return response;
   }
 

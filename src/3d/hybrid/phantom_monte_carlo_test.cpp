@@ -63,5 +63,7 @@ TEST("PET3D/hubrid/phantom_monte_carlo") {
   std::ofstream exact_event_stream("test_output/exact_events.txt");
   monte_carlo.set_exact_event_stream(exact_event_stream);
 
+  std::ofstream full_response_stream("test_output/full_response.txt");
+  monte_carlo.set_full_response_stream(full_response_stream);
   monte_carlo.generate(rng, scintillator, 1000000);
 }

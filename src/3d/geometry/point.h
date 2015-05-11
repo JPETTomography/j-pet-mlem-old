@@ -93,7 +93,7 @@ _ Vector<F> operator-(const Point<F>& lhs, const Point<F>& rhs) {
 
 template <typename FType>
 std::ostream& operator<<(std::ostream& out, const Point<FType>& p) {
-  out << "(" << p.x << ", " << p.y << ", " << p.z << ")";
+  out << p.x << " " << p.y << "  " << p.z ;
   return out;
 }
 
@@ -108,7 +108,7 @@ namespace Catch {
 template <typename FType> struct StringMaker<PET3D::Point<FType>> {
   static std::string convert(const PET3D::Point<FType>& p) {
     std::ostringstream oss;
-    oss << "(" << p.x << ", " << p.y << p.z << ")";
+    oss << p.x << " " << p.y << " " << p.z  ;
     return oss.str();
   }
 };

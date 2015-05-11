@@ -71,7 +71,7 @@ template <typename FType> struct Vector {
 
 template <typename FType>
 std::ostream& operator<<(std::ostream& out, const Vector<FType>& vec) {
-  out << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
+  out  << vec.x << " " << vec.y << " " << vec.z;
   return out;
 }
 
