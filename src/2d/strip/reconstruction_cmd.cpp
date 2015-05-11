@@ -136,9 +136,11 @@ int main(int argc, char* argv[]) {
 
     util::progress progress(verbosity, n_blocks * n_iterations, 1);
 
-    int n_file_digits = n_blocks * n_iterations >= 1000 ? 4 :
-                        n_blocks * n_iterations >= 100 ? 3 :
-                        n_blocks * n_iterations >= 10 ? 2 : 1;
+    int n_file_digits = n_blocks * n_iterations >= 1000
+                            ? 4
+                            : n_blocks * n_iterations >= 100
+                                  ? 3
+                                  : n_blocks * n_iterations >= 10 ? 2 : 1;
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {

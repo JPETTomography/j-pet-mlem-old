@@ -38,10 +38,14 @@ void run_reconstruction(Scanner<F, short>& scanner,
                         bool verbose);
 
 struct Context {
-  Context(util::progress& progress, std::string& output_file_name,
-          bool text_output, int n_file_digits)
-      : progress(progress), output_file_name(output_file_name),
-        text_output(text_output), n_file_digits(n_file_digits) {}
+  Context(util::progress& progress,
+          std::string& output_file_name,
+          bool text_output,
+          int n_file_digits)
+      : progress(progress),
+        output_file_name(output_file_name),
+        text_output(text_output),
+        n_file_digits(n_file_digits) {}
   util::progress& progress;
   std::string& output_file_name;
   bool text_output;

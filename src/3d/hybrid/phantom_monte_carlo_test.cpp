@@ -35,6 +35,7 @@ TEST("PET3D/hubrid/phantom_monte_carlo") {
       inner_radius, 2, strip_width, strip_height);
 
   Scanner scanner(scanner2d, strip_length);
+  scanner.set_sigmas(0.010, 0.024);
 
   using RNG = std::mt19937;
   RNG rng;
@@ -51,6 +52,15 @@ TEST("PET3D/hubrid/phantom_monte_carlo") {
 
   Allways allways;
 
-  PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
+  PET3D::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
+  std::ofstream no_error_stream("test_output/no_errors.txt");
+  monte_carlo.set_no_error_stream(no_error_stream);
+
+  std::ofstream error_stream("test_output/errors.txt");
+  monte_carlo.set_no_error_stream(error_stream);
+
+  std::ofstream exact_event_stream("test_output/exact_events.txt");
+  monte_carlo.set_exact_event_stream(exact_event_stream);
+
   monte_carlo.generate(rng, allways, 1000);
 }

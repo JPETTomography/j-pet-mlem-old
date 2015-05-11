@@ -1,6 +1,7 @@
 #pragma once
 
-#include <iostream>
+#include <ostream>
+#include <random>
 
 #include "2d/barrel/generic_scanner.h"
 #include "3d/geometry/event.h"
@@ -45,10 +46,26 @@ template <typename Scanner2D> class Scanner {
     F z_up;
     F z_dn;
     F dl;
+
+    friend std::ostream& operator<<(std::ostream& out,
+                                    const Response& response) {
+      out << (int)response.lor.first << " " << (int)response.lor.second << " ";
+      out << response.z_up << " " << response.z_dn << " " << response.dl;
+      return out;
+    }
   };
 
   Scanner(const Scanner2D& barrel, F length)
-      : barrel(barrel), length(length), half_length(length / 2) {}
+      : barrel(barrel),
+        length(length),
+        half_length(length / 2),
+        sigma_z_(),
+        sigma_dl_() {}
+
+  void set_sigmas(F sigma_z, F sigma_dl) {
+    sigma_z_ = sigma_z;
+    sigma_dl_ = sigma_dl;
+  }
 
   bool escapes_through_endcap(const Event& event) const {
     if (event.direction.z == 0.0)
@@ -147,6 +164,19 @@ template <typename Scanner2D> class Scanner {
     return response;
   }
 
+  template <typename RNG>
+  Response errorResponse(RNG& rng, const FullResponse& full_response) const {
+    std::normal_distribution<F> dist_z(0, sigma_z_);
+    std::normal_distribution<F> dist_dl(0, sigma_dl_);
+    Response response = noErrorResponse(full_response);
+
+    response.z_up += dist_z(rng);
+    response.z_dn += dist_z(rng);
+    response.dl += dist_dl(rng);
+
+    return response;
+  }
+
   template <class RandomGenerator, class AcceptanceModel>
   _ short detect(RandomGenerator& gen,    ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
@@ -238,7 +268,12 @@ template <typename Scanner2D> class Scanner {
   const Scanner2D barrel;
   const F length;
   const F half_length;
+
+ private:
+  F sigma_z_;
+  F sigma_dl_;
 };
 
 }  // Longitudinal
+
 }  // PET3D

@@ -133,7 +133,7 @@ void run_reconstruction(Scanner<F, short>& scanner,
                    cudaMemcpyHostToDevice);
 
 #if __CUDACC__
-#define reconstruction reconstruction<Kernel><<<blocks, threads>>>
+#define reconstruction reconstruction<Kernel> << <blocks, threads>>>
 #endif
       reconstruction(scanner,
                      gpu_events.z_u,
@@ -175,7 +175,8 @@ void run_reconstruction(Scanner<F, short>& scanner,
       }
     }
 
-    output_callback(scanner, (ib + 1) * n_iterations_in_block, cpu_rho, context);
+    output_callback(
+        scanner, (ib + 1) * n_iterations_in_block, cpu_rho, context);
   }
 
   progress_callback(n_iteration_blocks * n_iterations_in_block, context, false);

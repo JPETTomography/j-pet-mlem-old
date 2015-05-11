@@ -70,6 +70,12 @@ template <typename FType> struct Vector {
 };
 
 template <typename FType>
+std::ostream& operator<<(std::ostream& out, const Vector<FType>& vec) {
+  out << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
+  return out;
+}
+
+template <typename FType>
 _ Vector<FType> operator+(const Vector<FType>& lhs, const Vector<FType>& rhs) {
   Vector<FType> vec(lhs);
   vec += rhs;

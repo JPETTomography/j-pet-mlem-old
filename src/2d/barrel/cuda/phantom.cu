@@ -84,7 +84,7 @@ void run_gpu_phantom(int n_threads_per_block,
     float fov_radius = radius / M_SQRT2;
     if ((i * i + j * j) * s_size * s_size < fov_radius * fov_radius) {
 #if __CUDACC__
-#define gpu_phantom_generation gpu_phantom_generation<<<blocks, threads>>>
+#define gpu_phantom_generation gpu_phantom_generation << <blocks, threads>>>
 #endif
 #if WHERE_IS_PHANTOM
       gpu_phantom_generation(i,

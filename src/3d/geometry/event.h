@@ -29,4 +29,13 @@ template <typename FType> class Event {
   const Point origin;
   const Vector direction;
 };
+
+template <typename FType>
+std::ostream& operator<<(std::ostream& out, const Event<FType>& ev) {
+  auto orig = ev.origin;
+  out << orig.x << " " << orig.y << " " << orig.z << " ";
+  auto dir = ev.direction;
+  out << dir.x << " " << dir.y << " " << dir.z;
+  return out;
+}
 }
