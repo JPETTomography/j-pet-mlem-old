@@ -7,3 +7,6 @@
 [submodule "pubs/beamer"]
 	path = pubs/beamer
 	url = ../../ujhpc/beamer-torino-theme.git
+[submodule "lib/rapidjson"]
+	path = lib/rapidjson
+	url = https://github.com/ujhpc/rapidjson.git
