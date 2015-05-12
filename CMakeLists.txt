@@ -60,7 +60,7 @@ else()
   add_definitions(/D_USE_MATH_DEFINES /wd4244 /wd4800 /wd4267 /wd4996)
 endif()
 
-include_directories(src lib/cmdline)
+include_directories(src lib/cmdline lib/rapidjson/include)
 
 # common headers and utility sources used by all commands
 file(GLOB COMMON

@@ -217,4 +217,25 @@ class TranslatedPhantomRegion : public PhantomRegion<FType, RNG> {
   PhantomRegion<F, RNG>* region;
   Vector displacement;
 };
+
+template <typename FType,
+          typename RNG,
+          typename AngularDistribution = PET3D::SphericalDistribution<FType>>
+class PointRegion : public AbstractPhantomRegion<FType, RNG, AngularDistribution> {
+ public:
+  using F = FType;
+  using Point = PET3D::Point<F>;
+  using Event = PET3D::Event<F>;
+  using Vector = PET3D::Vector<F>;
+  PointRegion(F intensity, AngularDistribution angular, const Point& origin)
+      : AbstractPhantomRegion<FType, RNG, AngularDistribution>(intensity, angular), origin(origin) {}
+
+  Point random_point(RNG& rng) { return origin; }
+
+  bool in(const Point& p) const { return p == origin; }
+
+  F volume() const { return F(1); }
+
+  const Point origin;
+};
 }

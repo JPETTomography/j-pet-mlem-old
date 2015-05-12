@@ -29,6 +29,18 @@ template <typename F> class SphericalDistribution {
   std::uniform_real_distribution<F> z_dist;
 };
 
+template <typename F> class SingleDirectionDistribution {
+  public:
+  using Vector = PET3D::Vector<F>;
+  SingleDirectionDistribution(const Vector& direction)
+      : direction_(direction.normalized()) {}
+
+  template <typename RNG> Vector operator()(RNG& rng) { return direction_; }
+
+ private:
+  Vector direction_;
+};
+
 template <typename F> class VoxelEventGenerator {
  public:
   using Event = PET3D::Event<F>;

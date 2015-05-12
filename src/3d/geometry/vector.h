@@ -67,11 +67,17 @@ template <typename FType> struct Vector {
   _ F length() const { return compat::sqrt(length2()); }
 
   _ PET2D::Vector<FType> xy() const { return PET2D::Vector<FType>(x, y); }
+
+  _ Vector normalized() const {
+    Vector res(*this);
+    res /= length();
+    return res;
+  }
 };
 
 template <typename FType>
 std::ostream& operator<<(std::ostream& out, const Vector<FType>& vec) {
-  out  << vec.x << " " << vec.y << " " << vec.z;
+  out << vec.x << " " << vec.y << " " << vec.z;
   return out;
 }
 
