@@ -8,6 +8,9 @@
 # ignore data
 /data/
 
+# ignore articles
+/articles/
+
 # Doxygen output
 /doc/html/
 /doc/doxygen_sqlite3.db
