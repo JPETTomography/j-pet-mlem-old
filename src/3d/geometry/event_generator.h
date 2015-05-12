@@ -33,12 +33,11 @@ template <typename F> class SingleDirectionDistribution {
   public:
   using Vector = PET3D::Vector<F>;
   SingleDirectionDistribution(const Vector& direction)
-      : direction_(direction.normalized()) {}
+      : direction(direction.normalized()) {}
 
-  template <typename RNG> Vector operator()(RNG& rng) { return direction_; }
+  template <typename RNG> Vector operator()(RNG& rng) { return direction; }
 
- private:
-  Vector direction_;
+  const Vector direction;
 };
 
 template <typename F> class VoxelEventGenerator {
