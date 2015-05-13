@@ -219,6 +219,7 @@ pet_target(2d strip reconstruction)
 set(CL_2D_OPTIONS 2d/barrel/options.cpp 2d/strip/options.cpp)
 
 pet_target(3d hybrid matrix ${CL_2D_OPTIONS})
+pet_target(3d hybrid 2strip_phantom ${CL_2D_OPTIONS})
 
 # custom documentation and config files to be shown in project tree
 file(GLOB EXTRA scripts/* cmake/*)
