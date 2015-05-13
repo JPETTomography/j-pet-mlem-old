@@ -45,7 +45,7 @@ TEST("PhantomBuilder/angular_distribution") {
   rapidjson::Value& angular_val = obj["angular"];
 
   PET3D::SingleDirectionDistribution<float> distr =
-      PET3D::create_from_json<PET3D::SingleDirectionDistribution<float>>(
+      PET3D::create_angular_distribution_from_json<PET3D::SingleDirectionDistribution<float>>(
           angular_val);
 
   REQUIRE(distr.direction.x == Approx(1.0f / std::sqrt(2.0f)).epsilon(1e-7));

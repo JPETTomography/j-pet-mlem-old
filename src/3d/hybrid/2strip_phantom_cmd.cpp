@@ -45,6 +45,9 @@ int main(int argc, char* argv[]) {
                         false,
                         "phantom.txt",
                         cmdline::not_from_file);
+  cl.add<int>("n-emissions", 'e', "number of emmisions", false, 0);
+  cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
+  cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
   cl.parse_check(argc, argv);
 
   auto output = cl.get<cmdline::path>("output");
@@ -55,14 +58,14 @@ int main(int argc, char* argv[]) {
       inner_radius, 2, strip_width, strip_height);
 
   Scanner scanner(scanner2d, strip_length);
-  scanner.set_sigmas(0.010, 0.024);
+  scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
 
   using RNG = std::mt19937;
   RNG rng;
   std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
-  float angle = std::atan2(0.0025f, 0.400f);
+  float angle = std::atan2(0.0025f, 0.190);
   auto cylinder = new PET3D::CylinderRegion<float, RNG>(
-      0.0015, 0.001, 1, PET3D::SphericalDistribution<float>(-angle, angle));
+      0.0025, 0.001, 1, PET3D::SphericalDistribution<float>(-angle, angle));
   PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
   auto rotated_cylinder =
@@ -74,18 +77,18 @@ int main(int argc, char* argv[]) {
   Scintillator scintillator(0.100);
   PET3D::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
 
-  std::ofstream no_error_stream("test_output/no_errors.txt");
+  std::ofstream no_error_stream(output_base_name + "_geom_only" + ext);
   monte_carlo.set_no_error_stream(no_error_stream);
 
   std::ofstream error_stream(output);
   monte_carlo.set_error_stream(error_stream);
 
-  std::ofstream exact_event_stream("test_output/exact_events.txt");
+  std::ofstream exact_event_stream(output_base_name + "_exact_events" + ext);
   monte_carlo.set_exact_event_stream(exact_event_stream);
 
-  std::ofstream full_response_stream("test_output/full_response.txt");
+  std::ofstream full_response_stream(output_base_name + "_full_response" + ext);
   monte_carlo.set_full_response_stream(full_response_stream);
-  monte_carlo.generate(rng, scintillator, 1000000);
+  monte_carlo.generate(rng, scintillator, cl.get<int>("n-emissions"));
 
   return 0;
 }
