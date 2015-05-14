@@ -48,6 +48,12 @@ int main(int argc, char* argv[]) {
   cl.add<int>("n-emissions", 'e', "number of emmisions", false, 0);
   cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
   cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
+  cl.add<float>("radius", 'r', "cylinder radius", false, 0.0015);
+  cl.add<float>("height", 'h', "cylinder height", false, 0.0005);
+  cl.add<float>("x", 'x', "cylinder center x", false, 0);
+  cl.add<float>("y", 'y', "cylinder center y", false, 0);
+  cl.add<float>("z", 'z', "cylinder center z", false, 0);
+
   cl.parse_check(argc, argv);
 
   auto output = cl.get<cmdline::path>("output");
@@ -65,12 +71,21 @@ int main(int argc, char* argv[]) {
   std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
   float angle = std::atan2(0.0025f, 0.190);
   auto cylinder = new PET3D::CylinderRegion<float, RNG>(
-      0.0025, 0.001, 1, PET3D::SphericalDistribution<float>(-angle, angle));
+      cl.get<float>("radius"),
+      cl.get<float>("height"),
+      1,
+      PET3D::SphericalDistribution<float>(-angle, angle));
   PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
   auto rotated_cylinder =
       new PET3D::RotatedPhantomRegion<float, RNG>(cylinder, R);
-  regions.push_back(rotated_cylinder);
+  Vector translation(
+      cl.get<float>("x"), cl.get<float>("y"), cl.get<float>("z"));
+
+  auto translated_cylinder = new PET3D::TranslatedPhantomRegion<float, RNG>(
+      rotated_cylinder, translation);
+
+  regions.push_back(translated_cylinder);
   PET3D::Phantom<float, short, RNG> phantom(regions);
 
   Allways allways;
