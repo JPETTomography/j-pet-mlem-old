@@ -168,6 +168,23 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
     m_out << "}";
   }
 
+  void to_json(std::ostream& j_out) const {
+    int i = 0;
+    std::string delimiter;
+    j_out << "{\"Detector\":";
+    j_out << "[\n";
+
+    for (auto& detector : (*this)) {
+      j_out << delimiter ;
+      detector.to_json(j_out);
+      i++;
+      delimiter = ",";
+    }
+    j_out << "]\n";
+
+    j_out << "}";
+  }
+
 #endif
 
   void push_back(const Detector& detector) {

@@ -63,8 +63,15 @@ int main(int argc, char* argv[]) {
   auto scanner2d = PET2D::Barrel::ScannerBuilder<Scanner2D>::build_single_ring(
       inner_radius, 2, strip_width, strip_height);
 
+
   Scanner scanner(scanner2d, strip_length);
   scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
+
+  std::ofstream mathematica_stream(output_base_name + ".m");
+  scanner.barrel.to_mathematica(mathematica_stream);
+
+  std::ofstream json_stream(output_base_name + ".json");
+  scanner.barrel.to_json(json_stream);
 
   using RNG = std::mt19937;
   RNG rng;
@@ -104,6 +111,8 @@ int main(int argc, char* argv[]) {
   std::ofstream full_response_stream(output_base_name + "_full_response" + ext);
   monte_carlo.set_full_response_stream(full_response_stream);
   monte_carlo.generate(rng, scintillator, cl.get<int>("n-emissions"));
+
+
 
   return 0;
 }

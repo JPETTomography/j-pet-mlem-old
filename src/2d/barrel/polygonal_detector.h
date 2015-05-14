@@ -60,6 +60,18 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
     m_out << "}}";
   }
 
+  void to_json(std::ostream& j_out) const {
+    std::string delimiter;
+    j_out << "{ \"Polygon\":  [ ";
+    for (int i = 0; i < NVertices; i++) {
+      auto vertex = (*this)[i];
+      j_out << delimiter << "[" << vertex.x << ", " << vertex.y;
+      j_out << "]";
+      delimiter = ",";
+    }
+    j_out << "]}";
+  }
+
  protected:
   PolygonalDetector() {}
 };
