@@ -12,7 +12,10 @@ template <typename F> class SphericalDistribution {
   using Vector = PET3D::Vector<F>;
 
   SphericalDistribution(F theta_min = -M_PI / 2, F theta_max = M_PI / 2)
-      : phi_dist(-M_PI, M_PI), z_dist(sin(theta_min), sin(theta_max)) {}
+      : theta_min(theta_min),
+        theta_max(theta_max),
+        phi_dist(-M_PI, M_PI),
+        z_dist(sin(theta_min), sin(theta_max)) {}
 
   template <typename RNG> Vector operator()(RNG& rng) {
 
@@ -24,13 +27,16 @@ template <typename F> class SphericalDistribution {
     return Vector(x, y, z);
   }
 
+  const F theta_min;
+  const F theta_max;
+
  private:
   std::uniform_real_distribution<F> phi_dist;
   std::uniform_real_distribution<F> z_dist;
 };
 
 template <typename F> class SingleDirectionDistribution {
-  public:
+ public:
   using Vector = PET3D::Vector<F>;
   SingleDirectionDistribution(const Vector& direction)
       : direction(direction.normalized()) {}
