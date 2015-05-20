@@ -72,7 +72,8 @@ TEST("PhantomBuilder/angular_distribution/spherical", "spherical") {
   doc.ParseStream(input_stream);
   fclose(in);
 
-  rapidjson::Value& obj = doc[0];
+  rapidjson::Value& phantoms=doc["phantoms"];
+  rapidjson::Value& obj = phantoms[0];
   rapidjson::Value& angular_val = obj["angular"];
 
   PET3D::SphericalDistribution<float> distr =

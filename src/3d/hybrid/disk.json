@@ -2,7 +2,6 @@
     "phantoms": [
         {
             "angular": {
-                "id": "spherical",
                 "theta-max": 0.01,
                 "theta-min": -0.01,
                 "type": "spherical"
@@ -14,14 +13,35 @@
             "type": "cylinder"
         },
         {
-            "angular": {
-                "href": "spherical"
+            "displacement": [
+                -0.05,
+                0.03
+            ],
+            "phantom": {
+                "R": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    1,
+                    0
+                ],
+                "phantom": {
+                    "angular": {
+                        "type": "spherical"
+                    },
+                    "height": 0.002,
+                    "id": "cylinder",
+                    "intensity": 1.0,
+                    "radius": 0.005,
+                    "type": "cylinder"
+                },
+                "type": "rotated"
             },
-            "height": 0.002,
-            "id": "cylinder",
-            "intensity": 1.0,
-            "radius": 0.005,
-            "type": "cylinder"
+            "type": "translated"
         }
     ]
 }
