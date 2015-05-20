@@ -72,7 +72,7 @@ TEST("PhantomBuilder/angular_distribution/spherical", "spherical") {
   doc.ParseStream(input_stream);
   fclose(in);
 
-  rapidjson::Value& phantoms=doc["phantoms"];
+  rapidjson::Value& phantoms = doc["phantoms"];
   rapidjson::Value& obj = phantoms[0];
   rapidjson::Value& angular_val = obj["angular"];
 
@@ -81,5 +81,36 @@ TEST("PhantomBuilder/angular_distribution/spherical", "spherical") {
           PET3D::SphericalDistribution<float>>(angular_val);
 
   REQUIRE(distr.theta_min == -0.01_e7);
-  REQUIRE(distr.theta_max ==  0.01_e7);
+  REQUIRE(distr.theta_max == 0.01_e7);
+}
+
+TEST("PhantomBuilder/phantom") {
+  using RNGType = std::mt19937;
+  FILE* in = fopen("src/3d/hybrid/disk.json", "r");
+  if (!in) {
+    std::cerr << "cannot open src/3d/hybrid/disk.json\n";
+  }
+
+  rapidjson::Document doc;
+  char readBuffer[256];
+  rapidjson::FileReadStream input_stream(in, readBuffer, sizeof(readBuffer));
+  doc.ParseStream(input_stream);
+  fclose(in);
+
+  rapidjson::Value& phantoms_val = doc["phantoms"];
+  {
+    rapidjson::Value& phantom_val = phantoms_val[0];
+    auto phantom = static_cast<PET3D::CylinderRegion<float, RNGType>*>(
+        PET3D::create_phantom_region_from_json<float, RNGType>(phantom_val));
+
+    REQUIRE(phantom->intensity == 1.0_e7);
+    REQUIRE(phantom->radius == 0.005_e7);
+    REQUIRE(phantom->height == 0.002_e7);
+  }
+
+  {
+    rapidjson::Value& phantom_val = phantoms_val[1];
+    auto phantom =
+        PET3D::create_phantom_region_from_json<float, RNGType>(phantom_val);
+  }
 }

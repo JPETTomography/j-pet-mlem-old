@@ -41,6 +41,13 @@ template <typename FType> class Matrix {
     }
   }
 
+  template <typename I> Matrix(I begin, I end) {
+    int i = 0;
+    for (auto it = begin; it != end; it++, i++) {
+      rep_[i] = *it;
+    }
+  }
+
   F& operator()(int i) { return rep_[i]; }
   F operator()(int i) const { return rep_[i]; }
 

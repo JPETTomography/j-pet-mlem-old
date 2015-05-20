@@ -52,5 +52,38 @@ SphericalDistribution<float> create_angular_distribution_from_json<
 }
 
 template <typename FType, typename RNG>
-PhantomRegion<FType, RNG>* create_phantom_region_from_json(const Value& obj) {}
+PhantomRegion<FType, RNG>* create_phantom_region_from_json(const Value& obj) {
+  if (!obj.HasMember("type")) {
+    std::cerr << "phantom region does not have type member\n";
+    return nullptr;
+  }
+  const Value& type_val = obj["type"];
+  if (type_val == "cylinder") {
+    FType radius = obj["radius"].GetDouble();
+    FType height = obj["height"].GetDouble();
+    FType intensity = obj["intensity"].GetDouble();
+
+    const Value& angular_val = obj["angular"];
+    if (angular_val["type"] == "spherical") {
+      SphericalDistribution<FType> angular =
+          create_angular_distribution_from_json<SphericalDistribution<FType>>(
+              angular_val);
+      return new CylinderRegion<FType, RNG>(radius, height, intensity, angular);
+    }
+
+  } else if (type_val == "point") {
+    std::cerr << "not implemented yet\n";
+    return nullptr;
+
+  } else if (type_val == "rotated") {
+    std::cerr << "not implemented yet\n";
+    return nullptr;
+  } else if (type_val == "translated") {
+    std::cerr << "not implemented yet\n";
+    return nullptr;
+  } else {
+    std::cerr << "unknown region type : " << type_val.GetString() << "\n";
+    return nullptr;
+  }
+}
 }
