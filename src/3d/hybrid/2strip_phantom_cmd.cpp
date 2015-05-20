@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
   cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
   cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
   cl.add<float>("radius", 'r', "cylinder radius", false, 0.0015);
-  cl.add<float>("height", 'h', "cylinder height", false, 0.0005);
+  cl.add<float>("height", 'h', "cylinder height", false, 0.0020);
   cl.add<float>("x", 'x', "cylinder center x", false, 0);
   cl.add<float>("y", 'y', "cylinder center y", false, 0);
   cl.add<float>("z", 'z', "cylinder center z", false, 0);

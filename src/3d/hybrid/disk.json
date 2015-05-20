@@ -1,0 +1,15 @@
+[
+    {
+        "angular": {
+            "id": "spherical",
+            "theta-max": 0.01,
+            "theta-min": -0.01,
+            "type": "spherical"
+        },
+        "height": 0.002,
+        "id": "cylinder",
+        "intensity": 1.0,
+        "radius": 0.005,
+        "type": "cylinder"
+    }
+]
