@@ -88,6 +88,44 @@ class CylinderRegion
   PET3D::CylinderPointDistribution<F> dist;
 };
 
+template <typename FType,
+          typename RNG,
+          typename AngularDistribution = PET3D::SphericalDistribution<FType>>
+class EllipsoidRegion
+    : public AbstractPhantomRegion<FType, RNG, AngularDistribution> {
+ public:
+  using F = FType;
+  using Point = PET3D::Point<F>;
+
+  EllipsoidRegion(
+      F rx,
+      F ry,
+      F rz,
+      F intensity,
+      AngularDistribution angular = PET3D::SphericalDistribution<F>())
+      : AbstractPhantomRegion<FType, RNG, AngularDistribution>(intensity,
+                                                               angular),
+        rx(rx),
+        ry(ry),
+        rz(rz),
+        dist(rx, ry, rz){};
+
+  bool in(const Point& p) const {
+    F x = p.x / rx;
+    F y = p.y / ry;
+    F z = p.z / rz;
+    return (x * x + y * y + z * z <= 1.0);
+  }
+
+  Point random_point(RNG& rng) { return dist(rng); }
+  F volume() const { return 4.0 / 3.0 * M_PI * rx * ry * rz; }
+
+  const F rx, ry, rz;
+
+ private:
+  PET3D::EllipsoidPointDistribution<F> dist;
+};
+
 /* Rotated -----------------------------------------------------------------
  */
 

@@ -37,7 +37,7 @@ TEST("3d/geometry/phantom/cylinder_region") {
   }
 }
 
-TEST("3d/geometry/phantom") {
+TEST("3d/geometry/phantom/cylinder") {
   using RNG = std::mt19937;
   RNG rng;
   std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
@@ -57,7 +57,30 @@ TEST("3d/geometry/phantom") {
     auto event = phantom.gen_event(rng);
     auto p = event.origin;
     auto v = event.direction;
-    out << p.x << " " << p.y << " " << p.z;
+    out << p.x << " " << p.y << " " << p.z<<" ";
+    out << v.x << " " << v.y << " " << v.z << "\n";
+  }
+  out.close();
+}
+
+TEST("3d/geometry/phantom/ellipsoid") {
+  using RNG = std::mt19937;
+  RNG rng;
+  std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
+  float angle = std::atan2(0.0025f, 0.400f);
+  auto ellipsoid = new PET3D::EllipsoidRegion<float, RNG>(
+      0.005, 0.01, 0.02, 1, PET3D::SphericalDistribution<float>(-angle, angle));
+
+  regions.push_back(ellipsoid);
+  PET3D::Phantom<float, short, RNG> phantom(regions);
+
+  std::ofstream out("test_output/ellipsoid.txt");
+
+  for (int i = 0; i < 10000; i++) {
+    auto event = phantom.gen_event(rng);
+    auto p = event.origin;
+    auto v = event.direction;
+    out << p.x << " " << p.y << " " << p.z<<" ";
     out << v.x << " " << v.y << " " << v.z << "\n";
   }
   out.close();

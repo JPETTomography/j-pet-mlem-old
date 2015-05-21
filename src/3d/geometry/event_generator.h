@@ -114,7 +114,7 @@ template <typename FType> class BallPointDistribution {
       x = uni(rng);
       y = uni(rng);
       z = uni(rng);
-    } while (x * x + y * y + z * z > F(1.0));
+    } while ((x * x + y * y + z * z) > F(1.0));
     return Point(x, y, z);
   }
 
