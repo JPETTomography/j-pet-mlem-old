@@ -76,11 +76,28 @@ PhantomRegion<FType, RNG>* create_phantom_region_from_json(const Value& obj) {
     return nullptr;
 
   } else if (type_val == "rotated") {
-    std::cerr << "not implemented yet\n";
-    return nullptr;
+    auto phantom = create_phantom_region_from_json<FType, RNG>(obj["phantom"]);
+    const Value& R_val = obj["R"];
+    PET3D::Matrix<FType>  R;
+    int i=0;
+    for (auto it = R_val.Begin(); it != R_val.End(); it++,i++) {
+        R(i)=it->GetDouble();
+    }
+
+    return new RotatedPhantomRegion<FType, RNG>(phantom, R);
+
   } else if (type_val == "translated") {
-    std::cerr << "not implemented yet\n";
-    return nullptr;
+
+      auto phantom = create_phantom_region_from_json<FType, RNG>(obj["phantom"]);
+      const Value& displacement_val = obj["displacement"];
+      PET3D::Vector<FType>  displacement;
+      displacement.x=displacement_val[0].GetDouble();
+      displacement.y=displacement_val[1].GetDouble();
+      displacement.z=displacement_val[2].GetDouble();
+
+
+      return new TranslatedPhantomRegion<FType, RNG>(phantom, displacement);
+
   } else {
     std::cerr << "unknown region type : " << type_val.GetString() << "\n";
     return nullptr;

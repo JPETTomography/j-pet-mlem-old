@@ -88,7 +88,8 @@ class CylinderRegion
   PET3D::CylinderPointDistribution<F> dist;
 };
 
-
+/* Rotated -----------------------------------------------------------------
+ */
 
 template <typename FType, typename RNG>
 class RotatedPhantomRegion : public PhantomRegion<FType, RNG> {
@@ -156,14 +157,17 @@ class TranslatedPhantomRegion : public PhantomRegion<FType, RNG> {
 template <typename FType,
           typename RNG,
           typename AngularDistribution = PET3D::SphericalDistribution<FType>>
-class PointRegion : public AbstractPhantomRegion<FType, RNG, AngularDistribution> {
+class PointRegion
+    : public AbstractPhantomRegion<FType, RNG, AngularDistribution> {
  public:
   using F = FType;
   using Point = PET3D::Point<F>;
   using Event = PET3D::Event<F>;
   using Vector = PET3D::Vector<F>;
   PointRegion(F intensity, AngularDistribution angular, const Point& origin)
-      : AbstractPhantomRegion<FType, RNG, AngularDistribution>(intensity, angular), origin(origin) {}
+      : AbstractPhantomRegion<FType, RNG, AngularDistribution>(intensity,
+                                                               angular),
+        origin(origin) {}
 
   Point random_point(RNG& rng) { return origin; }
 
@@ -173,6 +177,9 @@ class PointRegion : public AbstractPhantomRegion<FType, RNG, AngularDistribution
 
   const Point origin;
 };
+
+/*   Phantom ******
+ */
 
 template <typename FType, typename SType, typename RNGType> class Phantom {
  public:
@@ -240,5 +247,4 @@ template <typename FType, typename SType, typename RNGType> class Phantom {
     return Event(p, region_list[i_region]->random_direction(generator));
   }
 };
-
 }

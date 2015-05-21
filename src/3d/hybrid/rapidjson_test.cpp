@@ -112,5 +112,8 @@ TEST("PhantomBuilder/phantom") {
     rapidjson::Value& phantom_val = phantoms_val[1];
     auto phantom =
         PET3D::create_phantom_region_from_json<float, RNGType>(phantom_val);
+
+    REQUIRE(phantom->in(PET3D::Point<float>(-0.05, 0.007, 0.03)));
+    REQUIRE(!phantom->in(PET3D::Point<float>(-0.05, 0.011, 0.03)));
   }
 }
