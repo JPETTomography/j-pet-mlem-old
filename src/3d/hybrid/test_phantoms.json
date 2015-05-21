@@ -43,6 +43,15 @@
                 "type": "rotated"
             },
             "type": "translated"
+        },
+        {
+            "angular": {
+                "type": "spherical"
+            },
+            "rx": 0.1,
+            "ry": 0.15,
+            "rz": 0.2,
+            "type": "ellipsoid"
         }
     ]
 }

@@ -61,9 +61,11 @@ TEST("PhantomBuilder/angular_distribution") {
 }
 
 TEST("PhantomBuilder/angular_distribution/spherical", "spherical") {
-  FILE* in = fopen("src/3d/hybrid/disk.json", "r");
+  char filename[] = "src/3d/hybrid/test_phantoms.json";
+  FILE* in = fopen(filename, "r");
   if (!in) {
-    std::cerr << "cannot open src/3d/hybrid/disk.json\n";
+    std::cerr << filename << "\n";
+    FAIL();
   }
 
   rapidjson::Document doc;
@@ -86,9 +88,11 @@ TEST("PhantomBuilder/angular_distribution/spherical", "spherical") {
 
 TEST("PhantomBuilder/phantom") {
   using RNGType = std::mt19937;
-  FILE* in = fopen("src/3d/hybrid/disk.json", "r");
+  char filename[] = "src/3d/hybrid/test_phantoms.json";
+  FILE* in = fopen(filename, "r");
   if (!in) {
-    std::cerr << "cannot open src/3d/hybrid/disk.json\n";
+    std::cerr << filename << "\n";
+    FAIL();
   }
 
   rapidjson::Document doc;
@@ -115,5 +119,14 @@ TEST("PhantomBuilder/phantom") {
 
     REQUIRE(phantom->in(PET3D::Point<float>(-0.05, 0.007, 0.03)));
     REQUIRE(!phantom->in(PET3D::Point<float>(-0.05, 0.011, 0.03)));
+  }
+
+  {
+    rapidjson::Value& phantom_val = phantoms_val[2];
+    auto phantom =
+        PET3D::create_phantom_region_from_json<float, RNGType>(phantom_val);
+
+    REQUIRE(phantom->in(PET3D::Point<float>(0.05, 0.0, -0.10)));
+    REQUIRE(!phantom->in(PET3D::Point<float>(0.0, .16, 0.0)));
   }
 }
