@@ -248,6 +248,7 @@ template <typename FType, typename SType, typename RNGType> class Phantom {
     F norm = CDF[el.size() - 1];
     for (size_t i = 0; i < el.size(); i++) {
       CDF[i] /= norm;
+      // std::cerr<<"CDF["<<i<<"]="<<CDF[i];
     }
   }
 

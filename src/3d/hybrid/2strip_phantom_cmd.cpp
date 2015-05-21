@@ -16,6 +16,11 @@
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 
+#include "rapidjson/document.h"
+#include "rapidjson/filereadstream.h"
+
+#include "3d/geometry/phantom_builder.h"
+
 using FType = float;
 using SType = short;
 using RNGType = std::mt19937;
@@ -53,6 +58,8 @@ int main(int argc, char* argv[]) {
   cl.add<float>("x", 'x', "cylinder center x", false, 0);
   cl.add<float>("y", 'y', "cylinder center y", false, 0);
   cl.add<float>("z", 'z', "cylinder center z", false, 0);
+  cl.add<std::string>(
+      "phantoms", '\0', "phantom description in JSON fromat", false);
 
   cl.parse_check(argc, argv);
 
@@ -62,7 +69,6 @@ int main(int argc, char* argv[]) {
 
   auto scanner2d = PET2D::Barrel::ScannerBuilder<Scanner2D>::build_single_ring(
       inner_radius, 2, strip_width, strip_height);
-
 
   Scanner scanner(scanner2d, strip_length);
   scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
@@ -76,23 +82,57 @@ int main(int argc, char* argv[]) {
   using RNG = std::mt19937;
   RNG rng;
   std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
-  float angle = std::atan2(0.0025f, 0.190);
-  auto cylinder = new PET3D::CylinderRegion<float, RNG>(
-      cl.get<float>("radius"),
-      cl.get<float>("height"),
-      1,
-      PET3D::SphericalDistribution<float>(-angle, angle));
-  PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
-  auto rotated_cylinder =
-      new PET3D::RotatedPhantomRegion<float, RNG>(cylinder, R);
-  Vector translation(
-      cl.get<float>("x"), cl.get<float>("y"), cl.get<float>("z"));
+  if (cl.exist("phantoms")) {
+    FILE* in = fopen(cl.get<std::string>("phantoms").c_str(), "r");
+    if (!in) {
+      std::cerr << "could not open file: `" << cl.get<std::string>("phantoms")
+                << "'\n";
+      exit(0);
+    }
+    char readBuffer[256];
+    rapidjson::FileReadStream input_stream(in, readBuffer, sizeof(readBuffer));
+    rapidjson::Document doc;
+    doc.ParseStream(input_stream);
 
-  auto translated_cylinder = new PET3D::TranslatedPhantomRegion<float, RNG>(
-      rotated_cylinder, translation);
+    if (!doc.IsObject()) {
+      std::cerr << "file `" << cl.get<std::string>("phantoms")
+                << "' does not contain a JSON object "<<doc.GetType()<<"\n";
+      exit(0);
+    }
+    const rapidjson::Value& phantoms_val = doc["phantoms"];
+    if (!phantoms_val.IsArray()) {
+      std::cerr << "file `" << cl.get<std::string>("phantoms")
+                << "' does not contain Phantoms\n";
+      exit(0);
+    }
 
-  regions.push_back(translated_cylinder);
+    for (auto it = phantoms_val.Begin(); it != phantoms_val.End(); it++) {
+
+      auto region = PET3D::create_phantom_region_from_json<float, RNG>(*it);
+      //std::cerr<<"Adding region\n";
+      regions.push_back(region);
+    }
+
+  } else {
+    float angle = std::atan2(0.0025f, 0.190);
+    auto cylinder = new PET3D::CylinderRegion<float, RNG>(
+        cl.get<float>("radius"),
+        cl.get<float>("height"),
+        1,
+        PET3D::SphericalDistribution<float>(-angle, angle));
+    PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
+
+    auto rotated_cylinder =
+        new PET3D::RotatedPhantomRegion<float, RNG>(cylinder, R);
+    Vector translation(
+        cl.get<float>("x"), cl.get<float>("y"), cl.get<float>("z"));
+
+    auto translated_cylinder = new PET3D::TranslatedPhantomRegion<float, RNG>(
+        rotated_cylinder, translation);
+    regions.push_back(translated_cylinder);
+  }
+
   PET3D::Phantom<float, short, RNG> phantom(regions);
 
   Allways allways;
@@ -111,8 +151,6 @@ int main(int argc, char* argv[]) {
   std::ofstream full_response_stream(output_base_name + "_full_response" + ext);
   monte_carlo.set_full_response_stream(full_response_stream);
   monte_carlo.generate(rng, scintillator, cl.get<int>("n-emissions"));
-
-
 
   return 0;
 }
