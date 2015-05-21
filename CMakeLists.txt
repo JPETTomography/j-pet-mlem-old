@@ -222,7 +222,7 @@ pet_target(3d hybrid matrix ${CL_2D_OPTIONS})
 pet_target(3d hybrid 2strip_phantom ${CL_2D_OPTIONS})
 
 # custom documentation and config files to be shown in project tree
-file(GLOB EXTRA scripts/* cmake/* src/3d/hybrid/*.js src/3d/hybrid/*.json)
+file(GLOB EXTRA scripts/* cmake/* src/3d/hybrid/*.js src/3d/hybrid/*.json src/3d/geometry/*.json)
 add_custom_target(extra SOURCES
   README.md
   Doxyfile

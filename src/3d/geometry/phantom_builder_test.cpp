@@ -61,7 +61,7 @@ TEST("PhantomBuilder/angular_distribution") {
 }
 
 TEST("PhantomBuilder/angular_distribution/spherical", "spherical") {
-  char filename[] = "src/3d/hybrid/test_phantoms.json";
+  char filename[] = "src/3d/geometry/test_phantoms.json";
   FILE* in = fopen(filename, "r");
   if (!in) {
     std::cerr << filename << "\n";
@@ -88,7 +88,7 @@ TEST("PhantomBuilder/angular_distribution/spherical", "spherical") {
 
 TEST("PhantomBuilder/phantom") {
   using RNGType = std::mt19937;
-  char filename[] = "src/3d/hybrid/test_phantoms.json";
+  char filename[] = "src/3d/geometry/test_phantoms.json";
   FILE* in = fopen(filename, "r");
   if (!in) {
     std::cerr << filename << "\n";
