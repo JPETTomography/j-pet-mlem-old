@@ -41,13 +41,13 @@ using LOR = Scanner2D::LOR;
 using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR>;
 using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR>;
 
-Scanner build_scanner_from_cl(const cmdline::parser& cl) {
-  Scanner2D barrel =
-      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
-          PET3D_LONGITUDINAL_SCANNER_CL(cl, Scanner2D::F));
-  barrel.set_fov_radius(cl.get<double>("fov-radius"));
-  return Scanner(barrel, F(cl.get<double>("length")));
-}
+//Scanner build_scanner_from_cl(const cmdline::parser& cl) {
+//  Scanner2D barrel =
+//      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
+//          PET3D_LONGITUDINAL_SCANNER_CL(cl, Scanner2D::F));
+//  barrel.set_fov_radius(cl.get<double>("fov-radius"));
+//  return Scanner(barrel, F(cl.get<double>("length")));
+//}
 
 template <typename Scanner, typename Model>
 void print_parameters(cmdline::parser& cl, const Scanner& scanner);
@@ -64,6 +64,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
+
     PET3D::Hybrid::add_matrix_options(cl);
     cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
     cl.add<double>("length", 0, "length of the detector", false, 0.3);
@@ -101,7 +102,7 @@ int main(int argc, char* argv[]) {
     const auto& model_name = cl.get<std::string>("model");
     const auto& length_scale = cl.get<double>("base-length");
 
-    Scanner scanner = build_scanner_from_cl(cl);
+    Scanner scanner = Scanner::build_scanner_from_cl(cl);
 
     if (model_name == "always") {
       PET2D::Barrel::AlwaysAccept<float> model;

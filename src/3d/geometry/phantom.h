@@ -216,7 +216,7 @@ class PointRegion
   const Point origin;
 };
 
-/*   Phantom ******
+/*   Phantom -------------------------------------------------------------
  */
 
 template <typename FType, typename SType, typename RNGType> class Phantom {

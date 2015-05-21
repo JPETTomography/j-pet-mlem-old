@@ -26,6 +26,7 @@ void add_scanner_options(cmdline::parser& cl) {
   cl.add<int>("n-detectors2", 0, " ... 2nd ring", false);
   cl.add<int>("n-detectors3", 0, " ... 3rd ring", false);
   cl.add<int>("n-detectors4", 0, " ... 4th ring", false);
+  cl.add<double>("fov-radius", 0, "field of view radius", false);
 }
 
 void add_matrix_options(cmdline::parser& cl) {
@@ -92,7 +93,7 @@ void add_matrix_options(cmdline::parser& cl) {
                         "output binary triangular/full sparse system matrix",
                         cmdline::dontsave);
   cl.add("full", 'f', "output full non-triangular sparse system matrix");
-  cl.add<double>("fov-radius", 0, "field of view radius", false);
+
   // visual debugging params
   cl.add<cmdline::path>("png", 0, "output lor to png", cmdline::dontsave);
   cl.add<int>("from", 0, "lor start detector to output", cmdline::dontsave, -1);
@@ -235,11 +236,10 @@ void calculate_scanner_options(cmdline::parser& cl) {
 
   // automatic pixel size
   if (!cl.exist("s-pixel")) {
-    if (!cl.exist("radius")) {
-      s_pixel = 2. / n_pixels;  // exact result
-    } else {
-      s_pixel = 2 * fov_radius / n_pixels;
-    }
+    s_pixel = 2 * fov_radius / n_pixels;
+
+    std::cerr << "--n-pixel=" << n_pixels << std::endl;
+    std::cerr << "--fov-radius=" << fov_radius << std::endl;
     std::cerr << "--s-pixel=" << s_pixel << std::endl;
   }
 

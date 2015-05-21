@@ -5,6 +5,8 @@
 
 #include "2d/barrel/generic_scanner.h"
 #include "3d/geometry/event.h"
+#include "cmdline.h"
+#include "3d/hybrid/options.h"
 
 /// Three-dimensional PET
 namespace PET3D {
@@ -26,6 +28,19 @@ template <typename Scanner2D> class Scanner {
   using LOR = typename Scanner2D::LOR;
   using Indices = typename Scanner2D::Indices;
   using Event2D = typename Scanner2D::Event;
+
+  static Scanner build_scanner_from_cl(const cmdline::parser& cl) {
+    try {
+      Scanner2D barrel =
+          PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
+              PET3D_LONGITUDINAL_SCANNER_CL(cl, F));
+      barrel.set_fov_radius(cl.get<double>("fov-radius"));
+      return Scanner(barrel, F(cl.get<double>("length")));
+    } catch (const char* msg) {
+      std::cerr << msg << "\n";
+      exit(-1);
+    }
+  }
 
   /// Scanner full response
   ///
