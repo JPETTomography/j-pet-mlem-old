@@ -7,6 +7,7 @@
 
 #include "event.h"
 #include "kernel.h"
+#include "gausian_kernel.h"
 #include "scanner.h"
 
 #if _OPENMP
