@@ -129,6 +129,14 @@ if(PNG_FOUND)
   link_libraries(${PNG_LIBRARIES})
 endif()
 
+
+find_package(Boost)
+if(Boost_FOUND)
+message(STATUS "Boost libraries found")
+include_directories(${Boost_INCLUDE_DIRS})
+add_definitions(-DHAVE_Boost=1)
+endif()
+
 # add options above as compile flags removing PET_ prefix
 get_cmake_property(vars VARIABLES)
 foreach(var ${vars})

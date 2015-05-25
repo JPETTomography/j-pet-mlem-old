@@ -3,6 +3,13 @@
 #include "3d/geometry/point.h"
 #include "3d/geometry/vector.h"
 
+/**
+ * Class Frame respresents a frome defined by two scintillators.
+ *
+ * It provides the methods to project onto this fram, and caclulate the distance
+ * from it.
+ */
+
 template <typename FType> class Frame {
  public:
   using F = FType;
