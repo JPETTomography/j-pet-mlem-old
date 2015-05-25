@@ -48,6 +48,9 @@ int main(int argc, char* argv[]) {
       boost::geometry::append(detector_poly,
                               boost::geometry::make<point_2d>(p.x, p.y));
     }
+    Point p = detector[0];
+    boost::geometry::append(detector_poly,
+                            boost::geometry::make<point_2d>(p.x, p.y));
     detectors.push_back(detector_poly);
   }
 
@@ -61,15 +64,15 @@ int main(int argc, char* argv[]) {
 
   boost::geometry::model::multi_polygon<Polygon> pair;
 
-  boost::geometry::union_(detectors[0], detectors[20],pair);
+  boost::geometry::union_(detectors[0], detectors[20], pair);
+  std::cout << boost::size(pair) << std::endl;
   Polygon lor;
-  // boost::geometry::convex_hull(pair, lor);
-  mapper.add(pair);
-  mapper.map(pair, "fill::rgb(1,0,0)");
-  std::cout << boost::geometry::wkt(pair) << std::endl;
+  boost::geometry::convex_hull(pair, lor);
+  mapper.add(lor);
+
+  std::cout << boost::geometry::wkt(lor) << std::endl;
   for (auto p = detectors.begin(); p != detectors.end(); ++p) {
-     mapper.map(*p, "fill::rgb(0,0,0)");
+    mapper.map(*p, "fill:rgb(0,0,0)");
   }
-
-
+   mapper.map(lor, "fill:none;stroke:blue;");
 }
