@@ -108,4 +108,18 @@ _ Vector<FType> operator*(FType lhs, const Vector<FType>& rhs) {
   vec *= lhs;
   return vec;
 }
+
+template <typename FType>
+_ FType dot(const Vector<FType>& lhs, const Vector<FType>& rhs) {
+
+  return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+}
+
+template <typename FType>
+_ Vector<FType> cross(const Vector<FType>& lhs, const Vector<FType>& rhs) {
+
+  return Vector<FType>(-lhs.z * rhs.y + lhs.y * rhs.z,
+                       lhs.z * rhs.x - lhs.x * rhs.z,
+                       -lhs.y * rhs.x + lhs.x * rhs.y);
+}
 }
