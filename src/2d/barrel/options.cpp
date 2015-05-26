@@ -278,7 +278,8 @@ void set_small_barrel_options(cmdline::parser& cl) {
   auto& h_detector = cl.get<double>("h-detector");
 
   auto& fov_radius = cl.get<double>("fov-radius");
-  fov_radius = 0.150;
+  if (!cl.exist("fov-radius"))
+    fov_radius = 0.150;
 
   w_detector = 0.005;
   h_detector = 0.019;
@@ -308,7 +309,8 @@ void set_big_barrel_options(cmdline::parser& cl) {
   cl.get<int>("n-detectors2") = 48;
   cl.get<int>("n-detectors3") = 96;
 
-  cl.get<double>("fov-radius") = 0.400;
+  if (!cl.exist("fov-radius"))
+    cl.get<double>("fov-radius") = 0.400;
 }
 }
 }
