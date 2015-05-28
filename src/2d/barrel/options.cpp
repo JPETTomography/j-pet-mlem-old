@@ -303,7 +303,7 @@ void set_big_barrel_options(cmdline::parser& cl) {
 
   cl.get<double>("rotation") = 0.0;
   cl.get<double>("rotation2") = 0.5;
-  cl.get<double>("rotation3") = 0.0;
+  cl.get<double>("rotation3") = 0.5;
 
   cl.get<int>("n-detectors") = 48;
   cl.get<int>("n-detectors2") = 48;
