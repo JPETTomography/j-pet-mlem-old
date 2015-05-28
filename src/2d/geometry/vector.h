@@ -50,6 +50,11 @@ template <typename FType = double, typename SType = int> struct Vector {
     return *this;
   }
 
+  Vector normalized() {
+   Vector res(*this);
+   res.normalize();
+   return res;
+  }
   _ bool operator!=(const Vector& p) const { return x != p.x || y != p.y; }
 
   _ bool operator==(const Vector& p) const { return x == p.x && y == p.y; }
@@ -78,6 +83,10 @@ template <typename FType = double, typename SType = int> struct Vector {
     Vector tmp(*this);
     return tmp.rotate(phi);
   }
+
+  Vector perpendicular() const {
+    return Vector(-y,x);
+  }
 };
 
 template <typename FType>
@@ -92,5 +101,11 @@ _ Vector<FType> operator-(const Vector<FType>& lhs, const Vector<FType>& rhs) {
   Vector<FType> vec(lhs);
   vec -= rhs;
   return vec;
+}
+
+template <typename FType>
+_ FType dot(const Vector<FType>& lhs, const Vector<FType>& rhs)  {
+
+  return lhs.x * rhs.x + lhs.y * rhs.y ;
 }
 }
