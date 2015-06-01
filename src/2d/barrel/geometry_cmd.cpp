@@ -97,7 +97,8 @@ int main(int argc, char* argv[]) {
   for (auto p = detectors.begin(); p != detectors.end(); ++p) {
     mapper.map(*p, "fill:rgb(0,0,255);");
   }
-
+  mapper.map(fov_circle, "fill:none;stroke:red;");
+  mapper.~svg_mapper();
   int n_detectors = 192;
   int i = 0;
   for (int d1 = 0; d1 < n_detectors; ++d1) {
@@ -133,13 +134,11 @@ int main(int argc, char* argv[]) {
               }
             }
           }
-        //mapper.map(lor, "fill:none;stroke:rgb(0,0,255);");
+        // mapper.map(lor, "fill:none;stroke:rgb(0,0,255);");
         // goto end;
       }
     }
   }
 end:
   ;
-
-  mapper.map(fov_circle, "fill:none;stroke:red;");
 }
