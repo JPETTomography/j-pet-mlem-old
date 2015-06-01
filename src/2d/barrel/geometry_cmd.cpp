@@ -20,6 +20,7 @@
 #include "generic_scanner.h"
 #include "2d/geometry/line_segment.h"
 #include "2d/geometry/pixel_grid.h"
+#include "2d/barrel/lor_info.h"
 
 using FType = float;
 using SType = int;
@@ -62,6 +63,13 @@ Polygon makePixel(const PET2D::PixelGrid<FType, SType>& grid, int ix, int iy) {
   boost::geometry::append(pixel, boost::geometry::make<point_2d>(x, y));
   return pixel;
 }
+
+struct PixelInfo {
+  PET2D::Pixel<SType> pixel;
+  FType t;
+  FType distance;
+  FType fill;
+};
 
 int main(int argc, char* argv[]) {
   cmdline::parser cl;
@@ -137,8 +145,9 @@ int main(int argc, char* argv[]) {
     mapper.map(*p, "fill:rgb(0,0,255);");
   }
   mapper.map(fov_circle, "fill:none;stroke:red;");
-  mapper.~svg_mapper();
-  int n_detectors = 192;
+  //mapper.~svg_mapper();
+
+  int n_detectors = scanner.size();
   int i = 0;
   for (int d1 = 0; d1 < n_detectors; ++d1) {
     for (int d2 = 0; d2 < d1; ++d2) {
@@ -151,11 +160,13 @@ int main(int argc, char* argv[]) {
       if (boost::geometry::intersects(lor, fov_circle)) {
         std::cout << "l : " << i << "  " << d1 << " " << d2 << "\n";
         i++;
+        std::vector<PixelInfo> pixel_info;
         PET2D::LineSegment<FType> segment(detectors_centers[d2],
                                           detectors_centers[d1]);
 
         for (int ix = 0; ix < grid.n_columns; ++ix)
           for (int iy = 0; iy < grid.n_rows; ++iy) {
+
             Point center = grid.center_at(ix, iy);
             Polygon pixel = makePixel(grid, ix, iy);
             if (boost::geometry::intersects(pixel, fov_circle)) {
@@ -168,14 +179,27 @@ int main(int argc, char* argv[]) {
                 auto fill = area / pixel_area;
                 auto t = segment.projection_on(center);
                 auto distance = segment.distance_from(center);
-                std::cout << "p : " << ix << " " << iy << " " << fill << " "
-                          << t << " " << distance << "\n";
+                PixelInfo info;
+                info.pixel = PET2D::Pixel<SType>(ix, iy);
+                info.t = t;
+                info.distance = distance;
+                info.fill = fill;
+                pixel_info.push_back(info);
               }
             }
           }
+
+        std::sort(
+            pixel_info.begin(),
+            pixel_info.end(),
+            [](const PixelInfo& a, const PixelInfo& b) { return a.t < b.t; });
+
+        for (PixelInfo info : pixel_info) {
+          std::cout << "p : " << info.pixel.x << " " << info.pixel.y << " "
+                    << info.t << info.fill << " "
+                    << " " << info.distance << "\n";
+        }
       }
     }
   }
-end:
-  ;
 }
