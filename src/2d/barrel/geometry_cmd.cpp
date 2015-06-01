@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <fstream>
 #include <deque>
 
 #include <boost/geometry.hpp>
@@ -32,7 +33,8 @@ using point_2d = boost::geometry::model::d2::point_xy<FType>;
 
 using Polygon = boost::geometry::model::polygon<point_2d>;
 using PixelInfo = PET2D::Barrel::LorInfo<FType, SType>::PixelInfo;
-using PixelInfoContainer = PET2D::Barrel::LorInfo<FType, SType>::PixelInfoContainer;
+using PixelInfoContainer =
+    PET2D::Barrel::LorInfo<FType, SType>::PixelInfoContainer;
 using LOR = PET2D::Barrel::LOR<SType>;
 
 Polygon makeCircle(const Point& center, FType radius, int n = 64) {
@@ -66,7 +68,6 @@ Polygon makePixel(const PET2D::PixelGrid<FType, SType>& grid, int ix, int iy) {
   boost::geometry::append(pixel, boost::geometry::make<point_2d>(x, y));
   return pixel;
 }
-
 
 int main(int argc, char* argv[]) {
   cmdline::parser cl;
@@ -146,11 +147,12 @@ int main(int argc, char* argv[]) {
     mapper.map(*p, "fill:rgb(0,0,255);");
   }
   mapper.map(fov_circle, "fill:none;stroke:red;");
-  //mapper.~svg_mapper();
+  // mapper.~svg_mapper();
 
   int n_detectors = scanner.size();
-  PET2D::Barrel::LorInfo<FType, SType> lor_info(n_detectors);
+  PET2D::Barrel::LorInfo<FType, SType> lor_info(n_detectors, grid);
 
+  std::ofstream lor_info_stream(output, std::ios::binary);
 
   /* -------- Loop over the lors ------------- */
 
@@ -164,9 +166,11 @@ int main(int argc, char* argv[]) {
       boost::geometry::convex_hull(pair, lor);
 
       if (boost::geometry::intersects(lor, fov_circle)) {
-        std::cout << "l : " << i << "  " << d1 << " " << d2 << "\n";
+        //        std::cout << "l : " << i << "  " << d1 << " " << d2 << "\n";
+        lor_info_stream.write((const char*)&d1, sizeof(int));
+        lor_info_stream.write((const char*)&d2, sizeof(int));
         i++;
-        std::vector<PixelInfo>& pixel_info=lor_info[LOR(d1,d2)];
+        std::vector<PixelInfo>& pixel_info = lor_info[LOR(d1, d2)];
         PET2D::LineSegment<FType> segment(detectors_centers[d2],
                                           detectors_centers[d1]);
 
@@ -200,11 +204,18 @@ int main(int argc, char* argv[]) {
             pixel_info.end(),
             [](const PixelInfo& a, const PixelInfo& b) { return a.t < b.t; });
 
-        for (PixelInfo info : pixel_info) {
-          std::cout << "p : " << info.pixel.x << " " << info.pixel.y << " "
-                    << info.t << info.fill << " "
-                    << " " << info.distance << "\n";
-        }
+        int n_pixels = pixel_info.size();
+
+        lor_info_stream.write((const char*)&n_pixels, sizeof(int));
+        lor_info_stream.write((const char*)&pixel_info[0],
+                              n_pixels * sizeof(PixelInfo));
+
+        //        for (PixelInfo info : pixel_info) {
+        //          std::cout << "p : " << info.pixel.x << " " << info.pixel.y
+        //          << " "
+        //                    << info.t << info.fill << " "
+        //                    << " " << info.distance << "\n";
+        //        }
       }
     }
   }
