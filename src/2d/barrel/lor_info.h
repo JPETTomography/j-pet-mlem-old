@@ -15,6 +15,7 @@ template <typename FType, typename SType> class LorInfo {
     FType distance;
     FType fill;
   };
+  using LOR = PET2D::Barrel::LOR<SType>;
   using PixelGrid = PET2D::PixelGrid<FType, SType>;
   using PixelInfoContainer = std::vector<PixelInfo>;
 
@@ -24,11 +25,25 @@ template <typename FType, typename SType> class LorInfo {
         lor_info_(max_index + 1),
         grid(grid) {}
 
-  PixelInfoContainer& operator[](const LOR<SType>& lor) {
+  PixelInfoContainer& operator[](const LOR& lor) {
     return lor_info_[lor.index()];
   }
 
- public:
+  bool read(std::ifstream& in) {
+      return in;
+  }
+
+  bool read_lor_info(std::ifstream& in) {
+      int lor_desc[3];
+      in.read((char*)lor_desc,3*sizeof(int));
+      if(in) {
+         LOR lor(lor_desc[0], lor_desc[1]);
+         lor_info_[lor].reserve(lor_desc[2]);
+         in.read((char*)&lor_info_[lor][0], sizeof(PixelInfo)*lor_desc[2]);
+      }
+      return in;
+  }
+
   const SType n_detectors;
   const int max_index;
   const PixelGrid grid;
