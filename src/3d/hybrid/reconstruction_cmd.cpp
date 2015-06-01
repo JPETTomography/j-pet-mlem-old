@@ -34,8 +34,7 @@ int main(int argc, char* argv[]) {
     auto output_base_name = output.wo_ext();
     auto ext = output.ext();
 
-
-    auto lor_info_file_name=cl.get<std::string>("lor-info");
+    auto lor_info_file_name = cl.get<std::string>("lor-info");
 
     std::ifstream lor_info_istream(lor_info_file_name, std::ios::binary);
 
@@ -53,12 +52,9 @@ int main(int argc, char* argv[]) {
         pixel_size,
         Point(-pixel_size * n_columns / 2, -pixel_size * n_rows / 2));
 
-
-
     PET2D::Barrel::LorInfo<FType, SType> lor_info(scanner.size(), grid);
     lor_info.read(lor_info_istream);
     lor_info.print(std::cout);
-
 
   } catch (cmdline::exception& ex) {
     if (ex.help()) {

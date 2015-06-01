@@ -45,32 +45,31 @@ void draw_line(const Point<typename Grid::F>& start,
   if (start.x != end.x) {
     t_max_x = (x_border - start.x) / c;
   } else {
-    t_max_x=step_x*std::numeric_limits<F>::max();
+    t_max_x = step_x * std::numeric_limits<F>::max();
   }
 
   F t_max_y;
   if (start.y != end.y) {
     t_max_y = (y_border - start.y) / s;
   } else {
-    t_max_y = step_y*std::numeric_limits<F>::max();
+    t_max_y = step_y * std::numeric_limits<F>::max();
   }
 
   F t_delta_x = grid.pixel_size / c;
   F t_delta_y = grid.pixel_size / s;
 
-
-  S ix=start_pix.x, iy=start_pix.y;
-  pixels=Pixel(ix,iy);
+  S ix = start_pix.x, iy = start_pix.y;
+  pixels = Pixel(ix, iy);
   pixels++;
-  while (ix != end_pix.x || iy!=end_pix.y) {
+  while (ix != end_pix.x || iy != end_pix.y) {
     if (t_max_x < t_max_y) {
-      t_max_x+=t_delta_x;
-      ix+=step_x;
+      t_max_x += t_delta_x;
+      ix += step_x;
     } else {
-      t_max_y+=t_delta_y;
-      iy+=step_y;
+      t_max_y += t_delta_y;
+      iy += step_y;
     }
-    pixels=Pixel(ix,iy);
+    pixels = Pixel(ix, iy);
     pixels++;
   }
 }

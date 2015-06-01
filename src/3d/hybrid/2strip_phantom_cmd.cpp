@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
 
     if (!doc.IsObject()) {
       std::cerr << "file `" << cl.get<std::string>("phantoms")
-                << "' does not contain a JSON object "<<doc.GetType()<<"\n";
+                << "' does not contain a JSON object " << doc.GetType() << "\n";
       exit(0);
     }
     const rapidjson::Value& phantoms_val = doc["phantoms"];
@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
     for (auto it = phantoms_val.Begin(); it != phantoms_val.End(); it++) {
 
       auto region = PET3D::create_phantom_region_from_json<float, RNG>(*it);
-      //std::cerr<<"Adding region\n";
+      // std::cerr<<"Adding region\n";
       regions.push_back(region);
     }
 

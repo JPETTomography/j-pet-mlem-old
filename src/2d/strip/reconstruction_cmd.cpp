@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
 #endif
 
     Scanner<float, short> scanner(PET2D_STRIP_SCANNER_CL(cl));
-    Reconstruction<float, GaussianKernel<float> > reconstruction(scanner);
+    Reconstruction<float, GaussianKernel<float>> reconstruction(scanner);
 
     auto verbose = cl.exist("verbose");
     auto verbosity = cl.count("verbose");

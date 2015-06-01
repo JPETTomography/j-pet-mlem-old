@@ -175,7 +175,7 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
     j_out << "[\n";
 
     for (auto& detector : (*this)) {
-      j_out << delimiter ;
+      j_out << delimiter;
       detector.to_json(j_out);
       i++;
       delimiter = ",";

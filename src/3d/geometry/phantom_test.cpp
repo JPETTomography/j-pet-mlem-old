@@ -57,7 +57,7 @@ TEST("3d/geometry/phantom/cylinder") {
     auto event = phantom.gen_event(rng);
     auto p = event.origin;
     auto v = event.direction;
-    out << p.x << " " << p.y << " " << p.z<<" ";
+    out << p.x << " " << p.y << " " << p.z << " ";
     out << v.x << " " << v.y << " " << v.z << "\n";
   }
   out.close();
@@ -80,7 +80,7 @@ TEST("3d/geometry/phantom/ellipsoid") {
     auto event = phantom.gen_event(rng);
     auto p = event.origin;
     auto v = event.direction;
-    out << p.x << " " << p.y << " " << p.z<<" ";
+    out << p.x << " " << p.y << " " << p.z << " ";
     out << v.x << " " << v.y << " " << v.z << "\n";
   }
   out.close();
