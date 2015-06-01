@@ -29,19 +29,21 @@ template <typename FType, typename SType> class LorInfo {
     return lor_info_[lor.index()];
   }
 
-  bool read(std::ifstream& in) {
-      return in;
+  std::ifstream& read(std::ifstream& in) {
+    while (read_lor_info(in))
+      ;
+    return in;
   }
 
-  bool read_lor_info(std::ifstream& in) {
-      int lor_desc[3];
-      in.read((char*)lor_desc,3*sizeof(int));
-      if(in) {
-         LOR lor(lor_desc[0], lor_desc[1]);
-         lor_info_[lor].reserve(lor_desc[2]);
-         in.read((char*)&lor_info_[lor][0], sizeof(PixelInfo)*lor_desc[2]);
-      }
-      return in;
+  std::ifstream& read_lor_info(std::ifstream& in) {
+    int lor_desc[3];
+    in.read((char*)lor_desc, 3 * sizeof(int));
+    if (in) {
+      LOR lor(lor_desc[0], lor_desc[1]);
+      lor_info_[lor].reserve(lor_desc[2]);
+      in.read((char*)&lor_info_[lor][0], sizeof(PixelInfo) * lor_desc[2]);
+    }
+    return in;
   }
 
   const SType n_detectors;
