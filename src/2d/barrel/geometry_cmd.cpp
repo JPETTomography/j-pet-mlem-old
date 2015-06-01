@@ -31,6 +31,9 @@ using Point = PET2D::Point<FType>;
 using point_2d = boost::geometry::model::d2::point_xy<FType>;
 
 using Polygon = boost::geometry::model::polygon<point_2d>;
+using PixelInfo = PET2D::Barrel::LorInfo<FType, SType>::PixelInfo;
+using PixelInfoContainer = PET2D::Barrel::LorInfo<FType, SType>::PixelInfoContainer;
+using LOR = PET2D::Barrel::LOR<SType>;
 
 Polygon makeCircle(const Point& center, FType radius, int n = 64) {
   Polygon circle;
@@ -64,12 +67,6 @@ Polygon makePixel(const PET2D::PixelGrid<FType, SType>& grid, int ix, int iy) {
   return pixel;
 }
 
-struct PixelInfo {
-  PET2D::Pixel<SType> pixel;
-  FType t;
-  FType distance;
-  FType fill;
-};
 
 int main(int argc, char* argv[]) {
   cmdline::parser cl;
@@ -97,6 +94,10 @@ int main(int argc, char* argv[]) {
   PET2D::Barrel::set_big_barrel_options(cl);
   auto scanner = PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, FType));
+
+  auto output = cl.get<cmdline::path>("output");
+  auto output_base_name = output.wo_ext();
+  auto ext = output.ext();
 
   std::vector<Polygon> detectors;
   std::vector<Point> detectors_centers;
@@ -148,6 +149,11 @@ int main(int argc, char* argv[]) {
   //mapper.~svg_mapper();
 
   int n_detectors = scanner.size();
+  PET2D::Barrel::LorInfo<FType, SType> lor_info(n_detectors);
+
+
+  /* -------- Loop over the lors ------------- */
+
   int i = 0;
   for (int d1 = 0; d1 < n_detectors; ++d1) {
     for (int d2 = 0; d2 < d1; ++d2) {
@@ -160,7 +166,7 @@ int main(int argc, char* argv[]) {
       if (boost::geometry::intersects(lor, fov_circle)) {
         std::cout << "l : " << i << "  " << d1 << " " << d2 << "\n";
         i++;
-        std::vector<PixelInfo> pixel_info;
+        std::vector<PixelInfo>& pixel_info=lor_info[LOR(d1,d2)];
         PET2D::LineSegment<FType> segment(detectors_centers[d2],
                                           detectors_centers[d1]);
 
