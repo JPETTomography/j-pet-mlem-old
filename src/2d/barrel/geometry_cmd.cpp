@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
         lor_info_stream.write((const char*)&d1, sizeof(int));
         lor_info_stream.write((const char*)&d2, sizeof(int));
         i++;
-        std::vector<PixelInfo>& pixel_info = lor_info[LOR(d1, d2)];
+        std::vector<PixelInfo>& pixel_info = lor_info[LOR(d1, d2)].pixels;
         PET2D::LineSegment<FType> segment(detectors_centers[d2],
                                           detectors_centers[d1]);
 

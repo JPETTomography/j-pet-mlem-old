@@ -15,9 +15,15 @@ template <typename FType, typename SType> class LorPixelnfo {
     FType distance;
     FType fill;
   };
+
   using LOR = PET2D::Barrel::LOR<SType>;
   using PixelGrid = PET2D::PixelGrid<FType, SType>;
   using PixelInfoContainer = std::vector<PixelInfo>;
+
+  struct LorInfo {
+    SType d1, d2;
+    PixelInfoContainer pixels;
+  };
 
   LorPixelnfo(SType n_detectors, const PixelGrid& grid)
       : n_detectors(n_detectors),
@@ -25,9 +31,7 @@ template <typename FType, typename SType> class LorPixelnfo {
         grid(grid),
         lor_info_(max_index + 1) {}
 
-  PixelInfoContainer& operator[](const LOR& lor) {
-    return lor_info_[lor.index()];
-  }
+  LorInfo& operator[](const LOR& lor) { return lor_info_[lor.index()]; }
 
   std::istream& read(std::istream& in) {
     while (read_lor_info(in))
@@ -41,8 +45,8 @@ template <typename FType, typename SType> class LorPixelnfo {
 
     if (in) {
       LOR lor(lor_desc[0], lor_desc[1]);
-      lor_info_[lor.index()].resize(lor_desc[2]);
-      in.read((char*)&lor_info_[lor.index()][0],
+      lor_info_[lor.index()].pixels.resize(lor_desc[2]);
+      in.read((char*)&lor_info_[lor.index()].pixels[0],
               sizeof(PixelInfo) * lor_desc[2]);
     }
     return in;
@@ -53,9 +57,9 @@ template <typename FType, typename SType> class LorPixelnfo {
       for (int d2 = 0; d2 < d1; ++d2) {
         LOR lor(d1, d2);
         auto index = lor.index();
-        if (lor_info_[index].size() > 0) {
+        if (lor_info_[index].pixels.size() > 0) {
           out << d1 << " " << d2 << "\n";
-          for (PixelInfo& info : lor_info_[index]) {
+          for (PixelInfo& info : lor_info_[index].pixels) {
             out << info.pixel.x << " " << info.pixel.y << " " << info.t << " "
                 << info.distance << " " << info.fill << "\n";
           }
@@ -69,7 +73,7 @@ template <typename FType, typename SType> class LorPixelnfo {
   const PixelGrid grid;
 
  private:
-  std::vector<PixelInfoContainer> lor_info_;
+  std::vector<LorInfo> lor_info_;
 };
 }
 }
