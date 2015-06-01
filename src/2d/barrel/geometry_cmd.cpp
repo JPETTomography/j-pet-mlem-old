@@ -18,9 +18,11 @@
 #include "scanner_builder.h"
 #include "ring_scanner.h"
 #include "generic_scanner.h"
+#include "2d/geometry/line_segment.h"
+#include "2d/geometry/pixel_grid.h"
 
 using FType = float;
-using SType = short;
+using SType = int;
 using RNGType = std::mt19937;
 using Detector = PET2D::Barrel::SquareDetector<FType>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, SType>;
@@ -45,10 +47,13 @@ Polygon makeCircle(const Point& center, FType radius, int n = 64) {
   return circle;
 }
 
-Polygon makePixel(FType size, int ix, int iy) {
+Polygon makePixel(const PET2D::PixelGrid<FType, SType>& grid, int ix, int iy) {
   Polygon pixel;
-  FType x = ix * size;
-  FType y = iy * size;
+  auto size = grid.pixel_size;
+  Point ll = grid.lower_left_at(ix, iy);
+  auto x = ll.x;
+  auto y = ll.y;
+  // std::cout<<x<<" "<<y<<"\n";
   boost::geometry::append(pixel, boost::geometry::make<point_2d>(x, y));
   boost::geometry::append(pixel, boost::geometry::make<point_2d>(x, y + size));
   boost::geometry::append(pixel,
@@ -61,13 +66,46 @@ Polygon makePixel(FType size, int ix, int iy) {
 int main(int argc, char* argv[]) {
   cmdline::parser cl;
   PET2D::Barrel::add_matrix_options(cl);
-  cl.try_parse(argc, argv);
+  try {
+    cl.try_parse(argc, argv);
+  } catch (cmdline::exception& ex) {
+    if (ex.help()) {
+      std::cerr << ex.usage();
+    }
+    for (auto& msg : ex.errors()) {
+      auto name = ex.name();
+      if (name) {
+        std::cerr << "error at " << name << ": " << msg << std::endl;
+      } else {
+        std::cerr << "error: " << msg << std::endl;
+      }
+    }
+  } catch (std::string& ex) {
+    std::cerr << "error: " << ex << std::endl;
+  } catch (const char* ex) {
+    std::cerr << "error: " << ex << std::endl;
+  }
 
   PET2D::Barrel::set_big_barrel_options(cl);
   auto scanner = PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, FType));
 
   std::vector<Polygon> detectors;
+  std::vector<Point> detectors_centers;
+
+  FType pixel_size = 0.005;
+  if (cl.exist("s-pixel"))
+    pixel_size = cl.get<double>("s-pixel");
+  FType fov_radius = cl.get<double>("fov-radius");
+  std::cout << "fov " << fov_radius << " size " << pixel_size << "\n";
+  SType n_columns = 2 * SType(std::ceil(fov_radius / pixel_size));
+  SType n_rows = n_columns;
+  std::cout << "cols " << n_columns << " rows " << n_rows << "\n";
+  PET2D::PixelGrid<FType, SType> grid(
+      n_columns,
+      n_rows,
+      pixel_size,
+      Point(-pixel_size * n_columns / 2, -pixel_size * n_rows / 2));
 
   for (int i = 0; i < scanner.size(); i++) {
     auto detector = scanner[i];
@@ -81,6 +119,7 @@ int main(int argc, char* argv[]) {
     boost::geometry::append(detector_poly,
                             boost::geometry::make<point_2d>(p.x, p.y));
     detectors.push_back(detector_poly);
+    detectors_centers.push_back(detector.center());
   }
 
   std::ofstream svg("my_map.svg");
@@ -112,30 +151,28 @@ int main(int argc, char* argv[]) {
       if (boost::geometry::intersects(lor, fov_circle)) {
         std::cout << "l : " << i << "  " << d1 << " " << d2 << "\n";
         i++;
-        for (int ix = -50; ix < 50; ++ix)
-          for (int iy = -50; iy < 50; ++iy) {
-            Polygon pixel = makePixel(0.005, ix, iy);
+        PET2D::LineSegment<FType> segment(detectors_centers[d2],
+                                          detectors_centers[d1]);
+
+        for (int ix = 0; ix < grid.n_columns; ++ix)
+          for (int iy = 0; iy < grid.n_rows; ++iy) {
+            Point center = grid.center_at(ix, iy);
+            Polygon pixel = makePixel(grid, ix, iy);
             if (boost::geometry::intersects(pixel, fov_circle)) {
               boost::geometry::model::multi_polygon<Polygon> inter;
               boost::geometry::intersection(lor, pixel, inter);
               auto area = boost::geometry::area(inter);
-              auto pixel_area = boost::geometry::area(pixel);
-              auto fill = area / pixel_area;
-              if (area > 0) {
-                std::cout << "p : " << ix << " " << iy << " " << fill << "\n";
-                //                mapper.add(pixel);
-                //                mapper.add(lor);
 
-                //                auto fill = (int)floor(255*area/pixel_area);
-                //                char fill_style[64];
-                //                sprintf(fill_style,"fill:rgb(%d,255, %d);",
-                //                255-fill, 255-fill);
-                //                mapper.map(pixel, fill_style);
+              if (area > 0) {
+                auto pixel_area = boost::geometry::area(pixel);
+                auto fill = area / pixel_area;
+                auto t = segment.projection_on(center);
+                auto distance = segment.distance_from(center);
+                std::cout << "p : " << ix << " " << iy << " " << fill << " "
+                          << t << " " << distance << "\n";
               }
             }
           }
-        // mapper.map(lor, "fill:none;stroke:rgb(0,0,255);");
-        // goto end;
       }
     }
   }
