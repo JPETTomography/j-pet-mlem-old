@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
         pixel_size,
         Point(-pixel_size * n_columns / 2, -pixel_size * n_rows / 2));
 
-    PET2D::Barrel::LorInfo<FType, SType> lor_info(scanner.size(), grid);
+    PET2D::Barrel::LorPixelnfo<FType, SType> lor_info(scanner.size(), grid);
     lor_info.read(lor_info_istream);
     lor_info.print(std::cout);
 

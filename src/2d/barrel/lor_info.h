@@ -7,7 +7,7 @@
 namespace PET2D {
 namespace Barrel {
 
-template <typename FType, typename SType> class LorInfo {
+template <typename FType, typename SType> class LorPixelnfo {
  public:
   struct PixelInfo {
     PET2D::Pixel<SType> pixel;
@@ -19,7 +19,7 @@ template <typename FType, typename SType> class LorInfo {
   using PixelGrid = PET2D::PixelGrid<FType, SType>;
   using PixelInfoContainer = std::vector<PixelInfo>;
 
-  LorInfo(SType n_detectors, const PixelGrid& grid)
+  LorPixelnfo(SType n_detectors, const PixelGrid& grid)
       : n_detectors(n_detectors),
         max_index((int(n_detectors - 1) * (n_detectors)) / 2 + n_detectors - 2),
         grid(grid),

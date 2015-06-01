@@ -32,9 +32,9 @@ using Point = PET2D::Point<FType>;
 using point_2d = boost::geometry::model::d2::point_xy<FType>;
 
 using Polygon = boost::geometry::model::polygon<point_2d>;
-using PixelInfo = PET2D::Barrel::LorInfo<FType, SType>::PixelInfo;
+using PixelInfo = PET2D::Barrel::LorPixelnfo<FType, SType>::PixelInfo;
 using PixelInfoContainer =
-    PET2D::Barrel::LorInfo<FType, SType>::PixelInfoContainer;
+    PET2D::Barrel::LorPixelnfo<FType, SType>::PixelInfoContainer;
 using LOR = PET2D::Barrel::LOR<SType>;
 
 Polygon makeCircle(const Point& center, FType radius, int n = 64) {
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
   // mapper.~svg_mapper();
 
   int n_detectors = scanner.size();
-  PET2D::Barrel::LorInfo<FType, SType> lor_info(n_detectors, grid);
+  PET2D::Barrel::LorPixelnfo<FType, SType> lor_info(n_detectors, grid);
 
   std::ofstream lor_info_stream(output, std::ios::binary);
 
