@@ -9,6 +9,7 @@
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/lor_info.h"
+#include "2d/strip/gausian_kernel.h"
 
 #include "3d/hybrid/scanner.h"
 #include "3d/hybrid/reconstructor.h"
@@ -59,9 +60,8 @@ int main(int argc, char* argv[]) {
                                                       grid);
     lor_info.read(lor_info_istream);
 
-    // lor_info.print(std::cout);
-
-    Reconstructor<Scanner> reconstructor(scanner, lor_info);
+    Reconstructor<Scanner, PET2D::Strip::GaussianKernel<FType>> reconstructor(
+        scanner, lor_info);
 
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstructor.fscanf_responses(response_stream);
@@ -69,7 +69,8 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < reconstructor.n_events(); i++) {
       auto event = reconstructor.frame_event(i);
       std::cout << event.lor.first << " " << event.lor.second << " " << event.up
-                << " " << event.right << " " << event.tan << "\n";
+                << " " << event.right << " " << event.tan << " "
+                << event.last_pixel - event.first_pixel << "\n";
     }
 
   } catch (cmdline::exception& ex) {

@@ -2,11 +2,12 @@
 #define RECONSTRUCTOR
 
 #include <vector>
+#include <algorithm>
 
 #include "2d/barrel/lor_info.h"
 #include "2d/strip/event.h"
 
-template <typename Scanner> class Reconstructor {
+template <typename Scanner, typename Kernel2D> class Reconstructor {
  public:
   using F = typename Scanner::F;
   using S = typename Scanner::S;
@@ -14,16 +15,23 @@ template <typename Scanner> class Reconstructor {
   using Response = typename Scanner::Response;
   using LOR = PET2D::Barrel::LOR<S>;
   using StripEvent = PET2D::Strip::Event<F>;
+  using PixelInfo = typename LorPixelInfo::PixelInfo;
 
   struct FrameEvent {
     LOR lor;
     F up;
     F right;
     F tan;
+    F half_box_up;
+    F half_box_right;
+    typename LorPixelInfo::PixelInfoContainer::const_iterator first_pixel;
+    typename LorPixelInfo::PixelInfoContainer::const_iterator last_pixel;
   };
 
   Reconstructor(const Scanner& scanner, const LorPixelInfo& lor_pixel_info)
-      : scanner_(scanner), lor_pixel_info_(lor_pixel_info) {}
+      : scanner_(scanner),
+        lor_pixel_info_(lor_pixel_info),
+        kernel_(scanner.sigma_z(), scanner.sigma_dl()) {}
 
   FrameEvent translate_to_frame(const Response& response) {
     FrameEvent event;
@@ -31,8 +39,34 @@ template <typename Scanner> class Reconstructor {
 
     auto R = lor_pixel_info_[event.lor].segment.length;
     StripEvent strip_event(response.z_up, response.z_dn, response.dl);
-    F tan, y, z;
+
     strip_event.transform(R, event.tan, event.up, event.right);
+    F sec, A, B, C;
+    kernel_.ellipse_bb(
+        event.tan, sec, A, B, C, event.half_box_up, event.half_box_right);
+
+    auto y_up = event.up + event.half_box_up;
+    auto y_dn = event.right - event.half_box_up;
+    auto t_up = (y_up + R) / (2 * R);
+    auto t_dn = (y_dn + R) / (2 * R);
+
+    PixelInfo pix_info_up, pix_info_dn;
+    pix_info_up.t = t_up;
+    pix_info_dn.t = t_dn;
+    event.last_pixel =
+        std::upper_bound(lor_pixel_info_[event.lor].pixels.begin(),
+                         lor_pixel_info_[event.lor].pixels.end(),
+                         pix_info_up,
+                         [](const PixelInfo& a, const PixelInfo& b)
+                             -> bool { return a.t < b.t; });
+
+    event.first_pixel =
+        std::lower_bound(lor_pixel_info_[event.lor].pixels.begin(),
+                         lor_pixel_info_[event.lor].pixels.end(),
+                         pix_info_dn,
+                         [](const PixelInfo& a, const PixelInfo& b)
+                             -> bool { return a.t < b.t; });
+
     return event;
   }
 
@@ -47,6 +81,14 @@ template <typename Scanner> class Reconstructor {
   int n_events() const { return events_.size(); }
   FrameEvent frame_event(int i) const { return events_[i]; }
 
+  int iterate() {
+    for (int i = 0; i < n_events(); ++i) {
+      auto event = frame_event(i);
+    }
+
+    return 0;
+  }
+
  private:
   Response fscanf_response(std::istream& in) {
     S d1, d2;
@@ -60,6 +102,7 @@ template <typename Scanner> class Reconstructor {
   const Scanner& scanner_;
   const LorPixelInfo& lor_pixel_info_;
   std::vector<FrameEvent> events_;
+  Kernel2D kernel_;
 };
 
 #endif  // RECONSTRUCTOR

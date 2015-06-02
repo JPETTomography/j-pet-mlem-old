@@ -298,6 +298,9 @@ template <typename Scanner2D> class Scanner {
     return false;
   }
 
+  F sigma_z() const { return sigma_z_;}
+  F sigma_dl() const { return sigma_dl_;}
+
   const Scanner2D barrel;
   const F length;
   const F half_length;
