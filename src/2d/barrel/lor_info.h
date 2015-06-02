@@ -43,14 +43,18 @@ template <typename FType, typename SType> class LorPixelnfo {
   }
 
   std::istream& read_lor_info(std::istream& in) {
-    int lor_desc[3];
-    in.read((char*)lor_desc, 3 * sizeof(int));
-
+    int lor_desc[2];
+    in.read((char*)lor_desc, 2 * sizeof(int));
+    F width;
+    in.read((char*)&width, sizeof(F));
+    int n_pixels;
+    in.read((char*)&n_pixels, sizeof(int));
     if (in) {
       LOR lor(lor_desc[0], lor_desc[1]);
-      lor_info_[lor.index()].pixels.resize(lor_desc[2]);
+      lor_info_[lor.index()].width = width;
+      lor_info_[lor.index()].pixels.resize(n_pixels);
       in.read((char*)&lor_info_[lor.index()].pixels[0],
-              sizeof(PixelInfo) * lor_desc[2]);
+              sizeof(PixelInfo) * n_pixels);
     }
     return in;
   }
@@ -61,7 +65,7 @@ template <typename FType, typename SType> class LorPixelnfo {
         LOR lor(d1, d2);
         auto index = lor.index();
         if (lor_info_[index].pixels.size() > 0) {
-          out << d1 << " " << d2 << "\n";
+          out << d1 << " " << d2 << " " << lor_info_[index].width << "\n";
           for (PixelInfo& info : lor_info_[index].pixels) {
             out << info.pixel.x << " " << info.pixel.y << " " << info.t << " "
                 << info.distance << " " << info.fill << "\n";

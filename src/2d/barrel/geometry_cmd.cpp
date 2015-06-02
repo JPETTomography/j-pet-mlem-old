@@ -191,7 +191,7 @@ int main(int argc, char* argv[]) {
             width2 = dist2;
         }
         FType width = width1 + width2;
-        std::cout << width << "\n";
+        lor_info_stream.write((const char*)&width, sizeof(FType));
 
         for (int ix = 0; ix < grid.n_columns; ++ix)
           for (int iy = 0; iy < grid.n_rows; ++iy) {
