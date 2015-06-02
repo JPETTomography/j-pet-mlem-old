@@ -152,6 +152,7 @@ int main(int argc, char* argv[]) {
   PET2D::Barrel::LorPixelnfo<FType, SType> lor_info(n_detectors, grid);
 
   std::ofstream lor_info_stream(output, std::ios::binary);
+  grid.write(lor_info_stream);
 
   /* -------- Loop over the lors ------------- */
 

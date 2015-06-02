@@ -37,20 +37,10 @@ int main(int argc, char* argv[]) {
     auto lor_info_file_name = cl.get<std::string>("lor-info");
 
     std::ifstream lor_info_istream(lor_info_file_name, std::ios::binary);
+    auto grid = PET2D::PixelGrid<FType, SType>::read(lor_info_istream);
 
-    FType pixel_size = 0.005;
-    if (cl.exist("s-pixel"))
-      pixel_size = cl.get<double>("s-pixel");
-    FType fov_radius = cl.get<double>("fov-radius");
-    std::cout << "fov " << fov_radius << " size " << pixel_size << "\n";
-    SType n_columns = 2 * SType(std::ceil(fov_radius / pixel_size));
-    SType n_rows = n_columns;
-    std::cout << "cols " << n_columns << " rows " << n_rows << "\n";
-    PET2D::PixelGrid<FType, SType> grid(
-        n_columns,
-        n_rows,
-        pixel_size,
-        Point(-pixel_size * n_columns / 2, -pixel_size * n_rows / 2));
+    std::cout << grid.n_columns << "x" << grid.n_rows << " " << grid.pixel_size
+              << "\n";
 
     PET2D::Barrel::LorPixelnfo<FType, SType> lor_info(scanner.size(), grid);
     lor_info.read(lor_info_istream);

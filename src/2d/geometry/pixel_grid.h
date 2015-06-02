@@ -1,6 +1,8 @@
 #ifndef PIXEL_GRID
 #define PIXEL_GRID
 
+#include <iostream>
+
 #include "2d/geometry/point.h"
 #include "2d/geometry/vector.h"
 #include "2d/geometry/pixel.h"
@@ -44,6 +46,28 @@ template <typename FType, typename SType> class PixelGrid {
     S column = static_cast<S>(floor(v.x / pixel_size));
     S row = static_cast<S>(floor(v.y / pixel_size));
     return Pixel(column, row);
+  }
+
+  std::ostream& write(std::ostream& out) {
+    out.write((const char*)&n_columns, sizeof(S));
+    out.write((const char*)&n_rows, sizeof(S));
+    out.write((const char*)&pixel_size, sizeof(F));
+    out.write((const char*)&lower_left.x, sizeof(F));
+    out.write((const char*)&lower_left.y, sizeof(F));
+    return out;
+  }
+
+  static PixelGrid read(std::istream& in) {
+    S n_columns, n_rows;
+    F pixel_size;
+    Point lower_left;
+    in.read((char*)&n_columns, sizeof(S));
+    in.read((char*)&n_rows, sizeof(S));
+    in.read((char*)&pixel_size, sizeof(F));
+    in.read((char*)&lower_left.x, sizeof(F));
+    in.read((char*)&lower_left.y, sizeof(F));
+
+    return PixelGrid(n_columns, n_rows, pixel_size, lower_left);
   }
 };
 }
