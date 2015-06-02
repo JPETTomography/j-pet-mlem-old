@@ -17,12 +17,14 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   using StripEvent = PET2D::Strip::Event<F>;
   using PixelInfo = typename LorPixelInfo::PixelInfo;
   using Pixel = typename LorPixelInfo::Pixel;
+  using Point2D = PET2D::Point<F>;
 
   struct FrameEvent {
     LOR lor;
     F up;
     F right;
     F tan;
+    F sec;
     F half_box_up;
     F half_box_right;
     typename LorPixelInfo::PixelInfoContainer::const_iterator first_pixel;
@@ -56,9 +58,9 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     StripEvent strip_event(response.z_up, response.z_dn, response.dl);
 
     strip_event.transform(R, event.tan, event.up, event.right);
-    F sec, A, B, C;
+    F A, B, C;
     kernel_.ellipse_bb(
-        event.tan, sec, A, B, C, event.half_box_up, event.half_box_right);
+        event.tan, event.sec, A, B, C, event.half_box_up, event.half_box_right);
 
     auto ev_z_left = event.right - event.half_box_right;
     auto ev_z_right = event.right + event.half_box_right;
@@ -112,6 +114,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
       auto event = frame_event(i);
       auto lor = event.lor;
       auto segment = lor_pixel_info_[lor].segment;
+      auto R = segment.length / 2;
       auto width = lor_pixel_info_[lor].width;
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         auto pix = it->pixel;
@@ -125,6 +128,13 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
           auto z = (plane + 0.5) * grid.pixel_size - z_left;
           int index =
               ix + iy * grid.n_columns + plane * grid.n_columns * grid.n_rows;
+          auto weight =
+              kernel_(event.up,
+                      event.tan,
+                      event.sec,
+                      R,
+                      Point2D(up, z) - Point2D(event.up, event.right));
+          rho_[index]+=weight;
         }
       }
     }
