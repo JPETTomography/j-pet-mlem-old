@@ -110,12 +110,19 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     int i;
     for (i = 0; i < n_events(); ++i) {
       auto event = frame_event(i);
-
+      auto lor = event.lor;
+      auto segment = lor_pixel_info_[lor].segment;
+      auto width = lor_pixel_info_[lor].width;
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         auto pix = it->pixel;
         auto ix = pix.x;
         auto iy = pix.y;
+        auto center = grid.center_at(ix, iy);
+        auto distance = segment.distance_from(center);
+        auto up = segment.projection_relative_middle(center);
+
         for (int plane = event.first_plane; plane < event.last_plane; ++plane) {
+          auto z = (plane + 0.5) * grid.pixel_size - z_left;
           int index =
               ix + iy * grid.n_columns + plane * grid.n_columns * grid.n_rows;
         }
