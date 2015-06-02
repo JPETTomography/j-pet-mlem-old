@@ -3,6 +3,8 @@
 
 #include "2d/barrel/lor.h"
 #include "2d/geometry/pixel_grid.h"
+#include "2d/geometry/point.h"
+#include "2d/geometry/line_segment.h"
 
 namespace PET2D {
 namespace Barrel {
@@ -21,10 +23,12 @@ template <typename FType, typename SType> class LorPixelnfo {
   using LOR = PET2D::Barrel::LOR<SType>;
   using PixelGrid = PET2D::PixelGrid<FType, SType>;
   using PixelInfoContainer = std::vector<PixelInfo>;
+  using Point = PET2D::Point<F>;
 
   struct LorInfo {
     SType d1, d2;
     FType width;
+    LineSegment<F> segment;
     PixelInfoContainer pixels;
   };
 
@@ -44,11 +48,15 @@ template <typename FType, typename SType> class LorPixelnfo {
 
   std::istream& read_lor_info(std::istream& in) {
     int lor_desc[2];
-    in.read((char*)lor_desc, 2 * sizeof(int));
+    in.read((char*)lor_desc, 2 * sizeof(S));
+    F coords[4];
+    in.read((char*)coords, 4 * sizeof(F));
+    auto segment = LineSegment<F>(Point(coords[2], coords[3]),
+                                  Point(coords[0], coords[1]));
     F width;
     in.read((char*)&width, sizeof(F));
     int n_pixels;
-    in.read((char*)&n_pixels, sizeof(int));
+    in.read((char*)&n_pixels, sizeof(S));
     if (in) {
       LOR lor(lor_desc[0], lor_desc[1]);
       lor_info_[lor.index()].width = width;

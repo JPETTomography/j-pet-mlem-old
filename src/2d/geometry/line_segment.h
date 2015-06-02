@@ -20,6 +20,8 @@ template <typename FType> class LineSegment {
         length((end - start).length()),
         distance_from_origin(dot(start.as_vector(), normal)) {}
 
+  LineSegment() : LineSegment(Point(0, 0), Point(1, 1)) {}
+
   F distance_from(const Point& p) {
     return dot(p.as_vector(), normal) - distance_from_origin;
   }

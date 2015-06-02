@@ -55,8 +55,8 @@ int main(int argc, char* argv[]) {
     }
     PET2D::Barrel::LorPixelnfo<FType, SType> lor_info(scanner.barrel.size(),
                                                       grid);
-    //    lor_info.read(lor_info_istream);
-    //    lor_info.print(std::cout);
+    lor_info.read(lor_info_istream);
+    lor_info.print(std::cout);
 
     Reconstructor<Scanner> reconstructor(scanner, lor_info);
 

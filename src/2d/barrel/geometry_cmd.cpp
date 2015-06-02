@@ -193,6 +193,10 @@ int main(int argc, char* argv[]) {
             width2 = dist2;
         }
         FType width = width1 + width2;
+        lor_info_stream.write((const char*)&detectors_centers[d1],
+                              2 * sizeof(FType));
+        lor_info_stream.write((const char*)&detectors_centers[d2],
+                              2 * sizeof(FType));
         lor_info_stream.write((const char*)&width, sizeof(FType));
 
         for (int ix = 0; ix < grid.n_columns; ++ix)
