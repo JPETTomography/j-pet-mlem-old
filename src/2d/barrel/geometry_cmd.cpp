@@ -168,10 +168,30 @@ int main(int argc, char* argv[]) {
         //        std::cout << "l : " << i << "  " << d1 << " " << d2 << "\n";
         lor_info_stream.write((const char*)&d1, sizeof(int));
         lor_info_stream.write((const char*)&d2, sizeof(int));
+
         i++;
         std::vector<PixelInfo>& pixel_info = lor_info[LOR(d1, d2)].pixels;
         PET2D::LineSegment<FType> segment(detectors_centers[d2],
                                           detectors_centers[d1]);
+
+        // TODO: Calculate width of the LOR.
+        auto width1 = FType(0);
+        auto width2 = FType(0);
+        Detector detector1 = scanner[d1];
+        Detector detector2 = scanner[d2];
+        for (int i = 0; i < detector1.size(); ++i) {
+          auto p1 = detector1[i];
+          auto dist1 = std::abs(segment.distance_from(p1));
+          if (dist1 > width1)
+            width1 = dist1;
+
+          auto p2 = detector2[i];
+          auto dist2 = std::abs(segment.distance_from(p2));
+          if (dist2 > width2)
+            width2 = dist2;
+        }
+        FType width = width1 + width2;
+        std::cout << width << "\n";
 
         for (int ix = 0; ix < grid.n_columns; ++ix)
           for (int iy = 0; iy < grid.n_rows; ++iy) {

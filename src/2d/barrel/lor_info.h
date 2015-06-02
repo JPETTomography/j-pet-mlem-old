@@ -16,12 +16,15 @@ template <typename FType, typename SType> class LorPixelnfo {
     FType fill;
   };
 
+  using F = FType;
+  using S = SType;
   using LOR = PET2D::Barrel::LOR<SType>;
   using PixelGrid = PET2D::PixelGrid<FType, SType>;
   using PixelInfoContainer = std::vector<PixelInfo>;
 
   struct LorInfo {
     SType d1, d2;
+    FType width;
     PixelInfoContainer pixels;
   };
 
