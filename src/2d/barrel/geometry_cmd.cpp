@@ -147,7 +147,6 @@ int main(int argc, char* argv[]) {
     mapper.map(*p, "fill:rgb(0,0,255);");
   }
   mapper.map(fov_circle, "fill:none;stroke:red;");
-  // mapper.~svg_mapper();
 
   int n_detectors = scanner.size();
   PET2D::Barrel::LorPixelnfo<FType, SType> lor_info(n_detectors, grid);
@@ -209,13 +208,6 @@ int main(int argc, char* argv[]) {
         lor_info_stream.write((const char*)&n_pixels, sizeof(int));
         lor_info_stream.write((const char*)&pixel_info[0],
                               n_pixels * sizeof(PixelInfo));
-
-        //        for (PixelInfo info : pixel_info) {
-        //          std::cout << "p : " << info.pixel.x << " " << info.pixel.y
-        //          << " "
-        //                    << info.t << info.fill << " "
-        //                    << " " << info.distance << "\n";
-        //        }
       }
     }
   }

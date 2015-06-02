@@ -6,7 +6,8 @@
 /**
  * Class Frame respresents a frome defined by two scintillators.
  *
- * It provides the methods to project onto this fram, and caclulate the distance
+ * It provides the methods to project onto this frame, and calculate the
+ *distance
  * from it.
  */
 
