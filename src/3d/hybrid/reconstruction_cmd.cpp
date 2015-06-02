@@ -35,13 +35,17 @@ int main(int argc, char* argv[]) {
     auto ext = output.ext();
 
     auto lor_info_file_name = cl.get<std::string>("lor-info");
-
+    int n_detectors;
     std::ifstream lor_info_istream(lor_info_file_name, std::ios::binary);
+    lor_info_istream.read((char*)&n_detectors, sizeof(n_detectors));
+
     auto grid = PET2D::PixelGrid<FType, SType>::read(lor_info_istream);
 
     std::cout << grid.n_columns << "x" << grid.n_rows << " " << grid.pixel_size
               << "\n";
-
+    if (n_detectors != scanner.size()) {
+      throw("n_detectors mismatch");
+    }
     PET2D::Barrel::LorPixelnfo<FType, SType> lor_info(scanner.size(), grid);
     lor_info.read(lor_info_istream);
     lor_info.print(std::cout);
