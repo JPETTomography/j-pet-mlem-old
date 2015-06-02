@@ -10,26 +10,33 @@
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/lor_info.h"
 
+#include "3d/hybrid/scanner.h"
+#include "3d/hybrid/reconstructor.h"
+
 using FType = float;
 using SType = int;
 using RNGType = std::mt19937;
 using Detector = PET2D::Barrel::SquareDetector<FType>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, SType>;
+using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 using Point = PET2D::Point<FType>;
 
 int main(int argc, char* argv[]) {
 
   cmdline::parser cl;
   cl.add<std::string>("lor-info", '\0', "lor-pixel information", true);
+  cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
+  cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
+
+  cl.add<double>("length", 0, "length of the detector", false, 0.3);
   PET2D::Barrel::add_matrix_options(cl);
   try {
     cl.try_parse(argc, argv);
 
-    PET2D::Barrel::set_big_barrel_options(cl);
-    auto scanner =
-        PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
-            PET2D_BARREL_SCANNER_CL(cl, FType));
+    PET3D::Hybrid::set_big_barrel_options(cl);
 
+    Scanner scanner = Scanner::build_scanner_from_cl(cl);
+    scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
     auto output = cl.get<cmdline::path>("output");
     auto output_base_name = output.wo_ext();
     auto ext = output.ext();
@@ -43,12 +50,15 @@ int main(int argc, char* argv[]) {
 
     std::cout << grid.n_columns << "x" << grid.n_rows << " " << grid.pixel_size
               << "\n";
-    if (n_detectors != scanner.size()) {
+    if (n_detectors != scanner.barrel.size()) {
       throw("n_detectors mismatch");
     }
-    PET2D::Barrel::LorPixelnfo<FType, SType> lor_info(scanner.size(), grid);
-    lor_info.read(lor_info_istream);
-    lor_info.print(std::cout);
+    PET2D::Barrel::LorPixelnfo<FType, SType> lor_info(scanner.barrel.size(),
+                                                      grid);
+    //    lor_info.read(lor_info_istream);
+    //    lor_info.print(std::cout);
+
+    Reconstructor<Scanner> reconstructor(scanner, lor_info);
 
   } catch (cmdline::exception& ex) {
     if (ex.help()) {
