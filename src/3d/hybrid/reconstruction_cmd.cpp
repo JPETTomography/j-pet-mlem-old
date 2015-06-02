@@ -29,6 +29,8 @@ int main(int argc, char* argv[]) {
   cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
 
   cl.add<double>("length", 0, "length of the detector", false, 0.3);
+  cl.add<std::string>("response", '\0', "detector responses", true);
+
   PET2D::Barrel::add_matrix_options(cl);
   try {
     cl.try_parse(argc, argv);
@@ -56,9 +58,19 @@ int main(int argc, char* argv[]) {
     PET2D::Barrel::LorPixelnfo<FType, SType> lor_info(scanner.barrel.size(),
                                                       grid);
     lor_info.read(lor_info_istream);
-    lor_info.print(std::cout);
+
+    // lor_info.print(std::cout);
 
     Reconstructor<Scanner> reconstructor(scanner, lor_info);
+
+    std::ifstream response_stream(cl.get<std::string>("response"));
+    reconstructor.fscanf_responses(response_stream);
+
+    for (int i = 0; i < reconstructor.n_events(); i++) {
+      auto event = reconstructor.frame_event(i);
+      std::cout << event.lor.first << " " << event.lor.second << " " << event.up
+                << " " << event.right << " " << event.tan << "\n";
+    }
 
   } catch (cmdline::exception& ex) {
     if (ex.help()) {

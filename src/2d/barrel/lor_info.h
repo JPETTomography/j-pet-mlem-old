@@ -40,6 +40,9 @@ template <typename FType, typename SType> class LorPixelnfo {
 
   LorInfo& operator[](const LOR& lor) { return lor_info_[lor.index()]; }
 
+  const LorInfo& operator[](const LOR& lor) const {
+    return lor_info_[lor.index()];
+  }
   std::istream& read(std::istream& in) {
     while (read_lor_info(in))
       ;
