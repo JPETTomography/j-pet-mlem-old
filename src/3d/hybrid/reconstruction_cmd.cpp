@@ -61,17 +61,19 @@ int main(int argc, char* argv[]) {
     lor_info.read(lor_info_istream);
 
     Reconstructor<Scanner, PET2D::Strip::GaussianKernel<FType>> reconstructor(
-        scanner, lor_info);
+        scanner, lor_info, 0.300, -0.150f);
 
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstructor.fscanf_responses(response_stream);
 
-    for (int i = 0; i < reconstructor.n_events(); i++) {
-      auto event = reconstructor.frame_event(i);
-      std::cout << event.lor.first << " " << event.lor.second << " " << event.up
-                << " " << event.right << " " << event.tan << " "
-                << event.last_pixel - event.first_pixel << "\n";
-    }
+//    for (int i = 0; i < reconstructor.n_events(); i++) {
+//      auto event = reconstructor.frame_event(i);
+//      std::cout << event.lor.first << " " << event.lor.second << " " << event.up
+//                << " " << event.right << " " << event.tan << " "
+//                << event.last_pixel - event.first_pixel << "\n";
+//    }
+
+    std::cout<<reconstructor.iterate()<<"\n";
 
   } catch (cmdline::exception& ex) {
     if (ex.help()) {

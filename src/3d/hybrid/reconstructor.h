@@ -16,6 +16,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   using LOR = PET2D::Barrel::LOR<S>;
   using StripEvent = PET2D::Strip::Event<F>;
   using PixelInfo = typename LorPixelInfo::PixelInfo;
+  using Pixel = typename LorPixelInfo::Pixel;
 
   struct FrameEvent {
     LOR lor;
@@ -26,12 +27,26 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     F half_box_right;
     typename LorPixelInfo::PixelInfoContainer::const_iterator first_pixel;
     typename LorPixelInfo::PixelInfoContainer::const_iterator last_pixel;
+    S first_plane;
+    S last_plane;
   };
 
-  Reconstructor(const Scanner& scanner, const LorPixelInfo& lor_pixel_info)
+  Reconstructor(const Scanner& scanner,
+                const LorPixelInfo& lor_pixel_info,
+                F fov_length,
+                F z_left)
       : scanner_(scanner),
         lor_pixel_info_(lor_pixel_info),
-        kernel_(scanner.sigma_z(), scanner.sigma_dl()) {}
+        fov_length(fov_length),
+        z_left(z_left),
+        n_planes((int)std::ceil(fov_length / lor_pixel_info_.grid.pixel_size)),
+        kernel_(scanner.sigma_z(), scanner.sigma_dl()),
+        rho_(lor_pixel_info_.grid.n_columns * lor_pixel_info_.grid.n_rows *
+                 n_planes,
+             F(0.0)),
+        rho_prev_(lor_pixel_info_.grid.n_columns * lor_pixel_info_.grid.n_rows *
+                      n_planes,
+                  F(1.0)) {}
 
   FrameEvent translate_to_frame(const Response& response) {
     FrameEvent event;
@@ -45,8 +60,13 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     kernel_.ellipse_bb(
         event.tan, sec, A, B, C, event.half_box_up, event.half_box_right);
 
+    auto ev_z_left = event.right - event.half_box_right;
+    auto ev_z_right = event.right + event.half_box_right;
+    event.first_plane = plane(ev_z_left);
+    event.last_plane = plane(ev_z_right) + 1;
+
     auto y_up = event.up + event.half_box_up;
-    auto y_dn = event.right - event.half_box_up;
+    auto y_dn = event.up - event.half_box_up;
     auto t_up = (y_up + R) / (2 * R);
     auto t_dn = (y_dn + R) / (2 * R);
 
@@ -70,6 +90,10 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     return event;
   }
 
+  S plane(F z) {
+    return S(std::floor((z - z_left) / lor_pixel_info_.grid.pixel_size));
+  }
+
   Response fscanf_responses(std::istream& in) {
     auto response = fscanf_response(in);
     while (in) {
@@ -82,11 +106,23 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   FrameEvent frame_event(int i) const { return events_[i]; }
 
   int iterate() {
-    for (int i = 0; i < n_events(); ++i) {
+    auto grid = lor_pixel_info_.grid;
+    int i;
+    for (i = 0; i < n_events(); ++i) {
       auto event = frame_event(i);
+
+      for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
+        auto pix = it->pixel;
+        auto ix = pix.x;
+        auto iy = pix.y;
+        for (int plane = event.first_plane; plane < event.last_plane; ++plane) {
+          int index =
+              ix + iy * grid.n_columns + plane * grid.n_columns * grid.n_rows;
+        }
+      }
     }
 
-    return 0;
+    return i;
   }
 
  private:
@@ -101,8 +137,13 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
 
   const Scanner& scanner_;
   const LorPixelInfo& lor_pixel_info_;
+  const F fov_length;
+  const F z_left;
+  const S n_planes;
   std::vector<FrameEvent> events_;
   Kernel2D kernel_;
+  std::vector<F> rho_;
+  std::vector<F> rho_prev_;
 };
 
 #endif  // RECONSTRUCTOR

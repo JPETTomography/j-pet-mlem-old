@@ -11,8 +11,9 @@ namespace Barrel {
 
 template <typename FType, typename SType> class LorPixelnfo {
  public:
+  using Pixel = PET2D::Pixel<SType>;
   struct PixelInfo {
-    PET2D::Pixel<SType> pixel;
+    Pixel pixel;
     FType t;
     FType distance;
     FType fill;
