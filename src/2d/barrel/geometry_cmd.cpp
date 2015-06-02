@@ -186,7 +186,7 @@ int main(int argc, char* argv[]) {
               if (area > 0) {
                 auto pixel_area = boost::geometry::area(pixel);
                 auto fill = area / pixel_area;
-                auto t = segment.projection_on(center);
+                auto t = segment.projection_scaled(center);
                 auto distance = segment.distance_from(center);
                 PixelInfo info;
                 info.pixel = PET2D::Pixel<SType>(ix, iy);

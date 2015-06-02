@@ -24,7 +24,12 @@ template <typename FType> class LineSegment {
     return dot(p.as_vector(), normal) - distance_from_origin;
   }
 
-  F projection_on(const Point& p) { return dot(p - start, direction) / length; }
+  F projection(const Point& p) { return dot(p - start, direction); }
+  F projection_scaled(const Point& p) { return projection(p) / length; }
+
+  F projection_relative_middle(const Point& p) {
+    return projection(p) - 0.5 * length;
+  }
 
   const Point start;
   const Point end;
