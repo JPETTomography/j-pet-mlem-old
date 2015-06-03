@@ -137,7 +137,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
 
         for (int plane = event.first_plane; plane < event.last_plane; ++plane) {
           voxel_count_++;
-          auto z = (plane + 0.5) * grid.pixel_size - z_left;
+          auto z = (plane + 0.5) * grid.pixel_size + z_left;
           int index =
               ix + iy * grid.n_columns + plane * grid.n_columns * grid.n_rows;
           auto weight =
