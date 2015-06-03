@@ -66,14 +66,6 @@ int main(int argc, char* argv[]) {
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstructor.fscanf_responses(response_stream);
 
-    //    for (int i = 0; i < reconstructor.n_events(); i++) {
-    //      auto event = reconstructor.frame_event(i);
-    //      std::cout << event.lor.first << " " << event.lor.second << " " <<
-    //      event.up
-    //                << " " << event.right << " " << event.tan << " "
-    //                << event.last_pixel - event.first_pixel << "\n";
-    //    }
-
     std::cout << reconstructor.iterate() << "\n";
     std::cout << reconstructor.event_count() << " "
               << reconstructor.voxel_count() << " "
@@ -82,6 +74,10 @@ int main(int argc, char* argv[]) {
                      reconstructor.event_count() << " ";
     std::cout << (double)reconstructor.pixel_count() /
                      reconstructor.event_count() << "\n";
+
+    std::ofstream out("rho.bin");
+    out.write((char*)&(*reconstructor.rho_begin()),
+              reconstructor.n_voxels() * sizeof(FType));
 
   } catch (cmdline::exception& ex) {
     if (ex.help()) {

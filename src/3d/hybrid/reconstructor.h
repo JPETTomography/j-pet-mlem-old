@@ -146,11 +146,20 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
                       event.sec,
                       R,
                       Point2D(up, z) - Point2D(event.up, event.right));
+          std::cerr<<event.up<<" "<<event.right<<" "<<up<<" "<<z<<" ";
+          std::cerr<<weight<<" "<<rho_[index]<<"\n";
           denominator += weight * rho_[index];
         }
       }  // Voxel loop - denominator
 
-      F inv_denominator = 1 / denominator;
+
+      F inv_denominator;
+      if(denominator>0)
+          inv_denominator = 1 / denominator;
+      else {
+          std::cerr<<"denminator == 0 !";
+          return i;
+      }
 
       /* ---------  Voxel loop ------------ */
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
@@ -181,9 +190,20 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     return i;
   }
 
+  typename std::vector<F>::const_iterator rho_begin() const {
+    return rho_.begin();
+  }
+  typename std::vector<F>::const_iterator rho_end() const { return rho_.end(); }
+  typename std::vector<F>::iterator rho_begin() { return rho_.begin(); }
+
   int voxel_count() const { return voxel_count_; }
   int pixel_count() const { return pixel_count_; }
   int event_count() const { return event_count_; }
+
+  int n_voxels() const {
+    return lor_pixel_info_.grid.n_columns * lor_pixel_info_.grid.n_rows *
+           n_planes;
+  }
 
  private:
   Response fscanf_response(std::istream& in) {
