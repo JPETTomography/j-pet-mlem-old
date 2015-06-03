@@ -29,11 +29,31 @@ template <typename FType> class Graphics {
   void add(const PET2D::Barrel::DetectorSet<Detector, MaxDet, SType>& scanner) {
     add();
     out_ << "{\n";
-    first_=true;
+    first_ = true;
     for (Detector detector : scanner) {
       add(detector);
     }
     out_ << "}\n";
+  }
+
+  template <typename Detector, std::size_t MaxDet, typename SType>
+  void add(const PET2D::Barrel::DetectorSet<Detector, MaxDet, SType>& scanner,
+           const PET2D::Barrel::LOR<SType>& lor) {
+    using F = typename Detector::F;
+    add();
+    out_ << "{FaceForm[], EdgeForm[Black], MeshPrimitives[ConvexHullMesh[{\n";
+    std::string sep = "";
+    auto detector1 = scanner[lor.first];
+    for (const PET2D::Point<F>& p : detector1) {
+      out_ << sep << "{" << p.x << "," << p.y << "}\n";
+      sep = ",";
+    }
+    auto detector2 = scanner[lor.second];
+    for (const PET2D::Point<F>& p : detector2) {
+      out_ << sep << "{" << p.x << "," << p.y << "}\n";
+      sep = ",";
+    }
+    out_ << "}],2]}\n";
   }
 
  private:

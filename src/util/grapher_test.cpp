@@ -37,3 +37,20 @@ TEST("grapher/BigBarel") {
 
   graphics.add(scanner);
 }
+
+
+TEST("grapher/BigBarel/lor") {
+
+  PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
+  using F = PET2D::Barrel::BigBarrelType::F;
+
+  std::ofstream out("test_output/graph.m");
+  if (!out) {
+    FAIL("cannot open file");
+  }
+
+  Graphics<F> graphics(out);
+
+  graphics.add(scanner);
+  graphics.add(scanner, PET2D::Barrel::LOR<int>(65,0));
+}
