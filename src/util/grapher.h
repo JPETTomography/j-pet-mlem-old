@@ -11,7 +11,7 @@ template <typename FType> class Graphics {
   Graphics(std::ostream& out) : first_(true), out_(out) {
     out_ << "Graphics[{\n";
   };
-  ~Graphics() { out_ << "}]\n";}
+  ~Graphics() { out_ << "}]\n"; }
 
   template <std::size_t NumPoints>
   void add(const PET2D::Polygon<NumPoints, F>& polygon) {
@@ -25,6 +25,16 @@ template <typename FType> class Graphics {
     out_ << "}]}\n";
   }
 
+  template <typename Detector, std::size_t MaxDet, typename SType>
+  void add(const PET2D::Barrel::DetectorSet<Detector, MaxDet, SType>& scanner) {
+    add();
+    out_ << "{\n";
+    first_=true;
+    for (Detector detector : scanner) {
+      add(detector);
+    }
+    out_ << "}\n";
+  }
 
  private:
   void add() {
