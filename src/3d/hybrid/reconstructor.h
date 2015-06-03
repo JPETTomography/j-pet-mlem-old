@@ -43,12 +43,12 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
         z_left(z_left),
         n_planes((int)std::ceil(fov_length / lor_pixel_info_.grid.pixel_size)),
         kernel_(scanner.sigma_z(), scanner.sigma_dl()),
+        rho_new_(lor_pixel_info_.grid.n_columns * lor_pixel_info_.grid.n_rows *
+                     n_planes,
+                 F(0.0)),
         rho_(lor_pixel_info_.grid.n_columns * lor_pixel_info_.grid.n_rows *
                  n_planes,
-             F(0.0)),
-        rho_prev_(lor_pixel_info_.grid.n_columns * lor_pixel_info_.grid.n_rows *
-                      n_planes,
-                  F(1.0)) {}
+             F(1.0)) {}
 
   FrameEvent translate_to_frame(const Response& response) {
     FrameEvent event;
@@ -108,14 +108,51 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   FrameEvent frame_event(int i) const { return events_[i]; }
 
   int iterate() {
+    event_count_ = 0;
+    voxel_count_ = 0;
+    pixel_count_ = 0;
     auto grid = lor_pixel_info_.grid;
+    std::fill(rho_new_.begin(), rho_new_.end(), 0);
     int i;
+
+    /* ------- Event loop ------*/
     for (i = 0; i < n_events(); ++i) {
+      event_count_++;
       auto event = frame_event(i);
       auto lor = event.lor;
       auto segment = lor_pixel_info_[lor].segment;
       auto R = segment.length / 2;
       auto width = lor_pixel_info_[lor].width;
+
+      /* ---------  Voxel loop  - denominator ----------- */
+      F denominator = 0;
+      for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
+        pixel_count_++;
+        auto pix = it->pixel;
+        auto ix = pix.x;
+        auto iy = pix.y;
+        auto center = grid.center_at(ix, iy);
+        auto distance = segment.distance_from(center);
+        auto up = segment.projection_relative_middle(center);
+
+        for (int plane = event.first_plane; plane < event.last_plane; ++plane) {
+          voxel_count_++;
+          auto z = (plane + 0.5) * grid.pixel_size - z_left;
+          int index =
+              ix + iy * grid.n_columns + plane * grid.n_columns * grid.n_rows;
+          auto weight =
+              kernel_(event.up,
+                      event.tan,
+                      event.sec,
+                      R,
+                      Point2D(up, z) - Point2D(event.up, event.right));
+          denominator += weight * rho_[index];
+        }
+      }  // Voxel loop - denominator
+
+      F inv_denominator = 1 / denominator;
+
+      /* ---------  Voxel loop ------------ */
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         auto pix = it->pixel;
         auto ix = pix.x;
@@ -134,13 +171,19 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
                       event.sec,
                       R,
                       Point2D(up, z) - Point2D(event.up, event.right));
-          rho_[index]+=weight;
+          rho_new_[index] += weight * rho_[index] * inv_denominator;
         }
-      }
+      }  // Voxel loop
     }
+
+    std::swap(rho_, rho_new_);
 
     return i;
   }
+
+  int voxel_count() const { return voxel_count_; }
+  int pixel_count() const { return pixel_count_; }
+  int event_count() const { return event_count_; }
 
  private:
   Response fscanf_response(std::istream& in) {
@@ -159,8 +202,11 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   const S n_planes;
   std::vector<FrameEvent> events_;
   Kernel2D kernel_;
+  std::vector<F> rho_new_;
   std::vector<F> rho_;
-  std::vector<F> rho_prev_;
+  int event_count_;
+  int voxel_count_;
+  int pixel_count_;
 };
 
 #endif  // RECONSTRUCTOR
