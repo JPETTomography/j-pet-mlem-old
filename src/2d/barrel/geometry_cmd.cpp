@@ -22,6 +22,8 @@
 #include "2d/geometry/line_segment.h"
 #include "2d/geometry/pixel_grid.h"
 #include "2d/barrel/lor_info.h"
+#include "2d/barrel/boost_geometry_utils.h"
+
 
 using FType = float;
 using SType = int;
@@ -29,45 +31,18 @@ using RNGType = std::mt19937;
 using Detector = PET2D::Barrel::SquareDetector<FType>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, SType>;
 using Point = PET2D::Point<FType>;
-using point_2d = boost::geometry::model::d2::point_xy<FType>;
 
-using Polygon = boost::geometry::model::polygon<point_2d>;
 using PixelInfo = PET2D::Barrel::LorPixelnfo<FType, SType>::PixelInfo;
 using PixelInfoContainer =
     PET2D::Barrel::LorPixelnfo<FType, SType>::PixelInfoContainer;
 using LOR = PET2D::Barrel::LOR<SType>;
 
-Polygon makeCircle(const Point& center, FType radius, int n = 64) {
-  Polygon circle;
-  FType da = 2 * M_PI / n;
-  FType angle = 0.0;
-  for (int i = 0; i < n; ++i) {
-    FType x, y;
-    x = radius * std::cos(angle);
-    y = radius * std::sin(angle);
-    boost::geometry::append(circle, boost::geometry::make<point_2d>(x, y));
-    angle += da;
-  }
-  boost::geometry::append(circle,
-                          boost::geometry::make<point_2d>(radius, FType(0.0)));
-  return circle;
-}
+using BoostGeometryUtils = PET2D::Barrel::BoostGeometryUtils<FType, SType>;
 
-Polygon makePixel(const PET2D::PixelGrid<FType, SType>& grid, int ix, int iy) {
-  Polygon pixel;
-  auto size = grid.pixel_size;
-  Point ll = grid.lower_left_at(ix, iy);
-  auto x = ll.x;
-  auto y = ll.y;
-  // std::cout<<x<<" "<<y<<"\n";
-  boost::geometry::append(pixel, boost::geometry::make<point_2d>(x, y));
-  boost::geometry::append(pixel, boost::geometry::make<point_2d>(x, y + size));
-  boost::geometry::append(pixel,
-                          boost::geometry::make<point_2d>(x + size, y + size));
-  boost::geometry::append(pixel, boost::geometry::make<point_2d>(x + size, y));
-  boost::geometry::append(pixel, boost::geometry::make<point_2d>(x, y));
-  return pixel;
-}
+using Polygon = typename BoostGeometryUtils::Polygon;
+using point_2d = BoostGeometryUtils::point_2d;
+
+
 
 int main(int argc, char* argv[]) {
   cmdline::parser cl;
@@ -119,15 +94,8 @@ int main(int argc, char* argv[]) {
 
   for (int i = 0; i < scanner.size(); i++) {
     auto detector = scanner[i];
-    Polygon detector_poly;
-    for (int j = 0; j < detector.size(); j++) {
-      Point p = detector[j];
-      boost::geometry::append(detector_poly,
-                              boost::geometry::make<point_2d>(p.x, p.y));
-    }
-    Point p = detector[0];
-    boost::geometry::append(detector_poly,
-                            boost::geometry::make<point_2d>(p.x, p.y));
+    Polygon detector_poly=BoostGeometryUtils::makeDetector(detector);
+
     detectors.push_back(detector_poly);
     detectors_centers.push_back(detector.center());
   }
@@ -140,7 +108,7 @@ int main(int argc, char* argv[]) {
     mapper.add(*p);
   }
 
-  auto fov_circle = makeCircle(Point(0, 0), cl.get<double>("fov-radius"), 128);
+  auto fov_circle = BoostGeometryUtils::makeCircle(Point(0, 0), cl.get<double>("fov-radius"), 128);
   mapper.add(fov_circle);
 
   for (auto p = detectors.begin(); p != detectors.end(); ++p) {
@@ -203,7 +171,7 @@ int main(int argc, char* argv[]) {
           for (int iy = 0; iy < grid.n_rows; ++iy) {
 
             Point center = grid.center_at(ix, iy);
-            Polygon pixel = makePixel(grid, ix, iy);
+            Polygon pixel = BoostGeometryUtils::makePixel(grid, ix, iy);
             if (boost::geometry::intersects(pixel, fov_circle)) {
               boost::geometry::model::multi_polygon<Polygon> inter;
               boost::geometry::intersection(lor, pixel, inter);

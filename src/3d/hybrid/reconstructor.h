@@ -205,6 +205,9 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
            n_planes;
   }
 
+#ifdef HAVE_Boost
+#endif
+
  private:
   Response fscanf_response(std::istream& in) {
     S d1, d2;
