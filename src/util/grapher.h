@@ -3,6 +3,7 @@
 #include <iostream>
 #include "2d/geometry/polygon.h"
 #include "2d/barrel/detector_set.h"
+#include "2d/geometry/line_segment.h"
 
 template <typename FType> class Graphics {
  public:
@@ -56,7 +57,42 @@ template <typename FType> class Graphics {
     out_ << "}],2]}\n";
   }
 
+  void add(const PET2D::LineSegment<F>& segment) {
+    add();
+    out_ << "{Line[{";
+    out_ << "{" << segment.start.x << "," << segment.start.y << "},";
+    out_ << "{" << segment.end.x << "," << segment.end.y << "}";
+    out_ << "}]}";
+  }
+
+  void addCircle(const PET2D::Point<F>& center, F radius) {
+    add();
+    out_ << "{Circle[";
+    out_ << "{" << number(center.x) << "," << number(center.y) << "},";
+    out_ << radius << "]}\n";
+  }
+
+  void addCircle(F radius) { addCircle(PET2D::Point<F>(0, 0), radius); }
+
  private:
+
+  std::string pair(F first, F second) {
+    return "";
+  }
+
+  std::string number(F number) {
+    char number_char[64];
+    sprintf(number_char,"%.12g", number);
+    std::string number_str(number_char);
+    auto i = number_str.find("e");
+    if (i != std::string::npos) {
+      number_str.erase(i,1);
+      number_str.insert(i, "*10^(");
+      number_str.push_back(')');
+    }
+    return number_str;
+  }
+
   void add() {
     if (first_) {
       first_ = false;
