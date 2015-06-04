@@ -165,6 +165,8 @@ int main(int argc, char* argv[]) {
                               2 * sizeof(FType));
         lor_info_stream.write((const char*)&detectors_centers[d2],
                               2 * sizeof(FType));
+        //std::cout<<detectors_centers[d1].x<<" "<<detectors_centers[d1].y<<" ";
+        //std::cout<<detectors_centers[d2].x<<" "<<detectors_centers[d2].y<<"\n";
         lor_info_stream.write((const char*)&width, sizeof(FType));
 
         for (int ix = 0; ix < grid.n_columns; ++ix)

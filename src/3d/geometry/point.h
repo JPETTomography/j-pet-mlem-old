@@ -101,7 +101,14 @@ template <typename F> _ Point<F> from_vector(const Vector<F>& vec) {
   return Point<F>(vec.x, vec.y, vec.z);
 }
 
-}  // PET2D
+template <typename FType> _
+Point<FType> interpolate(FType t, const Point<FType>& start, const Point<FType>& end) {
+  return Point<FType>(start.x * (1 - t) + end.x * t,
+                      start.y * (1 - t) + end.y * t,
+                      start.z * (1 - t) + end.z * t);
+}
+
+}  // PET3D
 
 #ifdef TEST_CASE
 namespace Catch {

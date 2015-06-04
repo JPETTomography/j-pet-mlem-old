@@ -6,6 +6,9 @@
 
 #include "2d/barrel/lor_info.h"
 #include "2d/strip/event.h"
+#include "3d/geometry/point.h"
+
+#include "util/grapher.h"
 
 template <typename Scanner, typename Kernel2D> class Reconstructor {
  public:
@@ -18,6 +21,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   using PixelInfo = typename LorPixelInfo::PixelInfo;
   using Pixel = typename LorPixelInfo::Pixel;
   using Point2D = PET2D::Point<F>;
+  using Point = PET3D::Point<F>;
 
   struct FrameEvent {
     LOR lor;
@@ -31,6 +35,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     typename LorPixelInfo::PixelInfoContainer::const_iterator last_pixel;
     S first_plane;
     S last_plane;
+    Response response;
   };
 
   Reconstructor(const Scanner& scanner,
@@ -50,11 +55,22 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
                  n_planes,
              F(1.0)) {}
 
+  Point translate_to_point(const Response& response) {
+
+    auto segment = lor_pixel_info_[response.lor].segment;
+    F t = 0.5 - response.dl / (2 * segment->length);
+    return PET3D::interpolate(
+        t,
+        Point(segment->start.x, segment->start.y, response.z_dn),
+        Point(segment->end.x, segment->end.y, response.z_up));
+  }
+
   FrameEvent translate_to_frame(const Response& response) {
     FrameEvent event;
+    event.response = response;
     event.lor = response.lor;
 
-    auto R = lor_pixel_info_[event.lor].segment.length;
+    auto R = lor_pixel_info_[event.lor].segment->length / 2;
     StripEvent strip_event(response.z_up, response.z_dn, response.dl);
 
     strip_event.transform(R, event.tan, event.up, event.right);
@@ -120,7 +136,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
       event_count_++;
       auto event = frame_event(i);
       auto lor = event.lor;
-      auto segment = lor_pixel_info_[lor].segment;
+      auto segment = *lor_pixel_info_[lor].segment;
       auto R = segment.length / 2;
       auto width = lor_pixel_info_[lor].width;
 
@@ -146,16 +162,17 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
                       event.sec,
                       R,
                       Point2D(up, z) - Point2D(event.up, event.right));
-          std::cerr << event.up << " " << event.right << " " << up << " " << z
-                    << " ";
-          std::cerr << weight << " " << rho_[index] << "\n";
+          // std::cout << weight << " " << rho_[index] << "\n";
           denominator += weight * rho_[index];
+          // std::cout<<denominator<<"\n";
         }
       }  // Voxel loop - denominator
 
       F inv_denominator;
-      if (denominator > 0)
+      if (denominator > 0) {
         inv_denominator = 1 / denominator;
+        //std::cout<<" inv "<<inv_denominator<<"\n";
+      }
       else {
         std::cerr << "denminator == 0 !";
         return i;
@@ -171,7 +188,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
         auto up = segment.projection_relative_middle(center);
 
         for (int plane = event.first_plane; plane < event.last_plane; ++plane) {
-          auto z = (plane + 0.5) * grid.pixel_size - z_left;
+          auto z = (plane + 0.5) * grid.pixel_size + z_left;
           int index =
               ix + iy * grid.n_columns + plane * grid.n_columns * grid.n_rows;
           auto weight =
@@ -180,6 +197,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
                       event.sec,
                       R,
                       Point2D(up, z) - Point2D(event.up, event.right));
+          //std::cout<< weight * rho_[index] * inv_denominator<<"\n";
           rho_new_[index] += weight * rho_[index] * inv_denominator;
         }
       }  // Voxel loop
@@ -205,7 +223,19 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
            n_planes;
   }
 
-  void graph_frame_event(std::ostream& out, int event_index) {}
+  void graph_frame_event(Graphics<F>& graphics, int event_index) {
+    auto event = events_[event_index];
+    auto lor = event.lor;
+    graphics.add(scanner_.barrel, lor);
+    graphics.add(*lor_pixel_info_[lor].segment);
+    for (auto pix = event.first_pixel; pix != event.last_pixel; ++pix) {
+      graphics.addPixel(lor_pixel_info_.grid, pix->pixel);
+    }
+
+    auto p = translate_to_point(event.response);
+
+    graphics.add(Point2D(p.x, p.y));
+  }
 
  private:
   Response fscanf_response(std::istream& in) {

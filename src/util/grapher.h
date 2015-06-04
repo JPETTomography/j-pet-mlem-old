@@ -91,6 +91,12 @@ template <typename FType> class Graphics {
     addPixel(grid, pix.x, pix.y);
   }
 
+
+  void add(const PET2D::Point<F>& p) {
+    add();
+    out_<<"{Red,Point["<<pair(p.x, p.y)<<"]}";
+  }
+
  private:
   std::string pair(F first, F second) {
     std::string result = "{";
