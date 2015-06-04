@@ -146,19 +146,19 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
                       event.sec,
                       R,
                       Point2D(up, z) - Point2D(event.up, event.right));
-          std::cerr<<event.up<<" "<<event.right<<" "<<up<<" "<<z<<" ";
-          std::cerr<<weight<<" "<<rho_[index]<<"\n";
+          std::cerr << event.up << " " << event.right << " " << up << " " << z
+                    << " ";
+          std::cerr << weight << " " << rho_[index] << "\n";
           denominator += weight * rho_[index];
         }
       }  // Voxel loop - denominator
 
-
       F inv_denominator;
-      if(denominator>0)
-          inv_denominator = 1 / denominator;
+      if (denominator > 0)
+        inv_denominator = 1 / denominator;
       else {
-          std::cerr<<"denminator == 0 !";
-          return i;
+        std::cerr << "denminator == 0 !";
+        return i;
       }
 
       /* ---------  Voxel loop ------------ */
@@ -205,8 +205,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
            n_planes;
   }
 
-#ifdef HAVE_Boost
-#endif
+  void graph_frame_event(std::ostream& out, int event_index) {}
 
  private:
   Response fscanf_response(std::istream& in) {

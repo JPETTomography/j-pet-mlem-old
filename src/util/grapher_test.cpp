@@ -7,6 +7,7 @@
 #include "2d/barrel/square_detector.h"
 #include "2d/barrel/barrel_builder.h"
 #include "2d/geometry/line_segment.h"
+#include "2d/geometry/pixel_grid.h"
 
 TEST("grapher/detector") {
   using Detector = PET2D::Barrel::SquareDetector<float>;
@@ -95,4 +96,31 @@ TEST("grapher/BigBarel/circle") {
     auto center = d.center();
     graphics.addCircle(center, 0.015);
   }
+}
+
+TEST("grapher/BigBarel/pixel") {
+
+  PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
+  using Detector = PET2D::Barrel::BigBarrelType::Detector;
+  using F = PET2D::Barrel::BigBarrelType::F;
+  using S = PET2D::Barrel::BigBarrelType::S;
+  using Point = PET2D::Point<F>;
+
+  std::ofstream out("test_output/graph_pixels.m");
+  if (!out) {
+    FAIL("cannot open file");
+  }
+
+  Graphics<F> graphics(out);
+
+  graphics.add(scanner);
+  const int n_columns = 20;
+  const int n_rows = 20;
+  PET2D::PixelGrid<F, S> grid(n_columns, n_rows, 0.01, Point(-0.1, -0.1));
+
+  for (int ix = 0; ix <n_columns;++ix )
+     for (int iy = 0; iy <n_rows;++iy ) {
+       graphics.addPixel(grid, ix, iy);
+     }
+
 }

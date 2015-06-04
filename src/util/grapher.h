@@ -4,6 +4,7 @@
 #include "2d/geometry/polygon.h"
 #include "2d/barrel/detector_set.h"
 #include "2d/geometry/line_segment.h"
+#include "2d/geometry/pixel_grid.h"
 
 template <typename FType> class Graphics {
  public:
@@ -73,6 +74,22 @@ template <typename FType> class Graphics {
   }
 
   void addCircle(F radius) { addCircle(PET2D::Point<F>(0, 0), radius); }
+
+  template <typename S>
+  void addPixel(const PET2D::PixelGrid<F, S>& grid, S ix, S iy) {
+    auto ll = grid.lower_left_at(ix, iy);
+    add();
+    out_ << "{FaceForm[],EdgeForm[Black],Polygon[{\n";
+    out_ << pair(ll.x, ll.y) << ",";
+    out_ << pair(ll.x + grid.pixel_size, ll.y) << ",";
+    out_ << pair(ll.x + grid.pixel_size, ll.y + grid.pixel_size) << ",";
+    out_ << pair(ll.x, ll.y + grid.pixel_size) << "}]}\n";
+  }
+
+  template <typename S>
+  void addPixel(const PET2D::PixelGrid<F, S>& grid, PET2D::Pixel<S> pix) {
+    addPixel(grid, pix.x, pix.y);
+  }
 
  private:
   std::string pair(F first, F second) {
