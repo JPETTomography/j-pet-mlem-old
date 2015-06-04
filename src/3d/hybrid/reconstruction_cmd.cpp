@@ -66,13 +66,15 @@ int main(int argc, char* argv[]) {
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstructor.fscanf_responses(response_stream);
 
-    std::ofstream gout("event.m");
-    Graphics<float> graphics(gout);
-    graphics.add(scanner.barrel);
-    reconstructor.graph_frame_event(graphics, 10);
+    {
+      std::ofstream gout("event.m");
+      Graphics<float> graphics(gout);
+      graphics.add(scanner.barrel);
+      reconstructor.graph_frame_event(graphics, 10);
+    }
 
-    for (int i = 0; i < 25; i++) {
-      std::cout << reconstructor.iterate() << "\n";
+    for (int i = 0; i < 10; i++) {
+      std::cout << i << " " << reconstructor.iterate() << "\n";
     }
 
     std::cout << reconstructor.event_count() << " "
