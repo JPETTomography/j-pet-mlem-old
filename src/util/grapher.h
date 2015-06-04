@@ -20,7 +20,7 @@ template <typename FType> class Graphics {
     out_ << "{Polygon[{";
     std::string sep("");
     for (PET2D::Point<F> p : polygon) {
-      out_ << sep << "{" << p.x << "," << p.y << "}\n";
+      out_ << sep << pair(p.x, p.y) << "\n";
       sep = ",";
     }
     out_ << "}]}\n";
@@ -46,12 +46,12 @@ template <typename FType> class Graphics {
     std::string sep = "";
     auto detector1 = scanner[lor.first];
     for (const PET2D::Point<F>& p : detector1) {
-      out_ << sep << "{" << p.x << "," << p.y << "}\n";
+      out_ << sep << pair(p.x, p.y) << "\n";
       sep = ",";
     }
     auto detector2 = scanner[lor.second];
     for (const PET2D::Point<F>& p : detector2) {
-      out_ << sep << "{" << p.x << "," << p.y << "}\n";
+      out_ << sep << pair(p.x, p.y) << "\n";
       sep = ",";
     }
     out_ << "}],2]}\n";
@@ -60,33 +60,34 @@ template <typename FType> class Graphics {
   void add(const PET2D::LineSegment<F>& segment) {
     add();
     out_ << "{Line[{";
-    out_ << "{" << segment.start.x << "," << segment.start.y << "},";
-    out_ << "{" << segment.end.x << "," << segment.end.y << "}";
+    out_ << pair(segment.start.x, segment.start.y) << ",";
+    out_ << pair(segment.end.x, segment.end.y);
     out_ << "}]}";
   }
 
   void addCircle(const PET2D::Point<F>& center, F radius) {
     add();
     out_ << "{Circle[";
-    out_ << "{" << number(center.x) << "," << number(center.y) << "},";
+    out_ << pair(center.x, center.y) << ",";
     out_ << radius << "]}\n";
   }
 
   void addCircle(F radius) { addCircle(PET2D::Point<F>(0, 0), radius); }
 
  private:
-
   std::string pair(F first, F second) {
-    return "";
+    std::string result = "{";
+    result += number(first) + "," + number(second) + "}";
+    return result;
   }
 
   std::string number(F number) {
     char number_char[64];
-    sprintf(number_char,"%.12g", number);
+    sprintf(number_char, "%.12g", number);
     std::string number_str(number_char);
     auto i = number_str.find("e");
     if (i != std::string::npos) {
-      number_str.erase(i,1);
+      number_str.erase(i, 1);
       number_str.insert(i, "*10^(");
       number_str.push_back(')');
     }

@@ -39,7 +39,6 @@ TEST("grapher/BigBarel") {
   graphics.add(scanner);
 }
 
-
 TEST("grapher/BigBarel/lor") {
 
   PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
@@ -53,9 +52,8 @@ TEST("grapher/BigBarel/lor") {
   Graphics<F> graphics(out);
 
   graphics.add(scanner);
-  graphics.add(scanner, PET2D::Barrel::LOR<int>(65,0));
+  graphics.add(scanner, PET2D::Barrel::LOR<int>(65, 0));
 }
-
 
 TEST("grapher/BigBarel/segment") {
 
@@ -72,18 +70,16 @@ TEST("grapher/BigBarel/segment") {
 
   graphics.add(scanner);
 
-  PET2D::LineSegment<F> segment(Point(-0.400,0), Point(0,0.400));
+  PET2D::LineSegment<F> segment(Point(-0.400, 0), Point(0, 0.400));
 
   graphics.add(segment);
 }
-
 
 TEST("grapher/BigBarel/circle") {
 
   PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
   using Detector = PET2D::Barrel::BigBarrelType::Detector;
   using F = PET2D::Barrel::BigBarrelType::F;
-  using Point = PET2D::Point<F>;
 
   std::ofstream out("test_output/graph_circle.m");
   if (!out) {
@@ -95,9 +91,8 @@ TEST("grapher/BigBarel/circle") {
   graphics.add(scanner);
   graphics.addCircle(0.400);
 
-  for(Detector& d: scanner) {
+  for (Detector& d : scanner) {
     auto center = d.center();
-    graphics.addCircle(center,0.015);
+    graphics.addCircle(center, 0.015);
   }
-
 }
