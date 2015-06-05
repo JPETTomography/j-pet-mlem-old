@@ -22,6 +22,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   using Pixel = typename LorPixelInfo::Pixel;
   using Point2D = PET2D::Point<F>;
   using Point = PET3D::Point<F>;
+  using Vector2D = PET2D::Vector<F>;
 
   struct FrameEvent {
     LOR lor;
@@ -40,13 +41,12 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
 
   Reconstructor(const Scanner& scanner,
                 const LorPixelInfo& lor_pixel_info,
-                F fov_length,
-                F z_left)
+                F z_left,
+                int n_planes)
       : scanner_(scanner),
         lor_pixel_info_(lor_pixel_info),
-        fov_length(fov_length),
         z_left(z_left),
-        n_planes((int)std::ceil(fov_length / lor_pixel_info_.grid.pixel_size)),
+        n_planes(n_planes),
         kernel_(scanner.sigma_z(), scanner.sigma_dl()),
         rho_new_(lor_pixel_info_.grid.n_columns * lor_pixel_info_.grid.n_rows *
                      n_planes,
@@ -140,40 +140,40 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
       auto R = segment.length / 2;
       auto width = lor_pixel_info_[lor].width;
 
+      //      std::cout << "event " << event.up << " " << event.right << " "
+      //                << event.tan << "\n";
+
       /* ---------  Voxel loop  - denominator ----------- */
-      F denominator = 0;
+      double denominator = 0;
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         pixel_count_++;
         auto pix = it->pixel;
         auto ix = pix.x;
         auto iy = pix.y;
+
         auto center = grid.center_at(ix, iy);
         auto distance = segment.distance_from(center);
         auto up = segment.projection_relative_middle(center);
 
         for (int plane = event.first_plane; plane < event.last_plane; ++plane) {
+          // std::cout << ix << " " << iy << " " << plane << " ";
           voxel_count_++;
           auto z = (plane + 0.5) * grid.pixel_size + z_left;
           int index =
               ix + iy * grid.n_columns + plane * grid.n_columns * grid.n_rows;
-          auto weight =
-              kernel_(event.up,
-                      event.tan,
-                      event.sec,
-                      R,
-                      Point2D(up, z) - Point2D(event.up, event.right));
-          // std::cout << weight << " " << rho_[index] << "\n";
+          auto diff = Point2D(up, z) - Point2D(event.up, event.right);
+          // std::cout << diff.x << " " << diff.y << " ";
+          auto weight = kernel_(
+              event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
+          // std::cout << weight << "\n";
           denominator += weight * rho_[index];
-          // std::cout<<denominator<<"\n";
         }
       }  // Voxel loop - denominator
 
       F inv_denominator;
       if (denominator > 0) {
         inv_denominator = 1 / denominator;
-        //std::cout<<" inv "<<inv_denominator<<"\n";
-      }
-      else {
+      } else {
         std::cerr << "denminator == 0 !";
         return i;
       }
@@ -191,20 +191,14 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
           auto z = (plane + 0.5) * grid.pixel_size + z_left;
           int index =
               ix + iy * grid.n_columns + plane * grid.n_columns * grid.n_rows;
-          auto weight =
-              kernel_(event.up,
-                      event.tan,
-                      event.sec,
-                      R,
-                      Point2D(up, z) - Point2D(event.up, event.right));
-          //std::cout<< weight * rho_[index] * inv_denominator<<"\n";
+          auto diff = Point2D(up, z) - Point2D(event.up, event.right);
+          auto weight = kernel_(
+              event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
           rho_new_[index] += weight * rho_[index] * inv_denominator;
         }
       }  // Voxel loop
     }
-
     std::swap(rho_, rho_new_);
-
     return i;
   }
 
@@ -249,7 +243,6 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
 
   const Scanner& scanner_;
   const LorPixelInfo& lor_pixel_info_;
-  const F fov_length;
   const F z_left;
   const S n_planes;
   std::vector<FrameEvent> events_;

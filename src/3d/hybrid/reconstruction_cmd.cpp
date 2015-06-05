@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
     lor_info.read(lor_info_istream);
 
     Reconstructor<Scanner, PET2D::Strip::GaussianKernel<FType>> reconstructor(
-        scanner, lor_info, 0.300, -0.150f);
+        scanner, lor_info,-0.200, 80);
 
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstructor.fscanf_responses(response_stream);
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
       std::ofstream gout("event.m");
       Graphics<float> graphics(gout);
       graphics.add(scanner.barrel);
-      reconstructor.graph_frame_event(graphics, 10);
+      reconstructor.graph_frame_event(graphics, 0);
     }
 
     auto n_blocks = cl.get<int>("blocks");

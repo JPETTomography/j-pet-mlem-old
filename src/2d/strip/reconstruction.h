@@ -128,7 +128,7 @@ class Reconstruction {
         auto event = events[e];
         F tan, y, z;
         event.transform(scanner.radius, tan, y, z);
-
+        //std::cout << "event " << y << " " << z << " " << tan << "\n";
         bb_update(Point(z, y), y, tan, thread_rhos[thread]);
 #else
         F y = events[e].z_u;
@@ -246,25 +246,27 @@ class Reconstruction {
 
     for (int iy = top_left.y; iy < bottom_right.y; ++iy) {
       for (int iz = top_left.x; iz < bottom_right.x; ++iz) {
+        //std::cout << iy << " " << iz << " ";
         stats_.n_pixels_processed_by();
         Pixel pixel(iz, iy);
         Point point = scanner.pixel_center(pixel);
 
         if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
           Vector r = point - ellipse_center;
-
+          //std::cout << r.x << " " << r.y << " ";
           int i = pixel.y * scanner.n_z_pixels + pixel.x;
 
-          // F pixel_sensitivity = use_sensitivity ? sensitivity[i] : 1;
-          F pixel_sensitivity = 1;
+          F pixel_sensitivity = use_sensitivity ? sensitivity[i] : 1;
           stats_.n_kernel_calls_by();
           F event_kernel = kernel(y, tan, sec, scanner.radius, r);
+          //std::cout << event_kernel;
           F event_kernel_mul_rho = event_kernel * rho[i];
           denominator += event_kernel_mul_rho * pixel_sensitivity;
           ellipse_pixels[n_ellipse_pixels] = pixel;
           ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
           ++n_ellipse_pixels;
         }
+        //std::cout << "\n";
       }
     }
 
