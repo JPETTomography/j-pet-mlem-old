@@ -53,7 +53,7 @@ class Reconstruction {
   Reconstruction(const Scanner& scanner)
       : scanner(scanner),
         n_threads(omp_get_max_threads()),
-        rho(scanner.total_n_pixels, 100),
+        rho(scanner.total_n_pixels, 1),
         thread_rhos(n_threads),
         sensitivity(scanner.total_n_pixels),
         kernel(scanner.sigma_z, scanner.sigma_dl),
@@ -138,10 +138,11 @@ class Reconstruction {
       }
 
       rho.assign(scanner.total_n_pixels, 0);
-
+      double total = 0;
       for (int thread = 0; thread < n_threads; ++thread) {
         for (int i = 0; i < scanner.total_n_pixels; ++i) {
           rho[i] += thread_rhos[thread][i];
+          total += thread_rhos[thread][i];
         }
       }
 
@@ -156,7 +157,6 @@ class Reconstruction {
 
       F z_u, z_d, dl;
       in >> z_u >> z_d >> dl;
-      // std::cout << i << " "<< z_u << " " << z_d << " " << dl << "\n";
       Event<F> temp_event(z_u, z_d, dl);
       events.push_back(temp_event);
       i++;
@@ -255,7 +255,8 @@ class Reconstruction {
 
           int i = pixel.y * scanner.n_z_pixels + pixel.x;
 
-          F pixel_sensitivity = use_sensitivity ? sensitivity[i] : 1;
+          // F pixel_sensitivity = use_sensitivity ? sensitivity[i] : 1;
+          F pixel_sensitivity = 1;
           stats_.n_kernel_calls_by();
           F event_kernel = kernel(y, tan, sec, scanner.radius, r);
           F event_kernel_mul_rho = event_kernel * rho[i];
@@ -273,6 +274,7 @@ class Reconstruction {
       auto pixel = ellipse_pixels[p];
       auto pixel_kernel = ellipse_kernel_mul_rho[p];
       int i = pixel.y * scanner.n_z_pixels + pixel.x;
+
       output_rho[i] += pixel_kernel * inv_denominator;
     }
   }
@@ -318,7 +320,7 @@ class Reconstruction {
         Pixel pixel(iz, iy);
         int i = pixel.y * scanner.n_z_pixels + pixel.x;
         int ik = (pixel.y - tl.y) * z_line * 2 + pixel.x - tl.x;
-        output_rho[i] += ellipse_kernel_mul_rho[ik] * rho[i] * inv_denominator;
+        output_rho[i] += ellipse_kernel_mul_rho[ik] * inv_denominator;
       }
     }
   }

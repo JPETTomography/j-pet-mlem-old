@@ -33,6 +33,9 @@ int main(int argc, char* argv[]) {
   cl.add<std::string>("response", '\0', "detector responses", true);
 
   PET2D::Barrel::add_matrix_options(cl);
+  cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
+  cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
+
   try {
     cl.try_parse(argc, argv);
 
@@ -73,10 +76,20 @@ int main(int argc, char* argv[]) {
       reconstructor.graph_frame_event(graphics, 10);
     }
 
-    for (int i = 0; i < 10; i++) {
-      std::cout << i << " " << reconstructor.iterate() << "\n";
-    }
+    auto n_blocks = cl.get<int>("blocks");
+    auto n_iter = cl.get<int>("iterations");
 
+    for (int block = 0; block < n_blocks; ++block) {
+      for (int i = 0; i < n_iter; i++) {
+        std::cout << block*n_iter+i << " " << reconstructor.iterate() << "\n";
+      }
+      char rho_file_name[64];
+      sprintf(rho_file_name,"%s_%03d.bin", output_base_name.c_str(), (
+                  block+1)*n_iter);
+      std::ofstream out(rho_file_name);
+      out.write((char*)&(*reconstructor.rho_begin()),
+                reconstructor.n_voxels() * sizeof(FType));
+    }
     std::cout << reconstructor.event_count() << " "
               << reconstructor.voxel_count() << " "
               << reconstructor.pixel_count() << "\n";
