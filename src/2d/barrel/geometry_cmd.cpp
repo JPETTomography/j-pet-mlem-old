@@ -24,7 +24,6 @@
 #include "2d/barrel/lor_info.h"
 #include "2d/barrel/boost_geometry_utils.h"
 
-
 using FType = float;
 using SType = int;
 using RNGType = std::mt19937;
@@ -41,8 +40,6 @@ using BoostGeometryUtils = PET2D::Barrel::BoostGeometryUtils<FType, SType>;
 
 using Polygon = typename BoostGeometryUtils::Polygon;
 using point_2d = BoostGeometryUtils::point_2d;
-
-
 
 int main(int argc, char* argv[]) {
   cmdline::parser cl;
@@ -94,7 +91,7 @@ int main(int argc, char* argv[]) {
 
   for (int i = 0; i < scanner.size(); i++) {
     auto detector = scanner[i];
-    Polygon detector_poly=BoostGeometryUtils::makeDetector(detector);
+    Polygon detector_poly = BoostGeometryUtils::makeDetector(detector);
 
     detectors.push_back(detector_poly);
     detectors_centers.push_back(detector.center());
@@ -108,7 +105,8 @@ int main(int argc, char* argv[]) {
     mapper.add(*p);
   }
 
-  auto fov_circle = BoostGeometryUtils::makeCircle(Point(0, 0), cl.get<double>("fov-radius"), 128);
+  auto fov_circle = BoostGeometryUtils::makeCircle(
+      Point(0, 0), cl.get<double>("fov-radius"), 128);
   mapper.add(fov_circle);
 
   for (auto p = detectors.begin(); p != detectors.end(); ++p) {
@@ -165,8 +163,10 @@ int main(int argc, char* argv[]) {
                               2 * sizeof(FType));
         lor_info_stream.write((const char*)&detectors_centers[d2],
                               2 * sizeof(FType));
-        //std::cout<<detectors_centers[d1].x<<" "<<detectors_centers[d1].y<<" ";
-        //std::cout<<detectors_centers[d2].x<<" "<<detectors_centers[d2].y<<"\n";
+        // std::cout<<detectors_centers[d1].x<<" "<<detectors_centers[d1].y<<"
+        // ";
+        // std::cout<<detectors_centers[d2].x<<"
+        // "<<detectors_centers[d2].y<<"\n";
         lor_info_stream.write((const char*)&width, sizeof(FType));
 
         for (int ix = 0; ix < grid.n_columns; ++ix)

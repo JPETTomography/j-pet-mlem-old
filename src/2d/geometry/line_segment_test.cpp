@@ -18,11 +18,11 @@ TEST("PET2D/geometry/line_segment") {
   auto t = segment.projection_scaled(p);
   REQUIRE(t == Approx(1 / 3.0).epsilon(1.0e-7));
 
-
   auto s = segment.projection(p);
-  REQUIRE(s==Approx(std::sqrt(5.0)).epsilon(1.0e-7));
+  REQUIRE(s == Approx(std::sqrt(5.0)).epsilon(1.0e-7));
 
   auto r = segment.projection_relative_middle(p);
-  REQUIRE(r==Approx(std::sqrt(5.0)-0.5*std::sqrt(3*3+6*6)).epsilon(1.0e-7));
-
+  REQUIRE(
+      r ==
+      Approx(std::sqrt(5.0) - 0.5 * std::sqrt(3 * 3 + 6 * 6)).epsilon(1.0e-7));
 }

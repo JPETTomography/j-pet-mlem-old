@@ -55,8 +55,8 @@ template <typename FType, typename SType> class LorPixelnfo {
     in.read((char*)lor_desc, 2 * sizeof(S));
     F coords[4];
     in.read((char*)coords, 4 * sizeof(F));
-//    std::cout << coords[0] << " " << coords[1] << " " << coords[2] << " "
-//              << coords[3] << "\n";
+    //    std::cout << coords[0] << " " << coords[1] << " " << coords[2] << " "
+    //              << coords[3] << "\n";
 
     F width;
     in.read((char*)&width, sizeof(F));
@@ -65,9 +65,8 @@ template <typename FType, typename SType> class LorPixelnfo {
     if (in) {
       LOR lor(lor_desc[0], lor_desc[1]);
       lor_info_[lor.index()].width = width;
-      lor_info_[lor.index()].segment =
-          new LineSegment<F>(Point(coords[2], coords[3]),
-                         Point(coords[0], coords[1]));
+      lor_info_[lor.index()].segment = new LineSegment<F>(
+          Point(coords[2], coords[3]), Point(coords[0], coords[1]));
       lor_info_[lor.index()].pixels.resize(n_pixels);
 
       in.read((char*)&lor_info_[lor.index()].pixels[0],

@@ -118,9 +118,8 @@ TEST("grapher/BigBarel/pixel") {
   const int n_rows = 20;
   PET2D::PixelGrid<F, S> grid(n_columns, n_rows, 0.01, Point(-0.1, -0.1));
 
-  for (int ix = 0; ix <n_columns;++ix )
-     for (int iy = 0; iy <n_rows;++iy ) {
-       graphics.addPixel(grid, ix, iy);
-     }
-
+  for (int ix = 0; ix < n_columns; ++ix)
+    for (int iy = 0; iy < n_rows; ++iy) {
+      graphics.addPixel(grid, ix, iy);
+    }
 }

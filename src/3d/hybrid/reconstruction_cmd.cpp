@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
     lor_info.read(lor_info_istream);
 
     Reconstructor<Scanner, PET2D::Strip::GaussianKernel<FType>> reconstructor(
-        scanner, lor_info,-0.200, 80);
+        scanner, lor_info, -0.200, 80);
 
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstructor.fscanf_responses(response_stream);
@@ -81,11 +81,14 @@ int main(int argc, char* argv[]) {
 
     for (int block = 0; block < n_blocks; ++block) {
       for (int i = 0; i < n_iter; i++) {
-        std::cout << block*n_iter+i << " " << reconstructor.iterate() << "\n";
+        std::cout << block* n_iter + i << " " << reconstructor.iterate()
+                  << "\n";
       }
       char rho_file_name[64];
-      sprintf(rho_file_name,"%s_%03d.bin", output_base_name.c_str(), (
-                  block+1)*n_iter);
+      sprintf(rho_file_name,
+              "%s_%03d.bin",
+              output_base_name.c_str(),
+              (block + 1) * n_iter);
       std::ofstream out(rho_file_name);
       out.write((char*)&(*reconstructor.rho_begin()),
                 reconstructor.n_voxels() * sizeof(FType));

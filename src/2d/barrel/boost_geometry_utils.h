@@ -80,9 +80,7 @@ template <typename FType, typename SType> class BoostGeometryUtils {
   static Polygon makeLor(const Detector& d1, const Detector& d2) {
     return makeLor(makeDetector(d1), makeDetector(d2));
   }
-
 };
 }
 }
 #endif
-
