@@ -32,6 +32,8 @@ template <typename FType, typename SType> class PixelGrid {
   const Point lower_left_center;
   const int n_pixels;
 
+  int index(S column, S row) const { return column + n_columns * row; }
+
   Point lower_left_at(S column, S row) const {
     Vector displacement(column * pixel_size, row * pixel_size);
     return lower_left + displacement;

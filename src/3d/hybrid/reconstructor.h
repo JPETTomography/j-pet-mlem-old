@@ -7,6 +7,7 @@
 #include "2d/barrel/lor_info.h"
 #include "2d/strip/event.h"
 #include "3d/geometry/point.h"
+#include "3d/geometry/voxel_grid.h"
 
 #include "util/grapher.h"
 
@@ -47,12 +48,13 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
         lor_pixel_info_(lor_pixel_info),
         z_left(z_left),
         n_planes(n_planes),
+        v_grid(lor_pixel_info_.grid, z_left, n_planes),
         n_voxels(lor_pixel_info_.grid.n_columns * lor_pixel_info_.grid.n_rows *
                  n_planes),
         kernel_(scanner.sigma_z(), scanner.sigma_dl()),
         rho_new_(n_voxels, F(0.0)),
-        rho_(n_voxels,
-             F(1.0)), kernel_cache_(n_voxels,F(0.0)) {}
+        rho_(n_voxels, F(1.0)),
+        kernel_cache_(n_voxels, F(0.0)) {}
 
   Point translate_to_point(const Response& response) {
 
@@ -111,12 +113,15 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     return S(std::floor((z - z_left) / lor_pixel_info_.grid.pixel_size));
   }
 
-  Response fscanf_responses(std::istream& in) {
+  int fscanf_responses(std::istream& in) {
+    int count = 0;
     auto response = fscanf_response(in);
     while (in) {
+      count++;
       events_.push_back(translate_to_frame(response));
       response = fscanf_response(in);
     }
+    return count;
   }
 
   int n_events() const { return events_.size(); }
@@ -156,13 +161,16 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
 
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
           voxel_count_++;
-          auto z = (iz + 0.5) * grid.pixel_size + z_left;
-          int index =
-              ix + iy * grid.n_columns + iz * grid.n_columns * grid.n_rows;
+          auto z = v_grid.center_z_at(ix, iy, iz);
+          int index = v_grid.index(ix, iy, iz);
+
           auto diff = Point2D(up, z) - Point2D(event.up, event.right);
-          auto weight = kernel_(
-              event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
-          denominator += weight * rho_[index];
+          auto weight =
+              kernel_(
+                  event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x)) *
+              rho_[index];
+          kernel_cache_[index] = weight;
+          denominator += weight;
         }
       }  // Voxel loop - denominator
 
@@ -179,18 +187,9 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
         auto pix = it->pixel;
         auto ix = pix.x;
         auto iy = pix.y;
-        auto center = grid.center_at(ix, iy);
-        auto distance = segment.distance_from(center);
-        auto up = segment.projection_relative_middle(center);
-
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
-          auto z = (iz + 0.5) * grid.pixel_size + z_left;
-          int index =
-              ix + iy * grid.n_columns + iz * grid.n_columns * grid.n_rows;
-          auto diff = Point2D(up, z) - Point2D(event.up, event.right);
-          auto weight = kernel_(
-              event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
-          rho_new_[index] += weight * rho_[index] * inv_denominator;
+          int index = v_grid.index(ix, iy, iz);
+          rho_new_[index] += kernel_cache_[index] * inv_denominator;
         }
       }  // Voxel loop
     }
@@ -207,8 +206,6 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   int voxel_count() const { return voxel_count_; }
   int pixel_count() const { return pixel_count_; }
   int event_count() const { return event_count_; }
-
-
 
   void graph_frame_event(Graphics<F>& graphics, int event_index) {
     auto event = events_[event_index];
@@ -233,13 +230,16 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     response.lor = LOR(d1, d2);
     return response;
   }
-public:
+
+ public:
   const Scanner& scanner_;
   const LorPixelInfo& lor_pixel_info_;
   const F z_left;
   const S n_planes;
+  const PET3D::VoxelGrid<F, S> v_grid;
   const int n_voxels;
-private:
+
+ private:
   std::vector<FrameEvent> events_;
   Kernel2D kernel_;
   std::vector<F> rho_new_;

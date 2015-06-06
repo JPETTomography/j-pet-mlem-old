@@ -23,10 +23,18 @@ template <typename FType, typename SType> class VoxelGrid {
 
   Point center_at(S column, S row, S plane) const {
     auto p2d = pixel_grid.center_at(column, row);
-    F z = (plane + F(0.5)) * pixel_grid.pixel_size + z_left;
+    F z = center_z_at(column, row, plane);
     return Point(p2d.x, p2d.y, z);
   };
 
+  F center_z_at(S column, S row, S plane) const {
+    return  (plane + F(0.5)) * pixel_grid.pixel_size + z_left;
+  }
+
+
+  int index (S column, S row, S plane) const {
+    return pixel_grid.index(column, row)+plane*pixel_grid.n_pixels;
+  }
   const PixelGrid pixel_grid;
   const F z_left;
   const S n_planes;
