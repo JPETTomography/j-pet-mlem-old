@@ -138,11 +138,11 @@ class Reconstruction {
       }
 
       rho.assign(scanner.total_n_pixels, 0);
-      double total = 0;
+
       for (int thread = 0; thread < n_threads; ++thread) {
         for (int i = 0; i < scanner.total_n_pixels; ++i) {
           rho[i] += thread_rhos[thread][i];
-          total += thread_rhos[thread][i];
+
         }
       }
 

@@ -11,6 +11,13 @@
 
 #include "util/grapher.h"
 
+#if _OPENMP
+#include <omp.h>
+#else
+#define omp_get_max_threads() 1
+#define omp_get_thread_num() 0
+#endif
+
 template <typename Scanner, typename Kernel2D> class Reconstructor {
  public:
   using F = typename Scanner::F;
@@ -40,6 +47,11 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     F gauss_norm;
   };
 
+  struct VoxelKernelInfo {
+    S ix, iy, iz;
+    F weight;
+  };
+
   Reconstructor(const Scanner& scanner,
                 const LorPixelInfo& lor_pixel_info,
                 F z_left,
@@ -54,7 +66,10 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
         kernel_(scanner.sigma_z(), scanner.sigma_dl()),
         rho_new_(n_voxels, F(0.0)),
         rho_(n_voxels, F(1.0)),
-        kernel_cache_(n_voxels, F(0.0)) {}
+        kernel_cache_(n_voxels, F(0.0)),
+        n_threads_(omp_get_max_threads()),
+        thread_rhos_(n_threads_),
+        thread_kernel_caches_(n_threads_) {}
 
   Point translate_to_point(const Response& response) {
 
@@ -138,10 +153,21 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     pixel_count_ = 0;
     auto grid = lor_pixel_info_.grid;
     std::fill(rho_new_.begin(), rho_new_.end(), 0);
+    for (auto& thread_rho : thread_rhos_) {
+      thread_rho.assign(v_grid.n_voxels, 0);
+    }
+    for (auto& thread_kernel_cache : thread_kernel_caches_) {
+      thread_kernel_cache.assign(v_grid.n_voxels, 0);
+    }
+
     int i;
 
     /* ------- Event loop ------*/
+#if _OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
     for (i = 0; i < n_events(); ++i) {
+      int thread = omp_get_thread_num();
       event_count_++;
       auto event = frame_event(i);
       auto lor = event.lor;
@@ -173,10 +199,11 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
           auto kernel2d = kernel_(
               event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
           auto s = sigma(width);
-          auto kernel_z = event.gauss_norm * exp(-distance * distance / (2 * s * s));
+          auto kernel_z =
+              event.gauss_norm * exp(-distance * distance / (2 * s * s));
           auto weight = kernel2d * kernel_z * rho_[index];
 
-          kernel_cache_[index] = weight;
+          thread_kernel_caches_[thread][index] = weight;
           denominator += weight;
         }
       }  // Voxel loop - denominator
@@ -186,7 +213,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
         inv_denominator = 1 / denominator;
       } else {
         std::cerr << "denminator == 0 !";
-        return i;
+        abort();
       }
 
       /* ---------  Voxel loop ------------ */
@@ -196,11 +223,18 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
         auto iy = pix.y;
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
           int index = v_grid.index(ix, iy, iz);
-          rho_new_[index] += kernel_cache_[index] * inv_denominator;
+          thread_rhos_[thread][index] += thread_kernel_caches_[thread][index] * inv_denominator;
         }
       }  // Voxel loop
-    }
-    std::swap(rho_, rho_new_);
+    }//event loop
+     rho_.assign(v_grid.n_voxels, 0);
+     for (int thread = 0; thread < n_threads_; ++thread) {
+       for (int i = 0; i < v_grid.n_voxels; ++i) {
+         rho_[i] += thread_rhos_[thread][i];
+
+       }
+     }
+    //std::swap(rho_, rho_new_);
     return i;
   }
 
@@ -251,6 +285,10 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   int voxel_count_;
   int pixel_count_;
   std::vector<F> kernel_cache_;
+  int n_threads_;
+  std::vector<std::vector<F>> thread_rhos_;
+  std::vector<std::vector<F>> thread_kernel_caches_;
+  std::vector<VoxelKernelInfo> voxel_cache_;
 };
 
 #endif  // RECONSTRUCTOR
