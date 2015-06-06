@@ -41,14 +41,6 @@ using LOR = Scanner2D::LOR;
 using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR>;
 using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR>;
 
-// Scanner build_scanner_from_cl(const cmdline::parser& cl) {
-//  Scanner2D barrel =
-//      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
-//          PET3D_LONGITUDINAL_SCANNER_CL(cl, Scanner2D::F));
-//  barrel.set_fov_radius(cl.get<double>("fov-radius"));
-//  return Scanner(barrel, F(cl.get<double>("length")));
-//}
-
 template <typename Scanner, typename Model>
 void print_parameters(cmdline::parser& cl, const Scanner& scanner);
 

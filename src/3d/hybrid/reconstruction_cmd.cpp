@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
               (block + 1) * n_iter);
       std::ofstream out(rho_file_name);
       out.write((char*)&(*reconstructor.rho_begin()),
-                reconstructor.n_voxels() * sizeof(FType));
+                reconstructor.n_voxels * sizeof(FType));
     }
     std::cout << reconstructor.event_count() << " "
               << reconstructor.voxel_count() << " "
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
 
     std::ofstream out("rho.bin");
     out.write((char*)&(*reconstructor.rho_begin()),
-              reconstructor.n_voxels() * sizeof(FType));
+              reconstructor.n_voxels * sizeof(FType));
 
   } catch (cmdline::exception& ex) {
     if (ex.help()) {

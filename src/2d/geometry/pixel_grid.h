@@ -22,14 +22,15 @@ template <typename FType, typename SType> class PixelGrid {
         n_rows(n_rows),
         pixel_size(pixel_size),
         lower_left(lower_left),
-        lower_left_center(lower_left + Vector(pixel_size / 2, pixel_size / 2)) {
-  }
+        lower_left_center(lower_left + Vector(pixel_size / 2, pixel_size / 2)),
+        n_pixels(n_columns * n_rows) {}
 
   const S n_columns;  // n_x
   const S n_rows;     // n_y
   const F pixel_size;
   const Point lower_left;
   const Point lower_left_center;
+  const int n_pixels;
 
   Point lower_left_at(S column, S row) const {
     Vector displacement(column * pixel_size, row * pixel_size);
