@@ -37,7 +37,6 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     typename LorPixelInfo::PixelInfoContainer::const_iterator last_pixel;
     S first_plane;
     S last_plane;
-    Response response;
   };
 
   Reconstructor(const Scanner& scanner,
@@ -68,7 +67,6 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
 
   FrameEvent translate_to_frame(const Response& response) {
     FrameEvent event;
-    event.response = response;
     event.lor = response.lor;
 
     auto R = lor_pixel_info_[event.lor].segment->length / 2;
@@ -169,6 +167,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
               kernel_(
                   event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x)) *
               rho_[index];
+
           kernel_cache_[index] = weight;
           denominator += weight;
         }
@@ -216,9 +215,6 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
       graphics.addPixel(lor_pixel_info_.grid, pix->pixel);
     }
 
-    auto p = translate_to_point(event.response);
-
-    graphics.add(Point2D(p.x, p.y));
   }
 
  private:
