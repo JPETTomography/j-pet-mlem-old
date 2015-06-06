@@ -37,6 +37,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     typename LorPixelInfo::PixelInfoContainer::const_iterator last_pixel;
     S first_plane;
     S last_plane;
+    F gauss_norm;
   };
 
   Reconstructor(const Scanner& scanner,
@@ -65,12 +66,18 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
         Point(segment->end.x, segment->end.y, response.z_up));
   }
 
+  F sigma(F width) const { return 0.3 * width; }
+
   FrameEvent translate_to_frame(const Response& response) {
+
     FrameEvent event;
     event.lor = response.lor;
 
     auto R = lor_pixel_info_[event.lor].segment->length / 2;
     StripEvent strip_event(response.z_up, response.z_dn, response.dl);
+
+    event.gauss_norm =
+        1 / (sigma(lor_pixel_info_[event.lor].width) * std::sqrt(2 * M_PI));
 
     strip_event.transform(R, event.tan, event.up, event.right);
     F A, B, C;
@@ -163,10 +170,11 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
           int index = v_grid.index(ix, iy, iz);
 
           auto diff = Point2D(up, z) - Point2D(event.up, event.right);
-          auto weight =
-              kernel_(
-                  event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x)) *
-              rho_[index];
+          auto kernel2d = kernel_(
+              event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
+          auto s = sigma(width);
+          auto kernel_z = event.gauss_norm * exp(-distance * distance / (2 * s * s));
+          auto weight = kernel2d * kernel_z * rho_[index];
 
           kernel_cache_[index] = weight;
           denominator += weight;
@@ -214,7 +222,6 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     for (auto pix = event.first_pixel; pix != event.last_pixel; ++pix) {
       graphics.addPixel(lor_pixel_info_.grid, pix->pixel);
     }
-
   }
 
  private:
