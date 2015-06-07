@@ -42,7 +42,11 @@ int main(int argc, char* argv[]) {
   PET2D::Barrel::add_matrix_options(cl);
   cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
   cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
-
+  //  cl.add<int>("n-threads",
+  //              'T',
+  //              "number of OpenMP threads to use",
+  //              false,
+  //              omp_get_max_threads());
   try {
     cl.try_parse(argc, argv);
 
@@ -53,6 +57,16 @@ int main(int argc, char* argv[]) {
     auto output = cl.get<cmdline::path>("output");
     auto output_base_name = output.wo_ext();
     auto ext = output.ext();
+
+    int n_threads ;
+    if (!cl.exist("n-threads"))
+      n_threads=omp_get_max_threads();
+   else
+      n_threads=cl.get<int>("n-threads");
+
+#if _OPENMP
+      omp_set_num_threads(n_threads);
+#endif
 
     auto lor_info_file_name = cl.get<std::string>("lor-info");
     int n_detectors;
@@ -71,7 +85,7 @@ int main(int argc, char* argv[]) {
     lor_info.read(lor_info_istream);
 
     Reconstructor<Scanner, PET2D::Strip::GaussianKernel<FType>> reconstructor(
-        scanner, lor_info, -0.200, 80);
+        scanner, lor_info, -0.200, 80, n_threads);
 
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstructor.fscanf_responses(response_stream);

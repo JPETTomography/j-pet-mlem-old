@@ -55,7 +55,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   Reconstructor(const Scanner& scanner,
                 const LorPixelInfo& lor_pixel_info,
                 F z_left,
-                int n_planes)
+                int n_planes, int n_threads)
       : scanner_(scanner),
         lor_pixel_info_(lor_pixel_info),
         z_left(z_left),
@@ -67,7 +67,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
         rho_new_(n_voxels, F(0.0)),
         rho_(n_voxels, F(1.0)),
         kernel_cache_(n_voxels, F(0.0)),
-        n_threads_(omp_get_max_threads()),
+        n_threads_(n_threads),
         thread_rhos_(n_threads_),
         thread_kernel_caches_(n_threads_) {}
 
