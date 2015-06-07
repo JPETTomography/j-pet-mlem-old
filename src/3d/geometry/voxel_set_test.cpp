@@ -37,6 +37,7 @@ TEST("VoxelSet") {
       graphics.addPixel(p_grid, voxel.ix, voxel.iy);
     }
   }
+
   SECTION("BuildYSlice") {
     PET3D::VoxelSetBuilder<F, S>::BuildYSlice(voxel_set, 79, 0.200);
     std::ofstream out("test_output/yslice_voxels.m");

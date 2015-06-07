@@ -12,7 +12,7 @@ using SmallBarrelType =
 
 using BigBarrelType = PET2D::Barrel::DetectorSet<SquareDetectorType, 192, int>;
 
-SmallBarrelType buildSmallBarrel() {
+inline SmallBarrelType buildSmallBarrel() {
   float width = 0.005;
   float height = 0.019;
   float r = 0.180 - height / 2;
@@ -25,7 +25,7 @@ SmallBarrelType buildSmallBarrel() {
   return barrel;
 }
 
-BigBarrelType buildBigBarrel() {
+inline BigBarrelType buildBigBarrel() {
   float width = 0.007;
   float height = 0.019;
   float r1 = 0.430 - height / 2;

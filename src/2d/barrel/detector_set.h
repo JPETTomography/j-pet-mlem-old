@@ -37,6 +37,7 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
   using Base = util::array<MaxDet, Detector>;
   using CircleDetector = Barrel::CircleDetector<F>;
   using Indices = util::array<MaxDet, S>;
+  using Event = Barrel::Event<F>;
 
   static const size_t MaxDetectors = MaxDet;
   struct Response {
