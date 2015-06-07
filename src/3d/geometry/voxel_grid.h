@@ -18,7 +18,9 @@ template <typename FType, typename SType> class VoxelGrid {
         n_voxels(pixel_grid.n_pixels * n_planes){};
 
   Point lower_left_at(S column, S row, S plane) const {
-
+    auto p2d = pixel_grid.lower_left_at(column, row);
+    F z = plane * pixel_grid.pixel_size + z_left;
+    return Point(p2d.x, p2d.y, z);
   };
 
   Point center_at(S column, S row, S plane) const {
@@ -27,13 +29,15 @@ template <typename FType, typename SType> class VoxelGrid {
     return Point(p2d.x, p2d.y, z);
   };
 
-  F center_z_at(S column, S row, S plane) const {
-    return  (plane + F(0.5)) * pixel_grid.pixel_size + z_left;
+  F center_z_at(S /*column*/, S /*row*/, S plane) const {
+    return (plane + F(0.5)) * pixel_grid.pixel_size + z_left;
   }
 
-
-  int index (S column, S row, S plane) const {
-    return pixel_grid.index(column, row)+plane*pixel_grid.n_pixels;
+  int index(S column, S row, S plane) const {
+    return pixel_grid.index(column, row) + plane * pixel_grid.n_pixels;
+    /* Experiments with better "cache aware" indexing
+     * no real speed up */
+    //return pixel_grid.index(column, row)*n_planes + plane;
   }
   const PixelGrid pixel_grid;
   const F z_left;
