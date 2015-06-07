@@ -4,6 +4,8 @@
 #include "3d/geometry/voxel.h"
 #include "3d/geometry/voxel_grid.h"
 
+namespace PET3D {
+
 template <typename FType, typename SType> class VoxelSet {
   using F = FType;
   using S = SType;
@@ -34,5 +36,5 @@ template <typename FType, typename SType> class VoxelSet {
   std::vector<Voxel> voxels_;
   std::vector<F> values_;
 };
-
+}
 #endif  // VOXEL_SET
