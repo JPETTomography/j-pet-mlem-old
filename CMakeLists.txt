@@ -232,6 +232,7 @@ pet_target(3d hybrid matrix ${CL_2D_OPTIONS})
 pet_target(3d hybrid 2strip_phantom ${CL_2D_OPTIONS})
 pet_target(3d hybrid phantom ${CL_2D_OPTIONS})
 pet_target(3d hybrid reconstruction ${CL_2D_OPTIONS})
+pet_target(3d hybrid sensitivity  ${CL_2D_OPTIONS})
 
 if(Boost_FOUND)
     pet_target(2d barrel geometry)

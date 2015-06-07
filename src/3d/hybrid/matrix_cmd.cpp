@@ -103,6 +103,7 @@ int main(int argc, char* argv[]) {
     } else if (model_name == "scintillator") {
 
       PET2D::Barrel::ScintillatorAccept<float> model(length_scale);
+      std::cout<<"length = "<<length_scale<<"\n";
 
       auto sparse_matrix = run(cl, scanner, model);
 
