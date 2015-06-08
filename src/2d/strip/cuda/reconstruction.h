@@ -79,7 +79,7 @@ void output(Scanner<float, short>& scanner,
     for (int y = 0; y < scanner.n_y_pixels; ++y) {
       for (auto x = 0; x < scanner.n_z_pixels; ++x) {
         auto value = output[y * scanner.n_z_pixels + x];
-        if (value != 0) {
+        if (value >= 0.000000000001f) {
           txt << x << ' ' << y << ' ' << value << std::endl;
         }
       }
