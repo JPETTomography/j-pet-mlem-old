@@ -84,7 +84,8 @@ int main(int argc, char* argv[]) {
     if (!in_matrix.is_open())
       throw("cannot open input file: " + cl.get<cmdline::path>("system"));
     Reconstruction<>::Matrix matrix(in_matrix);
-    matrix = matrix.to_full();
+
+    //matrix = matrix.to_full();
 
     std::ifstream in_means(cl.get<cmdline::path>("mean"));
     if (!in_means.is_open())

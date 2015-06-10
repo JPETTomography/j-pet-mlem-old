@@ -11,9 +11,7 @@
 #include "util/svg_ostream.h"
 #include <vector>  // multi-ring detector construction
 #endif
-#ifndef MAX_DETECTORS
-#define MAX_DETECTORS 256
-#endif
+
 
 /// Two-dimensional PET
 namespace PET2D {

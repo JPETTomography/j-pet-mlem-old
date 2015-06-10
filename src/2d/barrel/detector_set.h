@@ -14,7 +14,7 @@
 #include <vector>  // multi-ring detector construction
 #endif
 #ifndef MAX_DETECTORS
-#define MAX_DETECTORS 256
+#define MAX_DETECTORS 260
 #endif
 
 /// Two-dimensional PET

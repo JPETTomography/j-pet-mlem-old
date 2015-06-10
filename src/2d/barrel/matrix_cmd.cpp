@@ -61,8 +61,10 @@
 using namespace PET2D;
 using namespace PET2D::Barrel;
 
+using SType=short;
+
 template <typename DetectorType>
-using DetectorModel = GenericScanner<DetectorType, MAX_DETECTORS, short>;
+using DetectorModel = GenericScanner<DetectorType, MAX_DETECTORS, SType>;
 // using DetectorModel = Scanner<DetectorType>;
 
 // all available detector shapes
@@ -75,14 +77,14 @@ template <typename Scanner, typename Model>
 void print_parameters(cmdline::parser& cl, const Scanner& scanner);
 
 template <typename Detector, typename Model>
-static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
+static SparseMatrix<Pixel<SType>, LOR<SType>> run(cmdline::parser& cl,
                                                   Detector& scanner,
                                                   Model& model);
 
 template <typename Scanner>
 void post_process(cmdline::parser& cl,
                   Scanner& scanner,
-                  SparseMatrix<Pixel<short>, LOR<short>>& sparse_matrix);
+                  SparseMatrix<Pixel<SType>, LOR<SType>>& sparse_matrix);
 
 int main(int argc, char* argv[]) {
 
@@ -203,7 +205,7 @@ void print_parameters(cmdline::parser& cl, const Scanner& scanner) {
 }
 
 template <typename Detector, typename Model>
-static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
+static SparseMatrix<Pixel<SType>, LOR<SType>> run(cmdline::parser& cl,
                                                   Detector& scanner,
                                                   Model& model) {
 
@@ -227,7 +229,7 @@ static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
     n_tof_positions = scanner.n_tof_positions(tof_step, max_bias);
   }
 
-  using ComputeMatrix = MatrixPixelMajor<Pixel<short>, LOR<short>>;
+  using ComputeMatrix = MatrixPixelMajor<Pixel<SType>, LOR<SType>>;
   ComputeMatrix::SparseMatrix sparse_matrix(
       n_pixels, scanner.size(), n_tof_positions);
 
@@ -305,7 +307,7 @@ static SparseMatrix<Pixel<short>, LOR<short>> run(cmdline::parser& cl,
 template <typename Scanner>
 void post_process(cmdline::parser& cl,
                   Scanner& scanner,
-                  SparseMatrix<Pixel<short>, LOR<short>>& sparse_matrix) {
+                  SparseMatrix<Pixel<SType>, LOR<SType>>& sparse_matrix) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& s_pixel = cl.get<double>("s-pixel");
@@ -352,7 +354,7 @@ void post_process(cmdline::parser& cl,
 
   // visual debugging output
   if (cl.exist("png")) {
-    LOR<short> lor(0, 0);
+    LOR<SType> lor(0, 0);
     lor.first = cl.get<int>("from");
     if (cl.exist("to")) {
       lor.second = cl.get<int>("to");

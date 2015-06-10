@@ -50,6 +50,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
         pixel_lor_count(n_pixels_),
         index_to_lor(n_lors),
         index_to_pixel(n_pixels_) {
+    //std::cerr << "in  matxri constructor n_lors = " << n_lors << "\n";
     // store index to LOR mapping
     for (auto lor = this->begin_lor(); lor != this->end_lor(); ++lor) {
       index_to_lor[lor.index()] = lor;
