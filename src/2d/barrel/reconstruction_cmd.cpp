@@ -42,8 +42,8 @@
 #include <omp.h>
 #endif
 
-using namespace PET2D;
-using namespace PET2D::Barrel;
+//using namespace PET2D;
+//using namespace PET2D::Barrel;
 
 template <typename Iterator>
 void output_vector(std::ostream& out,
@@ -60,6 +60,8 @@ void output_vector(std::ostream& out,
   }
 }
 
+using Reconstruction=PET2D::Barrel::Reconstruction<float, short>;
+
 int main(int argc, char* argv[]) {
 
 #ifdef __SSE3__
@@ -69,7 +71,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    add_reconstruction_options(cl);
+    PET2D::Barrel::add_reconstruction_options(cl);
     cl.parse_check(argc, argv);
 
 #if _OPENMP
@@ -83,7 +85,7 @@ int main(int argc, char* argv[]) {
     util::ibstream in_matrix(cl.get<cmdline::path>("system"));
     if (!in_matrix.is_open())
       throw("cannot open input file: " + cl.get<cmdline::path>("system"));
-    Reconstruction<>::Matrix matrix(in_matrix);
+    Reconstruction::Matrix matrix(in_matrix);
 
     //matrix = matrix.to_full();
 
@@ -92,7 +94,7 @@ int main(int argc, char* argv[]) {
       throw("cannot open input file: " + cl.get<cmdline::path>("mean"));
 
     int n_i_blocks = cl.get<int>("blocks");
-    Reconstruction<> reconstruction(cl.get<int>("iterations"),
+    Reconstruction reconstruction(cl.get<int>("iterations"),
                                     matrix,
                                     in_means,
                                     cl.get<double>("threshold"));
@@ -110,8 +112,8 @@ int main(int argc, char* argv[]) {
 
     auto n_pixels_in_row = reconstruction.n_pixels_in_row();
     auto total_n_pixels = n_pixels_in_row * n_pixels_in_row;
-    Reconstruction<>::Output rho(total_n_pixels, 0.0);
-    Reconstruction<>::Output rho_detected(total_n_pixels, 0.0);
+    Reconstruction::Output rho(total_n_pixels, 0.0);
+    Reconstruction::Output rho_detected(total_n_pixels, 0.0);
 
     // no output, just make reconstruction in place and exit!
     if (!cl.exist("output")) {
@@ -162,7 +164,7 @@ int main(int argc, char* argv[]) {
     util::png_writer png(output.wo_ext() + ".png");
     png.write_header<>(n_pixels_in_row, n_pixels_in_row);
 
-    double output_max = 0.0;
+    float output_max = 0.0;
     for (auto it = rho.begin(); it != rho.end(); ++it) {
       output_max = std::max(output_max, *it);
     }

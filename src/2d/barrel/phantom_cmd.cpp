@@ -75,6 +75,8 @@ int main(int argc, char* argv[]) {
   try {
     cmdline::parser cl;
     add_phantom_options(cl);
+    cl.add("small", 0, "small barrel", false);
+    cl.add("big", 0, "big barrel", false);
     cl.try_parse(argc, argv);
 
 #if _OPENMP
@@ -196,12 +198,21 @@ void run(cmdline::parser& cl, Model& model) {
         continue;
 
       std::istringstream is(line);
+
       std::string type;
       is >> type;
       if (type == "point") {
         point_phantom.emplace_back(is);
       } else if (type == "ellipse") {
-        phantom.emplace_back(is);
+        float x, y, a, b, angle, intensity;
+        // is >> x >> y >> a >> b >> angle>>intensity;
+        x = util::read<float>(is);
+        y = util::read<float>(is);
+        a = util::read<float>(is);
+        b = util::read<float>(is);
+        angle = util::read<float>(is);
+        intensity = util::read<float>(is);
+        phantom.emplace_back(x, y, a, b, angle, intensity);
       } else {
         std::ostringstream msg;
         msg << fn << ":" << n_line << " unhandled type of shape: " << type;
@@ -222,6 +233,7 @@ void run(cmdline::parser& cl, Model& model) {
 
   if (phantom.n_regions() > 0) {
     while (n_emitted < n_emissions) {
+
       progress(n_emitted);
 
       Point<float> p(point_dis(gen), point_dis(gen));
@@ -230,8 +242,8 @@ void run(cmdline::parser& cl, Model& model) {
         continue;
 
       if (phantom.test_emit(p, one_dis(gen))) {
+
         auto pixel = p.pixel<PixelType>(s_pixel, n_pixels / 2);
-        // ensure we are inside pixel matrix
         if (pixel.x >= n_pixels || pixel.y >= n_pixels || pixel.x <= m_pixel ||
             pixel.y <= m_pixel)
           continue;

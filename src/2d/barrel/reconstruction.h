@@ -14,7 +14,7 @@ namespace PET2D {
 namespace Barrel {
 
 /// 2D barrel PET reconstruction
-template <typename FType = double, typename SType = int> class Reconstruction {
+template <typename FType, typename SType> class Reconstruction {
  public:
   using F = FType;
   using S = SType;
@@ -84,7 +84,7 @@ template <typename FType = double, typename SType = int> class Reconstruction {
   }
 
   void emt(S n_iterations) {
-    F* y = (F*)alloca(n_pixels_in_row_ * n_pixels_in_row_);
+    F* y = (F*)alloca(n_pixels_in_row_ * n_pixels_in_row_ * sizeof(F));
 
     for (S i = 0; i < n_iterations; ++i) {
       std::cout << ".", std::cout.flush();

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "point.h"
 #include "util/random.h"
 #include "util/cuda/compat.h"
@@ -49,7 +51,10 @@ template <typename FType> struct Ellipse {
         A(c * c / (a * a) + s * s / (b * b)),
         B(s * s / (a * a) + c * c / (b * b)),
         C(s * c * (1 / (a * a) - 1 / (b * b))),
-        area(M_PI * a * b) {}
+        area(M_PI * a * b) {
+    std::cerr << x << " " << y << " " << a << " " << b << " " << A << " " << B
+              << "\n";
+  }
 };
 
 /// Elliptical emmission source
