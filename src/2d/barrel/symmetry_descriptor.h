@@ -1,6 +1,8 @@
 #pragma once
 
 #include "2d/geometry/pixel.h"
+#include "2d/geometry/pixel_grid.h"
+
 namespace PET2D {
 namespace Barrel {
 
@@ -16,15 +18,37 @@ template <typename SType> class SymmetryDescriptor {
   static const S EIGHT = 8;
 
   /// Symmetric detector
-  ///
-  /// Returns symmetric detector on a ring of n_detectors, assuming that
-  /// detector zero is on the positive X-axis (rotation=0).
   S symmetric_detector(S detector, S symmetry) const {
     return detectors_[detector * EIGHT + symmetry];
   }
 
-  Pixel<S> pixel(Pixel<S> pixel, S symmetry);
+  // converts the pixels from the trainulra cut
+  // to full pixel_grid pixels
+  template <typename FType>
+  static Pixel<S> full_grid_pixel(const PET2D::PixelGrid<FType, S> grid,
+                                  const Pixel<S>& pixel) {
+    return Pixel<S>(pixel.x + grid.n_columns / 2, pixel.y + grid.n_rows / 2);
+  }
 
+  template <typename FType>
+  static Pixel<S> symmetric_pixel(const PET2D::PixelGrid<FType, S> grid,
+                                  const Pixel<S>& pixel,
+                                  S symmetry) {
+    Pixel<S> s_pixel(pixel);
+    if (symmetry & Axis::X) {
+      s_pixel.y = grid.n_row - s_pixel.y - 1;
+    }
+    if (symmetry & Axis::Y) {
+      s_pixel.y = grid.n_columns - s_pixel.x - 1;
+    }
+    if (symmetry & Axis::XY) {
+      std::swap(s_pixel.x, s_pixel.y);
+    }
+    return s_pixel;
+  }
+
+  /// Returns symmetric detector on a ring of n_detectors, assuming that
+  /// detector zero is on the positive X-axis (rotation=0).
   static S ring_symmetric_detector(S n_detectors, S detector, S symmetry) {
     if (symmetry & Axis::X) {
       detector = (n_detectors - detector) % n_detectors;  // x-axis

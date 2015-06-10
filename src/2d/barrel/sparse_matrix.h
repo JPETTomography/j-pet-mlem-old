@@ -16,7 +16,7 @@ namespace Barrel {
 template <typename LORType,
           typename PositionType,
           typename PixelType,
-          typename HitType = int>
+          typename HitType>
 struct SparseElement {
   SparseElement(LORType&& lor,
                 PositionType&& position,
@@ -506,6 +506,8 @@ class SparseMatrix
   };
 
  public:
+
+  //FIXME: !!!!This will not work for multi ring detectors!!!!!
   S symmetric_detector(S detector, S symmetry) const {
     if (symmetry & 1) {
       detector = (n_detectors_ - detector) % n_detectors_;  // x-axis

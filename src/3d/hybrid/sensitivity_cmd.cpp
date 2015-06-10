@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
   }
 #endif
 
-  Scanner2D barrel = PET2D::Barrel::buildSmallBarrel();
+  Scanner2D barrel = PET2D::Barrel::buildBigBarrel();
   Scanner scanner(barrel, 0.500);
   auto n_pixels = cl.get<int>("n-pixels");
   auto pixel_size = cl.get<float>("pixel-size");
