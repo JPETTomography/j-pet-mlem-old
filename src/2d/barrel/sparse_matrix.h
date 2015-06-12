@@ -419,7 +419,8 @@ class SparseMatrix
           hits *= 2;
         }
 #endif
-        auto lor = symmetric_lor(e.lor, symmetry);
+        auto lor = LOR(symmetry_descriptor->symmetric_detector(e.lor.first, symmetry),
+                       symmetry_descriptor->symmetric_detector(e.lor.second, symmetry));
         auto position = e.position;
         // if LOR is swapped, then position should be too
         if (lor.first < lor.second) {
@@ -510,28 +511,6 @@ class SparseMatrix
   };
 
  public:
-  // FIXME: !!!!This will not work for multi ring detectors!!!!!
-  S symmetric_detector(S detector, S symmetry) const {
-    if (symmetry & 1) {
-      detector = (n_detectors_ - detector) % n_detectors_;  // x-axis
-    }
-    if (symmetry & 2) {
-      detector = (n_1_detectors_2_ - detector) % n_detectors_;  // y-axis
-    }
-    if (symmetry & 4) {
-      detector = (n_1_detectors_4_ - detector) % n_detectors_;  // xy-axis
-    }
-    return detector;
-  }
-
-  /// Computes LOR based on given symmetry (1 out 8)
-  LOR symmetric_lor(LOR lor,    ///< base lor for symmetry
-                    S symmetry  ///< symmetry number (0..7)
-                    ) const {
-    lor.first = symmetric_detector(lor.first, symmetry);
-    lor.second = symmetric_detector(lor.second, symmetry);
-    return lor;
-  }
 
   Pixel symmetric_pixel(Pixel p, S symmetry) const {
     if (symmetry & 2) {
