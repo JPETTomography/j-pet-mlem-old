@@ -10,6 +10,8 @@
 #include "2d/geometry/pixel.h"
 #include "lor.h"
 
+#define DEBUG 0
+
 namespace PET2D {
 namespace Barrel {
 
@@ -58,6 +60,7 @@ template <typename FType, typename SType> class Reconstruction {
       }
     }
 
+    // Read the mean (detector response file)
     for (;;) {
       Mean mean;
       in_means >> mean.lor.first >> mean.lor.second;
@@ -110,10 +113,7 @@ template <typename FType, typename SType> class Reconstruction {
         }
 
         // skip LORs that does not exist in system matrix
-        while (means_it != means_.end() &&
-               (matrix_it->lor > means_it->lor ||
-                (matrix_it->lor == means_it->lor &&
-                 matrix_it->position > means_it->position))) {
+        while (means_it != means_.end() && (matrix_it->lor > means_it->lor)) {
 #if 1  // this warning should not appear if system matrix is complete
           std::cerr << "warning: mean LOR (" << means_it->lor.first << ", "
                     << means_it->lor.second << ") position "
