@@ -38,8 +38,8 @@ using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 
 using Pixel = PET2D::Pixel<Scanner2D::S>;
 using LOR = Scanner2D::LOR;
-using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR>;
-using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR>;
+using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, LOR::S, int>;
+using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, LOR::S, int>;
 
 template <typename Scanner, typename Model>
 void print_parameters(cmdline::parser& cl, const Scanner& scanner);
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
     } else if (model_name == "scintillator") {
 
       PET2D::Barrel::ScintillatorAccept<float> model(length_scale);
-      std::cout<<"length = "<<length_scale<<"\n";
+      std::cout << "length = " << length_scale << "\n";
 
       auto sparse_matrix = run(cl, scanner, model);
 
@@ -244,7 +244,8 @@ void post_process(cmdline::parser& cl,
     bool full = cl.exist("full");
     util::obstream out(fn, std::ios::binary | std::ios::trunc);
     if (full) {
-      auto full_matrix = sparse_matrix.to_full();
+      auto full_matrix =
+          sparse_matrix.to_full(scanner.barrel.symmetry_descriptor());
       out << full_matrix;
     } else {
       out << sparse_matrix;
@@ -297,7 +298,8 @@ void post_process(cmdline::parser& cl,
     util::png_writer png(fn);
     auto position = cl.get<int>("pos");
     if (cl.exist("full")) {
-      sparse_matrix.to_full().output_bitmap(png, lor, position);
+      sparse_matrix.to_full(scanner.barrel.symmetry_descriptor())
+          .output_bitmap(png, lor, position);
     } else {
       sparse_matrix.output_bitmap(png, lor, position);
     }

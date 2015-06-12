@@ -30,7 +30,8 @@ int main(int argc, char* argv[]) {
   cl.add<float>("pixel-size", 'p', "voxel size", false, 0.005);
   cl.add<float>("fov-radius", '\0', "field of view radius", false, 0.400);
   cl.add<int>("n-emissions", 'e', "number of emission", false, 0);
-  cl.add<cmdline::path>("output", 'o', "output files template", false, "out.bin");
+  cl.add<cmdline::path>(
+      "output", 'o', "output files template", false, "out.bin");
   cl.add<int>("n-threads", 'T', "number of threads", false);
 
   cl.try_parse(argc, argv);
@@ -76,13 +77,13 @@ int main(int argc, char* argv[]) {
     auto fn_wo_path = fn_wo_ext.wo_path();
 
     std::ofstream out(fn);
-    for(size_t i=0;i<voxel_set.size();++i) {
+    for (size_t i = 0; i < voxel_set.size(); ++i) {
       auto voxel = voxel_set.voxel(i);
       out.write((const char*)&voxel, sizeof(PET3D::Voxel<F>));
       out.write((const char*)&voxel_set.value(i), sizeof(F));
     }
 
-    std::ofstream j_out(fn_wo_ext+".json");
+    std::ofstream j_out(fn_wo_ext + ".json");
     scanner.barrel.to_json(j_out);
   }
 

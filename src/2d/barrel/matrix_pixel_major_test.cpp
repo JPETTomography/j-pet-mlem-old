@@ -10,7 +10,7 @@
 
 using Pixel = PET2D::Pixel<float>;
 using LOR = PET2D::Barrel::LOR<short>;
-using Matrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR>;
+using Matrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, LOR::S, int>;
 
 TEST("2d/barrel/lor/ctor") {
 

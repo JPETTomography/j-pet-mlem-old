@@ -12,7 +12,6 @@
 #include <vector>  // multi-ring detector construction
 #endif
 
-
 /// Two-dimensional PET
 namespace PET2D {
 /// Two-dimensional PET barrel

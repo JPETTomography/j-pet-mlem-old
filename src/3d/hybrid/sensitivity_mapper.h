@@ -40,9 +40,8 @@ template <typename Scanner> class SensitivityMapper {
       F ry = ll.y + one_dis(gen) * pixel_size;
       F rz = ll.z + one_dis(gen) * pixel_size;
 
-
       auto dir = direction(gen);
-      //std::cout<<dir.x<<" "<<dir.y<<" "<<dir.z<<"\n";
+      // std::cout<<dir.x<<" "<<dir.y<<" "<<dir.z<<"\n";
       Event event(PET3D::Point<F>(rx, ry, rz), dir);
 
       typename Scanner::Response response;

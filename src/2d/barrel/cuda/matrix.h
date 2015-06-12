@@ -27,7 +27,7 @@ using SquareDetector = Barrel::SquareDetector<float>;
 using Scanner = Barrel::GenericScanner<SquareDetector, MAX_DETECTORS, short>;
 using Model = ScintillatorAccept<float>;
 #if !__CUDACC__
-using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR>;
+using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR, typename LOR::S, int>;
 #endif
 
 /// \endcond

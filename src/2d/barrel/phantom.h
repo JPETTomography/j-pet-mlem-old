@@ -1,5 +1,5 @@
 #pragma once
-#include<iostream>
+#include <iostream>
 
 #include <cmath>
 #include <vector>
@@ -27,9 +27,7 @@ class Phantom : public std::vector<EllipticalSource<FType>> {
     return 0;
   }
 
-  bool test_emit(Point p, F rnd) const {
-    return intensity(p) > rnd;
-  }
+  bool test_emit(Point p, F rnd) const { return intensity(p) > rnd; }
 };
 
 /// Virtual phantom made of point sources

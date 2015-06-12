@@ -20,7 +20,7 @@ TEST("SensitivityMapper") {
   PET3D::VoxelSet<F, S> voxel_set(v_grid);
 
   REQUIRE(voxel_set.size() == 0);
-  voxel_set.push_back(Voxel(41,41,41));
+  voxel_set.push_back(Voxel(41, 41, 41));
 
   auto barrel = PET2D::Barrel::buildBigBarrel();
   Scanner scanner(barrel, 0.500);

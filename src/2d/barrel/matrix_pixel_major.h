@@ -25,8 +25,8 @@ namespace Barrel {
 
 template <typename PixelType,
           typename LORType,
-          typename SType = int,
-          typename HitType = int>
+          typename SType,
+          typename HitType>
 class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   using Base = Matrix<PixelType, LORType, SType, HitType>;
 
@@ -45,12 +45,11 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
         n_pixels_(Pixel::end_for_n_pixels_in_row(n_pixels_in_row).index()),
         n_lors(LOR::end_for_detectors(n_detectors).index()),
         size_(0),
-        pixel_lor_hits_ptr(new S* [n_pixels_]()),
+        pixel_lor_hits_ptr(new Hit* [n_pixels_]()),
         pixel_lor_hits(n_pixels_),
         pixel_lor_count(n_pixels_),
         index_to_lor(n_lors),
         index_to_pixel(n_pixels_) {
-    //std::cerr << "in  matxri constructor n_lors = " << n_lors << "\n";
     // store index to LOR mapping
     for (auto lor = this->begin_lor(); lor != this->end_lor(); ++lor) {
       index_to_lor[lor.index()] = lor;
@@ -62,7 +61,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     }
   }
 
-  void hit_lor(const LOR& lor, S position, S i_pixel, S hits = 1) {
+  void hit_lor(const LOR& lor, S position, S i_pixel, Hit hits = 1) {
     if (position >= this->n_tof_positions()) {
       std::ostringstream msg;
       msg << "hit position " << position << " greater than max TOF positions "
@@ -76,7 +75,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       throw(msg.str());
     }
     if (!pixel_lor_hits_ptr[i_pixel]) {
-      pixel_lor_hits_ptr[i_pixel] = new S[n_lors * this->n_tof_positions()]();
+      pixel_lor_hits_ptr[i_pixel] = new Hit[n_lors * this->n_tof_positions()]();
       // unpack previous values (if any)
       for (auto& e : pixel_lor_hits[i_pixel]) {
         hit_lor(e.lor, e.position, e.pixel.index(), e.hits);
@@ -109,7 +108,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     // ensure we have enough space for the all LORs for that pixel
     pixel_lor_hits[i_pixel].resize(pixel_lor_count[i_pixel]);
 
-    for (S i_lor = 0, lor_count = 0; i_lor < n_lors; ++i_lor) {
+    for (int i_lor = 0, lor_count = 0; i_lor < n_lors; ++i_lor) {
       for (S position = 0; position < this->n_tof_positions(); ++position) {
         auto hits =
             pixel_lor_hits_ptr[i_pixel][i_lor * this->n_tof_positions() +
@@ -196,7 +195,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   }
 
   // for testing purposes
-  S lor_hits_at_pixel_index(LOR lor, S i_pixel) {
+  Hit lor_hits_at_pixel_index(LOR lor, S i_pixel) {
     auto it =
         std::lower_bound(pixel_lor_hits[i_pixel].begin(),
                          pixel_lor_hits[i_pixel].end(),
@@ -209,8 +208,10 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   }
 
   S size() const { return size_; }
-  S n_lors_at_pixel_index(S i_pixel) const { return pixel_lor_count[i_pixel]; }
-  S n_pixels() const { return n_pixels_; }
+  int n_lors_at_pixel_index(S i_pixel) const {
+    return pixel_lor_count[i_pixel];
+  }
+  int n_pixels() const { return n_pixels_; }
 
  private:
   // disable copy contructor
@@ -226,8 +227,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   };
 
   S n_pixels_in_row_half;
-  S n_pixels_;
-  S n_lors;
+  int n_pixels_;
+  int n_lors;
   S size_;
   Hit** pixel_lor_hits_ptr;
   std::vector<std::vector<SparseElement>> pixel_lor_hits;

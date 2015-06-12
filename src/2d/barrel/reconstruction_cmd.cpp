@@ -42,8 +42,8 @@
 #include <omp.h>
 #endif
 
-//using namespace PET2D;
-//using namespace PET2D::Barrel;
+// using namespace PET2D;
+// using namespace PET2D::Barrel;
 
 template <typename Iterator>
 void output_vector(std::ostream& out,
@@ -60,7 +60,7 @@ void output_vector(std::ostream& out,
   }
 }
 
-using Reconstruction=PET2D::Barrel::Reconstruction<float, short>;
+using Reconstruction = PET2D::Barrel::Reconstruction<float, short>;
 
 int main(int argc, char* argv[]) {
 
@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
       throw("cannot open input file: " + cl.get<cmdline::path>("system"));
     Reconstruction::Matrix matrix(in_matrix);
 
-    matrix = matrix.to_full();
+    // matrix = matrix.to_full();
 
     std::ifstream in_means(cl.get<cmdline::path>("mean"));
     if (!in_means.is_open())
@@ -95,9 +95,9 @@ int main(int argc, char* argv[]) {
 
     int n_i_blocks = cl.get<int>("blocks");
     Reconstruction reconstruction(cl.get<int>("iterations"),
-                                    matrix,
-                                    in_means,
-                                    cl.get<double>("threshold"));
+                                  matrix,
+                                  in_means,
+                                  cl.get<double>("threshold"));
 
     if (verbose) {
       std::cerr << "reconstruction:" << std::endl;

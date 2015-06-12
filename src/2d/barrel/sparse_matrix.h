@@ -79,8 +79,8 @@ constexpr uint32_t operator"" _4cc(const char* str, size_t) {
 /// \see \ref sparse_format
 template <typename PixelType,
           typename LORType,
-          typename SType = int,
-          typename HitType = int>
+          typename SType,
+          typename HitType>
 class SparseMatrix
     : public std::vector<SparseElement<LORType, SType, PixelType, HitType>> {
   using Base = std::vector<SparseElement<LORType, SType, PixelType, HitType>>;
@@ -323,7 +323,7 @@ class SparseMatrix
 
   template <class FileWriter>
   void output_bitmap(FileWriter& fw, LOR lor = LOR(), S position = -1) {
-    S* pixels = new S[n_pixels_in_row_ * n_pixels_in_row_]();
+    Hit* pixels = new Hit[n_pixels_in_row_ * n_pixels_in_row_]();
     if (lor.first != lor.second) {
       sort_by_lor();
       for (auto it = std::lower_bound(Base::begin(),
@@ -394,7 +394,8 @@ class SparseMatrix
         Base::begin(), Base::end(), SortByPixelNPositionNLORLeavingEmpty());
   }
 
-  SparseMatrix to_full() {
+  SparseMatrix to_full(
+      PET2D::Barrel::SymmetryDescriptor<S>* symmetry_descriptor) {
     if (!triangular_) {
       return *this;
     }

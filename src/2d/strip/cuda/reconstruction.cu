@@ -171,8 +171,8 @@ void run_reconstruction(Scanner<F, short>& scanner,
 
       // always output first 5 iterations, and at 10, 15, 20, 30, 50, 100
       if (!ib && it < n_iterations_in_block - 1 &&
-          (it < 5 || it == 9 || it == 14 || it == 19 || it == 29 ||
-           it == 49 || it == 99)) {
+          (it < 5 || it == 9 || it == 14 || it == 19 || it == 29 || it == 49 ||
+           it == 99)) {
         output_callback(scanner, it + 1, cpu_rho, context);
       }
     }

@@ -58,14 +58,14 @@ int main(int argc, char* argv[]) {
     auto output_base_name = output.wo_ext();
     auto ext = output.ext();
 
-    int n_threads ;
+    int n_threads;
     if (!cl.exist("n-threads"))
-      n_threads=omp_get_max_threads();
-   else
-      n_threads=cl.get<int>("n-threads");
+      n_threads = omp_get_max_threads();
+    else
+      n_threads = cl.get<int>("n-threads");
 
 #if _OPENMP
-      omp_set_num_threads(n_threads);
+    omp_set_num_threads(n_threads);
 #endif
 
     auto lor_info_file_name = cl.get<std::string>("lor-info");

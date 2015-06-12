@@ -30,7 +30,7 @@ template <typename FType, typename SType> class Reconstruction {
   } Mean;
   using Means = std::vector<Mean>;
   using Output = std::vector<F>;
-  using Matrix = SparseMatrix<Pixel, LOR>;
+  using Matrix = SparseMatrix<Pixel, LOR, S, int>;
 
   Reconstruction(S n_iterations,
                  Matrix& matrix,

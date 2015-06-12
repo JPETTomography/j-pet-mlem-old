@@ -37,7 +37,7 @@ template <typename FType, typename SType> class VoxelGrid {
     return pixel_grid.index(column, row) + plane * pixel_grid.n_pixels;
     /* Experiments with better "cache aware" indexing
      * no real speed up */
-    //return pixel_grid.index(column, row)*n_planes + plane;
+    // return pixel_grid.index(column, row)*n_planes + plane;
   }
   const PixelGrid pixel_grid;
   const F z_left;

@@ -61,7 +61,7 @@
 using namespace PET2D;
 using namespace PET2D::Barrel;
 
-using SType=short;
+using SType = short;
 
 template <typename DetectorType>
 using DetectorModel = GenericScanner<DetectorType, MAX_DETECTORS, SType>;
@@ -76,15 +76,20 @@ using HexagonalScanner = DetectorModel<PolygonalDetector<6, float>>;
 template <typename Scanner, typename Model>
 void print_parameters(cmdline::parser& cl, const Scanner& scanner);
 
+using SparseMatrixType =
+    PET2D::Barrel::SparseMatrix<Pixel<SType>, LOR<SType>, SType, int>;
+using ComputeMatrix =
+    PET2D::Barrel::MatrixPixelMajor<Pixel<SType>, LOR<SType>, SType, int>;
+
 template <typename Detector, typename Model>
-static SparseMatrix<Pixel<SType>, LOR<SType>> run(cmdline::parser& cl,
-                                                  Detector& scanner,
-                                                  Model& model);
+static SparseMatrixType run(cmdline::parser& cl,
+                            Detector& scanner,
+                            Model& model);
 
 template <typename Scanner>
 void post_process(cmdline::parser& cl,
                   Scanner& scanner,
-                  SparseMatrix<Pixel<SType>, LOR<SType>>& sparse_matrix);
+                  SparseMatrixType& sparse_matrix);
 
 int main(int argc, char* argv[]) {
 
@@ -205,9 +210,9 @@ void print_parameters(cmdline::parser& cl, const Scanner& scanner) {
 }
 
 template <typename Detector, typename Model>
-static SparseMatrix<Pixel<SType>, LOR<SType>> run(cmdline::parser& cl,
-                                                  Detector& scanner,
-                                                  Model& model) {
+static SparseMatrixType run(cmdline::parser& cl,
+                            Detector& scanner,
+                            Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
@@ -229,7 +234,6 @@ static SparseMatrix<Pixel<SType>, LOR<SType>> run(cmdline::parser& cl,
     n_tof_positions = scanner.n_tof_positions(tof_step, max_bias);
   }
 
-  using ComputeMatrix = MatrixPixelMajor<Pixel<SType>, LOR<SType>>;
   ComputeMatrix::SparseMatrix sparse_matrix(
       n_pixels, scanner.size(), n_tof_positions);
 
@@ -307,7 +311,7 @@ static SparseMatrix<Pixel<SType>, LOR<SType>> run(cmdline::parser& cl,
 template <typename Scanner>
 void post_process(cmdline::parser& cl,
                   Scanner& scanner,
-                  SparseMatrix<Pixel<SType>, LOR<SType>>& sparse_matrix) {
+                  SparseMatrixType& sparse_matrix) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& s_pixel = cl.get<double>("s-pixel");
@@ -321,7 +325,7 @@ void post_process(cmdline::parser& cl,
     bool full = cl.exist("full");
     util::obstream out(fn, std::ios::binary | std::ios::trunc);
     if (full) {
-      auto full_matrix = sparse_matrix.to_full();
+      auto full_matrix = sparse_matrix.to_full(scanner.symmetry_descriptor());
       out << full_matrix;
     } else {
       out << sparse_matrix;
@@ -371,7 +375,8 @@ void post_process(cmdline::parser& cl,
     util::png_writer png(fn);
     auto position = cl.get<int>("pos");
     if (cl.exist("full")) {
-      sparse_matrix.to_full().output_bitmap(png, lor, position);
+      sparse_matrix.to_full(scanner.symmetry_descriptor())
+          .output_bitmap(png, lor, position);
     } else {
       sparse_matrix.output_bitmap(png, lor, position);
     }

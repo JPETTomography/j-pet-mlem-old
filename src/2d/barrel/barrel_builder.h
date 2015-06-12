@@ -10,7 +10,8 @@ using SquareDetectorType = PET2D::Barrel::SquareDetector<float>;
 using SmallBarrelType =
     PET2D::Barrel::GenericScanner<SquareDetectorType, 192, int>;
 
-using BigBarrelType = PET2D::Barrel::GenericScanner<SquareDetectorType, 192, int>;
+using BigBarrelType =
+    PET2D::Barrel::GenericScanner<SquareDetectorType, 192, int>;
 
 inline SmallBarrelType buildSmallBarrel() {
   float width = 0.005;

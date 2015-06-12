@@ -198,8 +198,8 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
           auto kernel2d = kernel_(
               event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
           auto s = sigma(width);
-          auto kernel_z =
-              event.gauss_norm * std::exp(-distance * distance * event.inv_sigma2);
+          auto kernel_z = event.gauss_norm *
+                          std::exp(-distance * distance * event.inv_sigma2);
           auto weight = kernel2d * kernel_z * rho_[index];
 
           thread_kernel_caches_[thread][index] = weight;
