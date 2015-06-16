@@ -85,6 +85,8 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
+    if(cl.exist("big"))
+        set_big_barrel_options(cl);
     calculate_scanner_options(cl);
 
     const auto& shape = cl.get<std::string>("shape");

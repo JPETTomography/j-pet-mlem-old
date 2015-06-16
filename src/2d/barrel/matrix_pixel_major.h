@@ -158,8 +158,8 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
     sparse.sort_by_pixel_n_lor();
     this->add_emissions(sparse.n_emissions());
 
-    S lor_count = 0;
-    S i_current_pixel = n_pixels_;
+    int lor_count = 0;
+    int i_current_pixel = n_pixels_;
 
     for (auto& e : sparse) {
       Pixel pixel = e.pixel;
@@ -229,7 +229,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   S n_pixels_in_row_half;
   int n_pixels_;
   int n_lors;
-  S size_;
+  int size_;
   Hit** pixel_lor_hits_ptr;
   std::vector<std::vector<SparseElement>> pixel_lor_hits;
   std::vector<S> pixel_lor_count;
