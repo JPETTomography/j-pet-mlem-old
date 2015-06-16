@@ -112,7 +112,7 @@ class SparseMatrix
 
   SparseMatrix(S n_pixels_in_row,
                S n_detectors,
-               S n_emissions,
+               Hit n_emissions,
                S n_tof_positions = 1,
                bool triangular = true)
       : n_pixels_in_row_(n_pixels_in_row),
@@ -132,7 +132,7 @@ class SparseMatrix
   S n_pixels_in_row() const { return n_pixels_in_row_; }
   S n_pixels_in_row_half() const { return n_pixels_in_row_half_; }
   S n_detectors() const { return n_detectors_; }
-  S n_emissions() const { return n_emissions_; }
+  Hit n_emissions() const { return n_emissions_; }
   S n_tof_positions() const { return n_tof_positions_; }
   bool triangular() const { return triangular_; }
 
@@ -443,8 +443,8 @@ class SparseMatrix
   S n_2_detectors_;
   S n_1_detectors_2_;
   S n_1_detectors_4_;
-  S n_emissions_;
-  S n_lors_;
+  Hit n_emissions_;
+  int n_lors_;
   bool triangular_;
   S n_tof_positions_;
 

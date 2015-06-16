@@ -53,7 +53,7 @@ class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
 
   void add_emissions(Hit n_emissions) { n_emissions_ += n_emissions; }
 
-  S n_emissions() { return n_emissions_; }
+  Hit n_emissions() { return n_emissions_; }
 
   void compact_pixel_index(S i_pixel) { (void)i_pixel; }
 
