@@ -93,7 +93,7 @@ tval=diff/s_ab_masked.filled(1.0);
 student = stats.t(a_n+b_n-2)
 p = np.ma.masked_array(2*(1.0-student.cdf(abs(tval))) , mask = mask);
 
-print p.filled(0);
+#print p.filled(0);
 np.savetxt("tval.txt",tval)
 np.savetxt("ps.txt",p.filled(0));
 
