@@ -14,5 +14,4 @@ TEST("2d/barrel/sparse_matrix/symmetric_lor") {
                               int> matrix(128, 24, 0, 1);
 
   short detector = 1;
-
 }

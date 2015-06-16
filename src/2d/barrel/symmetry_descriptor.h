@@ -22,7 +22,6 @@ template <typename SType> class SymmetryDescriptor {
     return detectors_[detector * EIGHT + symmetry];
   }
 
-
   // converts the pixels from the trainulra cut
   // to full pixel_grid pixels
   template <typename FType>

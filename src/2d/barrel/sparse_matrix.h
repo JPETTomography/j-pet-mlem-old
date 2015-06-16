@@ -419,8 +419,9 @@ class SparseMatrix
           hits *= 2;
         }
 #endif
-        auto lor = LOR(symmetry_descriptor->symmetric_detector(e.lor.first, symmetry),
-                       symmetry_descriptor->symmetric_detector(e.lor.second, symmetry));
+        auto lor = LOR(
+            symmetry_descriptor->symmetric_detector(e.lor.first, symmetry),
+            symmetry_descriptor->symmetric_detector(e.lor.second, symmetry));
         auto position = e.position;
         // if LOR is swapped, then position should be too
         if (lor.first < lor.second) {
@@ -511,7 +512,6 @@ class SparseMatrix
   };
 
  public:
-
   Pixel symmetric_pixel(Pixel p, S symmetry) const {
     if (symmetry & 2) {
       p.x = -p.x - 1;
