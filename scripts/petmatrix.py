@@ -124,8 +124,8 @@ def FillOctantPixMap(matrix):
 
     for item in matrix.items():               
         (ix,iy)  = item[1]
-        count  = item[2] if ix!= iy else 2*item[2]
-        pixmap[iy,ix]+=count
+        count  = item[2] #if ix!= iy else 2*item[2]
+        pixmap[ix,iy]+=count
     return pixmap    
         
 def FillPixMap(matrix):

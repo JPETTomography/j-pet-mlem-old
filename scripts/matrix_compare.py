@@ -79,10 +79,12 @@ print b_n
 a_p = pet.FillOctantPixMap(a_matrix.body)/a_matrix.n_emissions();
 b_p = pet.FillOctantPixMap(b_matrix.body)/b_matrix.n_emissions();
 
+
+
 diff = (a_p-b_p)
 mask = (a_p+b_p)<=0
 
-s_ab =np.sqrt((a_n*a_p*(1.0-a_p)+b_n*b_p*(1.0-b_p))/(
+s_ab =np.sqrt(((a_n-1)*a_p*(1.0-a_p)+(b_n-1)*b_p*(1.0-b_p))/(
     (a_n + b_n -2)))*np.sqrt(1.0/a_n+1.0/b_n);
 s_ab_masked =  np.ma.masked_array(s_ab,mask=mask )
 n_df =  s_ab_masked.count()
@@ -91,6 +93,9 @@ tval=diff/s_ab_masked.filled(1.0);
 student = stats.t(a_n+b_n-2)
 p = np.ma.masked_array(2*(1.0-student.cdf(abs(tval))) , mask = mask);
 
+print p.filled(0);
+np.savetxt("tval.txt",tval)
+np.savetxt("ps.txt",p.filled(0));
 
 chi2 = -2*np.log(p.filled(1.0)).sum();
 chi2dist = stats.chi2(2*n_df)
