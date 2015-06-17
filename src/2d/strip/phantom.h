@@ -6,7 +6,8 @@
 #include <random>
 #include <algorithm>
 
-#include "event.h"
+
+#include "2d/geometry/event.h"
 #include "2d/geometry/ellipse.h"
 
 #if _OPENMP
@@ -42,6 +43,7 @@ template <typename ScannerType> class Phantom {
   using S = typename Scanner::S;
   using Pixel = PET2D::Pixel<S>;
   using rng = std::minstd_rand0;
+  using Response = typename Scanner::Response;
 
  private:
   ScannerType scanner;
@@ -50,7 +52,7 @@ template <typename ScannerType> class Phantom {
   std::vector<F> CDF;
   std::vector<EllipsePointGenerator<F>> point_generators;
 
-  std::vector<Event<F>> events;
+  std::vector<Response> events;
   std::vector<std::vector<F>> output;
   std::vector<std::vector<F>> output_without_errors;
 
@@ -105,15 +107,15 @@ template <typename ScannerType> class Phantom {
   }
 
   template <typename Generator>
-  ImageSpaceEventAngle<F> gen_event(Generator& generator) {
+  PET2D::Event<F> gen_event(Generator& generator) {
     Point<F> p = gen_point(generator);
     F rangle = F(M_PI_4) * uniform_angle(generator);
-    return ImageSpaceEventAngle<F>(p.y, p.x, rangle);
+    return PET2D::Event<F>(p, rangle);
   }
 
   void operator()(int n_emissions) {
 
-    std::vector<std::vector<Event<F>>> event_list_per_thread(
+    std::vector<std::vector<Response>> event_list_per_thread(
         omp_get_max_threads());
 
     rng rd;
@@ -140,8 +142,7 @@ template <typename ScannerType> class Phantom {
       auto res = scanner.detect_event(event, rng_list[omp_get_thread_num()]);
       if (res.second) {
 
-        ImageSpaceEventTan<F> revent =
-            scanner.from_projection_space_tan(res.first);
+        auto revent = scanner.from_projection_space_tan(res.first);
 
         if (std::abs(revent.y) >= scanner.radius)
           continue;

@@ -28,6 +28,8 @@ template <typename FType, typename SType> class Scanner {
   using Pixel = PET2D::Pixel<S>;
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
+  using Response = PET2D::Strip::Event<F>;
+  using Event = PET2D::Event<F>;
 
   /// Creates strip-scanner with given parameters.
   Scanner(F radius,               //< radius of strip-scanner along y-axis
@@ -98,22 +100,22 @@ template <typename FType, typename SType> class Scanner {
 #endif
 
   /// Convert image space event tangent to projection space.
-  Event<F> to_projection_space_tan(
+  Response to_projection_space_tan(
       const ImageSpaceEventTan<F>& is_event) const {
     F z_u = is_event.z + (radius - is_event.y) * is_event.tan;
     F z_d = is_event.z - (radius + is_event.y) * is_event.tan;
     F dl = -2 * is_event.y * sqrt(is_event.tan * is_event.tan + 1);
-    return Event<F>(z_u, z_d, dl);
+    return Response(z_u, z_d, dl);
   }
 
   /// Convert image space event angle to projection space.
-  Event<F> to_projection_space_angle(
+  Response to_projection_space_angle(
       const ImageSpaceEventAngle<F>& is_ea) const {
     return to_projection_space_tan(is_ea.to_tan());
   }
 
   /// Convert project space event to image space event tangent.
-  ImageSpaceEventTan<F> from_projection_space_tan(const Event<F>& event) const {
+  ImageSpaceEventTan<F> from_projection_space_tan(const Response& event) const {
     F tan, y, z;
     event.transform(radius, tan, y, z);
     return ImageSpaceEventTan<F>(y, z, tan);
@@ -121,7 +123,7 @@ template <typename FType, typename SType> class Scanner {
 
   /// Convert project space event to image space event angle.
   ImageSpaceEventAngle<F> from_projection_space_angle(
-      const Event<F>& event) const {
+      const Response& event) const {
     return from_projection_space_tan(event).to_angle();
   }
 
@@ -185,10 +187,10 @@ template <typename FType, typename SType> class Scanner {
 
 #if !__CUDACC__
   template <typename G>
-  std::pair<Event<F>, bool> detect_event(const ImageSpaceEventAngle<F> is_event,
+  std::pair<Response, bool> detect_event(const Event is_event,
                                          G& gen) {
 
-    Event<F> ps_event = to_projection_space_angle(is_event);
+    Response ps_event = to_projection_space_angle(is_event);
 
     F z_u, z_d, dl;
     z_u = ps_event.z_u;
@@ -205,10 +207,10 @@ template <typename FType, typename SType> class Scanner {
     if (std::abs(z_u) < scintillator_length / 2 &&
         std::abs(z_d) < scintillator_length / 2) {
 
-      Event<F> event(z_u, z_d, dl);
+      Response event(z_u, z_d, dl);
       return std::make_pair(event, true);
     } else
-      return std::make_pair(Event<F>(0, 0, 0), false);
+      return std::make_pair(Response(0, 0, 0), false);
   }
 #endif
 

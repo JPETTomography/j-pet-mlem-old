@@ -87,7 +87,7 @@ template <typename ScannerType> class ScannerBuilder {
       throw("number of numbers of detectors must be less or equal radiuses");
 
     bool symmetry_broken = false;
-    for (int i = 0; i < radius.size(); ++i) {
+    for (unsigned int i = 0; i < radius.size(); ++i) {
 
       if (std::abs(rotation[i]) >= 1e-6 &&
           std::abs(rotation[i] - F(0.5)) > 1e-6) {

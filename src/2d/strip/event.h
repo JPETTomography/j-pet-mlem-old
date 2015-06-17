@@ -45,6 +45,7 @@ struct ImageSpaceEventAngle : public PET2D::Event<FType> {
   using Base = PET2D::Event<F>;
   using Point = PET2D::Point<F>;
 
+  _ ImageSpaceEventAngle(const Base& event): Base(event) {}
   _ ImageSpaceEventAngle(F y, F z, F angle) : Base(Point(z, y), angle) {}
 
   _ ImageSpaceEventTan<F> to_tan() const {

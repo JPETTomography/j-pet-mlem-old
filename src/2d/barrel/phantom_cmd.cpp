@@ -56,16 +56,20 @@
 using namespace PET2D;
 using namespace PET2D::Barrel;
 
+using F = float;
+using S = short;
+
 template <typename DetectorType>
-using DetectorModel = GenericScanner<DetectorType, MAX_DETECTORS, short>;
-// using DetectorModel = Scanner<DetectorType>;
+using DetectorModel =
+    PET2D::Barrel::GenericScanner<DetectorType, MAX_DETECTORS, S>;
 
 // all available detector shapes
-using SquareScanner = DetectorModel<SquareDetector<float>>;
-using CircleScanner = DetectorModel<CircleDetector<float>>;
-using TriangleScanner = DetectorModel<TriangleDetector<float>>;
-using HexagonalScanner = DetectorModel<PolygonalDetector<6, float>>;
-using PixelType = PET2D::Pixel<short>;
+using SquareScanner = DetectorModel<SquareDetector<F>>;
+using CircleScanner = DetectorModel<CircleDetector<F>>;
+using TriangleScanner = DetectorModel<TriangleDetector<F>>;
+using HexagonalScanner = DetectorModel<PolygonalDetector<6, F>>;
+using PixelType = PET2D::Pixel<S>;
+using EventType = PET2D::Event<F>;
 
 template <typename Scanner, typename Model>
 void run(cmdline::parser& cl, Model& model);
@@ -255,7 +259,7 @@ void run(cmdline::parser& cl, Model& model) {
         pixels[pixel.y * n_pixels + pixel.x]++;
         auto angle = phi_dis(gen);
         // double position;
-        typename Detector::Event event(p, angle);
+        EventType event(p, angle);
         typename Detector::Response response;
         auto hits = dr.detect(gen, model, event, response);
         if (hits == 2) {
@@ -302,7 +306,7 @@ void run(cmdline::parser& cl, Model& model) {
       auto angle = phi_dis(gen);
       // typename Detector::LOR lor;
       // double position;
-      typename Detector::Event event(p, angle);
+      EventType event(p, angle);
       typename Detector::Response response;
       auto hits = dr.detect(gen, model, event, response);
       if (hits == 2) {
@@ -330,16 +334,16 @@ void run(cmdline::parser& cl, Model& model) {
   std::ofstream n_stream(fn);
 
   if (n_tof_positions <= 1) {
-    for (int i = 0; i < n_detectors; i++) {
-      for (int j = i + 1; j < n_detectors; j++) {
+    for (unsigned int i = 0; i < n_detectors; i++) {
+      for (unsigned int j = i + 1; j < n_detectors; j++) {
         auto hits = tubes[i * n_detectors + j];
         if (hits > 0)
           n_stream << i << " " << j << "  " << hits << std::endl;
       }
     }
   } else {  // TOF
-    for (int i = 0; i < n_detectors; i++) {
-      for (int j = i + 1; j < n_detectors; j++) {
+    for (unsigned int i = 0; i < n_detectors; i++) {
+      for (unsigned int j = i + 1; j < n_detectors; j++) {
         for (int p = 0; p < n_tof_positions; p++) {
           auto hits = tubes[(i * n_detectors + j) * n_tof_positions + p];
           if (hits > 0)
