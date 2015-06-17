@@ -107,7 +107,8 @@ int main(int argc, char* argv[]) {
     if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
         !cl.exist("n-detectors") && !cl.exist("big")) {
       throw(
-          "need to specify either --w-detector, --d-detector or --n-detectors or --big");
+          "need to specify either --w-detector, --d-detector or --n-detectors "
+          "or --big");
     }
     if (cl.exist("png") && !cl.exist("from")) {
       throw("need to specify --from lor when output --png option is specified");
@@ -116,10 +117,9 @@ int main(int argc, char* argv[]) {
       throw("need to specify output --png option when --from is specified");
     }
 
-
     cmdline::load_accompanying_config(cl, false);
-    if(cl.exist("big")) {
-        set_big_barrel_options(cl);
+    if (cl.exist("big")) {
+      set_big_barrel_options(cl);
     }
     calculate_scanner_options(cl);
 
@@ -141,7 +141,6 @@ int main(int argc, char* argv[]) {
   print_parameters<detector_type, model_type>(cl, scanner);                    \
   auto sparse_matrix = _RUN(cl, scanner, model);                               \
   post_process(cl, scanner, sparse_matrix)
-
 
     // run simmulation on given detector model & shape
     if (model_name == "always") {
@@ -205,7 +204,7 @@ void print_parameters(cmdline::parser& cl, const Scanner& scanner) {
     std::cerr << "   OpenMP threads = " << omp_get_max_threads() << std::endl;
 #endif
     std::cerr << "    pixels in row = " << n_pixels << std::endl;
-    std::cerr << "    fov radius    = " << scanner.fov_radius()<<"\n";
+    std::cerr << "    fov radius    = " << scanner.fov_radius() << "\n";
     std::cerr << "     outer radius = " << scanner.outer_radius() << std::endl;
     std::cerr << "         max bias = " << max_bias << std::endl;
     std::cerr << "         TOF step = " << tof_step << std::endl;

@@ -87,11 +87,9 @@ int main(int argc, char* argv[]) {
       throw("cannot open input file: " + cl.get<cmdline::path>("system"));
     Reconstruction::Matrix matrix(in_matrix);
 
-
-
-    if(matrix.triangular()) {
-        std::cerr<<"matrix must be in full form\n";
-        exit(-1);
+    if (matrix.triangular()) {
+      std::cerr << "matrix must be in full form\n";
+      exit(-1);
     }
     // matrix = matrix.to_full();
 

@@ -70,7 +70,6 @@ using PixelType = PET2D::Pixel<short>;
 template <typename Scanner, typename Model>
 void run(cmdline::parser& cl, Model& model);
 
-
 int main(int argc, char* argv[]) {
 
   try {
