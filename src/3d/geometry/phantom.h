@@ -207,7 +207,10 @@ class PointRegion
                                                                angular),
         origin(origin) {}
 
-  Point random_point(RNG& rng) { return origin; }
+  Point random_point(RNG& rng) {
+    (void)rng;  // unused
+    return origin;
+  }
 
   bool in(const Point& p) const { return p == origin; }
 
