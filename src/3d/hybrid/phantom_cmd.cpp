@@ -35,6 +35,9 @@ using Scintillator = PET2D::Barrel::ScintillatorAccept<FType>;
 using Point = PET3D::Point<FType>;
 using Vector = PET3D::Vector<FType>;
 
+// FIXME: I don't know what is the purpose of this, but these are unused, so
+// either should be removed or applied to the code.
+#if HARDCODED_VALUES
 namespace {
 FType strip_width = 0.005;
 FType strip_height = 0.019;
@@ -42,6 +45,7 @@ FType strip_distance = 0.410;
 FType inner_radius = (strip_distance - strip_height) / 2;
 FType strip_length = 0.300;
 }
+#endif
 
 int main(int argc, char* argv[]) {
 
