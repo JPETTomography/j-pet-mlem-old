@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "util/cuda/compat.h"
+#include "2d/geometry/event.h"
 
 namespace PET2D {
 namespace Strip {
@@ -37,16 +38,17 @@ template <typename FType> struct Event {
 template <typename FType> struct ImageSpaceEventTan;
 
 /// Image-space event using angle in radians
-template <typename FType> struct ImageSpaceEventAngle {
-  using F = FType;
-  const F y;
-  const F z;
-  const F angle;
 
-  _ ImageSpaceEventAngle(F y, F z, F angle) : y(y), z(z), angle(angle) {}
+template <typename FType>
+struct ImageSpaceEventAngle : public PET2D::Event<FType> {
+  using F = FType;
+  using Base = PET2D::Event<F>;
+  using Point = PET2D::Point<F>;
+
+  _ ImageSpaceEventAngle(F y, F z, F angle) : Base(Point(z, y), angle) {}
 
   _ ImageSpaceEventTan<F> to_tan() const {
-    return ImageSpaceEventTan<F>(y, z, compat::tan(angle));
+    return ImageSpaceEventTan<F>(this->center.y, this->center.x, this->direction.x / this->direction.y);
   }
 };
 

@@ -146,7 +146,7 @@ template <typename ScannerType> class Phantom {
         if (std::abs(revent.y) >= scanner.radius)
           continue;
 
-        Pixel pp = scanner.pixel_at(Point<F>(event.z, event.y));
+        Pixel pp = scanner.pixel_at(Point<F>(event.center.x, event.center.y));
 
         if (scanner.contains_pixel(pp)) {
 
