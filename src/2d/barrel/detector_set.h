@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 #include "square_detector.h"
 #include "circle_detector.h"
 #include "util/array.h"
