@@ -28,7 +28,7 @@ TEST("2d/strip/event/conversions1") {
 
   CHECK(re_img_angle.center.y == Approx(img_angle.center.y).epsilon(1e-13));
   CHECK(re_img_angle.center.x == Approx(img_angle.center.x).epsilon(1e-13));
-  //CHECK(re_img_angle.angle == Approx(img_angle.angle).epsilon(1e-13));
+  // CHECK(re_img_angle.angle == Approx(img_angle.angle).epsilon(1e-13));
 }
 
 TEST("2d/strip/event/conversions2") {
@@ -51,5 +51,5 @@ TEST("2d/strip/event/conversions2") {
 
   CHECK(re_img_angle.center.y == Approx(img_angle.center.y).epsilon(1e-13));
   CHECK(re_img_angle.center.x == Approx(img_angle.center.x).epsilon(1e-13));
-  //CHECK(re_img_angle.angle == Approx(img_angle.angle).epsilon(1e-13));
+  // CHECK(re_img_angle.angle == Approx(img_angle.angle).epsilon(1e-13));
 }

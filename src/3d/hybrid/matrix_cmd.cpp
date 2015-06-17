@@ -97,12 +97,12 @@ int main(int argc, char* argv[]) {
     Scanner scanner = Scanner::build_scanner_from_cl(cl);
 
     if (model_name == "always") {
-      PET2D::Barrel::AlwaysAccept<float> model;
+      Common::AlwaysAccept<float> model;
       auto sparse_matrix = run(cl, scanner, model);
       post_process(cl, scanner, sparse_matrix);
     } else if (model_name == "scintillator") {
 
-      PET2D::Barrel::ScintillatorAccept<float> model(length_scale);
+      Common::ScintillatorAccept<float> model(length_scale);
       std::cout << "length = " << length_scale << "\n";
 
       auto sparse_matrix = run(cl, scanner, model);

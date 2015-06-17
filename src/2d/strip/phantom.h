@@ -6,7 +6,6 @@
 #include <random>
 #include <algorithm>
 
-
 #include "2d/geometry/event.h"
 #include "2d/geometry/ellipse.h"
 

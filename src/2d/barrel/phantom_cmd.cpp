@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
 
     // run simmulation on given detector model & shape
     if (model_name == "always") {
-      AlwaysAccept<> model;
+      Common::AlwaysAccept<> model;
       if (shape == "square") {
         run<SquareScanner>(cl, model);
       } else if (shape == "circle") {
@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
         run<HexagonalScanner>(cl, model);
       }
     } else if (model_name == "scintillator") {
-      ScintillatorAccept<> model(length_scale);
+      Common::ScintillatorAccept<> model(length_scale);
       if (shape == "square") {
         run<SquareScanner>(cl, model);
       } else if (shape == "circle") {

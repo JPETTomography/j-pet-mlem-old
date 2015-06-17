@@ -27,7 +27,7 @@ TEST("SensitivityMapper") {
 
   PET3D::Hybrid::SensitivityMapper<Scanner> mapper(scanner, voxel_set);
 
-  PET2D::Barrel::ScintillatorAccept<F> scintillator(0.100);
+  Common::ScintillatorAccept<F> scintillator(0.100);
 
   util::random::tausworthe gen(12212);
   mapper.map(gen, scintillator, 10000);

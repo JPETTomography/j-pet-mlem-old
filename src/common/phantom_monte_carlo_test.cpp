@@ -19,8 +19,8 @@ using Detector = PET2D::Barrel::SquareDetector<FType>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 8, short>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 using Phantom = PET3D::Phantom<FType, SType, RNGType>;
-using Allways = PET2D::Barrel::AlwaysAccept<FType>;
-using Scintillator = PET2D::Barrel::ScintillatorAccept<FType>;
+using Allways = Common::AlwaysAccept<FType>;
+using Scintillator = Common::ScintillatorAccept<FType>;
 using Point = PET3D::Point<FType>;
 using Vector = PET3D::Vector<FType>;
 

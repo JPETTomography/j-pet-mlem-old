@@ -22,7 +22,8 @@ template <typename FType> struct Event {
 
   _ Event(F x, F y, F dx, F dy) : Event(Point(x, y), Vector(dx, dy)) {}
 
-   _ Event(const Point& center, F angle) : Event(center, Vector(compat::sin(angle), compat::cos(angle))) {}
+  _ Event(const Point& center, F angle)
+      : Event(center, Vector(compat::sin(angle), compat::cos(angle))) {}
 
   const Point center;
   const Vector direction;

@@ -122,7 +122,7 @@ TEST("2d/barrel/detector_set/detect") {
     }
     CHECK(32 == detector.size());
 
-    PET2D::Barrel::AlwaysAccept<float> model;
+    Common::AlwaysAccept<float> model;
     Response response;
     SECTION("horizontal") {
       {

@@ -72,7 +72,7 @@ TEST("3d/hybrid/detector_set/detect", "detect") {
       PET2D::Barrel::ScannerBuilder<Scanner2D>::build_single_ring(
           inner_radius, 24, scintillator_height, scintillator_width);
   Scanner scanner(scanner_2d, length);
-  PET2D::Barrel::AlwaysAccept<> model;
+  Common::AlwaysAccept<> model;
 
   {
     PET3D::Event<float> event(Point(0.0f, 0.0f, 0.0f),

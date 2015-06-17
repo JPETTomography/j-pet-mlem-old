@@ -9,7 +9,7 @@
 
 using SquareDetector = PET2D::Barrel::SquareDetector<float>;
 using Scanner = PET2D::Barrel::RingScanner<SquareDetector, 512, short>;
-using Model = PET2D::Barrel::AlwaysAccept<float>;
+using Model = Common::AlwaysAccept<float>;
 
 TEST("2d/barrel/scanner/math") {
 

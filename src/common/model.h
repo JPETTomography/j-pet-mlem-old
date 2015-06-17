@@ -3,8 +3,7 @@
 #include "util/random.h"
 #include "util/cuda/compat.h"
 
-namespace PET2D {
-namespace Barrel {
+namespace Common {
 
 /// Model which always produces a decay
 
@@ -70,5 +69,4 @@ template <typename FType = double> class ScintillatorAccept {
   F scale;
   F inv_scale;
 };
-}  // Barrel
-}  // PET2D
+}  // Common

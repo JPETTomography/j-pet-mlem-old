@@ -186,11 +186,41 @@ template <typename FType, typename SType> class Scanner {
   }
 
 #if !__CUDACC__
+
+  template <class RandomGenerator, class AcceptanceModel>
+  _ short detect(RandomGenerator& gen,    ///< random number generator
+                 AcceptanceModel& model,  ///< acceptance model
+                 const Event& event,      ///< event to be detected
+                 Response& response       ///< scanner response (LOR+length)
+                 ) const {
+
+    Response ps_event = to_projection_space_angle(event);
+
+    F z_u, z_d, dl;
+    z_u = ps_event.z_u;
+    z_d = ps_event.z_d;
+    dl = ps_event.dl;
+
+    std::normal_distribution<F> normal_dist_dz(0, sigma_z);
+    std::normal_distribution<F> normal_dist_dl(0, sigma_dl);
+
+    z_u += normal_dist_dz(gen);
+    z_d += normal_dist_dz(gen);
+    dl += normal_dist_dl(gen);
+
+    if (std::abs(z_u) < scintillator_length / 2 &&
+        std::abs(z_d) < scintillator_length / 2) {
+      response = Response(z_u, z_d, dl);
+      return 2;
+    } else
+      return 0;
+  }
+
   template <typename G>
-  std::pair<Response, bool> detect_event(const Event is_event,
-                                         G& gen) {
+  std::pair<Response, bool> detect_event(const Event is_event, G& gen) {
 
     Response ps_event = to_projection_space_angle(is_event);
+    ;
 
     F z_u, z_d, dl;
     z_u = ps_event.z_u;

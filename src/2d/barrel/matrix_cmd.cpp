@@ -62,6 +62,7 @@ using namespace PET2D;
 using namespace PET2D::Barrel;
 
 using SType = short;
+using F = float;
 
 template <typename DetectorType>
 using DetectorModel = GenericScanner<DetectorType, MAX_DETECTORS, SType>;
@@ -145,23 +146,23 @@ int main(int argc, char* argv[]) {
     // run simmulation on given detector model & shape
     if (model_name == "always") {
       if (shape == "square") {
-        RUN(SquareScanner, AlwaysAccept<>);
+        RUN(SquareScanner, Common::AlwaysAccept<F>);
       } else if (shape == "circle") {
-        RUN(CircleScanner, AlwaysAccept<>);
+        RUN(CircleScanner, Common::AlwaysAccept<F>);
       } else if (shape == "triangle") {
-        RUN(TriangleScanner, AlwaysAccept<>);
+        RUN(TriangleScanner, Common::AlwaysAccept<F>);
       } else if (shape == "hexagon") {
-        RUN(HexagonalScanner, AlwaysAccept<>);
+        RUN(HexagonalScanner, Common::AlwaysAccept<F>);
       }
     } else if (model_name == "scintillator") {
       if (shape == "square") {
-        RUN(SquareScanner, ScintillatorAccept<>, length_scale);
+        RUN(SquareScanner, Common::ScintillatorAccept<F>, length_scale);
       } else if (shape == "circle") {
-        RUN(CircleScanner, ScintillatorAccept<>, length_scale);
+        RUN(CircleScanner, Common::ScintillatorAccept<F>, length_scale);
       } else if (shape == "triangle") {
-        RUN(TriangleScanner, ScintillatorAccept<>, length_scale);
+        RUN(TriangleScanner, Common::ScintillatorAccept<F>, length_scale);
       } else if (shape == "hexagon") {
-        RUN(HexagonalScanner, ScintillatorAccept<>, length_scale);
+        RUN(HexagonalScanner, Common::ScintillatorAccept<F>, length_scale);
       }
     }
 
