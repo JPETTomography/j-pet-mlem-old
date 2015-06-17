@@ -85,8 +85,8 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    if(cl.exist("big"))
-        set_big_barrel_options(cl);
+    if (cl.exist("big"))
+      set_big_barrel_options(cl);
     calculate_scanner_options(cl);
 
     const auto& shape = cl.get<std::string>("shape");
@@ -144,7 +144,7 @@ void run(cmdline::parser& cl, Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
-  auto& n_detectors = cl.get<int>("n-detectors");
+  // auto& n_detectors = cl.get<int>("n-detectors");
   auto& n_emissions = cl.get<int>("n-emissions");
   auto& s_pixel = cl.get<double>("s-pixel");
   auto& tof_step = cl.get<double>("tof-step");
@@ -161,6 +161,7 @@ void run(cmdline::parser& cl, Model& model) {
   Detector dr = ScannerBuilder<Detector>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, typename Detector::F));
 
+  auto n_detectors = dr.size();
   int n_tof_positions = 1;
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
@@ -349,6 +350,9 @@ void run(cmdline::parser& cl, Model& model) {
   }
 
   delete[] tubes;
+
+  std::ofstream json(fn_wo_ext + ".json", std::ios::trunc);
+  dr.to_json(json);
 
   std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
   os << cl;

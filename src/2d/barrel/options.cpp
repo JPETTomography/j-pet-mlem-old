@@ -309,6 +309,9 @@ void set_big_barrel_options(cmdline::parser& cl) {
   cl.get<int>("n-detectors2") = 48;
   cl.get<int>("n-detectors3") = 96;
 
+  cl.get<std::string>("model")="scintillator";
+  cl.get<double>("base-length")=0.100;
+
   if (!cl.exist("fov-radius"))
     cl.get<double>("fov-radius") = 0.400;
 }
