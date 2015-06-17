@@ -58,7 +58,7 @@ TEST("PET3D/hubrid/phantom_monte_carlo/point_source") {
 
   Allways allways;
   Scintillator scintillator(0.100);
-  PET3D::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
+  Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
 
   std::ofstream no_error_stream("test_output/point_source_no_errors.txt");
   monte_carlo.set_no_error_stream(no_error_stream);
@@ -98,7 +98,7 @@ TEST("PET3D/hubrid/phantom_monte_carlo") {
 
   Allways allways;
   Scintillator scintillator(0.100);
-  PET3D::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
+  Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
 
   std::ofstream no_error_stream("test_output/no_errors.txt");
   monte_carlo.set_no_error_stream(no_error_stream);

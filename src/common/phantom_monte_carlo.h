@@ -3,9 +3,7 @@
 
 #include <random>
 
-#include "3d/geometry/point.h"
-
-namespace PET3D {
+namespace Common {
 
 template <typename Phantom, typename Detector> class PhantomMonteCarlo {
  public:

@@ -137,7 +137,7 @@ int main(int argc, char* argv[]) {
 
   Allways allways;
   Scintillator scintillator(0.100);
-  PET3D::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
+  Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
 
   std::ofstream no_error_stream(output_base_name + "_geom_only" + ext);
   monte_carlo.set_no_error_stream(no_error_stream);
