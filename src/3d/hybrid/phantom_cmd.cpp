@@ -15,6 +15,8 @@
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
+#include "util/mathematica_ostream.h"
+#include "util/json_ostream.h"
 
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
@@ -78,11 +80,11 @@ int main(int argc, char* argv[]) {
   Scanner scanner = Scanner::build_scanner_from_cl(cl);
   scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
 
-  std::ofstream mathematica_stream(output_base_name + ".m");
-  scanner.barrel.to_mathematica(mathematica_stream);
+  util::mathematica_ostream mathematica(output_base_name + ".m");
+  mathematica << scanner.barrel;
 
-  std::ofstream json_stream(output_base_name + ".json");
-  scanner.barrel.to_json(json_stream);
+  util::json_ostream json(output_base_name + ".json");
+  json << scanner.barrel;
 
   using RNG = std::mt19937;
   RNG rng;

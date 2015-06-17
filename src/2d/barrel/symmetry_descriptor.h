@@ -3,6 +3,10 @@
 #include "2d/geometry/pixel.h"
 #include "2d/geometry/pixel_grid.h"
 
+#if !__CUDACC__
+#include "util/mathematica_ostream.h"
+#endif
+
 namespace PET2D {
 namespace Barrel {
 
@@ -90,17 +94,29 @@ template <typename SType> class SymmetryDescriptor {
   }
 
 #if !__CUDACC__
-  void to_mathematica(std::ostream& m_out) const {
-    auto out_delimiter = "";
-    for (S i = 0; i < n_detectors; i++) {
-      auto in_delimiter = "";
-      m_out << out_delimiter << "{" << i << "->{";
-      for (S s = 0; s < n_symmetries; s++) {
-        m_out << in_delimiter << symmetric_detector(i, s);
-        in_delimiter = ",";
+  friend util::mathematica_ostream& operator<<(util::mathematica_ostream& m,
+                                               const SymmetryDescriptor& sd) {
+    bool next = false;
+
+    for (S i = 0; i < sd.n_detectors; ++i) {
+      if (next) {
+        m << ", ";
+      } else {
+        next = true;
       }
-      m_out << "}}\n";
-      out_delimiter = ",";
+      m << "{" << i << "->{";
+
+      bool inner_next = false;
+      for (S s = 0; s < sd.n_symmetries; ++s) {
+        if (inner_next) {
+          m << ", ";
+        } else {
+          inner_next = true;
+        }
+        m << sd.symmetric_detector(i, s);
+      }
+
+      m << "}}\n";
     }
   }
 #endif

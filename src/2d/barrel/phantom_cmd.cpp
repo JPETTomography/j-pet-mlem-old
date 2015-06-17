@@ -47,6 +47,7 @@
 #include "model.h"
 #include "util/png_writer.h"
 #include "util/progress.h"
+#include "util/json_ostream.h"
 #include "options.h"
 
 #if _OPENMP
@@ -351,8 +352,8 @@ void run(cmdline::parser& cl, Model& model) {
 
   delete[] tubes;
 
-  std::ofstream json(fn_wo_ext + ".json", std::ios::trunc);
-  dr.to_json(json);
+  util::json_ostream json(fn_wo_ext + ".json");
+  json << dr;
 
   std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
   os << cl;
