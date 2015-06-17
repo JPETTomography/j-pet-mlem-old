@@ -74,9 +74,6 @@ int main(int argc, char* argv[]) {
   auto output_base_name = output.wo_ext();
   auto ext = output.ext();
 
-  const auto& model_name = cl.get<std::string>("model");
-  const auto& length_scale = cl.get<double>("base-length");
-
   Scanner scanner = Scanner::build_scanner_from_cl(cl);
   scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
 

@@ -175,7 +175,6 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
       auto lor = event.lor;
       auto segment = *lor_pixel_info_[lor].segment;
       auto R = segment.length / 2;
-      auto width = lor_pixel_info_[lor].width;
 
       /* ---------  Voxel loop  - denominator ----------- */
       double denominator = 0;
@@ -197,7 +196,6 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
           auto diff = Point2D(up, z) - Point2D(event.up, event.right);
           auto kernel2d = kernel_(
               event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
-          auto s = sigma(width);
           auto kernel_z = event.gauss_norm *
                           std::exp(-distance * distance * event.inv_sigma2);
           auto weight = kernel2d * kernel_z * rho_[index];
@@ -263,7 +261,6 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
  private:
   Response fscanf_response(std::istream& in) {
     S d1, d2;
-    F z_up, z_dn, dl;
     Response response;
     in >> d1 >> d2 >> response.z_up >> response.z_dn >> response.dl;
     response.lor = LOR(d1, d2);

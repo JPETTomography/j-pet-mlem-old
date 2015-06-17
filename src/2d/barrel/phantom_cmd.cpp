@@ -145,7 +145,6 @@ void run(cmdline::parser& cl, Model& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
-  // auto& n_detectors = cl.get<int>("n-detectors");
   auto& n_emissions = cl.get<int>("n-emissions");
   auto& s_pixel = cl.get<double>("s-pixel");
   auto& tof_step = cl.get<double>("tof-step");
