@@ -39,21 +39,21 @@ TEST("2d/barrel/circle_detector/move") {
 }
 
 TEST("2d/barrel/circle_detector/intersection") {
-
+  using Event = PET2D::Barrel::Event<float>;
   CircleDetector<float> circle(1, Point<float>(1, 1));
 
   CHECK(circle.center.x == 1);
   CHECK(circle.center.y == 1);
 
   // horizontal
-  CHECK(true == circle.intersects(Event<float>(1, 1.999, 0)));
-  CHECK(true == circle.intersects(Event<float>(9999, 1.999, 0)));
-  CHECK(false == circle.intersects(Event<float>(1, 2.001, 0)));
-  CHECK(false == circle.intersects(Event<float>(9999, 2.001, 0)));
+  CHECK(true == circle.intersects(Event(1, 1.999, 0)));
+  CHECK(true == circle.intersects(Event(9999, 1.999, 0)));
+  CHECK(false == circle.intersects(Event(1, 2.001, 0)));
+  CHECK(false == circle.intersects(Event(9999, 2.001, 0)));
 
   // vertical
-  CHECK(true == circle.intersects(Event<float>(1.999, 1, M_PI_2)));
-  CHECK(true == circle.intersects(Event<float>(1.999, 9999, M_PI_2)));
-  CHECK(false == circle.intersects(Event<float>(2.001, 1, M_PI_2)));
-  CHECK(false == circle.intersects(Event<float>(2.001, 9999, M_PI_2)));
+  CHECK(true == circle.intersects(Event(1.999, 1, M_PI_2)));
+  CHECK(true == circle.intersects(Event(1.999, 9999, M_PI_2)));
+  CHECK(false == circle.intersects(Event(2.001, 1, M_PI_2)));
+  CHECK(false == circle.intersects(Event(2.001, 9999, M_PI_2)));
 }

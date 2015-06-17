@@ -77,10 +77,10 @@ TEST("2d/geometry/circle/secant") {
     auto s = c.secant(xone45);
 
     CHECK(std::min(s[0].x, s[1].x) == 0._e13);
-    CHECK(std::max(s[0].x, s[1].x) == Approx(xone45.x));
+    CHECK(std::max(s[0].x, s[1].x) == Approx(xone45.center.x));
 
     CHECK(std::min(s[0].y, s[1].y) == -1._e13);
-    CHECK(std::max(s[0].y, s[1].y) == Approx(xone45.y));
+    CHECK(std::max(s[0].y, s[1].y) == Approx(xone45.center.y));
   }
 }
 

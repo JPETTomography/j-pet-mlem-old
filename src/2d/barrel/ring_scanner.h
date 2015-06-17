@@ -143,7 +143,7 @@ class RingScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
       throw("invalid LOR");
 #endif
 
-    Point origin(e.x, e.y);
+    Point origin(e.center.x, e.center.y);
     F length1 = origin.nearest_distance(d1_p1, d1_p2) + depth1;
     F length2 = origin.nearest_distance(d2_p1, d2_p2) + depth2;
 
