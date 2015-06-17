@@ -69,8 +69,8 @@ template <typename FType, typename SType> class BoostGeometryUtils {
     FType angle = 0.0;
     for (int i = 0; i < n; ++i) {
       FType x, y;
-      x = radius * std::cos(angle);
-      y = radius * std::sin(angle);
+      x = center.x + radius * std::cos(angle);
+      y = center.y + radius * std::sin(angle);
       boost::geometry::append(circle, boost::geometry::make<point_2d>(x, y));
       angle += da;
     }
