@@ -52,18 +52,16 @@ template <typename SType> class SymmetryDescriptor {
   }
 
   /// Returns symmetric detector on a ring of n_detectors, assuming that
-  /// detector zero is on the positive X-axis (rotation=0).
+  /// detector zero is on the positive X-axis (rotation = 0).
   static S ring_symmetric_detector(S n_detectors, S detector, S symmetry) {
     if (symmetry & Axis::X) {
-      detector = (n_detectors - detector) % n_detectors;  // x-axis
+      detector = (n_detectors - detector) % n_detectors;
     }
     if (symmetry & Axis::Y) {
-      detector =
-          ((n_detectors + n_detectors / 2) - detector) % n_detectors;  // y-axis
+      detector = ((n_detectors + n_detectors / 2) - detector) % n_detectors;
     }
     if (symmetry & Axis::XY) {
-      detector = ((n_detectors + n_detectors / 4) - detector) %
-                 n_detectors;  // xy-axis
+      detector = ((n_detectors + n_detectors / 4) - detector) % n_detectors;
     }
     return detector;
   }
@@ -76,15 +74,15 @@ template <typename SType> class SymmetryDescriptor {
                                            S detector,
                                            S symmetry) {
     if (symmetry & Axis::X) {
-      detector = (n_detectors - (detector + 1)) % n_detectors;  // x-axis
+      detector = (n_detectors - (detector + 1)) % n_detectors;
     }
     if (symmetry & Axis::Y) {
-      detector = ((n_detectors + n_detectors / 2) - (detector + 1)) %
-                 n_detectors;  // y-axis
+      detector =
+          ((n_detectors + n_detectors / 2) - (detector + 1)) % n_detectors;
     }
     if (symmetry & Axis::XY) {
-      detector = ((n_detectors + n_detectors / 4) - (detector + 1)) %
-                 n_detectors;  // xy-axis
+      detector =
+          ((n_detectors + n_detectors / 4) - (detector + 1)) % n_detectors;
     }
     return detector;
   }
