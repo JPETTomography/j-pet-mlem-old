@@ -3,7 +3,7 @@
 
 #include "util/test.h"
 
-#include "model.h"
+#include "common/model.h"
 #include "ring_scanner.h"
 #include "scanner_builder.h"
 

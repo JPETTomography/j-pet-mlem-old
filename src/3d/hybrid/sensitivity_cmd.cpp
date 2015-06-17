@@ -11,7 +11,7 @@
 #include "3d/geometry/voxel_set_builder.h"
 #include "3d/hybrid/sensitivity_mapper.h"
 #include "util/random.h"
-#include "2d/barrel/model.h"
+#include "common/model.h"
 
 using SquareScintillator = PET2D::Barrel::SquareDetector<float>;
 

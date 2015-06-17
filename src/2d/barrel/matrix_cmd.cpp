@@ -41,7 +41,7 @@
 #include "matrix_pixel_major.h"
 #include "2d/geometry/pixel.h"
 #include "lor.h"
-#include "model.h"
+#include "common/model.h"
 #include "util/png_writer.h"
 #include "util/svg_ostream.h"
 #include "util/progress.h"

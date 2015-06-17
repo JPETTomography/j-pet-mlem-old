@@ -8,7 +8,7 @@
 #include "2d/barrel/square_detector.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/vector.h"
-#include "2d/barrel/model.h"
+#include "common/model.h"
 
 float center_radius = 0.180f;
 float scintillator_height = 0.019f;

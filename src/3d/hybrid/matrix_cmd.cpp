@@ -18,7 +18,7 @@
 #include "2d/barrel/matrix_pixel_major.h"
 #include "2d/geometry/pixel.h"
 #include "2d/barrel/lor.h"
-#include "2d/barrel/model.h"
+#include "common/model.h"
 #include "monte_carlo.h"
 #include "util/progress.h"
 

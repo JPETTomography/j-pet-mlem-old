@@ -4,7 +4,7 @@
 #include "3d/hybrid/scanner.h"
 #include "2d/barrel/barrel_builder.h"
 #include "util/random.h"
-#include "2d/barrel/model.h"
+#include "common/model.h"
 
 using F = float;
 using S = int;

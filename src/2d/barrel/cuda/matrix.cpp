@@ -5,7 +5,7 @@
 #include "2d/barrel/ring_scanner.h"
 #include "2d/barrel/square_detector.h"
 #include "2d/barrel/monte_carlo.h"
-#include "2d/barrel/model.h"
+#include "common/model.h"
 #include "2d/geometry/point.h"
 #include "2d/barrel/options.h"
 #include "2d/barrel/scanner_builder.h"

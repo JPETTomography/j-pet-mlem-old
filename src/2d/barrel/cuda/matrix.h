@@ -6,7 +6,7 @@
 #include "2d/barrel/square_detector.h"
 #include "2d/barrel/ring_scanner.h"
 #include "2d/barrel/generic_scanner.h"
-#include "2d/barrel/model.h"
+#include "common/model.h"
 #if !__CUDACC__
 #include "cmdline.h"
 #include "2d/barrel/sparse_matrix.h"

@@ -44,7 +44,7 @@
 #include "circle_detector.h"
 #include "triangle_detector.h"
 #include "polygonal_detector.h"
-#include "model.h"
+#include "common/model.h"
 #include "util/png_writer.h"
 #include "util/progress.h"
 #include "options.h"
