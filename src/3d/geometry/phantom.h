@@ -175,8 +175,8 @@ class TranslatedPhantomRegion : public PhantomRegion<FType, RNG> {
   TranslatedPhantomRegion(PhantomRegion<F, RNG>* region,
                           const Vector displacement)
       : PhantomRegion<F, RNG>(region->intensity),
-        displacement(displacement),
-        region(region) {}
+        region(region),
+        displacement(displacement) {}
 
   F volume() const { return region->volume(); }
   Point random_point(RNG& rng) {
