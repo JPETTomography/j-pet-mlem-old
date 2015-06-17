@@ -4,12 +4,7 @@
 #include <deque>
 #include <random>
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
-#include <boost/foreach.hpp>
-
+#include "2d/barrel/boost_geometry_utils.h"
 #include "2d/barrel/options.h"
 
 #include "cmdline.h"
@@ -21,7 +16,6 @@
 #include "2d/geometry/line_segment.h"
 #include "2d/geometry/pixel_grid.h"
 #include "2d/barrel/lor_info.h"
-#include "2d/barrel/boost_geometry_utils.h"
 
 using FType = float;
 using SType = int;

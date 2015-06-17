@@ -2,10 +2,36 @@
 
 #ifdef HAVE_Boost
 
+#ifdef __GNUC__
+#if __GNUC__ > 3 && __GNUC_MINOR__ > 6
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-local-typedef"
+#endif
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
+#endif
+
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
 #include <boost/geometry/geometries/geometries.hpp>
+
+#include <boost/foreach.hpp>
+
+#ifdef __GNUC__
+#if __GNUC__ > 3 && __GNUC_MINOR__ > 6
+#pragma GCC diagnostic pop
+#endif
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #include "2d/geometry/pixel_grid.h"
 namespace PET2D {
