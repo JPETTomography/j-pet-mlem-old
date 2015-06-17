@@ -2,13 +2,12 @@
 #include <iostream>
 #include <fstream>
 #include <deque>
+#include <random>
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
 #include <boost/geometry/geometries/geometries.hpp>
-//#include <boost/geometry/strategies/agnostic/hull_graham_andrew.hpp>
-
 #include <boost/foreach.hpp>
 
 #include "2d/barrel/options.h"
