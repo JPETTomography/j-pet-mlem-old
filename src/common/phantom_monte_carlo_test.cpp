@@ -7,7 +7,7 @@
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/model.h"
 
-#include "scanner.h"
+#include "3d/hybrid/scanner.h"
 
 #include "3d/geometry/phantom.h"
 #include "phantom_monte_carlo.h"

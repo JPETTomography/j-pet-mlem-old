@@ -1,6 +1,6 @@
 
 
-#include "phantom_monte_carlo.h"
+#include "common/phantom_monte_carlo.h"
 
 #include "2d/barrel/square_detector.h"
 #include "2d/barrel/generic_scanner.h"
@@ -10,7 +10,6 @@
 #include "scanner.h"
 
 #include "3d/geometry/phantom.h"
-#include "phantom_monte_carlo.h"
 
 #include "cmdline.h"
 #include "util/cmdline_types.h"
