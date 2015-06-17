@@ -218,29 +218,12 @@ template <typename FType, typename SType> class Scanner {
 
   template <typename G>
   std::pair<Response, bool> detect_event(const Event is_event, G& gen) {
-
-    Response ps_event = to_projection_space_angle(is_event);
-    ;
-
-    F z_u, z_d, dl;
-    z_u = ps_event.z_u;
-    z_d = ps_event.z_d;
-    dl = ps_event.dl;
-
-    std::normal_distribution<F> normal_dist_dz(0, sigma_z);
-    std::normal_distribution<F> normal_dist_dl(0, sigma_dl);
-
-    z_u += normal_dist_dz(gen);
-    z_d += normal_dist_dz(gen);
-    dl += normal_dist_dl(gen);
-
-    if (std::abs(z_u) < scintillator_length / 2 &&
-        std::abs(z_d) < scintillator_length / 2) {
-
-      Response event(z_u, z_d, dl);
-      return std::make_pair(event, true);
-    } else
-      return std::make_pair(Response(0, 0, 0), false);
+    int model = 0;
+    Response response;
+    if (detect(gen, model, is_event, response) > 1)
+      return std::make_pair(response, true);
+    else
+      return std::make_pair(response, false);
   }
 #endif
 
