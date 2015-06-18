@@ -117,15 +117,17 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
         std::upper_bound(lor_pixel_info_[event.lor].pixels.begin(),
                          lor_pixel_info_[event.lor].pixels.end(),
                          pix_info_up,
-                         [](const PixelInfo& a, const PixelInfo& b)
-                             -> bool { return a.t < b.t; });
+                         [](const PixelInfo& a, const PixelInfo& b) -> bool {
+                           return a.t < b.t;
+                         });
 
     event.first_pixel =
         std::lower_bound(lor_pixel_info_[event.lor].pixels.begin(),
                          lor_pixel_info_[event.lor].pixels.end(),
                          pix_info_dn,
-                         [](const PixelInfo& a, const PixelInfo& b)
-                             -> bool { return a.t < b.t; });
+                         [](const PixelInfo& a, const PixelInfo& b) -> bool {
+                           return a.t < b.t;
+                         });
 
     return event;
   }
