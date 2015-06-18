@@ -17,7 +17,7 @@
 #define omp_get_thread_num() 0
 #endif
 
-template <typename ScannerType, typename Kernel2DType> class Reconstructor {
+template <typename ScannerType, typename Kernel2DType> class Reconstruction {
  public:
   using Scanner = ScannerType;
   using Kernel2D = Kernel2DType;
@@ -56,10 +56,10 @@ template <typename ScannerType, typename Kernel2DType> class Reconstructor {
     F weight;
   };
 
-  Reconstructor(const Scanner& scanner,
-                const LORsPixelsInfo& lor_pixel_info,
-                F z_left,
-                int n_planes)
+  Reconstruction(const Scanner& scanner,
+                 const LORsPixelsInfo& lor_pixel_info,
+                 F z_left,
+                 int n_planes)
       : scanner(scanner),
         lor_pixel_info(lor_pixel_info),
         z_left(z_left),

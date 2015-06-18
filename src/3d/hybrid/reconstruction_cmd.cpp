@@ -12,7 +12,7 @@
 #include "2d/barrel/lors_pixels_info.h"
 #include "2d/strip/gausian_kernel.h"
 #include "3d/hybrid/scanner.h"
-#include "3d/hybrid/reconstructor.h"
+#include "3d/hybrid/reconstruction.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -81,17 +81,17 @@ int main(int argc, char* argv[]) {
     PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(scanner.barrel.size(), grid);
     lor_info.read(lor_info_istream);
 
-    Reconstructor<Scanner, PET2D::Strip::GaussianKernel<F>> reconstructor(
+    Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>> reconstruction(
         scanner, lor_info, -0.200, 80);
 
     std::ifstream response_stream(cl.get<std::string>("response"));
-    reconstructor.fscanf_responses(response_stream);
+    reconstruction.fscanf_responses(response_stream);
 
     {
       std::ofstream gout("event.m");
       Graphics<float> graphics(gout);
       graphics.add(scanner.barrel);
-      reconstructor.graph_frame_event(graphics, 0);
+      reconstruction.graph_frame_event(graphics, 0);
     }
 
     auto n_blocks = cl.get<int>("blocks");
@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
 
     for (int block = 0; block < n_blocks; ++block) {
       for (int i = 0; i < n_iter; i++) {
-        std::cout << block* n_iter + i << " " << reconstructor.iterate()
+        std::cout << block* n_iter + i << " " << reconstruction.iterate()
                   << "\n";
       }
       char rho_file_name[64];
@@ -108,20 +108,20 @@ int main(int argc, char* argv[]) {
               output_base_name.c_str(),
               (block + 1) * n_iter);
       std::ofstream out(rho_file_name);
-      out.write((char*)&(*reconstructor.rho_begin()),
-                reconstructor.n_voxels * sizeof(F));
+      out.write((char*)&(*reconstruction.rho_begin()),
+                reconstruction.n_voxels * sizeof(F));
     }
-    std::cout << reconstructor.event_count() << " "
-              << reconstructor.voxel_count() << " "
-              << reconstructor.pixel_count() << "\n";
-    std::cout << (double)reconstructor.voxel_count() /
-                     reconstructor.event_count() << " ";
-    std::cout << (double)reconstructor.pixel_count() /
-                     reconstructor.event_count() << "\n";
+    std::cout << reconstruction.event_count() << " "
+              << reconstruction.voxel_count() << " "
+              << reconstruction.pixel_count() << "\n";
+    std::cout << (double)reconstruction.voxel_count() /
+                     reconstruction.event_count() << " ";
+    std::cout << (double)reconstruction.pixel_count() /
+                     reconstruction.event_count() << "\n";
 
     std::ofstream out("rho.bin");
-    out.write((char*)&(*reconstructor.rho_begin()),
-              reconstructor.n_voxels * sizeof(F));
+    out.write((char*)&(*reconstruction.rho_begin()),
+              reconstruction.n_voxels * sizeof(F));
 
   } catch (cmdline::exception& ex) {
     if (ex.help()) {
