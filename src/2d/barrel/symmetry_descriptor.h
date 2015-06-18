@@ -15,11 +15,13 @@ enum Axis { X = 1, Y = 2, XY = 4 };
 template <typename SType> class SymmetryDescriptor {
  public:
   using S = SType;
+  static const S EIGHT = 8;
+
   SymmetryDescriptor(int n_detectors, int n_symmetries)
       : n_detectors(n_detectors), n_symmetries(n_symmetries) {
+    // FIXME: we are leaking there
     detectors_ = new S[n_detectors * n_symmetries];
   }
-  static const S EIGHT = 8;
 
   /// Symmetric detector
   S symmetric_detector(S detector, S symmetry) const {
