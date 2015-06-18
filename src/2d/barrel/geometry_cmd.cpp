@@ -17,19 +17,19 @@
 #include "2d/geometry/pixel_grid.h"
 #include "2d/barrel/lors_pixels_info.h"
 
-using FType = float;
-using SType = int;
+using F = float;
+using S = int;
 using RNGType = std::mt19937;
-using Detector = PET2D::Barrel::SquareDetector<FType>;
-using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, SType>;
-using Point = PET2D::Point<FType>;
+using Detector = PET2D::Barrel::SquareDetector<F>;
+using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, S>;
+using Point = PET2D::Point<F>;
 
 using PixelInfo = PET2D::Barrel::LORsPixelsInfo<F, S>::PixelInfo;
 using PixelInfoContainer =
     PET2D::Barrel::LORsPixelsInfo<F, S>::PixelInfoContainer;
 using LOR = PET2D::Barrel::LOR<S>;
 
-using BoostGeometryUtils = PET2D::Barrel::BoostGeometryUtils<FType, SType>;
+using BoostGeometryUtils = PET2D::Barrel::BoostGeometryUtils<F, S>;
 
 using Polygon = typename BoostGeometryUtils::Polygon;
 using point_2d = BoostGeometryUtils::point_2d;
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
 
   PET2D::Barrel::set_big_barrel_options(cl);
   auto scanner = PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
-      PET2D_BARREL_SCANNER_CL(cl, FType));
+      PET2D_BARREL_SCANNER_CL(cl, F));
 
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();
@@ -68,15 +68,15 @@ int main(int argc, char* argv[]) {
   std::vector<Polygon> detectors;
   std::vector<Point> detectors_centers;
 
-  FType pixel_size = 0.005;
+  F pixel_size = 0.005;
   if (cl.exist("s-pixel"))
     pixel_size = cl.get<double>("s-pixel");
-  FType fov_radius = cl.get<double>("fov-radius");
+  F fov_radius = cl.get<double>("fov-radius");
   std::cout << "fov " << fov_radius << " size " << pixel_size << "\n";
-  SType n_columns = 2 * SType(std::ceil(fov_radius / pixel_size));
-  SType n_rows = n_columns;
+  S n_columns = 2 * S(std::ceil(fov_radius / pixel_size));
+  S n_rows = n_columns;
   std::cout << "cols " << n_columns << " rows " << n_rows << "\n";
-  PET2D::PixelGrid<FType, SType> grid(
+  PET2D::PixelGrid<F, S> grid(
       n_columns,
       n_rows,
       pixel_size,
@@ -132,12 +132,12 @@ int main(int argc, char* argv[]) {
 
         i++;
         std::vector<PixelInfo>& pixel_info = lor_info[LOR(d1, d2)].pixels;
-        PET2D::LineSegment<FType> segment(detectors_centers[d2],
-                                          detectors_centers[d1]);
+        PET2D::LineSegment<F> segment(detectors_centers[d2],
+                                      detectors_centers[d1]);
 
         // TODO: Calculate width of the LOR.
-        auto width1 = FType(0);
-        auto width2 = FType(0);
+        auto width1 = F(0);
+        auto width2 = F(0);
         Detector detector1 = scanner[d1];
         Detector detector2 = scanner[d2];
         for (int i = 0; i < detector1.size(); ++i) {
@@ -151,16 +151,16 @@ int main(int argc, char* argv[]) {
           if (dist2 > width2)
             width2 = dist2;
         }
-        FType width = width1 + width2;
+        F width = width1 + width2;
         lor_info_stream.write((const char*)&detectors_centers[d1],
-                              2 * sizeof(FType));
+                              2 * sizeof(F));
         lor_info_stream.write((const char*)&detectors_centers[d2],
-                              2 * sizeof(FType));
+                              2 * sizeof(F));
         // std::cout<<detectors_centers[d1].x<<" "<<detectors_centers[d1].y<<"
         // ";
         // std::cout<<detectors_centers[d2].x<<"
         // "<<detectors_centers[d2].y<<"\n";
-        lor_info_stream.write((const char*)&width, sizeof(FType));
+        lor_info_stream.write((const char*)&width, sizeof(F));
 
         for (int ix = 0; ix < grid.n_columns; ++ix)
           for (int iy = 0; iy < grid.n_rows; ++iy) {
@@ -178,7 +178,7 @@ int main(int argc, char* argv[]) {
                 auto t = segment.projection_scaled(center);
                 auto distance = segment.distance_from(center);
                 PixelInfo info;
-                info.pixel = PET2D::Pixel<SType>(ix, iy);
+                info.pixel = PET2D::Pixel<S>(ix, iy);
                 info.t = t;
                 info.distance = distance;
                 info.fill = fill;

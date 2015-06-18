@@ -21,13 +21,13 @@
 #define omp_get_thread_num() 0
 #endif
 
-using FType = float;
-using SType = int;
+using F = float;
+using S = int;
 using RNGType = std::mt19937;
-using Detector = PET2D::Barrel::SquareDetector<FType>;
-using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, SType>;
+using Detector = PET2D::Barrel::SquareDetector<F>;
+using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
-using Point = PET2D::Point<FType>;
+using Point = PET2D::Point<F>;
 
 int main(int argc, char* argv[]) {
 
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
     std::ifstream lor_info_istream(lor_info_file_name, std::ios::binary);
     lor_info_istream.read((char*)&n_detectors, sizeof(n_detectors));
 
-    auto grid = PET2D::PixelGrid<FType, SType>::read(lor_info_istream);
+    auto grid = PET2D::PixelGrid<F, S>::read(lor_info_istream);
 
     std::cout << grid.n_columns << "x" << grid.n_rows << " " << grid.pixel_size
               << "\n";
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(scanner.barrel.size(), grid);
     lor_info.read(lor_info_istream);
 
-    Reconstructor<Scanner, PET2D::Strip::GaussianKernel<FType>> reconstructor(
+    Reconstructor<Scanner, PET2D::Strip::GaussianKernel<F>> reconstructor(
         scanner, lor_info, -0.200, 80, n_threads);
 
     std::ifstream response_stream(cl.get<std::string>("response"));
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
               (block + 1) * n_iter);
       std::ofstream out(rho_file_name);
       out.write((char*)&(*reconstructor.rho_begin()),
-                reconstructor.n_voxels * sizeof(FType));
+                reconstructor.n_voxels * sizeof(F));
     }
     std::cout << reconstructor.event_count() << " "
               << reconstructor.voxel_count() << " "
@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
 
     std::ofstream out("rho.bin");
     out.write((char*)&(*reconstructor.rho_begin()),
-              reconstructor.n_voxels * sizeof(FType));
+              reconstructor.n_voxels * sizeof(F));
 
   } catch (cmdline::exception& ex) {
     if (ex.help()) {
