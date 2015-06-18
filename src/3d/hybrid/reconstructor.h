@@ -23,15 +23,17 @@ template <typename ScannerType, typename Kernel2DType> class Reconstructor {
   using Kernel2D = Kernel2DType;
   using F = typename Scanner::F;
   using S = typename Scanner::S;
-  using LorPixelInfo = PET2D::Barrel::LORsPixelsInfo<F, S>;
+  using LORsPixelsInfo = PET2D::Barrel::LORsPixelsInfo<F, S>;
   using Response = typename Scanner::Response;
   using LOR = PET2D::Barrel::LOR<S>;
   using StripEvent = PET2D::Strip::Event<F>;
-  using PixelInfo = typename LorPixelInfo::PixelInfo;
-  using Pixel = typename LorPixelInfo::Pixel;
+  using PixelInfo = typename LORsPixelsInfo::PixelInfo;
+  using Pixel = typename LORsPixelsInfo::Pixel;
   using Point2D = PET2D::Point<F>;
   using Point = PET3D::Point<F>;
   using Vector2D = PET2D::Vector<F>;
+  using PixelConstIterator =
+      typename LORsPixelsInfo::PixelInfoContainer::const_iterator;
 
   struct FrameEvent {
     LOR lor;
@@ -41,8 +43,8 @@ template <typename ScannerType, typename Kernel2DType> class Reconstructor {
     F sec;
     F half_box_up;
     F half_box_right;
-    typename LorPixelInfo::PixelInfoContainer::const_iterator first_pixel;
-    typename LorPixelInfo::PixelInfoContainer::const_iterator last_pixel;
+    PixelConstIterator first_pixel;
+    PixelConstIterator last_pixel;
     S first_plane;
     S last_plane;
     F gauss_norm;
@@ -55,7 +57,7 @@ template <typename ScannerType, typename Kernel2DType> class Reconstructor {
   };
 
   Reconstructor(const Scanner& scanner,
-                const LorPixelInfo& lor_pixel_info,
+                const LORsPixelsInfo& lor_pixel_info,
                 F z_left,
                 int n_planes)
       : scanner(scanner),
@@ -271,7 +273,7 @@ template <typename ScannerType, typename Kernel2DType> class Reconstructor {
 
  public:
   const Scanner& scanner;
-  const LorPixelInfo& lor_pixel_info;
+  const LORsPixelsInfo& lor_pixel_info;
   const F z_left;
   const S n_planes;
   const PET3D::VoxelGrid<F, S> v_grid;
