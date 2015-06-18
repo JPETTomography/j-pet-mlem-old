@@ -15,7 +15,7 @@
 #include "generic_scanner.h"
 #include "2d/geometry/line_segment.h"
 #include "2d/geometry/pixel_grid.h"
-#include "2d/barrel/lor_info.h"
+#include "2d/barrel/lors_pixels_info.h"
 
 using FType = float;
 using SType = int;
@@ -24,10 +24,10 @@ using Detector = PET2D::Barrel::SquareDetector<FType>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, SType>;
 using Point = PET2D::Point<FType>;
 
-using PixelInfo = PET2D::Barrel::LorPixelnfo<FType, SType>::PixelInfo;
+using PixelInfo = PET2D::Barrel::LORsPixelsInfo<F, S>::PixelInfo;
 using PixelInfoContainer =
-    PET2D::Barrel::LorPixelnfo<FType, SType>::PixelInfoContainer;
-using LOR = PET2D::Barrel::LOR<SType>;
+    PET2D::Barrel::LORsPixelsInfo<F, S>::PixelInfoContainer;
+using LOR = PET2D::Barrel::LOR<S>;
 
 using BoostGeometryUtils = PET2D::Barrel::BoostGeometryUtils<FType, SType>;
 
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
   mapper.map(fov_circle, "fill:none;stroke:red;");
 
   int n_detectors = scanner.size();
-  PET2D::Barrel::LorPixelnfo<FType, SType> lor_info(n_detectors, grid);
+  PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(n_detectors, grid);
 
   std::ofstream lor_info_stream(output, std::ios::binary);
   lor_info_stream.write((const char*)&n_detectors, sizeof(n_detectors));

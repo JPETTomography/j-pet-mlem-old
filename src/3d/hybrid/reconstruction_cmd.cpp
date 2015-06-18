@@ -9,7 +9,7 @@
 #include "2d/barrel/ring_scanner.h"
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
-#include "2d/barrel/lor_info.h"
+#include "2d/barrel/lors_pixels_info.h"
 #include "2d/strip/gausian_kernel.h"
 #include "3d/hybrid/scanner.h"
 #include "3d/hybrid/reconstructor.h"
@@ -80,8 +80,7 @@ int main(int argc, char* argv[]) {
     if (n_detectors != scanner.barrel.size()) {
       throw("n_detectors mismatch");
     }
-    PET2D::Barrel::LorPixelnfo<FType, SType> lor_info(scanner.barrel.size(),
-                                                      grid);
+    PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(scanner.barrel.size(), grid);
     lor_info.read(lor_info_istream);
 
     Reconstructor<Scanner, PET2D::Strip::GaussianKernel<FType>> reconstructor(

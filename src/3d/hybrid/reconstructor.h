@@ -4,7 +4,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "2d/barrel/lor_info.h"
+#include "2d/barrel/lors_pixels_info.h"
 #include "2d/strip/event.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/voxel_grid.h"
@@ -22,7 +22,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
  public:
   using F = typename Scanner::F;
   using S = typename Scanner::S;
-  using LorPixelInfo = PET2D::Barrel::LorPixelnfo<F, S>;
+  using LorPixelInfo = PET2D::Barrel::LORsPixelsInfo<F, S>;
   using Response = typename Scanner::Response;
   using LOR = PET2D::Barrel::LOR<S>;
   using StripEvent = PET2D::Strip::Event<F>;
