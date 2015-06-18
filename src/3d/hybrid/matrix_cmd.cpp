@@ -111,8 +111,7 @@ int main(int argc, char* argv[]) {
 
       post_process(cl, scanner, sparse_matrix);
     } else {
-      std::cerr << "unknown model : `" << model_name << "'\n";
-      exit(-1);
+      throw("unknown model: " + model_name);
     }
 
     return 0;

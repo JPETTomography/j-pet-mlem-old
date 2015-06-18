@@ -30,16 +30,11 @@ template <typename Scanner2D> class Scanner {
   using Event2D = typename Scanner2D::Event;
 
   static Scanner build_scanner_from_cl(const cmdline::parser& cl) {
-    try {
-      Scanner2D barrel =
-          PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
-              PET3D_LONGITUDINAL_SCANNER_CL(cl, F));
-      barrel.set_fov_radius(cl.get<double>("fov-radius"));
-      return Scanner(barrel, F(cl.get<double>("length")));
-    } catch (const char* msg) {
-      std::cerr << msg << "\n";
-      exit(-1);
-    }
+    Scanner2D barrel =
+        PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
+            PET3D_LONGITUDINAL_SCANNER_CL(cl, F));
+    barrel.set_fov_radius(cl.get<double>("fov-radius"));
+    return Scanner(barrel, F(cl.get<double>("length")));
   }
 
   /// Scanner full response

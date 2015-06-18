@@ -88,9 +88,7 @@ int main(int argc, char* argv[]) {
   if (cl.exist("phantoms")) {
     FILE* in = fopen(cl.get<std::string>("phantoms").c_str(), "r");
     if (!in) {
-      std::cerr << "could not open file: `" << cl.get<std::string>("phantoms")
-                << "'\n";
-      exit(0);
+      throw("could not open file: " + cl.get<std::string>("phantoms"));
     }
     char readBuffer[256];
     rapidjson::FileReadStream input_stream(in, readBuffer, sizeof(readBuffer));
@@ -98,15 +96,13 @@ int main(int argc, char* argv[]) {
     doc.ParseStream(input_stream);
 
     if (!doc.IsObject()) {
-      std::cerr << "file `" << cl.get<std::string>("phantoms")
-                << "' does not contain a JSON object " << doc.GetType() << "\n";
-      exit(0);
+      throw("no JSON object in file:" + cl.get<std::string>("phantoms"));
     }
+
     const rapidjson::Value& phantoms_val = doc["phantoms"];
     if (!phantoms_val.IsArray()) {
-      std::cerr << "file `" << cl.get<std::string>("phantoms")
-                << "' does not contain Phantoms\n";
-      exit(0);
+      throw("Phantoms array missing in JSON file: " +
+            cl.get<std::string>("phantoms"));
     }
 
     for (auto it = phantoms_val.Begin(); it != phantoms_val.End(); it++) {

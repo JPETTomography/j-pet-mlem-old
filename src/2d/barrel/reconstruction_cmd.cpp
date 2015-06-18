@@ -88,8 +88,7 @@ int main(int argc, char* argv[]) {
     Reconstruction::Matrix matrix(in_matrix);
 
     if (matrix.triangular()) {
-      std::cerr << "matrix must be in full form\n";
-      exit(-1);
+      throw("matrix must be in full form");
     }
     // matrix = matrix.to_full();
 
