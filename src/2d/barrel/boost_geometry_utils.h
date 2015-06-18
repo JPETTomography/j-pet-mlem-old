@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef HAVE_Boost
+#ifdef HAVE_BOOST
 
 #ifdef __GNUC__
 #if __GNUC__ > 3 && __GNUC_MINOR__ > 6
