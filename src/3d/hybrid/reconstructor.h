@@ -17,8 +17,10 @@
 #define omp_get_thread_num() 0
 #endif
 
-template <typename Scanner, typename Kernel2D> class Reconstructor {
+template <typename ScannerType, typename Kernel2DType> class Reconstructor {
  public:
+  using Scanner = ScannerType;
+  using Kernel2D = Kernel2DType;
   using F = typename Scanner::F;
   using S = typename Scanner::S;
   using LorPixelInfo = PET2D::Barrel::LORsPixelsInfo<F, S>;
