@@ -118,7 +118,9 @@ int main(int argc, char* argv[]) {
     for (auto it = phantoms_val.Begin(); it != phantoms_val.End(); it++) {
 
       auto region = PET3D::create_phantom_region_from_json<float, RNG>(*it);
-      // std::cerr<<"Adding region\n";
+#if DEBUG
+      std::cerr << "Adding region\n";
+#endif
       regions.push_back(region);
     }
 

@@ -62,8 +62,6 @@ int main(int argc, char* argv[]) {
       PET2D_BARREL_SCANNER_CL(cl, F));
 
   auto output = cl.get<cmdline::path>("output");
-  auto output_base_name = output.wo_ext();
-  auto ext = output.ext();
 
   std::vector<Polygon> detectors;
   std::vector<Point> detectors_centers;
@@ -94,7 +92,9 @@ int main(int argc, char* argv[]) {
   boost::geometry::svg_mapper<point_2d> mapper(svg, 1200, 1200);
 
   for (auto p = detectors.begin(); p != detectors.end(); ++p) {
-    // std::cout << boost::geometry::wkt(*p) << std::endl;
+#if DEBUG
+    std::cout << boost::geometry::wkt(*p) << std::endl;
+#endif
     mapper.add(*p);
   }
 
@@ -114,8 +114,7 @@ int main(int argc, char* argv[]) {
   lor_info_stream.write((const char*)&n_detectors, sizeof(n_detectors));
   grid.write(lor_info_stream);
 
-  /* -------- Loop over the lors ------------- */
-
+  // Loop over the LORs
   int i = 0;
   for (int d1 = 0; d1 < n_detectors; ++d1) {
     for (int d2 = 0; d2 < d1; ++d2) {
@@ -126,7 +125,9 @@ int main(int argc, char* argv[]) {
       boost::geometry::convex_hull(pair, lor);
 
       if (boost::geometry::intersects(lor, fov_circle)) {
-        //        std::cout << "l : " << i << "  " << d1 << " " << d2 << "\n";
+#if DEBUG
+        std::cout << "l : " << i << "  " << d1 << " " << d2 << "\n";
+#endif
         lor_info_stream.write((const char*)&d1, sizeof(int));
         lor_info_stream.write((const char*)&d2, sizeof(int));
 
@@ -156,10 +157,12 @@ int main(int argc, char* argv[]) {
                               2 * sizeof(F));
         lor_info_stream.write((const char*)&detectors_centers[d2],
                               2 * sizeof(F));
-        // std::cout<<detectors_centers[d1].x<<" "<<detectors_centers[d1].y<<"
-        // ";
-        // std::cout<<detectors_centers[d2].x<<"
-        // "<<detectors_centers[d2].y<<"\n";
+#if DEBUG
+        std::cout << detectors_centers[d1].x << " " << detectors_centers[d1].y
+                  << " "  //
+                  << detectors_centers[d2].x << " " << detectors_centers[d2].y
+                  << "\n";
+#endif
         lor_info_stream.write((const char*)&width, sizeof(F));
 
         for (int ix = 0; ix < grid.n_columns; ++ix)
