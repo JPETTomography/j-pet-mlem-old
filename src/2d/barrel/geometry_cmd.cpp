@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 
   for (int i = 0; i < scanner.size(); i++) {
     auto detector = scanner[i];
-    Polygon detector_poly = BoostGeometryUtils::makeDetector(detector);
+    Polygon detector_poly = BoostGeometryUtils::make_detector(detector);
 
     detectors.push_back(detector_poly);
     detectors_centers.push_back(detector.center());
@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
     mapper.add(*p);
   }
 
-  auto fov_circle = BoostGeometryUtils::makeCircle(
+  auto fov_circle = BoostGeometryUtils::make_circle(
       Point(0, 0), cl.get<double>("fov-radius"), 128);
   mapper.add(fov_circle);
 
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
           for (int iy = 0; iy < grid.n_rows; ++iy) {
 
             Point center = grid.center_at(ix, iy);
-            Polygon pixel = BoostGeometryUtils::makePixel(grid, ix, iy);
+            Polygon pixel = BoostGeometryUtils::make_pixel(grid, ix, iy);
             if (boost::geometry::intersects(pixel, fov_circle)) {
               boost::geometry::model::multi_polygon<Polygon> inter;
               boost::geometry::intersection(lor, pixel, inter);

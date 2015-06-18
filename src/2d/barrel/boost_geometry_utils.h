@@ -46,7 +46,7 @@ template <typename FType, typename SType> class BoostGeometryUtils {
   using Polygon = boost::geometry::model::polygon<point_2d>;
   using Point = PET2D::Point<F>;
 
-  static Polygon makePixel(const PET2D::PixelGrid<F, S>& grid, S ix, S iy) {
+  static Polygon make_pixel(const PET2D::PixelGrid<F, S>& grid, S ix, S iy) {
     Polygon pixel;
     auto size = grid.pixel_size;
     Point ll = grid.lower_left_at(ix, iy);
@@ -64,7 +64,7 @@ template <typename FType, typename SType> class BoostGeometryUtils {
     return pixel;
   }
 
-  static Polygon makeCircle(const Point& center, F radius, int n = 64) {
+  static Polygon make_circle(const Point& center, F radius, int n = 64) {
     Polygon circle;
     F da = 2 * M_PI / n;
     F angle = 0.0;
@@ -81,7 +81,7 @@ template <typename FType, typename SType> class BoostGeometryUtils {
   }
 
   template <typename Detector>
-  static Polygon makeDetector(const Detector& detector) {
+  static Polygon make_detector(const Detector& detector) {
     Polygon detector_poly;
     for (int j = 0; j < detector.size(); j++) {
       Point p = detector[j];
@@ -94,7 +94,7 @@ template <typename FType, typename SType> class BoostGeometryUtils {
     return detector_poly;
   }
 
-  static Polygon makeLor(const Polygon& d1, const Polygon& d2) {
+  static Polygon make_lor(const Polygon& d1, const Polygon& d2) {
     boost::geometry::model::multi_polygon<Polygon> pair;
 
     boost::geometry::union_(d1, d2, pair);
@@ -104,8 +104,8 @@ template <typename FType, typename SType> class BoostGeometryUtils {
   }
 
   template <typename Detector>
-  static Polygon makeLor(const Detector& d1, const Detector& d2) {
-    return makeLor(makeDetector(d1), makeDetector(d2));
+  static Polygon make_lor(const Detector& d1, const Detector& d2) {
+    return make_lor(make_detector(d1), make_detector(d2));
   }
 };
 }
