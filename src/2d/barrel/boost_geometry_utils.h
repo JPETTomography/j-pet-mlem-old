@@ -34,24 +34,25 @@
 #endif
 
 #include "2d/geometry/pixel_grid.h"
+
 namespace PET2D {
 namespace Barrel {
 
 template <typename FType, typename SType> class BoostGeometryUtils {
  public:
-  using point_2d = boost::geometry::model::d2::point_xy<FType>;
+  using F = FType;
+  using S = SType;
+  using point_2d = boost::geometry::model::d2::point_xy<F>;
   using Polygon = boost::geometry::model::polygon<point_2d>;
-  using Point = PET2D::Point<FType>;
+  using Point = PET2D::Point<F>;
 
-  static Polygon makePixel(const PET2D::PixelGrid<FType, SType>& grid,
-                           int ix,
-                           int iy) {
+  static Polygon makePixel(const PET2D::PixelGrid<F, S>& grid, S ix, S iy) {
     Polygon pixel;
     auto size = grid.pixel_size;
     Point ll = grid.lower_left_at(ix, iy);
     auto x = ll.x;
     auto y = ll.y;
-    // std::cout<<x<<" "<<y<<"\n";
+
     boost::geometry::append(pixel, boost::geometry::make<point_2d>(x, y));
     boost::geometry::append(pixel,
                             boost::geometry::make<point_2d>(x, y + size));
@@ -63,19 +64,19 @@ template <typename FType, typename SType> class BoostGeometryUtils {
     return pixel;
   }
 
-  static Polygon makeCircle(const Point& center, FType radius, int n = 64) {
+  static Polygon makeCircle(const Point& center, F radius, int n = 64) {
     Polygon circle;
-    FType da = 2 * M_PI / n;
-    FType angle = 0.0;
+    F da = 2 * M_PI / n;
+    F angle = 0.0;
     for (int i = 0; i < n; ++i) {
-      FType x, y;
+      F x, y;
       x = center.x + radius * std::cos(angle);
       y = center.y + radius * std::sin(angle);
       boost::geometry::append(circle, boost::geometry::make<point_2d>(x, y));
       angle += da;
     }
-    boost::geometry::append(
-        circle, boost::geometry::make<point_2d>(radius, FType(0.0)));
+    boost::geometry::append(circle,
+                            boost::geometry::make<point_2d>(radius, F(0)));
     return circle;
   }
 
