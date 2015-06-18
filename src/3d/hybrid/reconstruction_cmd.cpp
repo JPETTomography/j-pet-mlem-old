@@ -31,23 +31,26 @@ using Point = PET2D::Point<F>;
 
 int main(int argc, char* argv[]) {
 
-  cmdline::parser cl;
-  cl.add<std::string>("lor-info", '\0', "lor-pixel information", true);
-  cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
-  cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
-
-  cl.add<double>("length", 0, "length of the detector", false, 0.3);
-  cl.add<std::string>("response", '\0', "detector responses", true);
-
-  PET2D::Barrel::add_matrix_options(cl);
-  cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
-  cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
-  //  cl.add<int>("n-threads",
-  //              'T',
-  //              "number of OpenMP threads to use",
-  //              false,
-  //              omp_get_max_threads());
   try {
+    cmdline::parser cl;
+    cl.add<std::string>("lor-info", 0, "lor-pixel information", true);
+    cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
+    cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
+
+    cl.add<double>("length", 0, "length of the detector", false, 0.3);
+    cl.add<std::string>("response", 0, "detector responses", true);
+
+    PET2D::Barrel::add_matrix_options(cl);
+    cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
+    cl.add<int>(
+        "iterations", 'I', "number of iterations (per block)", false, 1);
+#if _OPENMP
+    cl.add<int>("n-threads",
+                'T',
+                "number of OpenMP threads to use",
+                false,
+                omp_get_max_threads());
+#endif
     cl.try_parse(argc, argv);
 
     PET3D::Hybrid::set_big_barrel_options(cl);
@@ -56,16 +59,11 @@ int main(int argc, char* argv[]) {
     scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
     auto output = cl.get<cmdline::path>("output");
     auto output_base_name = output.wo_ext();
-    auto ext = output.ext();
-
-    int n_threads;
-    if (!cl.exist("n-threads"))
-      n_threads = omp_get_max_threads();
-    else
-      n_threads = cl.get<int>("n-threads");
 
 #if _OPENMP
-    omp_set_num_threads(n_threads);
+    if (cl.exist("n-threads")) {
+      omp_set_num_threads(cl.get<int>("n-threads"));
+    }
 #endif
 
     auto lor_info_file_name = cl.get<std::string>("lor-info");
@@ -84,7 +82,7 @@ int main(int argc, char* argv[]) {
     lor_info.read(lor_info_istream);
 
     Reconstructor<Scanner, PET2D::Strip::GaussianKernel<F>> reconstructor(
-        scanner, lor_info, -0.200, 80, n_threads);
+        scanner, lor_info, -0.200, 80);
 
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstructor.fscanf_responses(response_stream);

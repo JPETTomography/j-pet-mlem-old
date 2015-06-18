@@ -1,5 +1,4 @@
-#ifndef RECONSTRUCTOR
-#define RECONSTRUCTOR
+#pragma once
 
 #include <vector>
 #include <algorithm>
@@ -56,8 +55,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   Reconstructor(const Scanner& scanner,
                 const LorPixelInfo& lor_pixel_info,
                 F z_left,
-                int n_planes,
-                int n_threads)
+                int n_planes)
       : scanner_(scanner),
         lor_pixel_info_(lor_pixel_info),
         z_left(z_left),
@@ -67,7 +65,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
                  n_planes),
         kernel_(scanner.sigma_z(), scanner.sigma_dl()),
         rho_(n_voxels, F(1.0)),
-        n_threads_(n_threads),
+        n_threads_(omp_get_max_threads()),
         thread_rhos_(n_threads_),
         thread_kernel_caches_(n_threads_),
         n_events_per_thread_(n_threads_, 0) {}
@@ -290,5 +288,3 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   std::vector<VoxelKernelInfo> voxel_cache_;
   std::vector<int> n_events_per_thread_;
 };
-
-#endif  // RECONSTRUCTOR
