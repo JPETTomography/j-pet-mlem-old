@@ -1,10 +1,9 @@
-#ifndef RECONSTRUCTOR
-#define RECONSTRUCTOR
+#pragma once
 
 #include <vector>
 #include <algorithm>
 
-#include "2d/barrel/lor_info.h"
+#include "2d/barrel/lors_pixels_info.h"
 #include "2d/strip/event.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/voxel_grid.h"
@@ -18,11 +17,13 @@
 #define omp_get_thread_num() 0
 #endif
 
-template <typename Scanner, typename Kernel2D> class Reconstructor {
+template <typename ScannerType, typename Kernel2DType> class Reconstructor {
  public:
+  using Scanner = ScannerType;
+  using Kernel2D = Kernel2DType;
   using F = typename Scanner::F;
   using S = typename Scanner::S;
-  using LorPixelInfo = PET2D::Barrel::LorPixelnfo<F, S>;
+  using LorPixelInfo = PET2D::Barrel::LORsPixelsInfo<F, S>;
   using Response = typename Scanner::Response;
   using LOR = PET2D::Barrel::LOR<S>;
   using StripEvent = PET2D::Strip::Event<F>;
@@ -56,25 +57,24 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   Reconstructor(const Scanner& scanner,
                 const LorPixelInfo& lor_pixel_info,
                 F z_left,
-                int n_planes,
-                int n_threads)
-      : scanner_(scanner),
-        lor_pixel_info_(lor_pixel_info),
+                int n_planes)
+      : scanner(scanner),
+        lor_pixel_info(lor_pixel_info),
         z_left(z_left),
         n_planes(n_planes),
-        v_grid(lor_pixel_info_.grid, z_left, n_planes),
-        n_voxels(lor_pixel_info_.grid.n_columns * lor_pixel_info_.grid.n_rows *
+        v_grid(lor_pixel_info.grid, z_left, n_planes),
+        n_voxels(lor_pixel_info.grid.n_columns * lor_pixel_info.grid.n_rows *
                  n_planes),
         kernel_(scanner.sigma_z(), scanner.sigma_dl()),
         rho_(n_voxels, F(1.0)),
-        n_threads_(n_threads),
+        n_threads_(omp_get_max_threads()),
         thread_rhos_(n_threads_),
         thread_kernel_caches_(n_threads_),
         n_events_per_thread_(n_threads_, 0) {}
 
   Point translate_to_point(const Response& response) {
 
-    auto segment = lor_pixel_info_[response.lor].segment;
+    auto segment = lor_pixel_info[response.lor].segment;
     F t = 0.5 - response.dl / (2 * segment->length);
     return PET3D::interpolate(
         t,
@@ -89,10 +89,10 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     FrameEvent event;
     event.lor = response.lor;
 
-    auto R = lor_pixel_info_[event.lor].segment->length / 2;
+    auto R = lor_pixel_info[event.lor].segment->length / 2;
     StripEvent strip_event(response.z_up, response.z_dn, response.dl);
 
-    auto width = lor_pixel_info_[event.lor].width;
+    auto width = lor_pixel_info[event.lor].width;
     event.gauss_norm = 1 / (sigma(width) * std::sqrt(2 * M_PI));
     event.inv_sigma2 = 1 / (2 * sigma(width) * sigma(width));
     strip_event.transform(R, event.tan, event.up, event.right);
@@ -114,24 +114,26 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     pix_info_up.t = t_up;
     pix_info_dn.t = t_dn;
     event.last_pixel =
-        std::upper_bound(lor_pixel_info_[event.lor].pixels.begin(),
-                         lor_pixel_info_[event.lor].pixels.end(),
+        std::upper_bound(lor_pixel_info[event.lor].pixels.begin(),
+                         lor_pixel_info[event.lor].pixels.end(),
                          pix_info_up,
-                         [](const PixelInfo& a, const PixelInfo& b)
-                             -> bool { return a.t < b.t; });
+                         [](const PixelInfo& a, const PixelInfo& b) -> bool {
+                           return a.t < b.t;
+                         });
 
     event.first_pixel =
-        std::lower_bound(lor_pixel_info_[event.lor].pixels.begin(),
-                         lor_pixel_info_[event.lor].pixels.end(),
+        std::lower_bound(lor_pixel_info[event.lor].pixels.begin(),
+                         lor_pixel_info[event.lor].pixels.end(),
                          pix_info_dn,
-                         [](const PixelInfo& a, const PixelInfo& b)
-                             -> bool { return a.t < b.t; });
+                         [](const PixelInfo& a, const PixelInfo& b) -> bool {
+                           return a.t < b.t;
+                         });
 
     return event;
   }
 
   S plane(F z) {
-    return S(std::floor((z - z_left) / lor_pixel_info_.grid.pixel_size));
+    return S(std::floor((z - z_left) / lor_pixel_info.grid.pixel_size));
   }
 
   int fscanf_responses(std::istream& in) {
@@ -152,7 +154,7 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
     event_count_ = 0;
     voxel_count_ = 0;
     pixel_count_ = 0;
-    auto grid = lor_pixel_info_.grid;
+    auto grid = lor_pixel_info.grid;
     for (auto& thread_rho : thread_rhos_) {
       thread_rho.assign(v_grid.n_voxels, 0);
     }
@@ -173,9 +175,8 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
       n_events_per_thread_[thread]++;
       auto event = frame_event(i);
       auto lor = event.lor;
-      auto segment = *lor_pixel_info_[lor].segment;
+      auto segment = *lor_pixel_info[lor].segment;
       auto R = segment.length / 2;
-      auto width = lor_pixel_info_[lor].width;
 
       /* ---------  Voxel loop  - denominator ----------- */
       double denominator = 0;
@@ -197,7 +198,6 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
           auto diff = Point2D(up, z) - Point2D(event.up, event.right);
           auto kernel2d = kernel_(
               event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
-          auto s = sigma(width);
           auto kernel_z = event.gauss_norm *
                           std::exp(-distance * distance * event.inv_sigma2);
           auto weight = kernel2d * kernel_z * rho_[index];
@@ -253,17 +253,16 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   void graph_frame_event(Graphics<F>& graphics, int event_index) {
     auto event = events_[event_index];
     auto lor = event.lor;
-    graphics.add(scanner_.barrel, lor);
-    graphics.add(*lor_pixel_info_[lor].segment);
+    graphics.add(scanner.barrel, lor);
+    graphics.add(*lor_pixel_info[lor].segment);
     for (auto pix = event.first_pixel; pix != event.last_pixel; ++pix) {
-      graphics.addPixel(lor_pixel_info_.grid, pix->pixel);
+      graphics.addPixel(lor_pixel_info.grid, pix->pixel);
     }
   }
 
  private:
   Response fscanf_response(std::istream& in) {
     S d1, d2;
-    F z_up, z_dn, dl;
     Response response;
     in >> d1 >> d2 >> response.z_up >> response.z_dn >> response.dl;
     response.lor = LOR(d1, d2);
@@ -271,8 +270,8 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   }
 
  public:
-  const Scanner& scanner_;
-  const LorPixelInfo& lor_pixel_info_;
+  const Scanner& scanner;
+  const LorPixelInfo& lor_pixel_info;
   const F z_left;
   const S n_planes;
   const PET3D::VoxelGrid<F, S> v_grid;
@@ -291,5 +290,3 @@ template <typename Scanner, typename Kernel2D> class Reconstructor {
   std::vector<VoxelKernelInfo> voxel_cache_;
   std::vector<int> n_events_per_thread_;
 };
-
-#endif  // RECONSTRUCTOR

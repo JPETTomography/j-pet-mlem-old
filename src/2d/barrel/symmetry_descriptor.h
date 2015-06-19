@@ -3,6 +3,10 @@
 #include "2d/geometry/pixel.h"
 #include "2d/geometry/pixel_grid.h"
 
+#if !__CUDACC__
+#include "util/mathematica_ostream.h"
+#endif
+
 namespace PET2D {
 namespace Barrel {
 
@@ -11,11 +15,13 @@ enum Axis { X = 1, Y = 2, XY = 4 };
 template <typename SType> class SymmetryDescriptor {
  public:
   using S = SType;
+  static const S EIGHT = 8;
+
   SymmetryDescriptor(int n_detectors, int n_symmetries)
       : n_detectors(n_detectors), n_symmetries(n_symmetries) {
+    // FIXME: we are leaking there
     detectors_ = new S[n_detectors * n_symmetries];
   }
-  static const S EIGHT = 8;
 
   /// Symmetric detector
   S symmetric_detector(S detector, S symmetry) const {
@@ -48,18 +54,16 @@ template <typename SType> class SymmetryDescriptor {
   }
 
   /// Returns symmetric detector on a ring of n_detectors, assuming that
-  /// detector zero is on the positive X-axis (rotation=0).
+  /// detector zero is on the positive X-axis (rotation = 0).
   static S ring_symmetric_detector(S n_detectors, S detector, S symmetry) {
     if (symmetry & Axis::X) {
-      detector = (n_detectors - detector) % n_detectors;  // x-axis
+      detector = (n_detectors - detector) % n_detectors;
     }
     if (symmetry & Axis::Y) {
-      detector =
-          ((n_detectors + n_detectors / 2) - detector) % n_detectors;  // y-axis
+      detector = ((n_detectors + n_detectors / 2) - detector) % n_detectors;
     }
     if (symmetry & Axis::XY) {
-      detector = ((n_detectors + n_detectors / 4) - detector) %
-                 n_detectors;  // xy-axis
+      detector = ((n_detectors + n_detectors / 4) - detector) % n_detectors;
     }
     return detector;
   }
@@ -72,15 +76,15 @@ template <typename SType> class SymmetryDescriptor {
                                            S detector,
                                            S symmetry) {
     if (symmetry & Axis::X) {
-      detector = (n_detectors - (detector + 1)) % n_detectors;  // x-axis
+      detector = (n_detectors - (detector + 1)) % n_detectors;
     }
     if (symmetry & Axis::Y) {
-      detector = ((n_detectors + n_detectors / 2) - (detector + 1)) %
-                 n_detectors;  // y-axis
+      detector =
+          ((n_detectors + n_detectors / 2) - (detector + 1)) % n_detectors;
     }
     if (symmetry & Axis::XY) {
-      detector = ((n_detectors + n_detectors / 4) - (detector + 1)) %
-                 n_detectors;  // xy-axis
+      detector =
+          ((n_detectors + n_detectors / 4) - (detector + 1)) % n_detectors;
     }
     return detector;
   }
@@ -90,17 +94,29 @@ template <typename SType> class SymmetryDescriptor {
   }
 
 #if !__CUDACC__
-  void to_mathematica(std::ostream& m_out) const {
-    auto out_delimiter = "";
-    for (S i = 0; i < n_detectors; i++) {
-      auto in_delimiter = "";
-      m_out << out_delimiter << "{" << i << "->{";
-      for (S s = 0; s < n_symmetries; s++) {
-        m_out << in_delimiter << symmetric_detector(i, s);
-        in_delimiter = ",";
+  friend util::mathematica_ostream& operator<<(util::mathematica_ostream& m,
+                                               const SymmetryDescriptor& sd) {
+    bool next = false;
+
+    for (S i = 0; i < sd.n_detectors; ++i) {
+      if (next) {
+        m << ", ";
+      } else {
+        next = true;
       }
-      m_out << "}}\n";
-      out_delimiter = ",";
+      m << "{" << i << "->{";
+
+      bool inner_next = false;
+      for (S s = 0; s < sd.n_symmetries; ++s) {
+        if (inner_next) {
+          m << ", ";
+        } else {
+          inner_next = true;
+        }
+        m << sd.symmetric_detector(i, s);
+      }
+
+      m << "}}\n";
     }
   }
 #endif

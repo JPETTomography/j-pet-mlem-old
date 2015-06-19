@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 #include "square_detector.h"
 #include "circle_detector.h"
 #include "util/array.h"
@@ -11,8 +9,10 @@
 
 #if !__CUDACC__
 #include "util/svg_ostream.h"
-#include <vector>  // multi-ring detector construction
+#include "util/mathematica_ostream.h"
+#include "util/json_ostream.h"
 #endif
+
 #ifndef MAX_DETECTORS
 #define MAX_DETECTORS 260
 #endif
@@ -149,43 +149,42 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
     return svg;
   }
 
-  void to_mathematica(std::ostream& m_out) const {
+  friend util::mathematica_ostream& operator<<(util::mathematica_ostream& m,
+                                               const DetectorSet& ds) {
     int i = 0;
-    std::string delimiter;
-    m_out << "{\"Detector\"->";
-    m_out << "{\n";
+    bool next = false;
 
-    for (auto& detector : (*this)) {
-      m_out << delimiter << "{ " << i << " , ";
-      detector.to_mathematica(m_out);
-      m_out << "}\n";
+    m << "{\"Detector\"->"
+      << "{\n";
+
+    for (auto& detector : ds) {
+      m.delimiter(next) << "{ " << i << ", ";
+      m << detector << "}\n";
       i++;
-      delimiter = ",";
     }
-    m_out << "},";
-    m_out << "\"Symmetries\"->{";
-    symmetry_descriptor()->to_mathematica(m_out);
-    m_out << "}";
-    m_out << "}";
+
+    m << "},"
+      << "\"Symmetries\"->{";
+    m << ds.symmetry_descriptor() << "}"
+      << "}";
+    return m;
   }
 
-  void to_json(std::ostream& j_out) const {
-    int i = 0;
-    std::string delimiter;
-    j_out << "{\"Detector\":";
-    j_out << "[\n";
+  friend util::json_ostream& operator<<(util::json_ostream& json,
+                                        const DetectorSet& ds) {
+    bool next = false;
 
-    for (auto& detector : (*this)) {
-      j_out << delimiter;
-      detector.to_json(j_out);
-      i++;
-      delimiter = ",";
+    json << "{\"Detector\":"
+         << "[\n";
+
+    for (auto& detector : ds) {
+      json.delimiter(next) << detector;
     }
-    j_out << "]\n";
 
-    j_out << "}";
+    json << "]\n"
+         << "}";
+    return json;
   }
-
 #endif
 
   void push_back(const Detector& detector) {

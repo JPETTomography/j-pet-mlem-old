@@ -175,8 +175,8 @@ class TranslatedPhantomRegion : public PhantomRegion<FType, RNG> {
   TranslatedPhantomRegion(PhantomRegion<F, RNG>* region,
                           const Vector displacement)
       : PhantomRegion<F, RNG>(region->intensity),
-        displacement(displacement),
-        region(region) {}
+        region(region),
+        displacement(displacement) {}
 
   F volume() const { return region->volume(); }
   Point random_point(RNG& rng) {
@@ -207,7 +207,10 @@ class PointRegion
                                                                angular),
         origin(origin) {}
 
-  Point random_point(RNG& rng) { return origin; }
+  Point random_point(RNG& rng) {
+    (void)rng;  // unused
+    return origin;
+  }
 
   bool in(const Point& p) const { return p == origin; }
 
@@ -248,7 +251,9 @@ template <typename FType, typename SType, typename RNGType> class Phantom {
     F norm = CDF[el.size() - 1];
     for (size_t i = 0; i < el.size(); i++) {
       CDF[i] /= norm;
-      // std::cerr<<"CDF["<<i<<"]="<<CDF[i];
+#if DEBUG
+      std::cerr << "CDF[" << i << "]=" << CDF[i];
+#endif
     }
   }
 

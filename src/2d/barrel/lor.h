@@ -23,9 +23,9 @@ template <typename SType> class LOR {
   LOR(std::istream& in) : first(util::read<S>(in)), second(util::read<S>(in)) {}
 #endif
 
-  _ const int index() const { return first * (first + 1) / 2 + second; }
+  _ int index() const { return first * (first + 1) / 2 + second; }
 
-  _ const int index(S width) const { return first * width + second; }
+  _ int index(S width) const { return first * width + second; }
 
   _ LOR& operator++() {
     if (++second > first) {

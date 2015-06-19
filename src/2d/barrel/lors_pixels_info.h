@@ -1,5 +1,4 @@
-#ifndef LOR_INFO
-#define LOR_INFO
+#pragma once
 
 #include "2d/barrel/lor.h"
 #include "2d/geometry/pixel_grid.h"
@@ -9,39 +8,41 @@
 namespace PET2D {
 namespace Barrel {
 
-template <typename FType, typename SType> class LorPixelnfo {
+template <typename FType, typename SType> class LORsPixelsInfo {
  public:
-  using Pixel = PET2D::Pixel<SType>;
-  struct PixelInfo {
-    Pixel pixel;
-    FType t;
-    FType distance;
-    FType fill;
-  };
-
   using F = FType;
   using S = SType;
-  using LOR = PET2D::Barrel::LOR<SType>;
-  using PixelGrid = PET2D::PixelGrid<FType, SType>;
-  using PixelInfoContainer = std::vector<PixelInfo>;
+
+  using Pixel = PET2D::Pixel<S>;
+  using LOR = PET2D::Barrel::LOR<S>;
+  using PixelGrid = PET2D::PixelGrid<F, S>;
   using Point = PET2D::Point<F>;
 
-  struct LorInfo {
-    SType d1, d2;
-    FType width;
+  struct PixelInfo {
+    Pixel pixel;
+    F t;
+    F distance;
+    F fill;
+  };
+
+  using PixelInfoContainer = std::vector<PixelInfo>;
+
+  struct LORInfo {
+    S d1, d2;
+    F width;
     PixelInfoContainer pixels;
     LineSegment<F>* segment;
   };
 
-  LorPixelnfo(SType n_detectors, const PixelGrid& grid)
+  LORsPixelsInfo(S n_detectors, const PixelGrid& grid)
       : n_detectors(n_detectors),
         max_index((int(n_detectors - 1) * (n_detectors)) / 2 + n_detectors - 2),
         grid(grid),
         lor_info_(max_index + 1) {}
 
-  LorInfo& operator[](const LOR& lor) { return lor_info_[lor.index()]; }
+  LORInfo& operator[](const LOR& lor) { return lor_info_[lor.index()]; }
 
-  const LorInfo& operator[](const LOR& lor) const {
+  const LORInfo& operator[](const LOR& lor) const {
     return lor_info_[lor.index()];
   }
   std::istream& read(std::istream& in) {
@@ -91,13 +92,12 @@ template <typename FType, typename SType> class LorPixelnfo {
     }
   }
 
-  const SType n_detectors;
+  const S n_detectors;
   const int max_index;
   const PixelGrid grid;
 
  private:
-  std::vector<LorInfo> lor_info_;
+  std::vector<LORInfo> lor_info_;
 };
 }
 }
-#endif  // LOR_INFO

@@ -32,7 +32,10 @@ template <typename Scanner> class SensitivityMapper {
     PET3D::Point<F> ll =
         voxel_set.v_grid.lower_left_at(voxel.ix, voxel.iy, voxel.iz);
 
-    // std::cout<<"emitting from pixel at "<<ll.x<<" "<<ll.y<<" "<<ll.z<<"\n";
+#if DEBUG
+    std::cout << "emitting from pixel at " << ll.x << " " << ll.y << " " << ll.z
+              << "\n";
+#endif
 
     for (int i = 0; i < n_emissions; ++i) {
 
@@ -41,7 +44,9 @@ template <typename Scanner> class SensitivityMapper {
       F rz = ll.z + one_dis(gen) * pixel_size;
 
       auto dir = direction(gen);
-      // std::cout<<dir.x<<" "<<dir.y<<" "<<dir.z<<"\n";
+#if DEBUG
+      std::cout << dir.x << " " << dir.y << " " << dir.z << "\n";
+#endif
       Event event(PET3D::Point<F>(rx, ry, rz), dir);
 
       typename Scanner::Response response;

@@ -20,9 +20,9 @@ template <typename SType> class Pixel {
   Pixel(std::istream& in) : x(util::read<S>(in)), y(util::read<S>(in)) {}
 #endif
 
-  _ const int index() const { return y * (y + 1) / 2 + x; }
+  _ int index() const { return y * (y + 1) / 2 + x; }
 
-  _ const int index(S width) const { return y * width + x; }
+  _ int index(S width) const { return y * width + x; }
 
   _ Pixel& operator++() {
     if (++x > y) {

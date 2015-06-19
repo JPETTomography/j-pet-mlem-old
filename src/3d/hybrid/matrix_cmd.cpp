@@ -24,6 +24,8 @@
 
 #include "util/png_writer.h"
 #include "util/svg_ostream.h"
+#include "util/mathematica_ostream.h"
+#include "util/json_ostream.h"
 
 #include "options.h"
 #if _OPENMP
@@ -109,8 +111,7 @@ int main(int argc, char* argv[]) {
 
       post_process(cl, scanner, sparse_matrix);
     } else {
-      std::cerr << "unknown model : `" << model_name << "'\n";
-      exit(-1);
+      throw("unknown model: " + model_name);
     }
 
     return 0;
@@ -253,9 +254,9 @@ void post_process(cmdline::parser& cl,
 
     std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
     os << cl;
-    std::ofstream m_out(fn_wo_ext + ".m", std::ios::trunc);
 
-    scanner.barrel.to_mathematica(m_out);
+    util::mathematica_ostream mathematica(fn_wo_ext + ".m");
+    mathematica << scanner.barrel;
 
     try {
       util::png_writer png(fn_wo_ext + ".png");

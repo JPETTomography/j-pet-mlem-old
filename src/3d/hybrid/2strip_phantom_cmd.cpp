@@ -15,6 +15,8 @@
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
+#include "util/mathematica_ostream.h"
+#include "util/json_ostream.h"
 
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
@@ -73,11 +75,11 @@ int main(int argc, char* argv[]) {
   Scanner scanner(scanner2d, strip_length);
   scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
 
-  std::ofstream mathematica_stream(output_base_name + ".m");
-  scanner.barrel.to_mathematica(mathematica_stream);
+  util::mathematica_ostream mathematica(output_base_name + ".m");
+  mathematica << scanner.barrel;
 
-  std::ofstream json_stream(output_base_name + ".json");
-  scanner.barrel.to_json(json_stream);
+  util::json_ostream json(output_base_name + ".json");
+  json << scanner.barrel;
 
   using RNG = std::mt19937;
   RNG rng;
@@ -86,9 +88,7 @@ int main(int argc, char* argv[]) {
   if (cl.exist("phantoms")) {
     FILE* in = fopen(cl.get<std::string>("phantoms").c_str(), "r");
     if (!in) {
-      std::cerr << "could not open file: `" << cl.get<std::string>("phantoms")
-                << "'\n";
-      exit(0);
+      throw("could not open file: " + cl.get<std::string>("phantoms"));
     }
     char readBuffer[256];
     rapidjson::FileReadStream input_stream(in, readBuffer, sizeof(readBuffer));
@@ -96,21 +96,21 @@ int main(int argc, char* argv[]) {
     doc.ParseStream(input_stream);
 
     if (!doc.IsObject()) {
-      std::cerr << "file `" << cl.get<std::string>("phantoms")
-                << "' does not contain a JSON object " << doc.GetType() << "\n";
-      exit(0);
+      throw("no JSON object in file:" + cl.get<std::string>("phantoms"));
     }
+
     const rapidjson::Value& phantoms_val = doc["phantoms"];
     if (!phantoms_val.IsArray()) {
-      std::cerr << "file `" << cl.get<std::string>("phantoms")
-                << "' does not contain Phantoms\n";
-      exit(0);
+      throw("Phantoms array missing in JSON file: " +
+            cl.get<std::string>("phantoms"));
     }
 
     for (auto it = phantoms_val.Begin(); it != phantoms_val.End(); it++) {
 
       auto region = PET3D::create_phantom_region_from_json<float, RNG>(*it);
-      // std::cerr<<"Adding region\n";
+#if DEBUG
+      std::cerr << "Adding region\n";
+#endif
       regions.push_back(region);
     }
 

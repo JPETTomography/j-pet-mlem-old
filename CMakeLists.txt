@@ -131,13 +131,11 @@ if(PNG_FOUND)
   link_libraries(${PNG_LIBRARIES})
 endif()
 
-
-find_package(Boost)
+# optionally use Boost
+find_package(Boost 1.50.0)
 if(Boost_FOUND)
-message(STATUS "Boost libraries found")
-include_directories(${Boost_INCLUDE_DIRS})
-add_definitions(-DHAVE_Boost=1)
-
+  include_directories(${Boost_INCLUDE_DIRS})
+  add_definitions(-DHAVE_BOOST=1 ${Boost_DEFINITIONS})
 endif()
 
 # add options above as compile flags removing PET_ prefix
@@ -236,7 +234,7 @@ pet_target(3d hybrid reconstruction ${CL_2D_OPTIONS})
 pet_target(3d hybrid sensitivity  ${CL_2D_OPTIONS})
 
 if(Boost_FOUND)
-    pet_target(2d barrel geometry)
+  pet_target(2d barrel geometry)
 endif()
 
 # custom documentation and config files to be shown in project tree

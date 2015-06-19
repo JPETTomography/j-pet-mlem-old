@@ -1,9 +1,12 @@
 #pragma once
 
-#include <ostream>
-
 #include "circle_detector.h"
 #include "2d/geometry/polygon.h"
+
+#if !__CUDACC__
+#include "util/mathematica_ostream.h"
+#include "util/json_ostream.h"
+#endif
 
 namespace PET2D {
 namespace Barrel {
@@ -48,29 +51,37 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
 
   static F default_height_for_width(const F w) { return w; }
 
-  void to_mathematica(std::ostream& m_out) const {
-    std::string delimiter;
-    m_out << "{ \"Polygon\" , { ";
-    for (int i = 0; i < NVertices; i++) {
-      auto vertex = (*this)[i];
-      m_out << delimiter << "{" << vertex.x << ", " << vertex.y;
-      m_out << "}";
-      delimiter = ",";
+#if !__CUDACC__
+  friend util::mathematica_ostream& operator<<(util::mathematica_ostream& m,
+                                               const PolygonalDetector& pd) {
+    bool next = false;
+
+    m << "{\"Polygon\", {";
+
+    for (std::size_t i = 0; i < NVertices; i++) {
+      auto vertex = pd[i];
+      m.delimiter(next) << "{" << vertex.x << ", " << vertex.y << "}";
     }
-    m_out << "}}";
+
+    m << "}}";
+    return m;
   }
 
-  void to_json(std::ostream& j_out) const {
-    std::string delimiter;
-    j_out << "{ \"Polygon\":  [ ";
-    for (int i = 0; i < NVertices; i++) {
-      auto vertex = (*this)[i];
-      j_out << delimiter << "[" << vertex.x << ", " << vertex.y;
-      j_out << "]";
-      delimiter = ",";
+  friend util::json_ostream& operator<<(util::json_ostream& json,
+                                        const PolygonalDetector& pd) {
+    bool next = false;
+
+    json << "{\"Polygon\": [";
+
+    for (std::size_t i = 0; i < NVertices; i++) {
+      auto vertex = pd[i];
+      json.delimiter(next) << "[" << vertex.x << ", " << vertex.y << "]";
     }
-    j_out << "]}";
+
+    json << "]}";
+    return json;
   }
+#endif
 
  protected:
   PolygonalDetector() {}

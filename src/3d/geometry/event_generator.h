@@ -41,7 +41,10 @@ template <typename F> class SingleDirectionDistribution {
   SingleDirectionDistribution(const Vector& direction)
       : direction(direction.normalized()) {}
 
-  template <typename RNG> Vector operator()(RNG& rng) { return direction; }
+  template <typename RNG> Vector operator()(RNG& rng) {
+    (void)rng;  // unused
+    return direction;
+  }
 
   const Vector direction;
 };
