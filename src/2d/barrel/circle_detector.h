@@ -1,7 +1,5 @@
 #pragma once
 
-#include<iostream>
-
 #include "2d/geometry/point.h"
 #include "2d/geometry/circle.h"
 #include "util/array.h"

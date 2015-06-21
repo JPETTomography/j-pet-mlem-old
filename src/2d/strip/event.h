@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cmath>
-
 #include "util/cuda/compat.h"
 #include "2d/geometry/event.h"
 
@@ -15,9 +13,8 @@ template <typename FType> struct Event {
   F z_d;
   F dl;
 
-
   _ Event(F z_u, F z_d, F dl) : z_u(z_u), z_d(z_d), dl(dl) {}
-  _ Event() {};
+  _ Event() {}
 
   _ void transform(F R, F& tan, F& y, F& z) const {
     tan = this->tan(R);
