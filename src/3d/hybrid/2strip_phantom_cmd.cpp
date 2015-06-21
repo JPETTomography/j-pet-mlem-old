@@ -135,21 +135,20 @@ int main(int argc, char* argv[]) {
 
   PET3D::Phantom<float, short, RNG> phantom(regions);
 
-  Allways allways;
   Scintillator scintillator(0.100);
   Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
 
-  std::ofstream no_error_stream(output_base_name + "_geom_only" + ext);
-  monte_carlo.set_no_error_stream(no_error_stream);
+  std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
+  monte_carlo.out_wo_error = out_wo_error;
 
-  std::ofstream error_stream(output);
-  monte_carlo.set_error_stream(error_stream);
+  std::ofstream out_w_error(output);
+  monte_carlo.out_w_error = out_w_error;
 
-  std::ofstream exact_event_stream(output_base_name + "_exact_events" + ext);
-  monte_carlo.set_exact_event_stream(exact_event_stream);
+  std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
+  monte_carlo.out_exact_events = out_exact_events;
 
-  std::ofstream full_response_stream(output_base_name + "_full_response" + ext);
-  monte_carlo.set_full_response_stream(full_response_stream);
+  std::ofstream out_full_response(output_base_name + "_full_response" + ext);
+  monte_carlo.out_full_response = out_full_response;
   monte_carlo.generate(rng, scintillator, cl.get<int>("n-emissions"));
 
   return 0;

@@ -1,7 +1,9 @@
 #pragma once
-#include <ostream>
 
+#include <ostream>
+#include <iostream>
 #include <random>
+#include <functional>
 
 namespace Common {
 
@@ -16,17 +18,10 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
   PhantomMonteCarlo(Phantom& phantom, const Detector& detector)
       : phantom_(phantom),
         detector_(detector),
-        no_error_stream(),
-        error_stream(),
-        exact_event_stream(),
-        full_response_stream() {}
-
-  void set_no_error_stream(std::ostream& os) { no_error_stream = &os; }
-  void set_error_stream(std::ostream& os) { error_stream = &os; }
-  void set_exact_event_stream(std::ostream& os) { exact_event_stream = &os; }
-  void set_full_response_stream(std::ostream& os) {
-    full_response_stream = &os;
-  }
+        out_wo_error(std::cout),
+        out_w_error(std::cout),
+        out_exact_events(std::cout),
+        out_full_response(std::cout) {}
 
   template <typename ModelType>
   int generate(RNG& rng, ModelType model, size_t n_emisions) {
@@ -35,23 +30,10 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
       FullResponse full_response;
 
       if (detector_.exact_detect(rng, model, event, full_response) == 2) {
-
-        if (full_response_stream) {
-          *full_response_stream << full_response << "\n";
-        }
-
-        if (no_error_stream) {
-          Response response = detector_.noErrorResponse(full_response);
-          *no_error_stream << response << "\n";
-        }
-
-        if (error_stream) {
-          Response response = detector_.errorResponse(rng, full_response);
-          *error_stream << response << "\n";
-        }
-
-        if (exact_event_stream)
-          *exact_event_stream << event << "\n";
+        out_full_response << full_response << std::endl;
+        out_wo_error << detector_.noErrorResponse(full_response) << std::endl;
+        out_w_error << detector_.errorResponse(rng, full_response) << std::endl;
+        out_exact_events << event << std::endl;
       }
     }
     return 0;
@@ -60,9 +42,11 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
  private:
   Phantom& phantom_;
   Detector detector_;
-  std::ostream* no_error_stream;
-  std::ostream* error_stream;
-  std::ostream* exact_event_stream;
-  std::ostream* full_response_stream;
+
+ public:
+  std::reference_wrapper<std::ostream> out_wo_error;
+  std::reference_wrapper<std::ostream> out_w_error;
+  std::reference_wrapper<std::ostream> out_exact_events;
+  std::reference_wrapper<std::ostream> out_full_response;
 };
 }
