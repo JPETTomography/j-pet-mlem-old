@@ -1,5 +1,4 @@
-#ifndef PIXEL_GRID
-#define PIXEL_GRID
+#pragma once
 
 #include <iostream>
 
@@ -74,4 +73,3 @@ template <typename FType, typename SType> class PixelGrid {
   }
 };
 }
-#endif  // PIXEL_GRID

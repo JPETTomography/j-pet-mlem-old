@@ -1,14 +1,11 @@
-#ifndef EVENT_H
-#define EVENT_H
+#pragma once
 
 #include "2d/geometry/point.h"
 #include "2d/geometry/vector.h"
 
-/**
- * This is a generic emitted 2d event class. Events of this type  are emmited by
- * every
- * 2d phantom.
- */
+/// Generic emitted 2D event
+
+/// Events of this type  are emmited by every 2D phantom.
 
 namespace PET2D {
 
@@ -29,5 +26,3 @@ template <typename FType> struct Event {
   const Vector direction;
 };
 }
-
-#endif  // EVENT_H

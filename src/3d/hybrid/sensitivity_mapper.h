@@ -1,5 +1,4 @@
-#ifndef SENSITIVITY_MAPPER
-#define SENSITIVITY_MAPPER
+#pragma once
 
 #if _OPENMP
 #include <omp.h>
@@ -91,5 +90,3 @@ template <typename Scanner> class SensitivityMapper {
 };
 }
 }
-
-#endif  // SENSITIVITY_MAPPER

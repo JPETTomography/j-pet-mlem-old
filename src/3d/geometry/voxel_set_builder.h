@@ -1,5 +1,4 @@
-#ifndef VOXEL_SET_BUILDER
-#define VOXEL_SET_BUILDER
+#pragma once
 
 #include "3d/geometry/voxel_set.h"
 
@@ -43,4 +42,3 @@ template <typename FType, typename SType> class VoxelSetBuilder {
   }
 };
 }
-#endif  // VOXEL_SET_BUILDER

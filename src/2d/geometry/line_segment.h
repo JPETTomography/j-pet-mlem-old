@@ -1,5 +1,4 @@
-#ifndef LINE_SEGMENT
-#define LINE_SEGMENT
+#pragma once
 
 #include "2d/geometry/vector.h"
 #include "2d/geometry/point.h"
@@ -40,5 +39,3 @@ template <typename FType> class LineSegment {
   const F distance_from_origin;
 };
 }
-
-#endif  // LINE_SEGMENT

@@ -1,5 +1,4 @@
-#ifndef VOXEL
-#define VOXEL
+#pragma once
 
 namespace PET3D {
 
@@ -12,4 +11,3 @@ template <typename SType> struct Voxel {
   const S iz;
 };
 }
-#endif  // VOXEL

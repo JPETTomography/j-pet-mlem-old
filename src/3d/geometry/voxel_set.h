@@ -1,5 +1,4 @@
-#ifndef VOXEL_SET
-#define VOXEL_SET
+#pragma once
 
 #include "3d/geometry/voxel.h"
 #include "3d/geometry/voxel_grid.h"
@@ -37,4 +36,3 @@ template <typename FType, typename SType> class VoxelSet {
   std::vector<F> values_;
 };
 }
-#endif  // VOXEL_SET
