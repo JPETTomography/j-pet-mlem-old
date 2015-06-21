@@ -15,7 +15,7 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
   using Response = typename Detector::Response;
   using FullResponse = typename Detector::FullResponse;
 
-  PhantomMonteCarlo(Phantom& phantom, const Detector& detector)
+  PhantomMonteCarlo(Phantom& phantom, Detector& detector)
       : phantom_(phantom),
         detector_(detector),
         out_wo_error(std::cout),
@@ -41,7 +41,7 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
 
  private:
   Phantom& phantom_;
-  Detector detector_;
+  Detector& detector_;
 
  public:
   std::reference_wrapper<std::ostream> out_wo_error;
