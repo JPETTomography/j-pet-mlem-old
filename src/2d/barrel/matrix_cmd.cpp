@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
 #define RUN(detector_type, model_type, ...)                                    \
   detector_type scanner = ScannerBuilder<detector_type>::build_multiple_rings( \
       PET2D_BARREL_SCANNER_CL(cl, detector_type::F));                          \
-  model_type model{ __VA_ARGS__ };                                             \
+  model_type model __VA_ARGS__;                                                \
   print_parameters<detector_type, model_type>(cl, scanner);                    \
   auto sparse_matrix = _RUN(cl, scanner, model);                               \
   post_process(cl, scanner, sparse_matrix)
@@ -156,13 +156,13 @@ int main(int argc, char* argv[]) {
       }
     } else if (model_name == "scintillator") {
       if (shape == "square") {
-        RUN(SquareScanner, Common::ScintillatorAccept<F>, length_scale);
+        RUN(SquareScanner, Common::ScintillatorAccept<F>, (length_scale));
       } else if (shape == "circle") {
-        RUN(CircleScanner, Common::ScintillatorAccept<F>, length_scale);
+        RUN(CircleScanner, Common::ScintillatorAccept<F>, (length_scale));
       } else if (shape == "triangle") {
-        RUN(TriangleScanner, Common::ScintillatorAccept<F>, length_scale);
+        RUN(TriangleScanner, Common::ScintillatorAccept<F>, (length_scale));
       } else if (shape == "hexagon") {
-        RUN(HexagonalScanner, Common::ScintillatorAccept<F>, length_scale);
+        RUN(HexagonalScanner, Common::ScintillatorAccept<F>, (length_scale));
       }
     }
 
