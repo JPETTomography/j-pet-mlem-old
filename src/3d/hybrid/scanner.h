@@ -178,7 +178,7 @@ template <typename Scanner2D> class Scanner {
     return 2;
   }
 
-  Response noErrorResponse(const FullResponse& full_response) const {
+  Response response_wo_error(const FullResponse& full_response) const {
     Response response;
     F length1 = (full_response.d1_deposition - full_response.origin).length();
     F length2 = (full_response.d2_deposition - full_response.origin).length();
@@ -193,10 +193,10 @@ template <typename Scanner2D> class Scanner {
   }
 
   template <typename RNG>
-  Response errorResponse(RNG& rng, const FullResponse& full_response) const {
+  Response response_w_error(RNG& rng, const FullResponse& full_response) const {
     std::normal_distribution<F> dist_z(0, sigma_z_);
     std::normal_distribution<F> dist_dl(0, sigma_dl_);
-    Response response = noErrorResponse(full_response);
+    Response response = response_wo_error(full_response);
 
     response.z_up += dist_z(rng);
     response.z_dn += dist_z(rng);
@@ -215,7 +215,7 @@ template <typename Scanner2D> class Scanner {
     FullResponse full_response;
     if (exact_detect(gen, model, e, full_response) == 2) {
 
-      response = noErrorResponse(full_response);
+      response = response_wo_error(full_response);
       return 2;
     }
     return 0;

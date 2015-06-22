@@ -31,8 +31,9 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
 
       if (detector_.exact_detect(rng, model, event, full_response) == 2) {
         out_full_response << full_response << std::endl;
-        out_wo_error << detector_.noErrorResponse(full_response) << std::endl;
-        out_w_error << detector_.errorResponse(rng, full_response) << std::endl;
+        out_wo_error << detector_.response_wo_error(full_response) << std::endl;
+        out_w_error << detector_.response_w_error(rng, full_response)
+                    << std::endl;
         out_exact_events << event << std::endl;
       }
     }
