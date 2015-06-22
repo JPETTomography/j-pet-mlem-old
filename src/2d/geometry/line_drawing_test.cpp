@@ -14,10 +14,12 @@ TEST("2d/geometry/line_drawing") {
     using Container = std::vector<PET2D::Pixel<int>>;
     Container pixels;
     PET2D::draw_line(start, end, grid, std::back_inserter(pixels));
+#if THIS_IS_NOT_A_TEST
     std::cout << "----\n";
     for (PET2D::Pixel<int> p : pixels) {
       std::cout << p.x << " " << p.y << "\n";
     }
+#endif
   }
 
   {
@@ -26,10 +28,12 @@ TEST("2d/geometry/line_drawing") {
     using Container = std::vector<PET2D::Pixel<int>>;
     Container pixels;
     PET2D::draw_line(start, end, grid, std::back_inserter(pixels));
+#if THIS_IS_NOT_A_TEST
     std::cout << "----\n";
     for (PET2D::Pixel<int> p : pixels) {
       std::cout << p.x << " " << p.y << "\n";
     }
+#endif
   }
 
   {
@@ -38,9 +42,11 @@ TEST("2d/geometry/line_drawing") {
     using Container = std::vector<PET2D::Pixel<int>>;
     Container pixels;
     PET2D::draw_line(start, end, grid, std::back_inserter(pixels));
+#if THIS_IS_NOT_A_TEST
     std::cout << "----\n";
     for (PET2D::Pixel<int> p : pixels) {
       std::cout << p.x << " " << p.y << "\n";
     }
+#endif
   }
 }

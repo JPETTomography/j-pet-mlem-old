@@ -52,8 +52,10 @@ template <typename FType> struct Ellipse {
         B(s * s / (a * a) + c * c / (b * b)),
         C(s * c * (1 / (a * a) - 1 / (b * b))),
         area(M_PI * a * b) {
+#if DEBUG
     std::cerr << x << " " << y << " " << a << " " << b << " " << A << " " << B
               << "\n";
+#endif
   }
 };
 

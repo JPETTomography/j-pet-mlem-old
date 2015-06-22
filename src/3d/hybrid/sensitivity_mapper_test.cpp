@@ -31,8 +31,4 @@ TEST("3d/hybrid/sensitivity_mapper") {
 
   util::random::tausworthe gen(12212);
   mapper.map(gen, scintillator, 10000);
-
-  for (int i = 0; i < voxel_set.size(); ++i) {
-    std::cout << voxel_set.value(i) << "\n";
-  }
 }
