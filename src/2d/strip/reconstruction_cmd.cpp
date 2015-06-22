@@ -149,20 +149,18 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
-      Scanner<float, short> single_precision_scanner(scanner);
-
-      GPU::run_reconstruction(single_precision_scanner,
-                              reconstruction.events,
-                              n_blocks,
-                              n_iterations,
-                              cl.get<int>("cuda-device"),
-                              cl.get<int>("cuda-blocks"),
-                              cl.get<int>("cuda-threads"),
-                              cl.exist("verbose"),
-                              progress,
-                              output_base_name,
-                              output_txt,
-                              n_file_digits);
+      PET2D::Strip::GPU::run_reconstruction(scanner,
+                                            reconstruction.events,
+                                            n_blocks,
+                                            n_iterations,
+                                            cl.get<int>("cuda-device"),
+                                            cl.get<int>("cuda-blocks"),
+                                            cl.get<int>("cuda-threads"),
+                                            cl.exist("verbose"),
+                                            progress,
+                                            output_base_name,
+                                            output_txt,
+                                            n_file_digits);
     } else
 #endif
     {
