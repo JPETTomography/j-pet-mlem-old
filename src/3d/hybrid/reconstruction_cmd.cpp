@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
 
     for (int block = 0; block < n_blocks; ++block) {
       for (int i = 0; i < n_iter; i++) {
-        std::cout << block* n_iter + i << " " << reconstruction.iterate()
+        std::cout << block * n_iter + i << " " << reconstruction.iterate()
                   << "\n";
       }
       char rho_file_name[64];
@@ -115,9 +115,11 @@ int main(int argc, char* argv[]) {
               << reconstruction.voxel_count() << " "
               << reconstruction.pixel_count() << "\n";
     std::cout << (double)reconstruction.voxel_count() /
-                     reconstruction.event_count() << " ";
+                     reconstruction.event_count()
+              << " ";
     std::cout << (double)reconstruction.pixel_count() /
-                     reconstruction.event_count() << "\n";
+                     reconstruction.event_count()
+              << "\n";
 
     std::ofstream out("rho.bin");
     out.write((char*)&(*reconstruction.rho_begin()),
