@@ -54,22 +54,20 @@ TEST("PET3D/hubrid/phantom_monte_carlo/point_source") {
   regions.push_back(emitter);
   PET3D::Phantom<float, short, RNG> phantom(regions);
 
-  Allways allways;
   Scintillator scintillator(0.100);
   Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
 
-  std::ofstream no_error_stream("test_output/point_source_no_errors.txt");
-  monte_carlo.set_no_error_stream(no_error_stream);
+  std::ofstream out_wo_error("test_output/point_source_no_errors.txt");
+  monte_carlo.out_wo_error = out_wo_error;
 
-  std::ofstream error_stream("test_output/point_source_errors.txt");
-  monte_carlo.set_error_stream(error_stream);
+  std::ofstream out_w_error("test_output/point_source_errors.txt");
+  monte_carlo.out_w_error = out_w_error;
 
-  std::ofstream exact_event_stream("test_output/point_source_exact_events.txt");
-  monte_carlo.set_exact_event_stream(exact_event_stream);
+  std::ofstream out_exact_events("test_output/point_source_exact_events.txt");
+  monte_carlo.out_exact_events = out_exact_events;
 
-  std::ofstream full_response_stream(
-      "test_output/point_source_full_response.txt");
-  monte_carlo.set_full_response_stream(full_response_stream);
+  std::ofstream out_full_response("test_output/point_source_full_response.txt");
+  monte_carlo.out_full_response = out_full_response;
   monte_carlo.generate(rng, scintillator, 1000000);
 }
 
@@ -94,20 +92,19 @@ TEST("PET3D/hubrid/phantom_monte_carlo") {
   regions.push_back(rotated_cylinder);
   PET3D::Phantom<float, short, RNG> phantom(regions);
 
-  Allways allways;
   Scintillator scintillator(0.100);
   Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
 
-  std::ofstream no_error_stream("test_output/no_errors.txt");
-  monte_carlo.set_no_error_stream(no_error_stream);
+  std::ofstream out_wo_error("test_output/no_errors.txt");
+  monte_carlo.out_wo_error = out_wo_error;
 
-  std::ofstream error_stream("test_output/errors.txt");
-  monte_carlo.set_error_stream(error_stream);
+  std::ofstream out_w_error("test_output/errors.txt");
+  monte_carlo.out_w_error = out_w_error;
 
-  std::ofstream exact_event_stream("test_output/exact_events.txt");
-  monte_carlo.set_exact_event_stream(exact_event_stream);
+  std::ofstream out_exact_events("test_output/exact_events.txt");
+  monte_carlo.out_exact_events = out_exact_events;
 
-  std::ofstream full_response_stream("test_output/full_response.txt");
-  monte_carlo.set_full_response_stream(full_response_stream);
+  std::ofstream out_full_response("test_output/full_response.txt");
+  monte_carlo.out_full_response = out_full_response;
   monte_carlo.generate(rng, scintillator, 1000000);
 }

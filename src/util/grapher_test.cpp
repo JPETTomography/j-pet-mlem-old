@@ -101,7 +101,6 @@ TEST("grapher/BigBarel/circle") {
 TEST("grapher/BigBarel/pixel") {
 
   PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
-  using Detector = PET2D::Barrel::BigBarrelType::Detector;
   using F = PET2D::Barrel::BigBarrelType::F;
   using S = PET2D::Barrel::BigBarrelType::S;
   using Point = PET2D::Point<F>;

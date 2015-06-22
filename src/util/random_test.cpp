@@ -3,8 +3,8 @@
 
 TEST("util/random") {
   util::random::tausworthe gen;
-  util::random::uniform_real_distribution<> one;
-  util::random::uniform_real_distribution<> d99to100(99., 100.);
+  util::random::uniform_real_distribution<double> one;
+  util::random::uniform_real_distribution<double> d99to100(99., 100.);
 
   CHECK(one.scale<util::random::tausworthe>() == Approx(2.328306436538696e-10));
 

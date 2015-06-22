@@ -46,9 +46,8 @@ TEST("3d/geometry/matrix/vector_multiplication") {
 }
 
 TEST("3d/geometry/matrix/arithmetic_assignment_operators") {
-  using Vector = PET3D::Vector<Matrix::F>;
-
   Matrix rhs{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
   {
     Matrix mat{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     mat += rhs;
@@ -67,9 +66,8 @@ TEST("3d/geometry/matrix/arithmetic_assignment_operators") {
 }
 
 TEST("3d/geometry/matrix/arithmetic_operators") {
-  using Vector = PET3D::Vector<Matrix::F>;
-
   Matrix rhs{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
   Matrix lhs{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
   {
     Matrix mat;
@@ -90,8 +88,6 @@ TEST("3d/geometry/matrix/arithmetic_operators") {
 }
 
 TEST("3d/geometry/matrix/scalar_multiplication") {
-  using Vector = PET3D::Vector<Matrix::F>;
-
   Matrix rhs{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
   {

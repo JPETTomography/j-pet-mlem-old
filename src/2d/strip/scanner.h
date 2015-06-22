@@ -187,11 +187,10 @@ template <typename FType, typename SType> class Scanner {
 
 #if !__CUDACC__
 
-  template <class RandomGenerator, class AcceptanceModel>
-  _ short detect(RandomGenerator& gen,    ///< random number generator
-                 AcceptanceModel& model,  ///< acceptance model
-                 const Event& event,      ///< event to be detected
-                 Response& response       ///< scanner response (LOR+length)
+  template <class RandomGenerator>
+  _ short detect(RandomGenerator& gen,  ///< random number generator
+                 const Event& event,    ///< event to be detected
+                 Response& response     ///< scanner response (LOR+length)
                  ) const {
 
     Response ps_event = to_projection_space_angle(event);
@@ -218,9 +217,8 @@ template <typename FType, typename SType> class Scanner {
 
   template <typename G>
   std::pair<Response, bool> detect_event(const Event is_event, G& gen) {
-    int model = 0;
     Response response;
-    if (detect(gen, model, is_event, response) > 1)
+    if (detect(gen, is_event, response) > 1)
       return std::make_pair(response, true);
     else
       return std::make_pair(response, false);

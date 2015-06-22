@@ -16,8 +16,6 @@ void draw_line(const Point<typename Grid::F>& start,
                const Grid grid,
                I pixels) {
 
-  using Vector = typename Grid::Vector;
-
   using Pixel = typename Grid::Pixel;
   using Point = typename Grid::Point;
   using F = typename Grid::F;

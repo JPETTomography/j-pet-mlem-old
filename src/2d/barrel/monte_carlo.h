@@ -19,6 +19,9 @@ template <typename DetectorType, typename MatrixType> class MonteCarlo {
   using SS = typename std::make_signed<S>::type;
   using LOR = typename Matrix::LOR;
 
+  static_assert(std::is_same<typename Matrix::S, S>::value,
+                "matrix SType must be the same as detector SType");
+
  public:
   MonteCarlo(const Detector& detector,
              Matrix& matrix,
