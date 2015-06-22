@@ -17,13 +17,13 @@ template <typename FType> class LineSegment {
         direction((end - start).normalized()),
         normal(direction.perpendicular()),
         length((end - start).length()),
-        distance_from_origin(dot(start.as_vector(), normal)) {}
+        distance_from_origin(start.as_vector().dot(normal)) {}
 
   F distance_from(const Point& p) {
-    return dot(p.as_vector(), normal) - distance_from_origin;
+    return p.as_vector().dot(normal) - distance_from_origin;
   }
 
-  F projection(const Point& p) { return dot(p - start, direction); }
+  F projection(const Point& p) { return (p - start).dot(direction); }
   F projection_scaled(const Point& p) { return projection(p) / length; }
 
   F projection_relative_middle(const Point& p) {

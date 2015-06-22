@@ -19,7 +19,8 @@
 
 using F = float;
 using S = int;
-using RNGType = std::mt19937;
+using RNG = std::mt19937;
+
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, S>;
 using Point = PET2D::Point<F>;
@@ -32,7 +33,7 @@ using LOR = PET2D::Barrel::LOR<S>;
 using BoostGeometryUtils = PET2D::Barrel::BoostGeometryUtils<F, S>;
 
 using Polygon = typename BoostGeometryUtils::Polygon;
-using point_2d = BoostGeometryUtils::point_2d;
+using Point2D = BoostGeometryUtils::Point2D;
 
 int main(int argc, char* argv[]) {
   try {
@@ -73,7 +74,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::ofstream svg("my_map.svg");
-    boost::geometry::svg_mapper<point_2d> mapper(svg, 1200, 1200);
+    boost::geometry::svg_mapper<Point2D> mapper(svg, 1200, 1200);
 
     for (auto p = detectors.begin(); p != detectors.end(); ++p) {
 #if DEBUG

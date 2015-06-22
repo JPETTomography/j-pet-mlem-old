@@ -42,8 +42,11 @@
 #include <omp.h>
 #endif
 
-// using namespace PET2D;
-// using namespace PET2D::Barrel;
+using F = float;
+using S = short;
+using Hit = int;
+
+using Reconstruction = PET2D::Barrel::Reconstruction<F, S, Hit>;
 
 template <typename Iterator>
 void output_vector(std::ostream& out,
@@ -59,8 +62,6 @@ void output_vector(std::ostream& out,
     }
   }
 }
-
-using Reconstruction = PET2D::Barrel::Reconstruction<float, short>;
 
 int main(int argc, char* argv[]) {
 

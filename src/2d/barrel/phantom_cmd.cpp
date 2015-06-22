@@ -54,23 +54,27 @@
 #include <omp.h>
 #endif
 
-using namespace PET2D;
-using namespace PET2D::Barrel;
-
 using F = float;
 using S = short;
+using Hit = int;
+
+using Pixel = PET2D::Pixel<S>;
+using Point = PET2D::Point<F>;
+using Event = PET2D::Event<F>;
 
 template <typename DetectorType>
-using DetectorModel =
-    PET2D::Barrel::GenericScanner<DetectorType, MAX_DETECTORS, S>;
+using Scanner = PET2D::Barrel::GenericScanner<DetectorType, MAX_DETECTORS, S>;
+template <typename DetectorType>
+using ScannerBuilder = PET2D::Barrel::ScannerBuilder<DetectorType>;
 
 // all available detector shapes
-using SquareScanner = DetectorModel<SquareDetector<F>>;
-using CircleScanner = DetectorModel<CircleDetector<F>>;
-using TriangleScanner = DetectorModel<TriangleDetector<F>>;
-using HexagonalScanner = DetectorModel<PolygonalDetector<6, F>>;
-using PixelType = PET2D::Pixel<S>;
-using EventType = PET2D::Event<F>;
+using SquareScanner = Scanner<PET2D::Barrel::SquareDetector<F>>;
+using CircleScanner = Scanner<PET2D::Barrel::CircleDetector<F>>;
+using TriangleScanner = Scanner<PET2D::Barrel::TriangleDetector<F>>;
+using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
+
+using PointPhantom = PET2D::Barrel::PointPhantom<F>;
+using Phantom = PET2D::Barrel::Phantom<F>;
 
 template <typename Scanner, typename Model>
 void run(cmdline::parser& cl, Model& model);
@@ -79,7 +83,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    add_phantom_options(cl);
+    PET2D::Barrel::add_phantom_options(cl);
     cl.add("small", 0, "small barrel", false);
     cl.add("big", 0, "big barrel", false);
     cl.try_parse(argc, argv);
@@ -91,8 +95,8 @@ int main(int argc, char* argv[]) {
 #endif
 
     if (cl.exist("big"))
-      set_big_barrel_options(cl);
-    calculate_scanner_options(cl);
+      PET2D::Barrel::set_big_barrel_options(cl);
+    PET2D::Barrel::calculate_scanner_options(cl);
 
     const auto& shape = cl.get<std::string>("shape");
     const auto& model_name = cl.get<std::string>("model");
@@ -100,7 +104,7 @@ int main(int argc, char* argv[]) {
 
     // run simmulation on given detector model & shape
     if (model_name == "always") {
-      Common::AlwaysAccept<> model;
+      Common::AlwaysAccept<F> model;
       if (shape == "square") {
         run<SquareScanner>(cl, model);
       } else if (shape == "circle") {
@@ -111,7 +115,7 @@ int main(int argc, char* argv[]) {
         run<HexagonalScanner>(cl, model);
       }
     } else if (model_name == "scintillator") {
-      Common::ScintillatorAccept<> model(length_scale);
+      Common::ScintillatorAccept<F> model(length_scale);
       if (shape == "square") {
         run<SquareScanner>(cl, model);
       } else if (shape == "circle") {
@@ -144,8 +148,8 @@ int main(int argc, char* argv[]) {
   return 1;
 }
 
-template <typename Detector, typename Model>
-void run(cmdline::parser& cl, Model& model) {
+template <typename DetectorType, typename ModelType>
+void run(cmdline::parser& cl, ModelType& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
@@ -162,14 +166,14 @@ void run(cmdline::parser& cl, Model& model) {
     gen.seed(cl.get<std::mt19937::result_type>("seed"));
   }
 
-  Detector dr = ScannerBuilder<Detector>::build_multiple_rings(
-      PET2D_BARREL_SCANNER_CL(cl, typename Detector::F));
+  auto dr = ScannerBuilder<DetectorType>::build_multiple_rings(
+      PET2D_BARREL_SCANNER_CL(cl, typename DetectorType::F));
 
   auto n_detectors = dr.size();
   int n_tof_positions = 1;
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
-    max_bias = Model::max_bias();
+    max_bias = ModelType::max_bias();
     n_tof_positions = dr.n_tof_positions(tof_step, max_bias);
   }
 
@@ -186,8 +190,8 @@ void run(cmdline::parser& cl, Model& model) {
   if (cl.exist("detected"))
     only_detected = true;
 
-  PointPhantom<float> point_phantom;
-  Phantom<float> phantom;
+  PointPhantom point_phantom;
+  Phantom phantom;
 
   for (auto& fn : cl.rest()) {
     std::ifstream in(fn);
@@ -213,12 +217,12 @@ void run(cmdline::parser& cl, Model& model) {
       } else if (type == "ellipse") {
         float x, y, a, b, angle, intensity;
         // is >> x >> y >> a >> b >> angle>>intensity;
-        x = util::read<float>(is);
-        y = util::read<float>(is);
-        a = util::read<float>(is);
-        b = util::read<float>(is);
-        angle = util::read<float>(is);
-        intensity = util::read<float>(is);
+        x = util::read<F>(is);
+        y = util::read<F>(is);
+        a = util::read<F>(is);
+        b = util::read<F>(is);
+        angle = util::read<F>(is);
+        intensity = util::read<F>(is);
         phantom.emplace_back(x, y, a, b, angle, intensity);
       } else {
         std::ostringstream msg;
@@ -228,10 +232,10 @@ void run(cmdline::parser& cl, Model& model) {
     } while (!in.eof());
   }
 
-  util::random::uniform_real_distribution<> one_dis(0, 1);
-  util::random::uniform_real_distribution<> point_dis(-n_pixels * s_pixel / 2,
-                                                      +n_pixels * s_pixel / 2);
-  util::random::uniform_real_distribution<> phi_dis(0, M_PI);
+  util::random::uniform_real_distribution<F> one_dis(0, 1);
+  util::random::uniform_real_distribution<F> point_dis(-n_pixels * s_pixel / 2,
+                                                       +n_pixels * s_pixel / 2);
+  util::random::uniform_real_distribution<F> phi_dis(0, M_PI);
 
   util::progress progress(
       verbose, n_emissions, only_detected ? 10000 : 1000000);
@@ -243,31 +247,30 @@ void run(cmdline::parser& cl, Model& model) {
 
       progress(n_emitted);
 
-      Point<float> p(point_dis(gen), point_dis(gen));
+      Point p(point_dis(gen), point_dis(gen));
 
       if (p.distance_from_origin2() >= fov_radius2)
         continue;
 
       if (phantom.test_emit(p, one_dis(gen))) {
 
-        auto pixel = p.pixel<PixelType>(s_pixel, n_pixels / 2);
+        auto pixel = p.pixel<Pixel>(s_pixel, n_pixels / 2);
         if (pixel.x >= n_pixels || pixel.y >= n_pixels || pixel.x <= m_pixel ||
             pixel.y <= m_pixel)
           continue;
 
-        // typename Detector::LOR lor;
         pixels[pixel.y * n_pixels + pixel.x]++;
         auto angle = phi_dis(gen);
         // double position;
-        EventType event(p, angle);
-        typename Detector::Response response;
+        Event event(p, angle);
+        typename DetectorType::Response response;
         auto hits = dr.detect(gen, model, event, response);
         if (hits == 2) {
           if (response.lor.first > response.lor.second)
             std::swap(response.lor.first, response.lor.second);
           int quantized_position = 0;
           if (n_tof_positions > 1) {
-            quantized_position = Detector::quantize_tof_position(
+            quantized_position = DetectorType::quantize_tof_position(
                 response.dl, tof_step, n_tof_positions);
           }
           tubes[(response.lor.first * n_detectors + response.lor.second) *
@@ -296,7 +299,7 @@ void run(cmdline::parser& cl, Model& model) {
       if (p.distance_from_origin2() >= fov_radius2)
         continue;
 
-      auto pixel = p.pixel<PixelType>(s_pixel, n_pixels / 2);
+      auto pixel = p.pixel<Pixel>(s_pixel, n_pixels / 2);
       // ensure we are inside pixel matrix
       if (pixel.x >= n_pixels || pixel.y >= n_pixels || pixel.x <= m_pixel ||
           pixel.y <= m_pixel)
@@ -304,17 +307,15 @@ void run(cmdline::parser& cl, Model& model) {
 
       pixels[pixel.y * n_pixels + pixel.x]++;
       auto angle = phi_dis(gen);
-      // typename Detector::LOR lor;
-      // double position;
-      EventType event(p, angle);
-      typename Detector::Response response;
+      Event event(p, angle);
+      typename DetectorType::Response response;
       auto hits = dr.detect(gen, model, event, response);
       if (hits == 2) {
         if (response.lor.first > response.lor.second)
           std::swap(response.lor.first, response.lor.second);
         int quantized_position = 0;
         if (n_tof_positions > 1) {
-          quantized_position = Detector::quantize_tof_position(
+          quantized_position = DetectorType::quantize_tof_position(
               response.dl, tof_step, n_tof_positions);
         }
         tubes[(response.lor.first * n_detectors + response.lor.second) *

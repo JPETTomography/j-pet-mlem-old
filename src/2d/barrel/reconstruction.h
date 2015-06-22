@@ -16,10 +16,12 @@ namespace PET2D {
 namespace Barrel {
 
 /// 2D barrel PET reconstruction
-template <typename FType, typename SType> class Reconstruction {
+template <typename FType, typename SType, typename HitType>
+class Reconstruction {
  public:
   using F = FType;
   using S = SType;
+  using Hit = HitType;
   using Pixel = PET2D::Pixel<S>;
   using LOR = Barrel::LOR<S>;
   /// Input element for reconstruction
@@ -30,7 +32,7 @@ template <typename FType, typename SType> class Reconstruction {
   } Mean;
   using Means = std::vector<Mean>;
   using Output = std::vector<F>;
-  using Matrix = SparseMatrix<Pixel, LOR, S, int>;
+  using Matrix = SparseMatrix<Pixel, LOR, S, Hit>;
 
   Reconstruction(S n_iterations,
                  Matrix& matrix,

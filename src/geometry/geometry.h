@@ -10,7 +10,7 @@ namespace Base {
 
 template <int N, typename F> class Point;
 
-template <int N, typename F = double> class Vector {
+template <int N, typename F> class Vector {
  public:
   Vector() {
     for (int i = 0; i < N; i++)
@@ -138,11 +138,11 @@ template <int N, typename F> class Point {
 };
 }
 
-template <int N, typename F = double> class Vector : public Base::Vector<N, F> {
+template <int N, typename F> class Vector : public Base::Vector<N, F> {
  public:
   Vector(F v[N]) : Base::Vector<N, F>(v) {}
 };
-template <int N, typename F = double> class Point : public Base::Point<N, F> {
+template <int N, typename F> class Point : public Base::Point<N, F> {
  public:
   Point(F v[N]) : Base::Point<N, F>(v) {}
 };
@@ -185,35 +185,35 @@ template <typename F> class Vector<2, F> : public Base::Vector<2, F> {
   F& y;
 };
 
-template <int N, typename F = double>
+template <int N, typename F>
 Vector<N, F> operator+(const Vector<N, F>& v1, const Vector<N, F>& v2) {
   Vector<N, F> r(v1);
   r += v2;
   return r;
 }
 
-template <int N, typename F = double>
+template <int N, typename F>
 Vector<N, F> operator-(const Vector<N, F>& v1, const Vector<N, F>& v2) {
   Vector<N, F> r(v1);
   r -= v2;
   return r;
 }
 
-template <int N, typename F = double>
+template <int N, typename F>
 Vector<N, F> operator*(const Vector<N, F>& v1, F s) {
   Vector<N, F> r(v1);
   r *= s;
   return r;
 }
 
-template <int N, typename F = double>
+template <int N, typename F>
 Vector<N, F> operator*(F s, const Vector<N, F>& v1) {
   Vector<N, F> r(v1);
   r *= s;
   return r;
 }
 
-template <int N, typename F = double>
+template <int N, typename F>
 Vector<N, F> operator/(const Vector<N, F>& v1, F s) {
   Vector<N, F> r(v1);
   r /= s;
@@ -266,28 +266,28 @@ template <typename F> class Point<2, F> : public Base::Point<2, F> {
   }
 };
 
-template <int N, typename F = double>
+template <int N, typename F>
 Point<N, F> operator+(const Vector<N, F>& v, const Point<N, F>& p) {
   Point<N, F> r(p);
   r += v;
   return r;
 }
 
-template <int N, typename F = double>
+template <int N, typename F>
 Point<N, F> operator+(const Point<N, F>& p, const Vector<N, F>& v) {
   Point<N, F> r(p);
   r += v;
   return r;
 }
 
-template <int N, typename F = double>
+template <int N, typename F>
 Point<N, F> operator-(const Point<N, F>& p, const Vector<N, F>& v) {
   Point<N, F> r(p);
   r -= v;
   return r;
 }
 
-template <int N, typename F = double>
+template <int N, typename F>
 Vector<N, F> operator-(const Point<N, F>& p1, const Point<N, F>& p2) {
   Vector<N, F> v;
   for (int i = 0; i < N; ++i)
@@ -296,8 +296,8 @@ Vector<N, F> operator-(const Point<N, F>& p1, const Point<N, F>& p2) {
   return v;
 }
 
-template <int N, typename F = double>
+template <int N, typename F>
 Vector<N, F> operator+(const Vector<N, F>& v1, F s);
-template <int N, typename F = double>
+template <int N, typename F>
 Vector<N, F> operator+(F s, const Vector<N, F>& v1);
 }

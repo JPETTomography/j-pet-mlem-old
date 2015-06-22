@@ -8,7 +8,7 @@ namespace Common {
 /// Model which always produces a decay
 
 /// This model always produces a decay opposite to ScintillatorAccept.
-template <typename FType = double> class AlwaysAccept {
+template <typename FType> class AlwaysAccept {
  public:
   using F = FType;
 
@@ -42,7 +42,7 @@ template <typename FType = double> class AlwaysAccept {
 ///
 /// \sa AlwaysAccept
 
-template <typename FType = double> class ScintillatorAccept {
+template <typename FType> class ScintillatorAccept {
  public:
   using F = FType;
 

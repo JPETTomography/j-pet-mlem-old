@@ -32,16 +32,18 @@
 #include <omp.h>
 #endif
 
-using SquareScintillator = PET2D::Barrel::SquareDetector<float>;
+using F = float;
+using S = int;
+using Hit = int;
 
-using Scanner2D = PET2D::Barrel::GenericScanner<SquareScintillator, 192, int>;
-using F = Scanner2D::F;
+using SquareScintillator = PET2D::Barrel::SquareDetector<F>;
+using Scanner2D = PET2D::Barrel::GenericScanner<SquareScintillator, 192, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 
 using Pixel = PET2D::Pixel<Scanner2D::S>;
 using LOR = Scanner2D::LOR;
-using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, LOR::S, int>;
-using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, LOR::S, int>;
+using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, LOR::S, S>;
+using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, LOR::S, S>;
 
 template <typename Scanner, typename Model>
 void print_parameters(cmdline::parser& cl, const Scanner& scanner);
@@ -99,12 +101,12 @@ int main(int argc, char* argv[]) {
     Scanner scanner = Scanner::build_scanner_from_cl(cl);
 
     if (model_name == "always") {
-      Common::AlwaysAccept<float> model;
+      Common::AlwaysAccept<F> model;
       auto sparse_matrix = run(cl, scanner, model);
       post_process(cl, scanner, sparse_matrix);
     } else if (model_name == "scintillator") {
 
-      Common::ScintillatorAccept<float> model(length_scale);
+      Common::ScintillatorAccept<F> model(length_scale);
       std::cout << "length = " << length_scale << "\n";
 
       auto sparse_matrix = run(cl, scanner, model);

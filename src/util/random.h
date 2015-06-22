@@ -88,7 +88,7 @@ class tausworthe {
 };
 
 /// Uniform real distribution for given range and \a RNG
-template <typename FType = double> class uniform_real_distribution {
+template <typename FType> class uniform_real_distribution {
  public:
   typedef FType result_type;
 

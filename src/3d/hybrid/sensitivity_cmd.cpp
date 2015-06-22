@@ -14,11 +14,11 @@
 #include "util/random.h"
 #include "common/model.h"
 
-using SquareScintillator = PET2D::Barrel::SquareDetector<float>;
+using F = float;
+using S = int;
 
-using Scanner2D = PET2D::Barrel::GenericScanner<SquareScintillator, 192, int>;
-using F = Scanner2D::F;
-using S = Scanner2D::S;
+using SquareScintillator = PET2D::Barrel::SquareDetector<F>;
+using Scanner2D = PET2D::Barrel::GenericScanner<SquareScintillator, 192, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 
 int main(int argc, char* argv[]) {

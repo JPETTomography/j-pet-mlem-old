@@ -25,7 +25,7 @@ namespace PET2D {
 namespace Strip {
 
 /// 2D strip PET reconstruction
-template <typename FType = double, typename KernelType = Kernel<FType>>
+template <typename FType, typename KernelType = Kernel<FType>>
 class Reconstruction {
  public:
   using F = FType;

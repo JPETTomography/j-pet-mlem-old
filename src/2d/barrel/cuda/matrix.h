@@ -19,13 +19,16 @@ namespace GPU {
 
 /// \cond PRIVATE
 
-using Point = PET2D::Point<float>;
-using Pixel = PET2D::Pixel<short>;
-using LOR = Barrel::LOR<short>;
-using Event = Barrel::Event<float>;
-using SquareDetector = Barrel::SquareDetector<float>;
-using Scanner = Barrel::GenericScanner<SquareDetector, MAX_DETECTORS, short>;
-using Model = Common::ScintillatorAccept<float>;
+using F = float;
+using S = short;
+using HitType = int;
+using Point = PET2D::Point<F>;
+using Pixel = PET2D::Pixel<S>;
+using LOR = Barrel::LOR<S>;
+using Event = Barrel::Event<F>;
+using SquareDetector = Barrel::SquareDetector<F>;
+using Scanner = Barrel::GenericScanner<SquareDetector, MAX_DETECTORS, S>;
+using Model = Common::ScintillatorAccept<F>;
 #if !__CUDACC__
 using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR, typename LOR::S, int>;
 #endif
@@ -38,10 +41,10 @@ class Matrix {
   Matrix(const Scanner& scanner,
          int n_threads_per_block,
          int n_blocks,
-         float pixel_size,
+         F pixel_size,
          int n_positions,
-         float tof_step,
-         float length_scale,
+         F tof_step,
+         F length_scale,
          unsigned int* prng_seed);
 
   ~Matrix();
@@ -59,10 +62,10 @@ class Matrix {
   Scanner* gpu_scanner;
   const int n_threads_per_block;
   const int n_blocks;
-  const float pixel_size;
+  const F pixel_size;
   const int n_positions;
-  const float tof_step;
-  const float length_scale;
+  const F tof_step;
+  const F length_scale;
   unsigned int* gpu_prng_seed;
   const int pixel_hits_count;
   const int pixel_hits_size;

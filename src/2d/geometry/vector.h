@@ -6,9 +6,8 @@
 namespace PET2D {
 
 /// 2D Vector with given coordinates
-template <typename FType = double, typename SType = int> struct Vector {
+template <typename FType> struct Vector {
   using F = FType;
-  using S = SType;
 
   _ Vector(F x, F y) : x(x), y(y) {}
   _ Vector() = default;
@@ -32,20 +31,20 @@ template <typename FType = double, typename SType = int> struct Vector {
     return *this;
   }
 
-  _ Vector& operator*=(FType s) {
+  _ Vector& operator*=(F s) {
     x *= s;
     y *= s;
     return *this;
   }
 
-  Vector& operator/=(FType s) {
+  Vector& operator/=(F s) {
     x /= s;
     y /= s;
     return *this;
   }
 
   Vector& normalize() {
-    FType length = this->length();
+    F length = this->length();
     (*this /= length);
     return *this;
   }
@@ -85,25 +84,19 @@ template <typename FType = double, typename SType = int> struct Vector {
   }
 
   Vector perpendicular() const { return Vector(-y, x); }
+
+  _ Vector operator+(const Vector& rhs) const {
+    Vector vec(*this);
+    vec += rhs;
+    return vec;
+  }
+
+  _ Vector operator-(const Vector& rhs) const {
+    Vector vec(*this);
+    vec -= rhs;
+    return vec;
+  }
+
+  _ F dot(const Vector& rhs) const { return x * rhs.x + y * rhs.y; }
 };
-
-template <typename FType>
-_ Vector<FType> operator+(const Vector<FType>& lhs, const Vector<FType>& rhs) {
-  Vector<FType> vec(lhs);
-  vec += rhs;
-  return vec;
-}
-
-template <typename FType>
-_ Vector<FType> operator-(const Vector<FType>& lhs, const Vector<FType>& rhs) {
-  Vector<FType> vec(lhs);
-  vec -= rhs;
-  return vec;
-}
-
-template <typename FType>
-_ FType dot(const Vector<FType>& lhs, const Vector<FType>& rhs) {
-
-  return lhs.x * rhs.x + lhs.y * rhs.y;
-}
 }

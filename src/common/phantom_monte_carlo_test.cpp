@@ -12,24 +12,24 @@
 #include "3d/geometry/phantom.h"
 #include "phantom_monte_carlo.h"
 
-using FType = float;
-using SType = short;
-using RNGType = std::mt19937;
-using Detector = PET2D::Barrel::SquareDetector<FType>;
+using F = float;
+using S = short;
+using RNG = std::mt19937;
+using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 8, short>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
-using Phantom = PET3D::Phantom<FType, SType, RNGType>;
-using Allways = Common::AlwaysAccept<FType>;
-using Scintillator = Common::ScintillatorAccept<FType>;
-using Point = PET3D::Point<FType>;
-using Vector = PET3D::Vector<FType>;
+using Phantom = PET3D::Phantom<F, S, RNG>;
+using Allways = Common::AlwaysAccept<F>;
+using Scintillator = Common::ScintillatorAccept<F>;
+using Point = PET3D::Point<F>;
+using Vector = PET3D::Vector<F>;
 
 namespace {
-FType strip_width = 0.005;
-FType strip_height = 0.019;
-FType strip_distance = 0.410;
-FType inner_radius = (strip_distance - strip_height) / 2;
-FType strip_length = 0.300;
+F strip_width = 0.005;
+F strip_height = 0.019;
+F strip_distance = 0.410;
+F inner_radius = (strip_distance - strip_height) / 2;
+F strip_length = 0.300;
 }
 
 TEST("PET3D/hubrid/phantom_monte_carlo/point_source") {
@@ -45,9 +45,7 @@ TEST("PET3D/hubrid/phantom_monte_carlo/point_source") {
   std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
 
   auto emitter =
-      new PET3D::PointRegion<float,
-                             RNG,
-                             PET3D::SingleDirectionDistribution<FType>>(
+      new PET3D::PointRegion<float, RNG, PET3D::SingleDirectionDistribution<F>>(
           1.0f,
           PET3D::SingleDirectionDistribution<float>(
               Vector::from_euler_angles(0, 2 * M_PI / 6)),

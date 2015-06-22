@@ -5,7 +5,7 @@
 namespace util {
 
 /// \c SVG file generator based on \c std::ofstream
-template <typename FType = double> class svg_ostream : public std::ofstream {
+template <typename FType> class svg_ostream : public std::ofstream {
  public:
   using F = FType;
 

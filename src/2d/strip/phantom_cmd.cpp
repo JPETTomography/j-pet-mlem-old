@@ -50,8 +50,14 @@
 #include <omp.h>
 #endif
 
-using namespace PET2D;
-using namespace PET2D::Strip;
+using F = float;
+using S = short;
+using Hit = int;
+
+using Scanner = PET2D::Strip::Scanner<F, S>;
+using Phantom = PET2D::Strip::Phantom<Scanner>;
+using Ellipse = PET2D::Ellipse<F>;
+using PhantomRegion = PET2D::Strip::PhantomRegion<F>;
 
 const double RADIAN = M_PI / 180;
 
@@ -63,9 +69,9 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    add_phantom_options(cl);
+    PET2D::Strip::add_phantom_options(cl);
     cl.parse_check(argc, argv);
-    calculate_scanner_options(cl);
+    PET2D::Strip::calculate_scanner_options(cl);
 
     if (!cl.rest().size()) {
       throw(
@@ -82,9 +88,9 @@ int main(int argc, char* argv[]) {
     auto emissions = cl.get<int>("emissions");
     auto verbose = cl.exist("verbose");
 
-    std::vector<PhantomRegion<double>> ellipse_list;
+    std::vector<PhantomRegion> ellipse_list;
 
-    Scanner<double, short> scanner(PET2D_STRIP_SCANNER_CL(cl));
+    Scanner scanner(PET2D_STRIP_SCANNER_CL(cl));
 
     if (verbose) {
       std::cerr << "size: " << scanner.n_z_pixels << "x" << scanner.n_y_pixels
@@ -102,7 +108,7 @@ int main(int argc, char* argv[]) {
         if (!(iss >> x >> y >> a >> b >> angle >> acceptance))
           break;
 
-        Ellipse<double> el(x, y, a, b, angle * RADIAN);
+        Ellipse el(x, y, a, b, angle * RADIAN);
 
         if (verbose) {
           std::cout << "ellipse: " << el.center.x << " " << el.center.y << " "
@@ -110,12 +116,12 @@ int main(int argc, char* argv[]) {
                     << " " << el.B << " " << el.C << std::endl;
         }
 
-        PhantomRegion<double> region(el, acceptance);
+        PhantomRegion region(el, acceptance);
         ellipse_list.push_back(region);
       }
     }
 
-    Phantom<Scanner<double, short>> phantom(scanner, ellipse_list);
+    Phantom phantom(scanner, ellipse_list);
 
     if (verbose) {
       std::cerr << "scanner: " << scanner.size_y << " " << scanner.tl_y_half_h

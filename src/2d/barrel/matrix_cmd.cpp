@@ -61,25 +61,24 @@
 using namespace PET2D;
 using namespace PET2D::Barrel;
 
-using SType = short;
 using F = float;
+using S = short;
+using Hit = int;
 
 template <typename DetectorType>
-using DetectorModel = GenericScanner<DetectorType, MAX_DETECTORS, SType>;
+using Scanner = GenericScanner<DetectorType, MAX_DETECTORS, S>;
 
 // all available detector shapes
-using SquareScanner = DetectorModel<SquareDetector<float>>;
-using CircleScanner = DetectorModel<CircleDetector<float>>;
-using TriangleScanner = DetectorModel<TriangleDetector<float>>;
-using HexagonalScanner = DetectorModel<PolygonalDetector<6, float>>;
+using SquareScanner = Scanner<SquareDetector<F>>;
+using CircleScanner = Scanner<CircleDetector<F>>;
+using TriangleScanner = Scanner<TriangleDetector<F>>;
+using HexagonalScanner = Scanner<PolygonalDetector<6, F>>;
 
 template <typename Scanner, typename Model>
 void print_parameters(cmdline::parser& cl, const Scanner& scanner);
 
-using SparseMatrixType =
-    PET2D::Barrel::SparseMatrix<Pixel<SType>, LOR<SType>, SType, int>;
-using ComputeMatrix =
-    PET2D::Barrel::MatrixPixelMajor<Pixel<SType>, LOR<SType>, SType, int>;
+using SparseMatrixType = PET2D::Barrel::SparseMatrix<Pixel<S>, LOR<S>, S, Hit>;
+using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel<S>, LOR<S>, S, Hit>;
 
 template <typename Detector, typename Model>
 static SparseMatrixType run(cmdline::parser& cl,
@@ -347,11 +346,11 @@ void post_process(cmdline::parser& cl,
       std::cerr << "warning: " << ex << std::endl;
     }
 
-    util::svg_ostream<float> svg(fn_wo_ext + ".svg",
-                                 scanner.outer_radius(),
-                                 scanner.outer_radius(),
-                                 1024.,
-                                 1024.);
+    util::svg_ostream<F> svg(fn_wo_ext + ".svg",
+                             scanner.outer_radius(),
+                             scanner.outer_radius(),
+                             1024.,
+                             1024.);
     svg.link_image(fn_wo_path + ".png",
                    -(s_pixel * n_pixels) / 2,
                    -(s_pixel * n_pixels) / 2,
@@ -363,7 +362,7 @@ void post_process(cmdline::parser& cl,
 
   // visual debugging output
   if (cl.exist("png")) {
-    LOR<SType> lor(0, 0);
+    LOR<S> lor(0, 0);
     lor.first = cl.get<int>("from");
     if (cl.exist("to")) {
       lor.second = cl.get<int>("to");
@@ -386,11 +385,11 @@ void post_process(cmdline::parser& cl,
       sparse_matrix.output_bitmap(png, lor, position);
     }
 
-    util::svg_ostream<float> svg(fn_wo_ext + ".svg",
-                                 scanner.outer_radius(),
-                                 scanner.outer_radius(),
-                                 1024.,
-                                 1024.);
+    util::svg_ostream<F> svg(fn_wo_ext + ".svg",
+                             scanner.outer_radius(),
+                             scanner.outer_radius(),
+                             1024.,
+                             1024.);
     svg.link_image(fn_wo_path + ".png",
                    -(s_pixel * n_pixels) / 2,
                    -(s_pixel * n_pixels) / 2,

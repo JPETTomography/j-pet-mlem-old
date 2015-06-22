@@ -10,8 +10,8 @@ namespace Barrel {
 /// 2D barrel PET system matrix
 template <typename PixelType,
           typename LORType,
-          typename SType = int,
-          typename HitType = int>
+          typename SType,
+          typename HitType>
 class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
   using Base = TriangularPixelMap<PixelType, SType, HitType>;
 

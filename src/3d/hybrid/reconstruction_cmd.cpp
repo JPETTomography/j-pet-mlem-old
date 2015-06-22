@@ -23,7 +23,7 @@
 
 using F = float;
 using S = int;
-using RNGType = std::mt19937;
+using RNG = std::mt19937;
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;

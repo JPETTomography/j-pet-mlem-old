@@ -45,11 +45,16 @@
 #include "cuda/reconstruction.h"
 #endif
 
-using namespace PET2D;
-using namespace PET2D::Strip;
+using F = float;
+using S = short;
+using Hit = int;
+
+using Kernel = PET2D::Strip::GaussianKernel<F>;
+using Reconstruction = PET2D::Strip::Reconstruction<F, Kernel>;
+using Scanner = PET2D::Strip::Scanner<F, S>;
 
 void print_statistics(std::ostream& out,
-                      const Reconstruction<double>& reconstruction,
+                      const Reconstruction& reconstruction,
                       int n_iterations,
                       int n_blocks,
                       std::string prefix = std::string());
@@ -64,9 +69,9 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    add_reconstruction_options(cl);
+    PET2D::Strip::add_reconstruction_options(cl);
     cl.parse_check(argc, argv);
-    calculate_scanner_options(cl);
+    PET2D::Strip::calculate_scanner_options(cl);
 
     if (!cl.rest().size()) {
       throw("at least one events input file expected, consult --help");
@@ -80,8 +85,8 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    Scanner<float, short> scanner(PET2D_STRIP_SCANNER_CL(cl));
-    Reconstruction<float, GaussianKernel<float>> reconstruction(scanner);
+    Scanner scanner(PET2D_STRIP_SCANNER_CL(cl));
+    Reconstruction reconstruction(scanner);
 
     auto verbose = cl.exist("verbose");
     auto verbosity = cl.count("verbose");
@@ -208,7 +213,7 @@ int main(int argc, char* argv[]) {
 
 #if USE_STATISTICS
 void print_statistics(std::ostream& out,
-                      const Reconstruction<double>& reconstruction,
+                      const Reconstruction& reconstruction,
                       int n_iterations,
                       int n_blocks,
                       std::string prefix) {

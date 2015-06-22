@@ -22,17 +22,18 @@
 
 #include "3d/geometry/phantom_builder.h"
 
-using FType = float;
-using SType = short;
-using RNGType = std::mt19937;
-using Detector = PET2D::Barrel::SquareDetector<FType>;
-using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, short>;
+using F = float;
+using S = short;
+
+using RNG = std::mt19937;
+using Detector = PET2D::Barrel::SquareDetector<F>;
+using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
-using Phantom = PET3D::Phantom<FType, SType, RNGType>;
-using Allways = Common::AlwaysAccept<FType>;
-using Scintillator = Common::ScintillatorAccept<FType>;
-using Point = PET3D::Point<FType>;
-using Vector = PET3D::Vector<FType>;
+using Phantom = PET3D::Phantom<F, S, RNG>;
+using Allways = Common::AlwaysAccept<F>;
+using Scintillator = Common::ScintillatorAccept<F>;
+using Point = PET3D::Point<F>;
+using Vector = PET3D::Vector<F>;
 
 // FIXME: I don't know what is the purpose of this, but these are unused, so
 // either should be removed or applied to the code.

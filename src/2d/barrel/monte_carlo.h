@@ -10,16 +10,12 @@ namespace PET2D {
 namespace Barrel {
 
 /// Drives Monte-Carlo system matrix construction
-template <typename DetectorType,
-          typename MatrixType,
-          typename FType = double,
-          typename SType = int>
-class MonteCarlo {
+template <typename DetectorType, typename MatrixType> class MonteCarlo {
   using Detector = DetectorType;
   using Event = typename Detector::Event;
   using Matrix = MatrixType;
-  using F = FType;
-  using S = SType;
+  using F = typename Detector::F;
+  using S = typename Detector::S;
   using SS = typename std::make_signed<S>::type;
   using LOR = typename Matrix::LOR;
 

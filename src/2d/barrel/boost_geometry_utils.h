@@ -42,8 +42,8 @@ template <typename FType, typename SType> class BoostGeometryUtils {
  public:
   using F = FType;
   using S = SType;
-  using point_2d = boost::geometry::model::d2::point_xy<F>;
-  using Polygon = boost::geometry::model::polygon<point_2d>;
+  using Point2D = boost::geometry::model::d2::point_xy<F>;
+  using Polygon = boost::geometry::model::polygon<Point2D>;
   using Point = PET2D::Point<F>;
 
   static Polygon make_pixel(const PET2D::PixelGrid<F, S>& grid, S ix, S iy) {
@@ -53,14 +53,12 @@ template <typename FType, typename SType> class BoostGeometryUtils {
     auto x = ll.x;
     auto y = ll.y;
 
-    boost::geometry::append(pixel, boost::geometry::make<point_2d>(x, y));
+    boost::geometry::append(pixel, boost::geometry::make<Point2D>(x, y));
+    boost::geometry::append(pixel, boost::geometry::make<Point2D>(x, y + size));
     boost::geometry::append(pixel,
-                            boost::geometry::make<point_2d>(x, y + size));
-    boost::geometry::append(
-        pixel, boost::geometry::make<point_2d>(x + size, y + size));
-    boost::geometry::append(pixel,
-                            boost::geometry::make<point_2d>(x + size, y));
-    boost::geometry::append(pixel, boost::geometry::make<point_2d>(x, y));
+                            boost::geometry::make<Point2D>(x + size, y + size));
+    boost::geometry::append(pixel, boost::geometry::make<Point2D>(x + size, y));
+    boost::geometry::append(pixel, boost::geometry::make<Point2D>(x, y));
     return pixel;
   }
 
@@ -72,11 +70,11 @@ template <typename FType, typename SType> class BoostGeometryUtils {
       F x, y;
       x = center.x + radius * std::cos(angle);
       y = center.y + radius * std::sin(angle);
-      boost::geometry::append(circle, boost::geometry::make<point_2d>(x, y));
+      boost::geometry::append(circle, boost::geometry::make<Point2D>(x, y));
       angle += da;
     }
     boost::geometry::append(circle,
-                            boost::geometry::make<point_2d>(radius, F(0)));
+                            boost::geometry::make<Point2D>(radius, F(0)));
     return circle;
   }
 
@@ -86,11 +84,11 @@ template <typename FType, typename SType> class BoostGeometryUtils {
     for (int j = 0; j < detector.size(); j++) {
       Point p = detector[j];
       boost::geometry::append(detector_poly,
-                              boost::geometry::make<point_2d>(p.x, p.y));
+                              boost::geometry::make<Point2D>(p.x, p.y));
     }
     Point p = detector[0];
     boost::geometry::append(detector_poly,
-                            boost::geometry::make<point_2d>(p.x, p.y));
+                            boost::geometry::make<Point2D>(p.x, p.y));
     return detector_poly;
   }
 

@@ -9,7 +9,7 @@ namespace PET2D {
 namespace Strip {
 
 /// Analytic approximation of emission probability
-template <typename FType = double> class Kernel {
+template <typename FType> class Kernel {
  public:
   using F = FType;
   using Point = PET2D::Point<F>;
