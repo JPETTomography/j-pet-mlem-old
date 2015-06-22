@@ -8,9 +8,9 @@
 #include "3d/geometry/event_generator.h"
 
 TEST("3d/geometry/phantom_builder/rapid_json") {
-  std::ifstream in("src/3d/hybrid/point_source.js");
+  std::ifstream in("src/3d/hybrid/point_source.json");
   if (!in.is_open()) {
-    FAIL("cannot open src/3d/hybrid/point_source.js");
+    FAIL("cannot open src/3d/hybrid/point_source.json");
   }
   json j;
   j << in;
@@ -23,9 +23,9 @@ TEST("3d/geometry/phantom_builder/rapid_json") {
 }
 
 TEST("3d/geometry/phantom_builder/angular_distribution") {
-  std::ifstream in("src/3d/hybrid/point_source.js");
+  std::ifstream in("src/3d/hybrid/point_source.json");
   if (!in.is_open()) {
-    FAIL("cannot open src/3d/hybrid/point_source.js");
+    FAIL("cannot open src/3d/hybrid/point_source.json");
   }
   json j;
   j << in;
