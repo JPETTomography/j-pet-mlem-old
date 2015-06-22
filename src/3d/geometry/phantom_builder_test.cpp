@@ -1,19 +1,27 @@
-#include <iostream>
-#include <fstream>
-
 #include "util/test.h"
 #include "util/json.h"
 
 #include "3d/geometry/phantom_builder.h"
 #include "3d/geometry/event_generator.h"
 
-TEST("3d/geometry/phantom_builder/rapid_json") {
-  std::ifstream in("src/3d/hybrid/point_source.json");
-  if (!in.is_open()) {
-    FAIL("cannot open src/3d/hybrid/point_source.json");
+static const char* point_source_json = R"JSON([
+  {
+    "angular": {
+      "direction": [
+        1,
+        0,
+        1
+      ],
+      "type": "single-direction"
+    },
+    "intensity": 1.0,
+    "origin": [0, 0, 0],
+    "type": "point-source"
   }
-  json j;
-  j << in;
+])JSON";
+
+TEST("3d/geometry/phantom_builder/rapid_json") {
+  json j = json::parse(point_source_json);
 
   REQUIRE(j.is_array());
   const json& j_obj = j[0];
@@ -23,12 +31,7 @@ TEST("3d/geometry/phantom_builder/rapid_json") {
 }
 
 TEST("3d/geometry/phantom_builder/angular_distribution") {
-  std::ifstream in("src/3d/hybrid/point_source.json");
-  if (!in.is_open()) {
-    FAIL("cannot open src/3d/hybrid/point_source.json");
-  }
-  json j;
-  j << in;
+  json j = json::parse(point_source_json);
 
   const json& j_obj = j[0];
   const json& j_angular = j_obj["angular"];
@@ -49,14 +52,59 @@ TEST("3d/geometry/phantom_builder/angular_distribution") {
   REQUIRE(dir.z == Approx(1.0f / std::sqrt(2.0f)).epsilon(1e-7));
 }
 
+static const char* test_phantoms_json = R"JSON({
+  "phantoms": [
+    {
+      "angular": {
+        "theta-max": 0.01,
+        "theta-min": -0.01,
+        "type": "spherical"
+      },
+      "height": 0.002,
+      "id": "cylinder",
+      "intensity": 1.0,
+      "radius": 0.005,
+      "type": "cylinder"
+    },
+    {
+      "displacement": [
+        -0.05,
+        0.0,
+        0.03
+      ],
+      "phantom": {
+        "R": [1, 0, 0,
+              0, 0, 1,
+              0, 1, 0],
+        "phantom": {
+          "angular": {
+            "type": "spherical"
+          },
+          "height": 0.02,
+          "id": "cylinder",
+          "intensity": 1.0,
+          "radius": 0.005,
+          "type": "cylinder"
+        },
+        "type": "rotated"
+      },
+      "type": "translated"
+    },
+    {
+      "angular": {
+        "type": "spherical"
+      },
+      "rx": 0.1,
+      "ry": 0.15,
+      "rz": 0.2,
+      "type": "ellipsoid"
+    }
+  ]
+})JSON";
+
 TEST("3d/geometry/phantom_builder/angular_distribution/spherical",
      "spherical") {
-  std::ifstream in("src/3d/geometry/test_phantoms.json");
-  if (!in.is_open()) {
-    FAIL("cannot open src/3d/geometry/test_phantoms.json");
-  }
-  json j;
-  j << in;
+  json j = json::parse(test_phantoms_json);
 
   const json& j_phantoms = j["phantoms"];
   const json& j_phantom = j_phantoms[0];
@@ -72,12 +120,7 @@ TEST("3d/geometry/phantom_builder/angular_distribution/spherical",
 
 TEST("3d/geometry/phantom_builder/phantom") {
   using RNGType = std::mt19937;
-  std::ifstream in("src/3d/geometry/test_phantoms.json");
-  if (!in.is_open()) {
-    FAIL("cannot open src/3d/geometry/test_phantoms.json");
-  }
-  json j;
-  j << in;
+  json j = json::parse(test_phantoms_json);
 
   const json& j_phantoms = j["phantoms"];
   REQUIRE(j_phantoms.is_array());
