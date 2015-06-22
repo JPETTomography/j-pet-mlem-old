@@ -9,4 +9,4 @@ find "$dir" \( \
 	\! -iname 'cmdline.h'  \
 	\! -ipath "$dir/lib/*" \
 	\! -ipath "$dir/doc/*" | \
-xargs clang-format -style=file -i
+xargs ${CLANG_FORMAT-clang-format} -style=file -i
