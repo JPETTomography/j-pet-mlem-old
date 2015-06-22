@@ -15,10 +15,8 @@
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 #include "util/mathematica_ostream.h"
+#include "util/json.h"
 #include "util/json_ostream.h"
-
-#include "rapidjson/document.h"
-#include "rapidjson/filereadstream.h"
 
 #include "3d/geometry/phantom_builder.h"
 
@@ -34,6 +32,8 @@ using Allways = Common::AlwaysAccept<F>;
 using Scintillator = Common::ScintillatorAccept<F>;
 using Point = PET3D::Point<F>;
 using Vector = PET3D::Vector<F>;
+
+using json = nlohmann::json;
 
 // FIXME: I don't know what is the purpose of this, but these are unused, so
 // either should be removed or applied to the code.
@@ -85,37 +85,34 @@ int main(int argc, char* argv[]) {
     util::mathematica_ostream mathematica(output_base_name + ".m");
     mathematica << scanner.barrel;
 
-    util::json_ostream json(output_base_name + ".json");
-    json << scanner.barrel;
+    util::json_ostream out_json(output_base_name + ".json");
+    out_json << scanner.barrel;
 
     using RNG = std::mt19937;
     RNG rng;
     std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
 
     if (cl.exist("phantoms")) {
-      FILE* in = fopen(cl.get<std::string>("phantoms").c_str(), "r");
-      if (!in) {
+      std::ifstream in(cl.get<std::string>("phantoms"));
+      if (!in.is_open()) {
         throw("could not open file: " + cl.get<std::string>("phantoms"));
       }
-      char readBuffer[256];
-      rapidjson::FileReadStream input_stream(
-          in, readBuffer, sizeof(readBuffer));
-      rapidjson::Document doc;
-      doc.ParseStream(input_stream);
+      json j;
+      j << in;
 
-      if (!doc.IsObject()) {
+      if (!j.is_object()) {
         throw("no JSON object in file:" + cl.get<std::string>("phantoms"));
       }
 
-      const rapidjson::Value& phantoms_val = doc["phantoms"];
-      if (!phantoms_val.IsArray()) {
-        throw("Phantoms array missing in JSON file: " +
+      const json& j_phantoms = j["phantoms"];
+      if (!j_phantoms.is_array()) {
+        throw("phantoms array missing in JSON file: " +
               cl.get<std::string>("phantoms"));
       }
 
-      for (auto it = phantoms_val.Begin(); it != phantoms_val.End(); it++) {
-
-        auto region = PET3D::create_phantom_region_from_json<float, RNG>(*it);
+      for (const auto& j_phantom : j_phantoms) {
+        auto region =
+            PET3D::create_phantom_region_from_json<float, RNG>(j_phantom);
 #if DEBUG
         std::cerr << "Adding region\n";
 #endif
