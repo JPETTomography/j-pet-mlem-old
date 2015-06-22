@@ -7,7 +7,7 @@
 using F = float;
 using S = int;
 
-TEST("VoxelSet") {
+TEST("3d/geometry/voxel_set") {
   using Voxel = PET3D::Voxel<S>;
 
   PET2D::PixelGrid<F, S> p_grid(80, 80, 0.005, PET2D::Point<F>(-0.200, -0.200));

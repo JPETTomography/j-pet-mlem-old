@@ -2,7 +2,7 @@
 
 #include "line_segment.h"
 
-TEST("PET2D/geometry/line_segment") {
+TEST("2d/geometry/line_segment") {
   using Point = PET2D::Point<float>;
 
   Point start(3, 0);

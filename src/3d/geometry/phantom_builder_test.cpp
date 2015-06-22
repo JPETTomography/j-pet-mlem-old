@@ -10,7 +10,7 @@
 #include "3d/geometry/event_generator.h"
 #include "3d/geometry/phantom_builder.h"
 
-TEST("rapid_json") {
+TEST("3d/geometry/phantom_builder/rapid_json") {
   FILE* in = fopen("src/3d/hybrid/point_source.js", "r");
   if (!in) {
     std::cerr << "cannot open src/3d/hybrid/point_source.js\n";
@@ -29,7 +29,7 @@ TEST("rapid_json") {
   fclose(in);
 }
 
-TEST("PhantomBuilder/angular_distribution") {
+TEST("3d/geometry/phantom_builder/angular_distribution") {
   FILE* in = fopen("src/3d/hybrid/point_source.js", "r");
   if (!in) {
     std::cerr << "cannot open src/3d/hybrid/point_source.js\n";
@@ -60,7 +60,8 @@ TEST("PhantomBuilder/angular_distribution") {
   REQUIRE(dir.z == Approx(1.0f / std::sqrt(2.0f)).epsilon(1e-7));
 }
 
-TEST("PhantomBuilder/angular_distribution/spherical", "spherical") {
+TEST("3d/geometry/phantom_builder/angular_distribution/spherical",
+     "spherical") {
   char filename[] = "src/3d/geometry/test_phantoms.json";
   FILE* in = fopen(filename, "r");
   if (!in) {
@@ -86,7 +87,7 @@ TEST("PhantomBuilder/angular_distribution/spherical", "spherical") {
   REQUIRE(distr.theta_max == 0.01_e7);
 }
 
-TEST("PhantomBuilder/phantom") {
+TEST("3d/geometry/phantom_builder/phantom") {
   using RNGType = std::mt19937;
   char filename[] = "src/3d/geometry/test_phantoms.json";
   FILE* in = fopen(filename, "r");

@@ -2,7 +2,7 @@
 
 #include "3d/geometry/voxel_grid.h"
 
-TEST("3d/voxel_grid") {
+TEST("3d/geometry/voxel_grid") {
 
   PET2D::PixelGrid<float, short> pixel_grid(
       10, 8, 0.005, PET2D::Point<float>(0, 0));

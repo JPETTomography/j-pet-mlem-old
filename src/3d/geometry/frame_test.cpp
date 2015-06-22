@@ -5,7 +5,7 @@
 using Point = PET3D::Point<float>;
 using Point2D = PET2D::Point<float>;
 
-TEST("PET3D/geometry/frame") {
+TEST("3d/geometry/frame") {
 
   Frame<float> frame(Point(-0.205, 0.0, 0.0), Point(0.205, 0.0, 0.0));
 
@@ -17,7 +17,7 @@ TEST("PET3D/geometry/frame") {
   REQUIRE(frame.distance(p) == 2.0_e7);
 }
 
-TEST("PET3D/geometry/frame/45degree") {
+TEST("3d/geometry/frame/45degree") {
 
   Frame<float> frame(Point(-0.205, -0.205, 0.0), Point(0.205, 0.205, 0.0));
 

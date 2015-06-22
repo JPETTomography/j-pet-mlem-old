@@ -32,7 +32,7 @@ F inner_radius = (strip_distance - strip_height) / 2;
 F strip_length = 0.300;
 }
 
-TEST("PET3D/hubrid/phantom_monte_carlo/point_source") {
+TEST("common/phantom_monte_carlo/point_source") {
 
   auto scanner2d = PET2D::Barrel::ScannerBuilder<Scanner2D>::build_single_ring(
       inner_radius, 2, strip_width, strip_height);
@@ -71,7 +71,7 @@ TEST("PET3D/hubrid/phantom_monte_carlo/point_source") {
   monte_carlo.generate(rng, scintillator, 1000000);
 }
 
-TEST("PET3D/hubrid/phantom_monte_carlo") {
+TEST("common/phantom_monte_carlo/phantom_region") {
 
   auto scanner2d = PET2D::Barrel::ScannerBuilder<Scanner2D>::build_single_ring(
       inner_radius, 2, strip_width, strip_height);

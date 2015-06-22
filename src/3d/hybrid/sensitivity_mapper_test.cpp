@@ -9,7 +9,7 @@
 using F = float;
 using S = int;
 
-TEST("SensitivityMapper") {
+TEST("3d/hybrid/sensitivity_mapper") {
   using Voxel = PET3D::Voxel<S>;
   using BarrelType = PET2D::Barrel::BigBarrelType;
   using Scanner = PET3D::Hybrid::Scanner<BarrelType>;

@@ -9,7 +9,7 @@
 #include "2d/geometry/line_segment.h"
 #include "2d/geometry/pixel_grid.h"
 
-TEST("grapher/detector") {
+TEST("util/grapher/detector") {
   using Detector = PET2D::Barrel::SquareDetector<float>;
   using F = Detector::F;
 
@@ -25,7 +25,7 @@ TEST("grapher/detector") {
   graphics.add(detector);
 }
 
-TEST("grapher/BigBarel") {
+TEST("util/grapher/big_barrel") {
 
   PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
   using F = PET2D::Barrel::BigBarrelType::F;
@@ -40,7 +40,7 @@ TEST("grapher/BigBarel") {
   graphics.add(scanner);
 }
 
-TEST("grapher/BigBarel/lor") {
+TEST("util/grapher/big_barrel/lor") {
 
   PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
   using F = PET2D::Barrel::BigBarrelType::F;
@@ -56,7 +56,7 @@ TEST("grapher/BigBarel/lor") {
   graphics.add(scanner, PET2D::Barrel::LOR<int>(65, 0));
 }
 
-TEST("grapher/BigBarel/segment") {
+TEST("util/grapher/big_barrel/segment") {
 
   PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
   using F = PET2D::Barrel::BigBarrelType::F;
@@ -76,7 +76,7 @@ TEST("grapher/BigBarel/segment") {
   graphics.add(segment);
 }
 
-TEST("grapher/BigBarel/circle") {
+TEST("util/grapher/big_barrel/circle") {
 
   PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
   using Detector = PET2D::Barrel::BigBarrelType::Detector;
@@ -98,7 +98,7 @@ TEST("grapher/BigBarel/circle") {
   }
 }
 
-TEST("grapher/BigBarel/pixel") {
+TEST("util/grapher/big_barrel/pixel") {
 
   PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
   using F = PET2D::Barrel::BigBarrelType::F;
