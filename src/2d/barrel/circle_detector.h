@@ -76,12 +76,6 @@ template <typename FType> class CircleDetector : public Circle<FType> {
     return intersections;
   }
 
-  void to_json(std::ostream& j_out) const {
-    j_out << "{ \"Circle\": { \"center\": [";
-    j_out << center.x << "," << center.y << "],\n";
-    j_out << "\"radius\": " << this->radius << "}}\n";
-  }
-
  public:
   Point center;
 
