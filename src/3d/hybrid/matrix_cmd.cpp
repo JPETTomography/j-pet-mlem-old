@@ -36,8 +36,8 @@ using F = float;
 using S = int;
 using Hit = int;
 
-using SquareScintillator = PET2D::Barrel::SquareDetector<F>;
-using Scanner2D = PET2D::Barrel::GenericScanner<SquareScintillator, 192, S>;
+using SquareDetector = PET2D::Barrel::SquareDetector<F>;
+using Scanner2D = PET2D::Barrel::GenericScanner<SquareDetector, 192, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 
 using Pixel = PET2D::Pixel<Scanner2D::S>;

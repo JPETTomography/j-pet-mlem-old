@@ -9,10 +9,13 @@
 using F = float;
 using S = int;
 
+using Detector = PET2D::Barrel::SquareDetector<F>;
+using BarrelBuilder = PET2D::Barrel::BarrelBuilder<Detector, S>;
+
 TEST("3d/hybrid/sensitivity_mapper") {
   using Voxel = PET3D::Voxel<S>;
-  using BarrelType = PET2D::Barrel::BigBarrelType;
-  using Scanner = PET3D::Hybrid::Scanner<BarrelType>;
+  using Barrel = BarrelBuilder::BigBarrel;
+  using Scanner = PET3D::Hybrid::Scanner<Barrel>;
 
   PET2D::PixelGrid<F, S> p_grid(80, 80, 0.005, PET2D::Point<F>(-0.200, -0.200));
   PET3D::VoxelGrid<F, S> v_grid(p_grid, -0.200, 80);
@@ -22,7 +25,7 @@ TEST("3d/hybrid/sensitivity_mapper") {
   REQUIRE(voxel_set.size() == 0);
   voxel_set.push_back(Voxel(41, 41, 41));
 
-  auto barrel = PET2D::Barrel::buildBigBarrel();
+  auto barrel = BarrelBuilder::make_big_barrel();
   Scanner scanner(barrel, 0.500);
 
   PET3D::Hybrid::SensitivityMapper<Scanner> mapper(scanner, voxel_set);

@@ -9,10 +9,14 @@
 #include "2d/geometry/line_segment.h"
 #include "2d/geometry/pixel_grid.h"
 
-TEST("util/grapher/detector") {
-  using Detector = PET2D::Barrel::SquareDetector<float>;
-  using F = Detector::F;
+using F = float;
+using S = int;
 
+using Detector = PET2D::Barrel::SquareDetector<F>;
+using BarrelBuilder = PET2D::Barrel::BarrelBuilder<Detector, S>;
+using Scanner = BarrelBuilder::BigBarrel;
+
+TEST("util/grapher/detector") {
   std::ofstream out("test_output/graph_detector.m");
   if (!out) {
     FAIL("cannot open file");
@@ -27,8 +31,7 @@ TEST("util/grapher/detector") {
 
 TEST("util/grapher/big_barrel") {
 
-  PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
-  using F = PET2D::Barrel::BigBarrelType::F;
+  auto scanner = BarrelBuilder::make_big_barrel();
 
   std::ofstream out("test_output/graph_scanner.m");
   if (!out) {
@@ -42,8 +45,7 @@ TEST("util/grapher/big_barrel") {
 
 TEST("util/grapher/big_barrel/lor") {
 
-  PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
-  using F = PET2D::Barrel::BigBarrelType::F;
+  auto scanner = BarrelBuilder::make_big_barrel();
 
   std::ofstream out("test_output/graph_lor.m");
   if (!out) {
@@ -58,8 +60,7 @@ TEST("util/grapher/big_barrel/lor") {
 
 TEST("util/grapher/big_barrel/segment") {
 
-  PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
-  using F = PET2D::Barrel::BigBarrelType::F;
+  auto scanner = BarrelBuilder::make_big_barrel();
   using Point = PET2D::Point<F>;
 
   std::ofstream out("test_output/graph_segment.m");
@@ -78,9 +79,7 @@ TEST("util/grapher/big_barrel/segment") {
 
 TEST("util/grapher/big_barrel/circle") {
 
-  PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
-  using Detector = PET2D::Barrel::BigBarrelType::Detector;
-  using F = PET2D::Barrel::BigBarrelType::F;
+  auto scanner = BarrelBuilder::make_big_barrel();
 
   std::ofstream out("test_output/graph_circle.m");
   if (!out) {
@@ -100,9 +99,7 @@ TEST("util/grapher/big_barrel/circle") {
 
 TEST("util/grapher/big_barrel/pixel") {
 
-  PET2D::Barrel::BigBarrelType scanner = PET2D::Barrel::buildBigBarrel();
-  using F = PET2D::Barrel::BigBarrelType::F;
-  using S = PET2D::Barrel::BigBarrelType::S;
+  auto scanner = BarrelBuilder::make_big_barrel();
   using Point = PET2D::Point<F>;
 
   std::ofstream out("test_output/graph_pixels.m");
@@ -117,8 +114,9 @@ TEST("util/grapher/big_barrel/pixel") {
   const int n_rows = 20;
   PET2D::PixelGrid<F, S> grid(n_columns, n_rows, 0.01, Point(-0.1, -0.1));
 
-  for (int ix = 0; ix < n_columns; ++ix)
+  for (int ix = 0; ix < n_columns; ++ix) {
     for (int iy = 0; iy < n_rows; ++iy) {
       graphics.addPixel(grid, ix, iy);
     }
+  }
 }

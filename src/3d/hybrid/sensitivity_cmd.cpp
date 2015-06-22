@@ -17,8 +17,9 @@
 using F = float;
 using S = int;
 
-using SquareScintillator = PET2D::Barrel::SquareDetector<F>;
-using Scanner2D = PET2D::Barrel::GenericScanner<SquareScintillator, 192, S>;
+using SquareDetector = PET2D::Barrel::SquareDetector<F>;
+using BarrelBuilder = PET2D::Barrel::BarrelBuilder<SquareDetector, S>;
+using Scanner2D = BarrelBuilder::BigBarrel;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 
 int main(int argc, char* argv[]) {
@@ -45,7 +46,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    Scanner2D barrel = PET2D::Barrel::buildBigBarrel();
+    Scanner2D barrel = BarrelBuilder::make_big_barrel();
     Scanner scanner(barrel, 0.500);
     auto n_pixels = cl.get<int>("n-pixels");
     auto pixel_size = cl.get<float>("pixel-size");
