@@ -15,7 +15,7 @@ template <typename FType, typename SType> class VoxelGrid {
       : pixel_grid(pixel_grid),
         z_left(z_left),
         n_planes(n_planes),
-        n_voxels(pixel_grid.n_pixels * n_planes){};
+        n_voxels(pixel_grid.n_pixels * n_planes) {}
 
   Point lower_left_at(S column, S row, S plane) const {
     auto p2d = pixel_grid.lower_left_at(column, row);

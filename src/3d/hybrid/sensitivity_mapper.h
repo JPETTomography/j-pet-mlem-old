@@ -18,7 +18,7 @@ template <typename Scanner> class SensitivityMapper {
   using Event = typename Scanner::Event;
 
   SensitivityMapper(Scanner& scanner, VoxelSet& voxel_set)
-      : scanner(scanner), voxel_set(voxel_set), one_dis(0, 1){};
+      : scanner(scanner), voxel_set(voxel_set), one_dis(0, 1) {}
 
   template <typename RNG, typename AcceptanceModel>
   void map(int i_voxel,

@@ -11,7 +11,7 @@ template <typename FType, typename SType> class VoxelSet {
   using Voxel = PET3D::Voxel<S>;
 
  public:
-  VoxelSet(const PET3D::VoxelGrid<F, S>& grid) : v_grid(grid){};
+  VoxelSet(const PET3D::VoxelGrid<F, S>& grid) : v_grid(grid) {}
 
   typename std::vector<Voxel>::const_iterator begin() const {
     return voxels_.begin();

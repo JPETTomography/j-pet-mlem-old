@@ -72,7 +72,7 @@ class CylinderRegion
         radius(radius),
         height(height),
 
-        dist(radius, height){};
+        dist(radius, height) {}
 
   bool in(const Point& p) const {
     return ((p.x * p.x + p.y * p.y < radius * radius) && (p.z <= height / 2) &&
@@ -108,7 +108,7 @@ class EllipsoidRegion
         rx(rx),
         ry(ry),
         rz(rz),
-        dist(rx, ry, rz){};
+        dist(rx, ry, rz) {}
 
   bool in(const Point& p) const {
     F x = p.x / rx;

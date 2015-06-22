@@ -16,7 +16,7 @@ template <typename FType> class Event {
 
  public:
   Event(const Point& origin, const Vector& direction)
-      : origin(origin), direction(direction){};
+      : origin(origin), direction(direction) {}
 
   BarrelEvent to_barrel_event() const {
     auto dir_2d = Vector2D(direction.x, direction.y);
