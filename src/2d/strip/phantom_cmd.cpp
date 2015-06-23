@@ -59,7 +59,7 @@ using S = short;
 using Hit = int;
 
 using Scanner = PET2D::Strip::Scanner<F, S>;
-using Phantom = PET2D::Strip::Phantom<Scanner>;
+using Phantom = PET2D::Strip::Phantom<F, S>;
 using Ellipse = PET2D::Ellipse<F>;
 using PhantomRegion = PET2D::Strip::PhantomRegion<F>;
 
@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    Phantom phantom(scanner, ellipse_list);
+    Phantom phantom(ellipse_list);
 
     if (verbose) {
       std::cerr << "scanner: " << scanner.size_y << " " << scanner.tl_y_half_h
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
     monte_carlo.generate(rng, model, emissions);
 
     if (verbose) {
-      std::cerr << "detected: " << phantom.n_events() << " events" << std::endl;
+      std::cerr << "detected: " << " ??? " << " events" << std::endl;
     }
 
     std::ofstream cfg(output_base_name + ".cfg");

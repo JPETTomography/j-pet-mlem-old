@@ -36,38 +36,29 @@ template <typename FType> struct PhantomRegion {
 };
 
 /// Virtual phantom made of elliptical regions
-template <typename ScannerType> class Phantom {
+template <typename FType, typename SType> class Phantom {
  public:
-  using Scanner = ScannerType;
-  using F = typename Scanner::F;
-  using S = typename Scanner::S;
+  using F = FType;
+  using S = SType;
   using Pixel = PET2D::Pixel<S>;
   using RNG = std::minstd_rand0;
-  using Response = typename Scanner::Response;
   using Event = PET2D::Event<F>;
 
  private:
-  ScannerType scanner;
+  int n_events_;
 
   std::vector<PhantomRegion<F>> region_list;
   std::vector<F> CDF;
   std::vector<EllipsePointGenerator<F>> point_generators;
 
-  std::vector<Response> events;
-  std::vector<std::vector<F>> output;
-  std::vector<std::vector<F>> output_without_errors;
-
   std::uniform_real_distribution<F> uniform;
   std::uniform_real_distribution<F> uniform_angle;
 
  public:
-  Phantom(const ScannerType& scanner, const std::vector<PhantomRegion<F>>& el)
-      : scanner(scanner),
-        region_list(el),
-        CDF(el.size(), 0),
-        uniform_angle(-1, 1) {
-    CDF[0] = region_list[0].weight;
+  Phantom(const std::vector<PhantomRegion<F>>& el)
+      : region_list(el), CDF(el.size(), 0), uniform_angle(-1, 1) {
 
+    CDF[0] = region_list[0].weight;
     for (size_t i = 1; i < el.size(); i++) {
       CDF[i] = region_list[i].weight + CDF[i - 1];
     }
@@ -78,13 +69,7 @@ template <typename ScannerType> class Phantom {
 
     for (size_t i = 0; i < el.size(); ++i)
       point_generators.emplace_back(el[i].shape);
-
-    output.assign(scanner.n_y_pixels, std::vector<F>(scanner.n_z_pixels, 0));
-    output_without_errors.assign(scanner.n_y_pixels,
-                                 std::vector<F>(scanner.n_z_pixels, 0));
   }
-
-  size_t n_events() { return events.size(); }
 
   template <typename G> size_t choose_region(G& gen) {
     F r = uniform(gen);
@@ -113,10 +98,6 @@ template <typename ScannerType> class Phantom {
     F rangle = F(M_PI_4) * uniform_angle(generator);
     return PET2D::Event<F>(p, rangle);
   }
-
-
-
-
 };
 }  // Strip
 }  // PET2D
