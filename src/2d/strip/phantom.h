@@ -37,12 +37,14 @@ template <typename FType> struct PhantomRegion {
 
 /// Virtual phantom made of elliptical regions
 template <typename ScannerType> class Phantom {
+ public:
   using Scanner = ScannerType;
   using F = typename Scanner::F;
   using S = typename Scanner::S;
   using Pixel = PET2D::Pixel<S>;
-  using rng = std::minstd_rand0;
+  using RNG = std::minstd_rand0;
   using Response = typename Scanner::Response;
+  using Event = PET2D::Event<F>;
 
  private:
   ScannerType scanner;
@@ -117,8 +119,8 @@ template <typename ScannerType> class Phantom {
     std::vector<std::vector<Response>> event_list_per_thread(
         omp_get_max_threads());
 
-    rng rd;
-    std::vector<rng> rng_list;
+    RNG rd;
+    std::vector<RNG> rng_list;
 
     for (int i = 0; i < omp_get_max_threads(); ++i) {
 

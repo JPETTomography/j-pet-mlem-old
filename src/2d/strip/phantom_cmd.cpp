@@ -31,6 +31,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <random>
 
 #if SSE_FLUSH
 #include <xmmintrin.h>
@@ -43,8 +44,11 @@
 #include "util/png_writer.h"
 #include "options.h"
 
-#include "phantom.h"
-#include "scanner.h"
+#include "2d/strip/phantom.h"
+#include "2d/strip/scanner.h"
+#include "common/model.h"
+
+#include "common/phantom_monte_carlo.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -102,22 +106,29 @@ int main(int argc, char* argv[]) {
       std::string line;
       while (std::getline(infile, line)) {
         std::istringstream iss(line);
-        double x, y, a, b, angle, acceptance;
+        std::string type;
+        iss >> type;
+        if (type == "ellipse") {
+          double x, y, a, b, angle, acceptance;
 
-        // on error
-        if (!(iss >> x >> y >> a >> b >> angle >> acceptance))
-          break;
+          // on error
+          if (!(iss >> x >> y >> a >> b >> angle >> acceptance))
+            break;
 
-        Ellipse el(x, y, a, b, angle * RADIAN);
+          Ellipse el(x, y, a, b, angle * RADIAN);
 
-        if (verbose) {
-          std::cout << "ellipse: " << el.center.x << " " << el.center.y << " "
-                    << el.a << " " << el.b << " " << el.angle << " " << el.A
-                    << " " << el.B << " " << el.C << std::endl;
+          if (verbose) {
+            std::cout << "ellipse: " << el.center.x << " " << el.center.y << " "
+                      << el.a << " " << el.b << " " << el.angle << " " << el.A
+                      << " " << el.B << " " << el.C << std::endl;
+          }
+
+          PhantomRegion region(el, acceptance);
+          ellipse_list.push_back(region);
+        } else {
+          std::cerr << "unknow phantom type" << std::endl;
+          exit(-1);
         }
-
-        PhantomRegion region(el, acceptance);
-        ellipse_list.push_back(region);
       }
     }
 
@@ -128,16 +139,29 @@ int main(int argc, char* argv[]) {
                 << std::endl;
     }
 
-    phantom(emissions);
+    Common::PhantomMonteCarlo<Phantom, Scanner> mc(phantom, scanner);
+
+    typename Phantom::RNG rng;
+    Common::AlwaysAccept<F> model;
+
+    auto output = cl.get<cmdline::path>("output");
+    auto output_base_name = output.wo_ext();
+    util::obstream out(output);
+
+    mc.out_w_error = out;
+    //    mc.out_wo_error=out;
+    //    mc.out_full_response=out;
+    //    mc.out_exact_events=out;
+
+    mc.generate(rng, model, emissions);
+
+    // phantom(emissions);
 
     if (verbose) {
       std::cerr << "detected: " << phantom.n_events() << " events" << std::endl;
     }
 
-    auto output = cl.get<cmdline::path>("output");
-    auto output_base_name = output.wo_ext();
-    util::obstream out(output);
-    phantom >> out;
+    // phantom >> out;
 
     std::ofstream cfg(output_base_name + ".cfg");
     cfg << cl;

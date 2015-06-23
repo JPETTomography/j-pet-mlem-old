@@ -77,5 +77,12 @@ template <typename FType> struct EllipseParameters {
   _ EllipseParameters(F x, F y, F a, F b, F angle, F n_emissions)
       : x(x), y(y), a(a), b(b), angle(angle), n_emissions(n_emissions) {}
 };
+
+template<typename F>
+std::ostream& operator<<(std::ostream& out, const Event<F>& event) {
+    out<<event.z_u<<" "<<event.z_d<<" "<<event.dl;
+    return out;
+}
+
 }  // Strip
 }  // PET2D

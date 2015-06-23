@@ -114,6 +114,12 @@ _ Vector<F> operator-(const Point<F>& lhs, const Point<F>& rhs) {
   return Vector<F>(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 
+template <typename FType>
+std::ostream& operator<<(std::ostream& out, const Point<FType>& vec) {
+  out << vec.x << " " << vec.y ;
+  return out;
+}
+
 }  // PET2D
 
 template <typename F> F deg(F rad) { return rad * 180 / F(M_PI); }

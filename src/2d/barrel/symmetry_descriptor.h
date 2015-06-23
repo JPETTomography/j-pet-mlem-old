@@ -118,6 +118,7 @@ template <typename SType> class SymmetryDescriptor {
 
       m << "}}\n";
     }
+    return m;
   }
 #endif
 

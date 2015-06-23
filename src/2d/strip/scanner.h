@@ -29,6 +29,7 @@ template <typename FType, typename SType> class Scanner {
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
   using Response = PET2D::Strip::Event<F>;
+  using FullResponse = Response;
   using Event = PET2D::Event<F>;
 
   /// Creates strip-scanner with given parameters.
@@ -188,12 +189,13 @@ template <typename FType, typename SType> class Scanner {
 #if !__CUDACC__
 
   template <class RandomGenerator>
-  _ short detect(RandomGenerator& gen,  ///< random number generator
-                 const Event& event,    ///< event to be detected
-                 Response& response     ///< scanner response (LOR+length)
-                 ) const {
+  _ short exact_detect(
+      RandomGenerator& gen,   ///< random number generator
+      const Event& event,     ///< event to be detected
+      FullResponse& response  ///< scanner response (LOR+length)
+      ) const {
 
-    Response ps_event = to_projection_space_angle(event);
+    FullResponse ps_event = to_projection_space_angle(event);
 
     F z_u, z_d, dl;
     z_u = ps_event.z_u;
@@ -215,6 +217,23 @@ template <typename FType, typename SType> class Scanner {
       return 0;
   }
 
+  template <class RandomGenerator, class AcceptanceModel>
+  _ short exact_detect(RandomGenerator& gen,  ///< random number generator
+                       AcceptanceModel& model,
+                       const Event& event,  ///< event to be detected
+                       Response& response   ///< scanner response (LOR+length)
+                       ) const {
+    return exact_detect(gen, event, response);
+  }
+
+  template <class RandomGenerator>
+  _ short detect(RandomGenerator& gen,  ///< random number generator
+                 const Event& event,    ///< event to be detected
+                 Response& response     ///< scanner response (LOR+length)
+                 ) const {
+    return exact_detect(gen, event, response);
+  }
+
   template <typename G>
   std::pair<Response, bool> detect_event(const Event is_event, G& gen) {
     Response response;
@@ -223,6 +242,24 @@ template <typename FType, typename SType> class Scanner {
     else
       return std::make_pair(response, false);
   }
+
+  Response response_wo_error(const FullResponse& full_response) {
+    return full_response;
+  }
+
+  template <typename RNG>
+  Response response_w_error(RNG& rng, const FullResponse& full_response) {
+    std::normal_distribution<F> dist_z(0, sigma_z);
+    std::normal_distribution<F> dist_dl(0, sigma_dl);
+    Response response = response_wo_error(full_response);
+
+    response.z_u += dist_z(rng);
+    response.z_d += dist_z(rng);
+    response.dl += dist_dl(rng);
+
+    return response;
+  }
+
 #endif
 
   const F radius;

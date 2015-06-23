@@ -1,5 +1,7 @@
 #pragma once
 
+#include<ostream>
+
 #include "util/cuda/compat.h"
 #include "util/read.h"
 
@@ -99,4 +101,10 @@ template <typename FType> struct Vector {
 
   _ F dot(const Vector& rhs) const { return x * rhs.x + y * rhs.y; }
 };
+
+template <typename FType>
+std::ostream& operator<<(std::ostream& out, const Vector<FType>& vec) {
+  out << vec.x << " " << vec.y;
+  return out;
+}
 }
