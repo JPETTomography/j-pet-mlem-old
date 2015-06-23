@@ -18,6 +18,7 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
   PhantomMonteCarlo(Phantom& phantom, Detector& detector)
       : phantom_(phantom),
         detector_(detector),
+        n_events_detected_(),
         out_wo_error(std::cout),
         out_w_error(std::cout),
         out_exact_events(std::cout),
@@ -30,19 +31,23 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
       FullResponse full_response;
 
       if (detector_.exact_detect(rng, model, event, full_response) == 2) {
-        out_full_response << full_response << std::endl;
-        out_wo_error << detector_.response_wo_error(full_response) << std::endl;
+        out_full_response << full_response << "\n";
+        out_wo_error << detector_.response_wo_error(full_response) << "\n";
         out_w_error << detector_.response_w_error(rng, full_response)
-                    << std::endl;
-        out_exact_events << event << std::endl;
+                    << "\n";
+        out_exact_events << event << "\n";
+        n_events_detected_++;
       }
     }
     return 0;
   }
 
+  int n_events_detected() const { return n_events_detected_; }
+
  private:
   Phantom& phantom_;
   Detector& detector_;
+  int n_events_detected_;
 
  public:
   std::reference_wrapper<std::ostream> out_wo_error;

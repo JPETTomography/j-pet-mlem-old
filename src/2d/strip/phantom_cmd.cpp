@@ -38,16 +38,13 @@
 #endif
 
 #include "cmdline.h"
-#include "util/bstream.h"
-#include "util/svg_ostream.h"
 #include "util/cmdline_types.h"
-#include "util/png_writer.h"
 #include "options.h"
 
 #include "2d/strip/phantom.h"
 #include "2d/strip/scanner.h"
-#include "common/model.h"
 
+#include "common/model.h"
 #include "common/phantom_monte_carlo.h"
 
 #if _OPENMP
@@ -163,13 +160,12 @@ int main(int argc, char* argv[]) {
     monte_carlo.generate(rng, model, emissions);
 
     if (verbose) {
-      std::cerr << "detected: " << " ??? " << " events" << std::endl;
+      std::cerr << "detected: " << monte_carlo.n_events_detected() << " events"
+                << std::endl;
     }
 
     std::ofstream cfg(output_base_name + ".cfg");
     cfg << cl;
-
-
 
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;

@@ -43,7 +43,16 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
   struct Response {
     LOR lor;
     F dl;
+
+    friend std::ostream& operator<<(std::ostream& out,
+                                    const Response& response) {
+      out << (int)response.lor.first << " " << (int)response.lor.second << " " << response.dl;
+      return out;
+    }
+
   };
+
+  using FullResponse =  Response;
 
   /// Makes an empty detector set.
   DetectorSet(F radius = 1, F outer_radius = F(1.5))

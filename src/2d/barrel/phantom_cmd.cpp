@@ -38,7 +38,7 @@
 
 #include "2d/geometry/point.h"
 #include "2d/barrel/scanner_builder.h"
-#include "phantom.h"
+#include "2d/barrel/phantom.h"
 #include "ring_scanner.h"
 #include "generic_scanner.h"
 #include "circle_detector.h"
@@ -50,9 +50,15 @@
 #include "util/json_ostream.h"
 #include "options.h"
 
+#include "2d/strip/phantom.h"
+#include "common/model.h"
+#include "common/phantom_monte_carlo.h"
+
 #if _OPENMP
 #include <omp.h>
 #endif
+
+const double RADIAN = M_PI / 180;
 
 using F = float;
 using S = short;
@@ -76,8 +82,11 @@ using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
 using PointPhantom = PET2D::Barrel::PointPhantom<F>;
 using Phantom = PET2D::Barrel::Phantom<F>;
 
-template <typename Scanner, typename Model>
-void run(cmdline::parser& cl, Model& model);
+using Ellipse = PET2D::Ellipse<F>;
+using PhantomRegion = PET2D::Strip::PhantomRegion<F>;
+
+template <typename DetectorType, typename Phantom, typename ModelType>
+void run(cmdline::parser& cl, Phantom& phantom, ModelType& model);
 
 int main(int argc, char* argv[]) {
 
@@ -102,28 +111,66 @@ int main(int argc, char* argv[]) {
     const auto& model_name = cl.get<std::string>("model");
     const auto& length_scale = cl.get<double>("base-length");
 
+    auto emissions = cl.get<int>("emissions");
+    auto verbose = cl.exist("verbose");
+
+    std::vector<PhantomRegion> ellipse_list;
+
+    for (auto& fn : cl.rest()) {
+      std::ifstream infile(fn);
+      std::string line;
+      while (std::getline(infile, line)) {
+        std::istringstream iss(line);
+        std::string type;
+        iss >> type;
+        if (type == "ellipse") {
+          double x, y, a, b, angle, acceptance;
+
+          // on error
+          if (!(iss >> x >> y >> a >> b >> angle >> acceptance))
+            break;
+
+          Ellipse el(x, y, a, b, angle * RADIAN);
+
+          if (verbose) {
+            std::cout << "ellipse: " << el.center.x << " " << el.center.y << " "
+                      << el.a << " " << el.b << " " << el.angle << " " << el.A
+                      << " " << el.B << " " << el.C << std::endl;
+          }
+
+          PhantomRegion region(el, acceptance);
+          ellipse_list.push_back(region);
+        } else {
+          std::cerr << "unknow phantom type" << std::endl;
+          exit(-1);
+        }
+      }
+    }
+
+    PET2D::Strip::Phantom<F, S> phantom(ellipse_list);
+
     // run simmulation on given detector model & shape
     if (model_name == "always") {
       Common::AlwaysAccept<F> model;
       if (shape == "square") {
-        run<SquareScanner>(cl, model);
+        run<SquareScanner>(cl, phantom, model);
       } else if (shape == "circle") {
-        run<CircleScanner>(cl, model);
+        run<CircleScanner>(cl, phantom, model);
       } else if (shape == "triangle") {
-        run<TriangleScanner>(cl, model);
+        run<TriangleScanner>(cl, phantom, model);
       } else if (shape == "hexagon") {
-        run<HexagonalScanner>(cl, model);
+        run<HexagonalScanner>(cl,phantom,  model);
       }
     } else if (model_name == "scintillator") {
       Common::ScintillatorAccept<F> model(length_scale);
       if (shape == "square") {
-        run<SquareScanner>(cl, model);
+        run<SquareScanner>(cl, phantom, model);
       } else if (shape == "circle") {
-        run<CircleScanner>(cl, model);
+        run<CircleScanner>(cl, phantom, model);
       } else if (shape == "triangle") {
-        run<TriangleScanner>(cl, model);
+        run<TriangleScanner>(cl, phantom, model);
       } else if (shape == "hexagon") {
-        run<HexagonalScanner>(cl, model);
+        run<HexagonalScanner>(cl, phantom, model);
       }
     }
 
@@ -148,8 +195,8 @@ int main(int argc, char* argv[]) {
   return 1;
 }
 
-template <typename DetectorType, typename ModelType>
-void run(cmdline::parser& cl, ModelType& model) {
+template <typename DetectorType, typename Phantom, typename ModelType>
+void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
@@ -177,236 +224,30 @@ void run(cmdline::parser& cl, ModelType& model) {
     n_tof_positions = dr.n_tof_positions(tof_step, max_bias);
   }
 
-  int* tubes = new int[n_detectors * n_detectors * n_tof_positions]();
+  Common::PhantomMonteCarlo<Phantom, DetectorType> monte_carlo(phantom, dr);
 
-  int pixels_size = n_pixels * n_pixels * sizeof(int);
-  int* pixels = (int*)alloca(pixels_size);
-  int* pixels_detected = (int*)alloca(pixels_size);
-  memset(pixels, 0, pixels_size);
-  memset(pixels_detected, 0, pixels_size);
+  typename Phantom::RNG rng;
 
-  int n_emitted = 0;
-  bool only_detected = false;
-  if (cl.exist("detected"))
-    only_detected = true;
+  auto output = cl.get<cmdline::path>("output");
+  auto output_base_name = output.wo_ext();
+  auto ext = output.ext();
 
-  PointPhantom point_phantom;
-  Phantom phantom;
+  std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
+  monte_carlo.out_wo_error = out_wo_error;
 
-  for (auto& fn : cl.rest()) {
-    std::ifstream in(fn);
-    if (!in.is_open()) {
-      throw("cannot open input file: " + fn);
-    }
+  std::ofstream out_w_error(output);
+  monte_carlo.out_w_error = out_w_error;
 
-    int n_line = 0;
-    do {
-      std::string line;
-      std::getline(in, line);
-      ++n_line;
+  std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
+  monte_carlo.out_exact_events = out_exact_events;
 
-      if (!line.size() || line[0] == '#')
-        continue;
+  std::ofstream out_full_response(output_base_name + "_full_response" + ext);
+  monte_carlo.out_full_response = out_full_response;
 
-      std::istringstream is(line);
+  monte_carlo.generate(rng, model, n_emissions);
 
-      std::string type;
-      is >> type;
-      if (type == "point") {
-        point_phantom.emplace_back(is);
-      } else if (type == "ellipse") {
-        float x, y, a, b, angle, intensity;
-        // is >> x >> y >> a >> b >> angle>>intensity;
-        x = util::read<F>(is);
-        y = util::read<F>(is);
-        a = util::read<F>(is);
-        b = util::read<F>(is);
-        angle = util::read<F>(is);
-        intensity = util::read<F>(is);
-        phantom.emplace_back(x, y, a, b, angle, intensity);
-      } else {
-        std::ostringstream msg;
-        msg << fn << ":" << n_line << " unhandled type of shape: " << type;
-        throw(msg.str());
-      }
-    } while (!in.eof());
-  }
-
-  util::random::uniform_real_distribution<F> one_dis(0, 1);
-  util::random::uniform_real_distribution<F> point_dis(-n_pixels * s_pixel / 2,
-                                                       +n_pixels * s_pixel / 2);
-  util::random::uniform_real_distribution<F> phi_dis(0, M_PI);
-
-  util::progress progress(
-      verbose, n_emissions, only_detected ? 10000 : 1000000);
-
-  auto fov_radius2 = dr.fov_radius() * dr.fov_radius();
-
-  if (phantom.n_regions() > 0) {
-    while (n_emitted < n_emissions) {
-
-      progress(n_emitted);
-
-      Point p(point_dis(gen), point_dis(gen));
-
-      if (p.distance_from_origin2() >= fov_radius2)
-        continue;
-
-      if (phantom.test_emit(p, one_dis(gen))) {
-
-        auto pixel = p.pixel<Pixel>(s_pixel, n_pixels / 2);
-        if (pixel.x >= n_pixels || pixel.y >= n_pixels || pixel.x <= m_pixel ||
-            pixel.y <= m_pixel)
-          continue;
-
-        pixels[pixel.y * n_pixels + pixel.x]++;
-        auto angle = phi_dis(gen);
-        // double position;
-        Event event(p, angle);
-        typename DetectorType::Response response;
-        auto hits = dr.detect(gen, model, event, response);
-        if (hits == 2) {
-          if (response.lor.first > response.lor.second)
-            std::swap(response.lor.first, response.lor.second);
-          int quantized_position = 0;
-          if (n_tof_positions > 1) {
-            quantized_position = DetectorType::quantize_tof_position(
-                response.dl, tof_step, n_tof_positions);
-          }
-          tubes[(response.lor.first * n_detectors + response.lor.second) *
-                    n_tof_positions +
-                quantized_position]++;
-          pixels_detected[pixel.y * n_pixels + pixel.x]++;
-          if (only_detected)
-            n_emitted++;
-        }
-        if (!only_detected)
-          n_emitted++;
-      }
-    }
-  }
-  progress(n_emitted);
-
-  if (point_phantom.n_sources() > 0) {
-    point_phantom.normalize();
-    n_emitted = 0;
-    while (n_emitted < n_emissions) {
-      progress(n_emitted);
-
-      auto rng = one_dis(gen);
-      auto p = point_phantom.draw(rng);
-
-      if (p.distance_from_origin2() >= fov_radius2)
-        continue;
-
-      auto pixel = p.pixel<Pixel>(s_pixel, n_pixels / 2);
-      // ensure we are inside pixel matrix
-      if (pixel.x >= n_pixels || pixel.y >= n_pixels || pixel.x <= m_pixel ||
-          pixel.y <= m_pixel)
-        continue;
-
-      pixels[pixel.y * n_pixels + pixel.x]++;
-      auto angle = phi_dis(gen);
-      Event event(p, angle);
-      typename DetectorType::Response response;
-      auto hits = dr.detect(gen, model, event, response);
-      if (hits == 2) {
-        if (response.lor.first > response.lor.second)
-          std::swap(response.lor.first, response.lor.second);
-        int quantized_position = 0;
-        if (n_tof_positions > 1) {
-          quantized_position = DetectorType::quantize_tof_position(
-              response.dl, tof_step, n_tof_positions);
-        }
-        tubes[(response.lor.first * n_detectors + response.lor.second) *
-                  n_tof_positions +
-              quantized_position]++;
-        pixels_detected[pixel.y * n_pixels + pixel.x]++;
-        if (only_detected)
-          n_emitted++;
-      }
-      if (!only_detected)
-        n_emitted++;
-    }
-  }
-
-  auto fn = cl.get<cmdline::path>("output");
-  auto fn_wo_ext = fn.wo_ext();
-  std::ofstream n_stream(fn);
-
-  if (n_tof_positions <= 1) {
-    for (unsigned int i = 0; i < n_detectors; i++) {
-      for (unsigned int j = i + 1; j < n_detectors; j++) {
-        auto hits = tubes[i * n_detectors + j];
-        if (hits > 0)
-          n_stream << i << " " << j << "  " << hits << std::endl;
-      }
-    }
-  } else {  // TOF
-    for (unsigned int i = 0; i < n_detectors; i++) {
-      for (unsigned int j = i + 1; j < n_detectors; j++) {
-        for (int p = 0; p < n_tof_positions; p++) {
-          auto hits = tubes[(i * n_detectors + j) * n_tof_positions + p];
-          if (hits > 0)
-            n_stream << i << " " << j << " " << p << "  " << hits << std::endl;
-        }
-      }
-    }
-  }
-
-  delete[] tubes;
-
-  util::json_ostream json(fn_wo_ext + ".json");
-  json << dr;
-
-  std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
-  os << cl;
-
-  util::png_writer pix(fn_wo_ext + ".png");
-  util::png_writer pix_detected(fn_wo_ext + "_detected.png");
-
-  std::ofstream pixels_text_out(fn_wo_ext + "_pixels.txt");
-  std::ofstream pixels_detected_text_out(fn_wo_ext + "_detected_pixels.txt");
-
-  int pix_max = 0;
-  int pix_detected_max = 0;
-
-  pix.write_header<>(n_pixels, n_pixels);
-  pix_detected.write_header<>(n_pixels, n_pixels);
-
-  for (auto p = 0; p < n_pixels * n_pixels; ++p) {
-    pix_max = std::max(pix_max, pixels[p]);
-    pix_detected_max = std::max(pix_detected_max, pixels_detected[p]);
-  }
-
-  uint8_t* row = (uint8_t*)alloca(n_pixels);
-
-  auto pix_gain =
-      static_cast<double>(std::numeric_limits<uint8_t>::max()) / pix_max;
-  for (int y = n_pixels - 1; y >= 0; --y) {
-    for (auto x = 0; x < n_pixels; ++x) {
-      row[x] = std::numeric_limits<uint8_t>::max() -
-               pix_gain * pixels[y * n_pixels + x];
-    }
-    pix.write_row(row);
-  }
-
-  auto pix_detected_gain =
-      static_cast<double>(std::numeric_limits<uint8_t>::max()) /
-      pix_detected_max;
-  for (int y = n_pixels - 1; y >= 0; --y) {
-    for (auto x = 0; x < n_pixels; ++x) {
-      row[x] = std::numeric_limits<uint8_t>::max() -
-               pix_detected_gain * pixels_detected[y * n_pixels + x];
-    }
-    pix_detected.write_row(row);
-  }
-  for (auto y = 0; y < n_pixels; ++y) {
-    for (auto x = 0; x < n_pixels; ++x) {
-      pixels_text_out << pixels[y * n_pixels + x] << " ";
-      pixels_detected_text_out << pixels_detected[y * n_pixels + x] << " ";
-    }
-    pixels_text_out << "\n";
-    pixels_detected_text_out << "\n";
+  if (verbose) {
+    std::cerr << "detected: " << monte_carlo.n_events_detected() << " events"
+              << std::endl;
   }
 }

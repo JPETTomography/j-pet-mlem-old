@@ -1,5 +1,7 @@
 #pragma once
 
+#include<random>
+
 #include "square_detector.h"
 #include "circle_detector.h"
 #include "util/array.h"
@@ -46,6 +48,7 @@ class GenericScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
   using CircleDetector = Barrel::CircleDetector<F>;
   using Indices = util::array<MaxDetectors, S>;
   using Response = typename Base::Response;
+  using FullResponse = typename Base::FullResponse;
 
   /// Makes an empty detector set.
   GenericScanner(F radius = 1, F outer_radius = F(1.5))
@@ -66,14 +69,16 @@ class GenericScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
                  )
       : Base(test_case, radius, w_detector, h_detector, d_detector) {}
 
+  void set_sigma_dl(F sigma_dl) {sigma_dl_=sigma_dl;}
+
   /// \brief Tries to detect given event.
   /// \return number of coincidences (detector hits)
   template <class RandomGenerator, class AcceptanceModel>
-  _ short detect(RandomGenerator& gen,    ///< random number generator
-                 AcceptanceModel& model,  ///< acceptance model
-                 const Event& e,          ///< event to be detected
-                 Response& response       ///< scanner response (LOR+length)
-                 ) const {
+  _ short exact_detect(RandomGenerator& gen,    ///< random number generator
+                       AcceptanceModel& model,  ///< acceptance model
+                       const Event& e,          ///< event to be detected
+                       Response& response  ///< scanner response (LOR+length)
+                       ) const {
     Indices left, right;
     close_indices(e, left, right);
     S detector1, detector2;
@@ -96,6 +101,27 @@ class GenericScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
     }
 
     return 2;
+  }
+
+  template <class RandomGenerator, class AcceptanceModel>
+  _ short detect(RandomGenerator& gen,    ///< random number generator
+                 AcceptanceModel& model,  ///< acceptance model
+                 const Event& e,          ///< event to be detected
+                 Response& response       ///< scanner response (LOR+length)
+                 ) const {
+    return exact_detect(gen, model, e, response);
+  }
+
+  Response response_wo_error(const FullResponse& full_response) const {
+    return full_response;
+  }
+
+  template <typename RNG>
+  Response response_w_error(RNG& rng, const Response& response) const {
+    std::normal_distribution<F> dist_dl(0, sigma_dl_);
+    Response response_w_error_(response);
+    response_w_error_.dl += dist_dl(rng);
+    return response_w_error_;
   }
 
   /// Produce indices of detectors close to given event
@@ -144,7 +170,12 @@ class GenericScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
     return false;
   }
 
+
+
  private:
+
+  F sigma_dl_;
+
   template <class RandomGenerator, class AcceptanceModel>
   _ bool did_deposit(RandomGenerator& gen,
                      AcceptanceModel& model,
