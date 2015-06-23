@@ -111,8 +111,7 @@ class progress {
  private:
   double ellapsed() {
     return std::chrono::duration_cast<std::chrono::duration<double>>(
-               clock_t::now() - start_time)
-        .count();
+               clock_t::now() - start_time).count();
   }
 
   static const char* timetostr(int sec) {

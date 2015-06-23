@@ -116,7 +116,7 @@ _ Vector<F> operator-(const Point<F>& lhs, const Point<F>& rhs) {
 
 template <typename FType>
 std::ostream& operator<<(std::ostream& out, const Point<FType>& vec) {
-  out << vec.x << " " << vec.y ;
+  out << vec.x << " " << vec.y;
   return out;
 }
 

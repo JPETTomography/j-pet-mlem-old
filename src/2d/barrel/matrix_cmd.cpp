@@ -305,8 +305,7 @@ static SparseMatrixType run(cmdline::parser& cl,
     std::cerr << "time : "
               << ((1.0e9 * stop.tv_sec + stop.tv_nsec) -
                   (1.0e9 * start.tv_sec + start.tv_nsec)) /
-                     1.0e9
-              << std::endl;
+                     1.0e9 << std::endl;
   }
 #endif
 

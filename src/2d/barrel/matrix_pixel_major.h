@@ -45,7 +45,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
         n_pixels_(Pixel::end_for_n_pixels_in_row(n_pixels_in_row).index()),
         n_lors(LOR::end_for_detectors(n_detectors).index()),
         size_(0),
-        pixel_lor_hits_ptr(new Hit*[n_pixels_]()),
+        pixel_lor_hits_ptr(new Hit* [n_pixels_]()),
         pixel_lor_hits(n_pixels_),
         pixel_lor_count(n_pixels_),
         index_to_lor(n_lors),

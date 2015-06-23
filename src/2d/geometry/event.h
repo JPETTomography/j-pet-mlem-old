@@ -1,6 +1,6 @@
 #pragma once
 
-#include<iostream>
+#include <iostream>
 
 #include "2d/geometry/point.h"
 #include "2d/geometry/vector.h"
@@ -28,10 +28,9 @@ template <typename FType> struct Event {
   const Vector direction;
 };
 
-template<typename F>
+template <typename F>
 std::ostream& operator<<(std::ostream& out, const Event<F>& event) {
-    out<<event.center<<" "<<event.direction;
-    return out;
+  out << event.center << " " << event.direction;
+  return out;
 }
-
 }

@@ -78,10 +78,10 @@ template <typename FType> struct EllipseParameters {
       : x(x), y(y), a(a), b(b), angle(angle), n_emissions(n_emissions) {}
 };
 
-template<typename F>
+template <typename F>
 std::ostream& operator<<(std::ostream& out, const Event<F>& event) {
-    out<<event.z_u<<" "<<event.z_d<<" "<<event.dl;
-    return out;
+  out << event.z_u << " " << event.z_d << " " << event.dl;
+  return out;
 }
 
 }  // Strip

@@ -1,6 +1,6 @@
 #pragma once
 
-#include<ostream>
+#include <ostream>
 
 #include "util/cuda/compat.h"
 #include "util/read.h"

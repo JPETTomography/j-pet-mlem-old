@@ -139,29 +139,32 @@ int main(int argc, char* argv[]) {
                 << std::endl;
     }
 
-    Common::PhantomMonteCarlo<Phantom, Scanner> mc(phantom, scanner);
+    Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
 
     typename Phantom::RNG rng;
     Common::AlwaysAccept<F> model;
 
     auto output = cl.get<cmdline::path>("output");
     auto output_base_name = output.wo_ext();
-    util::obstream out(output);
+    auto ext = output.ext();
 
-    mc.out_w_error = out;
-    //    mc.out_wo_error=out;
-    //    mc.out_full_response=out;
-    //    mc.out_exact_events=out;
+    std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
+    monte_carlo.out_wo_error = out_wo_error;
 
-    mc.generate(rng, model, emissions);
+    std::ofstream out_w_error(output);
+    monte_carlo.out_w_error = out_w_error;
 
-    // phantom(emissions);
+    std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
+    monte_carlo.out_exact_events = out_exact_events;
+
+    std::ofstream out_full_response(output_base_name + "_full_response" + ext);
+    monte_carlo.out_full_response = out_full_response;
+
+    monte_carlo.generate(rng, model, emissions);
 
     if (verbose) {
       std::cerr << "detected: " << phantom.n_events() << " events" << std::endl;
     }
-
-    // phantom >> out;
 
     std::ofstream cfg(output_base_name + ".cfg");
     cfg << cl;

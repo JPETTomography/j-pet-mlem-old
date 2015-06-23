@@ -154,6 +154,7 @@ int main(int argc, char* argv[]) {
 
     std::ofstream out_full_response(output_base_name + "_full_response" + ext);
     monte_carlo.out_full_response = out_full_response;
+
     monte_carlo.generate(rng, scintillator, cl.get<int>("n-emissions"));
 
     return 0;
