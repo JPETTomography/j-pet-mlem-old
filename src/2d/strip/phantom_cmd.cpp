@@ -169,15 +169,7 @@ int main(int argc, char* argv[]) {
     std::ofstream cfg(output_base_name + ".cfg");
     cfg << cl;
 
-    util::png_writer png(output_base_name + ".png");
-    phantom.output_bitmap(png);
-    util::obstream bin(output_base_name + "_detected.bin");
-    phantom.output_binary(bin, false);
 
-    util::png_writer png_true(output_base_name + "_true.png");
-    phantom.output_bitmap(png_true, true);
-    util::obstream bin_true(output_base_name + "_true.bin");
-    phantom.output_binary(bin_true, true);
 
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
