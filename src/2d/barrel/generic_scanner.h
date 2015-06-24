@@ -1,6 +1,6 @@
 #pragma once
 
-#include<random>
+#include <random>
 
 #include "square_detector.h"
 #include "circle_detector.h"
@@ -69,16 +69,17 @@ class GenericScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
                  )
       : Base(test_case, radius, w_detector, h_detector, d_detector) {}
 
-  void set_sigma_dl(F sigma_dl) {sigma_dl_=sigma_dl;}
+  void set_sigma_dl(F sigma_dl) { sigma_dl_ = sigma_dl; }
 
   /// \brief Tries to detect given event.
   /// \return number of coincidences (detector hits)
   template <class RandomGenerator, class AcceptanceModel>
-  _ short exact_detect(RandomGenerator& gen,    ///< random number generator
-                       AcceptanceModel& model,  ///< acceptance model
-                       const Event& e,          ///< event to be detected
-                       Response& response  ///< scanner response (LOR+length)
-                       ) const {
+  _ short exact_detect(
+      RandomGenerator& gen,    ///< random number generator
+      AcceptanceModel& model,  ///< acceptance model
+      const Event& e,          ///< event to be detected
+      FullResponse& response   ///< scanner response (LOR+length)
+      ) const {
     Indices left, right;
     close_indices(e, left, right);
     S detector1, detector2;
@@ -107,20 +108,33 @@ class GenericScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
   _ short detect(RandomGenerator& gen,    ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
                  const Event& e,          ///< event to be detected
-                 Response& response       ///< scanner response (LOR+length)
+                 FullResponse& response   ///< scanner response (LOR+length)
                  ) const {
     return exact_detect(gen, model, e, response);
   }
 
+  void quantize_response(Response& response) const {
+    if (this->tof_step_size() > 0) {
+      response.tof_position = this->quantize_tof_position(
+          response.dl,
+          this->tof_step_size(),
+          this->n_tof_positions(this->tof_step_size(), max_dl_error()));
+    } else
+      response.tof_position = 0;
+  }
+
   Response response_wo_error(const FullResponse& full_response) const {
-    return full_response;
+    Response response(full_response);
+    quantize_response(response);
+    return response;
   }
 
   template <typename RNG>
-  Response response_w_error(RNG& rng, const Response& response) const {
+  Response response_w_error(RNG& rng, const FullResponse& response) const {
     std::normal_distribution<F> dist_dl(0, sigma_dl_);
     Response response_w_error_(response);
     response_w_error_.dl += dist_dl(rng);
+    quantize_response(response_w_error_);
     return response_w_error_;
   }
 
@@ -170,10 +184,9 @@ class GenericScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
     return false;
   }
 
-
+  F max_dl_error() const { return 5.0 * sigma_dl_; }
 
  private:
-
   F sigma_dl_;
 
   template <class RandomGenerator, class AcceptanceModel>

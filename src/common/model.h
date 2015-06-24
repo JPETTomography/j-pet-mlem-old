@@ -20,8 +20,6 @@ template <typename FType> class AlwaysAccept {
   template <typename RandomGenerator> _ F deposition_depth(RandomGenerator&) {
     return static_cast<F>(0);
   }
-
-  _ static F max_bias() { return static_cast<F>(0); }
 };
 
 /// Model of scintilator acceptance
@@ -61,8 +59,6 @@ template <typename FType> class ScintillatorAccept {
     auto r = one_dis(gen);
     return -log(r) * scale;
   }
-
-  _ static F max_bias() { return static_cast<F>(0); }
 
  private:
   util::random::uniform_real_distribution<F> one_dis;

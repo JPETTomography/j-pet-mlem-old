@@ -195,7 +195,7 @@ void print_parameters(cmdline::parser& cl, const Scanner& scanner) {
   int n_tof_positions = 1;
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
-    max_bias = Model::max_bias();
+    max_bias = 0;
     n_tof_positions = scanner.n_tof_positions(tof_step, max_bias);
   }
   if (verbose) {
@@ -234,7 +234,7 @@ static SparseMatrixType run(cmdline::parser& cl,
   int n_tof_positions = 1;
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
-    max_bias = Model::max_bias();
+    max_bias = 0;
     n_tof_positions = scanner.n_tof_positions(tof_step, max_bias);
   }
 

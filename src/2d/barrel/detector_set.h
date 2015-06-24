@@ -43,16 +43,18 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
   struct Response {
     LOR lor;
     F dl;
+    int tof_position;
 
     friend std::ostream& operator<<(std::ostream& out,
                                     const Response& response) {
-      out << (int)response.lor.first << " " << (int)response.lor.second << " " << response.dl;
+      out << (int)response.lor.first << " " << (int)response.lor.second;
+      out << " " << response.tof_position;
+      out << " " << response.dl;
       return out;
     }
-
   };
 
-  using FullResponse =  Response;
+  using FullResponse = Response;
 
   /// Makes an empty detector set.
   DetectorSet(F radius = 1, F outer_radius = F(1.5))
@@ -60,7 +62,8 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
         fov_radius_(radius / M_SQRT2),
         c_inner(radius),
         c_outer(outer_radius),
-        n_symmetries_(0) {}
+        n_symmetries_(0),
+        tof_step_size_() {}
 
   enum class TestCase {
     TEST_8_SQUARE_DETECTORS,
@@ -104,7 +107,8 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
 
   F radius() const { return c_inner.radius; }
   F outer_radius() const { return c_outer.radius; }
-  F max_dl(F max_bias_size) const { return 2 * c_outer.radius + max_bias_size; }
+
+  F max_dl(F max_dl_error) const { return 2 * c_outer.radius + max_dl_error; }
 
   /// Quantizes position across lor
   _ static S quantize_tof_position(F position,    ///< position across lor
@@ -123,11 +127,11 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
   }
 
   /// Returns number of position steps (indexes)
-  S n_tof_positions(F step_size,     ///< step size
-                    F max_bias_size  ///< possible bias (fuzz) maximum size
+  S n_tof_positions(F step_size,    ///< step size
+                    F max_dl_error  ///< possible bias (fuzz) maximum size
                     ) const {
     // since position needs to be symmetric against (0,0) number must be even
-    return (static_cast<S>(ceil(2 * max_dl(max_bias_size) / step_size)) + 1) /
+    return (static_cast<S>(ceil(2 * max_dl(max_dl_error) / step_size)) + 1) /
            2 * 2;
   }
 
@@ -217,16 +221,19 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
 
   template <typename D> friend class ScannerBuilder;
 
+  _ F set_tof_step(F tof_step_size) { tof_step_size_ = tof_step_size; }
+  _ F tof_step_size() const { return tof_step_size_; }
+
  protected:
   F fov_radius_;
   util::array<MaxDet, CircleDetector> c_detectors;
   Circle c_inner;
   Circle c_outer;
-
   int n_symmetries_;
   SymmetryDescriptor<S>* symmetry_descriptor_;
 
  private:
+  F tof_step_size_;
 };
 }
 }

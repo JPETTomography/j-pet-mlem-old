@@ -49,7 +49,7 @@ template <typename DetectorType, typename MatrixType> class MonteCarlo {
     if (n_emissions <= 0)
       return;
 
-    auto n_positions = detector.n_tof_positions(tof_step, model.max_bias());
+    auto n_positions = detector.n_tof_positions(tof_step, 0);
     bool tof = (tof_step > static_cast<F>(0));
     util::random::uniform_real_distribution<F> one_dis(0, 1);
     util::random::uniform_real_distribution<F> phi_dis(0, F(M_PI));

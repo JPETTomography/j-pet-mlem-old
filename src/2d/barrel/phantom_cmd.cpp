@@ -209,14 +209,8 @@ void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
   auto dr = ScannerBuilder<DetectorType>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, typename DetectorType::F));
   dr.set_sigma_dl(cl.get<float>("sigma"));
-  //  auto n_detectors = dr.size();
-  //  int n_tof_positions = 1;
-  //  double max_bias = 0;
-  //  auto& tof_step = cl.get<double>("tof-step");
-  //  if (cl.exist("tof-step") && tof_step > 0) {
-  //    max_bias = ModelType::max_bias();
-  //    n_tof_positions = dr.n_tof_positions(tof_step, max_bias);
-  //  }
+  if (cl.exist("tof-step"))
+    dr.set_tof_step(cl.get<double>("tof-step"));
 
   Common::PhantomMonteCarlo<Phantom, DetectorType> monte_carlo(phantom, dr);
 
