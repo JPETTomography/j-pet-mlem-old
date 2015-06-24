@@ -91,6 +91,7 @@ int main(int argc, char* argv[]) {
     PET2D::Barrel::add_phantom_options(cl);
     cl.add("small", 0, "small barrel", false);
     cl.add("big", 0, "big barrel", false);
+    cl.add<float>("sigma", 0, "tof sigma", false, 0.06);
     cl.try_parse(argc, argv);
 
 #if _OPENMP
@@ -106,7 +107,6 @@ int main(int argc, char* argv[]) {
     const auto& shape = cl.get<std::string>("shape");
     const auto& model_name = cl.get<std::string>("model");
     const auto& length_scale = cl.get<double>("base-length");
-
 
     auto verbose = cl.exist("verbose");
 
@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
       } else if (shape == "triangle") {
         run<TriangleScanner>(cl, phantom, model);
       } else if (shape == "hexagon") {
-        run<HexagonalScanner>(cl,phantom,  model);
+        run<HexagonalScanner>(cl, phantom, model);
       }
     } else if (model_name == "scintillator") {
       Common::ScintillatorAccept<F> model(length_scale);
@@ -208,15 +208,15 @@ void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
 
   auto dr = ScannerBuilder<DetectorType>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, typename DetectorType::F));
-
-//  auto n_detectors = dr.size();
-//  int n_tof_positions = 1;
-//  double max_bias = 0;
-//  auto& tof_step = cl.get<double>("tof-step");
-//  if (cl.exist("tof-step") && tof_step > 0) {
-//    max_bias = ModelType::max_bias();
-//    n_tof_positions = dr.n_tof_positions(tof_step, max_bias);
-//  }
+  dr.set_sigma_dl(cl.get<float>("sigma"));
+  //  auto n_detectors = dr.size();
+  //  int n_tof_positions = 1;
+  //  double max_bias = 0;
+  //  auto& tof_step = cl.get<double>("tof-step");
+  //  if (cl.exist("tof-step") && tof_step > 0) {
+  //    max_bias = ModelType::max_bias();
+  //    n_tof_positions = dr.n_tof_positions(tof_step, max_bias);
+  //  }
 
   Common::PhantomMonteCarlo<Phantom, DetectorType> monte_carlo(phantom, dr);
 
