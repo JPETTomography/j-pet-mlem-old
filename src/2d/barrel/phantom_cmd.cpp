@@ -38,13 +38,12 @@
 
 #include "2d/geometry/point.h"
 #include "2d/barrel/scanner_builder.h"
-#include "2d/barrel/phantom.h"
 #include "ring_scanner.h"
 #include "generic_scanner.h"
 #include "circle_detector.h"
 #include "triangle_detector.h"
 #include "polygonal_detector.h"
-#include "common/model.h"
+
 #include "util/png_writer.h"
 #include "util/progress.h"
 #include "util/json_ostream.h"
@@ -79,9 +78,6 @@ using CircleScanner = Scanner<PET2D::Barrel::CircleDetector<F>>;
 using TriangleScanner = Scanner<PET2D::Barrel::TriangleDetector<F>>;
 using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
 
-using PointPhantom = PET2D::Barrel::PointPhantom<F>;
-using Phantom = PET2D::Barrel::Phantom<F>;
-
 using Ellipse = PET2D::Ellipse<F>;
 using PhantomRegion = PET2D::Strip::PhantomRegion<F>;
 
@@ -111,7 +107,7 @@ int main(int argc, char* argv[]) {
     const auto& model_name = cl.get<std::string>("model");
     const auto& length_scale = cl.get<double>("base-length");
 
-    auto emissions = cl.get<int>("emissions");
+
     auto verbose = cl.exist("verbose");
 
     std::vector<PhantomRegion> ellipse_list;
@@ -198,11 +194,8 @@ int main(int argc, char* argv[]) {
 template <typename DetectorType, typename Phantom, typename ModelType>
 void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
 
-  auto& n_pixels = cl.get<int>("n-pixels");
-  auto& m_pixel = cl.get<int>("m-pixel");
   auto& n_emissions = cl.get<int>("n-emissions");
-  auto& s_pixel = cl.get<double>("s-pixel");
-  auto& tof_step = cl.get<double>("tof-step");
+
   auto verbose = cl.exist("verbose");
 
   // NOTE: detector height will be determined per shape
@@ -216,13 +209,14 @@ void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
   auto dr = ScannerBuilder<DetectorType>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, typename DetectorType::F));
 
-  auto n_detectors = dr.size();
-  int n_tof_positions = 1;
-  double max_bias = 0;
-  if (cl.exist("tof-step") && tof_step > 0) {
-    max_bias = ModelType::max_bias();
-    n_tof_positions = dr.n_tof_positions(tof_step, max_bias);
-  }
+//  auto n_detectors = dr.size();
+//  int n_tof_positions = 1;
+//  double max_bias = 0;
+//  auto& tof_step = cl.get<double>("tof-step");
+//  if (cl.exist("tof-step") && tof_step > 0) {
+//    max_bias = ModelType::max_bias();
+//    n_tof_positions = dr.n_tof_positions(tof_step, max_bias);
+//  }
 
   Common::PhantomMonteCarlo<Phantom, DetectorType> monte_carlo(phantom, dr);
 
