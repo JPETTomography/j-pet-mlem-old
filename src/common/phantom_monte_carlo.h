@@ -26,6 +26,14 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
         out_exact_events(null_stream),
         out_full_response(null_stream) {}
 
+  typename std::vector<FullResponse>::const_iterator begin() const {
+    return responses_.begin();
+  }
+
+  typename std::vector<FullResponse>::const_iterator end() const {
+    return responses_.end();
+  }
+
   template <typename ModelType>
   int generate(RNG& rng, ModelType model, size_t n_emisions) {
     for (size_t i = 0; i < n_emisions; ++i) {

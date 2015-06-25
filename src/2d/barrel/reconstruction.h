@@ -68,11 +68,9 @@ class Reconstruction {
       in_means >> mean.lor.first >> mean.lor.second;
       if (mean.lor.first < mean.lor.second)
         std::swap(mean.lor.first, mean.lor.second);
-      if (matrix_.n_tof_positions() > 1) {
-        in_means >> mean.position;
-      } else {
-        mean.position = 0;
-      }
+
+      in_means >> mean.position;
+
       in_means >> mean.mean;
       if (in_means.eof())
         break;

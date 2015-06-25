@@ -92,6 +92,7 @@ int main(int argc, char* argv[]) {
     cl.add("small", 0, "small barrel", false);
     cl.add("big", 0, "big barrel", false);
     cl.add<float>("sigma", 0, "tof sigma", false, 0.06);
+    cl.add("bin", 0, "ouput number of hits in each lor position");
     cl.try_parse(argc, argv);
 
 #if _OPENMP
@@ -112,6 +113,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<PhantomRegion> ellipse_list;
 
+    // Read phantom
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);
       std::string line;
@@ -232,8 +234,39 @@ void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
   std::ofstream out_full_response(output_base_name + "_full_response" + ext);
   monte_carlo.out_full_response = out_full_response;
 
+  std::vector<int> hits;
   monte_carlo.generate(rng, model, n_emissions);
-  monte_carlo.write_out(rng);
+  if (cl.exist("bin")) {
+    std::cerr << "bin\n";
+    auto n_tof_positions =
+        dr.n_tof_positions(dr.tof_step_size(), dr.max_dl_error());
+    if (n_tof_positions == 0)
+      n_tof_positions = 1;
+    auto n_detectors = dr.size();
+    hits.assign(n_detectors * n_detectors * n_tof_positions, 0);
+    for (auto& full_response : monte_carlo) {
+      auto response = dr.response_w_error(rng, full_response);
+      if (response.tof_position < 0)
+        response.tof_position = 0;
+      if (response.tof_position >= n_tof_positions)
+        response.tof_position = n_tof_positions - 1;
+      int index = response.lor.first * n_detectors * n_tof_positions +
+                  response.lor.second * n_tof_positions + response.tof_position;
+      hits[index]++;
+    }
+
+    for (int d1 = 0; d1 < n_detectors; d1++)
+      for (int d2 = 0; d2 < n_detectors; d2++)
+        for (int tof = 0; tof < n_tof_positions; tof++) {
+          if (hits[d1 * n_detectors * n_tof_positions + d2 * n_tof_positions +
+                   tof] > 0)
+            out_w_error << d1 << " " << d2 << " " << tof << " "
+                        << hits[d1 * n_detectors * n_tof_positions +
+                                d2 * n_tof_positions + tof] << "\n";
+        }
+
+  } else
+    monte_carlo.write_out(rng);
 
   if (verbose) {
     std::cerr << "detected: " << monte_carlo.n_events_detected() << " events"

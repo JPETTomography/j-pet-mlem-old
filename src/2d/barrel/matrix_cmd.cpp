@@ -204,6 +204,7 @@ void print_parameters(cmdline::parser& cl, const Scanner& scanner) {
     std::cerr << "   OpenMP threads = " << omp_get_max_threads() << std::endl;
 #endif
     std::cerr << "    pixels in row = " << n_pixels << std::endl;
+    std::cerr << "       pixel size = " << cl.get<double>("s-pixel")<<"\n";
     std::cerr << "    fov radius    = " << scanner.fov_radius() << "\n";
     std::cerr << "     outer radius = " << scanner.outer_radius() << std::endl;
     std::cerr << "         max bias = " << max_bias << std::endl;
@@ -251,6 +252,7 @@ static SparseMatrixType run(cmdline::parser& cl,
         std::cerr << "read sparse matrix: " << fn << std::endl;
         std::cerr << " pixels in row = " << in_sparse_matrix.n_pixels_in_row()
                   << std::endl;
+        std::cerr << " pixel size     = " << cl.get<float>("s-pixel");
         std::cerr << " TOF positions = " << in_sparse_matrix.n_tof_positions()
                   << std::endl;
         std::cerr << " emissions     = " << in_sparse_matrix.n_emissions()
