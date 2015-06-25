@@ -93,7 +93,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   }
 
   ~MatrixPixelMajor() {
-    for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
+    for (int i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
       if (pixel_lor_hits_ptr[i_pixel]) {
         delete[] pixel_lor_hits_ptr[i_pixel];
       }
