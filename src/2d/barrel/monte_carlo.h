@@ -41,7 +41,7 @@ template <typename DetectorType, typename MatrixType> class MonteCarlo {
   void operator()(
       RandomGenerator& gen,              ///< random number generator
       AcceptanceModel model,             ///< acceptance model
-      S n_emissions,                     ///< number of emissions generated
+      int n_emissions,                     ///< number of emissions generated
       ProgressCallback progress,         ///< progress callback
       bool o_collect_mc_matrix = true,   ///< enable matrix generation
       bool o_collect_pixel_stats = true  ///< enable pixel stats
