@@ -233,6 +233,7 @@ void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
   monte_carlo.out_full_response = out_full_response;
 
   monte_carlo.generate(rng, model, n_emissions);
+  monte_carlo.write_out(rng);
 
   if (verbose) {
     std::cerr << "detected: " << monte_carlo.n_events_detected() << " events"

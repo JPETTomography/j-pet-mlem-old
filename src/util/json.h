@@ -218,7 +218,7 @@ class basic_json {
     number_integer,  ///< number value (integer)
     number_float,    ///< number value (floating-point)
     discarded  ///< (internal) indicates the parser callback chose not to keep
-    /// the value
+               /// the value
   };
 
   ////////////////////////
@@ -328,7 +328,7 @@ class basic_json {
     array_end,     ///< end of an array scope (found ']' token)
     key,           ///< found an object key within an object scope
     value  ///< a value in an appropriate context (i.e., following a tag in an
-    /// object scope)
+           /// object scope)
   };
 
   /// per-element parser callback type

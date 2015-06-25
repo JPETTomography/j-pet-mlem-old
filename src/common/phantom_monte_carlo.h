@@ -33,14 +33,20 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
       FullResponse full_response;
 
       if (detector_.exact_detect(rng, model, event, full_response) == 2) {
-        out_full_response << full_response << "\n";
-        out_wo_error << detector_.response_wo_error(full_response) << "\n";
-        out_w_error << detector_.response_w_error(rng, full_response) << "\n";
+        responses_.push_back(full_response);
         out_exact_events << event << "\n";
         n_events_detected_++;
       }
     }
     return 0;
+  }
+
+  void write_out(RNG& rng) const {
+    for (auto& full_response : responses_) {
+      out_full_response << full_response << "\n";
+      out_wo_error << detector_.response_wo_error(full_response) << "\n";
+      out_w_error << detector_.response_w_error(rng, full_response) << "\n";
+    }
   }
 
   int n_events_detected() const { return n_events_detected_; }
@@ -49,6 +55,7 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
   Phantom& phantom_;
   Detector& detector_;
   int n_events_detected_;
+  std::vector<FullResponse> responses_;
 
  public:
   std::reference_wrapper<std::ostream> out_wo_error;

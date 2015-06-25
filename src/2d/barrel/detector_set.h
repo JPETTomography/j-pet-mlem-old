@@ -221,7 +221,7 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
 
   template <typename D> friend class ScannerBuilder;
 
-  _ F set_tof_step(F tof_step_size) { tof_step_size_ = tof_step_size; }
+  _ void set_tof_step(F tof_step_size) { tof_step_size_ = tof_step_size; }
   _ F tof_step_size() const { return tof_step_size_; }
 
  protected:
