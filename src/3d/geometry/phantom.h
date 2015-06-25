@@ -7,12 +7,9 @@
 #define omp_get_thread_num() 0
 #endif
 
-
 #include "3d/geometry/phantom_region.h"
 
-
 namespace PET3D {
-
 
 /*   Phantom -------------------------------------------------------------
  */
