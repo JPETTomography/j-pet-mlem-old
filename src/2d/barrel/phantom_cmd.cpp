@@ -238,11 +238,11 @@ void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
   monte_carlo.generate(rng, model, n_emissions);
   if (cl.exist("bin")) {
     std::cerr << "bin\n";
-    auto n_tof_positions =
+    int n_tof_positions =
         dr.n_tof_positions(dr.tof_step_size(), dr.max_dl_error());
     if (n_tof_positions == 0)
       n_tof_positions = 1;
-    auto n_detectors = dr.size();
+    int n_detectors = dr.size();
     hits.assign(n_detectors * n_detectors * n_tof_positions, 0);
     for (auto& full_response : monte_carlo) {
       auto response = dr.response_w_error(rng, full_response);

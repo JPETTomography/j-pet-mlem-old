@@ -95,7 +95,7 @@ template <typename FType, typename SType> class Phantom {
   template <typename Generator>
   PET2D::Event<F> gen_event(Generator& generator) {
     Point<F> p = gen_point(generator);
-    F rangle = F(M_PI_4) * uniform_angle(generator);
+    F rangle = F(M_PI_2) * uniform_angle(generator);
     return PET2D::Event<F>(p, rangle);
   }
 };
