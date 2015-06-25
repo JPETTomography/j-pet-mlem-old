@@ -142,11 +142,12 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
                         this->n_emissions(),
                         this->n_tof_positions());
     sparse.reserve(size_);
-    for (S i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
+    for (int i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
       for (auto& e : pixel_lor_hits[i_pixel]) {
         sparse.push_back(e);
       }
     }
+
     return sparse;
   }
 
