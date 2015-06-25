@@ -118,16 +118,10 @@ class SparseMatrix
       : n_pixels_in_row_(n_pixels_in_row),
         n_pixels_in_row_half_(n_pixels_in_row / 2),
         n_detectors_(n_detectors),
-        n_2_detectors_(2 * n_detectors),
         n_emissions_(n_emissions),
         n_lors_(LOR::end_for_detectors(n_detectors).index()),
         triangular_(triangular),
-        n_tof_positions_(n_tof_positions) {
-    S n_detectors_2 = n_detectors / 2;
-    S n_detectors_4 = n_detectors / 4;
-    n_1_detectors_2_ = n_detectors + n_detectors_2;
-    n_1_detectors_4_ = n_detectors + n_detectors_4;
-  }
+        n_tof_positions_(n_tof_positions) {}
 
   S n_pixels_in_row() const { return n_pixels_in_row_; }
   S n_pixels_in_row_half() const { return n_pixels_in_row_half_; }
@@ -180,11 +174,6 @@ class SparseMatrix
     n_pixels_in_row_half_ = in_n_pixels_in_row / 2;
     n_emissions_ = in_n_emissions;
     n_detectors_ = in_n_detectors;
-    n_2_detectors_ = in_n_detectors * 2;
-    S n_detectors_2 = in_n_detectors / 2;
-    S n_detectors_4 = in_n_detectors / 4;
-    n_1_detectors_2_ = in_n_detectors + n_detectors_2;
-    n_1_detectors_4_ = in_n_detectors + n_detectors_4;
     n_lors_ = LOR::end_for_detectors(n_detectors_).index();
 
     // load hits
@@ -441,9 +430,6 @@ class SparseMatrix
   S n_pixels_in_row_;
   S n_pixels_in_row_half_;
   S n_detectors_;
-  S n_2_detectors_;
-  S n_1_detectors_2_;
-  S n_1_detectors_4_;
   Hit n_emissions_;
   int n_lors_;
   bool triangular_;

@@ -91,7 +91,6 @@ int main(int argc, char* argv[]) {
     if (matrix.triangular()) {
       throw("matrix must be in full form");
     }
-    // matrix = matrix.to_full();
 
     std::ifstream in_means(cl.get<cmdline::path>("mean"));
     if (!in_means.is_open())
