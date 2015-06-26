@@ -2,9 +2,10 @@
 #define RECTANGLE
 
 #include <iostream>
+#include <random>
 
 #include "point.h"
-#include "util/random.h"
+
 #include "util/cuda/compat.h"
 
 namespace PET2D {
@@ -28,6 +29,26 @@ template <typename FType> class Rectangle {
   const F a;
   const F b;
   const F area;
+};
+
+template <typename FType> class RectanglePointGenerator {
+ public:
+  using F = FType;
+  using Rectangle = PET2D::Rectangle<F>;
+  using Point = PET2D::Point<F>;
+
+  RectanglePointGenerator(const Rectangle& rec) : rectangle_(rec), uni(-1, 1) {}
+
+  template <typename Generator> Point operator()(Generator& rng) {
+    F x = uni(rng) * rectangle_.a;
+    F y = uni(rng) * rectangle_.b;
+
+    return Point(rectangle_.center.x + x, rectangle_.center.y + y);
+  }
+
+ private:
+  Rectangle rectangle_;
+  std::uniform_real_distribution<F> uni;
 };
 }
 
