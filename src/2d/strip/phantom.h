@@ -8,6 +8,7 @@
 
 #include "2d/geometry/event.h"
 #include "2d/geometry/ellipse.h"
+#include "2d/geometry/rectangle.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -72,6 +73,24 @@ class EllipticalPhantomRegion
   EllipsePointGenerator<F> gen_;
 };
 
+template <typename FType, typename RNG>
+class RectangularPhantomRegion
+    : public ShapePhantomRegion<PET2D::Rectangle<FType>, RNG> {
+ public:
+  using F = FType;
+  using Rectangle = PET2D::Rectangle<F>;
+  using Point = PET2D::Point<F>;
+
+  RectangularPhantomRegion(const Rectangle& rectangle, F intensity)
+      : ShapePhantomRegion<Rectangle, RNG>(rectangle, intensity),
+        gen_(rectangle) {}
+
+  Point random_point(RNG& rng) { return gen_(rng); }
+
+ private:
+  PET2D::RectanglePointGenerator<F> gen_;
+};
+
 /// Virtual phantom made of  regions
 template <typename FType, typename SType> class Phantom {
  public:
@@ -131,6 +150,18 @@ template <typename FType, typename SType> class Phantom {
 
         auto region =
             new PET2D::Strip::EllipticalPhantomRegion<F, RNG>(el, acceptance);
+        push_back_region(region);
+      } else if (type == "rectangle") {
+        double x, y, a, b, acceptance;
+
+        // on error
+        if (!(iss >> x >> y >> a >> b >> acceptance))
+          break;
+
+        Rectangle<F> rec(x, y, a, b);
+
+        auto region =
+            new PET2D::Strip::RectangularPhantomRegion<F, RNG>(rec, acceptance);
         push_back_region(region);
       } else {
         std::cerr << "unknow phantom type" << std::endl;

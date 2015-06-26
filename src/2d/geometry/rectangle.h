@@ -20,7 +20,7 @@ template <typename FType> class Rectangle {
 
   Rectangle(F x, F y, F a, F b) : center(x, y), a(a), b(b), area(4 * a * b) {}
 
-  bool contains(Point p) {
+  bool contains(Point p) const {
     auto r = p - center;
     return std::abs(r.x) <= a && std::abs(r.y) <= b;
   }
