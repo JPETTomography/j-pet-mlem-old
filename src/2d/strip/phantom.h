@@ -35,6 +35,9 @@ template <typename FType> struct PhantomRegion {
   const F weight;
 };
 
+template <typename FType>
+class EllipcticalPhantomRegion : public PhantomRegion<FType> {};
+
 /// Virtual phantom made of elliptical regions
 template <typename FType, typename SType> class Phantom {
  public:

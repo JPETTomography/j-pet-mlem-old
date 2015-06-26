@@ -59,27 +59,6 @@ template <typename FType> struct Ellipse {
   }
 };
 
-/// Elliptical emmission source
-template <typename FType> struct EllipticalSource : public Ellipse<FType> {
-  using F = FType;
-
-  using Ellipse = PET2D::Ellipse<F>;
-  using Point = PET2D::Point<F>;
-
-  const F intensity;
-
-  EllipticalSource(F x, F y, F a, F b, F phi, F intensity)
-      : Ellipse::Ellipse(x, y, a, b, phi), intensity(intensity) {}
-
-  EllipticalSource(Point center, F a, F b, F phi, F intensity)
-      : Ellipse::Ellipse(center, a, b, phi), intensity(intensity) {}
-
-#if !__CUDACC__
-  EllipticalSource(std::istream& in)
-      : Ellipse::Ellipse(in), intensity(util::read<F>(in)) {}
-#endif
-};
-
 /// Generates random points from given ellipse
 template <typename FType> class EllipsePointGenerator {
  public:
