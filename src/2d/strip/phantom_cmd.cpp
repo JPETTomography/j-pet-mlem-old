@@ -58,9 +58,8 @@ using Hit = int;
 using Scanner = PET2D::Strip::Scanner<F, S>;
 using Phantom = PET2D::Strip::Phantom<F, S>;
 using Ellipse = PET2D::Ellipse<F>;
-using PhantomRegion = PET2D::Strip::PhantomRegion<F>;
-
-const double RADIAN = M_PI / 180;
+using RNG = typename Phantom::RNG;
+using PhantomRegion = PET2D::Strip::PhantomRegion<F, RNG>;
 
 int main(int argc, char* argv[]) {
 
@@ -89,8 +88,6 @@ int main(int argc, char* argv[]) {
     auto emissions = cl.get<int>("emissions");
     auto verbose = cl.exist("verbose");
 
-    std::vector<PhantomRegion> ellipse_list;
-
     Scanner scanner(PET2D_STRIP_SCANNER_CL(cl));
 
     if (verbose) {
@@ -98,38 +95,13 @@ int main(int argc, char* argv[]) {
                 << std::endl;
     }
 
+    Phantom phantom;
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);
-      std::string line;
-      while (std::getline(infile, line)) {
-        std::istringstream iss(line);
-        std::string type;
-        iss >> type;
-        if (type == "ellipse") {
-          double x, y, a, b, angle, acceptance;
-
-          // on error
-          if (!(iss >> x >> y >> a >> b >> angle >> acceptance))
-            break;
-
-          Ellipse el(x, y, a, b, angle * RADIAN);
-
-          if (verbose) {
-            std::cout << "ellipse: " << el.center.x << " " << el.center.y << " "
-                      << el.a << " " << el.b << " " << el.angle << " " << el.A
-                      << " " << el.B << " " << el.C << std::endl;
-          }
-
-          PhantomRegion region(el, acceptance);
-          ellipse_list.push_back(region);
-        } else {
-          std::cerr << "unknow phantom type" << std::endl;
-          exit(-1);
-        }
-      }
+      phantom.read_from_stream(infile);
     }
 
-    Phantom phantom(ellipse_list);
+    phantom.calculate_cdf();
 
     if (verbose) {
       std::cerr << "scanner: " << scanner.size_y << " " << scanner.tl_y_half_h

@@ -57,11 +57,11 @@
 #include <omp.h>
 #endif
 
-const double RADIAN = M_PI / 180;
-
 using F = float;
 using S = short;
 using Hit = int;
+
+using RNG = std::mt19937;
 
 using Pixel = PET2D::Pixel<S>;
 using Point = PET2D::Point<F>;
@@ -79,7 +79,7 @@ using TriangleScanner = Scanner<PET2D::Barrel::TriangleDetector<F>>;
 using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
 
 using Ellipse = PET2D::Ellipse<F>;
-using PhantomRegion = PET2D::Strip::PhantomRegion<F>;
+using PhantomRegion = PET2D::Strip::PhantomRegion<F, RNG>;
 
 template <typename DetectorType, typename Phantom, typename ModelType>
 void run(cmdline::parser& cl, Phantom& phantom, ModelType& model);
@@ -111,41 +111,13 @@ int main(int argc, char* argv[]) {
 
     auto verbose = cl.exist("verbose");
 
-    std::vector<PhantomRegion> ellipse_list;
-
+    PET2D::Strip::Phantom<F, S> phantom;
     // Read phantom
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);
-      std::string line;
-      while (std::getline(infile, line)) {
-        std::istringstream iss(line);
-        std::string type;
-        iss >> type;
-        if (type == "ellipse") {
-          double x, y, a, b, angle, acceptance;
-
-          // on error
-          if (!(iss >> x >> y >> a >> b >> angle >> acceptance))
-            break;
-
-          Ellipse el(x, y, a, b, angle * RADIAN);
-
-          if (verbose) {
-            std::cout << "ellipse: " << el.center.x << " " << el.center.y << " "
-                      << el.a << " " << el.b << " " << el.angle << " " << el.A
-                      << " " << el.B << " " << el.C << std::endl;
-          }
-
-          PhantomRegion region(el, acceptance);
-          ellipse_list.push_back(region);
-        } else {
-          std::cerr << "unknow phantom type" << std::endl;
-          exit(-1);
-        }
-      }
+      phantom.read_from_stream(infile);
     }
-
-    PET2D::Strip::Phantom<F, S> phantom(ellipse_list);
+    phantom.calculate_cdf();
 
     // run simmulation on given detector model & shape
     if (model_name == "always") {
@@ -203,7 +175,7 @@ void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
   // NOTE: detector height will be determined per shape
 
   std::random_device rd;
-  std::mt19937 gen(rd());
+  RNG gen(rd());
   if (cl.exist("seed")) {
     gen.seed(cl.get<std::mt19937::result_type>("seed"));
   }

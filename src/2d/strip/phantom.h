@@ -15,30 +15,64 @@
 #define omp_get_max_threads() 1
 #define omp_get_thread_num() 0
 #endif
-
+const double RADIAN = M_PI / 180;
 namespace PET2D {
 namespace Strip {
 
 // template <typename F> int sgn(F val) { return (0 < val) - (val < 0); }
 
 /// Virtual phantom region made of ellipse and intensity
-template <typename FType> struct PhantomRegion {
+template <typename FType, typename RNG> struct PhantomRegion {
   using F = FType;
+  using Point = PET2D::Point<F>;
 
-  PhantomRegion(const Ellipse<F>& ellipse, F intensity)
-      : shape(ellipse), intensity(intensity), weight(intensity * shape.area) {}
+  PhantomRegion(F intensity) : intensity(intensity) {}
 
-  bool contains(Point<F> p) const { return shape.constains(p); }
+  virtual bool contains(Point p) const = 0;
+  virtual F weight() const = 0;
+  virtual Point random_point(RNG&) = 0;
 
-  const Ellipse<F> shape;
   const F intensity;
-  const F weight;
 };
 
-template <typename FType>
-class EllipcticalPhantomRegion : public PhantomRegion<FType> {};
+template <typename Shape, typename RNG>
+class ShapePhantomRegion : public PhantomRegion<typename Shape::F, RNG> {
+ public:
+  using F = typename Shape::F;
 
-/// Virtual phantom made of elliptical regions
+  ShapePhantomRegion(const Shape& shape, F intensity)
+      : PhantomRegion<F, RNG>(intensity),
+        shape(shape),
+        weight_(intensity * shape.area) {}
+
+  bool contains(Point<F> p) const { return shape.contains(p); }
+
+  const Shape shape;
+
+  F weight() const { return weight_; }
+
+ private:
+  const F weight_;
+};
+
+template <typename FType, typename RNG>
+class EllipticalPhantomRegion
+    : public ShapePhantomRegion<PET2D::Ellipse<FType>, RNG> {
+ public:
+  using F = FType;
+  using Ellipse = PET2D::Ellipse<F>;
+  using Point = PET2D::Point<F>;
+
+  EllipticalPhantomRegion(const Ellipse& ellipse, F intensity)
+      : ShapePhantomRegion<Ellipse, RNG>(ellipse, intensity), gen_(ellipse) {}
+
+  Point random_point(RNG& rng) { return gen_(rng); }
+
+ private:
+  EllipsePointGenerator<F> gen_;
+};
+
+/// Virtual phantom made of  regions
 template <typename FType, typename SType> class Phantom {
  public:
   using F = FType;
@@ -50,28 +84,59 @@ template <typename FType, typename SType> class Phantom {
  private:
   int n_events_;
 
-  std::vector<PhantomRegion<F>> region_list;
+  std::vector<PhantomRegion<F, RNG>*> region_list;
   std::vector<F> CDF;
-  std::vector<EllipsePointGenerator<F>> point_generators;
 
   std::uniform_real_distribution<F> uniform;
   std::uniform_real_distribution<F> uniform_angle;
 
  public:
-  Phantom(const std::vector<PhantomRegion<F>>& el)
-      : region_list(el), CDF(el.size(), 0), uniform_angle(-1, 1) {
+  Phantom() : uniform_angle(-1, 1){};
+  Phantom(const std::vector<PhantomRegion<F, RNG>*>& el)
+      : uniform_angle(-1, 1), region_list(el) {
 
-    CDF[0] = region_list[0].weight;
-    for (size_t i = 1; i < el.size(); i++) {
-      CDF[i] = region_list[i].weight + CDF[i - 1];
+    calculate_cdf();
+  }
+
+  void calculate_cdf() {
+    CDF.assign(region_list.size(), 0);
+    CDF[0] = region_list[0]->weight();
+    for (size_t i = 1; i < region_list.size(); i++) {
+      CDF[i] = region_list[i]->weight() + CDF[i - 1];
     }
-    F norm = CDF[el.size() - 1];
-    for (size_t i = 0; i < el.size(); i++) {
+    F norm = CDF[region_list.size() - 1];
+    for (size_t i = 0; i < region_list.size(); i++) {
       CDF[i] /= norm;
     }
+  }
 
-    for (size_t i = 0; i < el.size(); ++i)
-      point_generators.emplace_back(el[i].shape);
+  void push_back_region(PhantomRegion<F, RNG>* region) {
+    region_list.push_back(region);
+  }
+
+  int read_from_stream(std::istream& infile) {
+    std::string line;
+    while (std::getline(infile, line)) {
+      std::istringstream iss(line);
+      std::string type;
+      iss >> type;
+      if (type == "ellipse") {
+        double x, y, a, b, angle, acceptance;
+
+        // on error
+        if (!(iss >> x >> y >> a >> b >> angle >> acceptance))
+          break;
+
+        Ellipse<F> el(x, y, a, b, angle * RADIAN);
+
+        auto region =
+            new PET2D::Strip::EllipticalPhantomRegion<F, RNG>(el, acceptance);
+        push_back_region(region);
+      } else {
+        std::cerr << "unknow phantom type" << std::endl;
+        exit(-1);
+      }
+    }
   }
 
   template <typename G> size_t choose_region(G& gen) {
@@ -87,9 +152,9 @@ template <typename FType, typename SType> class Phantom {
   template <typename Generator> Point<F> gen_point(Generator& generator) {
   again:
     size_t i_region = choose_region(generator);
-    Point<F> p = point_generators[i_region](generator);
+    Point<F> p = region_list[i_region]->random_point(generator);
     for (size_t j = 0; j < i_region; j++) {
-      if (region_list[j].shape.contains(p))
+      if (region_list[j]->contains(p))
         goto again;
     }
     return p;
