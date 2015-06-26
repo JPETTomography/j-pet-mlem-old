@@ -49,7 +49,7 @@
 #include "util/json_ostream.h"
 #include "options.h"
 
-#include "2d/strip/phantom.h"
+#include "2d/geometry/phantom.h"
 #include "common/model.h"
 #include "common/phantom_monte_carlo.h"
 

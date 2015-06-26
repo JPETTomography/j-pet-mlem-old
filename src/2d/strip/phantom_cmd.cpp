@@ -41,7 +41,7 @@
 #include "util/cmdline_types.h"
 #include "options.h"
 
-#include "2d/strip/phantom.h"
+#include "2d/geometry/phantom.h"
 #include "2d/strip/scanner.h"
 
 #include "common/model.h"
