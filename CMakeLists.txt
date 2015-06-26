@@ -222,6 +222,7 @@ endfunction()
 pet_target(2d barrel matrix)
 pet_target(2d barrel phantom)
 pet_target(2d barrel reconstruction)
+pet_target(2d barrel lm_reconstruction)
 pet_target(2d strip phantom)
 pet_target(2d strip reconstruction)
 

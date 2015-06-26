@@ -45,9 +45,16 @@ template <typename FType, typename SType> class LORsPixelsInfo {
   const LORInfo& operator[](const LOR& lor) const {
     return lor_info_[lor.index()];
   }
+
+  // Reading (binary)
   std::istream& read(std::istream& in) {
     while (read_lor_info(in))
       ;
+    return in;
+  }
+
+  std::istream& read_header(std::istream& in) {
+
     return in;
   }
 

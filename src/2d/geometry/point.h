@@ -120,6 +120,13 @@ std::ostream& operator<<(std::ostream& out, const Point<FType>& vec) {
   return out;
 }
 
+template <typename FType>
+_ Point<FType> interpolate(FType t,
+                           const Point<FType>& start,
+                           const Point<FType>& end) {
+  return Point<FType>(start.x * (1 - t) + end.x * t,
+                      start.y * (1 - t) + end.y * t);
+}
 }  // PET2D
 
 template <typename F> F deg(F rad) { return rad * 180 / F(M_PI); }
