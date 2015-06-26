@@ -56,10 +56,10 @@ using S = short;
 using Hit = int;
 
 using Scanner = PET2D::Strip::Scanner<F, S>;
-using Phantom = PET2D::Strip::Phantom<F, S>;
+using Phantom = PET2D::Phantom<F, S>;
 using Ellipse = PET2D::Ellipse<F>;
 using RNG = typename Phantom::RNG;
-using PhantomRegion = PET2D::Strip::PhantomRegion<F, RNG>;
+using PhantomRegion = PET2D::PhantomRegion<F, RNG>;
 
 int main(int argc, char* argv[]) {
 

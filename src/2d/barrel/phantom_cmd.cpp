@@ -79,7 +79,7 @@ using TriangleScanner = Scanner<PET2D::Barrel::TriangleDetector<F>>;
 using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
 
 using Ellipse = PET2D::Ellipse<F>;
-using PhantomRegion = PET2D::Strip::PhantomRegion<F, RNG>;
+using PhantomRegion = PET2D::PhantomRegion<F, RNG>;
 
 template <typename DetectorType, typename Phantom, typename ModelType>
 void run(cmdline::parser& cl, Phantom& phantom, ModelType& model);
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 
     auto verbose = cl.exist("verbose");
 
-    PET2D::Strip::Phantom<F, S> phantom;
+    PET2D::Phantom<F, S> phantom;
     // Read phantom
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);

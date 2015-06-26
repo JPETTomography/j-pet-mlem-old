@@ -9,6 +9,7 @@
 #include "2d/geometry/event.h"
 #include "2d/geometry/ellipse.h"
 #include "2d/geometry/rectangle.h"
+#include "2d/geometry/phantom_region.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -18,79 +19,6 @@
 #endif
 const double RADIAN = M_PI / 180;
 namespace PET2D {
-namespace Strip {
-
-// template <typename F> int sgn(F val) { return (0 < val) - (val < 0); }
-
-/// Virtual phantom region made of ellipse and intensity
-template <typename FType, typename RNG> struct PhantomRegion {
-  using F = FType;
-  using Point = PET2D::Point<F>;
-
-  PhantomRegion(F intensity) : intensity(intensity) {}
-
-  virtual bool contains(Point p) const = 0;
-  virtual F weight() const = 0;
-  virtual Point random_point(RNG&) = 0;
-
-  const F intensity;
-};
-
-template <typename Shape, typename RNG>
-class ShapePhantomRegion : public PhantomRegion<typename Shape::F, RNG> {
- public:
-  using F = typename Shape::F;
-
-  ShapePhantomRegion(const Shape& shape, F intensity)
-      : PhantomRegion<F, RNG>(intensity),
-        shape(shape),
-        weight_(intensity * shape.area) {}
-
-  bool contains(Point<F> p) const { return shape.contains(p); }
-
-  const Shape shape;
-
-  F weight() const { return weight_; }
-
- private:
-  const F weight_;
-};
-
-template <typename FType, typename RNG>
-class EllipticalPhantomRegion
-    : public ShapePhantomRegion<PET2D::Ellipse<FType>, RNG> {
- public:
-  using F = FType;
-  using Ellipse = PET2D::Ellipse<F>;
-  using Point = PET2D::Point<F>;
-
-  EllipticalPhantomRegion(const Ellipse& ellipse, F intensity)
-      : ShapePhantomRegion<Ellipse, RNG>(ellipse, intensity), gen_(ellipse) {}
-
-  Point random_point(RNG& rng) { return gen_(rng); }
-
- private:
-  EllipsePointGenerator<F> gen_;
-};
-
-template <typename FType, typename RNG>
-class RectangularPhantomRegion
-    : public ShapePhantomRegion<PET2D::Rectangle<FType>, RNG> {
- public:
-  using F = FType;
-  using Rectangle = PET2D::Rectangle<F>;
-  using Point = PET2D::Point<F>;
-
-  RectangularPhantomRegion(const Rectangle& rectangle, F intensity)
-      : ShapePhantomRegion<Rectangle, RNG>(rectangle, intensity),
-        gen_(rectangle) {}
-
-  Point random_point(RNG& rng) { return gen_(rng); }
-
- private:
-  PET2D::RectanglePointGenerator<F> gen_;
-};
-
 /// Virtual phantom made of  regions
 template <typename FType, typename SType> class Phantom {
  public:
@@ -135,6 +63,7 @@ template <typename FType, typename SType> class Phantom {
 
   int read_from_stream(std::istream& infile) {
     std::string line;
+    int count = 0;
     while (std::getline(infile, line)) {
       std::istringstream iss(line);
       std::string type;
@@ -149,8 +78,9 @@ template <typename FType, typename SType> class Phantom {
         Ellipse<F> el(x, y, a, b, angle * RADIAN);
 
         auto region =
-            new PET2D::Strip::EllipticalPhantomRegion<F, RNG>(el, acceptance);
+            new PET2D::EllipticalPhantomRegion<F, RNG>(el, acceptance);
         push_back_region(region);
+        count++;
       } else if (type == "rectangle") {
         double x, y, a, b, acceptance;
 
@@ -161,13 +91,15 @@ template <typename FType, typename SType> class Phantom {
         Rectangle<F> rec(x, y, a, b);
 
         auto region =
-            new PET2D::Strip::RectangularPhantomRegion<F, RNG>(rec, acceptance);
+            new PET2D::RectangularPhantomRegion<F, RNG>(rec, acceptance);
         push_back_region(region);
+        count++;
       } else {
         std::cerr << "unknow phantom type" << std::endl;
         exit(-1);
       }
     }
+    return count;
   }
 
   template <typename G> size_t choose_region(G& gen) {
@@ -198,5 +130,5 @@ template <typename FType, typename SType> class Phantom {
     return PET2D::Event<F>(p, rangle);
   }
 };
-}  // Strip
+
 }  // PET2D
