@@ -18,7 +18,7 @@
 #endif
 
 using F = float;
-using S = short;
+using S = int;
 using RNG = std::mt19937;
 using Point = PET2D::Point<F>;
 
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
   try {
     cmdline::parser cl;
     cl.add<std::string>("lor-info", 0, "lor-pixel information", true);
-    cl.add<float>("sigma", 0, "sigma dl", false, 0.060);
+    cl.add<double>("sigma", 0, "sigma dl", false, 0.060);
 
     cl.add<double>("length", 0, "length of the detector", false, 0.3);
     cl.add<std::string>("response", 0, "detector responses", true);
@@ -37,11 +37,7 @@ int main(int argc, char* argv[]) {
     cl.add<int>(
         "iterations", 'I', "number of iterations (per block)", false, 1);
 #if _OPENMP
-    cl.add<int>("n-threads",
-                'T',
-                "number of OpenMP threads to use",
-                false,
-                omp_get_max_threads());
+
 #endif
     cl.try_parse(argc, argv);
 
@@ -67,30 +63,28 @@ int main(int argc, char* argv[]) {
     PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(n_detectors, grid);
     lor_info.read(lor_info_istream);
 
-    PET2D::Barrel::LMReconstruction<F, S> reconstruction(lor_info, cl.get<double>("sigma"));
+    PET2D::Barrel::LMReconstruction<F, S> reconstruction(
+        lor_info, cl.get<double>("sigma"));
 
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstruction.fscanf_responses(response_stream);
-
-
 
     auto n_blocks = cl.get<int>("blocks");
     auto n_iter = cl.get<int>("iterations");
 
     for (int block = 0; block < n_blocks; ++block) {
       for (int i = 0; i < n_iter; i++) {
-        //        std::cout << block* n_iter + i << " " <<
-        //        reconstruction.iterate()
-        //                  << "\n";
+        std::cout << block* n_iter + i << " " << reconstruction.iterate()
+                  << "\n";
       }
-      //      char rho_file_name[64];
-      //      sprintf(rho_file_name,
-      //              "%s_%03d.bin",
-      //              output_base_name.c_str(),
-      //              (block + 1) * n_iter);
-      //      std::ofstream out(rho_file_name);
-      //      out.write((char*)&(*reconstruction.rho_begin()),
-      //                reconstruction.n_voxels * sizeof(F));
+      char rho_file_name[64];
+      sprintf(rho_file_name,
+              "%s_%03d.bin",
+              output_base_name.c_str(),
+              (block + 1) * n_iter);
+      std::ofstream out(rho_file_name);
+      out.write((char*)&(*reconstruction.rho_begin()),
+                reconstruction.n_pixels * sizeof(F));
     }
     //    std::cout << reconstruction.event_count() << " "
     //              << reconstruction.voxel_count() << " "
