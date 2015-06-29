@@ -71,7 +71,6 @@ int main(int argc, char* argv[]) {
     cmdline::parser cl;
     PET2D::Strip::add_reconstruction_options(cl);
     cl.parse_check(argc, argv);
-    PET2D::Strip::calculate_scanner_options(cl);
 
     if (!cl.rest().size()) {
       throw("at least one events input file expected, consult --help");

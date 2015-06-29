@@ -121,7 +121,6 @@ int main(int argc, char* argv[]) {
     if (cl.exist("big")) {
       set_big_barrel_options(cl);
     }
-    //calculate_scanner_options(cl);
 
     const auto& shape = cl.get<std::string>("shape");
     const auto& model_name = cl.get<std::string>("model");
@@ -204,7 +203,7 @@ void print_parameters(cmdline::parser& cl, const Scanner& scanner) {
     std::cerr << "   OpenMP threads = " << omp_get_max_threads() << std::endl;
 #endif
     std::cerr << "    pixels in row = " << n_pixels << std::endl;
-    std::cerr << "       pixel size = " << cl.get<double>("s-pixel")<<"\n";
+    std::cerr << "       pixel size = " << cl.get<double>("s-pixel") << "\n";
     std::cerr << "    fov radius    = " << scanner.fov_radius() << "\n";
     std::cerr << "     outer radius = " << scanner.outer_radius() << std::endl;
     std::cerr << "         max bias = " << max_bias << std::endl;

@@ -99,7 +99,6 @@ template <typename DetectorType, typename MatrixType> class MonteCarlo {
               detector.fov_radius() * detector.fov_radius())
         continue;
 
-
       int pixel_hit_count = 0;
       for (auto n = 0; n < n_emissions; ++n) {
 #if _OPENMP

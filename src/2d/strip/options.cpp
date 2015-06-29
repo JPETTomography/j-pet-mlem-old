@@ -88,20 +88,5 @@ void add_phantom_options(cmdline::parser& cl) {
                         cmdline::not_from_file);
 }
 
-void calculate_scanner_options(cmdline::parser& parser) {
-  if (parser.exist("n-pixels")) {
-    parser.get<int>("n-z-pixels") = parser.get<int>("n-pixels");
-    parser.get<int>("n-y-pixels") = parser.get<int>("n-pixels");
-  } else {
-    auto R_distance = parser.get<double>("r-distance");
-    auto scintillator_length = parser.get<double>("s-length");
-    auto pixel_size = parser.get<double>("p-size");
-    if (!parser.exist("n-z-pixels"))
-      parser.get<int>("n-z-pixels") =
-          std::ceil(scintillator_length / pixel_size);
-    if (!parser.exist("n-y-pixels"))
-      parser.get<int>("n-y-pixels") = std::ceil(2 * R_distance / pixel_size);
-  }
-}
 }  // Strip
 }  // PET2D

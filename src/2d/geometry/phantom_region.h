@@ -75,5 +75,4 @@ class RectangularPhantomRegion
 };
 }
 
-
 #endif  // PHANTOM_REGION

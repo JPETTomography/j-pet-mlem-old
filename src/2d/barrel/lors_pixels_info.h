@@ -53,10 +53,7 @@ template <typename FType, typename SType> class LORsPixelsInfo {
     return in;
   }
 
-  std::istream& read_header(std::istream& in) {
-
-    return in;
-  }
+  std::istream& read_header(std::istream& in) { return in; }
 
   std::istream& read_lor_info(std::istream& in) {
     int lor_desc[2];

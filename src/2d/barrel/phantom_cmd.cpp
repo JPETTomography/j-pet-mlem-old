@@ -103,7 +103,6 @@ int main(int argc, char* argv[]) {
 
     if (cl.exist("big"))
       PET2D::Barrel::set_big_barrel_options(cl);
-    //PET2D::Barrel::calculate_scanner_options(cl);
 
     const auto& shape = cl.get<std::string>("shape");
     const auto& model_name = cl.get<std::string>("model");
