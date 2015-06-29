@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
 
     auto output = cl.get<cmdline::path>("output");
     auto output_base_name = output.wo_ext();
+    bool verbose = cl.exist("verbose");
 
 #if _OPENMP
     if (cl.exist("n-threads")) {
@@ -58,17 +59,26 @@ int main(int argc, char* argv[]) {
 
     auto grid = PET2D::PixelGrid<F, S>::read(lor_info_istream);
 
-    std::cout << grid.n_columns << "x" << grid.n_rows << " " << grid.pixel_size
-              << "\n";
+    if (verbose)
+      std::cout << grid.n_columns << "x" << grid.n_rows << " "
+                << grid.pixel_size << "\n";
 
     PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(n_detectors, grid);
     lor_info.read(lor_info_istream);
 
+    if(verbose)
+        std::cout<<"read in lor_info\n";
+
     PET2D::Barrel::LMReconstruction<F, S> reconstruction(
         lor_info, cl.get<double>("sigma"));
+    if(verbose)
+        std::cout<<"created reconstruction\n";
+
 
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstruction.fscanf_responses(response_stream);
+    if(verbose)
+        std::cout<<"read in  responses\n";
 
     auto n_blocks = cl.get<int>("blocks");
     auto n_iter = cl.get<int>("iterations");

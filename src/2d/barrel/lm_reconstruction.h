@@ -53,7 +53,9 @@ template <typename FType, typename SType> class LMReconstruction {
         n_threads_(omp_get_max_threads()),
         thread_rhos_(n_threads_),
         thread_kernel_caches_(n_threads_),
-        n_events_per_thread_(n_threads_, 0) {}
+        n_events_per_thread_(n_threads_, 0) {
+    rho_.assign(n_pixels, 1);
+  }
 
   F sigma(F width) const { return 0.3 * width; }
 
@@ -109,6 +111,7 @@ template <typename FType, typename SType> class LMReconstruction {
   }
 
   int iterate() {
+
     event_count_ = 0;
     voxel_count_ = 0;
     pixel_count_ = 0;
@@ -116,6 +119,7 @@ template <typename FType, typename SType> class LMReconstruction {
     for (auto& thread_rho : thread_rhos_) {
       thread_rho.assign(grid.n_pixels, 0);
     }
+
     for (auto& thread_kernel_cache : thread_kernel_caches_) {
       thread_kernel_cache.assign(grid.n_pixels, 0);
     }
@@ -128,7 +132,7 @@ template <typename FType, typename SType> class LMReconstruction {
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (int i = 0; i < events_.size(); ++i) {
+    for (size_t i = 0; i < events_.size(); ++i) {
       int thread = omp_get_thread_num();
       n_events_per_thread_[thread]++;
       auto event = events_[i];
@@ -152,7 +156,6 @@ template <typename FType, typename SType> class LMReconstruction {
         auto kernel_z = event.gauss_norm *
                         std::exp(-distance * distance * event.inv_sigma2);
         auto weight = kernel_z * rho_[index];
-
         thread_kernel_caches_[thread][index] = weight;
         denominator += weight;
 
