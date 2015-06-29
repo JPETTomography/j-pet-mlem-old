@@ -18,7 +18,7 @@
 #endif
 
 using F = float;
-using S = short;
+using S = int16_t;
 using RNG = std::mt19937;
 using Point = PET2D::Point<F>;
 
@@ -51,9 +51,10 @@ int main(int argc, char* argv[]) {
 #endif
 
     auto lor_info_file_name = cl.get<std::string>("lor-info");
-    int n_detectors;
+    S n_detectors;
     std::ifstream lor_info_istream(lor_info_file_name, std::ios::binary);
     lor_info_istream.read((char*)&n_detectors, sizeof(n_detectors));
+    std::cout << n_detectors << "\n";
 
     auto grid = PET2D::PixelGrid<F, S>::read(lor_info_istream);
 

@@ -146,7 +146,6 @@ template <typename FType, typename SType> class LMReconstruction {
 
         auto center = grid.center_at(ix, iy);
         auto distance = segment.distance_from(center);
-        auto up = segment.projection_relative_middle(center);
 
         int index = grid.index(ix, iy);
 

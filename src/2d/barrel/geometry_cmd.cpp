@@ -99,17 +99,17 @@ int main(int argc, char* argv[]) {
     }
     mapper.map(fov_circle, "fill:none;stroke:red;");
 
-    int n_detectors = scanner.size();
+    S n_detectors = scanner.size();
     PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(n_detectors, grid);
 
     std::ofstream lor_info_stream(output, std::ios::binary);
-    lor_info_stream.write((const char*)&n_detectors, sizeof(n_detectors));
+    lor_info_stream.write((const char*)&n_detectors, sizeof(S));
     grid.write(lor_info_stream);
 
     // Loop over the LORs
     int i = 0;
-    for (int d1 = 0; d1 < n_detectors; ++d1) {
-      for (int d2 = 0; d2 < d1; ++d2) {
+    for (S d1 = 0; d1 < n_detectors; ++d1) {
+      for (S d2 = 0; d2 < d1; ++d2) {
         boost::geometry::model::multi_polygon<Polygon> pair;
 
         boost::geometry::union_(detectors[d1], detectors[d2], pair);
@@ -120,8 +120,8 @@ int main(int argc, char* argv[]) {
 #if DEBUG
           std::cout << "l : " << i << "  " << d1 << " " << d2 << "\n";
 #endif
-          lor_info_stream.write((const char*)&d1, sizeof(int));
-          lor_info_stream.write((const char*)&d2, sizeof(int));
+          lor_info_stream.write((const char*)&d1, sizeof(d1));
+          lor_info_stream.write((const char*)&d2, sizeof(d2));
 
           i++;
           std::vector<PixelInfo>& pixel_info = lor_info[LOR(d1, d2)].pixels;

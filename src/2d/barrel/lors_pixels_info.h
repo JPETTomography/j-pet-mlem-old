@@ -56,17 +56,19 @@ template <typename FType, typename SType> class LORsPixelsInfo {
   std::istream& read_header(std::istream& in) { return in; }
 
   std::istream& read_lor_info(std::istream& in) {
-    int lor_desc[2];
+    S lor_desc[2];
     in.read((char*)lor_desc, 2 * sizeof(S));
+    // std::cout<<lor_desc[0]<<" "<<lor_desc[1]<<"\n";
     F coords[4];
     in.read((char*)coords, 4 * sizeof(F));
-    //    std::cout << coords[0] << " " << coords[1] << " " << coords[2] << " "
-    //              << coords[3] << "\n";
+    //        std::cout << coords[0] << " " << coords[1] << " " << coords[2] <<
+    //        " "
+    //                  << coords[3] << "\n";
 
     F width;
     in.read((char*)&width, sizeof(F));
     int n_pixels;
-    in.read((char*)&n_pixels, sizeof(S));
+    in.read((char*)&n_pixels, sizeof(int));
     if (in) {
       LOR lor(lor_desc[0], lor_desc[1]);
       lor_info_[lor.index()].width = width;
