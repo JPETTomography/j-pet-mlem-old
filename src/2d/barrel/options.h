@@ -27,7 +27,7 @@ void add_phantom_options(cmdline::parser& parser);
 void add_reconstruction_options(cmdline::parser& parser);
 
 /// Calculates all empty values from existing other parameters.
-void calculate_scanner_options(cmdline::parser& parser);
+//void calculate_scanner_options(cmdline::parser& parser);
 
 void set_small_barrel_options(cmdline::parser& parser);
 void set_big_barrel_options(cmdline::parser& parser);

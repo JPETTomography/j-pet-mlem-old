@@ -18,7 +18,7 @@
 #endif
 
 using F = float;
-using S = int;
+using S = short;
 using RNG = std::mt19937;
 using Point = PET2D::Point<F>;
 

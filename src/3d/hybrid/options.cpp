@@ -22,7 +22,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
 }
 
 void calculate_scanner_options(cmdline::parser& cl) {
-  PET2D::Barrel::calculate_scanner_options(cl);
+ // PET2D::Barrel::calculate_scanner_options(cl);
 }
 
 void set_small_barrel_options(cmdline::parser& parser) {

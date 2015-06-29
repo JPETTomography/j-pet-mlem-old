@@ -18,7 +18,7 @@
 #include "2d/barrel/lors_pixels_info.h"
 
 using F = float;
-using S = int;
+using S = short;
 using RNG = std::mt19937;
 
 using Detector = PET2D::Barrel::SquareDetector<F>;
@@ -55,10 +55,17 @@ int main(int argc, char* argv[]) {
     if (cl.exist("s-pixel"))
       pixel_size = cl.get<double>("s-pixel");
     F fov_radius = cl.get<double>("fov-radius");
+
     std::cout << "fov " << fov_radius << " size " << pixel_size << "\n";
-    S n_columns = 2 * S(std::ceil(fov_radius / pixel_size));
-    S n_rows = n_columns;
+    S n_columns, n_rows;
+    if (!cl.exist("n-pixels")) {
+      n_columns = 2 * S(std::ceil(fov_radius / pixel_size));
+    } else {
+      n_columns = cl.get<int>("n-pixels");
+    }
+    n_rows = n_columns;
     std::cout << "cols " << n_columns << " rows " << n_rows << "\n";
+
     PET2D::PixelGrid<F, S> grid(
         n_columns,
         n_rows,
