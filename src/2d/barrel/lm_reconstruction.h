@@ -220,6 +220,9 @@ template <typename FType, typename SType> class LMReconstruction {
     }
   }
 
+
+  std::vector<F>& sensitivity() {return sensitivity_;}
+
  private:
   Response fscanf_response(std::istream& in) {
     S d1, d2;

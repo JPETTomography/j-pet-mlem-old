@@ -76,6 +76,13 @@ int main(int argc, char* argv[]) {
 
     reconstruction.calculate_sensitivity();
 
+    {
+      std::ofstream out_sensitivity(output.wo_ext() + "_sensitivity" +
+                                    output.ext());
+      for (auto& sens : reconstruction.sensitivity())
+        out_sensitivity << sens << "\n";
+    }
+
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstruction.fscanf_responses(response_stream);
     if (verbose)
