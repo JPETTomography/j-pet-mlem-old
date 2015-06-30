@@ -46,7 +46,7 @@ template <typename FType, typename SType> class LMReconstruction {
     F weight;
   };
 
-  LMReconstruction(const LORsPixelsInfo& lor_pixel_info, F sigma)
+  LMReconstruction(LORsPixelsInfo& lor_pixel_info, F sigma)
       : lor_pixel_info(lor_pixel_info),
         n_pixels(lor_pixel_info.grid.n_pixels),
         sigma_(sigma),
@@ -153,9 +153,8 @@ template <typename FType, typename SType> class LMReconstruction {
 
         int index = grid.index(ix, iy);
 
-        auto kernel_z = event.gauss_norm *
-                        std::exp(-distance * distance * event.inv_sigma2);
-        auto weight = kernel_z * rho_[index]/sensitivity_[index];
+        auto kernel_z = it->weight;
+        auto weight = kernel_z * rho_[index] / sensitivity_[index];
         thread_kernel_caches_[thread][index] = weight;
         denominator += weight;
 
@@ -194,7 +193,7 @@ template <typename FType, typename SType> class LMReconstruction {
     return event_count_;
   }
 
-  const LORsPixelsInfo& lor_pixel_info;
+  LORsPixelsInfo& lor_pixel_info;
   const int n_pixels;
 
   void calculate_sensitivity() {
@@ -215,13 +214,13 @@ template <typename FType, typename SType> class LMReconstruction {
         auto distance = segment->distance_from(center);
         auto kernel_z =
             gauss_norm * std::exp(-distance * distance * inv_sigma2);
+        pixel_info.weight = kernel_z;
         sensitivity_[index] += kernel_z;
       }
     }
   }
 
-
-  std::vector<F>& sensitivity() {return sensitivity_;}
+  std::vector<F>& sensitivity() { return sensitivity_; }
 
  private:
   Response fscanf_response(std::istream& in) {

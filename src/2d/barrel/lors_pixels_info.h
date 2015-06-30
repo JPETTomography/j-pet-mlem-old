@@ -23,6 +23,7 @@ template <typename FType, typename SType> class LORsPixelsInfo {
     F t;
     F distance;
     F fill;
+    F weight;
   };
 
   using PixelInfoContainer = std::vector<PixelInfo>;
@@ -43,6 +44,22 @@ template <typename FType, typename SType> class LORsPixelsInfo {
 
   const LORInfo& operator[](const LOR& lor) const {
     return lor_info_[lor.index()];
+  }
+
+  void push_back_pixel_info(const LOR& lor, const PixelInfo& pinfo) {
+    lor_info_[lor.index()].push_back(pinfo);
+  }
+
+  void sort(const LOR& lor) {
+    std::sort(lor_info_[lor.index()].begin(),
+              lor_info_[lor.index()].end(),
+              [](const PixelInfo& a, const PixelInfo& b) { return a.t < b.t; });
+  }
+
+  void sort() {
+      for(auto& lor_info: lor_info_) {
+          sort_lor(lor_info);
+      }
   }
 
   // Reading (binary)
@@ -104,9 +121,14 @@ template <typename FType, typename SType> class LORsPixelsInfo {
   const int max_index;
   const PixelGrid grid;
 
-  typename std::vector<LORInfo>::const_iterator begin() const {return lor_info_.begin();}
-  typename std::vector<LORInfo>::const_iterator end() const {return lor_info_.end();}
-
+  typename std::vector<LORInfo>::const_iterator begin() const {
+    return lor_info_.begin();
+  }
+  typename std::vector<LORInfo>::iterator begin() { return lor_info_.begin(); }
+  typename std::vector<LORInfo>::const_iterator end() const {
+    return lor_info_.end();
+  }
+  typename std::vector<LORInfo>::iterator end() { return lor_info_.end(); }
 
  private:
   std::vector<LORInfo> lor_info_;

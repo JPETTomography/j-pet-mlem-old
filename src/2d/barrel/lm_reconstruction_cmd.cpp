@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    cl.add<std::string>("lor-info", 0, "lor-pixel information", true);
+    cl.add<cmdline::path>("lor-info", 0, "lor-pixel information", true);
     cl.add<double>("sigma", 0, "sigma dl", false, 0.060);
 
     cl.add<double>("length", 0, "length of the detector", false, 0.3);
@@ -51,10 +51,14 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    auto lor_info_file_name = cl.get<std::string>("lor-info");
+
     S n_detectors;
+
+    auto lor_info_file_name = cl.get<cmdline::path>("lor-info");
     std::ifstream lor_info_istream(lor_info_file_name, std::ios::binary);
     lor_info_istream.read((char*)&n_detectors, sizeof(n_detectors));
+
+
     std::cout << n_detectors << "\n";
 
     auto grid = PET2D::PixelGrid<F, S>::read(lor_info_istream);
