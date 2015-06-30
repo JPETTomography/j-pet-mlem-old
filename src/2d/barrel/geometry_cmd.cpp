@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
           lor_info_stream.write((const char*)&d2, sizeof(d2));
 
           i++;
-          std::vector<PixelInfo>& pixel_info = lor_info[LOR(d1, d2)].pixels;
+
           PET2D::LineSegment<F> segment(detectors_centers[d2],
                                         detectors_centers[d1]);
 
@@ -177,20 +177,17 @@ int main(int argc, char* argv[]) {
                   info.t = t;
                   info.distance = distance;
                   info.fill = fill;
-                  pixel_info.push_back(info);
+                  lor_info.push_back_pixel_info(LOR(d1,d2), info);
                 }
               }
             }
 
-          std::sort(
-              pixel_info.begin(),
-              pixel_info.end(),
-              [](const PixelInfo& a, const PixelInfo& b) { return a.t < b.t; });
+          lor_info.sort();
 
-          int n_pixels = pixel_info.size();
+          int n_pixels = lor_info[LOR(d1,d2)].pixels.size();
 
           lor_info_stream.write((const char*)&n_pixels, sizeof(int));
-          lor_info_stream.write((const char*)&pixel_info[0],
+          lor_info_stream.write((const char*)&lor_info[LOR(d1,d2)].pixels[0],
                                 n_pixels * sizeof(PixelInfo));
         }
       }

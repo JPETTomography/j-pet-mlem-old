@@ -196,7 +196,7 @@ template <typename FType, typename SType> class LMReconstruction {
   LORsPixelsInfo& lor_pixel_info;
   const int n_pixels;
 
-  void calculate_sensitivity() {
+  void calculate_weight() {
     auto& grid = lor_pixel_info.grid;
     sensitivity_.assign(grid.n_pixels, 0);
     for (auto& lor_info : lor_pixel_info) {
@@ -215,7 +215,25 @@ template <typename FType, typename SType> class LMReconstruction {
         auto kernel_z =
             gauss_norm * std::exp(-distance * distance * inv_sigma2);
         pixel_info.weight = kernel_z;
-        sensitivity_[index] += kernel_z;
+      }
+    }
+  }
+
+  void calculate_sensitivity() {
+    auto& grid = lor_pixel_info.grid;
+    sensitivity_.assign(grid.n_pixels, 0);
+    for (auto& lor_info : lor_pixel_info) {
+
+      auto segment = lor_info.segment;
+
+      auto width = lor_info.width;
+      auto gauss_norm = 1 / (sigma(width) * std::sqrt(2 * M_PI));
+      auto inv_sigma2 = 1 / (2 * sigma(width) * sigma(width));
+
+      for (auto& pixel_info : lor_info.pixels) {
+        auto pixel = pixel_info.pixel;
+        auto index = grid.index(pixel);
+        sensitivity_[index] += pixel_info.weight;
       }
     }
   }

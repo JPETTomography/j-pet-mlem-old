@@ -51,13 +51,11 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-
     S n_detectors;
 
     auto lor_info_file_name = cl.get<cmdline::path>("lor-info");
     std::ifstream lor_info_istream(lor_info_file_name, std::ios::binary);
     lor_info_istream.read((char*)&n_detectors, sizeof(n_detectors));
-
 
     std::cout << n_detectors << "\n";
 
@@ -78,6 +76,7 @@ int main(int argc, char* argv[]) {
     if (verbose)
       std::cout << "created reconstruction\n";
 
+    reconstruction.calculate_weight();
     reconstruction.calculate_sensitivity();
 
     {

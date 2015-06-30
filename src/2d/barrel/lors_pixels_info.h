@@ -47,18 +47,18 @@ template <typename FType, typename SType> class LORsPixelsInfo {
   }
 
   void push_back_pixel_info(const LOR& lor, const PixelInfo& pinfo) {
-    lor_info_[lor.index()].push_back(pinfo);
+    lor_info_[lor.index()].pixels.push_back(pinfo);
   }
 
-  void sort(const LOR& lor) {
-    std::sort(lor_info_[lor.index()].begin(),
-              lor_info_[lor.index()].end(),
+  void sort(LORInfo& lor_info) {
+    std::sort(lor_info.pixels.begin(),
+              lor_info.pixels.end(),
               [](const PixelInfo& a, const PixelInfo& b) { return a.t < b.t; });
   }
 
   void sort() {
       for(auto& lor_info: lor_info_) {
-          sort_lor(lor_info);
+          sort(lor_info);
       }
   }
 
