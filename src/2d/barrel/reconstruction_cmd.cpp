@@ -131,7 +131,8 @@ int main(int argc, char* argv[]) {
 
     std::ofstream out;
     std::ofstream out_detected;
-
+    std::ofstream out_sensitivity(output.wo_ext() + "_sensitivity" +
+                                  output.ext());
     out.open(output);
     out_detected.open(output.wo_ext() + "_detected" + output.ext());
 
@@ -151,6 +152,13 @@ int main(int argc, char* argv[]) {
                     rho_detected.begin(),
                     rho_detected.end(),
                     n_pixels_in_row);
+    }
+
+    for (auto& scale : reconstruction.scale()) {
+      if (scale > 0)
+        out_sensitivity << 1 / scale << "\n";
+      else
+        out_sensitivity << 0 << "\n";
     }
 
     std::cout << std::endl;

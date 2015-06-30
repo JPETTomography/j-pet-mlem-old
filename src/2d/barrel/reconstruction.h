@@ -56,9 +56,13 @@ class Reconstruction {
 
     auto n_emissions = static_cast<F>(n_emissions_);
 
-    for (S p = 0; p < total_n_pixels_; ++p) {
+    for (int p = 0; p < total_n_pixels_; ++p) {
       if (scale_[p] > 0) {
         scale_[p] = n_emissions / scale_[p];
+      }
+      if(scale_[p]<0) {
+          std::cerr<<"scale_["<<p<<"]="<<scale_[p]<<" < 0 !!\n";
+          exit(-1);
       }
     }
 
@@ -185,6 +189,7 @@ class Reconstruction {
   F rho(const Pixel& pixel) const { return rho_[pixel_index(pixel)]; }
   Output rho() const { return rho_; }
   Output rho_detected() { return rho_detected_; }
+  Output scale() {return scale_;}
 
  public:
   F threshold;
@@ -194,9 +199,9 @@ class Reconstruction {
 
   S n_detectors_;
   S n_pixels_in_row_;
-  S total_n_pixels_;
-  S n_iterations_;
-  S n_emissions_;
+  int total_n_pixels_;
+  int n_iterations_;
+  int n_emissions_;
   Output scale_;
   Output rho_;
   Output rho_detected_;
