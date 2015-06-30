@@ -39,7 +39,6 @@ template <typename FType, typename SType> class LORsPixelsInfo {
         max_index((int(n_detectors - 1) * (n_detectors)) / 2 + n_detectors - 2),
         grid(grid),
         lor_info_(max_index + 1) {}
-
   LORInfo& operator[](const LOR& lor) { return lor_info_[lor.index()]; }
 
   const LORInfo& operator[](const LOR& lor) const {
@@ -71,7 +70,7 @@ template <typename FType, typename SType> class LORsPixelsInfo {
     in.read((char*)&width, sizeof(F));
     int n_pixels;
     in.read((char*)&n_pixels, sizeof(int));
-    //std::cout << n_pixels << "\n";
+    // std::cout << n_pixels << "\n";
     if (in) {
       LOR lor(lor_desc[0], lor_desc[1]);
       lor_info_[lor.index()].width = width;
@@ -104,6 +103,10 @@ template <typename FType, typename SType> class LORsPixelsInfo {
   const S n_detectors;
   const int max_index;
   const PixelGrid grid;
+
+  typename std::vector<LORInfo>::const_iterator begin() const {return lor_info_.begin();}
+  typename std::vector<LORInfo>::const_iterator end() const {return lor_info_.end();}
+
 
  private:
   std::vector<LORInfo> lor_info_;

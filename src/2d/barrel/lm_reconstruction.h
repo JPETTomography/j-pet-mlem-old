@@ -48,8 +48,8 @@ template <typename FType, typename SType> class LMReconstruction {
 
   LMReconstruction(const LORsPixelsInfo& lor_pixel_info, F sigma)
       : lor_pixel_info(lor_pixel_info),
-        sigma_(sigma),
         n_pixels(lor_pixel_info.grid.n_pixels),
+        sigma_(sigma),
         n_threads_(omp_get_max_threads()),
         thread_rhos_(n_threads_),
         thread_kernel_caches_(n_threads_),
@@ -155,7 +155,7 @@ template <typename FType, typename SType> class LMReconstruction {
 
         auto kernel_z = event.gauss_norm *
                         std::exp(-distance * distance * event.inv_sigma2);
-        auto weight = kernel_z * rho_[index];
+        auto weight = kernel_z * rho_[index]/sensitivity_[index];
         thread_kernel_caches_[thread][index] = weight;
         denominator += weight;
 
@@ -197,6 +197,29 @@ template <typename FType, typename SType> class LMReconstruction {
   const LORsPixelsInfo& lor_pixel_info;
   const int n_pixels;
 
+  void calculate_sensitivity() {
+    auto& grid = lor_pixel_info.grid;
+    sensitivity_.assign(grid.n_pixels, 0);
+    for (auto& lor_info : lor_pixel_info) {
+
+      auto segment = lor_info.segment;
+
+      auto width = lor_info.width;
+      auto gauss_norm = 1 / (sigma(width) * std::sqrt(2 * M_PI));
+      auto inv_sigma2 = 1 / (2 * sigma(width) * sigma(width));
+
+      for (auto& pixel_info : lor_info.pixels) {
+        auto pixel = pixel_info.pixel;
+        auto index = grid.index(pixel);
+        auto center = grid.center_at(pixel.x, pixel.y);
+        auto distance = segment->distance_from(center);
+        auto kernel_z =
+            gauss_norm * std::exp(-distance * distance * inv_sigma2);
+        sensitivity_[index] += kernel_z;
+      }
+    }
+  }
+
  private:
   Response fscanf_response(std::istream& in) {
     S d1, d2;
@@ -219,6 +242,7 @@ template <typename FType, typename SType> class LMReconstruction {
   std::vector<std::vector<F>> thread_kernel_caches_;
   std::vector<PixelKernelInfo> voxel_cache_;
   std::vector<int> n_events_per_thread_;
+  std::vector<F> sensitivity_;
 };
 }
 }

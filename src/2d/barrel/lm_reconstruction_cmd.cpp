@@ -66,19 +66,20 @@ int main(int argc, char* argv[]) {
     PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(n_detectors, grid);
     lor_info.read(lor_info_istream);
 
-    if(verbose)
-        std::cout<<"read in lor_info\n";
+    if (verbose)
+      std::cout << "read in lor_info\n";
 
     PET2D::Barrel::LMReconstruction<F, S> reconstruction(
         lor_info, cl.get<double>("sigma"));
-    if(verbose)
-        std::cout<<"created reconstruction\n";
+    if (verbose)
+      std::cout << "created reconstruction\n";
 
+    reconstruction.calculate_sensitivity();
 
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstruction.fscanf_responses(response_stream);
-    if(verbose)
-        std::cout<<"read in  responses\n";
+    if (verbose)
+      std::cout << "read in  responses\n";
 
     auto n_blocks = cl.get<int>("blocks");
     auto n_iter = cl.get<int>("iterations");
