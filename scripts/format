@@ -6,6 +6,7 @@ find "$dir" \( \
 		-iname '*.cu'  -or \
 		-iname '*.cuh' -or \
 		-iname '*.h' \)    \
+	\! -iname 'json.h'  \
 	\! -iname 'cmdline.h'  \
 	\! -ipath "$dir/lib/*" \
 	\! -ipath "$dir/doc/*" | \
