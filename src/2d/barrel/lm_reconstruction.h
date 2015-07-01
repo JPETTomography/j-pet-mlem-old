@@ -94,6 +94,10 @@ template <typename FType, typename SType> class LMReconstruction {
                          pix_info_dn,
                          [](const PixelInfo& a, const PixelInfo& b)
                              -> bool { return a.t < b.t; });
+    // REMOVE!!!
+    event.last_pixel = lor_pixel_info[event.lor].pixels.end();
+    event.first_pixel = lor_pixel_info[event.lor].pixels.begin();
+
     return event;
   }
 
@@ -120,12 +124,12 @@ template <typename FType, typename SType> class LMReconstruction {
       thread_rho.assign(grid.n_pixels, 0);
     }
 
-    for (auto& thread_kernel_cache : thread_kernel_caches_) {
-      thread_kernel_cache.assign(grid.n_pixels, 0);
-    }
-
     for (auto& n_events : n_events_per_thread_) {
       n_events = 0;
+    }
+
+    for (auto& thread_kernel_cache : thread_kernel_caches_) {
+      thread_kernel_cache.assign(grid.n_pixels, 0);
     }
 
 /* ------- Event loop ------*/
@@ -135,49 +139,53 @@ template <typename FType, typename SType> class LMReconstruction {
     for (size_t i = 0; i < events_.size(); ++i) {
       int thread = omp_get_thread_num();
       n_events_per_thread_[thread]++;
+
       auto event = events_[i];
       auto lor = event.lor;
-      auto segment = *lor_pixel_info[lor].segment;
 
       /* ---------  Voxel loop  - denominator ----------- */
       double denominator = 0;
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         pixel_count_++;
         auto pix = it->pixel;
-        auto ix = pix.x;
-        auto iy = pix.y;
-
-        auto center = grid.center_at(ix, iy);
-
-        int index = grid.index(ix, iy);
-
-        auto kernel_z = it->weight;
-        auto weight = kernel_z * rho_[index] / sensitivity_[index];
+        int index = grid.index(pix.x, pix.y);
+        double kernel_z = it->weight / sensitivity_[index];
+        double weight = kernel_z * rho_[index];
         thread_kernel_caches_[thread][index] = weight;
+
+        std::cout << "w1 " << weight << " " << denominator << " " << index
+                  << "\n";
         denominator += weight;
 
       }  // Voxel loop - denominator
-
-      F inv_denominator;
+      std::cout << "pix " << pixel_count_ << "\n";
+      double inv_denominator;
       if (denominator > 0) {
         inv_denominator = 1 / denominator;
+        std::cout << "inv " << inv_denominator << "\n";
       } else {
-        std::cerr << "denminator == 0 !";
-        abort();
+        std::cerr << "denominator == 0\n";
+        continue;
       }
+
+      double total = 0;
 
       /* ---------  Voxel loop ------------ */
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         auto pix = it->pixel;
-        auto ix = pix.x;
-        auto iy = pix.y;
 
-        int index = grid.index(ix, iy);
+        int index = grid.index(pix.x, pix.y);
+        std::cout << "w2 " << thread_kernel_caches_[thread][index] << " "
+                  << total << " " << index << "\n";
+        total += thread_kernel_caches_[thread][index];
         thread_rhos_[thread][index] +=
             thread_kernel_caches_[thread][index] * inv_denominator;
 
       }  // Voxel loop
-    }    // event loop
+      std::cout << denominator << " " << total << " " << total / denominator
+                << "\n";
+
+    }  // event loop
     event_count_ = 0;
 
     rho_.assign(grid.n_pixels, 0);
@@ -229,7 +237,7 @@ template <typename FType, typename SType> class LMReconstruction {
     }
   }
 
-  std::vector<F>& sensitivity() { return sensitivity_; }
+  std::vector<double>& sensitivity() { return sensitivity_; }
 
  private:
   Response fscanf_response(std::istream& in) {
@@ -249,11 +257,11 @@ template <typename FType, typename SType> class LMReconstruction {
   int pixel_count_;
   int n_threads_;
 
-  std::vector<std::vector<F>> thread_rhos_;
-  std::vector<std::vector<F>> thread_kernel_caches_;
-  std::vector<PixelKernelInfo> voxel_cache_;
+  std::vector<std::vector<double>> thread_rhos_;
+  std::vector<std::vector<double>> thread_kernel_caches_;
+  // std::vector<PixelKernelInfo> voxel_cache_;
   std::vector<int> n_events_per_thread_;
-  std::vector<F> sensitivity_;
+  std::vector<double> sensitivity_;
 };
 }
 }
