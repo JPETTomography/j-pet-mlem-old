@@ -85,6 +85,7 @@ int main(int argc, char* argv[]) {
           system_matrix_istream);
       if (verbose)
         std::cout << "read in system matrix" << std::endl;
+      matrix.sort_by_lor_n_pixel();
       matrix.merge_duplicates();
       F n_emissions = F(matrix.n_emissions());
       if(grid.n_columns!=matrix.n_pixels_in_row()) {
@@ -103,6 +104,7 @@ int main(int argc, char* argv[]) {
         lor_info.push_back_pixel(lor, element.pixel, weight);
       }
       lor_info.sort();
+
     }
 
     PET2D::Barrel::LMReconstruction<F, S> reconstruction(
