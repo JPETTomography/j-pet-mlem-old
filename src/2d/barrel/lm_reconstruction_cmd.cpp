@@ -86,6 +86,15 @@ int main(int argc, char* argv[]) {
       if (verbose)
         std::cout << "read in system matrix" << std::endl;
       F n_emissions = F(matrix.n_emissions());
+      if(grid.n_columns!=matrix.n_pixels_in_row()) {
+          std::cerr<<"mismatch in number of pixels with matrix\n";
+          exit(-1);
+      }
+      if(matrix.triangular()) {
+          std::cerr<<"matrix is not full\n";
+          exit(-1);
+      }
+
       for (auto& element : matrix) {
 
         auto lor = element.lor;
@@ -96,7 +105,7 @@ int main(int argc, char* argv[]) {
     }
 
     PET2D::Barrel::LMReconstruction<F, S> reconstruction(
-        lor_info, cl.get<double>("sigma"));
+        lor_info, cl.get<double>("sigma")/2);
     if (verbose)
       std::cout << "created reconstruction\n";
 
