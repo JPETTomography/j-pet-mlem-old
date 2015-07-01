@@ -85,15 +85,17 @@ template <typename FType, typename SType> class LMReconstruction {
         std::upper_bound(lor_pixel_info[event.lor].pixels.begin(),
                          lor_pixel_info[event.lor].pixels.end(),
                          pix_info_up,
-                         [](const PixelInfo& a, const PixelInfo& b)
-                             -> bool { return a.t < b.t; });
+                         [](const PixelInfo& a, const PixelInfo& b) -> bool {
+                           return a.t < b.t;
+                         });
 
     event.first_pixel =
         std::lower_bound(lor_pixel_info[event.lor].pixels.begin(),
                          lor_pixel_info[event.lor].pixels.end(),
                          pix_info_dn,
-                         [](const PixelInfo& a, const PixelInfo& b)
-                             -> bool { return a.t < b.t; });
+                         [](const PixelInfo& a, const PixelInfo& b) -> bool {
+                           return a.t < b.t;
+                         });
     // REMOVE!!!
     event.last_pixel = lor_pixel_info[event.lor].pixels.end();
     event.first_pixel = lor_pixel_info[event.lor].pixels.begin();
