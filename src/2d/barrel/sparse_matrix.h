@@ -213,19 +213,18 @@ class SparseMatrix
         auto second = *next;
         if (first.lor == second.lor && first.pixel == second.pixel &&
             first.position == second.position) {
-          std::cout << "found duplicate\n";
+
           it_elem->hits += second.hits;
           next->hits = 0;
         }
       }
     }
-    std::cout << "before " << this->size() << "\n";
+
     this->erase(
         std::remove_if(this->begin(),
                        this->end(),
                        [](const Element& a) -> bool { return a.hits == 0; }),
         this->end());
-    std::cout << "after " << this->size() << "\n";
   };
 
   SparseMatrix& operator<<(const SparseMatrix& other) {

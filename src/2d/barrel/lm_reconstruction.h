@@ -145,7 +145,6 @@ template <typename FType, typename SType> class LMReconstruction {
 
       auto event = events_[i];
 
-
       /* ---------  Voxel loop  - denominator ----------- */
       double denominator = 0;
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
@@ -154,41 +153,33 @@ template <typename FType, typename SType> class LMReconstruction {
 
         int index = grid.index(pix.x, pix.y);
         double kernel_z = it->weight / sensitivity_[index];
-        double weight = kernel_z * rho_[index];
+        F weight = kernel_z * rho_[index];
 
         thread_kernel_caches_[thread][index] = weight;
 
-        std::cout << "w1 " << weight << " " << denominator << " " << index
-                  << "\n";
         denominator += weight;
 
       }  // Voxel loop - denominator
-      std::cout << "pix " << pixel_count_ << "\n";
+
       double inv_denominator;
       if (denominator > 0) {
         inv_denominator = 1 / denominator;
-        std::cout << "inv " << inv_denominator << "\n";
+
       } else {
-        std::cerr << "denominator == 0\n";
+
         continue;
       }
-
-      double total = 0;
 
       /* ---------  Voxel loop ------------ */
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         auto pix = it->pixel;
 
         int index = grid.index(pix.x, pix.y);
-        std::cout << "w2 " << thread_kernel_caches_[thread][index] << " "
-                  << total << " " << index << "\n";
-        total += thread_kernel_caches_[thread][index];
+
         thread_rhos_[thread][index] +=
             thread_kernel_caches_[thread][index] * inv_denominator;
 
       }  // Voxel loop
-      std::cout << denominator << " " << total << " " << total / denominator
-                << "\n";
 
     }  // event loop
     event_count_ = 0;
@@ -242,7 +233,7 @@ template <typename FType, typename SType> class LMReconstruction {
     }
   }
 
-  std::vector<double>& sensitivity() { return sensitivity_; }
+  std::vector<F>& sensitivity() { return sensitivity_; }
 
  private:
   Response fscanf_response(std::istream& in) {
@@ -262,11 +253,11 @@ template <typename FType, typename SType> class LMReconstruction {
   int pixel_count_;
   int n_threads_;
 
-  std::vector<std::vector<double>> thread_rhos_;
-  std::vector<std::vector<double>> thread_kernel_caches_;
+  std::vector<std::vector<F>> thread_rhos_;
+  std::vector<std::vector<F>> thread_kernel_caches_;
   // std::vector<PixelKernelInfo> voxel_cache_;
   std::vector<int> n_events_per_thread_;
-  std::vector<double> sensitivity_;
+  std::vector<F> sensitivity_;
 };
 }
 }
