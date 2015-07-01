@@ -96,6 +96,7 @@ template <typename FType, typename SType> class LMReconstruction {
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
                          });
+
     // REMOVE!!!
     event.last_pixel = lor_pixel_info[event.lor].pixels.end();
     event.first_pixel = lor_pixel_info[event.lor].pixels.begin();
@@ -143,16 +144,18 @@ template <typename FType, typename SType> class LMReconstruction {
       n_events_per_thread_[thread]++;
 
       auto event = events_[i];
-      auto lor = event.lor;
+
 
       /* ---------  Voxel loop  - denominator ----------- */
       double denominator = 0;
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         pixel_count_++;
         auto pix = it->pixel;
+
         int index = grid.index(pix.x, pix.y);
         double kernel_z = it->weight / sensitivity_[index];
         double weight = kernel_z * rho_[index];
+
         thread_kernel_caches_[thread][index] = weight;
 
         std::cout << "w1 " << weight << " " << denominator << " " << index

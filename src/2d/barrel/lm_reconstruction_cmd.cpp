@@ -85,6 +85,7 @@ int main(int argc, char* argv[]) {
           system_matrix_istream);
       if (verbose)
         std::cout << "read in system matrix" << std::endl;
+      matrix.merge_duplicates();
       F n_emissions = F(matrix.n_emissions());
       if(grid.n_columns!=matrix.n_pixels_in_row()) {
           std::cerr<<"mismatch in number of pixels with matrix\n";
