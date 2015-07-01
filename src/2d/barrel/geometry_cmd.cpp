@@ -116,47 +116,46 @@ int main(int argc, char* argv[]) {
         Polygon lor;
         boost::geometry::convex_hull(pair, lor);
 
+#if DEBUG
+        std::cout << "l : " << i << "  " << d1 << " " << d2 << "\n";
+#endif
+        lor_info_stream.write((const char*)&d1, sizeof(d1));
+        lor_info_stream.write((const char*)&d2, sizeof(d2));
+
+        i++;
+
+        PET2D::LineSegment<F> segment(detectors_centers[d2],
+                                      detectors_centers[d1]);
+
+        // TODO: Calculate width of the LOR.
+        auto width1 = F(0);
+        auto width2 = F(0);
+        Detector detector1 = scanner[d1];
+        Detector detector2 = scanner[d2];
+        for (int i = 0; i < detector1.size(); ++i) {
+          auto p1 = detector1[i];
+          auto dist1 = std::abs(segment.distance_from(p1));
+          if (dist1 > width1)
+            width1 = dist1;
+
+          auto p2 = detector2[i];
+          auto dist2 = std::abs(segment.distance_from(p2));
+          if (dist2 > width2)
+            width2 = dist2;
+        }
+        F width = width1 + width2;
+        lor_info_stream.write((const char*)&detectors_centers[d1],
+                              2 * sizeof(F));
+        lor_info_stream.write((const char*)&detectors_centers[d2],
+                              2 * sizeof(F));
+#if DEBUG
+        std::cout << detectors_centers[d1].x << " " << detectors_centers[d1].y
+                  << " "  //
+                  << detectors_centers[d2].x << " " << detectors_centers[d2].y
+                  << "\n";
+#endif
+        lor_info_stream.write((const char*)&width, sizeof(F));
         if (boost::geometry::intersects(lor, fov_circle)) {
-#if DEBUG
-          std::cout << "l : " << i << "  " << d1 << " " << d2 << "\n";
-#endif
-          lor_info_stream.write((const char*)&d1, sizeof(d1));
-          lor_info_stream.write((const char*)&d2, sizeof(d2));
-
-          i++;
-
-          PET2D::LineSegment<F> segment(detectors_centers[d2],
-                                        detectors_centers[d1]);
-
-          // TODO: Calculate width of the LOR.
-          auto width1 = F(0);
-          auto width2 = F(0);
-          Detector detector1 = scanner[d1];
-          Detector detector2 = scanner[d2];
-          for (int i = 0; i < detector1.size(); ++i) {
-            auto p1 = detector1[i];
-            auto dist1 = std::abs(segment.distance_from(p1));
-            if (dist1 > width1)
-              width1 = dist1;
-
-            auto p2 = detector2[i];
-            auto dist2 = std::abs(segment.distance_from(p2));
-            if (dist2 > width2)
-              width2 = dist2;
-          }
-          F width = width1 + width2;
-          lor_info_stream.write((const char*)&detectors_centers[d1],
-                                2 * sizeof(F));
-          lor_info_stream.write((const char*)&detectors_centers[d2],
-                                2 * sizeof(F));
-#if DEBUG
-          std::cout << detectors_centers[d1].x << " " << detectors_centers[d1].y
-                    << " "  //
-                    << detectors_centers[d2].x << " " << detectors_centers[d2].y
-                    << "\n";
-#endif
-          lor_info_stream.write((const char*)&width, sizeof(F));
-
           for (int ix = 0; ix < grid.n_columns; ++ix)
             for (int iy = 0; iy < grid.n_rows; ++iy) {
 
@@ -177,19 +176,20 @@ int main(int argc, char* argv[]) {
                   info.t = t;
                   info.distance = distance;
                   info.fill = fill;
-                  lor_info.push_back_pixel_info(LOR(d1,d2), info);
+                  lor_info.push_back_pixel_info(LOR(d1, d2), info);
                 }
               }
             }
 
           lor_info.sort();
-
-          int n_pixels = lor_info[LOR(d1,d2)].pixels.size();
-
-          lor_info_stream.write((const char*)&n_pixels, sizeof(int));
-          lor_info_stream.write((const char*)&lor_info[LOR(d1,d2)].pixels[0],
-                                n_pixels * sizeof(PixelInfo));
         }
+
+        int n_pixels = lor_info[LOR(d1, d2)].pixels.size();
+
+        lor_info_stream.write((const char*)&n_pixels, sizeof(int));
+        if (n_pixels > 0)
+          lor_info_stream.write((const char*)&lor_info[LOR(d1, d2)].pixels[0],
+                                n_pixels * sizeof(PixelInfo));
       }
     }
 

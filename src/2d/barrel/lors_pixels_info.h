@@ -50,6 +50,20 @@ template <typename FType, typename SType> class LORsPixelsInfo {
     lor_info_[lor.index()].pixels.push_back(pinfo);
   }
 
+  void push_back_pixel(const LOR& lor, const Pixel& pixel, F weight) {
+
+    auto lor_info = lor_info_[lor.index()];
+    auto segment = lor_info.segment;
+    auto center = grid.center_at(pixel.x, pixel.y);
+    auto t = segment->projection_scaled(center);
+    PixelInfo pinfo;
+    pinfo.pixel = pixel;
+    pinfo.t = t;
+    pinfo.weight = weight;
+
+    push_back_pixel_info(lor, pinfo);
+  }
+
   void sort(LORInfo& lor_info) {
     std::sort(lor_info.pixels.begin(),
               lor_info.pixels.end(),
@@ -57,9 +71,9 @@ template <typename FType, typename SType> class LORsPixelsInfo {
   }
 
   void sort() {
-      for(auto& lor_info: lor_info_) {
-          sort(lor_info);
-      }
+    for (auto& lor_info : lor_info_) {
+      sort(lor_info);
+    }
   }
 
   // Reading (binary)
@@ -88,15 +102,18 @@ template <typename FType, typename SType> class LORsPixelsInfo {
     int n_pixels;
     in.read((char*)&n_pixels, sizeof(int));
     // std::cout << n_pixels << "\n";
+
     if (in) {
       LOR lor(lor_desc[0], lor_desc[1]);
       lor_info_[lor.index()].width = width;
       lor_info_[lor.index()].segment = new LineSegment<F>(
           Point(coords[2], coords[3]), Point(coords[0], coords[1]));
-      lor_info_[lor.index()].pixels.resize(n_pixels);
+      if (n_pixels > 0) {
+        lor_info_[lor.index()].pixels.resize(n_pixels);
 
-      in.read((char*)&lor_info_[lor.index()].pixels[0],
-              sizeof(PixelInfo) * n_pixels);
+        in.read((char*)&lor_info_[lor.index()].pixels[0],
+                sizeof(PixelInfo) * n_pixels);
+      }
     }
     return in;
   }
@@ -114,6 +131,13 @@ template <typename FType, typename SType> class LORsPixelsInfo {
           }
         }
       }
+    }
+  }
+
+  // Dirty hack
+  void erase_pixel_info() {
+    for (auto& lor_info : lor_info_) {
+      lor_info.pixels.clear();
     }
   }
 

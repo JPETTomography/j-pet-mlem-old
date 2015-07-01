@@ -138,7 +138,6 @@ template <typename FType, typename SType> class LMReconstruction {
       auto event = events_[i];
       auto lor = event.lor;
       auto segment = *lor_pixel_info[lor].segment;
-      auto R = segment.length / 2;
 
       /* ---------  Voxel loop  - denominator ----------- */
       double denominator = 0;
@@ -149,7 +148,6 @@ template <typename FType, typename SType> class LMReconstruction {
         auto iy = pix.y;
 
         auto center = grid.center_at(ix, iy);
-        auto distance = segment.distance_from(center);
 
         int index = grid.index(ix, iy);
 
@@ -209,7 +207,6 @@ template <typename FType, typename SType> class LMReconstruction {
 
       for (auto& pixel_info : lor_info.pixels) {
         auto pixel = pixel_info.pixel;
-        auto index = grid.index(pixel);
         auto center = grid.center_at(pixel.x, pixel.y);
         auto distance = segment->distance_from(center);
         auto kernel_z =
@@ -223,12 +220,6 @@ template <typename FType, typename SType> class LMReconstruction {
     auto& grid = lor_pixel_info.grid;
     sensitivity_.assign(grid.n_pixels, 0);
     for (auto& lor_info : lor_pixel_info) {
-
-      auto segment = lor_info.segment;
-
-      auto width = lor_info.width;
-      auto gauss_norm = 1 / (sigma(width) * std::sqrt(2 * M_PI));
-      auto inv_sigma2 = 1 / (2 * sigma(width) * sigma(width));
 
       for (auto& pixel_info : lor_info.pixels) {
         auto pixel = pixel_info.pixel;

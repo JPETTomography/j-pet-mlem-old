@@ -5,9 +5,10 @@
 
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
+#include "util/bstream.h"
 #include "2d/barrel/options.h"
 #include "2d/barrel/lors_pixels_info.h"
-
+#include "2d/barrel/sparse_matrix.h"
 #include "2d/barrel/lm_reconstruction.h"
 
 #if _OPENMP
@@ -19,14 +20,18 @@
 
 using F = float;
 using S = int16_t;
+using H = int;
 using RNG = std::mt19937;
 using Point = PET2D::Point<F>;
+using Pixel = PET2D::Pixel<S>;
+using LOR = PET2D::Barrel::LOR<S>;
 
 int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
     cl.add<cmdline::path>("lor-info", 0, "lor-pixel information", true);
+    cl.add<cmdline::path>("system", 0, "system maxtrix", false);
     cl.add<double>("sigma", 0, "sigma dl", false, 0.060);
 
     cl.add<double>("length", 0, "length of the detector", false, 0.3);
@@ -67,16 +72,38 @@ int main(int argc, char* argv[]) {
 
     PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(n_detectors, grid);
     lor_info.read(lor_info_istream);
-
     if (verbose)
       std::cout << "read in lor_info\n";
+
+    if (!cl.exist("system")) {
+
+    } else {
+      lor_info.erase_pixel_info();
+      auto system_matrix_file_name = cl.get<cmdline::path>("system");
+      util::ibstream system_matrix_istream(system_matrix_file_name);
+      PET2D::Barrel::SparseMatrix<Pixel, LOR, S, H> matrix(
+          system_matrix_istream);
+      if (verbose)
+        std::cout << "read in system matrix" << std::endl;
+      F n_emissions = F(matrix.n_emissions());
+      for (auto& element : matrix) {
+
+        auto lor = element.lor;
+        F weight = element.hits / n_emissions;
+        lor_info.push_back_pixel(lor, element.pixel, weight);
+      }
+      lor_info.sort();
+    }
 
     PET2D::Barrel::LMReconstruction<F, S> reconstruction(
         lor_info, cl.get<double>("sigma"));
     if (verbose)
       std::cout << "created reconstruction\n";
 
-    reconstruction.calculate_weight();
+    if (!cl.exist("system")) {
+      reconstruction.calculate_weight();
+    }
+
     reconstruction.calculate_sensitivity();
 
     {
