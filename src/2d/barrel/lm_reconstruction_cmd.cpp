@@ -85,6 +85,7 @@ int main(int argc, char* argv[]) {
           system_matrix_istream);
       if (verbose)
         std::cout << "read in system matrix" << std::endl;
+      matrix.merge_duplicates();
       F n_emissions = F(matrix.n_emissions());
       for (auto& element : matrix) {
 

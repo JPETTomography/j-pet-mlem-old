@@ -85,15 +85,17 @@ template <typename FType, typename SType> class LMReconstruction {
         std::upper_bound(lor_pixel_info[event.lor].pixels.begin(),
                          lor_pixel_info[event.lor].pixels.end(),
                          pix_info_up,
-                         [](const PixelInfo& a, const PixelInfo& b)
-                             -> bool { return a.t < b.t; });
+                         [](const PixelInfo& a, const PixelInfo& b) -> bool {
+                           return a.t < b.t;
+                         });
 
     event.first_pixel =
         std::lower_bound(lor_pixel_info[event.lor].pixels.begin(),
                          lor_pixel_info[event.lor].pixels.end(),
                          pix_info_dn,
-                         [](const PixelInfo& a, const PixelInfo& b)
-                             -> bool { return a.t < b.t; });
+                         [](const PixelInfo& a, const PixelInfo& b) -> bool {
+                           return a.t < b.t;
+                         });
     return event;
   }
 
@@ -136,8 +138,6 @@ template <typename FType, typename SType> class LMReconstruction {
       int thread = omp_get_thread_num();
       n_events_per_thread_[thread]++;
       auto event = events_[i];
-      auto lor = event.lor;
-      auto segment = *lor_pixel_info[lor].segment;
 
       /* ---------  Voxel loop  - denominator ----------- */
       double denominator = 0;
@@ -146,8 +146,6 @@ template <typename FType, typename SType> class LMReconstruction {
         auto pix = it->pixel;
         auto ix = pix.x;
         auto iy = pix.y;
-
-        auto center = grid.center_at(ix, iy);
 
         int index = grid.index(ix, iy);
 

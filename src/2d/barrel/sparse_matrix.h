@@ -205,6 +205,27 @@ class SparseMatrix
     }
   }
 
+  void merge_duplicates() {
+    for (auto it_elem = this->begin(); it_elem != this->end(); ++it_elem) {
+      auto next = it_elem + 1;
+      if (next != this->end()) {
+        auto first = *it_elem;
+        auto second = *next;
+        if (first.lor == second.lor && first.pixel == second.pixel &&
+            first.position == second.position) {
+          first.hits += second.hits;
+          second.hits = 0;
+        }
+      }
+    }
+
+    this->erase(
+        std::remove_if(this->begin(),
+                       this->end(),
+                       [](const Element& a) -> bool { return a.hits == 0; }),
+        this->end());
+  }
+
   SparseMatrix& operator<<(const SparseMatrix& other) {
 
     if (n_pixels_in_row_ != other.n_pixels_in_row_ ||
