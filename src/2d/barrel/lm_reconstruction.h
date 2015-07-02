@@ -36,7 +36,7 @@ template <typename FType, typename SType> class LMReconstruction {
     Point p;
     PixelConstIterator first_pixel;
     PixelConstIterator last_pixel;
-
+    F t;
     F gauss_norm;
     F inv_sigma2;
   };
@@ -47,7 +47,8 @@ template <typename FType, typename SType> class LMReconstruction {
   };
 
   LMReconstruction(LORsPixelsInfo& lor_pixel_info, F sigma)
-      : lor_pixel_info(lor_pixel_info),
+      : system_matrix_(false),
+        lor_pixel_info(lor_pixel_info),
         n_pixels(lor_pixel_info.grid.n_pixels),
         sigma_(sigma),
         n_threads_(omp_get_max_threads()),
@@ -57,7 +58,9 @@ template <typename FType, typename SType> class LMReconstruction {
     rho_.assign(n_pixels, 1);
   }
 
-  F sigma(F width) const { return 0.3 * width; }
+  void use_system_matrix() { system_matrix_ = true; }
+
+  F sigma_w(F width) const { return 0.3 * width; }
 
   typename std::vector<F>::const_iterator rho_begin() const {
     return rho_.begin();
@@ -72,10 +75,11 @@ template <typename FType, typename SType> class LMReconstruction {
     auto segment = lor_pixel_info[response.lor].segment;
 
     auto width = lor_pixel_info[event.lor].width;
-    event.gauss_norm = 1 / (sigma(width) * std::sqrt(2 * M_PI));
-    event.inv_sigma2 = 1 / (2 * sigma(width) * sigma(width));
+    event.gauss_norm = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
+    event.inv_sigma2 = 1 / (2 * sigma_w(width) * sigma_w(width));
 
     F t = 0.5 - response.dl / (2 * segment->length);
+    event.t = t;
     event.p = PET2D::interpolate(t, segment->start, segment->end);
 
     PixelInfo pix_info_up, pix_info_dn;
@@ -97,10 +101,10 @@ template <typename FType, typename SType> class LMReconstruction {
                            return a.t < b.t;
                          });
 
-    // REMOVE!!!
-    event.last_pixel = lor_pixel_info[event.lor].pixels.end();
-    event.first_pixel = lor_pixel_info[event.lor].pixels.begin();
-
+//    if (system_matrix_) {
+//      event.last_pixel = lor_pixel_info[event.lor].pixels.end();
+//      event.first_pixel = lor_pixel_info[event.lor].pixels.begin();
+//    }
     return event;
   }
 
@@ -153,7 +157,16 @@ template <typename FType, typename SType> class LMReconstruction {
 
         int index = grid.index(pix.x, pix.y);
         double kernel_z = it->weight / sensitivity_[index];
-        F weight = kernel_z * rho_[index];
+
+        auto gauss_norm_dl = 1 / (sigma_ * std::sqrt(2 * M_PI));
+        auto inv_sigma2_dl = 1 / (2 * sigma_ * sigma_);
+
+        F kernel_l =
+            gauss_norm_dl *
+            exp(-(it->t - event.t) * (it->t - event.t) * inv_sigma2_dl);
+        //std::cout<<event.t<<" "<<it->t<<" "<<kernel_l<<"\n";
+
+        F weight = kernel_l * kernel_z * rho_[index];
 
         thread_kernel_caches_[thread][index] = weight;
 
@@ -206,15 +219,15 @@ template <typename FType, typename SType> class LMReconstruction {
       auto segment = lor_info.segment;
 
       auto width = lor_info.width;
-      auto gauss_norm = 1 / (sigma(width) * std::sqrt(2 * M_PI));
-      auto inv_sigma2 = 1 / (2 * sigma(width) * sigma(width));
+      auto gauss_norm_w = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
+      auto inv_sigma2_w = 1 / (2 * sigma_w(width) * sigma_w(width));
 
       for (auto& pixel_info : lor_info.pixels) {
         auto pixel = pixel_info.pixel;
         auto center = grid.center_at(pixel.x, pixel.y);
         auto distance = segment->distance_from(center);
         auto kernel_z =
-            gauss_norm * std::exp(-distance * distance * inv_sigma2);
+            gauss_norm_w * std::exp(-distance * distance * inv_sigma2_w);
         pixel_info.weight = kernel_z;
       }
     }
@@ -235,6 +248,8 @@ template <typename FType, typename SType> class LMReconstruction {
 
   std::vector<F>& sensitivity() { return sensitivity_; }
 
+  BarrelEvent event(int i) const {return events_[i];}
+
  private:
   Response fscanf_response(std::istream& in) {
     S d1, d2;
@@ -244,6 +259,7 @@ template <typename FType, typename SType> class LMReconstruction {
     return response;
   }
 
+  bool system_matrix_;
   std::vector<BarrelEvent> events_;
   F sigma_;
 

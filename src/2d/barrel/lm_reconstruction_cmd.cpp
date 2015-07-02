@@ -6,10 +6,14 @@
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 #include "util/bstream.h"
+
+#include "2d/barrel/barrel_builder.h"
 #include "2d/barrel/options.h"
 #include "2d/barrel/lors_pixels_info.h"
 #include "2d/barrel/sparse_matrix.h"
 #include "2d/barrel/lm_reconstruction.h"
+
+#include "util/grapher.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -41,6 +45,8 @@ int main(int argc, char* argv[]) {
     cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
     cl.add<int>(
         "iterations", 'I', "number of iterations (per block)", false, 1);
+    cl.add("graph", 'g', "make a graph", false);
+    cl.add("event", 0, "event number", false, 0);
 #if _OPENMP
 
 #endif
@@ -88,13 +94,13 @@ int main(int argc, char* argv[]) {
       matrix.sort_by_lor_n_pixel();
       matrix.merge_duplicates();
       F n_emissions = F(matrix.n_emissions());
-      if(grid.n_columns!=matrix.n_pixels_in_row()) {
-          std::cerr<<"mismatch in number of pixels with matrix\n";
-          exit(-1);
+      if (grid.n_columns != matrix.n_pixels_in_row()) {
+        std::cerr << "mismatch in number of pixels with matrix\n";
+        exit(-1);
       }
-      if(matrix.triangular()) {
-          std::cerr<<"matrix is not full\n";
-          exit(-1);
+      if (matrix.triangular()) {
+        std::cerr << "matrix is not full\n";
+        exit(-1);
       }
 
       for (auto& element : matrix) {
@@ -104,14 +110,14 @@ int main(int argc, char* argv[]) {
         lor_info.push_back_pixel(lor, element.pixel, weight);
       }
       lor_info.sort();
-
     }
 
     PET2D::Barrel::LMReconstruction<F, S> reconstruction(
-        lor_info, cl.get<double>("sigma")/2);
+        lor_info, cl.get<double>("sigma") / 2);
     if (verbose)
       std::cout << "created reconstruction\n";
-
+    if (cl.exist("system"))
+      reconstruction.use_system_matrix();
     if (!cl.exist("system")) {
       reconstruction.calculate_weight();
     }
@@ -130,12 +136,35 @@ int main(int argc, char* argv[]) {
     if (verbose)
       std::cout << "read in  responses\n";
 
+    if (cl.exist("graph")) {
+      int event_num = cl.get<int>("event");
+      auto graph_file_name = output.wo_ext() + ".m";
+      std::ofstream graph_out(graph_file_name);
+
+      Graphics<F> graph(graph_out);
+
+      auto big_barrel = PET2D::Barrel::BarrelBuilder<S>::make_big_barrel();
+      graph.add(big_barrel);
+
+      auto event = reconstruction.event(event_num);
+      auto lor = event.lor;
+      graph.add(big_barrel, lor);
+      graph.add(event.p);
+      for (auto it = event.first_pixel;
+           it != event.last_pixel;
+           ++it) {
+        graph.addPixel(grid, it->pixel);
+      }
+
+      return 0;
+    }
+
     auto n_blocks = cl.get<int>("blocks");
     auto n_iter = cl.get<int>("iterations");
 
     for (int block = 0; block < n_blocks; ++block) {
       for (int i = 0; i < n_iter; i++) {
-        std::cout << block* n_iter + i << " " << reconstruction.iterate()
+        std::cout << block * n_iter + i << " " << reconstruction.iterate()
                   << "\n";
       }
       char rho_file_name[64];
