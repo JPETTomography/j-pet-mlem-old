@@ -5,7 +5,13 @@
 #include <random>
 #include <functional>
 
+#include "util/null_stream.h"
+
 namespace Common {
+
+namespace {
+static util::null_ostream null_ostream;
+}
 
 template <typename Phantom, typename Detector> class PhantomMonteCarlo {
  public:
@@ -15,16 +21,14 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
   using Response = typename Detector::Response;
   using FullResponse = typename Detector::FullResponse;
 
-  static std::ofstream null_stream;
-
   PhantomMonteCarlo(Phantom& phantom, Detector& detector)
       : phantom_(phantom),
         detector_(detector),
         n_events_detected_(),
-        out_wo_error(null_stream),
-        out_w_error(null_stream),
-        out_exact_events(null_stream),
-        out_full_response(null_stream) {}
+        out_wo_error(null_ostream),
+        out_w_error(null_ostream),
+        out_exact_events(null_ostream),
+        out_full_response(null_ostream) {}
 
   typename std::vector<FullResponse>::const_iterator begin() const {
     return responses_.begin();
@@ -71,7 +75,4 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
   std::reference_wrapper<std::ostream> out_exact_events;
   std::reference_wrapper<std::ostream> out_full_response;
 };
-
-template <typename Phantom, typename Detector>
-std::ofstream PhantomMonteCarlo<Phantom, Detector>::null_stream;
 }
