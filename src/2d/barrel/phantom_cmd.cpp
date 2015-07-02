@@ -233,7 +233,8 @@ void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
                    tof] > 0)
             out_w_error << d1 << " " << d2 << " " << tof << " "
                         << hits[d1 * n_detectors * n_tof_positions +
-                                d2 * n_tof_positions + tof] << "\n";
+                                d2 * n_tof_positions + tof]
+                        << "\n";
         }
 
   } else

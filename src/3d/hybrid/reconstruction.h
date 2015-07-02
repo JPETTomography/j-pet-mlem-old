@@ -119,15 +119,17 @@ template <typename ScannerType, typename Kernel2DType> class Reconstruction {
         std::upper_bound(lor_pixel_info[event.lor].pixels.begin(),
                          lor_pixel_info[event.lor].pixels.end(),
                          pix_info_up,
-                         [](const PixelInfo& a, const PixelInfo& b)
-                             -> bool { return a.t < b.t; });
+                         [](const PixelInfo& a, const PixelInfo& b) -> bool {
+                           return a.t < b.t;
+                         });
 
     event.first_pixel =
         std::lower_bound(lor_pixel_info[event.lor].pixels.begin(),
                          lor_pixel_info[event.lor].pixels.end(),
                          pix_info_dn,
-                         [](const PixelInfo& a, const PixelInfo& b)
-                             -> bool { return a.t < b.t; });
+                         [](const PixelInfo& a, const PixelInfo& b) -> bool {
+                           return a.t < b.t;
+                         });
 
     return event;
   }

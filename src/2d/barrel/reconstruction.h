@@ -60,9 +60,9 @@ class Reconstruction {
       if (scale_[p] > 0) {
         scale_[p] = n_emissions / scale_[p];
       }
-      if(scale_[p]<0) {
-          std::cerr<<"scale_["<<p<<"]="<<scale_[p]<<" < 0 !!\n";
-          exit(-1);
+      if (scale_[p] < 0) {
+        std::cerr << "scale_[" << p << "]=" << scale_[p] << " < 0 !!\n";
+        exit(-1);
       }
     }
 
@@ -189,7 +189,7 @@ class Reconstruction {
   F rho(const Pixel& pixel) const { return rho_[pixel_index(pixel)]; }
   Output rho() const { return rho_; }
   Output rho_detected() { return rho_detected_; }
-  Output scale() {return scale_;}
+  Output scale() { return scale_; }
 
  public:
   F threshold;

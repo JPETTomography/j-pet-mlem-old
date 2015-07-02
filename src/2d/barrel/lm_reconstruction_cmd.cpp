@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
 
     for (int block = 0; block < n_blocks; ++block) {
       for (int i = 0; i < n_iter; i++) {
-        std::cout << block* n_iter + i << " " << reconstruction.iterate()
+        std::cout << block * n_iter + i << " " << reconstruction.iterate()
                   << "\n";
       }
       char rho_file_name[64];
