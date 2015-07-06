@@ -21,7 +21,7 @@
 #endif
 
 using F = float;
-using S = int;
+using S = short;
 using RNG = std::mt19937;
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, 192, S>;
@@ -43,13 +43,7 @@ int main(int argc, char* argv[]) {
     cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
     cl.add<int>(
         "iterations", 'I', "number of iterations (per block)", false, 1);
-#if _OPENMP
-    cl.add<int>("n-threads",
-                'T',
-                "number of OpenMP threads to use",
-                false,
-                omp_get_max_threads());
-#endif
+
     cl.try_parse(argc, argv);
 
     PET3D::Hybrid::set_big_barrel_options(cl);
@@ -66,7 +60,7 @@ int main(int argc, char* argv[]) {
 #endif
 
     auto lor_info_file_name = cl.get<std::string>("lor-info");
-    int n_detectors;
+    S n_detectors;
     std::ifstream lor_info_istream(lor_info_file_name, std::ios::binary);
     lor_info_istream.read((char*)&n_detectors, sizeof(n_detectors));
 
@@ -82,6 +76,9 @@ int main(int argc, char* argv[]) {
 
     Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>> reconstruction(
         scanner, lor_info, -0.200, 80);
+
+    reconstruction.calculate_weight();
+    reconstruction.calculate_sensitivity();
 
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstruction.fscanf_responses(response_stream);

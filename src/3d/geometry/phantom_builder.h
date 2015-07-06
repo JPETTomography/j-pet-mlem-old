@@ -34,6 +34,7 @@ template <>
 SphericalDistribution<float> create_angular_distribution_from_json<
     SphericalDistribution<float>>(const json& j) {
 
+  //std::cerr<<"creating  angular distribution\n";
   std::string type = j["type"];
 
   if (type != "spherical") {
