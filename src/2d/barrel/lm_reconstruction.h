@@ -47,9 +47,9 @@ template <typename FType, typename SType> class LMReconstruction {
   };
 
   LMReconstruction(LORsPixelsInfo& lor_pixel_info, F sigma)
-      : system_matrix_(false),
-        lor_pixel_info(lor_pixel_info),
+      : lor_pixel_info(lor_pixel_info),
         n_pixels(lor_pixel_info.grid.n_pixels),
+        system_matrix_(false),
         sigma_(sigma),
         n_threads_(omp_get_max_threads()),
         thread_rhos_(n_threads_),
@@ -207,9 +207,6 @@ template <typename FType, typename SType> class LMReconstruction {
     return event_count_;
   }
 
-  LORsPixelsInfo& lor_pixel_info;
-  const int n_pixels;
-
   void calculate_weight() {
     auto& grid = lor_pixel_info.grid;
     sensitivity_.assign(grid.n_pixels, 0);
@@ -248,6 +245,9 @@ template <typename FType, typename SType> class LMReconstruction {
   std::vector<F>& sensitivity() { return sensitivity_; }
 
   BarrelEvent event(int i) const { return events_[i]; }
+
+  LORsPixelsInfo& lor_pixel_info;
+  const int n_pixels;
 
  private:
   Response fscanf_response(std::istream& in) {
