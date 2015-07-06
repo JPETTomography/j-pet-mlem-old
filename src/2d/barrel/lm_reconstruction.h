@@ -101,10 +101,10 @@ template <typename FType, typename SType> class LMReconstruction {
                            return a.t < b.t;
                          });
 
-//    if (system_matrix_) {
-//      event.last_pixel = lor_pixel_info[event.lor].pixels.end();
-//      event.first_pixel = lor_pixel_info[event.lor].pixels.begin();
-//    }
+    //    if (system_matrix_) {
+    //      event.last_pixel = lor_pixel_info[event.lor].pixels.end();
+    //      event.first_pixel = lor_pixel_info[event.lor].pixels.begin();
+    //    }
     return event;
   }
 
@@ -161,10 +161,9 @@ template <typename FType, typename SType> class LMReconstruction {
         auto gauss_norm_dl = 1 / (sigma_ * std::sqrt(2 * M_PI));
         auto inv_sigma2_dl = 1 / (2 * sigma_ * sigma_);
 
-        F kernel_l =
-            gauss_norm_dl *
-            exp(-(it->t - event.t) * (it->t - event.t) * inv_sigma2_dl);
-        //std::cout<<event.t<<" "<<it->t<<" "<<kernel_l<<"\n";
+        F kernel_l = gauss_norm_dl * exp(-(it->t - event.t) *
+                                         (it->t - event.t) * inv_sigma2_dl);
+        // std::cout<<event.t<<" "<<it->t<<" "<<kernel_l<<"\n";
 
         F weight = kernel_l * kernel_z * rho_[index];
 
@@ -248,7 +247,7 @@ template <typename FType, typename SType> class LMReconstruction {
 
   std::vector<F>& sensitivity() { return sensitivity_; }
 
-  BarrelEvent event(int i) const {return events_[i];}
+  BarrelEvent event(int i) const { return events_[i]; }
 
  private:
   Response fscanf_response(std::istream& in) {

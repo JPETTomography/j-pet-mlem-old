@@ -76,14 +76,12 @@ template <typename FType, typename SType> class LORsPixelsInfo {
     }
   }
 
-  //assumes sorted pixels
+  // assumes sorted pixels
   void merge_duplicates(LORInfo& lor_info) {
-      auto& pixels=lor_info.pixels;
-        for(auto& pinfo: pixels) {
-
-        }
+    auto& pixels = lor_info.pixels;
+    for (auto& pinfo : pixels) {
+    }
   }
-
 
   // Reading (binary)
   std::istream& read(std::istream& in) {

@@ -150,9 +150,7 @@ int main(int argc, char* argv[]) {
       auto lor = event.lor;
       graph.add(big_barrel, lor);
       graph.add(event.p);
-      for (auto it = event.first_pixel;
-           it != event.last_pixel;
-           ++it) {
+      for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         graph.addPixel(grid, it->pixel);
       }
 

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "3d/geometry/vector.h"
 #include "3d/geometry/point.h"
 #include "2d/barrel/event.h"
@@ -13,7 +12,6 @@ template <typename FType> class Event {
   using Point = PET3D::Point<FType>;
   using BarrelEvent = PET2D::Barrel::Event<FType>;
 
-
  public:
   Event(const Point& origin, const Vector& direction)
       : origin(origin), direction(direction) {}
@@ -23,8 +21,6 @@ template <typename FType> class Event {
     dir_2d.normalize();
     return BarrelEvent(origin.x, origin.y, dir_2d.x, dir_2d.y);
   }
-
-
 
   const Point origin;
   const Vector direction;

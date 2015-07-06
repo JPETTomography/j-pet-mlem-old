@@ -9,7 +9,7 @@ namespace Barrel {
 using SquareDetectorType = PET2D::Barrel::SquareDetector<float>;
 
 template <typename SType> struct BarrelBuilder {
-  using Detector =SquareDetectorType;
+  using Detector = SquareDetectorType;
   using S = SType;
   using SmallBarrel = PET2D::Barrel::GenericScanner<Detector, 192, S>;
   using BigBarrel = PET2D::Barrel::GenericScanner<Detector, 192, S>;

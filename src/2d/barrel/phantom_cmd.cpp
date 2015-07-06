@@ -173,8 +173,6 @@ void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
 
   // NOTE: detector height will be determined per shape
 
-
-
   auto dr = ScannerBuilder<DetectorType>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, typename DetectorType::F));
   dr.set_sigma_dl(cl.get<float>("sigma"));

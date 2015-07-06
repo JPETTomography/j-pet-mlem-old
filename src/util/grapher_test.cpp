@@ -13,7 +13,7 @@ using F = float;
 using S = int;
 
 using Detector = PET2D::Barrel::SquareDetector<F>;
-using BarrelBuilder = PET2D::Barrel::BarrelBuilder< S>;
+using BarrelBuilder = PET2D::Barrel::BarrelBuilder<S>;
 using Scanner = BarrelBuilder::BigBarrel;
 
 TEST("util/grapher/detector") {
