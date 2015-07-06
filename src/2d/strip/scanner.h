@@ -217,12 +217,15 @@ template <typename FType, typename SType> class Scanner {
       return 0;
   }
 
+  /// This function must be present to make the compatible interface with
+  /// PhantomMonteCarlo
   template <class RandomGenerator, class AcceptanceModel>
   _ short exact_detect(RandomGenerator& gen,  ///< random number generator
                        AcceptanceModel& model,
                        const Event& event,  ///< event to be detected
                        Response& response   ///< scanner response (LOR+length)
                        ) const {
+    (void)model;  // mark as unused
     return exact_detect(gen, event, response);
   }
 
