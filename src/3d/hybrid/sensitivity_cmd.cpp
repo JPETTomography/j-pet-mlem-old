@@ -18,7 +18,7 @@ using F = float;
 using S = int;
 
 using SquareDetector = PET2D::Barrel::SquareDetector<F>;
-using BarrelBuilder = PET2D::Barrel::BarrelBuilder<SquareDetector, S>;
+using BarrelBuilder = PET2D::Barrel::BarrelBuilder< S>;
 using Scanner2D = BarrelBuilder::BigBarrel;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 

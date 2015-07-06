@@ -1,7 +1,7 @@
 #pragma once
 
 #include "util/bstream.h"
-
+#include <iostream>
 #include <vector>
 #include <cstdint>
 #include <fstream>
@@ -213,8 +213,9 @@ class SparseMatrix
         auto second = *next;
         if (first.lor == second.lor && first.pixel == second.pixel &&
             first.position == second.position) {
-          first.hits += second.hits;
-          second.hits = 0;
+
+          it_elem->hits += second.hits;
+          next->hits = 0;
         }
       }
     }
@@ -224,7 +225,7 @@ class SparseMatrix
                        this->end(),
                        [](const Element& a) -> bool { return a.hits == 0; }),
         this->end());
-  }
+  };
 
   SparseMatrix& operator<<(const SparseMatrix& other) {
 

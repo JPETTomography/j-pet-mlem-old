@@ -173,11 +173,7 @@ void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
 
   // NOTE: detector height will be determined per shape
 
-  std::random_device rd;
-  RNG gen(rd());
-  if (cl.exist("seed")) {
-    gen.seed(cl.get<std::mt19937::result_type>("seed"));
-  }
+
 
   auto dr = ScannerBuilder<DetectorType>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, typename DetectorType::F));
@@ -187,7 +183,11 @@ void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
 
   Common::PhantomMonteCarlo<Phantom, DetectorType> monte_carlo(phantom, dr);
 
-  typename Phantom::RNG rng;
+  std::random_device rd;
+  typename Phantom::RNG rng(rd());
+  if (cl.exist("seed")) {
+    rng.seed(cl.get<std::mt19937::result_type>("seed"));
+  }
 
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();
