@@ -1,6 +1,8 @@
 #pragma once
 
+#if !__CUDACC__
 #include <iostream>
+#endif
 
 #include "point.h"
 #include "util/random.h"

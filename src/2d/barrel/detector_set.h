@@ -45,6 +45,7 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
     F dl;
     int tof_position;
 
+#if !__CUDACC__
     friend std::ostream& operator<<(std::ostream& out,
                                     const Response& response) {
       out << (int)response.lor.first << " " << (int)response.lor.second;
@@ -52,6 +53,7 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
       out << " " << response.dl;
       return out;
     }
+#endif
   };
 
   using FullResponse = Response;

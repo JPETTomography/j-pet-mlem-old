@@ -1,6 +1,8 @@
 #pragma once
 
+#if !__CUDACC__
 #include <iostream>
+#endif
 
 #include "2d/geometry/point.h"
 #include "2d/geometry/vector.h"
@@ -51,6 +53,7 @@ template <typename FType, typename SType> class PixelGrid {
     return Pixel(column, row);
   }
 
+#if !__CUDACC__
   std::ostream& write(std::ostream& out) {
     out.write((const char*)&n_columns, sizeof(S));
     out.write((const char*)&n_rows, sizeof(S));
@@ -72,5 +75,6 @@ template <typename FType, typename SType> class PixelGrid {
 
     return PixelGrid(n_columns, n_rows, pixel_size, lower_left);
   }
+#endif
 };
 }

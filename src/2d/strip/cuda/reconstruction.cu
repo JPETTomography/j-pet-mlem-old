@@ -1,7 +1,6 @@
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <algorithm>
 
 #include "util/cuda/debug.h"  // catches all CUDA errors
 #include "../event.h"

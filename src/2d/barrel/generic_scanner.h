@@ -1,6 +1,8 @@
 #pragma once
 
+#if !__CUDACC__
 #include <random>
+#endif
 
 #include "square_detector.h"
 #include "circle_detector.h"
@@ -129,6 +131,7 @@ class GenericScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
     return response;
   }
 
+#if !__CUDACC__
   template <typename RNG>
   Response response_w_error(RNG& rng, const FullResponse& response) const {
     std::normal_distribution<F> dist_dl(0, sigma_dl_);
@@ -137,6 +140,7 @@ class GenericScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
     quantize_response(response_w_error_);
     return response_w_error_;
   }
+#endif
 
   /// Produce indices of detectors close to given event
   _ void close_indices(const Event& e,     ///< event to be detected

@@ -1,5 +1,9 @@
 #pragma once
 
+#if !__CUDACC__
+#include <ostream>
+#endif
+
 #include "util/cuda/compat.h"
 #include "2d/geometry/event.h"
 
@@ -32,6 +36,13 @@ template <typename FType> struct Event {
   _ F z(const F y, const F tan) const {
     return F(0.5) * (z_u + z_d + (2 * y * tan));
   }
+
+#if !__CUDACC__
+  friend std::ostream& operator<<(std::ostream& out, const Event& event) {
+    out << event.z_u << " " << event.z_d << " " << event.dl;
+    return out;
+  }
+#endif
 };
 
 template <typename FType> struct ImageSpaceEventTan;
@@ -77,12 +88,6 @@ template <typename FType> struct EllipseParameters {
   _ EllipseParameters(F x, F y, F a, F b, F angle, F n_emissions)
       : x(x), y(y), a(a), b(b), angle(angle), n_emissions(n_emissions) {}
 };
-
-template <typename F>
-std::ostream& operator<<(std::ostream& out, const Event<F>& event) {
-  out << event.z_u << " " << event.z_d << " " << event.dl;
-  return out;
-}
 
 }  // Strip
 }  // PET2D

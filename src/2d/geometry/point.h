@@ -1,5 +1,9 @@
 #pragma once
 
+#if !__CUDACC__
+#include <ostream>
+#endif
+
 #include "util/cuda/compat.h"
 #include "pixel.h"
 
@@ -77,6 +81,13 @@ template <typename FType> struct Point {
   }
 
   _ Vector as_vector() const { return Vector(x, y); }
+
+#if !__CUDACC__
+  friend std::ostream& operator<<(std::ostream& out, const Point& vec) {
+    out << vec.x << " " << vec.y;
+    return out;
+  }
+#endif
 };
 
 /// Single point source
@@ -112,12 +123,6 @@ _ Point<F> operator-(const Point<F>& lhs, const Vector<F>& rhs) {
 template <typename F>
 _ Vector<F> operator-(const Point<F>& lhs, const Point<F>& rhs) {
   return Vector<F>(lhs.x - rhs.x, lhs.y - rhs.y);
-}
-
-template <typename FType>
-std::ostream& operator<<(std::ostream& out, const Point<FType>& vec) {
-  out << vec.x << " " << vec.y;
-  return out;
 }
 
 template <typename FType>
