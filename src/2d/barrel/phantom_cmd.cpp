@@ -108,8 +108,6 @@ int main(int argc, char* argv[]) {
     const auto& model_name = cl.get<std::string>("model");
     const auto& length_scale = cl.get<double>("base-length");
 
-    auto verbose = cl.exist("verbose");
-
     PET2D::Phantom<F, S> phantom;
     // Read phantom
     for (auto& fn : cl.rest()) {

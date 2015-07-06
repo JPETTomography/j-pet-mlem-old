@@ -224,7 +224,6 @@ template <typename ScannerType, typename Kernel2DType> class Reconstruction {
         auto iy = pix.y;
 
         auto center = grid.center_at(ix, iy);
-        auto distance = segment.distance_from(center);
         auto up = segment.projection_relative_middle(center);
 
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
