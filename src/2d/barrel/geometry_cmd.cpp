@@ -49,6 +49,7 @@ int main(int argc, char* argv[]) {
 
     auto verbose = cl.exist("verbose");
     auto output = cl.get<cmdline::path>("output");
+    auto output_base_name = output.wo_ext();
 
     std::vector<Polygon> detectors;
     std::vector<Point> detectors_centers;
@@ -82,7 +83,7 @@ int main(int argc, char* argv[]) {
       detectors_centers.push_back(detector.center());
     }
 
-    std::ofstream svg("my_map.svg");
+    std::ofstream svg(output_base_name + "_map.svg");
     boost::geometry::svg_mapper<Point2D> mapper(svg, 1200, 1200);
 
     for (const auto& detector : detectors) {
