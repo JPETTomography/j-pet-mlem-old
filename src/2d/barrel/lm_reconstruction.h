@@ -80,7 +80,7 @@ template <typename FType, typename SType> class LMReconstruction {
 
     F t = 0.5 - response.dl / (2 * segment->length);
     event.t = t;
-    event.p = PET2D::interpolate(t, segment->start, segment->end);
+    event.p = segment->start.interpolate(segment->end, t);
 
     PixelInfo pix_info_up, pix_info_dn;
     pix_info_up.t = t + 3 * sigma_;

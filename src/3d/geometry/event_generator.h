@@ -7,8 +7,9 @@
 #include "point.h"
 
 namespace PET3D {
-template <typename F> class SphericalDistribution {
+template <typename FType> class SphericalDistribution {
  public:
+  using F = FType;
   using Vector = PET3D::Vector<F>;
 
   SphericalDistribution(F theta_min = -M_PI / 2, F theta_max = M_PI / 2)
@@ -35,8 +36,9 @@ template <typename F> class SphericalDistribution {
   std::uniform_real_distribution<F> z_dist;
 };
 
-template <typename F> class SingleDirectionDistribution {
+template <typename FType> class SingleDirectionDistribution {
  public:
+  using F = FType;
   using Vector = PET3D::Vector<F>;
   SingleDirectionDistribution(const Vector& direction)
       : direction(direction.normalized()) {}
@@ -49,8 +51,9 @@ template <typename F> class SingleDirectionDistribution {
   const Vector direction;
 };
 
-template <typename F> class VoxelEventGenerator {
+template <typename FType> class VoxelEventGenerator {
  public:
+  using F = FType;
   using Event = PET3D::Event<F>;
   using Vector = PET3D::Vector<F>;
   using Point = PET3D::Point<F>;

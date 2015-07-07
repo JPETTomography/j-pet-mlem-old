@@ -78,10 +78,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
     auto segment = lor_pixel_info[response.lor].segment;
     F t = 0.5 - response.dl / (2 * segment->length);
-    return PET3D::interpolate(
-        t,
-        Point(segment->start.x, segment->start.y, response.z_dn),
-        Point(segment->end.x, segment->end.y, response.z_up));
+    return Point(segment->start.x, segment->start.y, response.z_dn)
+        .iterpolate(Point(segment->end.x, segment->end.y, response.z_up), t);
   }
 
   F sigma_w(F width) const { return 0.3 * width; }

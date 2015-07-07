@@ -140,7 +140,7 @@ class RotatedPhantomRegion : public PhantomRegion<FType, RNG> {
   F volume() const { return region->volume(); }
   Point random_point(RNG& rng) {
     Point p = region->random_point(rng);
-    return from_vector(R * p.as_vector());
+    return Point::from_vector(R * p.as_vector());
   }
 
   Vector random_direction(RNG& rng) {
@@ -149,7 +149,7 @@ class RotatedPhantomRegion : public PhantomRegion<FType, RNG> {
   }
 
   bool in(const Point& p) const {
-    return region->in(from_vector(transposed_R * p.as_vector()));
+    return region->in(Point::from_vector(transposed_R * p.as_vector()));
   }
 
  private:

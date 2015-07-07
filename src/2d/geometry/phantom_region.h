@@ -3,8 +3,6 @@
 
 namespace PET2D {
 
-// template <typename F> int sgn(F val) { return (0 < val) - (val < 0); }
-
 /// Virtual phantom region made of ellipse and intensity
 template <typename FType, typename RNG> struct PhantomRegion {
   using F = FType;

@@ -4,7 +4,8 @@ namespace PET2D {
 namespace Strip {
 namespace GPU {
 
-template <typename F> struct EventsSOA {
+template <typename FType> struct EventsSOA {
+  using F = FType;
   F* z_u;
   F* z_d;
   F* dl;

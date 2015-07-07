@@ -14,8 +14,6 @@ namespace PET2D {
 /// 2D point with given coordinates
 template <typename FType> struct Point {
   using F = FType;
-
-  // using Pixel = PET2D::Pixel<S>;
   using Vector = PET2D::Vector<FType>;
 
   _ Point(F x, F y) : x(x), y(y) {}
@@ -82,6 +80,26 @@ template <typename FType> struct Point {
 
   _ Vector as_vector() const { return Vector(x, y); }
 
+  _ Point operator+(const Vector& rhs) const {
+    Point p(*this);
+    p += rhs;
+    return p;
+  }
+
+  _ Point operator-(const Vector& rhs) const {
+    Point p(*this);
+    p -= rhs;
+    return p;
+  }
+
+  _ Vector operator-(const Point& rhs) const {
+    return Vector(x - rhs.x, y - rhs.y);
+  }
+
+  _ Point interpolate(const Point& end, F t) const {
+    return Point(x * (1 - t) + end.x * t, y * (1 - t) + end.y * t);
+  }
+
 #if !__CUDACC__
   friend std::ostream& operator<<(std::ostream& out, const Point& vec) {
     out << vec.x << " " << vec.y;
@@ -105,37 +123,14 @@ template <typename FType> struct PointSource : public Point<FType> {
       : Point::Point(in), intensity(util::read<F>(in)) {}
 #endif
 };
-
-template <typename F>
-_ Point<F> operator+(const Point<F>& lhs, const Vector<F>& rhs) {
-  Point<F> p(lhs);
-  p += rhs;
-  return p;
-}
-
-template <typename F>
-_ Point<F> operator-(const Point<F>& lhs, const Vector<F>& rhs) {
-  Point<F> p(lhs);
-  p -= rhs;
-  return p;
-}
-
-template <typename F>
-_ Vector<F> operator-(const Point<F>& lhs, const Point<F>& rhs) {
-  return Vector<F>(lhs.x - rhs.x, lhs.y - rhs.y);
-}
-
-template <typename FType>
-_ Point<FType> interpolate(FType t,
-                           const Point<FType>& start,
-                           const Point<FType>& end) {
-  return Point<FType>(start.x * (1 - t) + end.x * t,
-                      start.y * (1 - t) + end.y * t);
-}
 }  // PET2D
 
-template <typename F> F deg(F rad) { return rad * 180 / F(M_PI); }
-template <typename F> F rad(F deg) { return deg * F(M_PI) / 180; }
+template <typename FType> FType deg(FType rad) {
+  return rad * 180 / FType(M_PI);
+}
+template <typename FType> FType rad(FType deg) {
+  return deg * FType(M_PI) / 180;
+}
 
 #ifdef TEST_CASE
 namespace Catch {

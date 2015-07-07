@@ -1,6 +1,8 @@
 #pragma once
 
+#if !__CUDACC__
 #include <ostream>
+#endif
 
 #include "util/cuda/compat.h"
 
@@ -13,6 +15,7 @@ namespace PET3D {
 template <typename FType> struct Point {
   using F = FType;
   using Vector = PET3D::Vector<FType>;
+  using Point2D = PET2D::Point<F>;
 
   _ Point(F x, F y, F z) : x(x), y(y), z(z) {}
   _ Point() = default;
@@ -53,7 +56,40 @@ template <typename FType> struct Point {
 
   _ Vector as_vector() const { return Vector(x, y, z); }
 
-  _ PET2D::Point<F> xy() const { return PET2D::Point<F>(x, y); }
+  _ static Point from_vector(const Vector& vec) {
+    return Point(vec.x, vec.y, vec.z);
+  }
+
+  _ Point2D xy() const { return Point2D(x, y); }
+
+  _ Point operator+(const Vector& rhs) const {
+    Point p(*this);
+    p += rhs;
+    return p;
+  }
+
+  _ Point operator-(const Vector& rhs) const {
+    Point p(*this);
+    p -= rhs;
+    return p;
+  }
+
+  _ Vector operator-(const Point& rhs) const {
+    return Vector(x - rhs.x, y - rhs.y, z - rhs.z);
+  }
+
+  _ Point interpolate(const Point& end, F t) const {
+    return Point(x * (1 - t) + end.x * t,
+                 y * (1 - t) + end.y * t,
+                 z * (1 - t) + end.z * t);
+  }
+
+#if !__CUDACC__
+  friend std::ostream& operator<<(std::ostream& out, const Point& p) {
+    out << p.x << " " << p.y << "  " << p.z;
+    return out;
+  }
+#endif
 };
 
 /// Single point source
@@ -72,44 +108,6 @@ template <typename FType> struct PointSource : public Point<FType> {
 #endif
 };
 
-template <typename F>
-_ Point<F> operator+(const Point<F>& lhs, const Vector<F>& rhs) {
-  Point<F> p(lhs);
-  p += rhs;
-  return p;
-}
-
-template <typename F>
-_ Point<F> operator-(const Point<F>& lhs, const Vector<F>& rhs) {
-  Point<F> p(lhs);
-  p -= rhs;
-  return p;
-}
-
-template <typename F>
-_ Vector<F> operator-(const Point<F>& lhs, const Point<F>& rhs) {
-  return Vector<F>(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
-}
-
-template <typename FType>
-std::ostream& operator<<(std::ostream& out, const Point<FType>& p) {
-  out << p.x << " " << p.y << "  " << p.z;
-  return out;
-}
-
-template <typename F> _ Point<F> from_vector(const Vector<F>& vec) {
-  return Point<F>(vec.x, vec.y, vec.z);
-}
-
-template <typename FType>
-_ Point<FType> interpolate(FType t,
-                           const Point<FType>& start,
-                           const Point<FType>& end) {
-  return Point<FType>(start.x * (1 - t) + end.x * t,
-                      start.y * (1 - t) + end.y * t,
-                      start.z * (1 - t) + end.z * t);
-}
-
 }  // PET3D
 
 #ifdef TEST_CASE
@@ -117,10 +115,9 @@ namespace Catch {
 template <typename FType> struct StringMaker<PET3D::Point<FType>> {
   static std::string convert(const PET3D::Point<FType>& p) {
     std::ostringstream oss;
-    oss << p.x << " " << p.y << " " << p.z;
+    oss << "(" p.x << " " << p.y << " " << p.z << ")";
     return oss.str();
   }
 };
 }
-
 #endif
