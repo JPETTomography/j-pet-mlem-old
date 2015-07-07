@@ -77,13 +77,10 @@ int main(int argc, char* argv[]) {
     if (cl.exist("output")) {
       auto fn = cl.get<cmdline::path>("output");
       auto fn_wo_ext = fn.wo_ext();
-      auto fn_wo_path = fn_wo_ext.wo_path();
 
-      std::ofstream out(fn);
+      util::obstream out(fn);
       for (size_t i = 0; i < voxel_set.size(); ++i) {
-        auto voxel = voxel_set.voxel(i);
-        out.write((const char*)&voxel, sizeof(PET3D::Voxel<F>));
-        out.write((const char*)&voxel_set.value(i), sizeof(F));
+        out << voxel_set.voxel(i) << voxel_set.value(i);
       }
 
       util::json_ostream json(fn_wo_ext + ".json");

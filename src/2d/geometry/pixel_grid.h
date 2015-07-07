@@ -2,6 +2,7 @@
 
 #if !__CUDACC__
 #include <iostream>
+#include "util/bstream.h"
 #endif
 
 #include "2d/geometry/point.h"
@@ -62,12 +63,8 @@ template <typename FType, typename SType> class PixelGrid {
         lower_left_center(lower_left + Vector(pixel_size / 2, pixel_size / 2)),
         n_pixels(n_columns * n_rows) {}
 
-  std::ostream& write(std::ostream& out) {
-    out.write((const char*)&n_columns, sizeof(S));
-    out.write((const char*)&n_rows, sizeof(S));
-    out.write((const char*)&pixel_size, sizeof(F));
-    out.write((const char*)&lower_left.x, sizeof(F));
-    out.write((const char*)&lower_left.y, sizeof(F));
+  friend util::obstream& operator<<(util::obstream& out, const PixelGrid& pg) {
+    out << pg.n_columns << pg.n_rows << pg.pixel_size << pg.lower_left;
     return out;
   }
 #endif

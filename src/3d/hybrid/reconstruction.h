@@ -34,6 +34,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using Vector2D = PET2D::Vector<F>;
   using PixelConstIterator =
       typename LORsPixelsInfo::PixelInfoContainer::const_iterator;
+  using Output = std::vector<F>;
 
   struct FrameEvent {
     LOR lor;
@@ -274,11 +275,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     return event_count_;
   }
 
-  typename std::vector<F>::const_iterator rho_begin() const {
-    return rho_.begin();
-  }
-  typename std::vector<F>::const_iterator rho_end() const { return rho_.end(); }
-  typename std::vector<F>::iterator rho_begin() { return rho_.begin(); }
+  const Output& rho() const { return rho_; }
 
   int voxel_count() const { return voxel_count_; }
   int pixel_count() const { return pixel_count_; }
@@ -314,14 +311,14 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
  private:
   std::vector<FrameEvent> events_;
   Kernel2D kernel_;
-  std::vector<F> rho_;
+  Output rho_;
   int event_count_;
   int voxel_count_;
   int pixel_count_;
   int n_threads_;
-  std::vector<std::vector<F>> thread_rhos_;
-  std::vector<std::vector<F>> thread_kernel_caches_;
+  std::vector<Output> thread_rhos_;
+  std::vector<Output> thread_kernel_caches_;
   std::vector<VoxelKernelInfo> voxel_cache_;
   std::vector<int> n_events_per_thread_;
-  std::vector<F> sensitivity_;
+  Output sensitivity_;
 };

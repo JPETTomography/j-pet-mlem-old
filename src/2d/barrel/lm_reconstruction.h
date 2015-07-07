@@ -30,6 +30,7 @@ template <typename FType, typename SType> class LMReconstruction {
   using PixelInfo = typename LORsPixelsInfo::PixelInfo;
   using PixelConstIterator =
       typename LORsPixelsInfo::PixelInfoContainer::const_iterator;
+  using Output = std::vector<F>;
 
   struct BarrelEvent {
     LOR lor;
@@ -58,15 +59,11 @@ template <typename FType, typename SType> class LMReconstruction {
     rho_.assign(n_pixels, 1);
   }
 
+  const Output& rho() const { return rho_; }
+
   void use_system_matrix() { system_matrix_ = true; }
 
   F sigma_w(F width) const { return 0.3 * width; }
-
-  typename std::vector<F>::const_iterator rho_begin() const {
-    return rho_.begin();
-  }
-  typename std::vector<F>::const_iterator rho_end() const { return rho_.end(); }
-  typename std::vector<F>::iterator rho_begin() { return rho_.begin(); }
 
   BarrelEvent to_event(const Response& response) {
     BarrelEvent event;
@@ -242,7 +239,7 @@ template <typename FType, typename SType> class LMReconstruction {
     }
   }
 
-  std::vector<F>& sensitivity() { return sensitivity_; }
+  const Output& sensitivity() const { return sensitivity_; }
 
   BarrelEvent event(int i) const { return events_[i]; }
 
@@ -262,17 +259,16 @@ template <typename FType, typename SType> class LMReconstruction {
   std::vector<BarrelEvent> events_;
   F sigma_;
 
-  std::vector<F> rho_;
+  Output rho_;
   int event_count_;
   int voxel_count_;
   int pixel_count_;
   int n_threads_;
 
-  std::vector<std::vector<F>> thread_rhos_;
-  std::vector<std::vector<F>> thread_kernel_caches_;
-  // std::vector<PixelKernelInfo> voxel_cache_;
+  std::vector<Output> thread_rhos_;
+  std::vector<Output> thread_kernel_caches_;
   std::vector<int> n_events_per_thread_;
-  std::vector<F> sensitivity_;
+  Output sensitivity_;
 };
 }
 }

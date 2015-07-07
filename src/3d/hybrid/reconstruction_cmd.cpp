@@ -105,9 +105,8 @@ int main(int argc, char* argv[]) {
               "%s_%03d.bin",
               output_base_name.c_str(),
               (block + 1) * n_iter);
-      std::ofstream out(rho_file_name);
-      out.write((char*)&(*reconstruction.rho_begin()),
-                reconstruction.n_voxels * sizeof(F));
+      util::obstream out(rho_file_name);
+      out << reconstruction.rho();
     }
     std::cout << reconstruction.event_count() << " "
               << reconstruction.voxel_count() << " "
@@ -119,9 +118,8 @@ int main(int argc, char* argv[]) {
                      reconstruction.event_count()
               << "\n";
 
-    std::ofstream out("rho.bin");
-    out.write((char*)&(*reconstruction.rho_begin()),
-              reconstruction.n_voxels * sizeof(F));
+    util::obstream out(output);
+    out << reconstruction.rho();
 
   } catch (cmdline::exception& ex) {
     if (ex.help()) {

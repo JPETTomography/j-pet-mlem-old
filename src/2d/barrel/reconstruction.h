@@ -187,9 +187,9 @@ class Reconstruction {
   S n_pixels_in_row() { return n_pixels_in_row_; }
   F rho(const S p) const { return rho_[p]; }
   F rho(const Pixel& pixel) const { return rho_[pixel_index(pixel)]; }
-  Output rho() const { return rho_; }
-  Output rho_detected() { return rho_detected_; }
-  Output scale() { return scale_; }
+  const Output& rho() const { return rho_; }
+  const Output& rho_detected() const { return rho_detected_; }
+  const Output& scale() const { return scale_; }
 
  public:
   F threshold;

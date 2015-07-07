@@ -104,9 +104,8 @@ int main(int argc, char* argv[]) {
     S n_detectors = scanner.size();
     PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(n_detectors, grid);
 
-    std::ofstream lor_info_stream(output, std::ios::binary);
-    lor_info_stream.write((const char*)&n_detectors, sizeof(S));
-    grid.write(lor_info_stream);
+    util::obstream out_lor_info(output);
+    out_lor_info << n_detectors << grid;
 
     std::vector<LOR> lor_map;
     auto lor_count = LOR::end_for_detectors(n_detectors).index();
@@ -202,17 +201,9 @@ int main(int argc, char* argv[]) {
 #pragma omp critical
 #endif
       {
-        lor_info_stream.write((const char*)&lor.first, sizeof(lor.first));
-        lor_info_stream.write((const char*)&lor.second, sizeof(lor.second));
-        lor_info_stream.write((const char*)&detectors_centers[lor.first],
-                              2 * sizeof(F));
-        lor_info_stream.write((const char*)&detectors_centers[lor.second],
-                              2 * sizeof(F));
-        lor_info_stream.write((const char*)&width, sizeof(F));
-        lor_info_stream.write((const char*)&n_pixels, sizeof(int));
-        if (n_pixels > 0)
-          lor_info_stream.write((const char*)&lor_info[lor].pixels[0],
-                                n_pixels * sizeof(PixelInfo));
+        out_lor_info << lor << detectors_centers[lor.first]
+                     << detectors_centers[lor.second] << width << n_pixels
+                     << lor_info[lor].pixels;
       }
       CATCH;
       progress(lor_index, true);
