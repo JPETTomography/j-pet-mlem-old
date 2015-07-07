@@ -19,7 +19,8 @@
 const double RADIAN = M_PI / 180;
 
 namespace PET2D {
-/// Virtual phantom made of  regions
+
+/// Virtual phantom made of regions
 template <class RNGClass, typename FType> class Phantom {
  public:
   using RNG = RNGClass;
@@ -27,7 +28,9 @@ template <class RNGClass, typename FType> class Phantom {
   using Point = PET2D::Point<F>;
   using Event = PET2D::Event<F>;
 
-  /// Virtual phantom region made of ellipse and intensity
+  /// Abstract phantom region (must subclass)
+
+  /// Must provide at least intensity for the region.
   struct Region {
     Region(F intensity) : intensity(intensity) {}
 
@@ -38,6 +41,7 @@ template <class RNGClass, typename FType> class Phantom {
     const F intensity;
   };
 
+  /// Region that represent custom shape
   template <class Shape> class ShapeRegion : public Region {
    public:
     ShapeRegion(const Shape& shape, F intensity)
@@ -53,6 +57,7 @@ template <class RNGClass, typename FType> class Phantom {
     const F weight_;
   };
 
+  /// Elliptical region
   class EllipticalRegion : public ShapeRegion<PET2D::Ellipse<F>> {
    public:
     using Ellipse = PET2D::Ellipse<F>;
@@ -66,6 +71,7 @@ template <class RNGClass, typename FType> class Phantom {
     EllipsePointGenerator<F> gen_;
   };
 
+  /// Rectangular region
   class RectangularRegion : public ShapeRegion<PET2D::Rectangle<F>> {
    public:
     using Rectangle = PET2D::Rectangle<F>;

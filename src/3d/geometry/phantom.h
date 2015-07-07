@@ -15,6 +15,7 @@
 
 namespace PET3D {
 
+/// Virtual phantom made of regions
 template <class RNGClass, typename FType> class Phantom {
  public:
   using RNG = RNGClass;
@@ -23,6 +24,9 @@ template <class RNGClass, typename FType> class Phantom {
   using Point = PET3D::Point<F>;
   using Vector = PET3D::Vector<F>;
 
+  /// Abstract phantom region (must subclass)
+
+  /// Must provide at least intensity for the region.
   struct Region {
     Region(F intensity) : intensity(intensity) {}
     virtual bool in(const Point&) const = 0;
@@ -40,9 +44,11 @@ template <class RNGClass, typename FType> class Phantom {
     const F intensity;
   };
 
-  template <typename AngularDistribution> class AbstractRegion : public Region {
+  /// Abstract phantom region with angular distribution
+  template <typename AngularDistribution>
+  class AngularDistributionRegion : public Region {
    public:
-    AbstractRegion(F intensity, AngularDistribution angular)
+    AngularDistributionRegion(F intensity, AngularDistribution angular)
         : Region(intensity), angular_distribution(angular) {}
     Vector random_direction(RNG& rng) { return angular_distribution(rng); }
 
@@ -50,14 +56,15 @@ template <class RNGClass, typename FType> class Phantom {
     AngularDistribution angular_distribution;
   };
 
+  /// Cylindrical region
   template <typename AngularDistribution = PET3D::SphericalDistribution<FType>>
-  class CylinderRegion : public AbstractRegion<AngularDistribution> {
+  class CylinderRegion : public AngularDistributionRegion<AngularDistribution> {
    public:
     CylinderRegion(F radius,
                    F height,
                    F intensity,
                    AngularDistribution angular = AngularDistribution())
-        : AbstractRegion<AngularDistribution>(intensity, angular),
+        : AngularDistributionRegion<AngularDistribution>(intensity, angular),
           radius(radius),
           height(height),
 
@@ -77,15 +84,17 @@ template <class RNGClass, typename FType> class Phantom {
     PET3D::CylinderPointDistribution<F> dist;
   };
 
+  /// Ellipsoid region
   template <typename AngularDistribution = PET3D::SphericalDistribution<FType>>
-  class EllipsoidRegion : public AbstractRegion<AngularDistribution> {
+  class EllipsoidRegion
+      : public AngularDistributionRegion<AngularDistribution> {
    public:
     EllipsoidRegion(F rx,
                     F ry,
                     F rz,
                     F intensity,
                     AngularDistribution angular = AngularDistribution())
-        : AbstractRegion<AngularDistribution>(intensity, angular),
+        : AngularDistributionRegion<AngularDistribution>(intensity, angular),
           rx(rx),
           ry(ry),
           rz(rz),
@@ -107,6 +116,7 @@ template <class RNGClass, typename FType> class Phantom {
     PET3D::EllipsoidPointDistribution<F> dist;
   };
 
+  /// Region rotated using given 3x3 transformation matrix
   class RotatedRegion : public Region {
    public:
     using Matrix = PET3D::Matrix<F>;
@@ -138,6 +148,7 @@ template <class RNGClass, typename FType> class Phantom {
     Matrix transposed_R;
   };
 
+  /// Region translated using given vector
   class TranslatedRegion : public Region {
    public:
     TranslatedRegion(Region* region, const Vector displacement)
@@ -159,15 +170,16 @@ template <class RNGClass, typename FType> class Phantom {
     Vector displacement;
   };
 
+  /// Point region
   template <typename AngularDistribution = PET3D::SphericalDistribution<FType>>
-  class PointRegion : public AbstractRegion<AngularDistribution> {
+  class PointRegion : public AngularDistributionRegion<AngularDistribution> {
    public:
     using F = FType;
     using Point = PET3D::Point<F>;
     using Event = PET3D::Event<F>;
     using Vector = PET3D::Vector<F>;
     PointRegion(F intensity, AngularDistribution angular, const Point& origin)
-        : AbstractRegion<AngularDistribution>(intensity, angular),
+        : AngularDistributionRegion<AngularDistribution>(intensity, angular),
           origin(origin) {}
 
     Point random_point(RNG& rng) {
