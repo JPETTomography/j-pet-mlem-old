@@ -10,6 +10,7 @@
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
+#include "util/progress.h"
 #include "scanner_builder.h"
 #include "ring_scanner.h"
 #include "generic_scanner.h"
@@ -46,6 +47,7 @@ int main(int argc, char* argv[]) {
         PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
             PET2D_BARREL_SCANNER_CL(cl, F));
 
+    auto verbose = cl.exist("verbose");
     auto output = cl.get<cmdline::path>("output");
 
     std::vector<Polygon> detectors;
@@ -107,9 +109,12 @@ int main(int argc, char* argv[]) {
     grid.write(lor_info_stream);
 
     // Loop over the LORs
-    int i = 0;
+    int count = 0;
+    util::progress progress(verbose, n_detectors * (n_detectors + 1) / 2);
     for (S d1 = 0; d1 < n_detectors; ++d1) {
-      for (S d2 = 0; d2 < d1; ++d2) {
+      for (S d2 = 0; d2 < d1; ++d2, ++count) {
+        progress(count);
+
         boost::geometry::model::multi_polygon<Polygon> pair;
 
         boost::geometry::union_(detectors[d1], detectors[d2], pair);
@@ -117,12 +122,10 @@ int main(int argc, char* argv[]) {
         boost::geometry::convex_hull(pair, lor);
 
 #if DEBUG
-        std::cout << "l : " << i << "  " << d1 << " " << d2 << "\n";
+        std::cout << "l: " << count << "  " << d1 << " " << d2 << "\n";
 #endif
         lor_info_stream.write((const char*)&d1, sizeof(d1));
         lor_info_stream.write((const char*)&d2, sizeof(d2));
-
-        i++;
 
         PET2D::LineSegment<F> segment(detectors_centers[d2],
                                       detectors_centers[d1]);
@@ -190,6 +193,8 @@ int main(int argc, char* argv[]) {
         if (n_pixels > 0)
           lor_info_stream.write((const char*)&lor_info[LOR(d1, d2)].pixels[0],
                                 n_pixels * sizeof(PixelInfo));
+
+        progress(count, true);
       }
     }
 
