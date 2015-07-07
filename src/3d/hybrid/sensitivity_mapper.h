@@ -58,14 +58,14 @@ template <class ScannerClass> class SensitivityMapper {
   }
 
   template <class RNG, typename AcceptanceModel>
-  void map(RNG gen, AcceptanceModel& model, int n_emissions) {
+  void map(RNG& rng, AcceptanceModel& model, int n_emissions) {
 #if _OPENMP
     // OpenMP uses passed random generator as seed source for
     // thread local random generators
-    RNG* mp_gens = new (alloca(sizeof(RNG) * omp_get_max_threads()))
+    RNG* mp_rngs = new (alloca(sizeof(RNG) * omp_get_max_threads()))
         RNG[omp_get_max_threads()];
     for (auto t = 0; t < omp_get_max_threads(); ++t) {
-      mp_gens[t].seed(gen());
+      mp_rngs[t].seed(rng());
     }
 
 #pragma omp parallel for schedule(dynamic)
@@ -73,13 +73,13 @@ template <class ScannerClass> class SensitivityMapper {
 #endif
     for (int i_voxel = 0; i_voxel < voxel_set.size(); ++i_voxel) {
 #if _OPENMP
-      auto& l_gen = mp_gens[omp_get_thread_num()];
+      auto& l_rng = mp_rngs[omp_get_thread_num()];
 #else
-      auto& l_gen = gen;
+      auto& l_rng = rng;
 #endif
       auto voxel = voxel_set.voxel(i_voxel);
 
-      map(i_voxel, voxel, l_gen, model, n_emissions);
+      map(i_voxel, voxel, l_rng, model, n_emissions);
     }
   }
 

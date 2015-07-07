@@ -79,15 +79,13 @@ class MonteCarlo {
 #if _OPENMP
     // OpenMP uses passed random generator as seed source for
     // thread local random generators
-    RandomGenerator* mp_gens =
-        new (alloca(sizeof(RandomGenerator) * omp_get_max_threads()))
-            RandomGenerator[omp_get_max_threads()];
+    RNG* mp_rngs = new (alloca(sizeof(RNG) * omp_get_max_threads()))
+        RNG[omp_get_max_threads()];
     for (auto t = 0; t < omp_get_max_threads(); ++t) {
-      mp_gens[t].seed(gen());
+      mp_rngs[t].seed(rng());
     }
 
 #pragma omp parallel for schedule(dynamic)
-// #pragma omp parallel for
 #endif
     // iterating only triangular matrix,
     // being upper right part or whole system matrix
@@ -108,21 +106,21 @@ class MonteCarlo {
       for (auto n = 0; n < n_emissions; ++n) {
 
 #if _OPENMP
-        auto& l_gen = mp_gens[omp_get_thread_num()];
+        auto& l_rng = mp_rngs[omp_get_thread_num()];
 #else
-        auto& l_gen = rng;
+        auto& l_rng = rng;
 #endif
-        F rx = (pixel.x + one_dis(l_gen)) * pixel_size;
-        F ry = (pixel.y + one_dis(l_gen)) * pixel_size;
-        F rz = z + one_dis(l_gen) * pixel_size;
+        F rx = (pixel.x + one_dis(l_rng)) * pixel_size;
+        F ry = (pixel.y + one_dis(l_rng)) * pixel_size;
+        F rz = z + one_dis(l_rng) * pixel_size;
         // ensure we are within a triangle
         if (rx > ry)
           continue;
 
         typename DetectorClass::Response response;
 
-        Event event(PET3D::Point<float>(rx, ry, rz), direction(l_gen));
-        auto hits = detector.detect(l_gen, model, event, response);
+        Event event(PET3D::Point<float>(rx, ry, rz), direction(l_rng));
+        auto hits = detector.detect(l_rng, model, event, response);
 
         // do we have hit on both sides?
         if (hits >= 2) {
