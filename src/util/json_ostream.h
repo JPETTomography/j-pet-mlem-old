@@ -6,7 +6,7 @@
 namespace util {
 
 /// \c JSON file generator based on \c std::ofstream
-///
+
 /// Actually it does not currently nothing, but it is used to distinguish << >>
 /// operators.
 class json_ostream : public std::ofstream {

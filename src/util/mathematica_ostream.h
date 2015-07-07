@@ -5,7 +5,7 @@
 namespace util {
 
 /// Mathematica \c .m file generator based on \c std::ofstream
-///
+
 /// Actually it does not currently nothing, but it is used to distinguish << >>
 /// operators.
 class mathematica_ostream : public std::ofstream {

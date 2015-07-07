@@ -4,6 +4,7 @@
 
 namespace util {
 
+/// Dummy \c std::streambuf having no storage
 template <class cT, class traits = std::char_traits<cT>>
 class basic_null_buf : public std::basic_streambuf<cT, traits> {
   typename traits::int_type overflow(typename traits::int_type c) {
@@ -11,6 +12,7 @@ class basic_null_buf : public std::basic_streambuf<cT, traits> {
   }
 };
 
+/// Dummy \c std::ostream outputting nowhere
 template <class cT, class traits = std::char_traits<cT>>
 class basic_null_ostream : public std::basic_ostream<cT, traits> {
  public:
