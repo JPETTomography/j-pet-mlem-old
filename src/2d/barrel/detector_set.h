@@ -22,7 +22,7 @@ template <class ScannerClass> class ScannerBuilder;
 
 template <class DetectorClass,
           typename SType,
-          std::size_t MaxDetetectorsSize = 260>
+          std::size_t MaxDetetectorsSize = 192>
 class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
  public:
   using Detector = DetectorClass;

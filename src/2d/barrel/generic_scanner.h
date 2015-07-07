@@ -37,7 +37,7 @@ namespace Barrel {
 
 template <class DetectorClass,
           typename SType,
-          std::size_t MaxDetectorsSize = 260>
+          std::size_t MaxDetectorsSize = 192>
 class GenericScanner
     : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
  public:

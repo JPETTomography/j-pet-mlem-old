@@ -67,7 +67,7 @@ using Pixel = PET2D::Pixel<S>;
 using LOR = PET2D::Barrel::LOR<S>;
 
 template <class DetectorClass>
-using Scanner = PET2D::Barrel::GenericScanner<DetectorClass, S, 192>;
+using Scanner = PET2D::Barrel::GenericScanner<DetectorClass, S>;
 
 // all available detector shapes
 using SquareScanner = Scanner<PET2D::Barrel::SquareDetector<F>>;

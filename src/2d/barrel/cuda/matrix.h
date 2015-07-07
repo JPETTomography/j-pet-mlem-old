@@ -27,7 +27,7 @@ using Pixel = PET2D::Pixel<S>;
 using LOR = Barrel::LOR<S>;
 using Event = Barrel::Event<F>;
 using SquareDetector = Barrel::SquareDetector<F>;
-using Scanner = Barrel::GenericScanner<SquareDetector, S, 192>;
+using Scanner = Barrel::GenericScanner<SquareDetector, S>;
 using Model = Common::ScintillatorAccept<F>;
 #if !__CUDACC__
 using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR, typename LOR::S, int>;

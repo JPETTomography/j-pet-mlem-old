@@ -25,7 +25,7 @@ using S = short;
 
 using RNG = std::mt19937;
 using Detector = PET2D::Barrel::SquareDetector<F>;
-using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S, 192>;
+using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 using Phantom = PET3D::Phantom<F, S, RNG>;
 using Allways = Common::AlwaysAccept<F>;

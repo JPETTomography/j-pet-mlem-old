@@ -68,7 +68,7 @@ using Point = PET2D::Point<F>;
 using Event = PET2D::Event<F>;
 
 template <class DetectorClass>
-using Scanner = PET2D::Barrel::GenericScanner<DetectorClass, S, 192>;
+using Scanner = PET2D::Barrel::GenericScanner<DetectorClass, S>;
 template <class DetectorClass>
 using ScannerBuilder = PET2D::Barrel::ScannerBuilder<DetectorClass>;
 

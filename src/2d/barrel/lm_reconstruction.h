@@ -18,7 +18,7 @@ namespace Barrel {
 
 template <typename FType, typename SType> class LMReconstruction {
   using Detector = PET2D::Barrel::SquareDetector<FType>;
-  using Scanner2D = PET2D::Barrel::DetectorSet<Detector, SType, 192>;
+  using Scanner2D = PET2D::Barrel::DetectorSet<Detector, SType>;
 
  public:
   using F = FType;
