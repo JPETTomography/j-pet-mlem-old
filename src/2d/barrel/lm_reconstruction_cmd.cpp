@@ -179,18 +179,21 @@ int main(int argc, char* argv[]) {
       out.write((char*)&(*reconstruction.rho_begin()),
                 reconstruction.n_pixels * sizeof(F));
     }
-    //    std::cout << reconstruction.event_count() << " "
-    //              << reconstruction.voxel_count() << " "
-    //              << reconstruction.pixel_count() << "\n";
-    //    std::cout << (double)reconstruction.voxel_count() /
-    //                     reconstruction.event_count() << " ";
-    //    std::cout << (double)reconstruction.pixel_count() /
-    //                     reconstruction.event_count() << "\n";
+#if DEBUG
+    std::cout << reconstruction.event_count() << " "
+              << reconstruction.voxel_count() << " "
+              << reconstruction.pixel_count() << "\n";
+    std::cout << (double)reconstruction.voxel_count() /
+                     reconstruction.event_count()
+              << " ";
+    std::cout << (double)reconstruction.pixel_count() /
+                     reconstruction.event_count()
+              << "\n";
 
-    //    std::ofstream out("rho.bin");
-    //    out.write((char*)&(*reconstruction.rho_begin()),
-    //              reconstruction.n_voxels * sizeof(F));
-
+    std::ofstream out("rho.bin");
+    out.write((char*)&(*reconstruction.rho_begin()),
+              reconstruction.n_voxels * sizeof(F));
+#endif
   } catch (cmdline::exception& ex) {
     if (ex.help()) {
       std::cerr << ex.usage();
