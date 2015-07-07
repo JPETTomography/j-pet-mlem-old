@@ -27,9 +27,9 @@ template <typename FType, typename SType> class LMReconstruction {
   using Point = PET2D::Point<F>;
   using LOR = PET2D::Barrel::LOR<S>;
   using LORsPixelsInfo = PET2D::Barrel::LORsPixelsInfo<F, S>;
+  using LORInfo = typename LORsPixelsInfo::LORInfo;
   using PixelInfo = typename LORsPixelsInfo::PixelInfo;
-  using PixelConstIterator =
-      typename LORsPixelsInfo::PixelInfoContainer::const_iterator;
+  using PixelConstIterator = typename LORInfo::PixelInfoList::const_iterator;
   using Output = std::vector<F>;
 
   struct BarrelEvent {
@@ -69,15 +69,15 @@ template <typename FType, typename SType> class LMReconstruction {
     BarrelEvent event;
     event.lor = response.lor;
 
-    auto segment = lor_pixel_info[response.lor].segment;
+    auto& segment = lor_pixel_info[response.lor].segment;
 
     auto width = lor_pixel_info[event.lor].width;
     event.gauss_norm = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
     event.inv_sigma2 = 1 / (2 * sigma_w(width) * sigma_w(width));
 
-    F t = 0.5 - response.dl / (2 * segment->length);
+    F t = 0.5 - response.dl / (2 * segment.length);
     event.t = t;
-    event.p = segment->start.interpolate(segment->end, t);
+    event.p = segment.start.interpolate(segment.end, t);
 
     PixelInfo pix_info_up, pix_info_dn;
     pix_info_up.t = t + 3 * sigma_;
@@ -207,7 +207,7 @@ template <typename FType, typename SType> class LMReconstruction {
     sensitivity_.assign(grid.n_pixels, 0);
     for (auto& lor_info : lor_pixel_info) {
 
-      auto segment = lor_info.segment;
+      auto& segment = lor_info.segment;
 
       auto width = lor_info.width;
       auto gauss_norm_w = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
@@ -216,7 +216,7 @@ template <typename FType, typename SType> class LMReconstruction {
       for (auto& pixel_info : lor_info.pixels) {
         auto pixel = pixel_info.pixel;
         auto center = grid.center_at(pixel.x, pixel.y);
-        auto distance = segment->distance_from(center);
+        auto distance = segment.distance_from(center);
         auto kernel_z =
             gauss_norm_w * std::exp(-distance * distance * inv_sigma2_w);
         pixel_info.weight = kernel_z;

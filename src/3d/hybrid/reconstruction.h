@@ -24,6 +24,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using F = typename Scanner::F;
   using S = typename Scanner::S;
   using LORsPixelsInfo = PET2D::Barrel::LORsPixelsInfo<F, S>;
+  using LORInfo = typename LORsPixelsInfo::LORInfo;
   using Response = typename Scanner::Response;
   using LOR = PET2D::Barrel::LOR<S>;
   using StripEvent = PET2D::Strip::Event<F>;
@@ -32,8 +33,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using Point2D = PET2D::Point<F>;
   using Point = PET3D::Point<F>;
   using Vector2D = PET2D::Vector<F>;
-  using PixelConstIterator =
-      typename LORsPixelsInfo::PixelInfoContainer::const_iterator;
+  using PixelConstIterator = typename LORInfo::PixelInfoList::const_iterator;
   using Output = std::vector<F>;
 
   struct FrameEvent {
@@ -90,7 +90,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     FrameEvent event;
     event.lor = response.lor;
 
-    auto R = lor_pixel_info[event.lor].segment->length / 2;
+    auto R = lor_pixel_info[event.lor].segment.length / 2;
     StripEvent strip_event(response.z_up, response.z_dn, response.dl);
 
     auto width = lor_pixel_info[event.lor].width;
@@ -156,7 +156,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     sensitivity_.assign(grid.n_pixels, 0);
     for (auto& lor_info : lor_pixel_info) {
 
-      auto segment = lor_info.segment;
+      auto& segment = lor_info.segment;
 
       auto width = lor_info.width;
       auto gauss_norm_w = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
@@ -165,7 +165,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       for (auto& pixel_info : lor_info.pixels) {
         auto pixel = pixel_info.pixel;
         auto center = grid.center_at(pixel.x, pixel.y);
-        auto distance = segment->distance_from(center);
+        auto distance = segment.distance_from(center);
         auto kernel_z =
             gauss_norm_w * std::exp(-distance * distance * inv_sigma2_w);
         pixel_info.weight = kernel_z;
@@ -211,7 +211,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       n_events_per_thread_[thread]++;
       auto event = frame_event(i);
       auto lor = event.lor;
-      auto segment = *lor_pixel_info[lor].segment;
+      auto& segment = lor_pixel_info[lor].segment;
       auto R = segment.length / 2;
 
       /* ---------  Voxel loop  - denominator ----------- */
@@ -285,7 +285,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     auto event = events_[event_index];
     auto lor = event.lor;
     graphics.add(scanner.barrel, lor);
-    graphics.add(*lor_pixel_info[lor].segment);
+    graphics.add(lor_pixel_info[lor].segment);
     for (auto pix = event.first_pixel; pix != event.last_pixel; ++pix) {
       graphics.add_pixel(lor_pixel_info.grid, pix->pixel);
     }

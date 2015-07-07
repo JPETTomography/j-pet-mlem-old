@@ -8,15 +8,11 @@
 namespace PET2D {
 namespace Barrel {
 
-template <typename FType, typename SType> class LORsPixelsInfo {
- public:
+template <typename FType, typename SType> struct LORInfo {
   using F = FType;
   using S = SType;
-
   using Pixel = PET2D::Pixel<S>;
   using LOR = PET2D::Barrel::LOR<S>;
-  using PixelGrid = PET2D::PixelGrid<F, S>;
-  using Point = PET2D::Point<F>;
 
   struct PixelInfo {
     Pixel pixel;
@@ -26,14 +22,35 @@ template <typename FType, typename SType> class LORsPixelsInfo {
     F weight;
   };
 
-  using PixelInfoContainer = std::vector<PixelInfo>;
+  using PixelInfoList = std::vector<PixelInfo>;
 
-  struct LORInfo {
-    S d1, d2;
-    F width;
-    PixelInfoContainer pixels;
-    LineSegment<F>* segment;
-  };
+  LOR lor;
+  LineSegment<F> segment;
+  F width;
+  PixelInfoList pixels;
+
+  LORInfo() = default;
+
+  LORInfo(std::istream& in) : lor(in), segment(in), width(util::read<F>(in)) {
+    auto n_pixels = util::read<int>(in);
+    if (in && n_pixels) {
+      pixels.resize(n_pixels);
+      in.read((char*)&pixels[0], sizeof(PixelInfo) * n_pixels);
+    }
+  }
+};
+
+template <typename FType, typename SType> class LORsPixelsInfo {
+ public:
+  using F = FType;
+  using S = SType;
+
+  using Pixel = PET2D::Pixel<S>;
+  using LOR = PET2D::Barrel::LOR<S>;
+  using PixelGrid = PET2D::PixelGrid<F, S>;
+  using Point = PET2D::Point<F>;
+  using LORInfo = PET2D::Barrel::LORInfo<F, S>;
+  using PixelInfo = typename LORInfo::PixelInfo;
 
   LORsPixelsInfo(S n_detectors, const PixelGrid& grid)
       : n_detectors(n_detectors),
@@ -52,10 +69,9 @@ template <typename FType, typename SType> class LORsPixelsInfo {
 
   void push_back_pixel(const LOR& lor, const Pixel& pixel, F weight) {
 
-    auto lor_info = lor_info_[lor.index()];
-    auto segment = lor_info.segment;
+    auto& lor_info = lor_info_[lor.index()];
     auto center = grid.center_at(pixel.x, pixel.y);
-    auto t = segment->projection_scaled(center);
+    auto t = lor_info.segment.projection_scaled(center);
     PixelInfo pinfo;
     pinfo.pixel = pixel;
     pinfo.t = t;
@@ -84,41 +100,11 @@ template <typename FType, typename SType> class LORsPixelsInfo {
   }
 
   // Reading (binary)
-  std::istream& read(std::istream& in) {
-    while (read_lor_info(in))
-      ;
-    return in;
-  }
-
-  std::istream& read_header(std::istream& in) { return in; }
-
-  std::istream& read_lor_info(std::istream& in) {
-    S lor_desc[2];
-    in.read((char*)lor_desc, 2 * sizeof(S));
-    if (!in)
-      return in;
-
-    F coords[4];
-    in.read((char*)coords, 4 * sizeof(F));
-
-    F width;
-    in.read((char*)&width, sizeof(F));
-    int n_pixels;
-    in.read((char*)&n_pixels, sizeof(int));
-
-    if (in) {
-      LOR lor(lor_desc[0], lor_desc[1]);
-      lor_info_[lor.index()].width = width;
-      lor_info_[lor.index()].segment = new LineSegment<F>(
-          Point(coords[2], coords[3]), Point(coords[0], coords[1]));
-      if (n_pixels > 0) {
-        lor_info_[lor.index()].pixels.resize(n_pixels);
-
-        in.read((char*)&lor_info_[lor.index()].pixels[0],
-                sizeof(PixelInfo) * n_pixels);
-      }
+  void read(std::istream& in) {
+    while (in) {
+      LORInfo lor_info(in);
+      lor_info_[lor_info.lor.index()] = std::move(lor_info);
     }
-    return in;
   }
 
   friend std::ostream& operator<<(std::ostream& out,

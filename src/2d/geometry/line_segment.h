@@ -4,12 +4,14 @@
 #include "2d/geometry/point.h"
 
 namespace PET2D {
-template <typename FType> class LineSegment {
+
+template <typename FType> struct LineSegment {
   using F = FType;
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
 
- public:
+  LineSegment() = default;
+
   LineSegment(const Point& start, const Point& end)
       : start(start),
         end(end),
@@ -18,6 +20,8 @@ template <typename FType> class LineSegment {
         normal(direction.perpendicular()),
         length((end - start).length()),
         distance_from_origin(start.as_vector().dot(normal)) {}
+
+  LineSegment(std::istream& in) : LineSegment(Point(in), Point(in)) {}
 
   F distance_from(const Point& p) {
     return p.as_vector().dot(normal) - distance_from_origin;
@@ -30,12 +34,12 @@ template <typename FType> class LineSegment {
     return projection(p) - 0.5 * length;
   }
 
-  const Point start;
-  const Point end;
-  const Point mid_point;
-  const Vector direction;
-  const Vector normal;
-  const F length;
-  const F distance_from_origin;
+  Point start;
+  Point end;
+  Point mid_point;
+  Vector direction;
+  Vector normal;
+  F length;
+  F distance_from_origin;
 };
 }

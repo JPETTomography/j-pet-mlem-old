@@ -26,8 +26,7 @@ using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Point = PET2D::Point<F>;
 
 using PixelInfo = PET2D::Barrel::LORsPixelsInfo<F, S>::PixelInfo;
-using PixelInfoContainer =
-    PET2D::Barrel::LORsPixelsInfo<F, S>::PixelInfoContainer;
+using PixelInfoContainer = PET2D::Barrel::LORInfo<F, S>::PixelInfoList;
 using LOR = PET2D::Barrel::LOR<S>;
 
 using BoostGeometryUtils = PET2D::Barrel::BoostGeometryUtils<F, S>;
