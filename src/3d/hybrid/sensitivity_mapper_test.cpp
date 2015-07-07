@@ -10,7 +10,7 @@ using F = float;
 using S = int;
 
 using Detector = PET2D::Barrel::SquareDetector<F>;
-using BarrelBuilder = PET2D::Barrel::BarrelBuilder<S>;
+using BarrelBuilder = PET2D::Barrel::BarrelBuilder<Detector, S>;
 
 TEST("3d/hybrid/sensitivity_mapper") {
   using Voxel = PET3D::Voxel<S>;

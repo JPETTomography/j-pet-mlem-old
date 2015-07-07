@@ -13,7 +13,7 @@ using F = float;
 using S = int;
 
 using Detector = PET2D::Barrel::SquareDetector<F>;
-using BarrelBuilder = PET2D::Barrel::BarrelBuilder<S>;
+using BarrelBuilder = PET2D::Barrel::BarrelBuilder<Detector, S>;
 using Scanner = BarrelBuilder::BigBarrel;
 
 TEST("util/grapher/detector") {
@@ -116,7 +116,7 @@ TEST("util/grapher/big_barrel/pixel") {
 
   for (int ix = 0; ix < n_columns; ++ix) {
     for (int iy = 0; iy < n_rows; ++iy) {
-      graphics.addPixel(grid, ix, iy);
+      graphics.add_pixel(grid, ix, iy);
     }
   }
 }
