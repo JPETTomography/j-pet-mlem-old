@@ -67,7 +67,6 @@ template <class RNGClass, typename FType> class Phantom {
         : AngularDistributionRegion<AngularDistribution>(intensity, angular),
           radius(radius),
           height(height),
-
           dist(radius, height) {}
 
     bool in(const Point& p) const {
@@ -121,53 +120,62 @@ template <class RNGClass, typename FType> class Phantom {
    public:
     using Matrix = PET3D::Matrix<F>;
 
-    RotatedRegion(Region* region, const Matrix& R)
-        : Region(region->intensity),
+    RotatedRegion(Region& region, const Matrix& R)
+        : Region(region.intensity),
           region(region),
           R(R),
           transposed_R(transpose(R)) {}
+    RotatedRegion(Region* region, const Matrix& R)
+        : Region(region->intensity),
+          region(*region),
+          R(R),
+          transposed_R(transpose(R)) {}
 
-    F volume() const { return region->volume(); }
+    F volume() const { return region.volume(); }
     Point random_point(RNG& rng) {
-      Point p = region->random_point(rng);
+      Point p = region.random_point(rng);
       return Point::from_vector(R * p.as_vector());
     }
 
     Vector random_direction(RNG& rng) {
-      Vector v = region->random_direction(rng);
+      Vector v = region.random_direction(rng);
       return R * v;
     }
 
     bool in(const Point& p) const {
-      return region->in(Point::from_vector(transposed_R * p.as_vector()));
+      return region.in(Point::from_vector(transposed_R * p.as_vector()));
     }
 
    private:
-    Region* region;
-    Matrix R;
-    Matrix transposed_R;
+    Region& region;
+    const Matrix R;
+    const Matrix transposed_R;
   };
 
   /// Region translated using given vector
   class TranslatedRegion : public Region {
    public:
-    TranslatedRegion(Region* region, const Vector displacement)
-        : Region(region->intensity),
+    TranslatedRegion(Region& region, const Vector displacement)
+        : Region(region.intensity),
           region(region),
           displacement(displacement) {}
+    TranslatedRegion(Region* region, const Vector displacement)
+        : Region(region->intensity),
+          region(*region),
+          displacement(displacement) {}
 
-    F volume() const { return region->volume(); }
+    F volume() const { return region.volume(); }
     Point random_point(RNG& rng) {
-      return region->random_point(rng) + displacement;
+      return region.random_point(rng) + displacement;
     }
 
-    Vector random_direction(RNG& rng) { return region->random_direction(rng); }
+    Vector random_direction(RNG& rng) { return region.random_direction(rng); }
 
-    bool in(const Point& p) const { return region->in(p - displacement); }
+    bool in(const Point& p) const { return region.in(p - displacement); }
 
    private:
-    Region* region;
-    Vector displacement;
+    Region& region;
+    const Vector displacement;
   };
 
   /// Point region
