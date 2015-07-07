@@ -3,11 +3,11 @@
 #ifdef HAVE_BOOST
 
 #ifdef __GNUC__
-#if __GNUC__ > 3 && __GNUC_MINOR__ > 6
+#if __GNUC__ >= 4 && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wunused-local-typedef"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 #endif
 #ifdef __clang__
@@ -15,6 +15,7 @@
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
 #pragma clang diagnostic ignored "-Wunused-parameter"
 #pragma clang diagnostic ignored "-Wunused-local-typedef"
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 #include <boost/geometry.hpp>
@@ -25,7 +26,7 @@
 #include <boost/foreach.hpp>
 
 #ifdef __GNUC__
-#if __GNUC__ > 3 && __GNUC_MINOR__ > 6
+#if __GNUC__ >= 4 && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
 #endif
