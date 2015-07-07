@@ -58,43 +58,44 @@
 #include "cuda/matrix.h"
 #endif
 
-using namespace PET2D;
-using namespace PET2D::Barrel;
-
 using F = float;
 using S = short;
 using Hit = int;
 
-template <typename DetectorType>
-using Scanner = GenericScanner<DetectorType, MAX_DETECTORS, S>;
+using Point = PET2D::Point<F>;
+using Pixel = PET2D::Pixel<S>;
+using LOR = PET2D::Barrel::LOR<S>;
+
+template <class DetectorClass>
+using Scanner = PET2D::Barrel::GenericScanner<DetectorClass, MAX_DETECTORS, S>;
 
 // all available detector shapes
-using SquareScanner = Scanner<SquareDetector<F>>;
-using CircleScanner = Scanner<CircleDetector<F>>;
-using TriangleScanner = Scanner<TriangleDetector<F>>;
-using HexagonalScanner = Scanner<PolygonalDetector<6, F>>;
+using SquareScanner = Scanner<PET2D::Barrel::SquareDetector<F>>;
+using CircleScanner = Scanner<PET2D::Barrel::CircleDetector<F>>;
+using TriangleScanner = Scanner<PET2D::Barrel::TriangleDetector<F>>;
+using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
 
-template <typename Scanner, typename Model>
-void print_parameters(cmdline::parser& cl, const Scanner& scanner);
+template <class ScannerClass, class ModelClass>
+void print_parameters(cmdline::parser& cl, const ScannerClass& scanner);
 
-using SparseMatrixType = PET2D::Barrel::SparseMatrix<Pixel<S>, LOR<S>, S, Hit>;
-using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel<S>, LOR<S>, S, Hit>;
+using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, S, Hit>;
+using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, S, Hit>;
 
-template <typename Detector, typename Model>
-static SparseMatrixType run(cmdline::parser& cl,
-                            Detector& scanner,
-                            Model& model);
+template <class DetectorClass, class ModelClass>
+static SparseMatrix run(cmdline::parser& cl,
+                        DetectorClass& scanner,
+                        ModelClass& model);
 
-template <typename Scanner>
+template <class ScannerClass>
 void post_process(cmdline::parser& cl,
-                  Scanner& scanner,
-                  SparseMatrixType& sparse_matrix);
+                  ScannerClass& scanner,
+                  SparseMatrix& sparse_matrix);
 
 int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    add_matrix_options(cl);
+    PET2D::Barrel::add_matrix_options(cl);
     cl.try_parse(argc, argv);
 
 #if _OPENMP
@@ -119,7 +120,7 @@ int main(int argc, char* argv[]) {
 
     cmdline::load_accompanying_config(cl, false);
     if (cl.exist("big")) {
-      set_big_barrel_options(cl);
+      PET2D::Barrel::set_big_barrel_options(cl);
     }
 
     const auto& shape = cl.get<std::string>("shape");
@@ -128,17 +129,19 @@ int main(int argc, char* argv[]) {
 
 // these are wrappers running actual simulation
 #if HAVE_CUDA
-#define _RUN(cl, scanner, model) \
-  cl.exist("gpu") ? GPU::Matrix::run(cl) : run(cl, scanner, model)
+#define _RUN(cl, scanner, model)                        \
+  cl.exist("gpu") ? PET2D::Barrel::GPU::Matrix::run(cl) \
+                  : run(cl, scanner, model)
 #else
 #define _RUN(cl, scanner, model) run(cl, scanner, model)
 #endif
-#define RUN(detector_type, model_type, ...)                                    \
-  detector_type scanner = ScannerBuilder<detector_type>::build_multiple_rings( \
-      PET2D_BARREL_SCANNER_CL(cl, detector_type::F));                          \
-  model_type model __VA_ARGS__;                                                \
-  print_parameters<detector_type, model_type>(cl, scanner);                    \
-  auto sparse_matrix = _RUN(cl, scanner, model);                               \
+#define RUN(detector_type, model_type, ...)                               \
+  detector_type scanner =                                                 \
+      PET2D::Barrel::ScannerBuilder<detector_type>::build_multiple_rings( \
+          PET2D_BARREL_SCANNER_CL(cl, detector_type::F));                 \
+  model_type model __VA_ARGS__;                                           \
+  print_parameters<detector_type, model_type>(cl, scanner);               \
+  auto sparse_matrix = _RUN(cl, scanner, model);                          \
   post_process(cl, scanner, sparse_matrix)
 
     // run simmulation on given detector model & shape
@@ -185,8 +188,8 @@ int main(int argc, char* argv[]) {
   return 1;
 }
 
-template <typename Scanner, typename Model>
-void print_parameters(cmdline::parser& cl, const Scanner& scanner) {
+template <class ScannerClass, class ModelClass>
+void print_parameters(cmdline::parser& cl, const ScannerClass& scanner) {
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& n_emissions = cl.get<int>("n-emissions");
   auto& tof_step = cl.get<double>("tof-step");
@@ -213,10 +216,10 @@ void print_parameters(cmdline::parser& cl, const Scanner& scanner) {
   }
 }
 
-template <typename Detector, typename Model>
-static SparseMatrixType run(cmdline::parser& cl,
-                            Detector& scanner,
-                            Model& model) {
+template <class DetectorClass, class ModelClass>
+static SparseMatrix run(cmdline::parser& cl,
+                        DetectorClass& scanner,
+                        ModelClass& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
@@ -291,7 +294,7 @@ static SparseMatrixType run(cmdline::parser& cl,
   clock_gettime(CLOCK_REALTIME, &start);
 #endif
 
-  MonteCarlo<Detector, ComputeMatrix> monte_carlo(
+  PET2D::Barrel::MonteCarlo<DetectorClass, ComputeMatrix> monte_carlo(
       scanner, matrix, s_pixel, tof_step, m_pixel);
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
   monte_carlo(gen, model, n_emissions, progress);
@@ -317,7 +320,7 @@ static SparseMatrixType run(cmdline::parser& cl,
 template <typename Scanner>
 void post_process(cmdline::parser& cl,
                   Scanner& scanner,
-                  SparseMatrixType& sparse_matrix) {
+                  SparseMatrix& sparse_matrix) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& s_pixel = cl.get<double>("s-pixel");
@@ -364,7 +367,7 @@ void post_process(cmdline::parser& cl,
 
   // visual debugging output
   if (cl.exist("png")) {
-    LOR<S> lor(0, 0);
+    LOR lor(0, 0);
     lor.first = cl.get<int>("from");
     if (cl.exist("to")) {
       lor.second = cl.get<int>("to");

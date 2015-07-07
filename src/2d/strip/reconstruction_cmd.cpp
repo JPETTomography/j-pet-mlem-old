@@ -59,8 +59,6 @@ void print_statistics(std::ostream& out,
                       int n_blocks,
                       std::string prefix = std::string());
 
-using namespace std;
-
 int main(int argc, char* argv[]) {
 
 #if SSE_FLUSH
