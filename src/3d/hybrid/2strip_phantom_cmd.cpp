@@ -27,7 +27,7 @@ using RNG = std::mt19937;
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, short, 8>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
-using Phantom = PET3D::Phantom<F, S, RNG>;
+using Phantom = PET3D::Phantom<RNG, F>;
 using Allways = Common::AlwaysAccept<F>;
 using Scintillator = Common::ScintillatorAccept<F>;
 using Point = PET3D::Point<F>;
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
 
   using RNG = std::mt19937;
   RNG rng;
-  std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
+  Phantom::RegionPtrList regions;
 
   if (cl.exist("phantoms")) {
     std::ifstream in(cl.get<std::string>("phantoms"));
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
 
     for (const auto& j_phantom : j_phantoms) {
       auto region =
-          PET3D::create_phantom_region_from_json<float, RNG>(j_phantom);
+          PET3D::create_phantom_region_from_json<RNG, float>(j_phantom);
 #if DEBUG
       std::cerr << "Adding region\n";
 #endif
@@ -114,24 +114,23 @@ int main(int argc, char* argv[]) {
 
   } else {
     float angle = std::atan2(0.0025f, 0.190);
-    auto cylinder = new PET3D::CylinderRegion<float, RNG>(
+    auto cylinder = new Phantom::CylinderRegion<>(
         cl.get<float>("radius"),
         cl.get<float>("height"),
         1,
         PET3D::SphericalDistribution<float>(-angle, angle));
     PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
-    auto rotated_cylinder =
-        new PET3D::RotatedPhantomRegion<float, RNG>(cylinder, R);
+    auto rotated_cylinder = new Phantom::RotatedRegion(cylinder, R);
     Vector translation(
         cl.get<float>("x"), cl.get<float>("y"), cl.get<float>("z"));
 
-    auto translated_cylinder = new PET3D::TranslatedPhantomRegion<float, RNG>(
-        rotated_cylinder, translation);
+    auto translated_cylinder =
+        new Phantom::TranslatedRegion(rotated_cylinder, translation);
     regions.push_back(translated_cylinder);
   }
 
-  PET3D::Phantom<float, short, RNG> phantom(regions);
+  Phantom phantom(regions);
 
   Scintillator scintillator(0.100);
   Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);

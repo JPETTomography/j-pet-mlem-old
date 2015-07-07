@@ -7,14 +7,16 @@
 #include "matrix.h"
 #include "phantom.h"
 
-TEST("3d/geometry/phantom/cylinder_region") {
-  using F = float;
-  using Region =
-      PET3D::CylinderRegion<F, std::mt19937, PET3D::SphericalDistribution<F>>;
-  using Point = Region::Point;
+using F = float;
+using RNG = std::mt19937;
+using Phantom = PET3D::Phantom<RNG, F>;
+using Point = Phantom::Point;
+using AngularDistribution = PET3D::SphericalDistribution<F>;
 
-  Region region(
-      2.0f, 3.0f, 1.0f, PET3D::SphericalDistribution<F>(-M_PI / 3, M_PI / 3));
+TEST("3d/geometry/phantom/cylinder_region") {
+  using Region = Phantom::CylinderRegion<AngularDistribution>;
+
+  Region region(2.0f, 3.0f, 1.0f, AngularDistribution(-M_PI / 3, M_PI / 3));
 
   REQUIRE(region.volume() == Approx(4.0 * M_PI * 3.0).epsilon(1e-7));
   REQUIRE(region.intensity == 1.0_e7);
@@ -38,18 +40,16 @@ TEST("3d/geometry/phantom/cylinder_region") {
 }
 
 TEST("3d/geometry/phantom/cylinder") {
-  using RNG = std::mt19937;
   RNG rng;
-  std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
+  Phantom::RegionPtrList regions;
   float angle = std::atan2(0.0025f, 0.400f);
-  auto cylinder = new PET3D::CylinderRegion<float, RNG>(
-      0.0015, 0.001, 1, PET3D::SphericalDistribution<float>(-angle, angle));
+  auto cylinder = new Phantom::CylinderRegion<AngularDistribution>(
+      0.0015, 0.001, 1, AngularDistribution(-angle, angle));
   PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
-  auto rotated_cylinder =
-      new PET3D::RotatedPhantomRegion<float, RNG>(cylinder, R);
+  auto rotated_cylinder = new Phantom::RotatedRegion(cylinder, R);
   regions.push_back(rotated_cylinder);
-  PET3D::Phantom<float, short, RNG> phantom(regions);
+  Phantom phantom(regions);
 
   std::ofstream out("test_output/cylinder.txt");
 
@@ -66,13 +66,13 @@ TEST("3d/geometry/phantom/cylinder") {
 TEST("3d/geometry/phantom/ellipsoid") {
   using RNG = std::mt19937;
   RNG rng;
-  std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
+  Phantom::RegionPtrList regions;
   float angle = std::atan2(0.0025f, 0.400f);
-  auto ellipsoid = new PET3D::EllipsoidRegion<float, RNG>(
-      0.005, 0.01, 0.02, 1, PET3D::SphericalDistribution<float>(-angle, angle));
+  auto ellipsoid = new Phantom::EllipsoidRegion<AngularDistribution>(
+      0.005, 0.01, 0.02, 1, AngularDistribution(-angle, angle));
 
   regions.push_back(ellipsoid);
-  PET3D::Phantom<float, short, RNG> phantom(regions);
+  Phantom phantom(regions);
 
   std::ofstream out("test_output/ellipsoid.txt");
 

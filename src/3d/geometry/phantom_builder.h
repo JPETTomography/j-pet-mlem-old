@@ -54,8 +54,18 @@ SphericalDistribution<float> create_angular_distribution_from_json<
   return SphericalDistribution<float>(theta_min, theta_max);
 }
 
-template <typename FType, class RNG>
-PhantomRegion<FType, RNG>* create_phantom_region_from_json(const json& j) {
+template <class RNG, typename FType>
+typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
+    const json& j) {
+  using F = FType;
+  using AngularDistribution = SphericalDistribution<F>;
+  using Phantom = PET3D::Phantom<RNG, F>;
+  using CylinderRegion =
+      typename Phantom::template CylinderRegion<AngularDistribution>;
+  using EllipsoidRegion =
+      typename Phantom::template EllipsoidRegion<AngularDistribution>;
+  using RotatedRegion = typename Phantom::RotatedRegion;
+  using TranslatedRegion = typename Phantom::TranslatedRegion;
 
   if (!j.count("type")) {
     throw("phantom region does not have type member");
@@ -64,36 +74,33 @@ PhantomRegion<FType, RNG>* create_phantom_region_from_json(const json& j) {
   std::string type = j["type"];
 
   if (type == "cylinder") {
-    FType radius = j["radius"];
-    FType height = j["height"];
-    FType intensity = j["intensity"];
+    F radius = j["radius"];
+    F height = j["height"];
+    F intensity = j["intensity"];
 
     const json& j_angular = j["angular"];
     std::string angular_type = j_angular["type"];
     if (angular_type == "spherical") {
-      SphericalDistribution<FType> angular =
-          create_angular_distribution_from_json<SphericalDistribution<FType>>(
-              j_angular);
-      return new CylinderRegion<FType, RNG>(radius, height, intensity, angular);
+      AngularDistribution angular =
+          create_angular_distribution_from_json<AngularDistribution>(j_angular);
+      return new CylinderRegion(radius, height, intensity, angular);
     } else {
       std::cerr << "unsuported angular distribution\n";
       return nullptr;
     }
 
   } else if (type == "ellipsoid") {
-    FType rx = j["rx"];
-    FType ry = j["ry"];
-    FType rz = j["rz"];
-    FType intensity =
-        j.count("intensity") ? j["intensity"].get<FType>() : FType(1);
+    F rx = j["rx"];
+    F ry = j["ry"];
+    F rz = j["rz"];
+    F intensity = j.count("intensity") ? j["intensity"].get<F>() : F(1);
 
     const json& j_angular = j["angular"];
     std::string angular_type = j_angular["type"];
     if (angular_type == "spherical") {
-      SphericalDistribution<FType> angular =
-          create_angular_distribution_from_json<SphericalDistribution<FType>>(
-              j_angular);
-      return new EllipsoidRegion<FType, RNG>(rx, ry, rz, intensity, angular);
+      AngularDistribution angular =
+          create_angular_distribution_from_json<AngularDistribution>(j_angular);
+      return new EllipsoidRegion(rx, ry, rz, intensity, angular);
     } else {
       std::cerr << "unsuported angular distribution\n";
       return nullptr;
@@ -103,23 +110,23 @@ PhantomRegion<FType, RNG>* create_phantom_region_from_json(const json& j) {
     throw("not implemented yet");
 
   } else if (type == "rotated") {
-    auto phantom = create_phantom_region_from_json<FType, RNG>(j["phantom"]);
+    auto phantom = create_phantom_region_from_json<RNG, F>(j["phantom"]);
     const json& j_R = j["R"];
-    PET3D::Matrix<FType> R;
+    PET3D::Matrix<F> R;
     int i = 0;
     for (const auto& el : j_R) {
       R(i++) = el;
     }
-    return new RotatedPhantomRegion<FType, RNG>(phantom, R);
+    return new RotatedRegion(phantom, R);
 
   } else if (type == "translated") {
-    auto phantom = create_phantom_region_from_json<FType, RNG>(j["phantom"]);
+    auto phantom = create_phantom_region_from_json<RNG, F>(j["phantom"]);
     const json& displacement_val = j["displacement"];
-    PET3D::Vector<FType> displacement;
+    PET3D::Vector<F> displacement;
     displacement.x = displacement_val[0];
     displacement.y = displacement_val[1];
     displacement.z = displacement_val[2];
-    return new TranslatedPhantomRegion<FType, RNG>(phantom, displacement);
+    return new TranslatedRegion(phantom, displacement);
 
   } else {
     throw("unknown region type: " + type);

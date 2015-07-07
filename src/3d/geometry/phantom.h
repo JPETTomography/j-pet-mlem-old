@@ -7,22 +7,185 @@
 #define omp_get_thread_num() 0
 #endif
 
-#include "3d/geometry/phantom_region.h"
+#include "event.h"
+#include "event_generator.h"
+#include "point.h"
+#include "vector.h"
+#include "matrix.h"
 
 namespace PET3D {
 
-/*   Phantom -------------------------------------------------------------
- */
-
-template <typename FType, typename SType, class RNGType> class Phantom {
+template <class RNGClass, typename FType> class Phantom {
  public:
+  using RNG = RNGClass;
   using F = FType;
-  using S = SType;
   using Event = PET3D::Event<F>;
-  using RNG = RNGType;
+  using Point = PET3D::Point<F>;
+  using Vector = PET3D::Vector<F>;
+
+  struct Region {
+    Region(F intensity) : intensity(intensity) {}
+    virtual bool in(const Point&) const = 0;
+    virtual Point random_point(RNG&) = 0;
+    virtual Vector random_direction(RNG& rng) = 0;
+
+    Event random_event(RNG& rng) {
+      return Event(this->random_point(rng), this->random_direction(rng));
+    }
+
+    Point operator()(RNG& rng) { return random_event(rng); }
+
+    virtual F volume() const = 0;
+    F weight() const { return intensity * volume(); }
+    const F intensity;
+  };
+
+  template <typename AngularDistribution> class AbstractRegion : public Region {
+   public:
+    AbstractRegion(F intensity, AngularDistribution angular)
+        : Region(intensity), angular_distribution(angular) {}
+    Vector random_direction(RNG& rng) { return angular_distribution(rng); }
+
+   protected:
+    AngularDistribution angular_distribution;
+  };
+
+  template <typename AngularDistribution = PET3D::SphericalDistribution<FType>>
+  class CylinderRegion : public AbstractRegion<AngularDistribution> {
+   public:
+    CylinderRegion(F radius,
+                   F height,
+                   F intensity,
+                   AngularDistribution angular = AngularDistribution())
+        : AbstractRegion<AngularDistribution>(intensity, angular),
+          radius(radius),
+          height(height),
+
+          dist(radius, height) {}
+
+    bool in(const Point& p) const {
+      return ((p.x * p.x + p.y * p.y < radius * radius) &&
+              (p.z <= height / 2) && (p.z >= -height / 2));
+    }
+    Point random_point(RNG& rng) { return dist(rng); }
+    F volume() const { return M_PI * radius * radius * height; }
+
+    const F radius;
+    const F height;
+
+   private:
+    PET3D::CylinderPointDistribution<F> dist;
+  };
+
+  template <typename AngularDistribution = PET3D::SphericalDistribution<FType>>
+  class EllipsoidRegion : public AbstractRegion<AngularDistribution> {
+   public:
+    EllipsoidRegion(F rx,
+                    F ry,
+                    F rz,
+                    F intensity,
+                    AngularDistribution angular = AngularDistribution())
+        : AbstractRegion<AngularDistribution>(intensity, angular),
+          rx(rx),
+          ry(ry),
+          rz(rz),
+          dist(rx, ry, rz) {}
+
+    bool in(const Point& p) const {
+      F x = p.x / rx;
+      F y = p.y / ry;
+      F z = p.z / rz;
+      return (x * x + y * y + z * z <= 1.0);
+    }
+
+    Point random_point(RNG& rng) { return dist(rng); }
+    F volume() const { return 4.0 / 3.0 * M_PI * rx * ry * rz; }
+
+    const F rx, ry, rz;
+
+   private:
+    PET3D::EllipsoidPointDistribution<F> dist;
+  };
+
+  class RotatedRegion : public Region {
+   public:
+    using Matrix = PET3D::Matrix<F>;
+
+    RotatedRegion(Region* region, const Matrix& R)
+        : Region(region->intensity),
+          region(region),
+          R(R),
+          transposed_R(transpose(R)) {}
+
+    F volume() const { return region->volume(); }
+    Point random_point(RNG& rng) {
+      Point p = region->random_point(rng);
+      return Point::from_vector(R * p.as_vector());
+    }
+
+    Vector random_direction(RNG& rng) {
+      Vector v = region->random_direction(rng);
+      return R * v;
+    }
+
+    bool in(const Point& p) const {
+      return region->in(Point::from_vector(transposed_R * p.as_vector()));
+    }
+
+   private:
+    Region* region;
+    Matrix R;
+    Matrix transposed_R;
+  };
+
+  class TranslatedRegion : public Region {
+   public:
+    TranslatedRegion(Region* region, const Vector displacement)
+        : Region(region->intensity),
+          region(region),
+          displacement(displacement) {}
+
+    F volume() const { return region->volume(); }
+    Point random_point(RNG& rng) {
+      return region->random_point(rng) + displacement;
+    }
+
+    Vector random_direction(RNG& rng) { return region->random_direction(rng); }
+
+    bool in(const Point& p) const { return region->in(p - displacement); }
+
+   private:
+    Region* region;
+    Vector displacement;
+  };
+
+  template <typename AngularDistribution = PET3D::SphericalDistribution<FType>>
+  class PointRegion : public AbstractRegion<AngularDistribution> {
+   public:
+    using F = FType;
+    using Point = PET3D::Point<F>;
+    using Event = PET3D::Event<F>;
+    using Vector = PET3D::Vector<F>;
+    PointRegion(F intensity, AngularDistribution angular, const Point& origin)
+        : AbstractRegion<AngularDistribution>(intensity, angular),
+          origin(origin) {}
+
+    Point random_point(RNG& rng) {
+      (void)rng;  // unused
+      return origin;
+    }
+
+    bool in(const Point& p) const { return p == origin; }
+
+    F volume() const { return F(1); }
+
+    const Point origin;
+  };
+
+  using RegionPtrList = std::vector<Region*>;
 
  private:
-  std::vector<PhantomRegion<F, RNG>*> region_list;
+  RegionPtrList region_list;
   std::vector<F> CDF;
 
   std::vector<Event> events;
@@ -33,7 +196,7 @@ template <typename FType, typename SType, class RNGType> class Phantom {
   std::uniform_real_distribution<F> uniform_angle;
 
  public:
-  Phantom(const std::vector<PhantomRegion<F, RNG>*>& el)
+  Phantom(const RegionPtrList& el)
       : region_list(el), CDF(el.size(), 0), uniform_angle(-1, 1) {
     CDF[0] = region_list[0]->weight();
 
@@ -61,10 +224,10 @@ template <typename FType, typename SType, class RNGType> class Phantom {
     return i;
   }
 
-  template <class RNG> Point<F> gen_point(RNG& rng) {
+  Point gen_point(RNG& rng) {
   again:
     size_t i_region = choose_region(rng);
-    Point<F> p = region_list[i_region]->random_point();
+    Point p = region_list[i_region]->random_point();
     for (size_t j = 0; j < i_region; j++) {
       if (region_list[j].shape.contains(p))
         goto again;
@@ -72,10 +235,10 @@ template <typename FType, typename SType, class RNGType> class Phantom {
     return p;
   }
 
-  template <class RNG> Event gen_event(RNG& rng) {
+  Event gen_event(RNG& rng) {
   again:
     size_t i_region = choose_region(rng);
-    Point<F> p = region_list[i_region]->random_point(rng);
+    Point p = region_list[i_region]->random_point(rng);
     for (size_t j = 0; j < i_region; j++) {
       if (region_list[j]->in(p))
         goto again;

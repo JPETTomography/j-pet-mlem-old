@@ -39,6 +39,7 @@
 
 #include "cmdline.h"
 #include "util/cmdline_types.h"
+#include "util/random.h"
 #include "options.h"
 
 #include "2d/geometry/phantom.h"
@@ -55,11 +56,10 @@ using F = float;
 using S = short;
 using Hit = int;
 
+using RNG = util::random::tausworthe;
 using Scanner = PET2D::Strip::Scanner<F, S>;
-using Phantom = PET2D::Phantom<F, S>;
+using Phantom = PET2D::Phantom<RNG, F>;
 using Ellipse = PET2D::Ellipse<F>;
-using RNG = typename Phantom::RNG;
-using PhantomRegion = PET2D::PhantomRegion<F, RNG>;
 
 int main(int argc, char* argv[]) {
 

@@ -18,7 +18,7 @@ using RNG = std::mt19937;
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, short, 8>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
-using Phantom = PET3D::Phantom<F, S, RNG>;
+using Phantom = PET3D::Phantom<RNG, F>;
 using Allways = Common::AlwaysAccept<F>;
 using Scintillator = Common::ScintillatorAccept<F>;
 using Point = PET3D::Point<F>;
@@ -42,17 +42,17 @@ TEST("common/phantom_monte_carlo/point_source") {
 
   using RNG = std::mt19937;
   RNG rng;
-  std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
+  Phantom::RegionPtrList regions;
 
   auto emitter =
-      new PET3D::PointRegion<float, RNG, PET3D::SingleDirectionDistribution<F>>(
+      new Phantom::PointRegion<PET3D::SingleDirectionDistribution<F>>(
           1.0f,
-          PET3D::SingleDirectionDistribution<float>(
+          PET3D::SingleDirectionDistribution<F>(
               Vector::from_euler_angles(0, 2 * M_PI / 6)),
           Point(0, 0, 0));
 
   regions.push_back(emitter);
-  PET3D::Phantom<float, short, RNG> phantom(regions);
+  Phantom phantom(regions);
 
   Scintillator scintillator(0.100);
   Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
@@ -81,16 +81,15 @@ TEST("common/phantom_monte_carlo/phantom_region") {
 
   using RNG = std::mt19937;
   RNG rng;
-  std::vector<PET3D::PhantomRegion<float, RNG>*> regions;
-  float angle = std::atan2(0.0025f, 0.400f);
-  auto cylinder = new PET3D::CylinderRegion<float, RNG>(
-      0.0015, 0.001, 1, PET3D::SphericalDistribution<float>(-angle, angle));
+  Phantom::RegionPtrList regions;
+  F angle = std::atan2(0.0025f, 0.400f);
+  auto cylinder = new Phantom::CylinderRegion<>(
+      0.0015, 0.001, 1, PET3D::SphericalDistribution<F>(-angle, angle));
   PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
-  auto rotated_cylinder =
-      new PET3D::RotatedPhantomRegion<float, RNG>(cylinder, R);
+  auto rotated_cylinder = new Phantom::RotatedRegion(cylinder, R);
   regions.push_back(rotated_cylinder);
-  PET3D::Phantom<float, short, RNG> phantom(regions);
+  Phantom phantom(regions);
 
   Scintillator scintillator(0.100);
   Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);

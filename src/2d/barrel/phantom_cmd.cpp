@@ -47,6 +47,7 @@
 #include "util/png_writer.h"
 #include "util/progress.h"
 #include "util/json_ostream.h"
+#include "util/random.h"
 #include "options.h"
 
 #include "2d/geometry/phantom.h"
@@ -61,7 +62,7 @@ using F = float;
 using S = short;
 using Hit = int;
 
-using RNG = std::mt19937;
+using RNG = util::random::tausworthe;
 
 using Pixel = PET2D::Pixel<S>;
 using Point = PET2D::Point<F>;
@@ -79,7 +80,7 @@ using TriangleScanner = Scanner<PET2D::Barrel::TriangleDetector<F>>;
 using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
 
 using Ellipse = PET2D::Ellipse<F>;
-using PhantomRegion = PET2D::PhantomRegion<F, RNG>;
+using Phantom = PET2D::Phantom<RNG, F>;
 
 template <class DetectorClass, class PhantomClass, class ModelClass>
 void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model);
@@ -108,7 +109,7 @@ int main(int argc, char* argv[]) {
     const auto& model_name = cl.get<std::string>("model");
     const auto& length_scale = cl.get<double>("base-length");
 
-    PET2D::Phantom<F, S> phantom;
+    Phantom phantom;
     // Read phantom
     for (auto& fn : cl.rest()) {
       std::ifstream infile(fn);

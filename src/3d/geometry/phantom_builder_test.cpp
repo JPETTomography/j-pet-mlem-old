@@ -119,7 +119,10 @@ TEST("3d/geometry/phantom_builder/angular_distribution/spherical",
 }
 
 TEST("3d/geometry/phantom_builder/phantom") {
-  using RNGType = std::mt19937;
+  using RNG = std::mt19937;
+  using Phantom = PET3D::Phantom<RNG, float>;
+  using Point = Phantom::Point;
+
   json j = json::parse(test_phantoms_json);
 
   const json& j_phantoms = j["phantoms"];
@@ -127,8 +130,8 @@ TEST("3d/geometry/phantom_builder/phantom") {
 
   {
     const json& j_phantom = j_phantoms[0];
-    auto phantom = static_cast<PET3D::CylinderRegion<float, RNGType>*>(
-        PET3D::create_phantom_region_from_json<float, RNGType>(j_phantom));
+    auto phantom = static_cast<Phantom::CylinderRegion<>*>(
+        PET3D::create_phantom_region_from_json<RNG, float>(j_phantom));
 
     REQUIRE(phantom->intensity == 1.0_e7);
     REQUIRE(phantom->radius == 0.005_e7);
@@ -138,18 +141,18 @@ TEST("3d/geometry/phantom_builder/phantom") {
   {
     const json& j_phantom = j_phantoms[1];
     auto phantom =
-        PET3D::create_phantom_region_from_json<float, RNGType>(j_phantom);
+        PET3D::create_phantom_region_from_json<RNG, float>(j_phantom);
 
-    REQUIRE(phantom->in(PET3D::Point<float>(-0.05, 0.007, 0.03)));
-    REQUIRE(!phantom->in(PET3D::Point<float>(-0.05, 0.011, 0.03)));
+    REQUIRE(phantom->in(Point(-0.05, 0.007, 0.03)));
+    REQUIRE(!phantom->in(Point(-0.05, 0.011, 0.03)));
   }
 
   {
     const json& j_phantom = j_phantoms[2];
     auto phantom =
-        PET3D::create_phantom_region_from_json<float, RNGType>(j_phantom);
+        PET3D::create_phantom_region_from_json<RNG, float>(j_phantom);
 
-    REQUIRE(phantom->in(PET3D::Point<float>(0.05, 0.0, -0.10)));
-    REQUIRE(!phantom->in(PET3D::Point<float>(0.0, .16, 0.0)));
+    REQUIRE(phantom->in(Point(0.05, 0.0, -0.10)));
+    REQUIRE(!phantom->in(Point(0.0, .16, 0.0)));
   }
 }
