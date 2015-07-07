@@ -22,7 +22,7 @@ namespace PET2D {
 /// Two-dimensional PET barrel
 namespace Barrel {
 
-template <typename D> class ScannerBuilder;
+template <class ScannerClass> class ScannerBuilder;
 
 template <class DetectorClass, std::size_t MaxDetetectorsSize, typename SType>
 class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
@@ -221,7 +221,7 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
 
   _ F fov_radius() const { return fov_radius_; }
 
-  template <typename D> friend class ScannerBuilder;
+  template <class ScannerClass> friend class ScannerBuilder;
 
   _ void set_tof_step(F tof_step_size) { tof_step_size_ = tof_step_size; }
   _ F tof_step_size() const { return tof_step_size_; }
