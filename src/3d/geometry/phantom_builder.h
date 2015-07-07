@@ -54,7 +54,7 @@ SphericalDistribution<float> create_angular_distribution_from_json<
   return SphericalDistribution<float>(theta_min, theta_max);
 }
 
-template <typename FType, typename RNG>
+template <typename FType, class RNG>
 PhantomRegion<FType, RNG>* create_phantom_region_from_json(const json& j) {
 
   if (!j.count("type")) {

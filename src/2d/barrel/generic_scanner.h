@@ -79,9 +79,9 @@ class GenericScanner
 
   /// \brief Tries to detect given event.
   /// \return number of coincidences (detector hits)
-  template <class RandomGenerator, class AcceptanceModel>
+  template <class RNG, class AcceptanceModel>
   _ short exact_detect(
-      RandomGenerator& gen,    ///< random number generator
+      RNG& rng,                ///< random number generator
       AcceptanceModel& model,  ///< acceptance model
       const Event& e,          ///< event to be detected
       FullResponse& response   ///< scanner response (LOR+length)
@@ -91,8 +91,8 @@ class GenericScanner
     S detector1, detector2;
     F depth1, depth2;
     Point d1_p1, d1_p2, d2_p1, d2_p2;
-    if (!check_for_hits(gen, model, left, e, detector1, depth1, d1_p1, d1_p2) ||
-        !check_for_hits(gen, model, right, e, detector2, depth2, d2_p1, d2_p2))
+    if (!check_for_hits(rng, model, left, e, detector1, depth1, d1_p1, d1_p2) ||
+        !check_for_hits(rng, model, right, e, detector2, depth2, d2_p1, d2_p2))
       return 0;
 
     response.lor = LOR(detector1, detector2);
@@ -110,13 +110,13 @@ class GenericScanner
     return 2;
   }
 
-  template <class RandomGenerator, class AcceptanceModel>
-  _ short detect(RandomGenerator& gen,    ///< random number generator
+  template <class RNG, class AcceptanceModel>
+  _ short detect(RNG& rng,                ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
                  const Event& e,          ///< event to be detected
                  FullResponse& response   ///< scanner response (LOR+length)
                  ) const {
-    return exact_detect(gen, model, e, response);
+    return exact_detect(rng, model, e, response);
   }
 
   void quantize_response(Response& response) const {
@@ -136,7 +136,7 @@ class GenericScanner
   }
 
 #if !__CUDACC__
-  template <typename RNG>
+  template <class RNG>
   Response response_w_error(RNG& rng, const FullResponse& response) const {
     std::normal_distribution<F> dist_dl(0, sigma_dl_);
     Response response_w_error_(response);
@@ -197,13 +197,13 @@ class GenericScanner
  private:
   F sigma_dl_;
 
-  template <class RandomGenerator, class AcceptanceModel>
-  _ bool did_deposit(RandomGenerator& gen,
+  template <class RNG, class AcceptanceModel>
+  _ bool did_deposit(RNG& rng,
                      AcceptanceModel& model,
                      const Point& p1,
                      const Point& p2,
                      F& depth) const {
-    depth = model.deposition_depth(gen);
+    depth = model.deposition_depth(rng);
 #if DEBUG
     std::cerr << "dep " << depth << " " << (p2 - p1).length() << std::endl;
 #endif
@@ -213,8 +213,8 @@ class GenericScanner
     return false;
   }
 
-  template <class RandomGenerator, class AcceptanceModel>
-  _ bool check_for_hits(RandomGenerator& gen,
+  template <class RNG, class AcceptanceModel>
+  _ bool check_for_hits(RNG& rng,
                         AcceptanceModel& model,
                         const Indices& indices,
                         Event e,
@@ -225,7 +225,7 @@ class GenericScanner
 
     for (auto i : indices) {
       if (did_intersect(e, i, p1, p2)) {
-        if (did_deposit(gen, model, p1, p2, depth)) {
+        if (did_deposit(rng, model, p1, p2, depth)) {
           detector = i;
           return true;
         }

@@ -109,8 +109,8 @@ template <class Scanner2DClass> class Scanner {
     return false;
   }
 
-  template <class RandomGenerator, class AcceptanceModel>
-  _ short exact_detect(RandomGenerator& gen,    ///< random number generator
+  template <class RNG, class AcceptanceModel>
+  _ short exact_detect(RNG& rng,                ///< random number generator
                        AcceptanceModel& model,  ///< acceptance model
                        const Event& e,          ///< event to be detected
                        FullResponse& response   ///< response (LOR+zu+zd+dl)
@@ -129,7 +129,7 @@ template <class Scanner2DClass> class Scanner {
     Point d1_p1, d1_p2, d2_p1, d2_p2;
     Point d1_deposit, d2_deposit;
 
-    if (!check_for_hits(gen,
+    if (!check_for_hits(rng,
                         model,
                         left,
                         e,
@@ -139,7 +139,7 @@ template <class Scanner2DClass> class Scanner {
                         d1_p1,
                         d1_p2,
                         d1_deposit) ||
-        !check_for_hits(gen,
+        !check_for_hits(rng,
                         model,
                         right,
                         e,
@@ -193,7 +193,7 @@ template <class Scanner2DClass> class Scanner {
     return response;
   }
 
-  template <typename RNG>
+  template <class RNG>
   Response response_w_error(RNG& rng, const FullResponse& full_response) const {
     std::normal_distribution<F> dist_z(0, sigma_z_);
     std::normal_distribution<F> dist_dl(0, sigma_dl_);
@@ -206,15 +206,15 @@ template <class Scanner2DClass> class Scanner {
     return response;
   }
 
-  template <class RandomGenerator, class AcceptanceModel>
-  _ short detect(RandomGenerator& gen,    ///< random number generator
+  template <class RNG, class AcceptanceModel>
+  _ short detect(RNG& rng,                ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
                  const Event& e,          ///< event to be detected
                  Response& response       ///< response (LOR+zu+zd+dl)
                  ) const {
 
     FullResponse full_response;
-    if (exact_detect(gen, model, e, full_response) == 2) {
+    if (exact_detect(rng, model, e, full_response) == 2) {
 
       response = response_wo_error(full_response);
       return 2;
@@ -252,20 +252,20 @@ template <class Scanner2DClass> class Scanner {
       std::swap(entry, exit);
   }
 
-  template <class RandomGenerator, class AcceptanceModel>
-  _ bool did_deposit(RandomGenerator& gen,
+  template <class RNG, class AcceptanceModel>
+  _ bool did_deposit(RNG& rng,
                      AcceptanceModel& model,
                      const Point& entry,
                      const Point& exit,
                      F& depth) const {
-    depth = model.deposition_depth(gen);
+    depth = model.deposition_depth(rng);
     if (depth * depth <= (exit - entry).length2())
       return true;
     return false;
   }
 
-  template <class RandomGenerator, class AcceptanceModel>
-  _ bool check_for_hits(RandomGenerator& gen,
+  template <class RNG, class AcceptanceModel>
+  _ bool check_for_hits(RNG& rng,
                         AcceptanceModel& model,
                         const Indices& indices,
                         Event e,
@@ -283,7 +283,7 @@ template <class Scanner2DClass> class Scanner {
         reconstruct_3d_intersection_points(e, dir, p1_xy, p2_xy, entry, exit);
         if (entry.z > half_length || entry.z < -half_length)
           return false;
-        if (did_deposit(gen, model, entry, exit, depth)) {
+        if (did_deposit(rng, model, entry, exit, depth)) {
           Vector v = exit - entry;
           deposit = entry + v * (depth / v.length());
           detector = i;

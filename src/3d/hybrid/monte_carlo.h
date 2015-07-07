@@ -39,12 +39,12 @@ class MonteCarlo {
         start_pixel(start_pixel) {}
 
   /// Executes Monte-Carlo system matrix generation for given detector ring
-  template <typename RandomGenerator,
-            typename AcceptanceModel,
-            typename ProgressCallback>
+  template <class RNG,
+            class AcceptanceModel,
+            class ProgressCallback>
   void operator()(
       F z,                               ///< z position for calculations
-      RandomGenerator& gen,              ///< random number generator
+      RNG& rng,                          ///< random number generator
       AcceptanceModel model,             ///< acceptance model
       int n_emissions,                   ///< number of emissions generated
       ProgressCallback progress,         ///< progress callback
@@ -110,7 +110,7 @@ class MonteCarlo {
 #if _OPENMP
         auto& l_gen = mp_gens[omp_get_thread_num()];
 #else
-        auto& l_gen = gen;
+        auto& l_gen = rng;
 #endif
         F rx = (pixel.x + one_dis(l_gen)) * pixel_size;
         F ry = (pixel.y + one_dis(l_gen)) * pixel_size;

@@ -14,7 +14,7 @@ namespace PET3D {
 /*   Phantom -------------------------------------------------------------
  */
 
-template <typename FType, typename SType, typename RNGType> class Phantom {
+template <typename FType, typename SType, class RNGType> class Phantom {
  public:
   using F = FType;
   using S = SType;
@@ -51,8 +51,8 @@ template <typename FType, typename SType, typename RNGType> class Phantom {
 
   size_t n_events() { return events.size(); }
 
-  template <typename G> size_t choose_region(G& gen) {
-    F r = uniform(gen);
+  template <class RNG> size_t choose_region(RNG& rng) {
+    F r = uniform(rng);
     size_t i = 0;
 
     while (r > CDF[i])
@@ -61,9 +61,9 @@ template <typename FType, typename SType, typename RNGType> class Phantom {
     return i;
   }
 
-  template <typename Generator> Point<F> gen_point(Generator& generator) {
+  template <class RNG> Point<F> gen_point(RNG& rng) {
   again:
-    size_t i_region = choose_region(generator);
+    size_t i_region = choose_region(rng);
     Point<F> p = region_list[i_region]->random_point();
     for (size_t j = 0; j < i_region; j++) {
       if (region_list[j].shape.contains(p))
@@ -72,15 +72,15 @@ template <typename FType, typename SType, typename RNGType> class Phantom {
     return p;
   }
 
-  template <typename Generator> Event gen_event(Generator& generator) {
+  template <class RNG> Event gen_event(RNG& rng) {
   again:
-    size_t i_region = choose_region(generator);
-    Point<F> p = region_list[i_region]->random_point(generator);
+    size_t i_region = choose_region(rng);
+    Point<F> p = region_list[i_region]->random_point(rng);
     for (size_t j = 0; j < i_region; j++) {
       if (region_list[j]->in(p))
         goto again;
     }
-    return Event(p, region_list[i_region]->random_direction(generator));
+    return Event(p, region_list[i_region]->random_direction(rng));
   }
 };
 }

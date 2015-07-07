@@ -13,13 +13,9 @@ template <typename FType> class AlwaysAccept {
   using F = FType;
 
   AlwaysAccept() {}
-  template <class RandomGenerator> _ bool operator()(RandomGenerator&, F) {
-    return true;
-  }
+  template <class RNG> _ bool operator()(RNG&, F) { return true; }
 
-  template <typename RandomGenerator> _ F deposition_depth(RandomGenerator&) {
-    return static_cast<F>(0);
-  }
+  template <class RNG> _ F deposition_depth(RNG&) { return static_cast<F>(0); }
 };
 
 /// Model of scintilator acceptance
@@ -49,14 +45,12 @@ template <typename FType> class ScintillatorAccept {
         scale(scale),
         inv_scale(static_cast<F>(1) / scale) {}
 
-  template <class RandomGenerator>
-  _ bool operator()(RandomGenerator& gen, F length) {
-    return one_dis(gen) >= exp(-length * inv_scale);
+  template <class RNG> _ bool operator()(RNG& rng, F length) {
+    return one_dis(rng) >= exp(-length * inv_scale);
   }
 
-  template <typename RandomGenerator>
-  _ F deposition_depth(RandomGenerator& gen) {
-    auto r = one_dis(gen);
+  template <class RNG> _ F deposition_depth(RNG& rng) {
+    auto r = one_dis(rng);
     return -log(r) * scale;
   }
 

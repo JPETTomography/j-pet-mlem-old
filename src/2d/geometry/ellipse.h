@@ -74,9 +74,9 @@ template <typename FType> class EllipsePointGenerator {
         sin(compat::sin(ellipse.angle)),
         cos(compat::cos(ellipse.angle)) {}
 
-  template <typename Generator> Point operator()(Generator& generator) {
-    F angle = 2 * M_PI * distribution(generator);
-    F r = compat::sqrt(distribution(generator));
+  template <class RNG> Point operator()(RNG& rng) {
+    F angle = 2 * M_PI * distribution(rng);
+    F r = compat::sqrt(distribution(rng));
     F x = ellipse.a * r * std::cos(angle);
     F y = ellipse.b * r * std::sin(angle);
 

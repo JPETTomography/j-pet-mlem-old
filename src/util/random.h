@@ -99,9 +99,9 @@ template <typename FType> class uniform_real_distribution {
       : size_(b - a), offset_(a) {}
 
   /// Returns value from given range using generator
-  template <class Generator> _ result_type operator()(Generator& gen) {
-    return gen() * size() * scale<Generator>() + offset() -
-           static_cast<result_type>(Generator::min()) / range<Generator>();
+  template <class RNG> _ result_type operator()(RNG& rng) {
+    return rng() * size() * scale<RNG>() + offset() -
+           static_cast<result_type>(RNG::min()) / range<RNG>();
   }
 
   /// Return distribution range size
@@ -109,13 +109,13 @@ template <typename FType> class uniform_real_distribution {
   /// Return distribution range offset
   _ result_type offset() const { return offset_; }
 
-  template <class Generator> _ static result_type range() {
-    return static_cast<result_type>(Generator::max()) -
-           static_cast<result_type>(Generator::min());
+  template <class RNG> _ static result_type range() {
+    return static_cast<result_type>(RNG::max()) -
+           static_cast<result_type>(RNG::min());
   }
 
-  template <class Generator> _ static result_type scale() {
-    return static_cast<result_type>(1) / range<Generator>();
+  template <class RNG> _ static result_type scale() {
+    return static_cast<result_type>(1) / range<RNG>();
   }
 
  private:

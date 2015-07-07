@@ -39,7 +39,7 @@ template <typename FType> class RectanglePointGenerator {
 
   RectanglePointGenerator(const Rectangle& rec) : rectangle_(rec), uni(-1, 1) {}
 
-  template <typename Generator> Point operator()(Generator& rng) {
+  template <class RNG> Point operator()(RNG& rng) {
     F x = uni(rng) * rectangle_.a;
     F y = uni(rng) * rectangle_.b;
 

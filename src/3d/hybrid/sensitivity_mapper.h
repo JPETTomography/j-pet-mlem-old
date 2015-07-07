@@ -21,10 +21,10 @@ template <class ScannerClass> class SensitivityMapper {
   SensitivityMapper(Scanner& scanner, VoxelSet& voxel_set)
       : scanner(scanner), voxel_set(voxel_set), one_dis(0, 1) {}
 
-  template <typename RNG, typename AcceptanceModel>
+  template <class RNG, typename AcceptanceModel>
   void map(int i_voxel,
            const Voxel<S>& voxel,
-           RNG& gen,
+           RNG& rng,
            AcceptanceModel& model,
            int n_emissions) {
     auto pixel_size = voxel_set.v_grid.pixel_grid.pixel_size;
@@ -39,25 +39,25 @@ template <class ScannerClass> class SensitivityMapper {
 
     for (int i = 0; i < n_emissions; ++i) {
 
-      F rx = ll.x + one_dis(gen) * pixel_size;
-      F ry = ll.y + one_dis(gen) * pixel_size;
-      F rz = ll.z + one_dis(gen) * pixel_size;
+      F rx = ll.x + one_dis(rng) * pixel_size;
+      F ry = ll.y + one_dis(rng) * pixel_size;
+      F rz = ll.z + one_dis(rng) * pixel_size;
 
-      auto dir = direction(gen);
+      auto dir = direction(rng);
 #if DEBUG
       std::cout << dir.x << " " << dir.y << " " << dir.z << "\n";
 #endif
       Event event(PET3D::Point<F>(rx, ry, rz), dir);
 
       typename Scanner::Response response;
-      auto hits = scanner.detect(gen, model, event, response);
+      auto hits = scanner.detect(rng, model, event, response);
       if (hits >= 2) {
         voxel_set.value(i_voxel) += F(1.0);
       }
     }
   }
 
-  template <typename RNG, typename AcceptanceModel>
+  template <class RNG, typename AcceptanceModel>
   void map(RNG gen, AcceptanceModel& model, int n_emissions) {
 #if _OPENMP
     // OpenMP uses passed random generator as seed source for

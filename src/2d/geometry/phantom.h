@@ -102,8 +102,8 @@ template <typename FType, typename SType> class Phantom {
     return count;
   }
 
-  template <typename G> size_t choose_region(G& gen) {
-    F r = uniform(gen);
+  template <class RNG> size_t choose_region(RNG& rng) {
+    F r = uniform(rng);
     size_t i = 0;
 
     while (r > CDF[i])
@@ -112,10 +112,10 @@ template <typename FType, typename SType> class Phantom {
     return i;
   }
 
-  template <typename Generator> Point<F> gen_point(Generator& generator) {
+  template <class RNG> Point<F> gen_point(RNG& rng) {
   again:
-    size_t i_region = choose_region(generator);
-    Point<F> p = region_list[i_region]->random_point(generator);
+    size_t i_region = choose_region(rng);
+    Point<F> p = region_list[i_region]->random_point(rng);
     for (size_t j = 0; j < i_region; j++) {
       if (region_list[j]->contains(p))
         goto again;
@@ -123,10 +123,9 @@ template <typename FType, typename SType> class Phantom {
     return p;
   }
 
-  template <typename Generator>
-  PET2D::Event<F> gen_event(Generator& generator) {
-    Point<F> p = gen_point(generator);
-    F rangle = F(M_PI_2) * uniform_angle(generator);
+  template <class RNG> PET2D::Event<F> gen_event(RNG& rng) {
+    Point<F> p = gen_point(rng);
+    F rangle = F(M_PI_2) * uniform_angle(rng);
     return PET2D::Event<F>(p, rangle);
   }
 };

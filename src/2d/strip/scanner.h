@@ -188,9 +188,9 @@ template <typename FType, typename SType> class Scanner {
 
 #if !__CUDACC__
 
-  template <class RandomGenerator>
+  template <class RNG>
   _ short exact_detect(
-      RandomGenerator& gen,   ///< random number generator
+      RNG& rng,               ///< random number generator
       const Event& event,     ///< event to be detected
       FullResponse& response  ///< scanner response (LOR+length)
       ) const {
@@ -205,9 +205,9 @@ template <typename FType, typename SType> class Scanner {
     std::normal_distribution<F> normal_dist_dz(0, sigma_z);
     std::normal_distribution<F> normal_dist_dl(0, sigma_dl);
 
-    z_u += normal_dist_dz(gen);
-    z_d += normal_dist_dz(gen);
-    dl += normal_dist_dl(gen);
+    z_u += normal_dist_dz(rng);
+    z_d += normal_dist_dz(rng);
+    dl += normal_dist_dl(rng);
 
     if (std::abs(z_u) < scintillator_length / 2 &&
         std::abs(z_d) < scintillator_length / 2) {
@@ -219,28 +219,28 @@ template <typename FType, typename SType> class Scanner {
 
   /// This function must be present to make the compatible interface with
   /// PhantomMonteCarlo
-  template <class RandomGenerator, class AcceptanceModel>
-  _ short exact_detect(RandomGenerator& gen,  ///< random number generator
-                       AcceptanceModel& model,
-                       const Event& event,  ///< event to be detected
-                       Response& response   ///< scanner response (LOR+length)
+  template <class RNG, class AcceptanceModel>
+  _ short exact_detect(RNG& rng,                ///< random number generator
+                       AcceptanceModel& model,  ///< (unused)
+                       const Event& event,      ///< event to be detected
+                       Response& response  ///< scanner response (LOR+length)
                        ) const {
     (void)model;  // mark as unused
-    return exact_detect(gen, event, response);
+    return exact_detect(rng, event, response);
   }
 
-  template <class RandomGenerator>
-  _ short detect(RandomGenerator& gen,  ///< random number generator
-                 const Event& event,    ///< event to be detected
-                 Response& response     ///< scanner response (LOR+length)
+  template <class RNG>
+  _ short detect(RNG& rng,            ///< random number generator
+                 const Event& event,  ///< event to be detected
+                 Response& response   ///< scanner response (LOR+length)
                  ) const {
-    return exact_detect(gen, event, response);
+    return exact_detect(rng, event, response);
   }
 
-  template <typename G>
-  std::pair<Response, bool> detect_event(const Event is_event, G& gen) {
+  template <class RNG>
+  std::pair<Response, bool> detect_event(const Event is_event, RNG& rng) {
     Response response;
-    if (detect(gen, is_event, response) > 1)
+    if (detect(rng, is_event, response) > 1)
       return std::make_pair(response, true);
     else
       return std::make_pair(response, false);
@@ -250,7 +250,7 @@ template <typename FType, typename SType> class Scanner {
     return full_response;
   }
 
-  template <typename RNG>
+  template <class RNG>
   Response response_w_error(RNG& rng, const FullResponse& full_response) {
     std::normal_distribution<F> dist_z(0, sigma_z);
     std::normal_distribution<F> dist_dl(0, sigma_dl);

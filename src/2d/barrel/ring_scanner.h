@@ -56,8 +56,8 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
       : Base(radius, outer_radius) {}
 
  private:
-  template <class RandomGenerator, class AcceptanceModel>
-  _ bool check_for_hits(RandomGenerator& gen,
+  template <class RNG, class AcceptanceModel>
+  _ bool check_for_hits(RNG& rng,
                         AcceptanceModel& model,
                         S inner,
                         S outer,
@@ -79,7 +79,7 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
       // check if we got 2 point intersection
       // then test the model against these points distance
       if (intersections.size() == 2) {
-        auto deposition_depth = model.deposition_depth(gen);
+        auto deposition_depth = model.deposition_depth(rng);
 #if DEBUG
         std::cerr << "dep " << deposition_depth << " "
                   << (intersections[1] - intersections[0]).length()
@@ -101,8 +101,8 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
   /// Tries to detect given event.
 
   /// \return number of coincidences (detector hits)
-  template <class RandomGenerator, class AcceptanceModel>
-  _ short detect(RandomGenerator& gen,    ///< random number generator
+  template <class RNG, class AcceptanceModel>
+  _ short detect(RNG& rng,                ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
                  const Event& e,          ///< event to be detected
                  Response& response       ///< scanner response (LOR+length)
@@ -126,7 +126,7 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
 
     Point d1_p1, d1_p2;
     if (!check_for_hits(
-            gen, model, i_inner, i_outer, e, detector1, depth1, d1_p1, d1_p2))
+            rng, model, i_inner, i_outer, e, detector1, depth1, d1_p1, d1_p2))
       return 0;
 
     i_inner = c_inner.section(c_inner.angle(inner_secant[1]), n_detectors);
@@ -135,7 +135,7 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
     F depth2;
     Point d2_p1, d2_p2;
     if (!check_for_hits(
-            gen, model, i_inner, i_outer, e, detector2, depth2, d2_p1, d2_p2))
+            rng, model, i_inner, i_outer, e, detector2, depth2, d2_p1, d2_p2))
       return 0;
 
     response.lor = LOR(detector1, detector2);

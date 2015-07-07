@@ -19,8 +19,6 @@ TEST("2d/geometry/rectangle") {
 }
 
 TEST("2d/geometry/rectangle/point_generator") {
-  using Point = PET2D::Point<float>;
-
   PET2D::Rectangle<float> r(1, 2, 3, 4);
 
   PET2D::RectanglePointGenerator<float> gen(r);

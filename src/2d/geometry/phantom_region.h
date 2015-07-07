@@ -4,7 +4,7 @@
 namespace PET2D {
 
 /// Virtual phantom region made of ellipse and intensity
-template <typename FType, typename RNG> struct PhantomRegion {
+template <typename FType, class RNG> struct PhantomRegion {
   using F = FType;
   using Point = PET2D::Point<F>;
 
@@ -17,7 +17,7 @@ template <typename FType, typename RNG> struct PhantomRegion {
   const F intensity;
 };
 
-template <typename Shape, typename RNG>
+template <typename Shape, class RNG>
 class ShapePhantomRegion : public PhantomRegion<typename Shape::F, RNG> {
  public:
   using F = typename Shape::F;
@@ -37,7 +37,7 @@ class ShapePhantomRegion : public PhantomRegion<typename Shape::F, RNG> {
   const F weight_;
 };
 
-template <typename FType, typename RNG>
+template <typename FType, class RNG>
 class EllipticalPhantomRegion
     : public ShapePhantomRegion<PET2D::Ellipse<FType>, RNG> {
  public:
@@ -54,7 +54,7 @@ class EllipticalPhantomRegion
   EllipsePointGenerator<F> gen_;
 };
 
-template <typename FType, typename RNG>
+template <typename FType, class RNG>
 class RectangularPhantomRegion
     : public ShapePhantomRegion<PET2D::Rectangle<FType>, RNG> {
  public:

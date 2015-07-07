@@ -8,7 +8,7 @@
 
 namespace PET3D {
 
-template <typename FType, typename RNG> class PhantomRegion {
+template <typename FType, class RNG> class PhantomRegion {
  public:
   using F = FType;
   using Point = PET3D::Point<F>;
@@ -31,7 +31,7 @@ template <typename FType, typename RNG> class PhantomRegion {
   const F intensity;
 };
 
-template <typename FType, typename RNG, typename AngularDistribution>
+template <typename FType, class RNG, typename AngularDistribution>
 class AbstractPhantomRegion : public PhantomRegion<FType, RNG> {
  public:
   using F = FType;
@@ -48,7 +48,7 @@ class AbstractPhantomRegion : public PhantomRegion<FType, RNG> {
 };
 
 template <typename FType,
-          typename RNG,
+          class RNG,
           typename AngularDistribution = PET3D::SphericalDistribution<FType>>
 class CylinderRegion
     : public AbstractPhantomRegion<FType, RNG, AngularDistribution> {
@@ -83,7 +83,7 @@ class CylinderRegion
 };
 
 template <typename FType,
-          typename RNG,
+          class RNG,
           typename AngularDistribution = PET3D::SphericalDistribution<FType>>
 class EllipsoidRegion
     : public AbstractPhantomRegion<FType, RNG, AngularDistribution> {
@@ -123,7 +123,7 @@ class EllipsoidRegion
 /* Rotated -----------------------------------------------------------------
  */
 
-template <typename FType, typename RNG>
+template <typename FType, class RNG>
 class RotatedPhantomRegion : public PhantomRegion<FType, RNG> {
  public:
   using F = FType;
@@ -158,7 +158,7 @@ class RotatedPhantomRegion : public PhantomRegion<FType, RNG> {
   Matrix<F> transposed_R;
 };
 
-template <typename FType, typename RNG>
+template <typename FType, class RNG>
 class TranslatedPhantomRegion : public PhantomRegion<FType, RNG> {
  public:
   using F = FType;
@@ -187,7 +187,7 @@ class TranslatedPhantomRegion : public PhantomRegion<FType, RNG> {
 };
 
 template <typename FType,
-          typename RNG,
+          class RNG,
           typename AngularDistribution = PET3D::SphericalDistribution<FType>>
 class PointRegion
     : public AbstractPhantomRegion<FType, RNG, AngularDistribution> {
