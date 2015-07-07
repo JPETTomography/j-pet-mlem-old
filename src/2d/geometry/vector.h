@@ -111,3 +111,15 @@ template <typename FType> struct Vector {
 #endif
 };
 }
+
+#ifdef TEST_CASE
+namespace Catch {
+template <typename FType> struct StringMaker<PET2D::Vector<FType>> {
+  static std::string convert(const PET2D::Vector<FType>& vec) {
+    std::ostringstream oss;
+    oss << "<" << vec.x << ", " << vec.y << ">";
+    return oss.str();
+  }
+};
+}
+#endif

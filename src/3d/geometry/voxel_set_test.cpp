@@ -34,7 +34,7 @@ TEST("3d/geometry/voxel_set") {
     std::ofstream out("test_output/triangular_voxels.m");
     Graphics<F> graphics(out);
     for (auto& voxel : voxel_set) {
-      graphics.addPixel(p_grid, voxel.ix, voxel.iy);
+      graphics.add_pixel(p_grid, voxel.ix, voxel.iy);
     }
   }
 
@@ -43,7 +43,7 @@ TEST("3d/geometry/voxel_set") {
     std::ofstream out("test_output/yslice_voxels.m");
     Graphics<F> graphics(out);
     for (auto& voxel : voxel_set) {
-      graphics.addPixel(p_grid, voxel.iz, voxel.ix);
+      graphics.add_pixel(p_grid, voxel.iz, voxel.ix);
     }
   }
 }

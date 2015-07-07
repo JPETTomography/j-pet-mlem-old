@@ -120,3 +120,15 @@ template <typename FType> struct Vector {
 #endif
 };
 }
+
+#ifdef TEST_CASE
+namespace Catch {
+template <typename FType> struct StringMaker<PET3D::Vector<FType>> {
+  static std::string convert(const PET3D::Vector<FType>& vec) {
+    std::ostringstream oss;
+    oss << "<" << vec.x << ", " << vec.y << ", " << vec.z << ">";
+    return oss.str();
+  }
+};
+}
+#endif
