@@ -85,19 +85,19 @@ int main(int argc, char* argv[]) {
     std::ofstream svg("my_map.svg");
     boost::geometry::svg_mapper<Point2D> mapper(svg, 1200, 1200);
 
-    for (auto p = detectors.begin(); p != detectors.end(); ++p) {
+    for (const auto& detector : detectors) {
 #if DEBUG
-      std::cout << boost::geometry::wkt(*p) << std::endl;
+      std::cout << boost::geometry::wkt(detector) << std::endl;
 #endif
-      mapper.add(*p);
+      mapper.add(detector);
     }
 
     auto fov_circle = BoostGeometryUtils::make_circle(
         Point(0, 0), cl.get<double>("fov-radius"), 128);
     mapper.add(fov_circle);
 
-    for (auto p = detectors.begin(); p != detectors.end(); ++p) {
-      mapper.map(*p, "fill:rgb(0,0,255);");
+    for (const auto& detector : detectors) {
+      mapper.map(detector, "fill:rgb(0,0,255);");
     }
     mapper.map(fov_circle, "fill:none;stroke:red;");
 
