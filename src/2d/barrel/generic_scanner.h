@@ -204,9 +204,7 @@ class GenericScanner
                      const Point& p2,
                      F& depth) const {
     depth = model.deposition_depth(rng);
-#if DEBUG
-    std::cerr << "dep " << depth << " " << (p2 - p1).length() << std::endl;
-#endif
+
     if (depth < (p2 - p1).length()) {
       return true;
     }

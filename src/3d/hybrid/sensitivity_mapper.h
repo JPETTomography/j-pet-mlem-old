@@ -34,7 +34,7 @@ template <class ScannerClass> class SensitivityMapper {
 
 #if DEBUG
     std::cout << "emitting from pixel at " << ll.x << " " << ll.y << " " << ll.z
-              << "\n";
+              << std::endl;
 #endif
 
     for (int i = 0; i < n_emissions; ++i) {
@@ -45,7 +45,7 @@ template <class ScannerClass> class SensitivityMapper {
 
       auto dir = direction(rng);
 #if DEBUG
-      std::cout << dir.x << " " << dir.y << " " << dir.z << "\n";
+      std::cout << dir.x << " " << dir.y << " " << dir.z << std::endl;
 #endif
       Event event(PET3D::Point<F>(rx, ry, rz), dir);
 

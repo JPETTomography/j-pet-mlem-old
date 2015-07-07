@@ -105,12 +105,8 @@ int main(int argc, char* argv[]) {
       auto sparse_matrix = run(cl, scanner, model);
       post_process(cl, scanner, sparse_matrix);
     } else if (model_name == "scintillator") {
-
       Common::ScintillatorAccept<F> model(length_scale);
-      std::cout << "length = " << length_scale << "\n";
-
       auto sparse_matrix = run(cl, scanner, model);
-
       post_process(cl, scanner, sparse_matrix);
     } else {
       throw("unknown model: " + model_name);
@@ -150,8 +146,8 @@ static SparseMatrix run(cmdline::parser& cl,
   auto& z_position = cl.get<double>("z-position");
 
   if (verbose) {
-    std::cerr << "n pixels   : " << n_pixels << "\n";
-    std::cerr << "pixel size : " << s_pixel << "\n";
+    std::cerr << "  n pixels = " << n_pixels << std::endl;
+    std::cerr << "pixel size = " << s_pixel << std::endl;
   }
   std::random_device rd;
   util::random::tausworthe gen(rd());

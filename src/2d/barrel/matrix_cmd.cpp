@@ -191,6 +191,7 @@ int main(int argc, char* argv[]) {
 template <class ScannerClass, class ModelClass>
 void print_parameters(cmdline::parser& cl, const ScannerClass& scanner) {
   auto& n_pixels = cl.get<int>("n-pixels");
+  auto& s_pixel = cl.get<int>("s-pixel");
   auto& n_emissions = cl.get<int>("n-emissions");
   auto& tof_step = cl.get<double>("tof-step");
   auto verbose = cl.exist("verbose");
@@ -206,8 +207,8 @@ void print_parameters(cmdline::parser& cl, const ScannerClass& scanner) {
     std::cerr << "   OpenMP threads = " << omp_get_max_threads() << std::endl;
 #endif
     std::cerr << "    pixels in row = " << n_pixels << std::endl;
-    std::cerr << "       pixel size = " << cl.get<double>("s-pixel") << "\n";
-    std::cerr << "    fov radius    = " << scanner.fov_radius() << "\n";
+    std::cerr << "       pixel size = " << s_pixel << std::endl;
+    std::cerr << "    fov radius    = " << scanner.fov_radius() << std::endl;
     std::cerr << "     outer radius = " << scanner.outer_radius() << std::endl;
     std::cerr << "         max bias = " << max_bias << std::endl;
     std::cerr << "         TOF step = " << tof_step << std::endl;

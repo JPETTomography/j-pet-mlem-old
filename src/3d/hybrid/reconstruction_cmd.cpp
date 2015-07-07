@@ -68,11 +68,16 @@ int main(int argc, char* argv[]) {
 
     PET2D::PixelGrid<F, S> grid(in_lor_info);
 
-    std::cout << grid.n_columns << "x" << grid.n_rows << " " << grid.pixel_size
-              << "\n";
+    if (cl.exist("verbose")) {
+      std::cout << n_detectors << std::endl;
+      std::cout << grid.n_columns << "x" << grid.n_rows << " "
+                << grid.pixel_size << std::endl;
+    }
+
     if ((size_t)n_detectors != scanner.barrel.size()) {
       throw("n_detectors mismatch");
     }
+
     PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(scanner.barrel.size(), grid);
     lor_info.read(in_lor_info);
 

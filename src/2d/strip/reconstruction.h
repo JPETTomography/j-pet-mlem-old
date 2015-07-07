@@ -128,9 +128,6 @@ class Reconstruction {
         auto event = events[e];
         F tan, y, z;
         event.transform(scanner.radius, tan, y, z);
-#if DEBUG
-        std::cout << "event " << y << " " << z << " " << tan << "\n";
-#endif
         bb_update(Point(z, y), y, tan, thread_rhos[thread]);
 #else
         F y = events[e].z_u;

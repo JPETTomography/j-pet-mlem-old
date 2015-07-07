@@ -136,17 +136,17 @@ template <typename FType, typename SType> class LMReconstruction {
       thread_kernel_cache.assign(grid.n_pixels, 0);
     }
 
-/* ------- Event loop ------*/
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
+    // --- event loop ----------------------------------------------------------
     for (size_t i = 0; i < events_.size(); ++i) {
       int thread = omp_get_thread_num();
       n_events_per_thread_[thread]++;
 
       auto event = events_[i];
 
-      /* ---------  Voxel loop  - denominator ----------- */
+      // -- voxel loop - denominator -------------------------------------------
       double denominator = 0;
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         pixel_count_++;
@@ -160,15 +160,13 @@ template <typename FType, typename SType> class LMReconstruction {
 
         F kernel_l = gauss_norm_dl * exp(-(it->t - event.t) *
                                          (it->t - event.t) * inv_sigma2_dl);
-        // std::cout<<event.t<<" "<<it->t<<" "<<kernel_l<<"\n";
-
         F weight = kernel_l * kernel_z * rho_[index];
 
         thread_kernel_caches_[thread][index] = weight;
 
         denominator += weight;
 
-      }  // Voxel loop - denominator
+      }  // voxel loop - denominator
 
       double inv_denominator;
       if (denominator > 0) {
@@ -179,7 +177,7 @@ template <typename FType, typename SType> class LMReconstruction {
         continue;
       }
 
-      /* ---------  Voxel loop ------------ */
+      // -- voxel loop ---------------------------------------------------------
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         auto pix = it->pixel;
 
@@ -188,7 +186,7 @@ template <typename FType, typename SType> class LMReconstruction {
         thread_rhos_[thread][index] +=
             thread_kernel_caches_[thread][index] * inv_denominator;
 
-      }  // Voxel loop
+      }  // voxel loop
 
     }  // event loop
     event_count_ = 0;

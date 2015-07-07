@@ -58,9 +58,6 @@ template <class ScannerClass> class ScannerBuilder {
     auto symmetry_descriptor = new SymmetryDescriptor<S>(n_detectors, 8);
     for (S d = 0; d < n_detectors; ++d) {
       for (S s = 0; s < SymmetryDescriptor<S>::EIGHT; ++s) {
-#if DEBUG
-        std::cerr << d << " " << s << " " << symmetric_detector(d, s) << "\n";
-#endif
         symmetry_descriptor->set_symmetric_detector(
             d,
             s,
@@ -88,19 +85,11 @@ template <class ScannerClass> class ScannerBuilder {
     if (n_detectors.size() > radius.size())
       throw("number of numbers of detectors must be less or equal radiuses");
 
-    bool symmetry_broken = false;
     for (unsigned int i = 0; i < radius.size(); ++i) {
-
       if (std::abs(rotation[i]) >= 1e-6 &&
           std::abs(rotation[i] - F(0.5)) > 1e-6) {
-        std::cerr << "rotation = " << rotation[i] << "\n";
-        symmetry_broken = true;
-        break;
+        throw("broken symmetry");
       }
-    }
-
-    if (symmetry_broken) {
-      std::cerr << "Waring : symmetry is broken\n";
     }
 
     int total_n_detectors = 0;

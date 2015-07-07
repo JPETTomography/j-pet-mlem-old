@@ -58,7 +58,10 @@ int main(int argc, char* argv[]) {
       pixel_size = cl.get<double>("s-pixel");
     F fov_radius = cl.get<double>("fov-radius");
 
-    std::cout << "fov " << fov_radius << " size " << pixel_size << "\n";
+    if (verbose) {
+      std::cout << "fov " << fov_radius << " size " << pixel_size << std::endl;
+    }
+
     S n_columns, n_rows;
     if (!cl.exist("n-pixels")) {
       n_columns = 2 * S(std::ceil(fov_radius / pixel_size));
@@ -66,7 +69,10 @@ int main(int argc, char* argv[]) {
       n_columns = cl.get<int>("n-pixels");
     }
     n_rows = n_columns;
-    std::cout << "cols " << n_columns << " rows " << n_rows << "\n";
+
+    if (verbose) {
+      std::cout << "cols " << n_columns << " rows " << n_rows << std::endl;
+    }
 
     PET2D::PixelGrid<F, S> grid(
         n_columns,

@@ -53,12 +53,7 @@ template <typename FType> struct Ellipse {
         A(c * c / (a * a) + s * s / (b * b)),
         B(s * s / (a * a) + c * c / (b * b)),
         C(s * c * (1 / (a * a) - 1 / (b * b))),
-        area(M_PI * a * b) {
-#if DEBUG
-    std::cerr << x << " " << y << " " << a << " " << b << " " << A << " " << B
-              << "\n";
-#endif
-  }
+        area(M_PI * a * b) {}
 };
 
 /// Generates random points from given ellipse

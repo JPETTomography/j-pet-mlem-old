@@ -93,9 +93,6 @@ TEST("3d/hybrid/detector_set/detect", "detect") {
     auto lor = response.lor;
     CHECK(lor.first == 12);
     CHECK(lor.second == 0);
-#if DEBUG
-    std::cerr << lor.first << " " << lor.second << "\n";
-#endif
     CHECK(response.z_up == 0.0_e7);
     CHECK(response.z_dn == 0.0_e7);
     CHECK(response.dl == 0.0_e7);
@@ -112,13 +109,7 @@ TEST("3d/hybrid/detector_set/detect", "detect") {
     auto lor = response.lor;
     CHECK(lor.first == 12);
     CHECK(lor.second == 0);
-#if DEBUG
-    std::cerr << lor.first << " " << lor.second << "\n";
-#endif
     float z = inner_radius / std::tan(M_PI / 2.5);
-#if DEBUG
-    std::cerr << z << "\n";
-#endif
     CHECK(response.z_up == Approx(-z).epsilon(1e-7));
     CHECK(response.z_dn == Approx(z).epsilon(1e-7));
     CHECK(response.dl == 0.0_e7);

@@ -97,18 +97,14 @@ template <typename FType, typename SType> class LORsPixelsInfo {
     in.read((char*)lor_desc, 2 * sizeof(S));
     if (!in)
       return in;
-    // std::cout << lor_desc[0] << " " << lor_desc[1] << " ";
+
     F coords[4];
     in.read((char*)coords, 4 * sizeof(F));
-    //        std::cout << coords[0] << " " << coords[1] << " " << coords[2] <<
-    //        " "
-    //                  << coords[3] << "\n";
 
     F width;
     in.read((char*)&width, sizeof(F));
     int n_pixels;
     in.read((char*)&n_pixels, sizeof(int));
-    // std::cout << n_pixels << "\n";
 
     if (in) {
       LOR lor(lor_desc[0], lor_desc[1]);
@@ -125,20 +121,23 @@ template <typename FType, typename SType> class LORsPixelsInfo {
     return in;
   }
 
-  void print(std::ostream& out) {
-    for (int d1 = 0; d1 < n_detectors; ++d1) {
+  friend std::ostream& operator<<(std::ostream& out,
+                                  const LORsPixelsInfo& lpi) {
+    for (int d1 = 0; d1 < lpi.n_detectors; ++d1) {
       for (int d2 = 0; d2 < d1; ++d2) {
         LOR lor(d1, d2);
         auto index = lor.index();
-        if (lor_info_[index].pixels.size() > 0) {
-          out << d1 << " " << d2 << " " << lor_info_[index].width << "\n";
-          for (PixelInfo& info : lor_info_[index].pixels) {
+        if (lpi.lor_info_[index].pixels.size() > 0) {
+          out << d1 << " " << d2 << " " << lpi.lor_info_[index].width
+              << std::endl;
+          for (PixelInfo& info : lpi.lor_info_[index].pixels) {
             out << info.pixel.x << " " << info.pixel.y << " " << info.t << " "
-                << info.distance << " " << info.fill << "\n";
+                << info.distance << " " << info.fill << std::endl;
           }
         }
       }
     }
+    return out;
   }
 
   // Dirty hack
