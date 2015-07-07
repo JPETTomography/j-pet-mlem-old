@@ -292,7 +292,7 @@ template <typename ScannerType, typename Kernel2DType> class Reconstruction {
     graphics.add(scanner.barrel, lor);
     graphics.add(*lor_pixel_info[lor].segment);
     for (auto pix = event.first_pixel; pix != event.last_pixel; ++pix) {
-      graphics.addPixel(lor_pixel_info.grid, pix->pixel);
+      graphics.add_pixel(lor_pixel_info.grid, pix->pixel);
     }
   }
 

@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
       graph.add(big_barrel, lor);
       graph.add(event.p);
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
-        graph.addPixel(grid, it->pixel);
+        graph.add_pixel(grid, it->pixel);
       }
 
       return 0;

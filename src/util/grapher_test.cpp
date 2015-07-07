@@ -89,11 +89,11 @@ TEST("util/grapher/big_barrel/circle") {
   Graphics<F> graphics(out);
 
   graphics.add(scanner);
-  graphics.addCircle(0.400);
+  graphics.add_circle(0.400);
 
   for (Detector& d : scanner) {
     auto center = d.center();
-    graphics.addCircle(center, 0.015);
+    graphics.add_circle(center, 0.015);
   }
 }
 

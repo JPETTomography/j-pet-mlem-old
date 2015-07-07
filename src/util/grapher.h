@@ -12,7 +12,7 @@ template <typename FType> class Graphics {
 
   Graphics(std::ostream& out) : first_(true), out_(out) {
     out_ << "Graphics[{\n";
-  };
+  }
   ~Graphics() { out_ << "}]\n"; }
 
   template <std::size_t NumPoints>
@@ -66,17 +66,17 @@ template <typename FType> class Graphics {
     out_ << "}]}";
   }
 
-  void addCircle(const PET2D::Point<F>& center, F radius) {
+  void add_circle(const PET2D::Point<F>& center, F radius) {
     add();
     out_ << "{Circle[";
     out_ << pair(center.x, center.y) << ",";
     out_ << radius << "]}\n";
   }
 
-  void addCircle(F radius) { addCircle(PET2D::Point<F>(0, 0), radius); }
+  void add_circle(F radius) { add_circle(PET2D::Point<F>(0, 0), radius); }
 
   template <typename S>
-  void addPixel(const PET2D::PixelGrid<F, S>& grid, S ix, S iy) {
+  void add_pixel(const PET2D::PixelGrid<F, S>& grid, S ix, S iy) {
     auto ll = grid.lower_left_at(ix, iy);
     add();
     out_ << "{FaceForm[],EdgeForm[Black],Polygon[{\n";
@@ -87,8 +87,8 @@ template <typename FType> class Graphics {
   }
 
   template <typename S>
-  void addPixel(const PET2D::PixelGrid<F, S>& grid, PET2D::Pixel<S> pix) {
-    addPixel(grid, pix.x, pix.y);
+  void add_pixel(const PET2D::PixelGrid<F, S>& grid, PET2D::Pixel<S> pix) {
+    add_pixel(grid, pix.x, pix.y);
   }
 
   void add(const PET2D::Point<F>& p) {
