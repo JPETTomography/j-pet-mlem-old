@@ -317,9 +317,9 @@ static SparseMatrix run(cmdline::parser& cl,
   return matrix.to_sparse();
 }
 
-template <typename Scanner>
+template <class ScannerClass>
 void post_process(cmdline::parser& cl,
-                  Scanner& scanner,
+                  ScannerClass& scanner,
                   SparseMatrix& sparse_matrix) {
 
   auto& n_pixels = cl.get<int>("n-pixels");

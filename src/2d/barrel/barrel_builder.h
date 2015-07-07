@@ -5,8 +5,8 @@
 namespace PET2D {
 namespace Barrel {
 
-template <class DetectorType, typename SType> struct BarrelBuilder {
-  using Detector = DetectorType;
+template <class DetectorClass, typename SType> struct BarrelBuilder {
+  using Detector = DetectorClass;
   using F = typename Detector::F;
   using S = SType;
   using SmallBarrel = PET2D::Barrel::GenericScanner<Detector, 192, S>;

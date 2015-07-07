@@ -38,8 +38,8 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
     return responses_.end();
   }
 
-  template <typename ModelType>
-  int generate(RNG& rng, ModelType model, size_t n_emisions) {
+  template <class ModelClass>
+  int generate(RNG& rng, ModelClass model, size_t n_emisions) {
     for (size_t i = 0; i < n_emisions; ++i) {
       auto event = phantom_.gen_event(rng);
       FullResponse full_response;

@@ -14,14 +14,14 @@ namespace PET3D {
 namespace Barrel {
 
 /// Drives Monte-Carlo system matrix construction
-template <typename DetectorType,
-          typename MatrixType,
+template <class DetectorClass,
+          class MatrixClass,
           typename FType,
           typename SType>
 class MonteCarlo {
-  using Detector = DetectorType;
+  using Detector = DetectorClass;
   using Event = typename Detector::Event;
-  using Matrix = MatrixType;
+  using Matrix = MatrixClass;
   using F = FType;
   using S = SType;
   using SS = typename std::make_signed<S>::type;
@@ -119,7 +119,7 @@ class MonteCarlo {
         if (rx > ry)
           continue;
 
-        typename DetectorType::Response response;
+        typename DetectorClass::Response response;
 
         Event event(PET3D::Point<float>(rx, ry, rz), direction(l_gen));
         auto hits = detector.detect(l_gen, model, event, response);

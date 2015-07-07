@@ -67,10 +67,10 @@ using Pixel = PET2D::Pixel<S>;
 using Point = PET2D::Point<F>;
 using Event = PET2D::Event<F>;
 
-template <typename DetectorType>
-using Scanner = PET2D::Barrel::GenericScanner<DetectorType, MAX_DETECTORS, S>;
-template <typename DetectorType>
-using ScannerBuilder = PET2D::Barrel::ScannerBuilder<DetectorType>;
+template <class DetectorClass>
+using Scanner = PET2D::Barrel::GenericScanner<DetectorClass, MAX_DETECTORS, S>;
+template <class DetectorClass>
+using ScannerBuilder = PET2D::Barrel::ScannerBuilder<DetectorClass>;
 
 // all available detector shapes
 using SquareScanner = Scanner<PET2D::Barrel::SquareDetector<F>>;
@@ -81,8 +81,8 @@ using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
 using Ellipse = PET2D::Ellipse<F>;
 using PhantomRegion = PET2D::PhantomRegion<F, RNG>;
 
-template <typename DetectorType, typename Phantom, typename ModelType>
-void run(cmdline::parser& cl, Phantom& phantom, ModelType& model);
+template <class DetectorClass, class PhantomClass, class ModelClass>
+void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model);
 
 int main(int argc, char* argv[]) {
 
@@ -162,8 +162,10 @@ int main(int argc, char* argv[]) {
   return 1;
 }
 
-template <typename DetectorType, typename Phantom, typename ModelType>
-void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
+template <class DetectorClass, class PhantomClass, class ModelClass>
+void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
+  using MonteCarlo = Common::PhantomMonteCarlo<PhantomClass, DetectorClass>;
+  using RNG = typename PhantomClass::RNG;
 
   auto& n_emissions = cl.get<int>("n-emissions");
 
@@ -171,16 +173,16 @@ void run(cmdline::parser& cl, Phantom& phantom, ModelType& model) {
 
   // NOTE: detector height will be determined per shape
 
-  auto dr = ScannerBuilder<DetectorType>::build_multiple_rings(
-      PET2D_BARREL_SCANNER_CL(cl, typename DetectorType::F));
+  auto dr = ScannerBuilder<DetectorClass>::build_multiple_rings(
+      PET2D_BARREL_SCANNER_CL(cl, typename DetectorClass::F));
   dr.set_sigma_dl(cl.get<float>("sigma"));
   if (cl.exist("tof-step"))
     dr.set_tof_step(cl.get<double>("tof-step"));
 
-  Common::PhantomMonteCarlo<Phantom, DetectorType> monte_carlo(phantom, dr);
+  MonteCarlo monte_carlo(phantom, dr);
 
   std::random_device rd;
-  typename Phantom::RNG rng(rd());
+  RNG rng(rd());
   if (cl.exist("seed")) {
     rng.seed(cl.get<std::mt19937::result_type>("seed"));
   }

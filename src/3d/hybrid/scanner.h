@@ -16,8 +16,9 @@ namespace Hybrid {
 
 /// 3D scanner made of several scintillators
 
-template <typename Scanner2D> class Scanner {
+template <class Scanner2DClass> class Scanner {
  public:
+  using Scanner2D = Scanner2DClass;
   using F = typename Scanner2D::F;
   using S = typename Scanner2D::S;
   using Point = PET3D::Point<F>;

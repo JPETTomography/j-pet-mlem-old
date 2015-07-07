@@ -27,8 +27,9 @@ template <typename FType> class Graphics {
     out_ << "}]}\n";
   }
 
-  template <typename Detector, std::size_t MaxDet, typename SType>
-  void add(const PET2D::Barrel::DetectorSet<Detector, MaxDet, SType>& scanner) {
+  template <class Detector, std::size_t MaxDetectors, typename SType>
+  void add(const PET2D::Barrel::DetectorSet<Detector, MaxDetectors, SType>&
+               scanner) {
     add();
     out_ << "{\n";
     first_ = true;
@@ -38,9 +39,10 @@ template <typename FType> class Graphics {
     out_ << "}\n";
   }
 
-  template <typename Detector, std::size_t MaxDet, typename SType>
-  void add(const PET2D::Barrel::DetectorSet<Detector, MaxDet, SType>& scanner,
-           const PET2D::Barrel::LOR<SType>& lor) {
+  template <class Detector, std::size_t MaxDetectors, typename SType>
+  void add(
+      const PET2D::Barrel::DetectorSet<Detector, MaxDetectors, SType>& scanner,
+      const PET2D::Barrel::LOR<SType>& lor) {
     using F = typename Detector::F;
     add();
     out_ << "{FaceForm[], EdgeForm[Black], MeshPrimitives[ConvexHullMesh[{\n";

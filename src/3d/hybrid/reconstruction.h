@@ -17,10 +17,10 @@
 #define omp_get_thread_num() 0
 #endif
 
-template <typename ScannerType, typename Kernel2DType> class Reconstruction {
+template <class ScannerClass, class Kernel2DClass> class Reconstruction {
  public:
-  using Scanner = ScannerType;
-  using Kernel2D = Kernel2DType;
+  using Scanner = ScannerClass;
+  using Kernel2D = Kernel2DClass;
   using F = typename Scanner::F;
   using S = typename Scanner::S;
   using LORsPixelsInfo = PET2D::Barrel::LORsPixelsInfo<F, S>;

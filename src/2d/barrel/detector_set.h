@@ -24,22 +24,22 @@ namespace Barrel {
 
 template <typename D> class ScannerBuilder;
 
-template <typename DetectorType, std::size_t MaxDet, typename SType>
-class DetectorSet : public util::array<MaxDet, DetectorType> {
+template <class DetectorClass, std::size_t MaxDetetectorsSize, typename SType>
+class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
  public:
-  using Detector = DetectorType;
+  using Detector = DetectorClass;
+  static const size_t MaxDetectors = MaxDetetectorsSize;
   using S = SType;
   using F = typename Detector::F;
   using LOR = Barrel::LOR<S>;
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
   using Circle = PET2D::Circle<F>;
-  using Base = util::array<MaxDet, Detector>;
+  using Base = util::array<MaxDetetectorsSize, Detector>;
   using CircleDetector = Barrel::CircleDetector<F>;
-  using Indices = util::array<MaxDet, S>;
+  using Indices = util::array<MaxDetetectorsSize, S>;
   using Event = Barrel::Event<F>;
 
-  static const size_t MaxDetectors = MaxDet;
   struct Response {
     LOR lor;
     F dl;
@@ -228,7 +228,7 @@ class DetectorSet : public util::array<MaxDet, DetectorType> {
 
  protected:
   F fov_radius_;
-  util::array<MaxDet, CircleDetector> c_detectors;
+  util::array<MaxDetetectorsSize, CircleDetector> c_detectors;
   Circle c_inner;
   Circle c_outer;
   int n_symmetries_;

@@ -10,10 +10,10 @@ namespace PET2D {
 namespace Barrel {
 
 /// Drives Monte-Carlo system matrix construction
-template <typename DetectorType, typename MatrixType> class MonteCarlo {
-  using Detector = DetectorType;
+template <class DetectorClass, class MatrixClass> class MonteCarlo {
+  using Detector = DetectorClass;
   using Event = typename Detector::Event;
-  using Matrix = MatrixType;
+  using Matrix = MatrixClass;
   using F = typename Detector::F;
   using S = typename Detector::S;
   using SS = typename std::make_signed<S>::type;
@@ -114,7 +114,7 @@ template <typename DetectorType, typename MatrixType> class MonteCarlo {
           continue;
 
         auto angle = phi_dis(l_gen);
-        typename DetectorType::Response response;
+        typename DetectorClass::Response response;
 
         Event event(rx, ry, angle);
         auto hits = detector.detect(l_gen, model, event, response);

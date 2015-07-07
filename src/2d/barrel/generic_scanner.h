@@ -28,17 +28,17 @@ namespace Barrel {
 ///
 /// \image html config_4x48.pdf.png
 ///
-/// This class is a template that accepts custom DetectorType which can be any
+/// This class is a template that accepts custom DetectorClass which can be any
 /// shape of:
 /// - SquareDetector
 /// - CircleDetector
 /// - TriangleDetector
 /// - PolygonalDetector
 
-template <typename DetectorType, std::size_t MaxDetectors, typename SType>
-class GenericScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
+template <class DetectorClass, std::size_t MaxDetectors, typename SType>
+class GenericScanner : public DetectorSet<DetectorClass, MaxDetectors, SType> {
  public:
-  using Detector = DetectorType;
+  using Detector = DetectorClass;
   using S = SType;
   using F = typename Detector::F;
   using LOR = Barrel::LOR<S>;
@@ -46,7 +46,7 @@ class GenericScanner : public DetectorSet<DetectorType, MaxDetectors, SType> {
   using Vector = PET2D::Vector<F>;
   using Circle = PET2D::Circle<F>;
   using Event = Barrel::Event<F>;
-  using Base = DetectorSet<DetectorType, MaxDetectors, SType>;
+  using Base = DetectorSet<DetectorClass, MaxDetectors, SType>;
   using CircleDetector = Barrel::CircleDetector<F>;
   using Indices = util::array<MaxDetectors, S>;
   using Response = typename Base::Response;

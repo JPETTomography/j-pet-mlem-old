@@ -8,20 +8,21 @@
 namespace PET2D {
 namespace Barrel {
 
-template <typename ScannerType> class ScannerBuilder {
+template <class ScannerClass> class ScannerBuilder {
  public:
-  using F = typename ScannerType::F;
-  using S = typename ScannerType::S;
-  using Detector = typename ScannerType::Detector;
+  using Scanner = ScannerClass;
+  using F = typename Scanner::F;
+  using S = typename Scanner::S;
+  using Detector = typename Scanner::Detector;
   using Vector = PET2D::Vector<F>;
 
-  static ScannerType build_single_ring(F radius,
-                                       int n_detectors,
-                                       F w_detector,
-                                       F h_detector,
-                                       F d_detector = 0) {
+  static Scanner build_single_ring(F radius,
+                                   int n_detectors,
+                                   F w_detector,
+                                   F h_detector,
+                                   F d_detector = 0) {
 
-    if (n_detectors > static_cast<S>(ScannerType::MaxDetectors))
+    if (n_detectors > static_cast<S>(Scanner::MaxDetectors))
       throw("buld single ring: too many detectors");
     if (radius <= 0)
       throw("invalid radius");
@@ -45,7 +46,7 @@ template <typename ScannerType> class ScannerBuilder {
     if (d_detector == 0)
       outer_radius = detector_base.max_distance();
 
-    ScannerType detector_set(radius, outer_radius);
+    Scanner detector_set(radius, outer_radius);
 
     // produce detector ring rotating base detector n times
     for (auto n = 0; n < n_detectors; ++n) {
@@ -71,7 +72,7 @@ template <typename ScannerType> class ScannerBuilder {
     return detector_set;
   }
 
-  static ScannerType build_multiple_rings(
+  static Scanner build_multiple_rings(
       const std::vector<F> radius,    ///< radiuses of ring
       const std::vector<F> rotation,  ///< rotation of each ring (0-1)
       std::vector<int> n_detectors,   ///< numbers of detectors on ring
@@ -117,7 +118,7 @@ template <typename ScannerType> class ScannerBuilder {
 
     S start_detector = 0;
 
-    ScannerType detector_set = build_single_ring(
+    Scanner detector_set = build_single_ring(
         radius[0], n_detectors[0], w_detector, h_detector, d_detector);
 
     std::function<S(S, S)> symmetric_detector;
@@ -152,12 +153,11 @@ template <typename ScannerType> class ScannerBuilder {
         break;
       if (!n_detectors[i])
         n_detectors[i] = n_detectors[i - 1];
-      if (n_detectors[i] + detector_set.size() > ScannerType::MaxDetectors)
+      if (n_detectors[i] + detector_set.size() > Scanner::MaxDetectors)
         throw("build multiple rings :too many detectors");
 
-      DetectorSet<Detector, ScannerType::MaxDetectors, S> ring =
-          build_single_ring(
-              radius[i], n_detectors[i], w_detector, h_detector, d_detector);
+      DetectorSet<Detector, Scanner::MaxDetectors, S> ring = build_single_ring(
+          radius[i], n_detectors[i], w_detector, h_detector, d_detector);
       S detector_i = 0;
 
       if (std::abs(rotation[i]) < 1e-6) {

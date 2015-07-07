@@ -10,8 +10,9 @@
 
 namespace PET3D {
 namespace Hybrid {
-template <typename Scanner> class SensitivityMapper {
+template <class ScannerClass> class SensitivityMapper {
  public:
+  using Scanner = ScannerClass;
   using F = typename Scanner::F;
   using S = typename Scanner::S;
   using VoxelSet = PET3D::VoxelSet<F, S>;

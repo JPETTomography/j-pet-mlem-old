@@ -45,15 +45,17 @@ using LOR = Scanner2D::LOR;
 using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, LOR::S, S>;
 using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, LOR::S, S>;
 
-template <typename Scanner, typename Model>
-void print_parameters(cmdline::parser& cl, const Scanner& scanner);
+template <class ScannerClass, class ModelClass>
+void print_parameters(cmdline::parser& cl, const ScannerClass& scanner);
 
-template <typename Scanner, typename Model>
-static SparseMatrix run(cmdline::parser& cl, Scanner& scanner, Model& model);
+template <class ScannerClass, class ModelClass>
+static SparseMatrix run(cmdline::parser& cl,
+                        ScannerClass& scanner,
+                        ModelClass& model);
 
-template <typename Scanner>
+template <class ScannerClass>
 void post_process(cmdline::parser& cl,
-                  Scanner& scanner,
+                  ScannerClass& scanner,
                   SparseMatrix& sparse_matrix);
 
 int main(int argc, char* argv[]) {
@@ -135,8 +137,10 @@ int main(int argc, char* argv[]) {
   return 1;
 }
 
-template <typename Scanner, typename Model>
-static SparseMatrix run(cmdline::parser& cl, Scanner& scanner, Model& model) {
+template <class ScannerClass, class ModelClass>
+static SparseMatrix run(cmdline::parser& cl,
+                        ScannerClass& scanner,
+                        ModelClass& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
@@ -229,9 +233,9 @@ static SparseMatrix run(cmdline::parser& cl, Scanner& scanner, Model& model) {
   return matrix.to_sparse();
 }
 
-template <typename Scanner>
+template <class ScannerClass>
 void post_process(cmdline::parser& cl,
-                  Scanner& scanner,
+                  ScannerClass& scanner,
                   SparseMatrix& sparse_matrix) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
