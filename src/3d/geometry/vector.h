@@ -1,5 +1,9 @@
 #pragma once
 
+#if !__CUDACC__
+#include <ostream>
+#endif
+
 #include "util/cuda/compat.h"
 #include "util/read.h"
 #include "2d/geometry/vector.h"
@@ -73,53 +77,46 @@ template <typename FType> struct Vector {
     res /= length();
     return res;
   }
+
+  _ Vector operator+(const Vector& rhs) const {
+    Vector vec(*this);
+    vec += rhs;
+    return vec;
+  }
+
+  _ Vector operator-(const Vector& rhs) const {
+    Vector vec(*this);
+    vec -= rhs;
+    return vec;
+  }
+
+  _ Vector operator*(FType rhs) {
+    Vector vec(*this);
+    vec *= rhs;
+    return vec;
+  }
+
+  _ friend Vector operator*(FType lhs, const Vector& rhs) {
+    Vector vec(rhs);
+    vec *= lhs;
+    return vec;
+  }
+
+  _ FType dot(const Vector& rhs) const {
+    return x * rhs.x + y * rhs.y + z * rhs.z;
+  }
+
+  _ Vector cross(const Vector& rhs) const {
+    return Vector(-z * rhs.y + y * rhs.z,  //
+                  z * rhs.x - x * rhs.z,   //
+                  -y * rhs.x + x * rhs.y);
+  }
+
+#if !__CUDACC__
+  friend std::ostream& operator<<(std::ostream& out, const Vector& vec) {
+    out << vec.x << " " << vec.y << " " << vec.z;
+    return out;
+  }
+#endif
 };
-
-template <typename FType>
-std::ostream& operator<<(std::ostream& out, const Vector<FType>& vec) {
-  out << vec.x << " " << vec.y << " " << vec.z;
-  return out;
-}
-
-template <typename FType>
-_ Vector<FType> operator+(const Vector<FType>& lhs, const Vector<FType>& rhs) {
-  Vector<FType> vec(lhs);
-  vec += rhs;
-  return vec;
-}
-
-template <typename FType>
-_ Vector<FType> operator-(const Vector<FType>& lhs, const Vector<FType>& rhs) {
-  Vector<FType> vec(lhs);
-  vec -= rhs;
-  return vec;
-}
-
-template <typename FType>
-_ Vector<FType> operator*(const Vector<FType>& lhs, FType rhs) {
-  Vector<FType> vec(lhs);
-  vec *= rhs;
-  return vec;
-}
-
-template <typename FType>
-_ Vector<FType> operator*(FType lhs, const Vector<FType>& rhs) {
-  Vector<FType> vec(rhs);
-  vec *= lhs;
-  return vec;
-}
-
-template <typename FType>
-_ FType dot(const Vector<FType>& lhs, const Vector<FType>& rhs) {
-
-  return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
-}
-
-template <typename FType>
-_ Vector<FType> cross(const Vector<FType>& lhs, const Vector<FType>& rhs) {
-
-  return Vector<FType>(-lhs.z * rhs.y + lhs.y * rhs.z,
-                       lhs.z * rhs.x - lhs.x * rhs.z,
-                       -lhs.y * rhs.x + lhs.x * rhs.y);
-}
 }
