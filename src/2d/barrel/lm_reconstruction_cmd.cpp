@@ -70,19 +70,18 @@ int main(int argc, char* argv[]) {
     S n_detectors;
 
     auto lor_info_file_name = cl.get<cmdline::path>("lor-info");
-    std::ifstream lor_info_istream(lor_info_file_name, std::ios::binary);
-    lor_info_istream.read((char*)&n_detectors, sizeof(n_detectors));
-
+    util::ibstream in_lor_info(lor_info_file_name);
+    in_lor_info >> n_detectors;
     std::cout << n_detectors << "\n";
 
-    auto grid = PET2D::PixelGrid<F, S>::read(lor_info_istream);
+    PET2D::PixelGrid<F, S> grid(in_lor_info);
 
     if (verbose)
       std::cout << grid.n_columns << "x" << grid.n_rows << " "
                 << grid.pixel_size << "\n";
 
     PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(n_detectors, grid);
-    lor_info.read(lor_info_istream);
+    lor_info.read(in_lor_info);
     if (verbose)
       std::cout << "read in lor_info\n";
 

@@ -5,6 +5,8 @@
 
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
+#include "util/bstream.h"
+
 #include "2d/barrel/options.h"
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
@@ -61,10 +63,10 @@ int main(int argc, char* argv[]) {
 
     auto lor_info_file_name = cl.get<std::string>("lor-info");
     S n_detectors;
-    std::ifstream lor_info_istream(lor_info_file_name, std::ios::binary);
-    lor_info_istream.read((char*)&n_detectors, sizeof(n_detectors));
+    util::ibstream in_lor_info(lor_info_file_name, std::ios::binary);
+    in_lor_info >> n_detectors;
 
-    auto grid = PET2D::PixelGrid<F, S>::read(lor_info_istream);
+    PET2D::PixelGrid<F, S> grid(in_lor_info);
 
     std::cout << grid.n_columns << "x" << grid.n_rows << " " << grid.pixel_size
               << "\n";
@@ -72,7 +74,7 @@ int main(int argc, char* argv[]) {
       throw("n_detectors mismatch");
     }
     PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(scanner.barrel.size(), grid);
-    lor_info.read(lor_info_istream);
+    lor_info.read(in_lor_info);
 
     Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>> reconstruction(
         scanner, lor_info, -0.200, 80);
