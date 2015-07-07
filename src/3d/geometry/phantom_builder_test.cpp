@@ -102,8 +102,7 @@ static const char* test_phantoms_json = R"JSON({
   ]
 })JSON";
 
-TEST("3d/geometry/phantom_builder/angular_distribution/spherical",
-     "spherical") {
+TEST("3d/geometry/phantom_builder/angular_distribution/spherical") {
   json j = json::parse(test_phantoms_json);
 
   const json& j_phantoms = j["phantoms"];
