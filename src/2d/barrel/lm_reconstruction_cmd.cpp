@@ -9,6 +9,7 @@
 #include "util/bstream.h"
 
 #include "2d/barrel/barrel_builder.h"
+#include "2d/barrel/square_detector.h"
 #include "2d/barrel/options.h"
 #include "2d/barrel/lors_pixels_info.h"
 #include "2d/barrel/sparse_matrix.h"
@@ -30,6 +31,9 @@ using RNG = std::mt19937;
 using Point = PET2D::Point<F>;
 using Pixel = PET2D::Pixel<S>;
 using LOR = PET2D::Barrel::LOR<S>;
+
+using SquareDetector = PET2D::Barrel::SquareDetector<F>;
+using BarrelBuilder = PET2D::Barrel::BarrelBuilder<SquareDetector, S>;
 
 int main(int argc, char* argv[]) {
 
@@ -144,7 +148,7 @@ int main(int argc, char* argv[]) {
 
       Graphics<F> graph(graph_out);
 
-      auto big_barrel = PET2D::Barrel::BarrelBuilder<S>::make_big_barrel();
+      auto big_barrel = BarrelBuilder::make_big_barrel();
       graph.add(big_barrel);
 
       auto event = reconstruction.event(event_num);

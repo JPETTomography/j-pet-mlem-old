@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
     std::vector<Polygon> detectors;
     std::vector<Point> detectors_centers;
 
-    F pixel_size = 0.005;
+    F pixel_size = F(0.005);
     if (cl.exist("s-pixel"))
       pixel_size = cl.get<double>("s-pixel");
     F fov_radius = cl.get<double>("fov-radius");
