@@ -82,7 +82,7 @@ template <typename FType, typename SType> class BoostGeometryUtils {
   template <typename Detector>
   static Polygon make_detector(const Detector& detector) {
     Polygon detector_poly;
-    for (int j = 0; j < detector.size(); j++) {
+    for (int j = 0; j < (int)detector.size(); j++) {
       Point p = detector[j];
       boost::geometry::append(detector_poly,
                               boost::geometry::make<Point2D>(p.x, p.y));

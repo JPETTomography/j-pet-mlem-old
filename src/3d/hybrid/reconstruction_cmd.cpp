@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
 
     std::cout << grid.n_columns << "x" << grid.n_rows << " " << grid.pixel_size
               << "\n";
-    if (n_detectors != scanner.barrel.size()) {
+    if ((size_t)n_detectors != scanner.barrel.size()) {
       throw("n_detectors mismatch");
     }
     PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(scanner.barrel.size(), grid);

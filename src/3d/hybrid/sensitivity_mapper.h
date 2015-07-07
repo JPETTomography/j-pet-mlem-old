@@ -71,7 +71,7 @@ template <class ScannerClass> class SensitivityMapper {
 #pragma omp parallel for schedule(dynamic)
 // #pragma omp parallel for
 #endif
-    for (int i_voxel = 0; i_voxel < voxel_set.size(); ++i_voxel) {
+    for (int i_voxel = 0; i_voxel < (int)voxel_set.size(); ++i_voxel) {
 #if _OPENMP
       auto& l_rng = mp_rngs[omp_get_thread_num()];
 #else

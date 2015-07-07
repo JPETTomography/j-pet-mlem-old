@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
         pixel_size,
         Point(-pixel_size * n_columns / 2, -pixel_size * n_rows / 2));
 
-    for (int i = 0; i < scanner.size(); i++) {
+    for (int i = 0; i < (int)scanner.size(); i++) {
       auto detector = scanner[i];
       Polygon detector_poly = BoostGeometryUtils::make_detector(detector);
 
@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
         auto width2 = F(0);
         Detector detector1 = scanner[d1];
         Detector detector2 = scanner[d2];
-        for (int i = 0; i < detector1.size(); ++i) {
+        for (int i = 0; i < (int)detector1.size(); ++i) {
           auto p1 = detector1[i];
           auto dist1 = std::abs(segment.distance_from(p1));
           if (dist1 > width1)
