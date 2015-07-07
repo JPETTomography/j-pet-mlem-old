@@ -20,12 +20,13 @@ namespace Barrel {
 ///
 /// \image html detector_ring.pdf.png
 
-template <class DetectorClass, std::size_t MaxDetectors, typename SType>
-class RingScanner : public DetectorSet<DetectorClass, MaxDetectors, SType> {
+template <class DetectorClass, typename SType, std::size_t MaxDetectorsSize>
+class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
  public:
-  using Base = DetectorSet<DetectorClass, MaxDetectors, SType>;
-  using S = SType;
+  using Base = DetectorSet<DetectorClass, SType, MaxDetectorsSize>;
   using Detector = DetectorClass;
+  using S = SType;
+  static const size_t MaxDetectors = MaxDetectorsSize;
   using F = typename Detector::F;
   using LOR = Barrel::LOR<S>;
   using Pixel = PET2D::Pixel<S>;

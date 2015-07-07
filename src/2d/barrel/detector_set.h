@@ -13,10 +13,6 @@
 #include "util/json_ostream.h"
 #endif
 
-#ifndef MAX_DETECTORS
-#define MAX_DETECTORS 260
-#endif
-
 /// Two-dimensional PET
 namespace PET2D {
 /// Two-dimensional PET barrel
@@ -24,12 +20,14 @@ namespace Barrel {
 
 template <class ScannerClass> class ScannerBuilder;
 
-template <class DetectorClass, std::size_t MaxDetetectorsSize, typename SType>
+template <class DetectorClass,
+          typename SType,
+          std::size_t MaxDetetectorsSize = 260>
 class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
  public:
   using Detector = DetectorClass;
-  static const size_t MaxDetectors = MaxDetetectorsSize;
   using S = SType;
+  static const size_t MaxDetectors = MaxDetetectorsSize;
   using F = typename Detector::F;
   using LOR = Barrel::LOR<S>;
   using Point = PET2D::Point<F>;

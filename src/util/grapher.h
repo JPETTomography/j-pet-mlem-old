@@ -27,8 +27,8 @@ template <typename FType> class Graphics {
     out_ << "}]}\n";
   }
 
-  template <class Detector, std::size_t MaxDetectors, typename SType>
-  void add(const PET2D::Barrel::DetectorSet<Detector, MaxDetectors, SType>&
+  template <class Detector, typename SType, std::size_t MaxDetectors>
+  void add(const PET2D::Barrel::DetectorSet<Detector, SType, MaxDetectors>&
                scanner) {
     add();
     out_ << "{\n";
@@ -39,9 +39,9 @@ template <typename FType> class Graphics {
     out_ << "}\n";
   }
 
-  template <class Detector, std::size_t MaxDetectors, typename SType>
+  template <class Detector, typename SType, std::size_t MaxDetectors>
   void add(
-      const PET2D::Barrel::DetectorSet<Detector, MaxDetectors, SType>& scanner,
+      const PET2D::Barrel::DetectorSet<Detector, SType, MaxDetectors>& scanner,
       const PET2D::Barrel::LOR<SType>& lor) {
     using F = typename Detector::F;
     add();

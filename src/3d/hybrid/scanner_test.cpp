@@ -19,7 +19,7 @@ float length = 0.30;
 float minimal_angle = std::atan2(inner_radius, length / 2);
 
 using SquareDetector = PET2D::Barrel::SquareDetector<float>;
-using Scanner2D = PET2D::Barrel::GenericScanner<SquareDetector, 24, short>;
+using Scanner2D = PET2D::Barrel::GenericScanner<SquareDetector, short, 24>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 using Vector = PET3D::Vector<float>;
 using Point = PET3D::Point<float>;

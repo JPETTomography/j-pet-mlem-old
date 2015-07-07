@@ -35,20 +35,24 @@ namespace Barrel {
 /// - TriangleDetector
 /// - PolygonalDetector
 
-template <class DetectorClass, std::size_t MaxDetectors, typename SType>
-class GenericScanner : public DetectorSet<DetectorClass, MaxDetectors, SType> {
+template <class DetectorClass,
+          typename SType,
+          std::size_t MaxDetectorsSize = 260>
+class GenericScanner
+    : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
  public:
   using Detector = DetectorClass;
   using S = SType;
+  static const size_t MaxDetectors = MaxDetectorsSize;
   using F = typename Detector::F;
   using LOR = Barrel::LOR<S>;
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
   using Circle = PET2D::Circle<F>;
   using Event = Barrel::Event<F>;
-  using Base = DetectorSet<DetectorClass, MaxDetectors, SType>;
+  using Base = DetectorSet<DetectorClass, SType, MaxDetectorsSize>;
   using CircleDetector = Barrel::CircleDetector<F>;
-  using Indices = util::array<MaxDetectors, S>;
+  using Indices = util::array<MaxDetectorsSize, S>;
   using Response = typename Base::Response;
   using FullResponse = typename Base::FullResponse;
 

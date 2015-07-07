@@ -6,7 +6,7 @@
 
 using Builder = PET2D::Barrel::ScannerBuilder<
     PET2D::Barrel::
-        GenericScanner<PET2D::Barrel::SquareDetector<float>, 128, short>>;
+        GenericScanner<PET2D::Barrel::SquareDetector<float>, short, 128>>;
 
 TEST("2d/barrel/scanner_builder/single_ring/symmetry") {
 

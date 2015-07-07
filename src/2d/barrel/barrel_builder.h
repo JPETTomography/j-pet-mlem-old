@@ -9,8 +9,8 @@ template <class DetectorClass, typename SType> struct BarrelBuilder {
   using Detector = DetectorClass;
   using F = typename Detector::F;
   using S = SType;
-  using SmallBarrel = PET2D::Barrel::GenericScanner<Detector, 192, S>;
-  using BigBarrel = PET2D::Barrel::GenericScanner<Detector, 192, S>;
+  using SmallBarrel = PET2D::Barrel::GenericScanner<Detector, S, 192>;
+  using BigBarrel = PET2D::Barrel::GenericScanner<Detector, S, 192>;
 
   static SmallBarrel make_small_barrel() {
     F width = F(0.005);

@@ -10,7 +10,7 @@
 TEST("2d/barrel/detector_set/math") {
   SECTION("square_detector") {
     using SquareDetector = PET2D::Barrel::SquareDetector<double>;
-    using Scanner = PET2D::Barrel::GenericScanner<SquareDetector, 24, short>;
+    using Scanner = PET2D::Barrel::GenericScanner<SquareDetector, short, 24>;
     using Event = Scanner::Event;
     using Point = Scanner::Point;
     Scanner scanner;
@@ -67,7 +67,7 @@ TEST("2d/barrel/detector_set/math") {
 
   SECTION("circle_detector") {
     using CircleDetector = PET2D::Barrel::CircleDetector<float>;
-    using Detector = PET2D::Barrel::GenericScanner<CircleDetector, 24, short>;
+    using Detector = PET2D::Barrel::GenericScanner<CircleDetector, short, 24>;
     using Point = Detector::Point;
     Detector detector;
 
@@ -92,7 +92,7 @@ TEST("2d/barrel/detector_set/detect") {
   SECTION("two_rings") {
 
     using SquareDetector = PET2D::Barrel::SquareDetector<float>;
-    using Detector = PET2D::Barrel::GenericScanner<SquareDetector, 128, short>;
+    using Detector = PET2D::Barrel::GenericScanner<SquareDetector, short, 128>;
     using Event = Detector::Event;
 
     using Response = typename Detector::Response;

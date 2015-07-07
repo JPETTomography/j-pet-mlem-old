@@ -156,7 +156,7 @@ template <class ScannerClass> class ScannerBuilder {
       if (n_detectors[i] + detector_set.size() > Scanner::MaxDetectors)
         throw("build multiple rings :too many detectors");
 
-      DetectorSet<Detector, Scanner::MaxDetectors, S> ring = build_single_ring(
+      DetectorSet<Detector, S, Scanner::MaxDetectors> ring = build_single_ring(
           radius[i], n_detectors[i], w_detector, h_detector, d_detector);
       S detector_i = 0;
 

@@ -8,7 +8,7 @@
 #include "scanner_builder.h"
 
 using SquareDetector = PET2D::Barrel::SquareDetector<float>;
-using Scanner = PET2D::Barrel::RingScanner<SquareDetector, 512, short>;
+using Scanner = PET2D::Barrel::RingScanner<SquareDetector, short, 512>;
 using Model = Common::AlwaysAccept<float>;
 
 TEST("2d/barrel/scanner/math") {
