@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
     util::ibstream in_geometry(lor_info_file_name);
     Geometry geometry(in_geometry);
 
-    if (geometry.n_detectors != scanner.barrel.size()) {
+    if (geometry.n_detectors != (int)scanner.barrel.size()) {
       throw("n_detectors mismatch");
     }
 
