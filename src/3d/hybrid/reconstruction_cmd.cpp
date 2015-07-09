@@ -29,7 +29,7 @@ using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 using Point = PET2D::Point<F>;
-using LORInfoList = PET2D::Barrel::LORInfoList<F, S>;
+using Geometry = PET2D::Barrel::Geometry<F, S>;
 
 int main(int argc, char* argv[]) {
 
@@ -79,11 +79,11 @@ int main(int argc, char* argv[]) {
       throw("n_detectors mismatch");
     }
 
-    LORInfoList lor_info_list(scanner.barrel.size(), grid);
-    lor_info_list.read(in_lor_info);
+    Geometry geometry(scanner.barrel.size(), grid);
+    geometry.read(in_lor_info);
 
     Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>> reconstruction(
-        scanner, lor_info_list, -0.200, 80);
+        scanner, geometry, -0.200, 80);
 
     reconstruction.calculate_weight();
     reconstruction.calculate_sensitivity();

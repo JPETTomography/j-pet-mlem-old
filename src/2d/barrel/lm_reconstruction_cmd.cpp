@@ -81,10 +81,10 @@ int main(int argc, char* argv[]) {
                 << grid.pixel_size << std::endl;
     }
 
-    PET2D::Barrel::LORInfoList<F, S> lor_info_list(n_detectors, grid);
-    lor_info_list.read(in_lor_info);
+    PET2D::Barrel::Geometry<F, S> geometry(n_detectors, grid);
+    geometry.read(in_lor_info);
     if (cl.exist("system")) {
-      lor_info_list.erase_pixel_info();
+      geometry.erase_pixel_info();
       auto system_matrix_file_name = cl.get<cmdline::path>("system");
       util::ibstream system_matrix_istream(system_matrix_file_name);
       PET2D::Barrel::SparseMatrix<Pixel, LOR, S, H> matrix(
@@ -106,13 +106,13 @@ int main(int argc, char* argv[]) {
       for (auto& element : matrix) {
         auto lor = element.lor;
         F weight = element.hits / n_emissions;
-        lor_info_list.push_back_pixel(lor, element.pixel, weight);
+        geometry.push_back_pixel(lor, element.pixel, weight);
       }
-      lor_info_list.sort_all();
+      geometry.sort_all();
     }
 
     PET2D::Barrel::LMReconstruction<F, S> reconstruction(
-        lor_info_list, cl.get<double>("sigma") / 2);
+        geometry, cl.get<double>("sigma") / 2);
     if (verbose)
       std::cout << "created reconstruction\n";
     if (cl.exist("system"))

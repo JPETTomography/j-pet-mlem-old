@@ -15,7 +15,7 @@
 #include "generic_scanner.h"
 #include "2d/geometry/line_segment.h"
 #include "2d/geometry/pixel_grid.h"
-#include "2d/barrel/lor_info.h"
+#include "2d/barrel/geometry.h"
 
 using F = float;
 using S = short;
@@ -26,7 +26,7 @@ using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Point = PET2D::Point<F>;
 
 using LORInfo = PET2D::Barrel::LORInfo<F, S>;
-using PixelInfo = PET2D::Barrel::LORInfoList<F, S>::PixelInfo;
+using PixelInfo = PET2D::Barrel::Geometry<F, S>::PixelInfo;
 using PixelInfoContainer = PET2D::Barrel::LORInfo<F, S>::PixelInfoList;
 using LOR = PET2D::Barrel::LOR<S>;
 

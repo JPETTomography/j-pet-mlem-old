@@ -3,7 +3,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "2d/barrel/lors_pixels_info.h"
+#include "2d/barrel/geometry.h"
 #include "2d/strip/event.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/voxel_grid.h"
@@ -23,13 +23,13 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using Kernel2D = Kernel2DClass;
   using F = typename Scanner::F;
   using S = typename Scanner::S;
-  using LORInfoList = PET2D::Barrel::LORInfoList<F, S>;
-  using LORInfo = typename LORInfoList::LORInfo;
+  using Geometry = PET2D::Barrel::Geometry<F, S>;
+  using LORInfo = typename Geometry::LORInfo;
   using Response = typename Scanner::Response;
   using LOR = PET2D::Barrel::LOR<S>;
   using StripEvent = PET2D::Strip::Event<F>;
-  using PixelInfo = typename LORInfoList::PixelInfo;
-  using Pixel = typename LORInfoList::Pixel;
+  using PixelInfo = typename Geometry::PixelInfo;
+  using Pixel = typename Geometry::Pixel;
   using Point2D = PET2D::Point<F>;
   using Point = PET3D::Point<F>;
   using Vector2D = PET2D::Vector<F>;
@@ -58,7 +58,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   };
 
   Reconstruction(const Scanner& scanner,
-                 LORInfoList& lor_pixel_info,
+                 Geometry& lor_pixel_info,
                  F z_left,
                  int n_planes)
       : scanner(scanner),
@@ -302,7 +302,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
  public:
   const Scanner& scanner;
-  LORInfoList& lor_pixel_info;
+  Geometry& lor_pixel_info;
   const F z_left;
   const S n_planes;
   const PET3D::VoxelGrid<F, S> v_grid;

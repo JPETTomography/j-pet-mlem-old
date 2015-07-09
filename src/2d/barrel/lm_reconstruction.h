@@ -1,7 +1,6 @@
-#ifndef LM_RECONSTRUCTION
-#define LM_RECONSTRUCTION
+#pragma once
 
-#include "2d/barrel/lors_pixels_info.h"
+#include "2d/barrel/geometry.h"
 #include "2d/barrel/detector_set.h"
 #include "2d/geometry/point.h"
 #include "2d/barrel/lor.h"
@@ -26,9 +25,9 @@ template <typename FType, typename SType> class LMReconstruction {
   using Response = typename Scanner2D::Response;
   using Point = PET2D::Point<F>;
   using LOR = PET2D::Barrel::LOR<S>;
-  using LORsPixelsInfo = PET2D::Barrel::LORInfoList<F, S>;
-  using LORInfo = typename LORsPixelsInfo::LORInfo;
-  using PixelInfo = typename LORsPixelsInfo::PixelInfo;
+  using Geometry = PET2D::Barrel::Geometry<F, S>;
+  using LORInfo = typename Geometry::LORInfo;
+  using PixelInfo = typename Geometry::PixelInfo;
   using PixelConstIterator = typename LORInfo::PixelInfoList::const_iterator;
   using Output = std::vector<F>;
 
@@ -47,9 +46,9 @@ template <typename FType, typename SType> class LMReconstruction {
     F weight;
   };
 
-  LMReconstruction(LORsPixelsInfo& lor_pixel_info, F sigma)
-      : lor_pixel_info(lor_pixel_info),
-        n_pixels(lor_pixel_info.grid.n_pixels),
+  LMReconstruction(Geometry& geometry, F sigma)
+      : geometry(geometry),
+        n_pixels(geometry.grid.n_pixels),
         system_matrix_(false),
         sigma_(sigma),
         n_threads_(omp_get_max_threads()),
@@ -69,9 +68,9 @@ template <typename FType, typename SType> class LMReconstruction {
     BarrelEvent event;
     event.lor = response.lor;
 
-    auto& segment = lor_pixel_info[response.lor].segment;
+    auto& segment = geometry[response.lor].segment;
 
-    auto width = lor_pixel_info[event.lor].width;
+    auto width = geometry[event.lor].width;
     event.gauss_norm = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
     event.inv_sigma2 = 1 / (2 * sigma_w(width) * sigma_w(width));
 
@@ -83,16 +82,16 @@ template <typename FType, typename SType> class LMReconstruction {
     pix_info_up.t = t + 3 * sigma_;
     pix_info_dn.t = t - 3 * sigma_;
     event.last_pixel =
-        std::upper_bound(lor_pixel_info[event.lor].pixels.begin(),
-                         lor_pixel_info[event.lor].pixels.end(),
+        std::upper_bound(geometry[event.lor].pixels.begin(),
+                         geometry[event.lor].pixels.end(),
                          pix_info_up,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
                          });
 
     event.first_pixel =
-        std::lower_bound(lor_pixel_info[event.lor].pixels.begin(),
-                         lor_pixel_info[event.lor].pixels.end(),
+        std::lower_bound(geometry[event.lor].pixels.begin(),
+                         geometry[event.lor].pixels.end(),
                          pix_info_dn,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
@@ -123,7 +122,7 @@ template <typename FType, typename SType> class LMReconstruction {
     event_count_ = 0;
     voxel_count_ = 0;
     pixel_count_ = 0;
-    auto grid = lor_pixel_info.grid;
+    auto grid = geometry.grid;
     for (auto& thread_rho : thread_rhos_) {
       thread_rho.assign(grid.n_pixels, 0);
     }
@@ -203,9 +202,9 @@ template <typename FType, typename SType> class LMReconstruction {
   }
 
   void calculate_weight() {
-    auto& grid = lor_pixel_info.grid;
+    auto& grid = geometry.grid;
     sensitivity_.assign(grid.n_pixels, 0);
-    for (auto& lor_info : lor_pixel_info) {
+    for (auto& lor_info : geometry) {
 
       auto& segment = lor_info.segment;
 
@@ -225,9 +224,9 @@ template <typename FType, typename SType> class LMReconstruction {
   }
 
   void calculate_sensitivity() {
-    auto& grid = lor_pixel_info.grid;
+    auto& grid = geometry.grid;
     sensitivity_.assign(grid.n_pixels, 0);
-    for (auto& lor_info : lor_pixel_info) {
+    for (auto& lor_info : geometry) {
 
       for (auto& pixel_info : lor_info.pixels) {
         auto pixel = pixel_info.pixel;
@@ -241,7 +240,7 @@ template <typename FType, typename SType> class LMReconstruction {
 
   BarrelEvent event(int i) const { return events_[i]; }
 
-  LORsPixelsInfo& lor_pixel_info;
+  Geometry& geometry;
   const int n_pixels;
 
  private:
@@ -268,6 +267,6 @@ template <typename FType, typename SType> class LMReconstruction {
   std::vector<int> n_events_per_thread_;
   Output sensitivity_;
 };
-}
-}
-#endif  // LM_RECONSTRUCTION
+
+}  // Barrel
+}  // PET2D
