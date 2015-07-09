@@ -22,6 +22,9 @@ void add_reconstruction_options(cmdline::parser& parser);
 /// Adds \ref cmd_2d_strip_phantom specific command line options.
 void add_phantom_options(cmdline::parser& parser);
 
+/// calculates all empty values from existing other parameters
+void calculate_scanner_options(cmdline::parser& parser);
+
 /// provides initialization list for creating scanner
 #define __PET2D_STRIP(...) __VA_ARGS__  // just pass-through
 #define PET2D_STRIP_SCANNER_CL(cl)            \

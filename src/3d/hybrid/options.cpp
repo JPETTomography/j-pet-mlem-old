@@ -21,6 +21,10 @@ void add_reconstruction_options(cmdline::parser& cl) {
   PET2D::Barrel::add_reconstruction_options(cl);
 }
 
+void calculate_scanner_options(cmdline::parser& cl) {
+  PET2D::Barrel::calculate_scanner_options(cl);
+}
+
 void set_small_barrel_options(cmdline::parser& parser) {
   PET2D::Barrel::set_small_barrel_options(parser);
   parser.get<double>("length") = 0.3;

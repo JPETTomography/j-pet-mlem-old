@@ -92,8 +92,10 @@ int main(int argc, char* argv[]) {
     cmdline::load_accompanying_config(cl, false);
     if (cl.exist("small"))
       PET3D::Hybrid::set_small_barrel_options(cl);
-    if (cl.exist("big"))
+    else if (cl.exist("big"))
       PET3D::Hybrid::set_big_barrel_options(cl);
+    else
+      PET3D::Hybrid::calculate_scanner_options(cl);
 
     const auto& model_name = cl.get<std::string>("model");
     const auto& length_scale = cl.get<double>("base-length");

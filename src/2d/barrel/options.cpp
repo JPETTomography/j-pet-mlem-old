@@ -206,6 +206,70 @@ void add_reconstruction_options(cmdline::parser& cl) {
 #endif
 }
 
+void calculate_scanner_options(cmdline::parser& cl) {
+  // convert obsolete acceptance option to length scale
+  auto& length_scale = cl.get<double>("base-length");
+  if (cl.exist("acceptance") && !cl.exist("base-length")) {
+    length_scale = 1.0 / cl.get<double>("acceptance");
+  }
+
+  if (cl.exist("verbose")) {
+    std::cerr << "assumed:" << std::endl;
+  }
+
+  auto& n_pixels = cl.get<int>("n-pixels");
+  auto& radius = cl.get<double>("radius");
+  auto& n_detectors = cl.get<int>("n-detectors");
+  auto& s_pixel = cl.get<double>("s-pixel");
+  auto& w_detector = cl.get<double>("w-detector");
+  auto& d_detector = cl.get<double>("d-detector");
+  auto& shape = cl.get<std::string>("shape");
+  auto& fov_radius = cl.get<double>("fov-radius");
+  std::cerr << fov_radius << "\n";
+
+  if (!cl.exist("small") && !cl.exist("big") && !cl.exist("fov-radius")) {
+    fov_radius = radius / std::sqrt(2);
+  }
+  std::cerr << fov_radius << "\n";
+  if (cl.exist("s-pixel") && !cl.exist("n-pixels")) {
+    cl.get<int>("n-pixels") = (int)std::floor(2 * fov_radius / s_pixel);
+  }
+
+  // automatic pixel size
+  if (!cl.exist("s-pixel")) {
+    s_pixel = 2 * fov_radius / n_pixels;
+
+    std::cerr << "--n-pixel=" << n_pixels << std::endl;
+    std::cerr << "--fov-radius=" << fov_radius << std::endl;
+    std::cerr << "--s-pixel=" << s_pixel << std::endl;
+  }
+
+  if (!cl.exist("w-detector")) {
+    if (cl.exist("n-detectors")) {
+      w_detector = 2 * M_PI * .9 * radius / n_detectors;
+    } else if (cl.exist("d-detector")) {
+      if (shape == "circle") {
+        w_detector = d_detector;
+      } else {
+        auto mult = 1.;
+        auto sides = 0.;
+        if (shape == "triangle") {
+          sides = 3.;
+        } else if (shape == "square") {
+          sides = 4.;
+        } else if (shape == "hexagon") {
+          sides = 6.;
+          mult = 2.;
+        } else {
+          throw("cannot determine detector width for given shape");
+        }
+        w_detector = d_detector * std::sin(M_PI / sides) * mult;
+      }
+    }
+    std::cerr << "--w-detector=" << w_detector << std::endl;
+  }
+}
+
 void set_small_barrel_options(cmdline::parser& cl) {
   std::cerr << "setting small barrel\n";
   auto& radius = cl.get<double>("radius");
