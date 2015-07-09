@@ -1,5 +1,9 @@
 #pragma once
 
+#if !__CUDACC__
+#include "util/bstream.h"
+#endif
+
 #include "2d/barrel/lor.h"
 #include "2d/geometry/pixel_grid.h"
 #include "2d/geometry/point.h"
@@ -8,6 +12,10 @@
 namespace PET2D {
 namespace Barrel {
 
+/// Keeps extended information about LOR
+
+/// Keeps extended information about LOR such as pixels belonging to the LOR
+/// together with their description using PixelInfo.
 template <typename FType, typename SType> struct LORInfo {
   using F = FType;
   using S = SType;
@@ -35,6 +43,7 @@ template <typename FType, typename SType> struct LORInfo {
   LORInfo(const LOR& lor, const LineSegment& segment, const F width)
       : lor(lor), segment(segment), width(width) {}
 
+#if !__CUDACC__
   LORInfo(std::istream& in) : lor(in), segment(in), width(util::read<F>(in)) {
     auto n_pixels = util::read<int>(in);
     if (in && n_pixels) {
@@ -42,6 +51,17 @@ template <typename FType, typename SType> struct LORInfo {
       in.read((char*)&pixels[0], sizeof(PixelInfo) * n_pixels);
     }
   }
+
+  friend util::obstream& operator<<(util::obstream& out,
+                                    const LORInfo& lor_info) {
+    out << lor_info.lor;
+    out << lor_info.segment;
+    out << lor_info.width;
+    out << lor_info.pixels.size();
+    out << lor_info.pixels;
+    return out;
+  }
+#endif
 
   void sort() {
     std::sort(pixels.begin(),

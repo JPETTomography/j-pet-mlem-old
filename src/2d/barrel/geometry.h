@@ -1,10 +1,16 @@
 #pragma once
 
+#if !__CUDACC__
+#include "util/bstream.h"
+#include "util/read.h"
+#endif
+
 #include "lor_info.h"
 
 namespace PET2D {
 namespace Barrel {
 
+/// Keeps extended information about barrel, including grid and all LOR info
 template <typename FType, typename SType>
 class Geometry : public std::vector<LORInfo<FType, SType>> {
  public:
@@ -23,6 +29,32 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
       : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
         n_detectors(n_detectors),
         grid(grid) {}
+
+#if !__CUDACC__
+ private:
+  Geometry(S n_detectors, std::istream& in)
+      : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
+        n_detectors(n_detectors),
+        grid(in) {
+    while (in) {
+      LORInfo lor_info(in);
+      (*this)[lor_info.lor] = std::move(lor_info);
+    }
+  }
+
+ public:
+  /// Construct geometry out of the input streams
+  Geometry(std::istream& in) : Geometry(util::read<S>(in), in) {}
+
+  /// Serialize geometry into binary output stream
+  friend util::obstream& operator<<(util::obstream& out,
+                                    const Geometry& geometry) {
+    for (const auto& lor_info : geometry) {
+      out << lor_info;
+    }
+    return out;
+  }
+#endif
 
   LORInfo& operator[](const LOR& lor) { return this->at(lor.index()); }
 
@@ -54,14 +86,6 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
   void erase_pixel_info() {
     for (auto& lor_info : *this) {
       lor_info.pixels.resize(0);
-    }
-  }
-
-  // Reading (binary)
-  void read(std::istream& in) {
-    while (in) {
-      LORInfo lor_info(in);
-      (*this)[lor_info.lor] = std::move(lor_info);
     }
   }
 

@@ -25,6 +25,7 @@ using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Point = PET2D::Point<F>;
 
+using Geometry = PET2D::Barrel::Geometry<F, S>;
 using LORInfo = PET2D::Barrel::LORInfo<F, S>;
 using PixelInfo = PET2D::Barrel::Geometry<F, S>::PixelInfo;
 using PixelInfoContainer = PET2D::Barrel::LORInfo<F, S>::PixelInfoList;
@@ -109,15 +110,14 @@ int main(int argc, char* argv[]) {
 
     S n_detectors = scanner.size();
 
-    util::obstream out_lor_info(output);
-    out_lor_info << n_detectors << grid;
-
     std::vector<LOR> lor_map;
     auto lor_count = LOR::end_for_detectors(n_detectors).index();
     lor_map.resize(lor_count);
     for (LOR lor(0, 0); lor < LOR::end_for_detectors(n_detectors); ++lor) {
       lor_map[lor.index()] = lor;
     }
+
+    Geometry geometry(n_detectors, grid);
 
     util::progress progress(verbose, lor_count);
 
@@ -201,22 +201,14 @@ int main(int argc, char* argv[]) {
 
         lor_info.sort();
       }
+      geometry[lor] = lor_info;
 
-      int n_pixels = lor_info.pixels.size();
-
-#if _OPENMP
-#pragma omp critical
-#endif
-      {
-        out_lor_info << lor  //
-                     << detectors_centers[lor.first]
-                     << detectors_centers[lor.second]  //
-                     << lor_info.width << n_pixels     //
-                     << lor_info.pixels;
-      }
       CATCH;
       progress(lor_index, true);
     }
+
+    util::obstream out_geometry(output);
+    out_geometry << geometry;
 
     return 0;
   } catch (cmdline::exception& ex) {

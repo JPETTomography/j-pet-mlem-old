@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 
   try {
     cmdline::parser cl;
-    cl.add<std::string>("lor-info", 0, "lor-pixel information", true);
+    cl.add<std::string>("geometry", 0, "geometry information", true);
     cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
     cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
 
@@ -62,25 +62,19 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    auto lor_info_file_name = cl.get<std::string>("lor-info");
-    S n_detectors;
-    util::ibstream in_lor_info(lor_info_file_name, std::ios::binary);
-    in_lor_info >> n_detectors;
+    auto lor_info_file_name = cl.get<std::string>("geometry");
+    util::ibstream in_geometry(lor_info_file_name);
+    Geometry geometry(in_geometry);
 
-    PET2D::PixelGrid<F, S> grid(in_lor_info);
-
-    if (cl.exist("verbose")) {
-      std::cout << n_detectors << std::endl;
-      std::cout << grid.n_columns << "x" << grid.n_rows << " "
-                << grid.pixel_size << std::endl;
-    }
-
-    if ((size_t)n_detectors != scanner.barrel.size()) {
+    if (geometry.n_detectors != scanner.barrel.size()) {
       throw("n_detectors mismatch");
     }
 
-    Geometry geometry(scanner.barrel.size(), grid);
-    geometry.read(in_lor_info);
+    if (cl.exist("verbose")) {
+      std::cout << geometry.n_detectors << std::endl;
+      std::cout << geometry.grid.n_columns << "x" << geometry.grid.n_rows << " "
+                << geometry.grid.pixel_size << std::endl;
+    }
 
     Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>> reconstruction(
         scanner, geometry, -0.200, 80);
