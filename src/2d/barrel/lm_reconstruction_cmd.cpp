@@ -11,7 +11,7 @@
 #include "2d/barrel/barrel_builder.h"
 #include "2d/barrel/square_detector.h"
 #include "2d/barrel/options.h"
-#include "2d/barrel/lors_pixels_info.h"
+#include "2d/barrel/lor_info.h"
 #include "2d/barrel/sparse_matrix.h"
 #include "2d/barrel/lm_reconstruction.h"
 
@@ -81,15 +81,10 @@ int main(int argc, char* argv[]) {
                 << grid.pixel_size << std::endl;
     }
 
-    PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(n_detectors, grid);
-    lor_info.read(in_lor_info);
-    if (verbose)
-      std::cout << "read in lor_info\n";
-
-    if (!cl.exist("system")) {
-
-    } else {
-      lor_info.erase_pixel_info();
+    PET2D::Barrel::LORInfoList<F, S> lor_info_list(n_detectors, grid);
+    lor_info_list.read(in_lor_info);
+    if (cl.exist("system")) {
+      lor_info_list.erase_pixel_info();
       auto system_matrix_file_name = cl.get<cmdline::path>("system");
       util::ibstream system_matrix_istream(system_matrix_file_name);
       PET2D::Barrel::SparseMatrix<Pixel, LOR, S, H> matrix(
@@ -109,16 +104,15 @@ int main(int argc, char* argv[]) {
       }
 
       for (auto& element : matrix) {
-
         auto lor = element.lor;
         F weight = element.hits / n_emissions;
-        lor_info.push_back_pixel(lor, element.pixel, weight);
+        lor_info_list.push_back_pixel(lor, element.pixel, weight);
       }
-      lor_info.sort();
+      lor_info_list.sort_all();
     }
 
     PET2D::Barrel::LMReconstruction<F, S> reconstruction(
-        lor_info, cl.get<double>("sigma") / 2);
+        lor_info_list, cl.get<double>("sigma") / 2);
     if (verbose)
       std::cout << "created reconstruction\n";
     if (cl.exist("system"))

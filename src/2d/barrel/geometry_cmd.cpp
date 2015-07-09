@@ -15,7 +15,7 @@
 #include "generic_scanner.h"
 #include "2d/geometry/line_segment.h"
 #include "2d/geometry/pixel_grid.h"
-#include "2d/barrel/lors_pixels_info.h"
+#include "2d/barrel/lor_info.h"
 
 using F = float;
 using S = short;
@@ -25,7 +25,8 @@ using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Point = PET2D::Point<F>;
 
-using PixelInfo = PET2D::Barrel::LORsPixelsInfo<F, S>::PixelInfo;
+using LORInfo = PET2D::Barrel::LORInfo<F, S>;
+using PixelInfo = PET2D::Barrel::LORInfoList<F, S>::PixelInfo;
 using PixelInfoContainer = PET2D::Barrel::LORInfo<F, S>::PixelInfoList;
 using LOR = PET2D::Barrel::LOR<S>;
 
@@ -107,7 +108,6 @@ int main(int argc, char* argv[]) {
     mapper.map(fov_circle, "fill:none;stroke:red;");
 
     S n_detectors = scanner.size();
-    PET2D::Barrel::LORsPixelsInfo<F, S> lor_info(n_detectors, grid);
 
     util::obstream out_lor_info(output);
     out_lor_info << n_detectors << grid;
@@ -145,10 +145,11 @@ int main(int argc, char* argv[]) {
       TRY;
       boost::geometry::model::multi_polygon<Polygon> pair;
 
-      boost::geometry::union_(
-          detectors[lor.first], detectors[lor.second], pair);
-      Polygon lor_polygon;
-      boost::geometry::convex_hull(pair, lor_polygon);
+      boost::geometry::union_(detectors[lor.first],   // combine
+                              detectors[lor.second],  // these
+                              pair);
+      Polygon lor_hull;
+      boost::geometry::convex_hull(pair, lor_hull);
 
       PET2D::LineSegment<F> segment(detectors_centers[lor.second],
                                     detectors_centers[lor.first]);
@@ -169,9 +170,10 @@ int main(int argc, char* argv[]) {
         if (dist2 > width2)
           width2 = dist2;
       }
-      F width = width1 + width2;
 
-      if (boost::geometry::intersects(lor_polygon, fov_circle)) {
+      LORInfo lor_info(lor, segment, width1 + width2);
+
+      if (boost::geometry::intersects(lor_hull, fov_circle)) {
         for (int ix = 0; ix < grid.n_columns; ++ix)
           for (int iy = 0; iy < grid.n_rows; ++iy) {
 
@@ -179,7 +181,7 @@ int main(int argc, char* argv[]) {
             Polygon pixel = BoostGeometryUtils::make_pixel(grid, ix, iy);
             if (boost::geometry::intersects(pixel, fov_circle)) {
               boost::geometry::model::multi_polygon<Polygon> inter;
-              boost::geometry::intersection(lor_polygon, pixel, inter);
+              boost::geometry::intersection(lor_hull, pixel, inter);
               auto area = boost::geometry::area(inter);
 
               if (area > 0) {
@@ -187,12 +189,12 @@ int main(int argc, char* argv[]) {
                 auto fill = area / pixel_area;
                 auto t = segment.projection_scaled(center);
                 auto distance = segment.distance_from(center);
-                PixelInfo info;
-                info.pixel = PET2D::Pixel<S>(ix, iy);
-                info.t = t;
-                info.distance = distance;
-                info.fill = fill;
-                lor_info.push_back_pixel_info(lor, info);
+                PixelInfo pixel_info;
+                pixel_info.pixel = PET2D::Pixel<S>(ix, iy);
+                pixel_info.t = t;
+                pixel_info.distance = distance;
+                pixel_info.fill = fill;
+                lor_info.push_back(pixel_info);
               }
             }
           }
@@ -200,15 +202,17 @@ int main(int argc, char* argv[]) {
         lor_info.sort();
       }
 
-      int n_pixels = lor_info[lor].pixels.size();
+      int n_pixels = lor_info.pixels.size();
 
 #if _OPENMP
 #pragma omp critical
 #endif
       {
-        out_lor_info << lor << detectors_centers[lor.first]
-                     << detectors_centers[lor.second] << width << n_pixels
-                     << lor_info[lor].pixels;
+        out_lor_info << lor  //
+                     << detectors_centers[lor.first]
+                     << detectors_centers[lor.second]  //
+                     << lor_info.width << n_pixels     //
+                     << lor_info.pixels;
       }
       CATCH;
       progress(lor_index, true);

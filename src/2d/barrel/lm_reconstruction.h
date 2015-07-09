@@ -26,7 +26,7 @@ template <typename FType, typename SType> class LMReconstruction {
   using Response = typename Scanner2D::Response;
   using Point = PET2D::Point<F>;
   using LOR = PET2D::Barrel::LOR<S>;
-  using LORsPixelsInfo = PET2D::Barrel::LORsPixelsInfo<F, S>;
+  using LORsPixelsInfo = PET2D::Barrel::LORInfoList<F, S>;
   using LORInfo = typename LORsPixelsInfo::LORInfo;
   using PixelInfo = typename LORsPixelsInfo::PixelInfo;
   using PixelConstIterator = typename LORInfo::PixelInfoList::const_iterator;

@@ -23,13 +23,13 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using Kernel2D = Kernel2DClass;
   using F = typename Scanner::F;
   using S = typename Scanner::S;
-  using LORsPixelsInfo = PET2D::Barrel::LORsPixelsInfo<F, S>;
-  using LORInfo = typename LORsPixelsInfo::LORInfo;
+  using LORInfoList = PET2D::Barrel::LORInfoList<F, S>;
+  using LORInfo = typename LORInfoList::LORInfo;
   using Response = typename Scanner::Response;
   using LOR = PET2D::Barrel::LOR<S>;
   using StripEvent = PET2D::Strip::Event<F>;
-  using PixelInfo = typename LORsPixelsInfo::PixelInfo;
-  using Pixel = typename LORsPixelsInfo::Pixel;
+  using PixelInfo = typename LORInfoList::PixelInfo;
+  using Pixel = typename LORInfoList::Pixel;
   using Point2D = PET2D::Point<F>;
   using Point = PET3D::Point<F>;
   using Vector2D = PET2D::Vector<F>;
@@ -58,7 +58,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   };
 
   Reconstruction(const Scanner& scanner,
-                 LORsPixelsInfo& lor_pixel_info,
+                 LORInfoList& lor_pixel_info,
                  F z_left,
                  int n_planes)
       : scanner(scanner),
@@ -302,7 +302,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
  public:
   const Scanner& scanner;
-  LORsPixelsInfo& lor_pixel_info;
+  LORInfoList& lor_pixel_info;
   const F z_left;
   const S n_planes;
   const PET3D::VoxelGrid<F, S> v_grid;
