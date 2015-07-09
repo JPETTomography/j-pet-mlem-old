@@ -10,6 +10,14 @@
 namespace PET2D {
 namespace Barrel {
 
+#if !__CUDACC__
+namespace {
+template <typename FType> constexpr uint32_t magic() { return 0; }
+template <> constexpr uint32_t magic<float>() { return "PETg"_4cc; }
+template <> constexpr uint32_t magic<double>() { return "PETG"_4cc; }
+}
+#endif
+
 /// Keeps extended information about barrel, including grid and all LOR info
 template <typename FType, typename SType>
 class Geometry : public std::vector<LORInfo<FType, SType>> {
@@ -32,10 +40,12 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
 
 #if !__CUDACC__
  private:
-  Geometry(S n_detectors, std::istream& in)
+  Geometry(uint32_t file_magic, S n_detectors, std::istream& in)
       : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
         n_detectors(n_detectors),
         grid(in) {
+    if (file_magic != magic<F>())
+      throw("unknown binary geometry file");
     while (in) {
       LORInfo lor_info(in);
       (*this)[lor_info.lor] = std::move(lor_info);
@@ -44,11 +54,15 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
 
  public:
   /// Construct geometry out of the input streams
-  Geometry(std::istream& in) : Geometry(util::read<S>(in), in) {}
+  Geometry(std::istream& in)
+      : Geometry(util::read<uint32_t>(in), util::read<S>(in), in) {}
 
   /// Serialize geometry into binary output stream
   friend util::obstream& operator<<(util::obstream& out,
                                     const Geometry& geometry) {
+    out << magic<F>();
+    out << geometry.n_detectors;
+    out << geometry.grid;
     for (const auto& lor_info : geometry) {
       out << lor_info;
     }

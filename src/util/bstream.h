@@ -3,6 +3,11 @@
 #include <fstream>
 #include <vector>
 
+/// Builds 32-bit FourCC from "1234"_4cc
+constexpr uint32_t operator"" _4cc(const char* str, size_t) {
+  return (uint32_t)((str[3] << 24) | (str[2] << 16) | (str[1] << 8) | str[0]);
+}
+
 namespace util {
 
 /// Binary input stream based on \c std::ifstream

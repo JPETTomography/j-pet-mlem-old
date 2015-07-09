@@ -39,11 +39,6 @@ struct SparseElement {
   HitType hits;
 };
 
-/// Builds 32-bit FourCC from "1234"_4cc
-constexpr uint32_t operator"" _4cc(const char* str, size_t) {
-  return (uint32_t)((str[3] << 24) | (str[2] << 16) | (str[1] << 8) | str[0]);
-}
-
 /// \page sparse_format Sparse system matrix binary file format
 ///
 /// \brief Describes binary format used to keep optimal representation for
