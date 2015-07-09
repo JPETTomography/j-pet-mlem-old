@@ -117,7 +117,7 @@ template <typename FType, typename SType> class LMReconstruction {
     return count;
   }
 
-  int iterate() {
+  int operator()() {
 
     event_count_ = 0;
     voxel_count_ = 0;

@@ -7,6 +7,7 @@
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 #include "util/bstream.h"
+#include "util/progress.h"
 
 #include "2d/barrel/barrel_builder.h"
 #include "2d/barrel/square_detector.h"
@@ -150,19 +151,28 @@ int main(int argc, char* argv[]) {
     }
 
     auto n_blocks = cl.get<int>("blocks");
-    auto n_iter = cl.get<int>("iterations");
+    auto n_iterations = cl.get<int>("iterations");
+
+    const int n_file_digits = n_blocks * n_iterations >= 1000
+                                  ? 4
+                                  : n_blocks * n_iterations >= 100
+                                        ? 3
+                                        : n_blocks * n_iterations >= 10 ? 2 : 1;
+
+    util::progress progress(verbose, n_blocks * n_iterations, 1);
 
     for (int block = 0; block < n_blocks; ++block) {
-      for (int i = 0; i < n_iter; i++) {
-        std::cout << block * n_iter + i << " " << reconstruction.iterate()
-                  << "\n";
+      for (int i = 0; i < n_iterations; i++) {
+        progress(block * n_iterations + i);
+        reconstruction();
+        progress(block * n_iterations + i, true);
       }
-      char rho_file_name[64];
-      sprintf(rho_file_name,
-              "%s_%03d.bin",
-              output_base_name.c_str(),
-              (block + 1) * n_iter);
-      util::obstream out(rho_file_name);
+      std::stringstream fn;
+      fn << output_base_name << "_"      // phantom_
+         << std::setw(n_file_digits)     //
+         << std::setfill('0')            //
+         << (block + 1) * n_iterations;  // 001
+      util::obstream out(fn.str() + ".bin");
       out << reconstruction.rho();
     }
   } catch (cmdline::exception& ex) {
