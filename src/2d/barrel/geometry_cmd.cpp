@@ -42,6 +42,7 @@ int main(int argc, char* argv[]) {
     PET2D::Barrel::add_matrix_options(cl);
     cl.try_parse(argc, argv);
 
+    // FIXME: this only works for big barrel
     PET2D::Barrel::set_big_barrel_options(cl);
     auto scanner =
         PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
