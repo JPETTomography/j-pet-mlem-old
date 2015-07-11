@@ -8,6 +8,37 @@
 /// - \subpage cmd_2d_barrel_reconstruction
 /// - \subpage cmd_2d_barrel_geometry
 /// - \subpage cmd_2d_barrel_lm_reconstruction
+///
+/// Workflow
+/// --------
+///
+/// 1. Using system matrix:
+///
+/// \f[
+///   \left.
+///   \begin{array}{lll}
+///     \mathit{scanner~desc.} &\!\!\!\!\rightarrow \mathtt{2d\_barrel\_matrix}
+///                            &\!\!\!\!\rightarrow \mathit{system~matrix} \\
+///     \mathit{phantom~desc.} &\!\!\!\!\rightarrow \mathtt{2d\_barrel\_phantom}
+///                            &\!\!\!\!\rightarrow \mathit{mean}
+///   \end{array}
+///   \right\} \rightarrow \mathtt{2d\_barrel\_reconstruction}
+///            \rightarrow \mathit{reconstruction~image}
+/// \f]
+///
+/// 2. Using LM and geometry description:
+///
+/// \f[
+///   \left.
+///   \begin{array}{lll}
+///   \mathit{scanner~desc.} &\!\!\!\!\rightarrow \mathtt{2d\_barrel\_geometry}
+///                          &\!\!\!\!\rightarrow \mathit{geometry~desc.} \\
+///   \mathit{phantom~desc.} &\!\!\!\!\rightarrow \mathtt{2d\_barrel\_phantom}
+///                          &\!\!\!\!\rightarrow \mathit{response}
+///   \end{array}
+///   \right\} \rightarrow \mathtt{2d\_barrel\_lm\_reconstruction}
+///            \rightarrow \mathit{reconstruction~image}
+/// \f]
 
 #pragma once
 

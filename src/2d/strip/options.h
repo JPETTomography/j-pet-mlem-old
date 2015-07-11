@@ -5,6 +5,13 @@
 /// ---------------
 /// - \subpage cmd_2d_strip_phantom
 /// - \subpage cmd_2d_strip_reconstruction
+///
+/// Workflow
+/// --------
+/// \f[
+///   \mathit{phantom~desc.} \rightarrow \mathtt{2d\_barrel\_phantom}
+///                          \rightarrow \mathit{reconstruction~image}
+/// \f]
 
 #pragma once
 
