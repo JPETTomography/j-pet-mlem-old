@@ -104,6 +104,9 @@ template <class RNGClass, typename FType> class Phantom {
   }
 
   void calculate_cdf() {
+    if (region_list.size() == 0) {
+      throw("must specify at least one region");
+    }
     CDF.assign(region_list.size(), 0);
     CDF[0] = region_list[0]->weight();
     for (size_t i = 1; i < region_list.size(); i++) {
