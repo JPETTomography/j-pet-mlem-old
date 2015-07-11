@@ -90,10 +90,6 @@ int main(int argc, char* argv[]) {
   try {
     cmdline::parser cl;
     PET2D::Barrel::add_phantom_options(cl);
-    cl.add("small", 0, "small barrel", false);
-    cl.add("big", 0, "big barrel", false);
-    cl.add<float>("sigma", 0, "tof sigma", false, 0.06);
-    cl.add("bin", 0, "ouput number of hits in each lor position");
     cl.try_parse(argc, argv);
 
 #if _OPENMP

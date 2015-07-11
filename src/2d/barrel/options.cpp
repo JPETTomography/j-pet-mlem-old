@@ -14,6 +14,11 @@ namespace PET2D {
 namespace Barrel {
 
 void add_scanner_options(cmdline::parser& cl) {
+  // hard-coded J-PET barrel types
+  cl.add("small", 0, "small J-PET barrel");
+  cl.add("big", 0, "big J-PET barrel");
+
+  // custom barrel dimensions
   cl.add<double>("radius", 'r', "inner detector ring radius", false);
   cl.add<double>("radius2", 0, " ... 2nd ring", false);
   cl.add<double>("radius3", 0, " ... 3rd ring", false);
@@ -108,8 +113,6 @@ void add_matrix_options(cmdline::parser& cl) {
   cl.add<util::random::tausworthe::seed_type>(
       "seed", 'S', "random number generator seed", cmdline::dontsave);
 
-  cl.add("small", 0, "small barrel");
-  cl.add("big", 0, "big barrel");
 #if HAVE_CUDA
   cl.add("gpu", 'G', "run on GPU (via CUDA)");
   cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 64);
@@ -144,6 +147,9 @@ void add_phantom_options(cmdline::parser& cl) {
   cl.add<double>("s-pixel", 'p', "pixel size", false);
   cl.add<double>(
       "tof-step", 't', "TOF quantisation step for distance delta", false);
+  cl.add<float>("sigma", 0, "tof sigma", false, 0.06);
+  cl.add("bin", 0, "ouput number of hits in each lor position");
+
   cl.add<std::string>(
       "shape",
       's',
