@@ -135,8 +135,8 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
            2 * 2;
   }
 
-  SymmetryDescriptor<S>* symmetry_descriptor() const {
-    return symmetry_descriptor_;
+  SymmetryDescriptor<S>& symmetry_descriptor() const {
+    return *symmetry_descriptor_;
   }
 
 #if !__CUDACC__

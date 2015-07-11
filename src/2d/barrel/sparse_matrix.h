@@ -401,7 +401,7 @@ class SparseMatrix
   }
 
   SparseMatrix to_full(
-      PET2D::Barrel::SymmetryDescriptor<S>* symmetry_descriptor) {
+      const PET2D::Barrel::SymmetryDescriptor<S>& symmetry_descriptor) {
     if (!triangular_) {
       return *this;
     }
@@ -425,9 +425,9 @@ class SparseMatrix
           hits *= 2;
         }
 #endif
-        auto lor = LOR(
-            symmetry_descriptor->symmetric_detector(e.lor.first, symmetry),
-            symmetry_descriptor->symmetric_detector(e.lor.second, symmetry));
+        auto lor =
+            LOR(symmetry_descriptor.symmetric_detector(e.lor.first, symmetry),
+                symmetry_descriptor.symmetric_detector(e.lor.second, symmetry));
         auto position = e.position;
         // if LOR is swapped, then position should be too
         if (lor.first < lor.second) {
