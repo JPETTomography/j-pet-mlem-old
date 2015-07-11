@@ -18,7 +18,7 @@ set(PET_GRANULARITY_TYPE "WARP"
 set(PET_USE_STATISTICS OFF
     CACHE BOOL
     "collect statistics and print them after program is finished")
-set(PET_CACHE_ELLIPSE_PIXELS ON
+set(PET_CACHE_ELLIPSE_PIXELS OFF
     CACHE BOOL
     "shared memory pixel buffer in error ellipse")
 set(PET_NORMAL_PHANTOM OFF
