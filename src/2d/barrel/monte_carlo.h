@@ -155,5 +155,6 @@ template <class DetectorClass, class MatrixClass> class MonteCarlo {
   F tof_step;
   S start_pixel;
 };
+
 }  // Barrel
 }  // PET2D

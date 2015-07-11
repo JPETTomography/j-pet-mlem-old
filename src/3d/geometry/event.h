@@ -34,4 +34,5 @@ std::ostream& operator<<(std::ostream& out, const Event<FType>& ev) {
   out << dir.x << " " << dir.y << " " << dir.z;
   return out;
 }
-}
+
+}  // PET3D

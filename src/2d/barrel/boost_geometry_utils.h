@@ -107,6 +107,8 @@ template <typename FType, typename SType> class BoostGeometryUtils {
     return make_lor(make_detector(d1), make_detector(d2));
   }
 };
-}
-}
+
+}  // Barrel
+}  // PET2D
+
 #endif

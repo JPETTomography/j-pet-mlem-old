@@ -188,5 +188,6 @@ template <class ScannerClass> class ScannerBuilder {
     return detector_set;
   }
 };
-}
-}
+
+}  // Barrel
+}  // PET2D

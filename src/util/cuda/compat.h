@@ -104,4 +104,5 @@ _ inline void swap(Assignable1& a, Assignable2& b) {
   a = b;
   b = temp;
 }
-}
+
+}  // compat

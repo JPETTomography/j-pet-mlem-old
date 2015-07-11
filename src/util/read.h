@@ -8,5 +8,5 @@ template <typename Type> Type read(std::istream& in) {
   in >> value;
   return value;
 }
-}
+}  // util
 #endif

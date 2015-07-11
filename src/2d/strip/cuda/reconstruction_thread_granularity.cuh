@@ -110,6 +110,7 @@ __global__ void reconstruction(Scanner<F> scanner,
 template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
   return (length + F(0.5)) / pixel_size;
 }
+
 }  // GPU
 }  // Strip
 }  // PET2D

@@ -357,5 +357,6 @@ void set_big_barrel_options(cmdline::parser& cl) {
   if (!cl.exist("fov-radius"))
     cl.get<double>("fov-radius") = 0.400;
 }
-}
-}
+
+}  // Barrel
+}  // PET2D

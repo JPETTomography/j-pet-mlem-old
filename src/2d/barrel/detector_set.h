@@ -235,5 +235,6 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
  private:
   F tof_step_size_;
 };
-}
-}
+
+}  // Barrel
+}  // PET2D

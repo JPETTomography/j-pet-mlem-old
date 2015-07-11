@@ -121,4 +121,5 @@ template <typename FType> Matrix<FType> transpose(const Matrix<FType>& mat) {
 
   return result;
 }
-}
+
+}  // PET3D

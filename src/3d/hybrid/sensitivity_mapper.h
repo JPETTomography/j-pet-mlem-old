@@ -89,5 +89,6 @@ template <class ScannerClass> class SensitivityMapper {
   util::random::uniform_real_distribution<F> one_dis;
   SphericalDistribution<F> direction;
 };
-}
-}
+
+}  // Hybrid
+}  // PET3D

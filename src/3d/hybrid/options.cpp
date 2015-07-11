@@ -34,5 +34,6 @@ void set_big_barrel_options(cmdline::parser& parser) {
   PET2D::Barrel::set_big_barrel_options(parser);
   parser.get<double>("length") = 0.5;
 }
-}
-}
+
+}  // Hybrid
+}  // PET3D

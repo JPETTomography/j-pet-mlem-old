@@ -69,4 +69,5 @@ void draw_line(const Point<typename Grid::F>& start,
     pixels++;
   }
 }
-}
+
+}  // PET2D

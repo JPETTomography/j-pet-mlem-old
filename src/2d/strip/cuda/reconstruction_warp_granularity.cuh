@@ -195,6 +195,7 @@ template <typename F> __device__ void reduce(F& value) {
   value = accumulator[tid & ~(WARP_SIZE - 1)];
 #endif
 }
+
 }  // GPU
 }  // Strip
 }  // PET2D

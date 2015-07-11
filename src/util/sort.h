@@ -47,4 +47,5 @@ _ void heap_sort(T* begin,           ///< data begin iterator
     heap_sort_sift_down(begin, 0, last, compare);
   }
 }
+
 }  // util

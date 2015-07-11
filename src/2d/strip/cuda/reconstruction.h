@@ -175,6 +175,7 @@ void run_reconstruction(Scanner<float, short>& scanner,
                      text_output,
                      n_file_digits);
 }
+
 }  // GPU
 }  // Strip
 }  // PET2D

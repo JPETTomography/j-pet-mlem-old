@@ -53,6 +53,7 @@ template <typename SType> class LOR {
     return !(*this < lor) && !(*this == lor);
   }
 };
+
 }  // Barrel
 }  // PET2D
 

@@ -103,5 +103,6 @@ void calculate_scanner_options(cmdline::parser& parser) {
       parser.get<int>("n-y-pixels") = std::ceil(2 * R_distance / pixel_size);
   }
 }
+
 }  // Strip
 }  // PET2D

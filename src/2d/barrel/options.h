@@ -51,5 +51,5 @@ void set_big_barrel_options(cmdline::parser& parser);
                  cl.get<double>("h-detector"),           \
                  cl.get<double>("d-detector"))
 
-}  // Strip
+}  // Barrel
 }  // PET2D

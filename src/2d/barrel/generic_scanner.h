@@ -232,5 +232,6 @@ class GenericScanner
     return false;
   }
 };
-}
-}
+
+}  // Barrel
+}  // PET2D

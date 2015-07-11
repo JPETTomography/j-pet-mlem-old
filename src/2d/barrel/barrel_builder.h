@@ -44,5 +44,6 @@ template <class DetectorClass, typename SType> struct BarrelBuilder {
     return barrel;
   }
 };
-}
-}
+
+}  // Barrel
+}  // PET2D

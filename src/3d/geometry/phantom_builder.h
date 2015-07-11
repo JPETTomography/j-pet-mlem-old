@@ -133,4 +133,5 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
     return nullptr;
   }
 }
-}
+
+}  // PET3D

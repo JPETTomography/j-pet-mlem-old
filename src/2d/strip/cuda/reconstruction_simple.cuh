@@ -82,6 +82,7 @@ __global__ void reconstruction(Scanner<F> scanner,
     }
   }
 }
+
 }  // GPU
 }  // Strip
 }  // PET2D

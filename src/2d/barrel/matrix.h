@@ -70,5 +70,6 @@ class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
   LOR end_lor_;
   Hit n_emissions_;
 };
+
 }  // Barrel
 }  // PET2D

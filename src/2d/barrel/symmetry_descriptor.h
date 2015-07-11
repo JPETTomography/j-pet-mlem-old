@@ -127,5 +127,6 @@ template <typename SType> class SymmetryDescriptor {
   const S n_symmetries;
   S* detectors_;
 };
-}
-}
+
+}  // Barrel
+}  // PET2D
