@@ -225,22 +225,20 @@ void calculate_scanner_options(cmdline::parser& cl) {
   auto& d_detector = cl.get<double>("d-detector");
   auto& shape = cl.get<std::string>("shape");
   auto& fov_radius = cl.get<double>("fov-radius");
-  std::cerr << fov_radius << "\n";
 
-  if (!cl.exist("small") && !cl.exist("big") && !cl.exist("fov-radius")) {
+  if (!cl.exist("fov-radius")) {
     fov_radius = radius / std::sqrt(2);
+    std::cerr << "--fov-radius=" << fov_radius << std::endl;
   }
-  std::cerr << fov_radius << "\n";
+
   if (cl.exist("s-pixel") && !cl.exist("n-pixels")) {
     cl.get<int>("n-pixels") = (int)std::floor(2 * fov_radius / s_pixel);
+    std::cerr << "--n-pixels=" << n_pixels << std::endl;
   }
 
   // automatic pixel size
   if (!cl.exist("s-pixel")) {
     s_pixel = 2 * fov_radius / n_pixels;
-
-    std::cerr << "--n-pixel=" << n_pixels << std::endl;
-    std::cerr << "--fov-radius=" << fov_radius << std::endl;
     std::cerr << "--s-pixel=" << s_pixel << std::endl;
   }
 
