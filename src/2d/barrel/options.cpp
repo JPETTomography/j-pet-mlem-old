@@ -212,6 +212,11 @@ void calculate_scanner_options(cmdline::parser& cl) {
   if (cl.exist("acceptance") && !cl.exist("base-length")) {
     length_scale = 1.0 / cl.get<double>("acceptance");
   }
+  // FIXME: fixup for spelling mistake, present in previous versions
+  auto& model_name = cl.get<std::string>("model");
+  if (model_name == "scintilator") {
+    model_name = "scintillator";
+  }
 
   if (cl.exist("verbose")) {
     std::cerr << "assumed:" << std::endl;
@@ -226,21 +231,37 @@ void calculate_scanner_options(cmdline::parser& cl) {
   auto& shape = cl.get<std::string>("shape");
   auto& fov_radius = cl.get<double>("fov-radius");
 
+  // 1. Automatic radius size
+
+  // This sets default radius size to sqrt(2), so the image space is (-1, 1).
+
+  if (!cl.exist("radius")) {
+    if (!cl.exist("s-pixel")) {
+      radius = M_SQRT2;  // exact result
+    } else {
+      radius = s_pixel * n_pixels / M_SQRT2;
+    }
+    std::cerr << "--radius=" << radius << std::endl;
+  }
+
+  // 2. Set fov-radius matching radius
+
   if (!cl.exist("fov-radius")) {
-    fov_radius = radius / std::sqrt(2);
+    fov_radius = radius / M_SQRT2;
     std::cerr << "--fov-radius=" << fov_radius << std::endl;
   }
 
-  if (cl.exist("s-pixel") && !cl.exist("n-pixels")) {
-    cl.get<int>("n-pixels") = (int)std::floor(2 * fov_radius / s_pixel);
-    std::cerr << "--n-pixels=" << n_pixels << std::endl;
-  }
+  // 3. Automatic pixel size
 
-  // automatic pixel size
   if (!cl.exist("s-pixel")) {
     s_pixel = 2 * fov_radius / n_pixels;
     std::cerr << "--s-pixel=" << s_pixel << std::endl;
   }
+
+  // 4. Automatic detector size
+
+  // Retermine detector dimensions so it fits best given number of detectors
+  // and radius.
 
   if (!cl.exist("w-detector")) {
     if (cl.exist("n-detectors")) {
@@ -265,6 +286,28 @@ void calculate_scanner_options(cmdline::parser& cl) {
       }
     }
     std::cerr << "--w-detector=" << w_detector << std::endl;
+  }
+
+  // 5. Automatic detector count
+
+  // Detector count will be determined per shape, so we put as many as possible
+  // into given radius, keeping the symmetry.
+
+  if (!cl.exist("n-detectors")) {
+    if (cl.exist("d-detector")) {
+      n_detectors =
+          ((int)std::floor(
+               M_PI / std::atan2(d_detector, 2 * radius + d_detector / 2)) /
+           4) *
+          4;
+    } else {
+      n_detectors =
+          ((int)std::floor(M_PI / std::atan2(w_detector, 2 * radius)) / 4) * 4;
+    }
+    if (!n_detectors) {
+      throw("detector width is too big for given detector ring radius");
+    }
+    std::cerr << "--n-detectors=" << n_detectors << std::endl;
   }
 }
 
