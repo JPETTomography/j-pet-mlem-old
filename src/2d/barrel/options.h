@@ -18,8 +18,8 @@
 ///   \left.
 ///   \begin{array}{lll}
 ///     \mathit{scanner~desc.} &\!\!\!\!\rightarrow \mathtt{2d\_barrel\_matrix}
-///                            &\!\!\!\!\rightarrow \mathit{system~matrix} \\
-///     \mathit{phantom~desc.} &\!\!\!\!\rightarrow \mathtt{2d\_barrel\_phantom}
+///                            &\!\!\!\!\rightarrow \mathit{system~matrix}
+///  \\ \mathit{phantom~desc.} &\!\!\!\!\rightarrow \mathtt{2d\_barrel\_phantom}
 ///                            &\!\!\!\!\rightarrow \mathit{mean}
 ///   \end{array}
 ///   \right\} \rightarrow \mathtt{2d\_barrel\_reconstruction}
@@ -31,10 +31,10 @@
 /// \f[
 ///   \left.
 ///   \begin{array}{lll}
-///   \mathit{scanner~desc.} &\!\!\!\!\rightarrow \mathtt{2d\_barrel\_geometry}
-///                          &\!\!\!\!\rightarrow \mathit{geometry~desc.} \\
-///   \mathit{phantom~desc.} &\!\!\!\!\rightarrow \mathtt{2d\_barrel\_phantom}
-///                          &\!\!\!\!\rightarrow \mathit{response}
+///    \mathit{scanner~desc.} &\!\!\!\!\rightarrow \mathtt{2d\_barrel\_geometry}
+///                           &\!\!\!\!\rightarrow \mathit{geometry~desc.}
+/// \\ \mathit{phantom~desc.} &\!\!\!\!\rightarrow \mathtt{2d\_barrel\_phantom}
+///                           &\!\!\!\!\rightarrow \mathit{response}
 ///   \end{array}
 ///   \right\} \rightarrow \mathtt{2d\_barrel\_lm\_reconstruction}
 ///            \rightarrow \mathit{reconstruction~image}
