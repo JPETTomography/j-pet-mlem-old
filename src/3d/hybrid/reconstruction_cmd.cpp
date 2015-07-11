@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
 
     cl.add<double>("length", 0, "length of the detector", false, 0.3);
-    cl.add<std::string>("response", 0, "detector responses", true);
+    cl.add<cmdline::path>("response", 0, "detector responses", true);
 
     PET2D::Barrel::add_matrix_options(cl);
     cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);

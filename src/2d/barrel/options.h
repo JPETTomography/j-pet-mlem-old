@@ -6,6 +6,8 @@
 /// - \subpage cmd_2d_barrel_matrix
 /// - \subpage cmd_2d_barrel_phantom
 /// - \subpage cmd_2d_barrel_reconstruction
+/// - \subpage cmd_2d_barrel_geometry
+/// - \subpage cmd_2d_barrel_lm_reconstruction
 
 #pragma once
 

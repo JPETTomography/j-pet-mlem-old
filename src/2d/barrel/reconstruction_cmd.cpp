@@ -21,6 +21,8 @@
 /// Usage
 /// -----
 /// \verbinclude src/2d/barrel/reconstruction_cmd.txt
+///
+/// \sa \ref cmd_2d_barrel_matrix, \ref cmd_2d_barrel_phantom
 
 #ifdef __SSE3__
 #include <xmmintrin.h>

@@ -1,3 +1,33 @@
+/// \page cmd_2d_barrel_geometry 2d_barrel_geometry
+/// \brief 2D Barrel PET geometry description construction tool
+///
+/// Creates geometry description binary file for LM reconstruction
+/// \ref cmd_2d_barrel_lm_reconstruction.
+///
+/// This is alternative for \ref cmd_2d_barrel_matrix. It does not use
+/// Monte-Carlo, but calculates every LOR geometry and pixels that lie inside
+/// this LOR.
+///
+/// Example
+/// -------
+///
+/// - Create geometry description for 2 rings of 48 detectors using 1 million
+///   emissions from each pixel:
+///
+///        2d_barrel_geometry -s square -w 0.007 -h 0.017
+///                           -r 0.360 -d 48 --radius2 0.400
+///                           -e 1000000 -o data/201412_rings/gpu_2rings
+///
+/// Authors
+/// -------
+/// - Piotr Bialas <piotr.bialas@uj.edu.pl>
+///
+/// Usage
+/// -----
+/// \verbinclude src/2d/barrel/geometry_cmd.txt
+///
+/// \sa \ref cmd_2d_barrel_phantom, \ref cmd_2d_barrel_lm_reconstruction
+
 #include <iostream>
 #include <fstream>
 #include <deque>

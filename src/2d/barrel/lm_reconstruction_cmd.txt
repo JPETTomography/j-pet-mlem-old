@@ -1,7 +1,12 @@
-usage: ./2d_barrel_matrix [options] ... matrix_file ...
+usage: ./2d_barrel_lm_reconstruction --geometry=file --response=file [options] ... matrix_file ...
 build: OpenMP/CUDA WARP
 note: All length options below should be expressed in meters.
 options:
+      --geometry        geometry information (file)
+      --system          system maxtrix (file [=])
+      --sigma           sigma dl (float [=0.06])
+      --length          length of the detector (float [=0.3])
+      --response        detector responses (file)
   -c, --config          load config file (file [=])
   -n, --n-pixels        number of pixels in one dimension (size [=256])
       --m-pixel         starting pixel for partial matrix (size [=0])
@@ -44,4 +49,8 @@ options:
   -B, --cuda-blocks     CUDA blocks (size [=64])
   -W, --cuda-threads    CUDA threads per block (size [=512])
   -T, --n-threads       number of OpenMP threads (size [=0])
+  -i, --blocks          number of iteration blocks (size [=0])
+  -I, --iterations      number of iterations (per block) (size [=1])
+  -g, --graph           make a graph
+      --event           event number (size [=0])
   -?, --help            print this message

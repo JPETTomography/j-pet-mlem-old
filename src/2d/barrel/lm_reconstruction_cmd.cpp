@@ -1,3 +1,21 @@
+/// \page cmd_2d_barrel_lm_reconstruction 2d_barrel_lm_reconstruction
+/// \brief 2D Barrel PET LM reconstruction tool
+///
+/// Reconstructs image using LM method using given geometry description
+/// produced by \ref cmd_2d_barrel_geometry and mean file representing physical
+/// detector response or simulated response output from
+/// \ref cmd_2d_barrel_phantom.
+///
+/// Authors
+/// -------
+/// - Piotr Bialas <piotr.bialas@uj.edu.pl>
+///
+/// Usage
+/// -----
+/// \verbinclude src/2d/barrel/lm_reconstruction_cmd.txt
+///
+/// \sa \ref cmd_2d_barrel_geometry, \ref cmd_2d_barrel_phantom
+
 #include <iostream>
 #include <fstream>
 #include <random>
@@ -45,7 +63,7 @@ int main(int argc, char* argv[]) {
     cl.add<double>("sigma", 0, "sigma dl", false, 0.060);
 
     cl.add<double>("length", 0, "length of the detector", false, 0.3);
-    cl.add<std::string>("response", 0, "detector responses", true);
+    cl.add<cmdline::path>("response", 0, "detector responses", true);
 
     PET2D::Barrel::add_matrix_options(cl);
     cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
@@ -53,9 +71,7 @@ int main(int argc, char* argv[]) {
         "iterations", 'I', "number of iterations (per block)", false, 1);
     cl.add("graph", 'g', "make a graph", false);
     cl.add("event", 0, "event number", false, 0);
-#if _OPENMP
 
-#endif
     cl.try_parse(argc, argv);
 
     auto output = cl.get<cmdline::path>("output");
