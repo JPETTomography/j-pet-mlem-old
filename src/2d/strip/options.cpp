@@ -31,7 +31,7 @@ void add_scanner_options(cmdline::parser& cl) {
 }
 
 static void add_common_options(cmdline::parser& cl) {
-  cl.add<int>("emissions",
+  cl.add<int>("n-emissions",
               'e',
               "number of emissions",
               false,

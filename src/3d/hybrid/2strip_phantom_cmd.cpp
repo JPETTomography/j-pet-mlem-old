@@ -32,6 +32,7 @@ using Allways = Common::AlwaysAccept<F>;
 using Scintillator = Common::ScintillatorAccept<F>;
 using Point = PET3D::Point<F>;
 using Vector = PET3D::Vector<F>;
+using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner>;
 
 namespace {
 F strip_width = 0.005;
@@ -128,23 +129,30 @@ int main(int argc, char* argv[]) {
     regions.push_back(translated_cylinder);
   }
 
+  auto n_emissions = cl.get<int>("n-emissions");
+
   Phantom phantom(regions);
 
   Scintillator scintillator(0.100);
-  Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
+  MonteCarlo monte_carlo(phantom, scanner);
 
   std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
-  monte_carlo.out_wo_error = out_wo_error;
-
   std::ofstream out_w_error(output);
-  monte_carlo.out_w_error = out_w_error;
-
   std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
-  monte_carlo.out_exact_events = out_exact_events;
-
   std::ofstream out_full_response(output_base_name + "_full_response" + ext);
-  monte_carlo.out_full_response = out_full_response;
-  monte_carlo.generate(rng, scintillator, cl.get<int>("n-emissions"));
+
+  monte_carlo(
+      rng,
+      scintillator,
+      n_emissions,
+      [](const typename MonteCarlo::Event&) {},
+      [&](const typename MonteCarlo::Event& event,
+          const typename MonteCarlo::FullResponse& full_response) {
+        out_exact_events << event << "\n";
+        out_full_response << full_response << "\n";
+        out_wo_error << scanner.response_wo_error(full_response) << "\n";
+        out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+      });
 
   return 0;
 }

@@ -139,7 +139,7 @@ void add_phantom_options(cmdline::parser& cl) {
   add_scanner_options(cl);
   cl.add<int>("n-emissions",
               'e',
-              "emissions",
+              "number of emissions",
               cmdline::optional,
               0,
               cmdline::default_reader<int>(),

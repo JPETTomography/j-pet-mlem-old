@@ -60,6 +60,7 @@ using RNG = util::random::tausworthe;
 using Scanner = PET2D::Strip::Scanner<F, S>;
 using Phantom = PET2D::Phantom<RNG, F>;
 using Ellipse = PET2D::Ellipse<F>;
+using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner>;
 
 int main(int argc, char* argv[]) {
 
@@ -85,7 +86,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    auto emissions = cl.get<int>("emissions");
+    auto n_emissions = cl.get<int>("n-emissions");
     auto verbose = cl.exist("verbose");
 
     Scanner scanner(PET2D_STRIP_SCANNER_CL(cl));
@@ -108,7 +109,7 @@ int main(int argc, char* argv[]) {
                 << std::endl;
     }
 
-    Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
+    MonteCarlo monte_carlo(phantom, scanner);
 
     typename Phantom::RNG rng;
     Common::AlwaysAccept<F> model;
@@ -118,19 +119,22 @@ int main(int argc, char* argv[]) {
     auto ext = output.ext();
 
     std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
-    monte_carlo.out_wo_error = out_wo_error;
-
     std::ofstream out_w_error(output);
-    monte_carlo.out_w_error = out_w_error;
-
     std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
-    monte_carlo.out_exact_events = out_exact_events;
-
     std::ofstream out_full_response(output_base_name + "_full_response" + ext);
-    monte_carlo.out_full_response = out_full_response;
 
-    monte_carlo.generate(rng, model, emissions);
-    monte_carlo.write_out(rng);
+    monte_carlo(
+        rng,
+        model,
+        n_emissions,
+        [](Phantom::Event&) {},
+        [&](const typename MonteCarlo::Event& event,
+            const typename MonteCarlo::FullResponse& full_response) {
+          out_exact_events << event << "\n";
+          out_full_response << full_response << "\n";
+          out_wo_error << scanner.response_wo_error(full_response) << "\n";
+          out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+        });
 
     if (verbose) {
       std::cerr << "detected: " << monte_carlo.n_events_detected() << " events"

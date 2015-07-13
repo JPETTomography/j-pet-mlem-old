@@ -180,15 +180,13 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
 
   auto verbose = cl.exist("verbose");
 
-  // NOTE: detector height will be determined per shape
-
-  auto dr = ScannerBuilder<DetectorClass>::build_multiple_rings(
+  auto scanner = ScannerBuilder<DetectorClass>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, typename DetectorClass::F));
-  dr.set_sigma_dl(cl.get<float>("sigma"));
+  scanner.set_sigma_dl(cl.get<float>("sigma"));
   if (cl.exist("tof-step"))
-    dr.set_tof_step(cl.get<double>("tof-step"));
+    scanner.set_tof_step(cl.get<double>("tof-step"));
 
-  MonteCarlo monte_carlo(phantom, dr);
+  MonteCarlo monte_carlo(phantom, scanner);
 
   std::random_device rd;
   RNG rng(rd());
@@ -201,20 +199,44 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
   auto ext = output.ext();
 
   std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
-  monte_carlo.out_wo_error = out_wo_error;
-
   std::ofstream out_w_error(output);
-  monte_carlo.out_w_error = out_w_error;
-
   std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
-  monte_carlo.out_exact_events = out_exact_events;
-
   std::ofstream out_full_response(output_base_name + "_full_response" + ext);
-  monte_carlo.out_full_response = out_full_response;
 
-  std::vector<int> hits;
-  monte_carlo.generate(rng, model, n_emissions);
+  if (cl.exist("bin")) {
+    std::vector<int> hits;
+    monte_carlo(
+        rng,
+        model,
+        n_emissions,
+        [](const typename MonteCarlo::Event&) {},
+        [&](const typename MonteCarlo::Event& event,
+            const typename MonteCarlo::FullResponse& full_response) {
+          out_exact_events << event << "\n";
+          out_full_response << full_response << "\n";
+          out_wo_error << scanner.response_wo_error(full_response) << "\n";
+          out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+        });
+  } else {
+    monte_carlo(
+        rng,
+        model,
+        n_emissions,
+        [](const typename MonteCarlo::Event&) {},
+        [&](const typename MonteCarlo::Event& event,
+            const typename MonteCarlo::FullResponse& full_response) {
+          out_exact_events << event << "\n";
+          out_full_response << full_response << "\n";
+          out_wo_error << scanner.response_wo_error(full_response) << "\n";
+          out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+        });
+  }
 
+  if (verbose) {
+    std::cerr << "detected: " << monte_carlo.n_events_detected() << " events"
+              << std::endl;
+  }
+#if BIN
   if (cl.exist("bin")) {
     int n_tof_positions =
         dr.n_tof_positions(dr.tof_step_size(), dr.max_dl_error());
@@ -246,9 +268,5 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
 
   } else
     monte_carlo.write_out(rng);
-
-  if (verbose) {
-    std::cerr << "detected: " << monte_carlo.n_events_detected() << " events"
-              << std::endl;
-  }
+#endif
 }

@@ -57,18 +57,14 @@ TEST("common/phantom_monte_carlo/point_source") {
   Scintillator scintillator(0.100);
   Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
 
-  std::ofstream out_wo_error("test_output/point_source_no_errors.txt");
-  monte_carlo.out_wo_error = out_wo_error;
+  monte_carlo(rng,
+              scintillator,
+              10000,
+              [](Phantom::Event&) {},
+              [](Phantom::Event&, Scanner::FullResponse&) {});
 
-  std::ofstream out_w_error("test_output/point_source_errors.txt");
-  monte_carlo.out_w_error = out_w_error;
-
-  std::ofstream out_exact_events("test_output/point_source_exact_events.txt");
-  monte_carlo.out_exact_events = out_exact_events;
-
-  std::ofstream out_full_response("test_output/point_source_full_response.txt");
-  monte_carlo.out_full_response = out_full_response;
-  monte_carlo.generate(rng, scintillator, 1000000);
+  // FIXME: put there some better estimation how many events we shall catch
+  REQUIRE(monte_carlo.n_events_detected() > 100);
 }
 
 TEST("common/phantom_monte_carlo/phantom_region") {
@@ -97,16 +93,12 @@ TEST("common/phantom_monte_carlo/phantom_region") {
   Scintillator scintillator(0.100);
   Common::PhantomMonteCarlo<Phantom, Scanner> monte_carlo(phantom, scanner);
 
-  std::ofstream out_wo_error("test_output/no_errors.txt");
-  monte_carlo.out_wo_error = out_wo_error;
+  monte_carlo(rng,
+              scintillator,
+              10000,
+              [](Phantom::Event&) {},
+              [](Phantom::Event&, Scanner::FullResponse&) {});
 
-  std::ofstream out_w_error("test_output/errors.txt");
-  monte_carlo.out_w_error = out_w_error;
-
-  std::ofstream out_exact_events("test_output/exact_events.txt");
-  monte_carlo.out_exact_events = out_exact_events;
-
-  std::ofstream out_full_response("test_output/full_response.txt");
-  monte_carlo.out_full_response = out_full_response;
-  monte_carlo.generate(rng, scintillator, 1000000);
+  // FIXME: put there some better estimation how many events we shall catch
+  REQUIRE(monte_carlo.n_events_detected() > 100);
 }
