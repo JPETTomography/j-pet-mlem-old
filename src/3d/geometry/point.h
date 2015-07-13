@@ -92,22 +92,6 @@ template <typename FType> struct Point {
 #endif
 };
 
-/// Single point source
-template <typename FType> struct PointSource : public Point<FType> {
-  using F = FType;
-  using Point = PET3D::Point<F>;
-
-  const F intensity;
-
-  PointSource(Point p, F intensity) : Point::Point(p), intensity(intensity) {}
-
-#if !__CUDACC__
-  /// constructs point source from stream
-  PointSource(std::istream& in)
-      : Point::Point(in), intensity(util::read<F>(in)) {}
-#endif
-};
-
 }  // PET3D
 
 #ifdef TEST_CASE
