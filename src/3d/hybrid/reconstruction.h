@@ -20,6 +20,7 @@
 namespace PET3D {
 namespace Hybrid {
 
+/// 3D hybrid PET reconstruction
 template <class ScannerClass, class Kernel2DClass> class Reconstruction {
  public:
   using Scanner = ScannerClass;

@@ -11,11 +11,9 @@
 /// Three-dimensional PET
 namespace PET3D {
 /// Three-dimensional PET with longitudinal direction(z) added to the barrel
-/// detector
 namespace Hybrid {
 
 /// 3D scanner made of several scintillators
-
 template <class Scanner2DClass> class Scanner {
  public:
   using Scanner2D = Scanner2DClass;
