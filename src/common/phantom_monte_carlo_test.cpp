@@ -44,12 +44,12 @@ TEST("common/phantom_monte_carlo/point_source") {
   RNG rng;
   Phantom::RegionPtrList regions;
 
-  auto emitter =
-      new Phantom::PointRegion<PET3D::SingleDirectionDistribution<F>>(
-          1.0f,
-          PET3D::SingleDirectionDistribution<F>(
-              Vector::from_euler_angles(0, 2 * M_PI / 6)),
-          Point(0, 0, 0));
+  auto emitter = new Phantom::PointRegion<
+      PET3D::Distribution::SingleDirectionDistribution<F>>(
+      1.0f,
+      PET3D::Distribution::SingleDirectionDistribution<F>(
+          Vector::from_euler_angles(0, 2 * M_PI / 6)),
+      Point(0, 0, 0));
 
   regions.push_back(emitter);
   Phantom phantom(regions);
@@ -84,7 +84,10 @@ TEST("common/phantom_monte_carlo/phantom_region") {
   Phantom::RegionPtrList regions;
   F angle = std::atan2(0.0025f, 0.400f);
   auto cylinder = new Phantom::CylinderRegion<>(
-      0.0015, 0.001, 1, PET3D::SphericalDistribution<F>(-angle, angle));
+      0.0015,
+      0.001,
+      1,
+      PET3D::Distribution::SphericalDistribution<F>(-angle, angle));
   PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
   auto rotated_cylinder = new Phantom::RotatedRegion(cylinder, R);

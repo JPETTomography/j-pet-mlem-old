@@ -10,6 +10,8 @@
 
 namespace PET3D {
 namespace Hybrid {
+
+/// Creates a map of 3D scanner sensitivity
 template <class ScannerClass> class SensitivityMapper {
  public:
   using Scanner = ScannerClass;
@@ -87,7 +89,7 @@ template <class ScannerClass> class SensitivityMapper {
   Scanner& scanner;
   VoxelSet& voxel_set;
   util::random::uniform_real_distribution<F> one_dis;
-  SphericalDistribution<F> direction;
+  Distribution::SphericalDistribution<F> direction;
 };
 
 }  // Hybrid

@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
         cl.get<float>("radius"),
         cl.get<float>("height"),
         1,
-        PET3D::SphericalDistribution<float>(-angle, angle));
+        PET3D::Distribution::SphericalDistribution<float>(-angle, angle));
     PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
     auto rotated_cylinder = new Phantom::RotatedRegion(cylinder, R);

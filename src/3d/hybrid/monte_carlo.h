@@ -57,7 +57,7 @@ class MonteCarlo {
 
     util::random::uniform_real_distribution<F> one_dis(0, 1);
     util::random::uniform_real_distribution<F> phi_dis(0, F(M_PI));
-    SphericalDistribution<F> direction;
+    Distribution::SphericalDistribution<F> direction;
 
     matrix.add_emissions(n_emissions);
 

@@ -11,7 +11,7 @@ using F = float;
 using RNG = std::mt19937;
 using Phantom = PET3D::Phantom<RNG, F>;
 using Point = Phantom::Point;
-using AngularDistribution = PET3D::SphericalDistribution<F>;
+using AngularDistribution = PET3D::Distribution::SphericalDistribution<F>;
 
 TEST("3d/geometry/phantom/cylinder_region") {
   using Region = Phantom::CylinderRegion<AngularDistribution>;

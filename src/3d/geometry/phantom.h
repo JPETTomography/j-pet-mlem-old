@@ -57,7 +57,8 @@ template <class RNGClass, typename FType> class Phantom {
   };
 
   /// Cylindrical region
-  template <typename AngularDistribution = PET3D::SphericalDistribution<FType>>
+  template <typename AngularDistribution =
+                PET3D::Distribution::SphericalDistribution<FType>>
   class CylinderRegion : public AngularDistributionRegion<AngularDistribution> {
    public:
     CylinderRegion(F radius,
@@ -67,24 +68,25 @@ template <class RNGClass, typename FType> class Phantom {
         : AngularDistributionRegion<AngularDistribution>(intensity, angular),
           radius(radius),
           height(height),
-          dist(radius, height) {}
+          distribution(radius, height) {}
 
     bool in(const Point& p) const {
       return ((p.x * p.x + p.y * p.y < radius * radius) &&
               (p.z <= height / 2) && (p.z >= -height / 2));
     }
-    Point random_point(RNG& rng) { return dist(rng); }
+    Point random_point(RNG& rng) { return distribution(rng); }
     F volume() const { return M_PI * radius * radius * height; }
 
     const F radius;
     const F height;
 
    private:
-    PET3D::CylinderPointDistribution<F> dist;
+    PET3D::Distribution::CylinderPointDistribution<F> distribution;
   };
 
   /// Ellipsoid region
-  template <typename AngularDistribution = PET3D::SphericalDistribution<FType>>
+  template <typename AngularDistribution =
+                PET3D::Distribution::SphericalDistribution<FType>>
   class EllipsoidRegion
       : public AngularDistributionRegion<AngularDistribution> {
    public:
@@ -97,7 +99,7 @@ template <class RNGClass, typename FType> class Phantom {
           rx(rx),
           ry(ry),
           rz(rz),
-          dist(rx, ry, rz) {}
+          distribution(rx, ry, rz) {}
 
     bool in(const Point& p) const {
       F x = p.x / rx;
@@ -106,13 +108,13 @@ template <class RNGClass, typename FType> class Phantom {
       return (x * x + y * y + z * z <= 1.0);
     }
 
-    Point random_point(RNG& rng) { return dist(rng); }
+    Point random_point(RNG& rng) { return distribution(rng); }
     F volume() const { return 4.0 / 3.0 * M_PI * rx * ry * rz; }
 
     const F rx, ry, rz;
 
    private:
-    PET3D::EllipsoidPointDistribution<F> dist;
+    PET3D::Distribution::EllipsoidPointDistribution<F> distribution;
   };
 
   /// Region rotated using given 3x3 transformation matrix
@@ -179,7 +181,8 @@ template <class RNGClass, typename FType> class Phantom {
   };
 
   /// Point region
-  template <typename AngularDistribution = PET3D::SphericalDistribution<FType>>
+  template <typename AngularDistribution =
+                PET3D::Distribution::SphericalDistribution<FType>>
   class PointRegion : public AngularDistributionRegion<AngularDistribution> {
    public:
     using F = FType;

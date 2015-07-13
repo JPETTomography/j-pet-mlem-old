@@ -15,8 +15,9 @@ template <typename AngularDistribution>
 AngularDistribution create_angular_distribution_from_json(const json& obj);
 
 template <>
-SingleDirectionDistribution<float> create_angular_distribution_from_json<
-    SingleDirectionDistribution<float>>(const json& j) {
+Distribution::SingleDirectionDistribution<float>
+create_angular_distribution_from_json<
+    Distribution::SingleDirectionDistribution<float>>(const json& j) {
   using Vector = Vector<float>;
 
   std::string type = j["type"];
@@ -27,12 +28,13 @@ SingleDirectionDistribution<float> create_angular_distribution_from_json<
 
   const json& direction_val = j["direction"];
   Vector direction(direction_val[0], direction_val[1], direction_val[2]);
-  return SingleDirectionDistribution<float>(direction);
+  return Distribution::SingleDirectionDistribution<float>(direction);
 }
 
 template <>
-SphericalDistribution<float> create_angular_distribution_from_json<
-    SphericalDistribution<float>>(const json& j) {
+Distribution::SphericalDistribution<float>
+create_angular_distribution_from_json<
+    Distribution::SphericalDistribution<float>>(const json& j) {
 
   // std::cerr<<"creating  angular distribution\n";
   std::string type = j["type"];
@@ -51,14 +53,14 @@ SphericalDistribution<float> create_angular_distribution_from_json<
     theta_max = j["theta-max"];
   }
 
-  return SphericalDistribution<float>(theta_min, theta_max);
+  return Distribution::SphericalDistribution<float>(theta_min, theta_max);
 }
 
 template <class RNG, typename FType>
 typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
     const json& j) {
   using F = FType;
-  using AngularDistribution = SphericalDistribution<F>;
+  using AngularDistribution = Distribution::SphericalDistribution<F>;
   using Phantom = PET3D::Phantom<RNG, F>;
   using CylinderRegion =
       typename Phantom::template CylinderRegion<AngularDistribution>;

@@ -36,9 +36,9 @@ TEST("3d/geometry/phantom_builder/angular_distribution") {
   const json& j_obj = j[0];
   const json& j_angular = j_obj["angular"];
 
-  PET3D::SingleDirectionDistribution<float> distr =
+  PET3D::Distribution::SingleDirectionDistribution<float> distr =
       PET3D::create_angular_distribution_from_json<
-          PET3D::SingleDirectionDistribution<float>>(j_angular);
+          PET3D::Distribution::SingleDirectionDistribution<float>>(j_angular);
 
   REQUIRE(distr.direction.x == Approx(1.0f / std::sqrt(2.0f)).epsilon(1e-7));
   REQUIRE(distr.direction.y == Approx(0.0f).epsilon(1e-7));
@@ -109,9 +109,9 @@ TEST("3d/geometry/phantom_builder/angular_distribution/spherical") {
   const json& j_phantom = j_phantoms[0];
   const json& j_angular = j_phantom["angular"];
 
-  PET3D::SphericalDistribution<float> distr =
+  PET3D::Distribution::SphericalDistribution<float> distr =
       PET3D::create_angular_distribution_from_json<
-          PET3D::SphericalDistribution<float>>(j_angular);
+          PET3D::Distribution::SphericalDistribution<float>>(j_angular);
 
   REQUIRE(distr.theta_min == -0.01_e7);
   REQUIRE(distr.theta_max == 0.01_e7);
