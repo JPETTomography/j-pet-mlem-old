@@ -7,8 +7,6 @@
 
 #include "util/json.h"
 
-using json = nlohmann::json;
-
 namespace PET3D {
 
 template <typename AngularDistribution>

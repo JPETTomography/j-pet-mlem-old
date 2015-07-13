@@ -33,8 +33,6 @@ using Scintillator = Common::ScintillatorAccept<F>;
 using Point = PET3D::Point<F>;
 using Vector = PET3D::Vector<F>;
 
-using json = nlohmann::json;
-
 // FIXME: I don't know what is the purpose of this, but these are unused, so
 // either should be removed or applied to the code.
 #if HARDCODED_VALUES

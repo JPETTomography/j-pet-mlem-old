@@ -33,8 +33,6 @@ using Scintillator = Common::ScintillatorAccept<F>;
 using Point = PET3D::Point<F>;
 using Vector = PET3D::Vector<F>;
 
-using json = nlohmann::json;
-
 namespace {
 F strip_width = 0.005;
 F strip_height = 0.019;
