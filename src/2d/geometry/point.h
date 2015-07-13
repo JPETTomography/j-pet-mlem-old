@@ -123,6 +123,7 @@ template <typename FType> struct PointSource : public Point<FType> {
       : Point::Point(in), intensity(util::read<F>(in)) {}
 #endif
 };
+
 }  // PET2D
 
 template <typename FType> FType deg(FType rad) {

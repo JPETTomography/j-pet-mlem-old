@@ -11,6 +11,9 @@
 
 namespace PET2D {
 
+/// Pixel grid description
+
+/// Pixel grid description that does not contain pixels.
 template <typename FType, typename SType> class PixelGrid {
  public:
   using F = FType;

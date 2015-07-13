@@ -9,7 +9,7 @@
 
 namespace PET2D {
 
-/// Represents line segment
+/// Line segment
 
 /// Gives some extra functions allowing calculation Point distance to the
 /// segment.
@@ -59,4 +59,5 @@ template <typename FType> struct LineSegment {
   F length;
   F distance_from_origin;
 };
-}
+
+}  // PET2D

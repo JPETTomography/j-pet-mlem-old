@@ -120,4 +120,5 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   }
 #endif
 };
+
 }  // PET2D

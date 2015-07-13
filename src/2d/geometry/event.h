@@ -7,12 +7,11 @@
 #include "2d/geometry/point.h"
 #include "2d/geometry/vector.h"
 
+namespace PET2D {
+
 /// Generic emitted 2D event
 
 /// Events of this type  are emmited by every 2D phantom.
-
-namespace PET2D {
-
 template <typename FType> struct Event {
   using F = FType;
   using Point = PET2D::Point<F>;
@@ -36,4 +35,5 @@ template <typename FType> struct Event {
   }
 #endif
 };
-}
+
+}  // PET2D

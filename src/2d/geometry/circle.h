@@ -98,4 +98,5 @@ template <typename FType> class Circle {
   }
 #endif
 };
+
 }  // PET2D

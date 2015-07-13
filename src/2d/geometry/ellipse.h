@@ -85,4 +85,5 @@ template <typename FType> class EllipsePointGenerator {
   F cos;
   Distribution distribution;
 };
+
 }  // PET2D

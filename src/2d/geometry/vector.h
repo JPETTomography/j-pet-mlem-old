@@ -9,7 +9,7 @@
 
 namespace PET2D {
 
-/// 2D Vector with given coordinates
+/// 2D vector
 template <typename FType> struct Vector {
   using F = FType;
 
@@ -110,7 +110,8 @@ template <typename FType> struct Vector {
   }
 #endif
 };
-}
+
+}  // PET2D
 
 #ifdef TEST_CASE
 namespace Catch {

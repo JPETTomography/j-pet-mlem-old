@@ -1,7 +1,5 @@
-#ifndef RECTANGLE
-#define RECTANGLE
+#pragma once
 
-#include <iostream>
 #include <random>
 
 #include "point.h"
@@ -10,9 +8,10 @@
 
 namespace PET2D {
 
-/** Axis alligned Rectangle centered on center with width = 2*a and height = 2*b
- *
- */
+/// Axis alligned & centered rectangle
+
+/// Rectangle that is axis aligned and centered on \c center with $width = 2*a$
+/// and $height = 2*b$.
 template <typename FType> class Rectangle {
  public:
   using F = FType;
@@ -31,6 +30,7 @@ template <typename FType> class Rectangle {
   const F area;
 };
 
+/// Uniform rectangle point generator
 template <typename FType> class RectanglePointGenerator {
  public:
   using F = FType;
@@ -50,6 +50,5 @@ template <typename FType> class RectanglePointGenerator {
   Rectangle rectangle_;
   std::uniform_real_distribution<F> uni;
 };
-}
 
-#endif  // RECTANGLE
+}  // PET2D

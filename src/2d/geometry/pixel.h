@@ -49,6 +49,7 @@ template <typename SType> class Pixel {
     y = compat::min(br.y, compat::max(tl.y, y));
   }
 };
+
 }  // PET2D
 
 #ifdef TEST_CASE
