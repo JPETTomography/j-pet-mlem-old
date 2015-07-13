@@ -194,47 +194,48 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
     rng.seed(cl.get<std::mt19937::result_type>("seed"));
   }
 
-  auto output = cl.get<cmdline::path>("output");
-  auto output_base_name = output.wo_ext();
-  auto ext = output.ext();
+  if (cl.exist("output")) {
+    auto output = cl.get<cmdline::path>("output");
+    auto output_base_name = output.wo_ext();
+    auto ext = output.ext();
 
-  std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
-  std::ofstream out_w_error(output);
-  std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
-  std::ofstream out_full_response(output_base_name + "_full_response" + ext);
+    std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
+    std::ofstream out_w_error(output);
+    std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
+    std::ofstream out_full_response(output_base_name + "_full_response" + ext);
 
-  if (cl.exist("bin")) {
-    std::vector<int> hits;
-    monte_carlo(
-        rng,
-        model,
-        n_emissions,
-        [](const typename MonteCarlo::Event&) {},
-        [&](const typename MonteCarlo::Event& event,
-            const typename MonteCarlo::FullResponse& full_response) {
-          out_exact_events << event << "\n";
-          out_full_response << full_response << "\n";
-          out_wo_error << scanner.response_wo_error(full_response) << "\n";
-          out_w_error << scanner.response_w_error(rng, full_response) << "\n";
-        });
-  } else {
-    monte_carlo(
-        rng,
-        model,
-        n_emissions,
-        [](const typename MonteCarlo::Event&) {},
-        [&](const typename MonteCarlo::Event& event,
-            const typename MonteCarlo::FullResponse& full_response) {
-          out_exact_events << event << "\n";
-          out_full_response << full_response << "\n";
-          out_wo_error << scanner.response_wo_error(full_response) << "\n";
-          out_w_error << scanner.response_w_error(rng, full_response) << "\n";
-        });
-  }
-
-  if (verbose) {
-    std::cerr << "detected: " << monte_carlo.n_events_detected() << " events"
-              << std::endl;
+    if (cl.exist("bin")) {
+      std::vector<int> hits;
+      monte_carlo(
+          rng,
+          model,
+          n_emissions,
+          [](const typename MonteCarlo::Event&) {},
+          [&](const typename MonteCarlo::Event& event,
+              const typename MonteCarlo::FullResponse& full_response) {
+            out_exact_events << event << "\n";
+            out_full_response << full_response << "\n";
+            out_wo_error << scanner.response_wo_error(full_response) << "\n";
+            out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+          });
+    } else {
+      monte_carlo(
+          rng,
+          model,
+          n_emissions,
+          [](const typename MonteCarlo::Event&) {},
+          [&](const typename MonteCarlo::Event& event,
+              const typename MonteCarlo::FullResponse& full_response) {
+            out_exact_events << event << "\n";
+            out_full_response << full_response << "\n";
+            out_wo_error << scanner.response_wo_error(full_response) << "\n";
+            out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+          });
+    }
+    if (verbose) {
+      std::cerr << "detected: " << monte_carlo.n_events_detected() << " events"
+                << std::endl;
+    }
   }
 #if BIN
   if (cl.exist("bin")) {

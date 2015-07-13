@@ -114,36 +114,36 @@ int main(int argc, char* argv[]) {
     typename Phantom::RNG rng;
     Common::AlwaysAccept<F> model;
 
-    auto output = cl.get<cmdline::path>("output");
-    auto output_base_name = output.wo_ext();
-    auto ext = output.ext();
+    if (cl.exist("output")) {
+      auto output = cl.get<cmdline::path>("output");
+      auto output_base_name = output.wo_ext();
+      auto ext = output.ext();
 
-    std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
-    std::ofstream out_w_error(output);
-    std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
-    std::ofstream out_full_response(output_base_name + "_full_response" + ext);
+      std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
+      std::ofstream out_w_error(output);
+      std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
+      std::ofstream out_full_response(output_base_name + "_full_response" +
+                                      ext);
 
-    monte_carlo(
-        rng,
-        model,
-        n_emissions,
-        [](Phantom::Event&) {},
-        [&](const typename MonteCarlo::Event& event,
-            const typename MonteCarlo::FullResponse& full_response) {
-          out_exact_events << event << "\n";
-          out_full_response << full_response << "\n";
-          out_wo_error << scanner.response_wo_error(full_response) << "\n";
-          out_w_error << scanner.response_w_error(rng, full_response) << "\n";
-        });
-
-    if (verbose) {
-      std::cerr << "detected: " << monte_carlo.n_events_detected() << " events"
-                << std::endl;
+      monte_carlo(
+          rng,
+          model,
+          n_emissions,
+          [](Phantom::Event&) {},
+          [&](const typename MonteCarlo::Event& event,
+              const typename MonteCarlo::FullResponse& full_response) {
+            out_exact_events << event << "\n";
+            out_full_response << full_response << "\n";
+            out_wo_error << scanner.response_wo_error(full_response) << "\n";
+            out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+          });
+      if (verbose) {
+        std::cerr << "detected: " << monte_carlo.n_events_detected()
+                  << " events" << std::endl;
+      }
+      std::ofstream cfg(output_base_name + ".cfg");
+      cfg << cl;
     }
-
-    std::ofstream cfg(output_base_name + ".cfg");
-    cfg << cl;
-
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
   } catch (const char* ex) {

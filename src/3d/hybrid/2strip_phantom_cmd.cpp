@@ -63,18 +63,11 @@ int main(int argc, char* argv[]) {
 
   cl.parse_check(argc, argv);
 
-  auto output = cl.get<cmdline::path>("output");
-  auto output_base_name = output.wo_ext();
-  auto ext = output.ext();
-
   auto scanner2d = PET2D::Barrel::ScannerBuilder<Scanner2D>::build_single_ring(
       inner_radius, 2, strip_width, strip_height);
 
   Scanner scanner(scanner2d, strip_length);
   scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
-
-  std::ofstream out_json(output_base_name + ".json");
-  out_json << json(scanner.barrel);
 
   using RNG = std::mt19937;
   RNG rng;
@@ -132,23 +125,31 @@ int main(int argc, char* argv[]) {
   Scintillator scintillator(0.100);
   MonteCarlo monte_carlo(phantom, scanner);
 
-  std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
-  std::ofstream out_w_error(output);
-  std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
-  std::ofstream out_full_response(output_base_name + "_full_response" + ext);
+  if (cl.exist("output")) {
+    auto output = cl.get<cmdline::path>("output");
+    auto output_base_name = output.wo_ext();
+    auto ext = output.ext();
 
-  monte_carlo(
-      rng,
-      scintillator,
-      n_emissions,
-      [](const typename MonteCarlo::Event&) {},
-      [&](const typename MonteCarlo::Event& event,
-          const typename MonteCarlo::FullResponse& full_response) {
-        out_exact_events << event << "\n";
-        out_full_response << full_response << "\n";
-        out_wo_error << scanner.response_wo_error(full_response) << "\n";
-        out_w_error << scanner.response_w_error(rng, full_response) << "\n";
-      });
+    std::ofstream out_json(output_base_name + ".json");
+    out_json << json(scanner.barrel);
 
+    std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
+    std::ofstream out_w_error(output);
+    std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
+    std::ofstream out_full_response(output_base_name + "_full_response" + ext);
+
+    monte_carlo(
+        rng,
+        scintillator,
+        n_emissions,
+        [](const typename MonteCarlo::Event&) {},
+        [&](const typename MonteCarlo::Event& event,
+            const typename MonteCarlo::FullResponse& full_response) {
+          out_exact_events << event << "\n";
+          out_full_response << full_response << "\n";
+          out_wo_error << scanner.response_wo_error(full_response) << "\n";
+          out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+        });
+  }
   return 0;
 }
