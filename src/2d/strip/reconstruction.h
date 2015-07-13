@@ -180,25 +180,9 @@ class Reconstruction {
 
   template <class FileWriter>
   void output_bitmap(FileWriter& fw, bool output_sensitivity = false) {
-    fw.template write_header<>(scanner.n_z_pixels, scanner.n_y_pixels);
-
-    auto& output = output_sensitivity ? sensitivity : rho;
-    F output_max = 0;
-    for (auto& v : output) {
-      output_max = std::max(output_max, v);
-    }
-
-    auto output_gain =
-        static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
-
-    uint8_t* row = (uint8_t*)alloca(scanner.n_z_pixels);
-    for (int y = 0; y < scanner.n_y_pixels; ++y) {
-      for (auto x = 0; x < scanner.n_z_pixels; ++x) {
-        row[x] = std::numeric_limits<uint8_t>::max() -
-                 output_gain * output[y * scanner.n_z_pixels + x];
-      }
-      fw.write_row(row);
-    }
+    fw.template write(scanner.n_z_pixels,
+                      scanner.n_y_pixels,
+                      output_sensitivity ? sensitivity : rho);
   }
 
  private:

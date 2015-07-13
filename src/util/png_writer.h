@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
+#include <limits>
 
 namespace util {
 
@@ -25,6 +27,35 @@ class png_writer {
   }
 
   ~png_writer();
+
+  template <typename T>
+  void write(unsigned int width, unsigned int height, const T* output) {
+    write_header(width, height);
+
+    T output_max = 0;
+    for (unsigned int i = 0; i < width * height; ++i) {
+      output_max = std::max(output_max, output[i]);
+    }
+
+    auto output_gain =
+        static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
+
+    uint8_t* row = (uint8_t*)alloca(width);
+    for (unsigned int y = 0; y < height; ++y) {
+      for (unsigned int x = 0; x < width; ++x) {
+        row[x] = std::numeric_limits<uint8_t>::max() -
+                 output_gain * output[y * width + x];
+      }
+      write_row(row);
+    }
+  }
+
+  template <typename T>
+  void write(unsigned int width,
+             unsigned int height,
+             const std::vector<T>& output) {
+    write(width, height, output.data());
+  }
 
  private:
   void priv_write_header(unsigned int width,

@@ -90,24 +90,7 @@ void output(Scanner<float, short>& scanner,
   }
 
   util::png_writer png(base_name.str() + ".png");
-  png.write_header<>(scanner.n_z_pixels, scanner.n_y_pixels);
-
-  float output_max = 0;
-  for (int i = 0; i < scanner.total_n_pixels; ++i) {
-    output_max = std::max(output_max, output[i]);
-  }
-
-  auto output_gain =
-      static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
-
-  uint8_t* row = (uint8_t*)alloca(scanner.n_z_pixels);
-  for (int y = 0; y < scanner.n_y_pixels; ++y) {
-    for (auto x = 0; x < scanner.n_z_pixels; ++x) {
-      row[x] = std::numeric_limits<uint8_t>::max() -
-               output_gain * output[y * scanner.n_z_pixels + x];
-    }
-    png.write_row(row);
-  }
+  png.write(scanner.n_z_pixels, scanner.n_y_pixels, output);
 }
 
 void progress(int iteration, void* ptr, bool finished) {

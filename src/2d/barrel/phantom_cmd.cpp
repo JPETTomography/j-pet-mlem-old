@@ -199,6 +199,14 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
     auto output_base_name = output.wo_ext();
     auto ext = output.ext();
 
+    auto n_pixels = cl.get<int>("n-pixels");
+    auto s_pixel = cl.get<double>("s-pixel");
+    float ll = -s_pixel * n_pixels / 2;
+    PET2D::PixelGrid<F, S> pixel_grid(
+        n_pixels, n_pixels, s_pixel, PET2D::Point<F>(ll, ll));
+
+    std::vector<int> image_emitted(n_pixels * n_pixels, 0);
+
     if (cl.exist("bin")) {
       int n_tof_positions = scanner.n_tof_positions(scanner.tof_step_size(),
                                                     scanner.max_dl_error());
@@ -210,7 +218,11 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           rng,
           model,
           n_emissions,
-          [](const typename MonteCarlo::Event&) {},
+          [&](const typename MonteCarlo::Event& event) {
+            auto pixel = pixel_grid.pixel_at(event.center);
+            auto pixel_index = pixel.y * n_pixels + pixel.x;
+            image_emitted[pixel_index]++;
+          },
           [&](const typename MonteCarlo::Event&,
               const typename MonteCarlo::FullResponse& full_response) {
             auto response = scanner.response_w_error(rng, full_response);
@@ -246,7 +258,11 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           rng,
           model,
           n_emissions,
-          [](const typename MonteCarlo::Event&) {},
+          [&](const typename MonteCarlo::Event& event) {
+            auto pixel = pixel_grid.pixel_at(event.center);
+            auto pixel_index = pixel.y * n_pixels + pixel.x;
+            image_emitted[pixel_index]++;
+          },
           [&](const typename MonteCarlo::Event& event,
               const typename MonteCarlo::FullResponse& full_response) {
             out_exact_events << event << "\n";
@@ -259,5 +275,8 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
       std::cerr << "detected: " << monte_carlo.n_events_detected() << " events"
                 << std::endl;
     }
+
+    util::png_writer png(output_base_name + ".png");
+    png.write(n_pixels, n_pixels, image_emitted);
   }
 }

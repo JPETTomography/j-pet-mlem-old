@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     cl.add<int>(
         "n-pixels", 'n', "number of pixels in x and y  directions", false, 80);
     cl.add<int>("n-planes", '\0', "number pf z planes", false, 80);
-    cl.add<float>("pixel-size", 'p', "voxel size", false, 0.005);
+    cl.add<float>("s-pixel", 'p', "voxel size", false, 0.005);
     cl.add<float>("fov-radius", '\0', "field of view radius", false, 0.400);
     cl.add<int>("n-emissions", 'e', "number of emission", false, 0);
     cl.add<cmdline::path>(
@@ -48,14 +48,16 @@ int main(int argc, char* argv[]) {
     Scanner2D barrel = BarrelBuilder::make_big_barrel();
     Scanner scanner(barrel, 0.500);
     auto n_pixels = cl.get<int>("n-pixels");
-    auto pixel_size = cl.get<float>("pixel-size");
-    float ll = -pixel_size * n_pixels / 2;
-    PET2D::PixelGrid<F, S> p_grid(
-        n_pixels, n_pixels, pixel_size, PET2D::Point<F>(ll, ll));
-    int n_planes = cl.get<int>("n-planes");
-    PET3D::VoxelGrid<F, S> v_grid(p_grid, -pixel_size * n_planes / 2, n_planes);
+    auto s_pixel = cl.get<float>("s-pixel");
+    float ll = -s_pixel * n_pixels / 2;
+    PET2D::PixelGrid<F, S> pixel_grid(
+        n_pixels, n_pixels, s_pixel, PET2D::Point<F>(ll, ll));
 
-    PET3D::VoxelSet<F, S> voxel_set(v_grid);
+    int n_planes = cl.get<int>("n-planes");
+    PET3D::VoxelGrid<F, S> voxel_grid(
+        pixel_grid, -s_pixel * n_planes / 2, n_planes);
+
+    PET3D::VoxelSet<F, S> voxel_set(voxel_grid);
     if (cl.exist("z-plane")) {
       voxel_set.add_triangular_z_slice(cl.get<int>("z-plane"),
                                        cl.get<float>("fov-radius"));
