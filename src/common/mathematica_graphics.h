@@ -15,33 +15,33 @@ template <typename FType> class MathematicaGraphics {
  public:
   using F = FType;
 
-  MathematicaGraphics(std::ostream& out) : first_(true), out_(out) {
+  MathematicaGraphics(std::ostream& out) : next_(false), out_(out) {
     out_ << "Graphics[{\n";
   }
   ~MathematicaGraphics() { out_ << "}]\n"; }
 
   template <std::size_t NumPoints>
   void add(const PET2D::Polygon<NumPoints, F>& polygon) {
-    add();
-    out_ << "{Polygon[{";
-    std::string sep("");
+    delimiter();
+    out_ << "{Polygon[{\n";
+    bool next = false;
     for (PET2D::Point<F> p : polygon) {
-      out_ << sep << pair(p.x, p.y) << "\n";
-      sep = ",";
+      delimiter(next) << "  " << pair(p.x, p.y);
     }
-    out_ << "}]}\n";
+    out_ << "}]}";
   }
 
   template <class Detector, typename SType, std::size_t MaxDetectors>
   void add(const PET2D::Barrel::DetectorSet<Detector, SType, MaxDetectors>&
                scanner) {
-    add();
-    out_ << "{\n";
-    first_ = true;
+    delimiter();
+    out_ << "{";
+    next_ = false;
     for (Detector detector : scanner) {
       add(detector);
     }
-    out_ << "}\n";
+    out_ << "}";
+    next_ = true;
   }
 
   template <class Detector, typename SType, std::size_t MaxDetectors>
@@ -49,35 +49,34 @@ template <typename FType> class MathematicaGraphics {
       const PET2D::Barrel::DetectorSet<Detector, SType, MaxDetectors>& scanner,
       const PET2D::Barrel::LOR<SType>& lor) {
     using F = typename Detector::F;
-    add();
+    delimiter();
     out_ << "{FaceForm[], EdgeForm[Black], MeshPrimitives[ConvexHullMesh[{\n";
-    std::string sep = "";
     auto detector1 = scanner[lor.first];
+    bool next1 = false;
     for (const PET2D::Point<F>& p : detector1) {
-      out_ << sep << pair(p.x, p.y) << "\n";
-      sep = ",";
+      delimiter(next1) << pair(p.x, p.y);
     }
     auto detector2 = scanner[lor.second];
+    bool next2 = false;
     for (const PET2D::Point<F>& p : detector2) {
-      out_ << sep << pair(p.x, p.y) << "\n";
-      sep = ",";
+      delimiter(next2) << pair(p.x, p.y);
     }
-    out_ << "}],2]}\n";
+    out_ << "}], 2]}";
   }
 
   void add(const PET2D::LineSegment<F>& segment) {
-    add();
+    delimiter();
     out_ << "{Line[{";
-    out_ << pair(segment.start.x, segment.start.y) << ",";
+    out_ << pair(segment.start.x, segment.start.y) << ", ";
     out_ << pair(segment.end.x, segment.end.y);
     out_ << "}]}";
   }
 
   void add_circle(const PET2D::Point<F>& center, F radius) {
-    add();
+    delimiter();
     out_ << "{Circle[";
-    out_ << pair(center.x, center.y) << ",";
-    out_ << radius << "]}\n";
+    out_ << pair(center.x, center.y) << ", ";
+    out_ << radius << "]}";
   }
 
   void add_circle(F radius) { add_circle(PET2D::Point<F>(0, 0), radius); }
@@ -85,12 +84,12 @@ template <typename FType> class MathematicaGraphics {
   template <typename S>
   void add_pixel(const PET2D::PixelGrid<F, S>& grid, S ix, S iy) {
     auto ll = grid.lower_left_at(ix, iy);
-    add();
-    out_ << "{FaceForm[],EdgeForm[Black],Polygon[{\n";
-    out_ << pair(ll.x, ll.y) << ",";
-    out_ << pair(ll.x + grid.pixel_size, ll.y) << ",";
-    out_ << pair(ll.x + grid.pixel_size, ll.y + grid.pixel_size) << ",";
-    out_ << pair(ll.x, ll.y + grid.pixel_size) << "}]}\n";
+    delimiter();
+    out_ << "{FaceForm[], EdgeForm[Black], Polygon[{\n";
+    out_ << pair(ll.x, ll.y) << ", ";
+    out_ << pair(ll.x + grid.pixel_size, ll.y) << ", ";
+    out_ << pair(ll.x + grid.pixel_size, ll.y + grid.pixel_size) << ", ";
+    out_ << pair(ll.x, ll.y + grid.pixel_size) << "}]}";
   }
 
   template <typename S>
@@ -99,14 +98,14 @@ template <typename FType> class MathematicaGraphics {
   }
 
   void add(const PET2D::Point<F>& p) {
-    add();
+    delimiter();
     out_ << "{Red,Point[" << pair(p.x, p.y) << "]}";
   }
 
  private:
   std::string pair(F first, F second) {
     std::string result = "{";
-    result += number(first) + "," + number(second) + "}";
+    result += number(first) + ", " + number(second) + "}";
     return result;
   }
 
@@ -123,14 +122,18 @@ template <typename FType> class MathematicaGraphics {
     return number_str;
   }
 
-  void add() {
-    if (first_) {
-      first_ = false;
-    } else
-      out_ << ',';
+  std::ostream& delimiter(bool& next) {
+    if (next) {
+      out_ << ",\n";
+    } else {
+      next = true;
+    }
+    return out_;
   }
 
-  bool first_;
+  std::ostream& delimiter() { return delimiter(next_); }
+
+  bool next_;
   std::ostream& out_;
 };
 
