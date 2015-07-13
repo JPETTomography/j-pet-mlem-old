@@ -1,5 +1,3 @@
-#include <fstream>
-
 #include "util/test.h"
 
 #include "rectangle.h"
@@ -24,10 +22,8 @@ TEST("2d/geometry/rectangle/point_generator") {
   PET2D::RectanglePointGenerator<float> gen(r);
   std::mt19937_64 rng;
 
-  std::ofstream out("test_output/random_rectangle_point.txt");
   for (int i = 0; i < 100; i++) {
     auto p = gen(rng);
     REQUIRE(r.contains(p));
-    out << p << "\n";
   }
 }

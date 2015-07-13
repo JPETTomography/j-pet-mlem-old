@@ -51,16 +51,11 @@ TEST("3d/geometry/phantom/cylinder") {
   regions.push_back(rotated_cylinder);
   Phantom phantom(regions);
 
-  std::ofstream out("test_output/cylinder.txt");
-
   for (int i = 0; i < 10000; i++) {
     auto event = phantom.gen_event(rng);
     auto p = event.origin;
-    auto v = event.direction;
-    out << p.x << " " << p.y << " " << p.z << " ";
-    out << v.x << " " << v.y << " " << v.z << "\n";
+    (void)p;  // FIXME: test position here
   }
-  out.close();
 }
 
 TEST("3d/geometry/phantom/ellipsoid") {
@@ -74,14 +69,9 @@ TEST("3d/geometry/phantom/ellipsoid") {
   regions.push_back(ellipsoid);
   Phantom phantom(regions);
 
-  std::ofstream out("test_output/ellipsoid.txt");
-
   for (int i = 0; i < 10000; i++) {
     auto event = phantom.gen_event(rng);
     auto p = event.origin;
-    auto v = event.direction;
-    out << p.x << " " << p.y << " " << p.z << " ";
-    out << v.x << " " << v.y << " " << v.z << "\n";
+    (void)p;  // FIXME: test position here
   }
-  out.close();
 }

@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "util/test.h"
 
 #include "3d/geometry/voxel_set.h"
@@ -37,7 +39,7 @@ TEST("3d/geometry/voxel_set") {
   SECTION("triangular_z_slice") {
     VoxelSet voxel_set(voxel_grid);
     voxel_set.add_triangular_z_slice(41, 0.200);
-    std::ofstream out("test_output/triangular_voxels.m");
+    std::stringstream out;
     MathematicaGraphics graphics(out);
     for (auto& voxel : voxel_set) {
       graphics.add_pixel(pixel_grid, voxel.ix, voxel.iy);
@@ -47,7 +49,7 @@ TEST("3d/geometry/voxel_set") {
   SECTION("y_slice") {
     VoxelSet voxel_set(voxel_grid);
     voxel_set.add_y_slice(79, 0.200);
-    std::ofstream out("test_output/yslice_voxels.m");
+    std::stringstream out;
     MathematicaGraphics graphics(out);
     for (auto& voxel : voxel_set) {
       graphics.add_pixel(pixel_grid, voxel.iz, voxel.ix);

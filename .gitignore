@@ -57,6 +57,3 @@
 
 # ignore OS X specific mess
 .DS_Store
-
-# ignore test output
-/test_output/
