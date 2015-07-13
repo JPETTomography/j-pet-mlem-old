@@ -207,7 +207,7 @@ static SparseMatrix run(cmdline::parser& cl,
   clock_gettime(CLOCK_REALTIME, &start);
 #endif
 
-  PET3D::Barrel::MonteCarlo<Scanner,
+  PET3D::Hybrid::MonteCarlo<Scanner,
                             ComputeMatrix,
                             typename Scanner::F,
                             typename Scanner::S> monte_carlo(scanner,

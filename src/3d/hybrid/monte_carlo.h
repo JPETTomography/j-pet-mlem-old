@@ -11,7 +11,7 @@
 #include "3d/geometry/point.h"
 
 namespace PET3D {
-namespace Barrel {
+namespace Hybrid {
 
 /// Drives Monte-Carlo system matrix construction
 template <class DetectorClass,
@@ -155,5 +155,6 @@ class MonteCarlo {
   F tof_step;
   S start_pixel;
 };
-}  // Barrel
-}  // PET2D
+
+}  // Hybrid
+}  // PET3D

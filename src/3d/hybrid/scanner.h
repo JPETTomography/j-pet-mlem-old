@@ -306,6 +306,5 @@ template <class Scanner2DClass> class Scanner {
   F sigma_dl_;
 };
 
-}  // Longitudinal
-
+}  // Hybrid
 }  // PET3D

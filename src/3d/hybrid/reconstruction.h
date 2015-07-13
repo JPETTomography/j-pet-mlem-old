@@ -17,6 +17,9 @@
 #define omp_get_thread_num() 0
 #endif
 
+namespace PET3D {
+namespace Hybrid {
+
 template <class ScannerClass, class Kernel2DClass> class Reconstruction {
  public:
   using Scanner = ScannerClass;
@@ -322,3 +325,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   std::vector<int> n_events_per_thread_;
   Output sensitivity_;
 };
+
+}  // Hybrid
+}  // PET3D

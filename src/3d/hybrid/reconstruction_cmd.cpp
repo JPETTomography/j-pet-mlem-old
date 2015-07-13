@@ -76,8 +76,8 @@ int main(int argc, char* argv[]) {
                 << geometry.grid.pixel_size << std::endl;
     }
 
-    Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>> reconstruction(
-        scanner, geometry, -0.200, 80);
+    PET3D::Hybrid::Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>>
+        reconstruction(scanner, geometry, -0.200, 80);
 
     reconstruction.calculate_weight();
     reconstruction.calculate_sensitivity();
