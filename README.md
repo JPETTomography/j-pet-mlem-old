@@ -28,11 +28,13 @@ Prerequisites
 * [CUDA][cuda] 7.0 (automatically detected by `cmake`)
 * [Ninja][ninja] 1.4 for faster re-builds (with `cmake -G Ninja`)
 * `libpng` headers and libraries for PNG output
+* [Boost][boost] 1.58 for advanced geometry calculation (`2d_barrel_geometry`)
 
 [qtcreator]: http://qt-project.org/downloads
 [cuda]: https://developer.nvidia.com/cuda-downloads
 [ninja]: http://martine.github.io/ninja/
 [libpng]: http://libpng.sourceforge.net
+[boost]: http://www.boost.org
 
 #### Notes
 

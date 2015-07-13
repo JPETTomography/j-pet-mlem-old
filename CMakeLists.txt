@@ -132,7 +132,7 @@ if(PNG_FOUND)
 endif()
 
 # optionally use Boost
-find_package(Boost 1.50.0)
+find_package(Boost 1.58.0)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   add_definitions(-DHAVE_BOOST=1 ${Boost_DEFINITIONS})
