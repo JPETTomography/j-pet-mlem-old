@@ -199,26 +199,49 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
     auto output_base_name = output.wo_ext();
     auto ext = output.ext();
 
-    std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
-    std::ofstream out_w_error(output);
-    std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
-    std::ofstream out_full_response(output_base_name + "_full_response" + ext);
-
     if (cl.exist("bin")) {
-      std::vector<int> hits;
+      int n_tof_positions = scanner.n_tof_positions(scanner.tof_step_size(),
+                                                    scanner.max_dl_error());
+      if (n_tof_positions == 0)
+        n_tof_positions = 1;
+      int n_detectors = scanner.size();
+      std::vector<int> hits(n_detectors * n_detectors * n_tof_positions, 0);
       monte_carlo(
           rng,
           model,
           n_emissions,
           [](const typename MonteCarlo::Event&) {},
-          [&](const typename MonteCarlo::Event& event,
+          [&](const typename MonteCarlo::Event&,
               const typename MonteCarlo::FullResponse& full_response) {
-            out_exact_events << event << "\n";
-            out_full_response << full_response << "\n";
-            out_wo_error << scanner.response_wo_error(full_response) << "\n";
-            out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+            auto response = scanner.response_w_error(rng, full_response);
+            if (response.tof_position < 0)
+              response.tof_position = 0;
+            if (response.tof_position >= n_tof_positions)
+              response.tof_position = n_tof_positions - 1;
+            int index = response.lor.first * n_detectors * n_tof_positions +
+                        response.lor.second * n_tof_positions +
+                        response.tof_position;
+            hits[index]++;
           });
+
+      std::ofstream out_hits(output);
+      for (int d1 = 0; d1 < n_detectors; d1++)
+        for (int d2 = 0; d2 < n_detectors; d2++)
+          for (int tof = 0; tof < n_tof_positions; tof++) {
+            if (hits[d1 * n_detectors * n_tof_positions + d2 * n_tof_positions +
+                     tof] > 0)
+              out_hits << d1 << " " << d2 << " " << tof << " "
+                       << hits[d1 * n_detectors * n_tof_positions +
+                               d2 * n_tof_positions + tof]
+                       << "\n";
+          }
     } else {
+      std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
+      std::ofstream out_w_error(output);
+      std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
+      std::ofstream out_full_response(output_base_name + "_full_response" +
+                                      ext);
+
       monte_carlo(
           rng,
           model,
@@ -237,37 +260,4 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
                 << std::endl;
     }
   }
-#if BIN
-  if (cl.exist("bin")) {
-    int n_tof_positions =
-        dr.n_tof_positions(dr.tof_step_size(), dr.max_dl_error());
-    if (n_tof_positions == 0)
-      n_tof_positions = 1;
-    int n_detectors = dr.size();
-    hits.assign(n_detectors * n_detectors * n_tof_positions, 0);
-    for (auto& full_response : monte_carlo) {
-      auto response = dr.response_w_error(rng, full_response);
-      if (response.tof_position < 0)
-        response.tof_position = 0;
-      if (response.tof_position >= n_tof_positions)
-        response.tof_position = n_tof_positions - 1;
-      int index = response.lor.first * n_detectors * n_tof_positions +
-                  response.lor.second * n_tof_positions + response.tof_position;
-      hits[index]++;
-    }
-
-    for (int d1 = 0; d1 < n_detectors; d1++)
-      for (int d2 = 0; d2 < n_detectors; d2++)
-        for (int tof = 0; tof < n_tof_positions; tof++) {
-          if (hits[d1 * n_detectors * n_tof_positions + d2 * n_tof_positions +
-                   tof] > 0)
-            out_w_error << d1 << " " << d2 << " " << tof << " "
-                        << hits[d1 * n_detectors * n_tof_positions +
-                                d2 * n_tof_positions + tof]
-                        << "\n";
-        }
-
-  } else
-    monte_carlo.write_out(rng);
-#endif
 }
