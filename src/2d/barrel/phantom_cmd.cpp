@@ -92,6 +92,14 @@ int main(int argc, char* argv[]) {
     PET2D::Barrel::add_phantom_options(cl);
     cl.try_parse(argc, argv);
 
+    // check options
+    if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
+        !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
+      throw(
+          "need to specify either --w-detector, --d-detector or --n-detectors "
+          "or --small or --big");
+    }
+
 #if _OPENMP
     if (cl.exist("n-threads")) {
       omp_set_num_threads(cl.get<int>("n-threads"));
@@ -206,8 +214,8 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
 
   std::vector<int> hits;
   monte_carlo.generate(rng, model, n_emissions);
+
   if (cl.exist("bin")) {
-    std::cerr << "bin\n";
     int n_tof_positions =
         dr.n_tof_positions(dr.tof_step_size(), dr.max_dl_error());
     if (n_tof_positions == 0)

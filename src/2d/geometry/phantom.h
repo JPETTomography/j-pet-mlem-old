@@ -152,8 +152,7 @@ template <class RNGClass, typename FType> class Phantom {
         push_back_region(region);
         count++;
       } else {
-        std::cerr << "unknow phantom type" << std::endl;
-        exit(-1);
+        throw("unknown phantom type: " + type);
       }
     }
     return count;

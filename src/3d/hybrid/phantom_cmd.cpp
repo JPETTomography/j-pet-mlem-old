@@ -65,8 +65,12 @@ int main(int argc, char* argv[]) {
 
     cl.parse_check(argc, argv);
 
-    if (!cl.exist("small") && !cl.exist("big")) {
-      throw("need to specify either ---small or --big");
+    // check options
+    if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
+        !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
+      throw(
+          "need to specify either --w-detector, --d-detector or --n-detectors "
+          "or --small or --big");
     }
 
     if (cl.exist("small"))
