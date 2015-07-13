@@ -1,6 +1,9 @@
 #pragma once
 
 #if !__CUDACC__
+#include "util/json.h"
+#include <istream>
+#include "util/read.h"
 #include <ostream>
 #endif
 
@@ -23,6 +26,9 @@ template <typename FType> struct Point {
   F x, y, z;
 
 #if !__CUDACC__
+  /// construct Point from json
+  Point(const json& j) : x(j[0]), y(j[1]), z(j[2]) {}
+
   /// constructs Point from stream
   Point(std::istream& in) : x(util::read<F>(in)), y(util::read<F>(in)) {}
 #endif
@@ -85,6 +91,9 @@ template <typename FType> struct Point {
   }
 
 #if !__CUDACC__
+  // serialize point to json
+  operator json() const { return json{ x, y, z }; }
+
   friend std::ostream& operator<<(std::ostream& out, const Point& p) {
     out << p.x << " " << p.y << "  " << p.z;
     return out;

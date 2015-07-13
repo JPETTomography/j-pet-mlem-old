@@ -1,12 +1,15 @@
 #pragma once
 
 #if !__CUDACC__
+#include "util/json.h"
+#include <istream>
+#include "util/read.h"
 #include <ostream>
 #endif
 
 #include "util/cuda/compat.h"
-#include "pixel.h"
 
+#include "pixel.h"
 #include "2d/geometry/vector.h"
 
 namespace PET2D {
@@ -22,7 +25,10 @@ template <typename FType> struct Point {
   F x, y;
 
 #if !__CUDACC__
-  /// constructs Point from stream
+  /// construct Point from json
+  Point(const json& j) : x(j[0]), y(j[1]) {}
+
+  /// construct Point from stream
   Point(std::istream& in) : x(util::read<F>(in)), y(util::read<F>(in)) {}
 #endif
 
@@ -101,6 +107,9 @@ template <typename FType> struct Point {
   }
 
 #if !__CUDACC__
+  // serialize point to json
+  operator json() const { return json{ x, y }; }
+
   friend std::ostream& operator<<(std::ostream& out, const Point& vec) {
     out << vec.x << " " << vec.y;
     return out;

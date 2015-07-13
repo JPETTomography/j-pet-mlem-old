@@ -82,7 +82,7 @@ template <typename FType> class CircleDetector : public Circle<FType> {
 #if !__CUDACC__
   operator json() const {
     json j_circle;
-    j_circle["center"] = json{ center.x, center.y };
+    j_circle["center"] = center;
     j_circle["radius"] = this->radius;
     json j;
     j["Circle"] = j_circle;

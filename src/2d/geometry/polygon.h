@@ -101,7 +101,7 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   operator json() const {
     json j_poly;
     for (const auto& p : *this) {
-      j_poly.push_back(json{ p.x, p.y });
+      j_poly.push_back(p);
     }
     json j;
     j["Polygon"] = j_poly;
