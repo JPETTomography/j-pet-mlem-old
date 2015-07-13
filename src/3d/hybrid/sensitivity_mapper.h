@@ -29,10 +29,10 @@ template <class ScannerClass> class SensitivityMapper {
            RNG& rng,
            AcceptanceModel& model,
            int n_emissions) {
-    auto pixel_size = voxel_set.v_grid.pixel_grid.pixel_size;
+    auto pixel_size = voxel_set.grid.pixel_grid.pixel_size;
 
     PET3D::Point<F> ll =
-        voxel_set.v_grid.lower_left_at(voxel.ix, voxel.iy, voxel.iz);
+        voxel_set.grid.lower_left_at(voxel.ix, voxel.iy, voxel.iz);
 
 #if DEBUG
     std::cout << "emitting from pixel at " << ll.x << " " << ll.y << " " << ll.z
