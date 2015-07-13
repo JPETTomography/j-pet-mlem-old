@@ -90,7 +90,7 @@ template <class RNGClass, typename FType> class Phantom {
  private:
   int n_events_;
 
-  RegionPtrList region_list;
+  RegionPtrList regions;
   std::vector<F> CDF;
 
   std::uniform_real_distribution<F> uniform;
@@ -98,27 +98,27 @@ template <class RNGClass, typename FType> class Phantom {
 
  public:
   Phantom() : uniform_angle(-1, 1) {}
-  Phantom(const RegionPtrList& el) : uniform_angle(-1, 1), region_list(el) {
 
+  Phantom(const RegionPtrList& el) : uniform_angle(-1, 1), regions(el) {
     calculate_cdf();
   }
 
   void calculate_cdf() {
-    if (region_list.size() == 0) {
+    if (regions.size() == 0) {
       throw("must specify at least one region");
     }
-    CDF.assign(region_list.size(), 0);
-    CDF[0] = region_list[0]->weight();
-    for (size_t i = 1; i < region_list.size(); i++) {
-      CDF[i] = region_list[i]->weight() + CDF[i - 1];
+    CDF.assign(regions.size(), 0);
+    CDF[0] = regions[0]->weight();
+    for (size_t i = 1; i < regions.size(); i++) {
+      CDF[i] = regions[i]->weight() + CDF[i - 1];
     }
-    F norm = CDF[region_list.size() - 1];
-    for (size_t i = 0; i < region_list.size(); i++) {
+    F norm = CDF[regions.size() - 1];
+    for (size_t i = 0; i < regions.size(); i++) {
       CDF[i] /= norm;
     }
   }
 
-  void push_back_region(Region* region) { region_list.push_back(region); }
+  void push_back_region(Region* region) { regions.push_back(region); }
 
   int read_from_stream(std::istream& infile) {
     std::string line;
@@ -169,14 +169,8 @@ template <class RNGClass, typename FType> class Phantom {
   }
 
   Point gen_point(RNG& rng) {
-  again:
-    size_t i_region = choose_region(rng);
-    Point p = region_list[i_region]->random_point(rng);
-    for (size_t j = 0; j < i_region; j++) {
-      if (region_list[j]->contains(p))
-        goto again;
-    }
-    return p;
+    size_t region_index = choose_region(rng);
+    return regions[region_index]->random_point(rng);
   }
 
   Event gen_event(RNG& rng) {
