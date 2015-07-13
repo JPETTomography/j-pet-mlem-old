@@ -15,7 +15,7 @@ TEST("2d/geometry/polygon/json") {
   ps.emplace_back(1., 2.);
 
   json j(ps);
-  REQUIRE(j.dump() == "{\"Polygon\":[[1,1],[2,1],[2,2],[1,2]]}");
+  REQUIRE(j.dump() == "[[1,1],[2,1],[2,2],[1,2]]");
 }
 
 TEST("2d/geometry/polygon/center") {

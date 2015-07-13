@@ -36,20 +36,21 @@ TEST("3d/geometry/phantom_builder/angular_distribution") {
   const json& j_obj = j[0];
   const json& j_angular = j_obj["angular"];
 
-  PET3D::Distribution::SingleDirectionDistribution<float> distr =
-      PET3D::create_angular_distribution_from_json<
-          PET3D::Distribution::SingleDirectionDistribution<float>>(j_angular);
+  PET3D::Distribution::SingleDirectionDistribution<float> distribution(
+      j_angular);
 
-  REQUIRE(distr.direction.x == Approx(1.0f / std::sqrt(2.0f)).epsilon(1e-7));
-  REQUIRE(distr.direction.y == Approx(0.0f).epsilon(1e-7));
-  REQUIRE(distr.direction.z == Approx(1.0f / std::sqrt(2.0f)).epsilon(1e-7));
+  CHECK(distribution.direction.x ==
+        Approx(1.0f / std::sqrt(2.0f)).epsilon(1e-7));
+  CHECK(distribution.direction.y == Approx(0.0f).epsilon(1e-7));
+  CHECK(distribution.direction.z ==
+        Approx(1.0f / std::sqrt(2.0f)).epsilon(1e-7));
 
   int dummy;
-  auto dir = distr(dummy);
+  auto dir = distribution(dummy);
 
-  REQUIRE(dir.x == Approx(1.0f / std::sqrt(2.0f)).epsilon(1e-7));
-  REQUIRE(dir.y == Approx(0.0f).epsilon(1e-7));
-  REQUIRE(dir.z == Approx(1.0f / std::sqrt(2.0f)).epsilon(1e-7));
+  CHECK(dir.x == Approx(1.0f / std::sqrt(2.0f)).epsilon(1e-7));
+  CHECK(dir.y == Approx(0.0f).epsilon(1e-7));
+  CHECK(dir.z == Approx(1.0f / std::sqrt(2.0f)).epsilon(1e-7));
 }
 
 static const char* test_phantoms_json = R"JSON({
@@ -109,12 +110,10 @@ TEST("3d/geometry/phantom_builder/angular_distribution/spherical") {
   const json& j_phantom = j_phantoms[0];
   const json& j_angular = j_phantom["angular"];
 
-  PET3D::Distribution::SphericalDistribution<float> distr =
-      PET3D::create_angular_distribution_from_json<
-          PET3D::Distribution::SphericalDistribution<float>>(j_angular);
+  PET3D::Distribution::SphericalDistribution<float> distribution(j_angular);
 
-  REQUIRE(distr.theta_min == -0.01_e7);
-  REQUIRE(distr.theta_max == 0.01_e7);
+  REQUIRE(distribution.theta_min == -0.01_e7);
+  REQUIRE(distribution.theta_max == 0.01_e7);
 }
 
 TEST("3d/geometry/phantom_builder/phantom") {

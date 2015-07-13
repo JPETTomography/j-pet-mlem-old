@@ -6,6 +6,10 @@
 #include "vector.h"
 #include "point.h"
 
+#if !__CUDACC__
+#include "util/json.h"
+#endif
+
 namespace PET3D {
 /// Various 3D distribution types
 namespace Distribution {
@@ -20,6 +24,18 @@ template <typename FType> class SphericalDistribution {
         theta_max(theta_max),
         phi_dist(-M_PI, M_PI),
         z_dist(sin(theta_min), sin(theta_max)) {}
+
+#if !__CUDACC__
+  SphericalDistribution(const json& j)
+      : SphericalDistribution(
+            j.count("theta-min") ? j["theta-min"].get<F>() : F(-M_PI) / 2,
+            j.count("theta-max") ? j["theta-max"].get<F>() : F(M_PI) / 2) {
+    std::string type = j["type"];
+    if (type != "spherical") {
+      throw("type mismatch in SphericalDistribution: " + type);
+    }
+  }
+#endif
 
   template <class RNG> Vector operator()(RNG& rng) {
 
@@ -45,6 +61,16 @@ template <typename FType> class SingleDirectionDistribution {
   using Vector = PET3D::Vector<F>;
   SingleDirectionDistribution(const Vector& direction)
       : direction(direction.normalized()) {}
+
+#if !__CUDACC__
+  SingleDirectionDistribution(const json& j)
+      : SingleDirectionDistribution(Vector(j["direction"])) {
+    std::string type = j["type"];
+    if (type != "single-direction") {
+      throw("type mismatch in SingleDirectionDistribution: " + type);
+    }
+  }
+#endif
 
   template <class RNG> Vector operator()(RNG& rng) {
     (void)rng;  // unused

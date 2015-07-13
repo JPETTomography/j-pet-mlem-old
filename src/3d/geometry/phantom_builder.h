@@ -9,51 +9,6 @@
 
 namespace PET3D {
 
-template <typename AngularDistribution>
-AngularDistribution create_angular_distribution_from_json(const json& obj);
-
-template <>
-Distribution::SingleDirectionDistribution<float>
-create_angular_distribution_from_json<
-    Distribution::SingleDirectionDistribution<float>>(const json& j) {
-  using Vector = Vector<float>;
-
-  std::string type = j["type"];
-
-  if (type != "single-direction") {
-    throw("type mismatch in SingleDirectionDistribution: " + type);
-  }
-
-  const json& direction_val = j["direction"];
-  Vector direction(direction_val[0], direction_val[1], direction_val[2]);
-  return Distribution::SingleDirectionDistribution<float>(direction);
-}
-
-template <>
-Distribution::SphericalDistribution<float>
-create_angular_distribution_from_json<
-    Distribution::SphericalDistribution<float>>(const json& j) {
-
-  // std::cerr<<"creating  angular distribution\n";
-  std::string type = j["type"];
-
-  if (type != "spherical") {
-    throw("type mismatch in SphericalDistribution: " + type);
-  }
-
-  float theta_min = -M_PI / 2;
-  float theta_max = M_PI / 2;
-
-  if (j.count("theta-min")) {
-    theta_min = j["theta-min"];
-  }
-  if (j.count("theta-max")) {
-    theta_max = j["theta-max"];
-  }
-
-  return Distribution::SphericalDistribution<float>(theta_min, theta_max);
-}
-
 template <class RNG, typename FType>
 typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
     const json& j) {
@@ -81,8 +36,7 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
     const json& j_angular = j["angular"];
     std::string angular_type = j_angular["type"];
     if (angular_type == "spherical") {
-      AngularDistribution angular =
-          create_angular_distribution_from_json<AngularDistribution>(j_angular);
+      AngularDistribution angular(j_angular);
       return new CylinderRegion(radius, height, intensity, angular);
     } else {
       std::cerr << "unsuported angular distribution\n";
@@ -98,8 +52,7 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
     const json& j_angular = j["angular"];
     std::string angular_type = j_angular["type"];
     if (angular_type == "spherical") {
-      AngularDistribution angular =
-          create_angular_distribution_from_json<AngularDistribution>(j_angular);
+      AngularDistribution angular(j_angular);
       return new EllipsoidRegion(rx, ry, rz, intensity, angular);
     } else {
       std::cerr << "unsuported angular distribution\n";
