@@ -1,11 +1,16 @@
 #pragma once
 
+#if !__CUDACC__
+#include <ostream>
+#endif
+
 #include "3d/geometry/vector.h"
 #include "3d/geometry/point.h"
 #include "2d/barrel/event.h"
 
 namespace PET3D {
 
+/// Generic emitted 3D event
 template <typename FType> class Event {
   using Vector = PET3D::Vector<FType>;
   using Vector2D = PET2D::Vector<FType>;
@@ -24,15 +29,16 @@ template <typename FType> class Event {
 
   const Point origin;
   const Vector direction;
-};
 
-template <typename FType>
-std::ostream& operator<<(std::ostream& out, const Event<FType>& ev) {
-  auto orig = ev.origin;
-  out << orig.x << " " << orig.y << " " << orig.z << " ";
-  auto dir = ev.direction;
-  out << dir.x << " " << dir.y << " " << dir.z;
-  return out;
-}
+#if !__CUDACC__
+  friend std::ostream& operator<<(std::ostream& out, const Event& event) {
+    out << event.origin.x << " " << event.origin.y << " " << event.origin.z
+        << " ";
+    out << event.direction.x << " " << event.direction.y << " "
+        << event.direction.z;
+    return out;
+  }
+#endif
+};
 
 }  // PET3D

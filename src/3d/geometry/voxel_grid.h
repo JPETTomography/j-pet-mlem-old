@@ -4,6 +4,10 @@
 #include "3d/geometry/point.h"
 
 namespace PET3D {
+
+/// 3D voxel grid description
+
+/// 3D voxel grid description, without actual voxels storage
 template <typename FType, typename SType> class VoxelGrid {
   using F = FType;
   using S = SType;
@@ -44,4 +48,5 @@ template <typename FType, typename SType> class VoxelGrid {
   const S n_planes;
   const int n_voxels;
 };
-}
+
+}  // PET3D

@@ -7,6 +7,7 @@
 
 namespace PET3D {
 
+/// 3D (3x3) matrix
 template <typename FType> class Matrix {
  public:
   using F = FType;

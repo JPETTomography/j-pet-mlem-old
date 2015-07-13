@@ -10,7 +10,7 @@
 
 namespace PET3D {
 
-/// 3D Vector with given coordinates
+/// 3D vector
 template <typename FType> struct Vector {
 
   static Vector from_euler_angles(FType phi, FType theta) {

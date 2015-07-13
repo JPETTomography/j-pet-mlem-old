@@ -9,7 +9,6 @@
 
 #include "2d/barrel/barrel_builder.h"
 #include "3d/hybrid/scanner.h"
-#include "3d/geometry/voxel_set_builder.h"
 #include "3d/hybrid/sensitivity_mapper.h"
 #include "util/random.h"
 #include "common/model.h"
@@ -57,13 +56,13 @@ int main(int argc, char* argv[]) {
     PET3D::VoxelGrid<F, S> v_grid(p_grid, -pixel_size * n_planes / 2, n_planes);
 
     PET3D::VoxelSet<F, S> voxel_set(v_grid);
-    if (cl.exist("z-plane"))
-      PET3D::VoxelSetBuilder<F, S>::BuildTriagularZSlice(
-          voxel_set, cl.get<int>("z-plane"), cl.get<float>("fov-radius"));
-    else if (cl.exist("y-plane"))
-      PET3D::VoxelSetBuilder<F, S>::BuildYSlice(
-          voxel_set, cl.get<int>("y-plane"), cl.get<float>("fov-radius"));
-    else {
+    if (cl.exist("z-plane")) {
+      voxel_set.add_triangular_z_slice(cl.get<int>("z-plane"),
+                                       cl.get<float>("fov-radius"));
+    } else if (cl.exist("y-plane")) {
+      voxel_set.add_y_slice(cl.get<int>("y-plane"),
+                            cl.get<float>("fov-radius"));
+    } else {
       throw("you must specify --y-plane or --z-plane");
     }
 

@@ -7,6 +7,7 @@
 
 namespace PET3D {
 
+/// Generates events from given voxel
 template <typename FType> class VoxelEventGenerator {
  public:
   using F = FType;
