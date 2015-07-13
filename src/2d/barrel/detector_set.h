@@ -9,7 +9,6 @@
 
 #if !__CUDACC__
 #include "util/svg_ostream.h"
-#include "util/mathematica_ostream.h"
 #include "util/json_ostream.h"
 #endif
 
@@ -160,27 +159,6 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
     svg << "</g>" << std::endl;
 
     return svg;
-  }
-
-  friend util::mathematica_ostream& operator<<(util::mathematica_ostream& m,
-                                               const DetectorSet& ds) {
-    int i = 0;
-    bool next = false;
-
-    m << "{\"Detector\"->"
-      << "{\n";
-
-    for (auto& detector : ds) {
-      m.delimiter(next) << "{ " << i << ", ";
-      m << detector << "}\n";
-      i++;
-    }
-
-    m << "},"
-      << "\"Symmetries\"->{";
-    m << ds.symmetry_descriptor() << "}"
-      << "}";
-    return m;
   }
 
   friend util::json_ostream& operator<<(util::json_ostream& json,

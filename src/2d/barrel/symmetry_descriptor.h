@@ -4,7 +4,7 @@
 #include "2d/geometry/pixel_grid.h"
 
 #if !__CUDACC__
-#include "util/mathematica_ostream.h"
+#include "util/json_ostream.h"
 #endif
 
 namespace PET2D {
@@ -94,31 +94,31 @@ template <typename SType> class SymmetryDescriptor {
   }
 
 #if !__CUDACC__
-  friend util::mathematica_ostream& operator<<(util::mathematica_ostream& m,
-                                               const SymmetryDescriptor& sd) {
+  friend util::json_ostream& operator<<(util::json_ostream& json,
+                                        const SymmetryDescriptor& sd) {
     bool next = false;
 
     for (S i = 0; i < sd.n_detectors; ++i) {
       if (next) {
-        m << ", ";
+        json << ", ";
       } else {
         next = true;
       }
-      m << "{" << i << "->{";
+      json << "{" << i << ": [";
 
       bool inner_next = false;
       for (S s = 0; s < sd.n_symmetries; ++s) {
         if (inner_next) {
-          m << ", ";
+          json << ", ";
         } else {
           inner_next = true;
         }
-        m << sd.symmetric_detector(i, s);
+        json << sd.symmetric_detector(i, s);
       }
 
-      m << "}}\n";
+      json << "]}\n";
     }
-    return m;
+    return json;
   }
 #endif
 

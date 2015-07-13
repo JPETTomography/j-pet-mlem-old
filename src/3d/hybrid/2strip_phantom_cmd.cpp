@@ -15,7 +15,6 @@
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
-#include "util/mathematica_ostream.h"
 #include "util/json.h"
 #include "util/json_ostream.h"
 
@@ -73,9 +72,6 @@ int main(int argc, char* argv[]) {
 
   Scanner scanner(scanner2d, strip_length);
   scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
-
-  util::mathematica_ostream mathematica(output_base_name + ".m");
-  mathematica << scanner.barrel;
 
   util::json_ostream out_json(output_base_name + ".json");
   out_json << scanner.barrel;

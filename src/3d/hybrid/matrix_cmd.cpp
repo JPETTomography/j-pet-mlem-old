@@ -24,7 +24,6 @@
 
 #include "util/png_writer.h"
 #include "util/svg_ostream.h"
-#include "util/mathematica_ostream.h"
 #include "util/json_ostream.h"
 
 #include "options.h"
@@ -257,9 +256,6 @@ void post_process(cmdline::parser& cl,
 
     std::ofstream os(fn_wo_ext + ".cfg", std::ios::trunc);
     os << cl;
-
-    util::mathematica_ostream mathematica(fn_wo_ext + ".m");
-    mathematica << scanner.barrel;
 
     try {
       util::png_writer png(fn_wo_ext + ".png");
