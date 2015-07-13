@@ -2,7 +2,7 @@
 
 #include "util/test.h"
 
-#include "grapher.h"
+#include "mathematica_graphics.h"
 
 #include "2d/barrel/square_detector.h"
 #include "2d/barrel/barrel_builder.h"
@@ -15,21 +15,22 @@ using S = int;
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using BarrelBuilder = PET2D::Barrel::BarrelBuilder<Detector, S>;
 using Scanner = BarrelBuilder::BigBarrel;
+using MathematicaGraphics = Common::MathematicaGraphics<F>;
 
-TEST("util/grapher/detector") {
+TEST("common/mathematica_graphics/detector") {
   std::ofstream out("test_output/graph_detector.m");
   if (!out) {
     FAIL("cannot open file");
   }
 
-  Graphics<F> graphics(out);
+  MathematicaGraphics graphics(out);
 
   Detector detector(0.007, 0.019, 0);
 
   graphics.add(detector);
 }
 
-TEST("util/grapher/big_barrel") {
+TEST("common/mathematica_graphics/big_barrel") {
 
   auto scanner = BarrelBuilder::make_big_barrel();
 
@@ -38,12 +39,12 @@ TEST("util/grapher/big_barrel") {
     FAIL("cannot open file");
   }
 
-  Graphics<F> graphics(out);
+  MathematicaGraphics graphics(out);
 
   graphics.add(scanner);
 }
 
-TEST("util/grapher/big_barrel/lor") {
+TEST("common/mathematica_graphics/big_barrel/lor") {
 
   auto scanner = BarrelBuilder::make_big_barrel();
 
@@ -52,13 +53,13 @@ TEST("util/grapher/big_barrel/lor") {
     FAIL("cannot open file");
   }
 
-  Graphics<F> graphics(out);
+  MathematicaGraphics graphics(out);
 
   graphics.add(scanner);
   graphics.add(scanner, PET2D::Barrel::LOR<int>(65, 0));
 }
 
-TEST("util/grapher/big_barrel/segment") {
+TEST("common/mathematica_graphics/big_barrel/segment") {
 
   auto scanner = BarrelBuilder::make_big_barrel();
   using Point = PET2D::Point<F>;
@@ -68,7 +69,7 @@ TEST("util/grapher/big_barrel/segment") {
     FAIL("cannot open file");
   }
 
-  Graphics<F> graphics(out);
+  MathematicaGraphics graphics(out);
 
   graphics.add(scanner);
 
@@ -77,7 +78,7 @@ TEST("util/grapher/big_barrel/segment") {
   graphics.add(segment);
 }
 
-TEST("util/grapher/big_barrel/circle") {
+TEST("common/mathematica_graphics/big_barrel/circle") {
 
   auto scanner = BarrelBuilder::make_big_barrel();
 
@@ -86,7 +87,7 @@ TEST("util/grapher/big_barrel/circle") {
     FAIL("cannot open file");
   }
 
-  Graphics<F> graphics(out);
+  MathematicaGraphics graphics(out);
 
   graphics.add(scanner);
   graphics.add_circle(0.400);
@@ -97,7 +98,7 @@ TEST("util/grapher/big_barrel/circle") {
   }
 }
 
-TEST("util/grapher/big_barrel/pixel") {
+TEST("common/mathematica_graphics/big_barrel/pixel") {
 
   auto scanner = BarrelBuilder::make_big_barrel();
   using Point = PET2D::Point<F>;
@@ -107,7 +108,7 @@ TEST("util/grapher/big_barrel/pixel") {
     FAIL("cannot open file");
   }
 
-  Graphics<F> graphics(out);
+  MathematicaGraphics graphics(out);
 
   graphics.add(scanner);
   const int n_columns = 20;

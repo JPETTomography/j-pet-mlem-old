@@ -8,7 +8,7 @@
 #include "3d/geometry/point.h"
 #include "3d/geometry/voxel_grid.h"
 
-#include "util/grapher.h"
+#include "common/mathematica_graphics.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -284,7 +284,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   int pixel_count() const { return pixel_count_; }
   int event_count() const { return event_count_; }
 
-  void graph_frame_event(Graphics<F>& graphics, int event_index) {
+  void graph_frame_event(Common::MathematicaGraphics<F>& graphics,
+                         int event_index) {
     auto event = events_[event_index];
     auto lor = event.lor;
     graphics.add(scanner.barrel, lor);

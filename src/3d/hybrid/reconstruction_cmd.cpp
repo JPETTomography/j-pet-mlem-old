@@ -30,6 +30,7 @@ using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 using Point = PET2D::Point<F>;
 using Geometry = PET2D::Barrel::Geometry<F, S>;
+using MathematicaGraphics = Common::MathematicaGraphics<F>;
 
 int main(int argc, char* argv[]) {
 
@@ -87,7 +88,7 @@ int main(int argc, char* argv[]) {
 
     {
       std::ofstream gout("event.m");
-      Graphics<float> graphics(gout);
+      MathematicaGraphics graphics(gout);
       graphics.add(scanner.barrel);
       reconstruction.graph_frame_event(graphics, 0);
     }

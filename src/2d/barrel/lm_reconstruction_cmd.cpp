@@ -34,7 +34,7 @@
 #include "2d/barrel/sparse_matrix.h"
 #include "2d/barrel/lm_reconstruction.h"
 
-#include "util/grapher.h"
+#include "common/mathematica_graphics.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -53,6 +53,7 @@ using LOR = PET2D::Barrel::LOR<S>;
 
 using SquareDetector = PET2D::Barrel::SquareDetector<F>;
 using BarrelBuilder = PET2D::Barrel::BarrelBuilder<SquareDetector, S>;
+using MathematicaGraphics = Common::MathematicaGraphics<F>;
 
 int main(int argc, char* argv[]) {
 
@@ -69,7 +70,7 @@ int main(int argc, char* argv[]) {
     cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
     cl.add<int>(
         "iterations", 'I', "number of iterations (per block)", false, 1);
-    cl.add("graph", 'g', "make a graph", false);
+    cl.add("graphics", 'g', "output mathematica .m graphics file", false);
     cl.add("event", 0, "event number", false, 0);
 
     cl.try_parse(argc, argv);
@@ -143,24 +144,24 @@ int main(int argc, char* argv[]) {
     std::ifstream response_stream(cl.get<std::string>("response"));
     reconstruction.fscanf_responses(response_stream);
     if (verbose)
-      std::cout << "read in  responses\n";
+      std::cout << "read in responses\n";
 
-    if (cl.exist("graph")) {
+    if (cl.exist("graphics")) {
       int event_num = cl.get<int>("event");
-      auto graph_file_name = output.wo_ext() + ".m";
-      std::ofstream graph_out(graph_file_name);
+      auto graphics_file_name = output.wo_ext() + ".m";
+      std::ofstream out_graphics(graphics_file_name);
 
-      Graphics<F> graph(graph_out);
+      MathematicaGraphics graphics(out_graphics);
 
       auto big_barrel = BarrelBuilder::make_big_barrel();
-      graph.add(big_barrel);
+      graphics.add(big_barrel);
 
       auto event = reconstruction.event(event_num);
       auto lor = event.lor;
-      graph.add(big_barrel, lor);
-      graph.add(event.p);
+      graphics.add(big_barrel, lor);
+      graphics.add(event.p);
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
-        graph.add_pixel(geometry.grid, it->pixel);
+        graphics.add_pixel(geometry.grid, it->pixel);
       }
 
       return 0;

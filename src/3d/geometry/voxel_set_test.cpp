@@ -2,10 +2,12 @@
 
 #include "3d/geometry/voxel_set.h"
 #include "3d/geometry/voxel_set_builder.h"
-#include "util/grapher.h"
+
+#include "common/mathematica_graphics.h"
 
 using F = float;
 using S = int;
+using MathematicaGraphics = Common::MathematicaGraphics<F>;
 
 TEST("3d/geometry/voxel_set") {
   using Voxel = PET3D::Voxel<S>;
@@ -32,7 +34,7 @@ TEST("3d/geometry/voxel_set") {
     PET3D::VoxelSetBuilder<F, S>::BuildTriagularZSlice(voxel_set, 41, 0.200);
 
     std::ofstream out("test_output/triangular_voxels.m");
-    Graphics<F> graphics(out);
+    MathematicaGraphics graphics(out);
     for (auto& voxel : voxel_set) {
       graphics.add_pixel(p_grid, voxel.ix, voxel.iy);
     }
@@ -41,7 +43,7 @@ TEST("3d/geometry/voxel_set") {
   SECTION("BuildYSlice") {
     PET3D::VoxelSetBuilder<F, S>::BuildYSlice(voxel_set, 79, 0.200);
     std::ofstream out("test_output/yslice_voxels.m");
-    Graphics<F> graphics(out);
+    MathematicaGraphics graphics(out);
     for (auto& voxel : voxel_set) {
       graphics.add_pixel(p_grid, voxel.iz, voxel.ix);
     }

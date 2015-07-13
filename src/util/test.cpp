@@ -88,15 +88,15 @@
 ///  - 3d/hybrid/detector_set/escape_through_endcap
 ///  - 3d/hybrid/detector_set/detect
 ///  - 3d/hybrid/sensitivity_mapper
+///  - common/mathematica_graphics/detector
+///  - common/mathematica_graphics/big_barrel
+///  - common/mathematica_graphics/big_barrel/lor
+///  - common/mathematica_graphics/big_barrel/segment
+///  - common/mathematica_graphics/big_barrel/circle
+///  - common/mathematica_graphics/big_barrel/pixel
 ///  - common/phantom_monte_carlo/point_source
 ///  - common/phantom_monte_carlo/phantom_region
 ///  - util/array
-///  - util/grapher/detector
-///  - util/grapher/big_barrel
-///  - util/grapher/big_barrel/lor
-///  - util/grapher/big_barrel/segment
-///  - util/grapher/big_barrel/circle
-///  - util/grapher/big_barrel/pixel
 ///  - util/random
 ///  - util/sort
 /// 82 test cases

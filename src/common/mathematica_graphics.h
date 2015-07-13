@@ -6,14 +6,19 @@
 #include "2d/geometry/line_segment.h"
 #include "2d/geometry/pixel_grid.h"
 
-template <typename FType> class Graphics {
+namespace Common {
+
+/// Outputs .m Mathematica file with given entities graphics
+
+/// Creates .m Mathematica graphics for various classes.
+template <typename FType> class MathematicaGraphics {
  public:
   using F = FType;
 
-  Graphics(std::ostream& out) : first_(true), out_(out) {
+  MathematicaGraphics(std::ostream& out) : first_(true), out_(out) {
     out_ << "Graphics[{\n";
   }
-  ~Graphics() { out_ << "}]\n"; }
+  ~MathematicaGraphics() { out_ << "}]\n"; }
 
   template <std::size_t NumPoints>
   void add(const PET2D::Polygon<NumPoints, F>& polygon) {
@@ -128,3 +133,5 @@ template <typename FType> class Graphics {
   bool first_;
   std::ostream& out_;
 };
+
+}  // Common
