@@ -10,45 +10,9 @@
 namespace PET2D {
 namespace Strip {
 
-/// Scanner-space event
-template <typename FType> struct Event {
-  using F = FType;
-  F z_u;
-  F z_d;
-  F dl;
-
-  _ Event(F z_u, F z_d, F dl) : z_u(z_u), z_d(z_d), dl(dl) {}
-  _ Event() {}
-
-  _ void transform(F R, F& tan, F& y, F& z) const {
-    tan = this->tan(R);
-    y = this->y(tan);
-    z = this->z(y, tan);
-  }
-
- private:
-  _ F tan(const F R) const { return (z_u - z_d) / (2 * R); }
-
-  _ F y(const F tan) const {
-    return -F(0.5) * (dl / compat::sqrt(1 + tan * tan));
-  }
-
-  _ F z(const F y, const F tan) const {
-    return F(0.5) * (z_u + z_d + (2 * y * tan));
-  }
-
-#if !__CUDACC__
-  friend std::ostream& operator<<(std::ostream& out, const Event& event) {
-    out << event.z_u << " " << event.z_d << " " << event.dl;
-    return out;
-  }
-#endif
-};
-
 template <typename FType> struct ImageSpaceEventTan;
 
 /// Image-space event using angle in radians
-
 template <typename FType>
 struct ImageSpaceEventAngle : public PET2D::Event<FType> {
   using F = FType;
@@ -76,17 +40,6 @@ template <typename FType> struct ImageSpaceEventTan {
   _ ImageSpaceEventAngle<F> to_angle() const {
     return ImageSpaceEventAngle<F>(y, z, compat::atan(tan));
   }
-};
-
-/// Describes emissions from ellipse
-template <typename FType> struct EllipseParameters {
-  using F = FType;
-  F x, y, a, b;
-  F angle;
-  F n_emissions;
-
-  _ EllipseParameters(F x, F y, F a, F b, F angle, F n_emissions)
-      : x(x), y(y), a(a), b(b), angle(angle), n_emissions(n_emissions) {}
 };
 
 }  // Strip

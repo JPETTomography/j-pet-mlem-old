@@ -48,7 +48,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
   add_common_options(cl);
 
   std::ostringstream msg;
-  msg << "events_file ..." << std::endl;
+  msg << "responses_file ..." << std::endl;
   msg << "build: " << VARIANT << std::endl;
   msg << "note: All length options below should be expressed in milimeters.";
   cl.footer(msg.str());
@@ -82,7 +82,7 @@ void add_phantom_options(cmdline::parser& cl) {
   cl.footer("phantom_description");
   cl.add<cmdline::path>("output",
                         'o',
-                        "output events file",
+                        "responses file",
                         false,
                         "phantom.bin",
                         cmdline::not_from_file);

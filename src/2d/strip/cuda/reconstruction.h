@@ -9,7 +9,7 @@
 #include "util/svg_ostream.h"
 #include "util/progress.h"
 
-#include "../event.h"
+#include "../response.h"
 #include "../scanner.h"
 
 namespace PET2D {
@@ -20,8 +20,8 @@ namespace GPU {
 /// CUDA entry-point function
 template <typename F>
 void run_reconstruction(Scanner<F, short>& scanner,
-                        Event<F>* events,
-                        int n_events,
+                        Response<F>* responses,
+                        int n_responses,
                         int n_iteration_blocks,
                         int n_iterations_in_block,
                         void (*output_callback)(Scanner<F, short>& scanner,
@@ -117,7 +117,7 @@ void progress(int iteration, void* ptr, bool finished) {
 
 // wraps progress and output into abstract context ptr and run CUDA code
 void run_reconstruction(Scanner<float, short>& scanner,
-                        std::vector<Event<float>>& events,
+                        std::vector<Response<float>>& responses,
                         int n_iteration_blocks,
                         int n_iterations_per_block,
                         int device,
@@ -131,8 +131,8 @@ void run_reconstruction(Scanner<float, short>& scanner,
 
   Context context(progress, output_base_name, text_output, n_file_digits);
   run_reconstruction(scanner,
-                     events.data(),
-                     events.size(),
+                     responses.data(),
+                     responses.size(),
                      n_iteration_blocks,
                      n_iterations_per_block,
                      GPU::output,
@@ -144,9 +144,9 @@ void run_reconstruction(Scanner<float, short>& scanner,
                      verbose);
 }
 
-// convert double (DP) events into float (SP) events and run SP kernel
+// convert double (DP) responses into float (SP) responses and run SP kernel
 void run_reconstruction(Scanner<float, short>& scanner,
-                        std::vector<Event<double>>& events,
+                        std::vector<Response<double>>& responses,
                         int n_iteration_blocks,
                         int n_iterations_per_block,
                         int device,
@@ -157,13 +157,13 @@ void run_reconstruction(Scanner<float, short>& scanner,
                         std::string output_file_name,
                         bool text_output,
                         int n_file_digits) {
-  std::vector<Event<float>> sp_event_list;
-  for (auto& event : events) {
-    Event<float> sp_event(event.z_u, event.z_d, event.dl);
-    sp_event_list.push_back(sp_event);
+  std::vector<Response<float>> sp_responses;
+  for (auto& response : responses) {
+    Response<float> sp_response(response.z_u, response.z_d, response.dl);
+    sp_responses.push_back(sp_response);
   }
   run_reconstruction(scanner,
-                     sp_event_list,
+                     sp_responses,
                      n_iteration_blocks,
                      n_iterations_per_block,
                      device,

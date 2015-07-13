@@ -4,6 +4,7 @@
 #include <random>
 #endif
 
+#include "response.h"
 #include "event.h"
 
 #include "2d/geometry/pixel.h"
@@ -28,7 +29,7 @@ template <typename FType, typename SType> class Scanner {
   using Pixel = PET2D::Pixel<S>;
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
-  using Response = PET2D::Strip::Event<F>;
+  using Response = PET2D::Strip::Response<F>;
   using FullResponse = Response;
   using Event = PET2D::Event<F>;
 
@@ -116,16 +117,17 @@ template <typename FType, typename SType> class Scanner {
   }
 
   /// Convert project space event to image space event tangent.
-  ImageSpaceEventTan<F> from_projection_space_tan(const Response& event) const {
+  ImageSpaceEventTan<F> from_projection_space_tan(
+      const Response& response) const {
     F tan, y, z;
-    event.transform(radius, tan, y, z);
+    response.transform(radius, tan, y, z);
     return ImageSpaceEventTan<F>(y, z, tan);
   }
 
   /// Convert project space event to image space event angle.
   ImageSpaceEventAngle<F> from_projection_space_angle(
-      const Response& event) const {
-    return from_projection_space_tan(event).to_angle();
+      const Response& response) const {
+    return from_projection_space_tan(response).to_angle();
   }
 
   /// Returns pixel center point for given pixel.

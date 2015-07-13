@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 
 #include "2d/geometry/point.h"
-#include "../event.h"
+#include "../response.h"
 #include "../kernel.h"
 #include "../scanner.h"
 
@@ -13,35 +13,35 @@ namespace GPU {
 
 template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(Scanner<F> scanner,
-                               F* events_z_u,
-                               F* events_z_d,
-                               F* events_dl,
-                               const int n_events,
+                               F* responses_z_u,
+                               F* responses_z_d,
+                               F* responses_dl,
+                               const int n_responses,
                                F* output_rho,
                                const int n_blocks,
                                const int n_threads_per_block) {
   using Point = PET2D::Point<F>;
   using Pixel = PET2D::Pixel<>;
-  using Event = Strip::Event<F>;
+  using Response = Strip::Response<F>;
 
   // mark variables used
-  (void)(events_dl);
+  (void)(responses_dl);
 
   int n_threads = n_blocks * n_threads_per_block;
-  int n_chunks = (n_events + n_threads - 1) / n_threads;
+  int n_chunks = (n_responses + n_threads - 1) / n_threads;
 
   int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
   for (int chunk = 0; chunk < n_chunks; ++chunk) {
     int i = chunk * n_threads + tid;
     // check if we are still on the list
-    if (i >= n_events) {
+    if (i >= n_responses) {
       break;
     }
 
     F y, z;
-    y = events_z_u[i];
-    z = events_z_d[i];
+    y = responses_z_u[i];
+    z = responses_z_d[i];
     F denominator = 0;
 
     int y_step = 3 * (scanner.sigma_dl / scanner.pixel_height);
@@ -56,10 +56,10 @@ __global__ void reconstruction(Scanner<F> scanner,
         Pixel pixel(iz, iy);
         Point point = scanner.pixel_center(pixel);
         Kernel kernel;
-        float event_kernel =
+        F kernel_value =
             kernel.test(y, z, point, scanner.sigma_dl, scanner.sigma_z);
 
-        denominator += event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
+        denominator += kernel_value * tex2D(tex_rho, pixel.x, pixel.y);
       }
     }
 
@@ -72,12 +72,12 @@ __global__ void reconstruction(Scanner<F> scanner,
         Point point = scanner.pixel_center(pixel);
 
         Kernel kernel;
-        F event_kernel =
+        F kernel_value =
             kernel.test(y, z, point, scanner.sigma_dl, scanner.sigma_z);
 
         atomicAdd(
             &output_rho[PIXEL_INDEX(pixel)],
-            event_kernel * tex2D(tex_rho, pixel.x, pixel.y) * inv_denominator);
+            kernel_value * tex2D(tex_rho, pixel.x, pixel.y) * inv_denominator);
       }
     }
   }

@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 
 #include "2d/geometry/point.h"
-#include "../event.h"
+#include "../response.h"
 #include "../scanner.h"
 
 #define PIXEL_INDEX(p) (((p).y * scanner.n_z_pixels) + (p).x)
@@ -16,21 +16,21 @@ template <typename F> __device__ void reduce(F& value);
 
 template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(Scanner<F, short> scanner,
-                               F* events_z_u,
-                               F* events_z_d,
-                               F* events_dl,
-                               const int n_events,
+                               F* responses_z_u,
+                               F* reponses_z_d,
+                               F* reponses_dl,
+                               const int n_responses,
                                F* output_rho,
                                const int n_blocks,
                                const int n_threads_per_block) {
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
   using Pixel = PET2D::Pixel<short>;
-  using Event = Strip::Event<F>;
+  using Response = Strip::Response<F>;
 
   const int n_warps_per_block = n_threads_per_block / WARP_SIZE;
   const int n_warps = n_blocks * n_warps_per_block;
-  const int max_events_per_warp = (n_events + n_warps - 1) / n_warps;
+  const int max_reponses_per_warp = (n_responses + n_warps - 1) / n_warps;
   const int warp_index = threadIdx.x / WARP_SIZE;
 
 #if CACHE_ELLIPSE_PIXELS
@@ -41,21 +41,22 @@ __global__ void reconstruction(Scanner<F, short> scanner,
 
   Kernel<F> kernel(scanner.sigma_z, scanner.sigma_dl);
 
-  for (int i = 0; i < max_events_per_warp; ++i) {
+  for (int i = 0; i < max_reponses_per_warp; ++i) {
 
-    int event_index = i * n_warps + blockIdx.x * n_warps_per_block + warp_index;
+    int reponse_index =
+        i * n_warps + blockIdx.x * n_warps_per_block + warp_index;
 
-    if (event_index >= n_events)
+    if (reponse_index >= n_responses)
       break;
 
-    Event event(events_z_u[event_index],
-                events_z_d[event_index],
-                events_dl[event_index]);
+    Response reponse(responses_z_u[reponse_index],
+                     reponses_z_d[reponse_index],
+                     reponses_dl[reponse_index]);
 
     F denominator = 0;
 
     F tan, y, z;
-    event.transform(scanner.radius, tan, y, z);
+    reponse.transform(scanner.radius, tan, y, z);
 
     F sec, A, B, C, bb_y, bb_z;
     kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);
@@ -63,7 +64,7 @@ __global__ void reconstruction(Scanner<F, short> scanner,
     Point ellipse_center(z, y);
     Pixel center_pixel = scanner.pixel_at(ellipse_center);
 
-    // bounding box limits for event
+    // bounding box limits for reponse
     const int bb_half_width = n_pixels_in_line(bb_z, scanner.pixel_width);
     const int bb_half_height = n_pixels_in_line(bb_y, scanner.pixel_height);
     Pixel bb_tl(center_pixel.x - bb_half_width,
@@ -103,17 +104,16 @@ __global__ void reconstruction(Scanner<F, short> scanner,
         F pixel_sensitivity =
             USE_SENSITIVITY ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
 
-        F event_kernel =
+        F kernel_value =
             USE_KERNEL ? kernel(y, tan, sec, scanner.radius, r) : 1;
 
-        F event_kernel_mul_rho =
-            event_kernel * tex2D(tex_rho, pixel.x, pixel.y);
-        denominator += event_kernel_mul_rho * pixel_sensitivity;
+        F kernel_mul_rho = kernel_value * tex2D(tex_rho, pixel.x, pixel.y);
+        denominator += kernel_mul_rho * pixel_sensitivity;
 
 #if CACHE_ELLIPSE_PIXELS
         ellipse_pixels[n_ellipse_pixels][threadIdx.x] =
             make_short2(pixel.x, pixel.y);
-        ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
+        ellipse_kernel_mul_rho[n_ellipse_pixels] = kernel_mul_rho;
         ++n_ellipse_pixels;
 #endif
       }
@@ -145,11 +145,11 @@ __global__ void reconstruction(Scanner<F, short> scanner,
       if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
         Vector r = point - ellipse_center;
 
-        F event_kernel =
+        F kernel_value =
             USE_KERNEL ? kernel(y, tan, sec, scanner.radius, r) : 1;
 
         atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
-                  event_kernel * tex2D(tex_rho, pixel.x, pixel.y) * inv_acc);
+                  kernel_value * tex2D(tex_rho, pixel.x, pixel.y) * inv_acc);
       }
     }
 #endif

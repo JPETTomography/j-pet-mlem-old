@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <iostream>
 
-#include "event.h"
+#include "response.h"
 #include "kernel.h"
 #include "gausian_kernel.h"
 #include "scanner.h"
@@ -48,7 +48,7 @@ class Reconstruction {
 
  public:
   const ReconstructionStats<size_t>& stats;
-  std::vector<Event<F>> events;
+  std::vector<Response<F>> responses;
 
   Reconstruction(const Scanner& scanner)
       : scanner(scanner),
@@ -112,7 +112,7 @@ class Reconstruction {
 
     for (int iteration = 0; iteration < n_iterations; ++iteration) {
       progress(iteration + n_iterations_so_far);
-      int n_events = events.size();
+      int n_responses = responses.size();
 
       for (auto& thread_rho : thread_rhos) {
         thread_rho.assign(scanner.total_n_pixels, 0);
@@ -121,17 +121,17 @@ class Reconstruction {
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-      for (int e = 0; e < n_events; ++e) {
+      for (int e = 0; e < n_responses; ++e) {
         int thread = omp_get_thread_num();
         stats_.n_events_processed_by(thread, 1);
 #if BB_UPDATE
-        auto event = events[e];
+        auto response = responses[e];
         F tan, y, z;
-        event.transform(scanner.radius, tan, y, z);
+        response.transform(scanner.radius, tan, y, z);
         bb_update(Point(z, y), y, tan, thread_rhos[thread]);
 #else
-        F y = events[e].z_u;
-        F z = events[e].z_d;
+        F y = responses[e].z_u;
+        F z = responses[e].z_d;
         simple_update(Point(z, y), y, z, thread_rhos[thread]);
 #endif
       }
@@ -155,8 +155,7 @@ class Reconstruction {
 
       F z_u, z_d, dl;
       in >> z_u >> z_d >> dl;
-      Event<F> temp_event(z_u, z_d, dl);
-      events.push_back(temp_event);
+      responses.emplace_back(z_u, z_d, dl);
       i++;
     }
     return *this;
@@ -260,14 +259,14 @@ class Reconstruction {
 
           F pixel_sensitivity = use_sensitivity ? sensitivity[i] : 1;
           stats_.n_kernel_calls_by();
-          F event_kernel = kernel(y, tan, sec, scanner.radius, r);
+          F kernel_value = kernel(y, tan, sec, scanner.radius, r);
 #if DEBUG
-          std::cout << event_kernel;
+          std::cout << kernel_value;
 #endif
-          F event_kernel_mul_rho = event_kernel * rho[i];
-          denominator += event_kernel_mul_rho * pixel_sensitivity;
+          F kernel_mul_rho = kernel_value * rho[i];
+          denominator += kernel_mul_rho * pixel_sensitivity;
           ellipse_pixels[n_ellipse_pixels] = pixel;
-          ellipse_kernel_mul_rho[n_ellipse_pixels] = event_kernel_mul_rho;
+          ellipse_kernel_mul_rho[n_ellipse_pixels] = kernel_mul_rho;
           ++n_ellipse_pixels;
         }
 #if DEBUG
@@ -314,10 +313,10 @@ class Reconstruction {
 
         int i = pixel.y * scanner.n_z_pixels + pixel.x;
         stats_.n_kernel_calls_by();
-        F event_kernel =
+        F kernel_value =
             kernel.test(y, z, point, scanner.sigma_z, scanner.sigma_dl);
-        F event_kernel_mul_rho = event_kernel * rho[i];
-        ellipse_kernel_mul_rho[n_ellipse_pixels++] = event_kernel_mul_rho;
+        F kernel_mul_rho = kernel_value * rho[i];
+        ellipse_kernel_mul_rho[n_ellipse_pixels++] = kernel_mul_rho;
       }
     }
 

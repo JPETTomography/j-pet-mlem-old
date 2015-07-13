@@ -38,7 +38,7 @@
 #include "util/progress.h"
 
 #include "options.h"
-#include "event.h"
+#include "response.h"
 #include "reconstruction.h"
 
 #if HAVE_CUDA
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
     PET2D::Strip::calculate_scanner_options(cl);
 
     if (!cl.rest().size()) {
-      throw("at least one events input file expected, consult --help");
+      throw("at least one responses input file expected, consult --help");
     }
 
     cmdline::load_accompanying_config(cl);
@@ -95,38 +95,38 @@ int main(int argc, char* argv[]) {
 
     for (auto& fn : cl.rest()) {
       if (cmdline::path(fn).ext() == ".txt") {
-        std::ifstream events(fn);
-        if (!events.is_open()) {
-          throw("cannot open phantom events file: " + fn);
+        std::ifstream in_responses(fn);
+        if (!in_responses.is_open()) {
+          throw("cannot open phantom responses file: " + fn);
         }
-        reconstruction << events;
+        reconstruction << in_responses;
       } else {
-        util::ibstream events(fn);
-        if (!events.is_open()) {
-          throw("cannot open phantom events file: " + fn);
+        util::ibstream in_responses(fn);
+        if (!in_responses.is_open()) {
+          throw("cannot open phantom responses file: " + fn);
         }
-        reconstruction << events;
+        reconstruction << in_responses;
       }
       if (verbose) {
-        std::cerr << "# read " << reconstruction.events.size()
-                  << " events from " << fn << std::endl;
+        std::cerr << "# read " << reconstruction.responses.size()
+                  << " responsess from " << fn << std::endl;
       }
 
       auto dl_is_time = cl.exist("dl-is-time");
       if (cl.exist("scale-length")) {
         auto scale = cl.get<double>("scale-length");
-        for (auto& event : reconstruction.events) {
-          event.z_u *= scale;
-          event.z_d *= scale;
+        for (auto& response : reconstruction.responses) {
+          response.z_u *= scale;
+          response.z_d *= scale;
           if (!dl_is_time)
-            event.dl *= scale;
+            response.dl *= scale;
         }
       }
       if (dl_is_time) {
         auto scale = cl.get<double>("scale-time");
         auto speed_of_light = cl.get<double>("speed-of-light");
-        for (auto& event : reconstruction.events) {
-          event.dl = event.dl * speed_of_light * scale;
+        for (auto& response : reconstruction.responses) {
+          response.dl = response.dl * speed_of_light * scale;
         }
       }
     }
@@ -148,7 +148,7 @@ int main(int argc, char* argv[]) {
 #if HAVE_CUDA
     if (cl.exist("gpu")) {
       PET2D::Strip::GPU::run_reconstruction(scanner,
-                                            reconstruction.events,
+                                            reconstruction.responses,
                                             n_blocks,
                                             n_iterations,
                                             cl.get<int>("cuda-device"),

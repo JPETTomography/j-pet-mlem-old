@@ -27,8 +27,8 @@ void fill_with_sensitivity(F* sensitivity, Scanner<F, short>& scanner);
 
 template <typename F>
 void run_reconstruction(Scanner<F, short>& scanner,
-                        Event<F>* events,
-                        int n_events,
+                        Response<F>* responses,
+                        int n_responses,
                         int n_iteration_blocks,
                         int n_iterations_in_block,
                         void (*output_callback)(Scanner<F, short>& scanner,
@@ -97,7 +97,7 @@ void run_reconstruction(Scanner<F, short>& scanner,
   }
 
   // this class allocated CUDA pointers and deallocated them in destructor
-  GPU::EventsSOA<F> gpu_events(events, n_events);
+  GPU::ResponsesSOA<F> gpu_responses(responses, n_responses);
 
   F* gpu_rho;
   size_t pitch_rho;
@@ -135,10 +135,10 @@ void run_reconstruction(Scanner<F, short>& scanner,
 #define reconstruction reconstruction<Kernel><<<blocks, threads>>>
 #endif
       reconstruction(scanner,
-                     gpu_events.z_u,
-                     gpu_events.z_d,
-                     gpu_events.dl,
-                     n_events,
+                     gpu_responses.z_u,
+                     gpu_responses.z_d,
+                     gpu_responses.dl,
+                     n_responses,
                      gpu_output_rho,
                      n_blocks,
                      n_threads_per_block);
@@ -211,8 +211,8 @@ void fill_with_sensitivity(F* sensitivity, Scanner<F, short>& scanner) {
 
 template void run_reconstruction<float>(
     Scanner<float, short>& scanner,
-    Event<float>* events,
-    int n_events,
+    Response<float>* responses,
+    int n_responses,
     int n_iteration_blocks,
     int n_iterations_in_block,
     void (*output_callback)(Scanner<float, short>& scanner,

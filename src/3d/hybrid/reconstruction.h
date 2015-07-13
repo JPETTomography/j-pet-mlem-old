@@ -4,7 +4,7 @@
 #include <algorithm>
 
 #include "2d/barrel/geometry.h"
-#include "2d/strip/event.h"
+#include "2d/strip/response.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/voxel_grid.h"
 
@@ -27,7 +27,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using LORInfo = typename Geometry::LORInfo;
   using Response = typename Scanner::Response;
   using LOR = PET2D::Barrel::LOR<S>;
-  using StripEvent = PET2D::Strip::Event<F>;
+  using StripEvent = PET2D::Strip::Response<F>;
   using PixelInfo = typename Geometry::PixelInfo;
   using Pixel = typename Geometry::Pixel;
   using Point2D = PET2D::Point<F>;
