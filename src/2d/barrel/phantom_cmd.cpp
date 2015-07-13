@@ -46,7 +46,7 @@
 
 #include "util/png_writer.h"
 #include "util/progress.h"
-#include "util/json_ostream.h"
+#include "util/json.h"
 #include "util/random.h"
 #include "options.h"
 

@@ -16,7 +16,7 @@
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 #include "util/json.h"
-#include "util/json_ostream.h"
+#include "util/json.h"
 
 #include "3d/geometry/phantom_builder.h"
 
@@ -73,8 +73,8 @@ int main(int argc, char* argv[]) {
   Scanner scanner(scanner2d, strip_length);
   scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
 
-  util::json_ostream out_json(output_base_name + ".json");
-  out_json << scanner.barrel;
+  std::ofstream out_json(output_base_name + ".json");
+  out_json << json(scanner.barrel);
 
   using RNG = std::mt19937;
   RNG rng;

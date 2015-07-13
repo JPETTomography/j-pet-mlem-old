@@ -5,7 +5,7 @@
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
-#include "util/json_ostream.h"
+#include "util/json.h"
 
 #include "2d/barrel/barrel_builder.h"
 #include "3d/hybrid/scanner.h"
@@ -82,8 +82,8 @@ int main(int argc, char* argv[]) {
         out << voxel_set.voxel(i) << voxel_set.value(i);
       }
 
-      util::json_ostream json(fn_wo_ext + ".json");
-      json << scanner.barrel;
+      std::ofstream out_json(fn_wo_ext + ".json");
+      out_json << json(scanner.barrel);
     }
 
     return 0;

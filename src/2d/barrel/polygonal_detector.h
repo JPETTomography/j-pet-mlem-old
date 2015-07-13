@@ -4,7 +4,7 @@
 #include "2d/geometry/polygon.h"
 
 #if !__CUDACC__
-#include "util/json_ostream.h"
+#include "util/json.h"
 #endif
 
 namespace PET2D {
@@ -49,23 +49,6 @@ class PolygonalDetector : public Polygon<NVertices, FType> {
   }
 
   static F default_height_for_width(const F w) { return w; }
-
-#if !__CUDACC__
-  friend util::json_ostream& operator<<(util::json_ostream& json,
-                                        const PolygonalDetector& pd) {
-    bool next = false;
-
-    json << "{\"Polygon\": [";
-
-    for (std::size_t i = 0; i < NVertices; i++) {
-      auto vertex = pd[i];
-      json.delimiter(next) << "[" << vertex.x << ", " << vertex.y << "]";
-    }
-
-    json << "]}";
-    return json;
-  }
-#endif
 
  protected:
   PolygonalDetector() {}

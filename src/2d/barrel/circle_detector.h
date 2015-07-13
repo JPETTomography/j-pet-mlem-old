@@ -5,8 +5,8 @@
 #include "util/array.h"
 #include "util/cuda/compat.h"
 #if !__CUDACC__
+#include "util/json.h"
 #include "util/svg_ostream.h"
-#include "util/json_ostream.h"
 #endif
 
 namespace PET2D {
@@ -80,20 +80,20 @@ template <typename FType> class CircleDetector : public Circle<FType> {
   Point center;
 
 #if !__CUDACC__
+  operator json() const {
+    json j_circle;
+    j_circle["center"] = json{ center.x, center.y };
+    j_circle["radius"] = this->radius;
+    json j;
+    j["Circle"] = j_circle;
+    return j;
+  }
+
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
                                           const CircleDetector& cd) {
     svg << "<circle cx=\"" << cd.center.x << "\" cy=\"" << cd.center.y
         << "\" r=\"" << cd.radius << "\"/>" << std::endl;
     return svg;
-  }
-
-  friend util::json_ostream& operator<<(util::json_ostream& json,
-                                        const CircleDetector& cd) {
-    json << "{ \"Circle\": {"
-         << "\"center\": [" << cd.center.x << "," << cd.center.y << "],\n"
-         << "\"radius\": " << cd.radius << "}"
-         << "}\n";
-    return json;
   }
 
   friend std::ostream& operator<<(std::ostream& out, const CircleDetector& cd) {

@@ -24,7 +24,7 @@
 
 #include "util/png_writer.h"
 #include "util/svg_ostream.h"
-#include "util/json_ostream.h"
+#include "util/json.h"
 
 #include "options.h"
 #if _OPENMP

@@ -6,11 +6,17 @@ using namespace PET2D;
 using namespace PET2D::Barrel;
 
 TEST("2d/barrel/circle_detector/ctor") {
-
   CircleDetector<float> circle(0.01);
 
   CHECK(circle.center.x == 0);
   CHECK(circle.center.y == 0);
+}
+
+TEST("2d/barrel/circle_detector/json") {
+  CircleDetector<float> circle(1, { 1, 2 });
+
+  json j(circle);
+  REQUIRE(j.dump() == "{\"Circle\":{\"center\":[1,2],\"radius\":1}}");
 }
 
 TEST("2d/barrel/circle_detector/move") {

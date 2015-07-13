@@ -5,6 +5,7 @@
 #include "util/array.h"
 #include "util/cuda/compat.h"
 #if !__CUDACC__
+#include "util/json.h"
 #include "util/svg_ostream.h"
 #endif
 
@@ -97,6 +98,16 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   }
 
 #if !__CUDACC__
+  operator json() const {
+    json j_poly;
+    for (const auto& p : *this) {
+      j_poly.push_back(json{ p.x, p.y });
+    }
+    json j;
+    j["Polygon"] = j_poly;
+    return j;
+  }
+
   using svg_ostream = util::svg_ostream<F>;
 
   friend svg_ostream& operator<<(svg_ostream& svg, Polygon& pg) {

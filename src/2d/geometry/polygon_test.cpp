@@ -7,6 +7,17 @@
 
 using namespace PET2D;
 
+TEST("2d/geometry/polygon/json") {
+  Polygon<4, float> ps;
+  ps.emplace_back(1., 1.);
+  ps.emplace_back(2., 1.);
+  ps.emplace_back(2., 2.);
+  ps.emplace_back(1., 2.);
+
+  json j(ps);
+  REQUIRE(j.dump() == "{\"Polygon\":[[1,1],[2,1],[2,2],[1,2]]}");
+}
+
 TEST("2d/geometry/polygon/center") {
   Polygon<4, float> ps;
   ps.emplace_back(1., 1.);

@@ -4,12 +4,10 @@
 #include "circle_detector.h"
 #include "util/array.h"
 #include "lor.h"
-
 #include "symmetry_descriptor.h"
-
 #if !__CUDACC__
+#include "util/json.h"
 #include "util/svg_ostream.h"
-#include "util/json_ostream.h"
 #endif
 
 /// Two-dimensional PET
@@ -139,6 +137,16 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
   }
 
 #if !__CUDACC__
+  operator json() const {
+    json j_detectors;
+    for (const auto& detector : *this) {
+      j_detectors.push_back(detector);
+    }
+    json j;
+    j["Detectors"] = j_detectors;
+    return j;
+  }
+
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,
                                           DetectorSet& cd) {
     svg << cd.c_outer;
@@ -159,22 +167,6 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
     svg << "</g>" << std::endl;
 
     return svg;
-  }
-
-  friend util::json_ostream& operator<<(util::json_ostream& json,
-                                        const DetectorSet& ds) {
-    bool next = false;
-
-    json << "{\"Detector\":"
-         << "[\n";
-
-    for (auto& detector : ds) {
-      json.delimiter(next) << detector;
-    }
-
-    json << "]\n"
-         << "}";
-    return json;
   }
 #endif
 
