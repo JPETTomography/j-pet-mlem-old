@@ -226,8 +226,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           [&](const typename MonteCarlo::Event& event) {
             auto pixel = pixel_grid.pixel_at(event.center);
             if (pixel_grid.contains(pixel)) {
-              auto pixel_index = pixel.y * n_pixels + pixel.x;
-              image_emitted[pixel_index]++;
+              image_emitted[pixel.index(n_pixels)]++;
             }
           },
           [&](const typename MonteCarlo::Event& event,
@@ -244,8 +243,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
             {
               auto pixel = pixel_grid.pixel_at(event.center);
               if (pixel_grid.contains(pixel)) {
-                auto pixel_index = pixel.y * n_pixels + pixel.x;
-                image_detected_exact[pixel_index]++;
+                image_detected_exact[pixel.index(n_pixels)]++;
               }
             }
           },
@@ -275,9 +273,8 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           n_emissions,
           [&](const typename MonteCarlo::Event& event) {
             auto pixel = pixel_grid.pixel_at(event.center);
-            auto pixel_index = pixel.y * n_pixels + pixel.x;
             if (pixel_grid.contains(pixel)) {
-              image_emitted[pixel_index]++;
+              image_emitted[pixel.index(n_pixels)]++;
             }
           },
           [&](const typename MonteCarlo::Event& event,
@@ -289,8 +286,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
             {
               auto pixel = pixel_grid.pixel_at(event.center);
               if (pixel_grid.contains(pixel)) {
-                auto pixel_index = pixel.y * n_pixels + pixel.x;
-                image_detected_exact[pixel_index]++;
+                image_detected_exact[pixel.index(n_pixels)]++;
               }
             }
           },

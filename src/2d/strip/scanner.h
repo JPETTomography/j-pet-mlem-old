@@ -26,6 +26,7 @@ template <typename FType, typename SType> class Scanner {
  public:
   using F = FType;
   using S = SType;
+  using I = typename std::common_type<S, int>::type;
   using Pixel = PET2D::Pixel<S>;
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
@@ -36,8 +37,8 @@ template <typename FType, typename SType> class Scanner {
   /// Creates strip-scanner with given parameters.
   Scanner(F radius,               //< radius of strip-scanner along y-axis
           F scintillator_length,  //< lenght of strip along z-axis
-          int n_y_pixels,         //< number of pixels along y-axis
-          int n_z_pixels,         //< number of pixels along z-axis
+          S n_y_pixels,           //< number of pixels along y-axis
+          S n_z_pixels,           //< number of pixels along z-axis
           F pixel_height,         //< pixel size along y-axis
           F pixel_width,          //< pixel size along z-axis
           F sigma_z,              //< sigma z
@@ -49,7 +50,7 @@ template <typename FType, typename SType> class Scanner {
         scintillator_length(scintillator_length),
         n_y_pixels(n_y_pixels),
         n_z_pixels(n_z_pixels),
-        total_n_pixels(n_y_pixels * n_z_pixels),
+        total_n_pixels(static_cast<I>(n_y_pixels) * n_z_pixels),
         pixel_width(pixel_width),
         pixel_height(pixel_height),
         sigma_z(sigma_z),
@@ -69,8 +70,8 @@ template <typename FType, typename SType> class Scanner {
   /// dimensions and number of pixels.
   Scanner(F radius,               //< radius of strip-scanner along y-axis
           F scintillator_length,  //< lenght of strip along z-axis
-          int n_y_pixels,         //< number of pixels along y-axis
-          int n_z_pixels,         //< number of pixels along z-axis
+          S n_y_pixels,           //< number of pixels along y-axis
+          S n_z_pixels,           //< number of pixels along z-axis
           F sigma_z,              //< sigma z
           F sigma_dl              //< sigma dl
           )
@@ -269,9 +270,9 @@ template <typename FType, typename SType> class Scanner {
 
   const F radius;
   const F scintillator_length;
-  const int n_y_pixels;
-  const int n_z_pixels;
-  const int total_n_pixels;
+  const S n_y_pixels;
+  const S n_z_pixels;
+  const I total_n_pixels;
   const F pixel_width;
   const F pixel_height;
   const F sigma_z;

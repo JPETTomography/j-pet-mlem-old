@@ -239,15 +239,15 @@ class Reconstruction {
 #if DEBUG
           std::cout << r.x << " " << r.y << " ";
 #endif
-          int i = pixel.y * scanner.n_z_pixels + pixel.x;
+          auto pixel_index = pixel.index(scanner.n_z_pixels);
 
-          F pixel_sensitivity = use_sensitivity ? sensitivity[i] : 1;
+          F pixel_sensitivity = use_sensitivity ? sensitivity[pixel_index] : 1;
           stats_.n_kernel_calls_by();
           F kernel_value = kernel(y, tan, sec, scanner.radius, r);
 #if DEBUG
           std::cout << kernel_value;
 #endif
-          F kernel_mul_rho = kernel_value * rho[i];
+          F kernel_mul_rho = kernel_value * rho[pixel_index];
           denominator += kernel_mul_rho * pixel_sensitivity;
           ellipse_pixels[n_ellipse_pixels] = pixel;
           ellipse_kernel_mul_rho[n_ellipse_pixels] = kernel_mul_rho;
@@ -264,9 +264,8 @@ class Reconstruction {
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       auto pixel = ellipse_pixels[p];
       auto pixel_kernel = ellipse_kernel_mul_rho[p];
-      int i = pixel.y * scanner.n_z_pixels + pixel.x;
-
-      output_rho[i] += pixel_kernel * inv_denominator;
+      output_rho[pixel.index(scanner.n_z_pixels)] +=
+          pixel_kernel * inv_denominator;
     }
   }
 
@@ -295,11 +294,10 @@ class Reconstruction {
         Pixel pixel(iz, iy);
         Point point = scanner.pixel_center(pixel);
 
-        int i = pixel.y * scanner.n_z_pixels + pixel.x;
         stats_.n_kernel_calls_by();
         F kernel_value =
             kernel.test(y, z, point, scanner.sigma_z, scanner.sigma_dl);
-        F kernel_mul_rho = kernel_value * rho[i];
+        F kernel_mul_rho = kernel_value * rho[pixel.index(scanner.n_z_pixels)];
         ellipse_kernel_mul_rho[n_ellipse_pixels++] = kernel_mul_rho;
       }
     }
@@ -309,9 +307,9 @@ class Reconstruction {
     for (int iy = tl.y; iy < br.y; ++iy) {
       for (int iz = tl.x; iz < br.x; ++iz) {
         Pixel pixel(iz, iy);
-        int i = pixel.y * scanner.n_z_pixels + pixel.x;
         int ik = (pixel.y - tl.y) * z_line * 2 + pixel.x - tl.x;
-        output_rho[i] += ellipse_kernel_mul_rho[ik] * inv_denominator;
+        output_rho[pixel.index(scanner.n_z_pixels)] +=
+            ellipse_kernel_mul_rho[ik] * inv_denominator;
       }
     }
   }

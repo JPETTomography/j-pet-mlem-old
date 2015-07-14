@@ -152,8 +152,7 @@ int main(int argc, char* argv[]) {
           [&](const typename MonteCarlo::Event& event) {
             auto pixel = pixel_grid.pixel_at(event.center);
             if (pixel_grid.contains(pixel)) {
-              auto pixel_index = pixel.y * n_z_pixels + pixel.x;
-              image_emitted[pixel_index]++;
+              image_emitted[pixel.index(n_z_pixels)]++;
             }
           },
           [&](const typename MonteCarlo::Event& event,
@@ -167,8 +166,7 @@ int main(int argc, char* argv[]) {
             {
               auto pixel = pixel_grid.pixel_at(event.center);
               if (pixel_grid.contains(pixel)) {
-                auto pixel_index = pixel.y * n_z_pixels + pixel.x;
-                image_detected_exact[pixel_index]++;
+                image_detected_exact[pixel.index(n_z_pixels)]++;
               }
             }
             {
@@ -176,8 +174,7 @@ int main(int argc, char* argv[]) {
               auto pixel =
                   pixel_grid.pixel_at(PET2D::Point<F>(event.z, event.y));
               if (pixel_grid.contains(pixel)) {
-                auto pixel_index = pixel.y * n_z_pixels + pixel.x;
-                image_detected_w_error[pixel_index]++;
+                image_detected_w_error[pixel.index(n_z_pixels)]++;
               }
             }
           },

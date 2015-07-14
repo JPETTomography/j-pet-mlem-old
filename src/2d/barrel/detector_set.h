@@ -38,7 +38,7 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
   struct Response {
     LOR lor;
     F dl;
-    int tof_position;
+    S tof_position;
 
 #if !__CUDACC__
     friend std::ostream& operator<<(std::ostream& out,
