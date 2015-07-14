@@ -8,6 +8,7 @@
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 #endif
 #ifdef __clang__
