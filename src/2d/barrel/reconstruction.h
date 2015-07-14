@@ -70,15 +70,12 @@ class Reconstruction {
     // Read the mean (detector response file)
     for (;;) {
       Mean mean;
-      in_means >> mean.lor.first >> mean.lor.second;
-      if (mean.lor.first < mean.lor.second)
-        std::swap(mean.lor.first, mean.lor.second);
-
-      in_means >> mean.position;
-
-      in_means >> mean.mean;
+      in_means >> mean.lor.first >> mean.lor.second >> mean.position >>
+          mean.mean;
       if (in_means.eof())
         break;
+      if (mean.lor.first < mean.lor.second)
+        std::swap(mean.lor.first, mean.lor.second);
       means_.push_back(mean);
     }
 
