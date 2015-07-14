@@ -100,18 +100,17 @@ int main(int argc, char* argv[]) {
       util::ibstream system_matrix_istream(system_matrix_file_name);
       PET2D::Barrel::SparseMatrix<Pixel, LOR, S, H> matrix(
           system_matrix_istream);
-      if (verbose)
+      if (verbose) {
         std::cout << "read in system matrix" << std::endl;
+      }
       matrix.sort_by_lor_n_pixel();
       matrix.merge_duplicates();
       F n_emissions = F(matrix.n_emissions());
       if (geometry.grid.n_columns != matrix.n_pixels_in_row()) {
-        std::cerr << "mismatch in number of pixels with matrix\n";
-        exit(-1);
+        throw("mismatch in number of pixels with matrix");
       }
       if (matrix.triangular()) {
-        std::cerr << "matrix is not full\n";
-        exit(-1);
+        throw("matrix is not full");
       }
 
       for (auto& element : matrix) {

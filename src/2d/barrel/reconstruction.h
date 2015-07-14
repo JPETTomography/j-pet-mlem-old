@@ -61,8 +61,9 @@ class Reconstruction {
         scale_[p] = n_emissions / scale_[p];
       }
       if (scale_[p] < 0) {
-        std::cerr << "scale_[" << p << "]=" << scale_[p] << " < 0 !!\n";
-        exit(-1);
+        std::stringstream ss;
+        ss << "scale_[" << p << "]=" << scale_[p] << " < 0";
+        throw(ss.str());
       }
     }
 
