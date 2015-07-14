@@ -28,7 +28,7 @@ class Reconstruction {
   typedef struct {
     LOR lor;
     S position;
-    S mean;
+    Hit mean;
   } Mean;
   using Means = std::vector<Mean>;
   using Output = std::vector<F>;
