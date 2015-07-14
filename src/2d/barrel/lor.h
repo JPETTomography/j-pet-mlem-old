@@ -46,14 +46,14 @@ template <typename SType> class LOR {
     return second == lor.second && first == lor.first;
   }
 
+  _ bool operator!=(const LOR& lor) const { return !operator==(lor); }
+
   _ bool operator<(const LOR& lor) const {
     return first < lor.first || (first == lor.first && second < lor.second);
   }
 
-  _ bool operator!=(const LOR& lor) const { return !operator==(lor); }
-
   _ bool operator>(const LOR& lor) const {
-    return !(*this < lor) && !(*this == lor);
+    return first > lor.first || (first == lor.first && second > lor.second);
   }
 };
 
