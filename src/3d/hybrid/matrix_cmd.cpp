@@ -25,6 +25,7 @@
 #include "util/png_writer.h"
 #include "util/svg_ostream.h"
 #include "util/json.h"
+#include "util/backtrace.h"
 
 #include "options.h"
 #if _OPENMP
@@ -128,8 +129,10 @@ int main(int argc, char* argv[]) {
     }
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   } catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   }
   return 1;
 }

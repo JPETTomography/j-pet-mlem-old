@@ -71,6 +71,7 @@ file(GLOB COMMON
   src/util/*.h
   src/util/png_writer.cpp
   src/util/cmdline_hooks.cpp
+  src/util/backtrace.cpp
   src/common/*.h)
 
 # OpenMP support

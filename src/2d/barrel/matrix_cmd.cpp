@@ -29,25 +29,29 @@
 #include <random>
 
 #include "cmdline.h"
+
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
-#include "scanner_builder.h"
 #include "util/random.h"
+#include "util/png_writer.h"
+#include "util/svg_ostream.h"
+#include "util/progress.h"
+#include "util/variant.h"
+#include "util/backtrace.h"
+
+#include "scanner_builder.h"
 #include "ring_scanner.h"
 #include "generic_scanner.h"
 #include "circle_detector.h"
 #include "triangle_detector.h"
 #include "polygonal_detector.h"
 #include "matrix_pixel_major.h"
+
 #include "2d/geometry/pixel.h"
 #include "lor.h"
 #include "common/model.h"
-#include "util/png_writer.h"
-#include "util/svg_ostream.h"
-#include "util/progress.h"
-#include "util/variant.h"
-#include "options.h"
 
+#include "options.h"
 #include "monte_carlo.h"
 
 #if _OPENMP
@@ -186,8 +190,10 @@ int main(int argc, char* argv[]) {
     }
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   } catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   }
   return 1;
 }

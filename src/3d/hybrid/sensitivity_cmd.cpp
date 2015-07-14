@@ -6,6 +6,7 @@
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 #include "util/json.h"
+#include "util/backtrace.h"
 
 #include "2d/barrel/barrel_builder.h"
 #include "3d/hybrid/scanner.h"
@@ -103,8 +104,10 @@ int main(int argc, char* argv[]) {
     }
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   } catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   }
   return 1;
 }

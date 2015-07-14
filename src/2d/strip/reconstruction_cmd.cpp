@@ -36,6 +36,7 @@
 #include "util/cmdline_hooks.h"
 #include "util/png_writer.h"
 #include "util/progress.h"
+#include "util/backtrace.h"
 
 #include "options.h"
 #include "response.h"
@@ -200,8 +201,10 @@ int main(int argc, char* argv[]) {
     }
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   } catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   }
 
   return 0;

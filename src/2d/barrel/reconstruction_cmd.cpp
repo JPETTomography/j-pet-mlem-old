@@ -38,6 +38,7 @@
 #include "util/cmdline_types.h"
 #include "reconstruction.h"
 #include "util/png_writer.h"
+#include "util/backtrace.h"
 #include "options.h"
 
 #if _OPENMP
@@ -197,8 +198,10 @@ int main(int argc, char* argv[]) {
     return 0;
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   } catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   }
   return 1;
 }

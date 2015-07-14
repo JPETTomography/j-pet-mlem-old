@@ -37,12 +37,16 @@
 #include "2d/barrel/options.h"
 
 #include "cmdline.h"
+
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 #include "util/progress.h"
+#include "util/backtrace.h"
+
 #include "scanner_builder.h"
 #include "ring_scanner.h"
 #include "generic_scanner.h"
+
 #include "2d/geometry/line_segment.h"
 #include "2d/geometry/pixel_grid.h"
 #include "2d/barrel/geometry.h"
@@ -256,8 +260,10 @@ int main(int argc, char* argv[]) {
     }
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   } catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   }
   return 1;
 }

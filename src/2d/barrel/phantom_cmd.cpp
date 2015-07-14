@@ -48,6 +48,7 @@
 #include "util/progress.h"
 #include "util/json.h"
 #include "util/random.h"
+#include "util/backtrace.h"
 #include "options.h"
 
 #include "2d/geometry/phantom.h"
@@ -165,8 +166,10 @@ int main(int argc, char* argv[]) {
     }
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   } catch (const char* ex) {
     std::cerr << "error: " << ex << std::endl;
+    util::print_backtrace(std::cerr);
   }
   return 1;
 }
