@@ -139,6 +139,11 @@ if(Boost_FOUND)
   add_definitions(-DHAVE_BOOST=1 ${Boost_DEFINITIONS})
 endif()
 
+# we need -ldl for backtrace on Linux
+if(UNIX AND NOT APPLE)
+  link_libraries(-ldl)
+endif()
+
 # add options above as compile flags removing PET_ prefix
 get_cmake_property(vars VARIABLES)
 foreach(var ${vars})
