@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #include "util/cuda/compat.h"
 #include "util/read.h"
 

@@ -3,6 +3,7 @@
 #if !__CUDACC__
 #include <random>
 #endif
+#include <type_traits>
 
 #include "response.h"
 #include "event.h"

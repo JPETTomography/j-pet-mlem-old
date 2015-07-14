@@ -4,6 +4,7 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <type_traits>
 
 #include "ring_scanner.h"
 #include "sparse_matrix.h"
