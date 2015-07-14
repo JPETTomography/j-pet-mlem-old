@@ -106,11 +106,6 @@ class Reconstruction {
                (matrix_it->lor < means_it->lor ||
                 (matrix_it->lor == means_it->lor &&
                  matrix_it->position < means_it->position))) {
-#if DEBUG
-          std::cerr << "skip matrix LOR (" << matrix_it->lor.first << ", "
-                    << matrix_it->lor.second << ") position "
-                    << matrix_it->position << std::endl;
-#endif
           ++matrix_it;
         }
 
@@ -136,11 +131,6 @@ class Reconstruction {
         // store current lor & position
         auto lor = matrix_it->lor;
         auto position = matrix_it->position;
-
-#if DEBUG
-        std::cerr << "processing LOR (" << lor.first << ", " << lor.second
-                  << ") position " << position << std::endl;
-#endif
 
         // if there any mean anyway here?
         if (means_it->mean > 0) {
