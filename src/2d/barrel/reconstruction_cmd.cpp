@@ -100,7 +100,8 @@ int main(int argc, char* argv[]) {
       throw("cannot open input file: " + cl.get<cmdline::path>("mean"));
 
     int n_i_blocks = cl.get<int>("blocks");
-    Reconstruction reconstruction(matrix, in_means);
+    Reconstruction reconstruction(
+        matrix, in_means, cl.exist("use-sensitivity"));
 
     if (verbose) {
       std::cerr << "reconstruction:" << std::endl;

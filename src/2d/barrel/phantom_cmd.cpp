@@ -218,7 +218,9 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
       if (n_tof_positions == 0)
         n_tof_positions = 1;
       int n_detectors = scanner.size();
-      std::vector<int> hits(n_detectors * n_detectors * n_tof_positions, 0);
+      int n_bins_total = n_detectors * n_detectors * n_tof_positions;
+      std::vector<int> bins_w_error(n_bins_total, 0);
+      std::vector<int> bins_wo_error(n_bins_total, 0);
       monte_carlo(
           rng,
           model,
@@ -231,15 +233,31 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           },
           [&](const typename MonteCarlo::Event& event,
               const typename MonteCarlo::FullResponse& full_response) {
-            auto response = scanner.response_w_error(rng, full_response);
-            if (response.tof_position < 0)
-              response.tof_position = 0;
-            if (response.tof_position >= n_tof_positions)
-              response.tof_position = n_tof_positions - 1;
-            int index = response.lor.first * n_detectors * n_tof_positions +
-                        response.lor.second * n_tof_positions +
-                        response.tof_position;
-            hits[index]++;
+            // bins without error
+            {
+              auto response = scanner.response_wo_error(full_response);
+              if (response.tof_position < 0)
+                response.tof_position = 0;
+              if (response.tof_position >= n_tof_positions)
+                response.tof_position = n_tof_positions - 1;
+              int index = response.lor.first * n_detectors * n_tof_positions +
+                          response.lor.second * n_tof_positions +
+                          response.tof_position;
+              bins_wo_error[index]++;
+            }
+            // bins with error
+            {
+              auto response = scanner.response_w_error(rng, full_response);
+              if (response.tof_position < 0)
+                response.tof_position = 0;
+              if (response.tof_position >= n_tof_positions)
+                response.tof_position = n_tof_positions - 1;
+              int index = response.lor.first * n_detectors * n_tof_positions +
+                          response.lor.second * n_tof_positions +
+                          response.tof_position;
+              bins_w_error[index]++;
+            }
+            // image without error
             {
               auto pixel = pixel_grid.pixel_at(event.center);
               if (pixel_grid.contains(pixel)) {
@@ -249,16 +267,21 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           },
           progress);
 
-      std::ofstream out_hits(output);
+      std::ofstream out_bins_wo_error(output_base_name + "_wo_error.txt");
+      std::ofstream out_bins_w_error(output);
+
+      // dump bins into files
       for (int d1 = 0; d1 < n_detectors; d1++)
         for (int d2 = 0; d2 < n_detectors; d2++)
           for (int tof = 0; tof < n_tof_positions; tof++) {
-            if (hits[d1 * n_detectors * n_tof_positions + d2 * n_tof_positions +
-                     tof] > 0)
-              out_hits << d1 << " " << d2 << " " << tof << " "
-                       << hits[d1 * n_detectors * n_tof_positions +
-                               d2 * n_tof_positions + tof]
-                       << "\n";
+            int bin_index =
+                d1 * n_detectors * n_tof_positions + d2 * n_tof_positions + tof;
+            if (bins_wo_error[bin_index] > 0)
+              out_bins_wo_error << d1 << " " << d2 << " " << tof << " "
+                                << bins_wo_error[bin_index] << "\n";
+            if (bins_w_error[bin_index] > 0)
+              out_bins_w_error << d1 << " " << d2 << " " << tof << " "
+                               << bins_w_error[bin_index] << "\n";
           }
     } else {
       std::ofstream out_wo_error(output_base_name + "_wo_error" + ext);

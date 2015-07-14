@@ -35,7 +35,10 @@ class Reconstruction {
   using Output = std::vector<F>;
   using Matrix = SparseMatrix<Pixel, LOR, S, Hit>;
 
-  Reconstruction(Matrix& matrix, std::istream& in_means) : matrix_(matrix) {
+  Reconstruction(Matrix& matrix,
+                 std::istream& in_means,
+                 bool use_sensitivity = true)
+      : matrix_(matrix) {
 
     n_pixels_in_row_ = matrix_.n_pixels_in_row();
     n_emissions_ = matrix_.n_emissions();
@@ -44,24 +47,26 @@ class Reconstruction {
     total_n_pixels_ = n_pixels_in_row_ * n_pixels_in_row_;
 
     rho_.resize(total_n_pixels_);
-    rho_detected_.resize(total_n_pixels_, static_cast<F>(1));
-    scale_.resize(total_n_pixels_, static_cast<F>(0));
+    rho_detected_.resize(total_n_pixels_, 1);
 
-    for (auto it = matrix_.begin(); it != matrix_.end(); ++it) {
-      scale_[pixel_index(it->pixel)] += it->hits;
-    }
+    if (use_sensitivity) {
+      std::vector<Hit> sensitivity(total_n_pixels_, 0);
+      scale_.resize(total_n_pixels_, 0);
 
-    auto n_emissions = static_cast<F>(n_emissions_);
-
-    for (I p = 0; p < total_n_pixels_; ++p) {
-      if (scale_[p] > 0) {
-        scale_[p] = n_emissions / scale_[p];
+      for (const auto element : matrix_) {
+        sensitivity[pixel_index(element.pixel)] += element.hits;
       }
-      if (scale_[p] < 0) {
-        std::stringstream ss;
-        ss << "scale_[" << p << "]=" << scale_[p] << " < 0";
-        throw(ss.str());
+
+      auto n_emissions = static_cast<F>(n_emissions_);
+
+      for (I p = 0; p < total_n_pixels_; ++p) {
+        Hit pixel_sensitivity = sensitivity[p];
+        if (pixel_sensitivity > 0) {
+          scale_[p] = static_cast<F>(n_emissions) / pixel_sensitivity;
+        }
       }
+    } else {
+      scale_.resize(total_n_pixels_, 1);
     }
 
     // Read the mean (detector response file)
@@ -137,8 +142,8 @@ class Reconstruction {
           // count u for current LOR
           while (matrix_it->lor == lor && matrix_it->position == position) {
             auto i_pixel = pixel_index(matrix_it->pixel);
-            u += rho_detected_[i_pixel] * static_cast<F>(matrix_it->hits) *
-                 scale_[i_pixel];
+            u += rho_detected_[i_pixel] * static_cast<F>(matrix_it->hits)  //
+                 * scale_[i_pixel];
             ++matrix_it;
           }
           F phi = means_it->mean / u;
@@ -148,7 +153,8 @@ class Reconstruction {
           while (matrix_it->lor == lor && matrix_it->position == position) {
             auto i_pixel = pixel_index(matrix_it->pixel);
             y[pixel_index(matrix_it->pixel)] +=
-                phi * static_cast<F>(matrix_it->hits) * scale_[i_pixel];
+                phi * static_cast<F>(matrix_it->hits)  //
+                * scale_[i_pixel];
             ++matrix_it;
           }
         } else {

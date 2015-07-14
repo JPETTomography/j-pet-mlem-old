@@ -202,6 +202,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
   cl.add<cmdline::path>("system", 's', "system matrix file", true);
   cl.add<cmdline::path>("mean", 'm', "mean file", true);
   cl.add<cmdline::path>("output", 'o', "output reconstruction", false);
+  cl.add("use-sensitivity", 'S', "correct for sensitivity");
 
   // additional options
   cl.add("verbose", 'v', "prints the iterations information on std::out");

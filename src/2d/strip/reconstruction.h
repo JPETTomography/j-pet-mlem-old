@@ -314,5 +314,6 @@ class Reconstruction {
     }
   }
 };
+
 }  // Strip
 }  // PET2D
