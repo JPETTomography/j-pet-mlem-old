@@ -21,6 +21,7 @@ class Reconstruction {
  public:
   using F = FType;
   using S = SType;
+  using I = typename std::common_type<S, int>::type;
   using Hit = HitType;
   using Pixel = PET2D::Pixel<S>;
   using LOR = Barrel::LOR<S>;
@@ -34,11 +35,7 @@ class Reconstruction {
   using Output = std::vector<F>;
   using Matrix = SparseMatrix<Pixel, LOR, S, Hit>;
 
-  Reconstruction(S n_iterations,
-                 Matrix& matrix,
-                 std::istream& in_means,
-                 F threshold = static_cast<F>(0))
-      : threshold(threshold), n_iterations_(n_iterations), matrix_(matrix) {
+  Reconstruction(Matrix& matrix, std::istream& in_means) : matrix_(matrix) {
 
     n_pixels_in_row_ = matrix_.n_pixels_in_row();
     n_emissions_ = matrix_.n_emissions();
@@ -56,7 +53,7 @@ class Reconstruction {
 
     auto n_emissions = static_cast<F>(n_emissions_);
 
-    for (int p = 0; p < total_n_pixels_; ++p) {
+    for (I p = 0; p < total_n_pixels_; ++p) {
       if (scale_[p] > 0) {
         scale_[p] = n_emissions / scale_[p];
       }
@@ -88,13 +85,13 @@ class Reconstruction {
     }
   }
 
-  void emt(S n_iterations) {
+  void emt(I n_iterations) {
     F* y = (F*)alloca(n_pixels_in_row_ * n_pixels_in_row_ * sizeof(F));
 
-    for (S i = 0; i < n_iterations; ++i) {
+    for (I i = 0; i < n_iterations; ++i) {
       std::cout << ".", std::cout.flush();
 
-      for (int p = 0; p < total_n_pixels_; ++p) {
+      for (I p = 0; p < total_n_pixels_; ++p) {
         y[p] = static_cast<F>(0);
       }
 
@@ -162,12 +159,12 @@ class Reconstruction {
         ++means_it;
       }
 
-      for (int p = 0; p < total_n_pixels_; ++p) {
+      for (I p = 0; p < total_n_pixels_; ++p) {
         rho_detected_[p] *= y[p];
       }
     }
 
-    for (int p = 0; p < total_n_pixels_; ++p) {
+    for (I p = 0; p < total_n_pixels_; ++p) {
       rho_[p] = rho_detected_[p] * scale_[p];
     }
   }
@@ -179,17 +176,15 @@ class Reconstruction {
   const Output& rho_detected() const { return rho_detected_; }
   const Output& scale() const { return scale_; }
 
- public:
-  F threshold;
-
  private:
-  S pixel_index(const Pixel& p) const { return p.y * n_pixels_in_row_ + p.x; }
+  I pixel_index(const Pixel& p) const {
+    return p.y * static_cast<I>(n_pixels_in_row_) + p.x;
+  }
 
   S n_detectors_;
   S n_pixels_in_row_;
-  int total_n_pixels_;
-  int n_iterations_;
-  int n_emissions_;
+  I total_n_pixels_;
+  I n_emissions_;
   Output scale_;
   Output rho_;
   Output rho_detected_;
