@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
 
     int n_i_blocks = cl.get<int>("blocks");
     Reconstruction reconstruction(
-        matrix, in_means, cl.exist("use-sensitivity"));
+        matrix, in_means, !cl.exist("no-sensitivity"));
 
     if (verbose) {
       std::cerr << "reconstruction:" << std::endl;
