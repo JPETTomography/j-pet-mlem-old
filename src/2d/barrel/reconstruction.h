@@ -34,6 +34,7 @@ class Reconstruction {
   } Mean;
   using Means = std::vector<Mean>;
   using Output = std::vector<F>;
+  using Sensitivity = std::vector<Hit>;
   using Matrix = SparseMatrix<Pixel, LOR, S, Hit>;
 
   Reconstruction(Matrix& matrix,
@@ -51,17 +52,17 @@ class Reconstruction {
     rho_detected_.resize(total_n_pixels_, 1);
 
     if (use_sensitivity) {
-      std::vector<Hit> sensitivity(total_n_pixels_, 0);
+      sensitivity_.resize(total_n_pixels_, 0);
       scale_.resize(total_n_pixels_, 0);
 
       for (const auto element : matrix_) {
-        sensitivity[pixel_index(element.pixel)] += element.hits;
+        sensitivity_[pixel_index(element.pixel)] += element.hits;
       }
 
       auto n_emissions = static_cast<F>(n_emissions_);
 
       for (I p = 0; p < total_n_pixels_; ++p) {
-        Hit pixel_sensitivity = sensitivity[p];
+        Hit pixel_sensitivity = sensitivity_[p];
         if (pixel_sensitivity > 0) {
           scale_[p] = static_cast<F>(n_emissions) / pixel_sensitivity;
         }
@@ -179,6 +180,7 @@ class Reconstruction {
   S n_pixels_in_row() { return n_pixels_in_row_; }
   F rho(const S p) const { return rho_[p]; }
   F rho(const Pixel& pixel) const { return rho_[pixel_index(pixel)]; }
+  const Sensitivity& sensitivity() const { return sensitivity_; }
   const Output& rho() const { return rho_; }
   const Output& rho_detected() const { return rho_detected_; }
   const Output& scale() const { return scale_; }
@@ -192,6 +194,7 @@ class Reconstruction {
   S n_pixels_in_row_;
   I total_n_pixels_;
   I n_emissions_;
+  Sensitivity sensitivity_;
   Output scale_;
   Output rho_;
   Output rho_detected_;

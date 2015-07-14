@@ -85,6 +85,7 @@ int main(int argc, char* argv[]) {
 #endif
 
     auto verbose = cl.exist("verbose");
+    auto use_sensitivity = !cl.exist("no-sensitivity");
 
     util::ibstream in_matrix(cl.get<cmdline::path>("system"));
     if (!in_matrix.is_open())
@@ -100,8 +101,7 @@ int main(int argc, char* argv[]) {
       throw("cannot open input file: " + cl.get<cmdline::path>("mean"));
 
     int n_i_blocks = cl.get<int>("blocks");
-    Reconstruction reconstruction(
-        matrix, in_means, !cl.exist("no-sensitivity"));
+    Reconstruction reconstruction(matrix, in_means, use_sensitivity);
 
     if (verbose) {
       std::cerr << "reconstruction:" << std::endl;
@@ -132,8 +132,7 @@ int main(int argc, char* argv[]) {
 
     std::ofstream out;
     std::ofstream out_detected;
-    std::ofstream out_sensitivity(output.wo_ext() + "_sensitivity" +
-                                  output.ext());
+
     out.open(output);
     out_detected.open(output.wo_ext() + "_detected" + output.ext());
 
@@ -155,11 +154,26 @@ int main(int argc, char* argv[]) {
                     n_pixels_in_row);
     }
 
-    for (auto& scale : reconstruction.scale()) {
-      if (scale > 0)
-        out_sensitivity << 1 / scale << "\n";
-      else
-        out_sensitivity << 0 << "\n";
+    if (use_sensitivity) {
+      std::ofstream out_sensitivity(output.wo_ext() + "_sensitivity" +
+                                    output.ext());
+      int n_row = 0;
+      for (auto& scale : reconstruction.scale()) {
+        if (scale > 0)
+          out_sensitivity << 1 / scale;
+        else
+          out_sensitivity << 0;
+
+        if (++n_row >= n_pixels_in_row) {
+          n_row = 0;
+          out_sensitivity << "\n";
+        } else {
+          out_sensitivity << " ";
+        }
+      }
+
+      util::png_writer png(output.wo_ext() + "_sensitivity.png");
+      png.write(n_pixels_in_row, n_pixels_in_row, reconstruction.sensitivity());
     }
 
     std::cout << std::endl;
@@ -174,24 +188,7 @@ int main(int argc, char* argv[]) {
 
     // output reconstruction PNG
     util::png_writer png(output.wo_ext() + ".png");
-    png.write_header<>(n_pixels_in_row, n_pixels_in_row);
-
-    float output_max = 0.0;
-    for (auto it = rho.begin(); it != rho.end(); ++it) {
-      output_max = std::max(output_max, *it);
-    }
-
-    auto output_gain =
-        static_cast<double>(std::numeric_limits<uint8_t>::max()) / output_max;
-
-    uint8_t* row = (uint8_t*)alloca(n_pixels_in_row);
-    for (int y = n_pixels_in_row - 1; y >= 0; --y) {
-      for (auto x = 0; x < n_pixels_in_row; ++x) {
-        row[x] = std::numeric_limits<uint8_t>::max() -
-                 output_gain * rho[y * n_pixels_in_row + x];
-      }
-      png.write_row(row);
-    }
+    png.write(n_pixels_in_row, n_pixels_in_row, rho);
 
     return 0;
   } catch (std::string& ex) {
