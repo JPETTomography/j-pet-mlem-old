@@ -172,7 +172,7 @@ class Reconstruction {
     }
 
     for (I p = 0; p < total_n_pixels_; ++p) {
-      rho_[p] = rho_detected_[p] * scale_[p];
+      rho_[p] = rho_detected_[p];
     }
   }
 
