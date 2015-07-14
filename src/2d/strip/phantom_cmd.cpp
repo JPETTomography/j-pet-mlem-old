@@ -41,9 +41,12 @@
 #include "util/cmdline_types.h"
 #include "util/random.h"
 #include "util/backtrace.h"
+#include "util/progress.h"
+#include "util/png_writer.h"
 #include "options.h"
 
 #include "2d/geometry/phantom.h"
+#include "2d/geometry/pixel_grid.h"
 #include "2d/strip/scanner.h"
 
 #include "common/model.h"
@@ -120,30 +123,80 @@ int main(int argc, char* argv[]) {
       auto output_base_name = output.wo_ext();
       auto ext = output.ext();
 
-      std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
+      std::ofstream out_wo_error(output_base_name + "_wo_error" + ext);
       std::ofstream out_w_error(output);
-      std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
+      std::ofstream out_exact_events(output_base_name + "_events" + ext);
       std::ofstream out_full_response(output_base_name + "_full_response" +
                                       ext);
 
+      auto n_z_pixels = cl.get<int>("n-z-pixels");
+      auto n_y_pixels = cl.get<int>("n-y-pixels");
+      auto s_pixel = cl.get<double>("s-pixel");
+      PET2D::PixelGrid<F, S> pixel_grid(
+          n_z_pixels,
+          n_y_pixels,
+          s_pixel,
+          PET2D::Point<F>(-s_pixel * n_z_pixels / 2,
+                          -s_pixel * n_y_pixels / 2));
+
+      auto n_pixels_total = n_z_pixels * n_y_pixels;
+      std::vector<int> image_emitted(n_pixels_total, 0);
+      std::vector<int> image_detected_exact(n_pixels_total, 0);
+      std::vector<int> image_detected_w_error(n_pixels_total, 0);
+
+      util::progress progress(verbose, n_emissions, 10000);
       monte_carlo(
           rng,
           model,
           n_emissions,
-          [](Phantom::Event&) {},
+          [&](const typename MonteCarlo::Event& event) {
+            auto pixel = pixel_grid.pixel_at(event.center);
+            if (pixel_grid.contains(pixel)) {
+              auto pixel_index = pixel.y * n_z_pixels + pixel.x;
+              image_emitted[pixel_index]++;
+            }
+          },
           [&](const typename MonteCarlo::Event& event,
               const typename MonteCarlo::FullResponse& full_response) {
             out_exact_events << event << "\n";
             out_full_response << full_response << "\n";
             out_wo_error << scanner.response_wo_error(full_response) << "\n";
-            out_w_error << scanner.response_w_error(rng, full_response) << "\n";
-          });
+            auto response_w_error =
+                scanner.response_w_error(rng, full_response);
+            out_w_error << response_w_error << "\n";
+            {
+              auto pixel = pixel_grid.pixel_at(event.center);
+              if (pixel_grid.contains(pixel)) {
+                auto pixel_index = pixel.y * n_z_pixels + pixel.x;
+                image_detected_exact[pixel_index]++;
+              }
+            }
+            {
+              auto event = scanner.from_projection_space_tan(response_w_error);
+              auto pixel =
+                  pixel_grid.pixel_at(PET2D::Point<F>(event.z, event.y));
+              if (pixel_grid.contains(pixel)) {
+                auto pixel_index = pixel.y * n_z_pixels + pixel.x;
+                image_detected_w_error[pixel_index]++;
+              }
+            }
+          },
+          progress);
       if (verbose) {
-        std::cerr << "detected: " << monte_carlo.n_events_detected()
+        std::cerr << std::endl
+                  << "detected: " << monte_carlo.n_events_detected()
                   << " events" << std::endl;
       }
+
       std::ofstream cfg(output_base_name + ".cfg");
       cfg << cl;
+
+      util::png_writer png_wo_error(output_base_name + "_wo_error.png");
+      png_wo_error.write(n_z_pixels, n_y_pixels, image_detected_exact);
+      util::png_writer png_emitted(output_base_name + "_emitted.png");
+      png_emitted.write(n_z_pixels, n_y_pixels, image_emitted);
+      util::png_writer png_w_error(output_base_name + ".png");
+      png_w_error.write(n_z_pixels, n_y_pixels, image_detected_w_error);
     }
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;

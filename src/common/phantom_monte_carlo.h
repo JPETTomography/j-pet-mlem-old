@@ -21,14 +21,19 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
   PhantomMonteCarlo(Phantom& phantom, Detector& detector)
       : phantom_(phantom), detector_(detector), n_events_detected_() {}
 
-  template <class ModelClass, class EmitCallback, class DetectCallback>
+  template <class ModelClass,
+            class EmitCallback,
+            class DetectCallback,
+            class Progress>
   int operator()(RNG& rng,
                  ModelClass model,
                  size_t n_emisions,
                  EmitCallback emitted,
-                 DetectCallback detected) {
+                 DetectCallback detected,
+                 Progress progress) {
     int n_events_detected = 0;
     for (size_t i = 0; i < n_emisions; ++i) {
+      progress(i, false);
       auto event = phantom_.gen_event(rng);
       emitted(event);
       FullResponse full_response;
@@ -36,6 +41,7 @@ template <typename Phantom, typename Detector> class PhantomMonteCarlo {
         detected(event, full_response);
         n_events_detected++;
       }
+      progress(i, true);
     }
     n_events_detected_ += n_events_detected;
     return n_events_detected;

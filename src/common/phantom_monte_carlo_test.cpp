@@ -61,7 +61,8 @@ TEST("common/phantom_monte_carlo/point_source") {
               scintillator,
               10000,
               [](Phantom::Event&) {},
-              [](Phantom::Event&, Scanner::FullResponse&) {});
+              [](Phantom::Event&, Scanner::FullResponse&) {},
+              [](int, bool) {});
 
   // FIXME: put there some better estimation how many events we shall catch
   REQUIRE(monte_carlo.n_events_detected() > 100);
@@ -97,7 +98,8 @@ TEST("common/phantom_monte_carlo/phantom_region") {
               scintillator,
               10000,
               [](Phantom::Event&) {},
-              [](Phantom::Event&, Scanner::FullResponse&) {});
+              [](Phantom::Event&, Scanner::FullResponse&) {},
+              [](int, bool) {});
 
   // FIXME: put there some better estimation how many events we shall catch
   REQUIRE(monte_carlo.n_events_detected() > 100);

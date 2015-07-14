@@ -17,6 +17,7 @@
 #include "util/cmdline_hooks.h"
 #include "util/json.h"
 #include "util/backtrace.h"
+#include "util/progress.h"
 
 #include "3d/geometry/phantom_builder.h"
 
@@ -61,8 +62,11 @@ int main(int argc, char* argv[]) {
     cl.add<float>("z", 'z', "cylinder center z", false, 0);
     cl.add<std::string>(
         "phantoms", '\0', "phantom description in JSON fromat", false);
+    cl.add("verbose", 'v', "prints the iterations information on std::out");
 
     cl.parse_check(argc, argv);
+
+    auto verbose = cl.exist("verbose");
 
     auto scanner2d =
         PET2D::Barrel::ScannerBuilder<Scanner2D>::build_single_ring(
@@ -141,6 +145,7 @@ int main(int argc, char* argv[]) {
       std::ofstream out_full_response(output_base_name + "_full_response" +
                                       ext);
 
+      util::progress progress(verbose, n_emissions, 10000);
       monte_carlo(
           rng,
           scintillator,
@@ -152,7 +157,8 @@ int main(int argc, char* argv[]) {
             out_full_response << full_response << "\n";
             out_wo_error << scanner.response_wo_error(full_response) << "\n";
             out_w_error << scanner.response_w_error(rng, full_response) << "\n";
-          });
+          },
+          progress);
     }
 
     return 0;

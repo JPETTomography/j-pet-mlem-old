@@ -39,8 +39,8 @@ void calculate_scanner_options(cmdline::parser& parser);
                 cl.get<double>("s-length"),   \
                 cl.get<int>("n-y-pixels"),    \
                 cl.get<int>("n-z-pixels"),    \
-                cl.get<double>("p-size"),     \
-                cl.get<double>("p-size"),     \
+                cl.get<double>("s-pixel"),    \
+                cl.get<double>("s-pixel"),    \
                 cl.get<double>("s-z"),        \
                 cl.get<double>("s-dl"))
 

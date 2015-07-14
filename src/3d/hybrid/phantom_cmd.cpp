@@ -16,6 +16,7 @@
 #include "util/cmdline_hooks.h"
 #include "util/json.h"
 #include "util/backtrace.h"
+#include "util/progress.h"
 
 #include "3d/geometry/phantom_builder.h"
 
@@ -62,6 +63,8 @@ int main(int argc, char* argv[]) {
     PET3D::Hybrid::add_phantom_options(cl);
 
     cl.parse_check(argc, argv);
+
+    auto verbose = cl.exist("verbose");
 
     // check options
     if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
@@ -148,6 +151,7 @@ int main(int argc, char* argv[]) {
     std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
     std::ofstream out_full_response(output_base_name + "_full_response" + ext);
 
+    util::progress progress(verbose, n_emissions, 10000);
     monte_carlo(
         rng,
         scintillator,
@@ -159,7 +163,8 @@ int main(int argc, char* argv[]) {
           out_full_response << full_response << "\n";
           out_wo_error << scanner.response_wo_error(full_response) << "\n";
           out_w_error << scanner.response_w_error(rng, full_response) << "\n";
-        });
+        },
+        progress);
 
     return 0;
   } catch (cmdline::exception& ex) {

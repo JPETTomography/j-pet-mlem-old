@@ -20,14 +20,14 @@ void add_scanner_options(cmdline::parser& cl) {
                         cmdline::load);
 
   cl.add<double>(
-      "r-distance", 'r', "R distance between scintillator", false, 500);
-  cl.add<double>("s-length", 'l', "scintillator length", false, 1000);
-  cl.add<double>("p-size", 'p', "pixel size", false, 5);
-  cl.add<int>("n-pixels", 'n', "number of pixels", cmdline::dontsave, 200);
+      "r-distance", 'r', "R distance between scintillator", false, 0.5);
+  cl.add<double>("s-length", 'l', "scintillator length", false, 1);
+  cl.add<double>("s-pixel", 'p', "pixel size", false, 0.01);
+  cl.add<int>("n-pixels", 'n', "number of pixels", cmdline::dontsave, 0);
   cl.add<int>("n-z-pixels", 0, "number of z pixels", false);
   cl.add<int>("n-y-pixels", 0, "number of y pixels", false);
-  cl.add<double>("s-z", 's', "Sigma z error", false, 10);
-  cl.add<double>("s-dl", 'd', "Sigma dl error", false, 42);
+  cl.add<double>("s-z", 's', "Sigma z error", false, 0.010);
+  cl.add<double>("s-dl", 'd', "Sigma dl error", false, 0.042);
 }
 
 static void add_common_options(cmdline::parser& cl) {
@@ -95,12 +95,11 @@ void calculate_scanner_options(cmdline::parser& parser) {
   } else {
     auto R_distance = parser.get<double>("r-distance");
     auto scintillator_length = parser.get<double>("s-length");
-    auto pixel_size = parser.get<double>("p-size");
+    auto s_pixel = parser.get<double>("s-pixel");
     if (!parser.exist("n-z-pixels"))
-      parser.get<int>("n-z-pixels") =
-          std::ceil(scintillator_length / pixel_size);
+      parser.get<int>("n-z-pixels") = std::ceil(scintillator_length / s_pixel);
     if (!parser.exist("n-y-pixels"))
-      parser.get<int>("n-y-pixels") = std::ceil(2 * R_distance / pixel_size);
+      parser.get<int>("n-y-pixels") = std::ceil(2 * R_distance / s_pixel);
   }
 }
 

@@ -209,7 +209,9 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
         n_pixels, n_pixels, s_pixel, PET2D::Point<F>(ll, ll));
 
     std::vector<int> image_emitted(n_pixels * n_pixels, 0);
+    std::vector<int> image_detected_exact(n_pixels * n_pixels, 0);
 
+    util::progress progress(verbose, n_emissions, 10000);
     if (cl.exist("bin")) {
       int n_tof_positions = scanner.n_tof_positions(scanner.tof_step_size(),
                                                     scanner.max_dl_error());
@@ -223,10 +225,12 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           n_emissions,
           [&](const typename MonteCarlo::Event& event) {
             auto pixel = pixel_grid.pixel_at(event.center);
-            auto pixel_index = pixel.y * n_pixels + pixel.x;
-            image_emitted[pixel_index]++;
+            if (pixel_grid.contains(pixel)) {
+              auto pixel_index = pixel.y * n_pixels + pixel.x;
+              image_emitted[pixel_index]++;
+            }
           },
-          [&](const typename MonteCarlo::Event&,
+          [&](const typename MonteCarlo::Event& event,
               const typename MonteCarlo::FullResponse& full_response) {
             auto response = scanner.response_w_error(rng, full_response);
             if (response.tof_position < 0)
@@ -237,7 +241,15 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
                         response.lor.second * n_tof_positions +
                         response.tof_position;
             hits[index]++;
-          });
+            {
+              auto pixel = pixel_grid.pixel_at(event.center);
+              if (pixel_grid.contains(pixel)) {
+                auto pixel_index = pixel.y * n_pixels + pixel.x;
+                image_detected_exact[pixel_index]++;
+              }
+            }
+          },
+          progress);
 
       std::ofstream out_hits(output);
       for (int d1 = 0; d1 < n_detectors; d1++)
@@ -251,9 +263,9 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
                        << "\n";
           }
     } else {
-      std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
+      std::ofstream out_wo_error(output_base_name + "_wo_error" + ext);
       std::ofstream out_w_error(output);
-      std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
+      std::ofstream out_exact_events(output_base_name + "_events" + ext);
       std::ofstream out_full_response(output_base_name + "_full_response" +
                                       ext);
 
@@ -264,7 +276,9 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           [&](const typename MonteCarlo::Event& event) {
             auto pixel = pixel_grid.pixel_at(event.center);
             auto pixel_index = pixel.y * n_pixels + pixel.x;
-            image_emitted[pixel_index]++;
+            if (pixel_grid.contains(pixel)) {
+              image_emitted[pixel_index]++;
+            }
           },
           [&](const typename MonteCarlo::Event& event,
               const typename MonteCarlo::FullResponse& full_response) {
@@ -272,14 +286,25 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
             out_full_response << full_response << "\n";
             out_wo_error << scanner.response_wo_error(full_response) << "\n";
             out_w_error << scanner.response_w_error(rng, full_response) << "\n";
-          });
+            {
+              auto pixel = pixel_grid.pixel_at(event.center);
+              if (pixel_grid.contains(pixel)) {
+                auto pixel_index = pixel.y * n_pixels + pixel.x;
+                image_detected_exact[pixel_index]++;
+              }
+            }
+          },
+          progress);
     }
     if (verbose) {
-      std::cerr << "detected: " << monte_carlo.n_events_detected() << " events"
+      std::cerr << std::endl
+                << "detected: " << monte_carlo.n_events_detected() << " events"
                 << std::endl;
     }
 
-    util::png_writer png(output_base_name + ".png");
-    png.write(n_pixels, n_pixels, image_emitted);
+    util::png_writer png_emitted(output_base_name + "_emitted.png");
+    png_emitted.write(n_pixels, n_pixels, image_emitted);
+    util::png_writer png_detected_wo_error(output_base_name + "_wo_error.png");
+    png_detected_wo_error.write(n_pixels, n_pixels, image_detected_exact);
   }
 }

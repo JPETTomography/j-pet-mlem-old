@@ -57,6 +57,11 @@ template <typename FType, typename SType> class PixelGrid {
     return Pixel(column, row);
   }
 
+  bool contains(Pixel pixel) const {
+    return pixel.x >= 0 && pixel.y >= 0 && pixel.x < n_columns &&
+           pixel.y < n_rows;
+  }
+
 #if !__CUDACC__
   PixelGrid(std::istream& in)
       : n_columns(util::read<S>(in)),
