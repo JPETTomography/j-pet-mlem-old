@@ -94,7 +94,7 @@ class Reconstruction {
     for (S i = 0; i < n_iterations; ++i) {
       std::cout << ".", std::cout.flush();
 
-      for (S p = 0; p < total_n_pixels_; ++p) {
+      for (int p = 0; p < total_n_pixels_; ++p) {
         y[p] = static_cast<F>(0);
       }
 
@@ -172,12 +172,12 @@ class Reconstruction {
         ++means_it;
       }
 
-      for (S p = 0; p < total_n_pixels_; ++p) {
+      for (int p = 0; p < total_n_pixels_; ++p) {
         rho_detected_[p] *= y[p];
       }
     }
 
-    for (S p = 0; p < total_n_pixels_; ++p) {
+    for (int p = 0; p < total_n_pixels_; ++p) {
       rho_[p] = rho_detected_[p] * scale_[p];
     }
   }
