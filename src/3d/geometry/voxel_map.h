@@ -52,9 +52,11 @@ class VoxelMap : std::vector<ValueType> {
     return *this;
   }
 
-  Value& operator[](const Voxel& voxel) { return this->at(voxel.index(width)); }
+  Value& operator[](const Voxel& voxel) {
+    return this->at(voxel.index(width, depth));
+  }
   const Value& operator[](const Voxel& voxel) const {
-    return this->at(voxel.index(width));
+    return this->at(voxel.index(width, depth));
   }
   Value& operator[](Size index) { return this->at(index); }
   const Value& operator[](Size index) const { return this->at(index); }
