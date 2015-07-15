@@ -12,7 +12,7 @@ namespace Barrel {
 template <typename SType> class LOR {
  public:
   using S = SType;
-  using I = typename std::common_type<S, int>::type;
+  using Size = typename std::common_type<S, int>::type;
 
   _ LOR(S first, S second)
       : first(compat::max(first, second)),  // first is always greater
@@ -26,9 +26,13 @@ template <typename SType> class LOR {
   LOR(std::istream& in) : first(util::read<S>(in)), second(util::read<S>(in)) {}
 #endif
 
-  _ I index() const { return static_cast<I>(first) * (first + 1) / 2 + second; }
+  _ Size index() const {
+    return static_cast<Size>(first) * (first + 1) / 2 + second;
+  }
 
-  _ I index(S width) const { return static_cast<I>(first) * width + second; }
+  _ Size index(S width) const {
+    return static_cast<Size>(first) * width + second;
+  }
 
   _ LOR& operator++() {
     if (++second > first) {

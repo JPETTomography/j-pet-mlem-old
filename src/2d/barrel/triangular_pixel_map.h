@@ -14,7 +14,7 @@ template <typename PixelType, typename ValueType> class TriangularPixelMap {
  public:
   using Pixel = PixelType;
   using S = typename Pixel::S;
-  using I = typename Pixel::I;
+  using Size = typename Pixel::Size;
   using Value = ValueType;
   using Values = Value*;
 
@@ -22,7 +22,7 @@ template <typename PixelType, typename ValueType> class TriangularPixelMap {
   TriangularPixelMap(S n_pixels_in_row)
       : n_pixels_in_row(n_pixels_in_row),
         n_pixels_in_row_half(n_pixels_in_row / 2),
-        total_n_pixels_in_triangle(static_cast<I>(n_pixels_in_row) / 2 *
+        total_n_pixels_in_triangle(static_cast<Size>(n_pixels_in_row) / 2 *
                                    (n_pixels_in_row / 2 + 1) /
                                    2),
         begin_pixel(),
@@ -36,10 +36,10 @@ template <typename PixelType, typename ValueType> class TriangularPixelMap {
 
   /// Computes pixel index and determines symmetry number based on pixel
   /// position
-  I pixel_index(Pixel p,     ///< pixel coordinate (0..n_pixels, 0..n_pixels)
-                bool& diag,  ///<[out] true if abs(x)==abs(y)
-                S& symmetry  ///<[out] symmetry number (0..7)
-                ) const {
+  Size pixel_index(Pixel p,     ///< pixel coordinate (0..n_pixels, 0..n_pixels)
+                   bool& diag,  ///<[out] true if abs(x)==abs(y)
+                   S& symmetry  ///<[out] symmetry number (0..7)
+                   ) const {
     // shift so 0,0 is now center
     p.x -= n_pixels_in_row_half;
     p.y -= n_pixels_in_row_half;
@@ -80,7 +80,7 @@ template <typename PixelType, typename ValueType> class TriangularPixelMap {
 
   const S n_pixels_in_row;
   const S n_pixels_in_row_half;
-  const I total_n_pixels_in_triangle;
+  const Size total_n_pixels_in_triangle;
   const Pixel begin_pixel;
   const Pixel end_pixel;
 

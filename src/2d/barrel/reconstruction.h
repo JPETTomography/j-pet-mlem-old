@@ -22,7 +22,7 @@ class Reconstruction {
  public:
   using F = FType;
   using S = SType;
-  using I = typename std::common_type<S, int>::type;
+  using Size = typename std::common_type<S, int>::type;
   using Hit = HitType;
   using Pixel = PET2D::Pixel<S>;
   using LOR = Barrel::LOR<S>;
@@ -61,7 +61,7 @@ class Reconstruction {
 
       auto n_emissions = static_cast<F>(n_emissions_);
 
-      for (I p = 0; p < total_n_pixels_; ++p) {
+      for (Size p = 0; p < total_n_pixels_; ++p) {
         Hit pixel_sensitivity = sensitivity_[p];
         if (pixel_sensitivity > 0) {
           scale_[p] = static_cast<F>(n_emissions) / pixel_sensitivity;
@@ -92,13 +92,13 @@ class Reconstruction {
     }
   }
 
-  void emt(I n_iterations) {
+  void emt(Size n_iterations) {
     F* y = (F*)alloca(n_pixels_in_row_ * n_pixels_in_row_ * sizeof(F));
 
-    for (I i = 0; i < n_iterations; ++i) {
+    for (Size i = 0; i < n_iterations; ++i) {
       std::cout << ".", std::cout.flush();
 
-      for (I p = 0; p < total_n_pixels_; ++p) {
+      for (Size p = 0; p < total_n_pixels_; ++p) {
         y[p] = static_cast<F>(0);
       }
 
@@ -167,12 +167,12 @@ class Reconstruction {
         ++means_it;
       }
 
-      for (I p = 0; p < total_n_pixels_; ++p) {
+      for (Size p = 0; p < total_n_pixels_; ++p) {
         rho_detected_[p] *= y[p];
       }
     }
 
-    for (I p = 0; p < total_n_pixels_; ++p) {
+    for (Size p = 0; p < total_n_pixels_; ++p) {
       rho_[p] = rho_detected_[p];
     }
   }
@@ -186,14 +186,14 @@ class Reconstruction {
   const Output& scale() const { return scale_; }
 
  private:
-  I pixel_index(const Pixel& p) const {
-    return p.y * static_cast<I>(n_pixels_in_row_) + p.x;
+  Size pixel_index(const Pixel& p) const {
+    return p.y * static_cast<Size>(n_pixels_in_row_) + p.x;
   }
 
   S n_detectors_;
   S n_pixels_in_row_;
-  I total_n_pixels_;
-  I n_emissions_;
+  Size total_n_pixels_;
+  Size n_emissions_;
   Sensitivity sensitivity_;
   Output scale_;
   Output rho_;

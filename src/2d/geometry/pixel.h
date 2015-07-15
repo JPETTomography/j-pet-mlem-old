@@ -11,7 +11,7 @@ namespace PET2D {
 template <typename SType> class Pixel {
  public:
   using S = SType;
-  using I = typename std::common_type<S, int>::type;
+  using Size = typename std::common_type<S, int>::type;
 
   _ Pixel(S x, S y) : x(x), y(y) {}
   _ Pixel() = default;
@@ -23,9 +23,9 @@ template <typename SType> class Pixel {
   Pixel(std::istream& in) : x(util::read<S>(in)), y(util::read<S>(in)) {}
 #endif
 
-  _ I index() const { return static_cast<I>(y) * (y + 1) / 2 + x; }
+  _ Size index() const { return static_cast<Size>(y) * (y + 1) / 2 + x; }
 
-  _ I index(S width) const { return static_cast<I>(y) * width + x; }
+  _ Size index(S width) const { return static_cast<Size>(y) * width + x; }
 
   _ Pixel& operator++() {
     if (++x > y) {

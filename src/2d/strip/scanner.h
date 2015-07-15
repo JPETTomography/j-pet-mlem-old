@@ -27,7 +27,7 @@ template <typename FType, typename SType> class Scanner {
  public:
   using F = FType;
   using S = SType;
-  using I = typename std::common_type<S, int>::type;
+  using Size = typename std::common_type<S, int>::type;
   using Pixel = PET2D::Pixel<S>;
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
@@ -51,7 +51,7 @@ template <typename FType, typename SType> class Scanner {
         scintillator_length(scintillator_length),
         n_y_pixels(n_y_pixels),
         n_z_pixels(n_z_pixels),
-        total_n_pixels(static_cast<I>(n_y_pixels) * n_z_pixels),
+        total_n_pixels(static_cast<Size>(n_y_pixels) * n_z_pixels),
         pixel_width(pixel_width),
         pixel_height(pixel_height),
         sigma_z(sigma_z),
@@ -273,7 +273,7 @@ template <typename FType, typename SType> class Scanner {
   const F scintillator_length;
   const S n_y_pixels;
   const S n_z_pixels;
-  const I total_n_pixels;
+  const Size total_n_pixels;
   const F pixel_width;
   const F pixel_height;
   const F sigma_z;
