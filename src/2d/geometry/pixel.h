@@ -7,9 +7,8 @@
 
 namespace PET2D {
 
-/// Discreete coordinates pixel
-template <typename SType> class Pixel {
- public:
+/// Discreete coordinates 2D pixel
+template <typename SType> struct Pixel {
   using S = SType;
   using Size = typename std::common_type<S, int>::type;
 
@@ -19,12 +18,14 @@ template <typename SType> class Pixel {
   S x, y;
 
 #if !__CUDACC__
-  /// constructs Pixel from stream
+  /// Constructs Pixel from stream
   Pixel(std::istream& in) : x(util::read<S>(in)), y(util::read<S>(in)) {}
 #endif
 
+  /// Index in triangular map
   _ Size index() const { return static_cast<Size>(y) * (y + 1) / 2 + x; }
 
+  /// Index for given width
   _ Size index(S width) const { return static_cast<Size>(y) * width + x; }
 
   _ Pixel& operator++() {

@@ -30,9 +30,9 @@ TEST("3d/geometry/voxel_set") {
     voxel_set.push_back(Voxel(1, 2, 3));
     REQUIRE(voxel_set.size() == 1);
     for (auto& voxel : voxel_set) {
-      REQUIRE(voxel.ix == 1);
-      REQUIRE(voxel.iy == 2);
-      REQUIRE(voxel.iz == 3);
+      REQUIRE(voxel.x == 1);
+      REQUIRE(voxel.y == 2);
+      REQUIRE(voxel.z == 3);
     }
   }
 
@@ -42,7 +42,7 @@ TEST("3d/geometry/voxel_set") {
     std::stringstream out;
     MathematicaGraphics graphics(out);
     for (auto& voxel : voxel_set) {
-      graphics.add_pixel(pixel_grid, voxel.ix, voxel.iy);
+      graphics.add_pixel(pixel_grid, voxel.x, voxel.y);
     }
   }
 
@@ -52,7 +52,7 @@ TEST("3d/geometry/voxel_set") {
     std::stringstream out;
     MathematicaGraphics graphics(out);
     for (auto& voxel : voxel_set) {
-      graphics.add_pixel(pixel_grid, voxel.iz, voxel.ix);
+      graphics.add_pixel(pixel_grid, voxel.z, voxel.x);
     }
   }
 }
