@@ -1,6 +1,6 @@
 #pragma once
 
-#include "triangular_pixel_map.h"
+#include "2d/geometry/triangular_pixel_map.h"
 #include "sparse_matrix.h"
 #include "util/cuda/compat.h"
 

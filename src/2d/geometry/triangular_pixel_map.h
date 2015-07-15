@@ -4,7 +4,6 @@
 #include <vector>
 
 namespace PET2D {
-namespace Barrel {
 
 /// Triangular pixel map
 
@@ -85,5 +84,4 @@ class TriangularPixelMap : public std::vector<ValueType> {
   const Pixel end_pixel;
 };
 
-}  // Barrel
 }  // PET2D
