@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 
 namespace PET2D {
 namespace Barrel {
@@ -10,29 +11,28 @@ namespace Barrel {
 /// Provides efficient storage for triangular map of pixels.
 /// \image html detector_ring2.pdf.png
 
-template <typename PixelType, typename ValueType> class TriangularPixelMap {
+template <typename PixelType, typename ValueType>
+class TriangularPixelMap : public std::vector<ValueType> {
  public:
   using Pixel = PixelType;
   using S = typename Pixel::S;
   using Size = typename Pixel::Size;
   using Value = ValueType;
-  using Values = Value*;
+  using Base = std::vector<Value>;
 
   // reserve for pixel stats
   TriangularPixelMap(S n_pixels_in_row)
-      : n_pixels_in_row(n_pixels_in_row),
+      : Base(static_cast<Size>(n_pixels_in_row) / 2 *
+             (n_pixels_in_row / 2 + 1) /
+             2),
+        n_pixels_in_row(n_pixels_in_row),
         n_pixels_in_row_half(n_pixels_in_row / 2),
-        total_n_pixels_in_triangle(static_cast<Size>(n_pixels_in_row) / 2 *
-                                   (n_pixels_in_row / 2 + 1) /
-                                   2),
+        total_n_pixels_in_triangle(this->size()),
         begin_pixel(),
         end_pixel(Pixel::end_for_n_pixels_in_row(n_pixels_in_row)) {
     if (n_pixels_in_row % 2)
       throw("number of pixels must be multiple of 2");
-    values = new Value[total_n_pixels_in_triangle]();
   }
-
-  ~TriangularPixelMap() { delete[] values; }
 
   /// Computes pixel index and determines symmetry number based on pixel
   /// position
@@ -66,26 +66,23 @@ template <typename PixelType, typename ValueType> class TriangularPixelMap {
     bool diag;
     S symmetry;
     auto i_pixel = pixel_index(p, diag, symmetry);
-    return values[i_pixel] * (diag ? 2 : 1);
+    return this->at(i_pixel) * (diag ? 2 : 1);
   }
 
   Value operator[](Pixel p) const {
     bool diag;
     S symmetry;
     auto i_pixel = pixel_index(p, diag, symmetry);
-    return values[i_pixel] * (diag ? 2 : 1);
+    return this->at(i_pixel) * (diag ? 2 : 1);
   }
 
-  void hit(S i_pixel, S hits = 1) { values[i_pixel] += hits; }
+  void hit(S i_pixel, S hits = 1) { this->at(i_pixel) += hits; }
 
   const S n_pixels_in_row;
   const S n_pixels_in_row_half;
   const Size total_n_pixels_in_triangle;
   const Pixel begin_pixel;
   const Pixel end_pixel;
-
- private:
-  Values values;
 };
 
 }  // Barrel
