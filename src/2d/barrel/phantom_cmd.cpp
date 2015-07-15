@@ -178,7 +178,8 @@ int main(int argc, char* argv[]) {
 
 template <class DetectorClass, class PhantomClass, class ModelClass>
 void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
-  using MonteCarlo = Common::PhantomMonteCarlo<PhantomClass, DetectorClass>;
+  using MonteCarlo =
+      Common::PhantomMonteCarlo<PhantomClass, DetectorClass, Image>;
   using RNG = typename PhantomClass::RNG;
 
   auto& n_emissions = cl.get<int>("n-emissions");

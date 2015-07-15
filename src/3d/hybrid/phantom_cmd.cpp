@@ -1,24 +1,23 @@
-
-
-#include "common/phantom_monte_carlo.h"
-
-#include "2d/barrel/square_detector.h"
-#include "2d/barrel/generic_scanner.h"
-#include "2d/barrel/scanner_builder.h"
-#include "common/model.h"
-
-#include "scanner.h"
-
-#include "3d/geometry/phantom.h"
-
 #include "cmdline.h"
+
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 #include "util/json.h"
 #include "util/backtrace.h"
 #include "util/progress.h"
 
+#include "2d/barrel/square_detector.h"
+#include "2d/barrel/generic_scanner.h"
+#include "2d/barrel/scanner_builder.h"
+#include "3d/geometry/phantom.h"
 #include "3d/geometry/phantom_builder.h"
+#include "3d/geometry/voxel.h"
+#include "3d/geometry/voxel_map.h"
+
+#include "common/model.h"
+#include "common/phantom_monte_carlo.h"
+
+#include "scanner.h"
 
 using F = float;
 using S = short;
@@ -32,7 +31,9 @@ using Allways = Common::AlwaysAccept<F>;
 using Scintillator = Common::ScintillatorAccept<F>;
 using Point = PET3D::Point<F>;
 using Vector = PET3D::Vector<F>;
-using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner>;
+using Voxel = PET3D::Voxel<S>;
+using Image = PET3D::VoxelMap<Voxel, F>;
+using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner, Image>;
 
 // FIXME: I don't know what is the purpose of this, but these are unused, so
 // either should be removed or applied to the code.
