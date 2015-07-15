@@ -54,6 +54,7 @@
 #include "2d/geometry/phantom.h"
 #include "common/model.h"
 #include "common/phantom_monte_carlo.h"
+#include "2d/geometry/pixel_map.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -68,6 +69,7 @@ using RNG = util::random::tausworthe;
 using Pixel = PET2D::Pixel<S>;
 using Point = PET2D::Point<F>;
 using Event = PET2D::Event<F>;
+using Image = PET2D::PixelMap<Pixel, Hit>;
 
 template <class DetectorClass>
 using Scanner = PET2D::Barrel::GenericScanner<DetectorClass, S>;
@@ -208,8 +210,8 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
     PET2D::PixelGrid<F, S> pixel_grid(
         n_pixels, n_pixels, s_pixel, PET2D::Point<F>(ll, ll));
 
-    std::vector<int> image_emitted(n_pixels * n_pixels, 0);
-    std::vector<int> image_detected_exact(n_pixels * n_pixels, 0);
+    Image image_emitted(n_pixels, n_pixels);
+    Image image_detected_exact(n_pixels, n_pixels);
 
     util::progress progress(verbose, n_emissions, 10000);
     if (cl.exist("bin")) {
@@ -228,7 +230,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           [&](const typename MonteCarlo::Event& event) {
             auto pixel = pixel_grid.pixel_at(event.center);
             if (pixel_grid.contains(pixel)) {
-              image_emitted[pixel.index(n_pixels)]++;
+              image_emitted[pixel]++;
             }
           },
           [&](const typename MonteCarlo::Event& event,
@@ -261,7 +263,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
             {
               auto pixel = pixel_grid.pixel_at(event.center);
               if (pixel_grid.contains(pixel)) {
-                image_detected_exact[pixel.index(n_pixels)]++;
+                image_detected_exact[pixel]++;
               }
             }
           },
@@ -297,7 +299,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           [&](const typename MonteCarlo::Event& event) {
             auto pixel = pixel_grid.pixel_at(event.center);
             if (pixel_grid.contains(pixel)) {
-              image_emitted[pixel.index(n_pixels)]++;
+              image_emitted[pixel]++;
             }
           },
           [&](const typename MonteCarlo::Event& event,
@@ -309,7 +311,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
             {
               auto pixel = pixel_grid.pixel_at(event.center);
               if (pixel_grid.contains(pixel)) {
-                image_detected_exact[pixel.index(n_pixels)]++;
+                image_detected_exact[pixel]++;
               }
             }
           },
@@ -322,8 +324,8 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
     }
 
     util::png_writer png_emitted(output_base_name + "_emitted.png");
-    png_emitted.write(n_pixels, n_pixels, image_emitted);
+    png_emitted << image_emitted;
     util::png_writer png_detected_wo_error(output_base_name + "_wo_error.png");
-    png_detected_wo_error.write(n_pixels, n_pixels, image_detected_exact);
+    png_detected_wo_error << image_detected_exact;
   }
 }

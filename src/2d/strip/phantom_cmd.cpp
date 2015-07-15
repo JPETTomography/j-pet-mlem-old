@@ -26,7 +26,6 @@
 /// \sa \ref cmd_2d_strip_reconstruction
 
 #include <iostream>
-#include <vector>
 #include <ctime>
 #include <fstream>
 #include <sstream>
@@ -47,6 +46,7 @@
 
 #include "2d/geometry/phantom.h"
 #include "2d/geometry/pixel_grid.h"
+#include "2d/geometry/pixel_map.h"
 #include "2d/strip/scanner.h"
 
 #include "common/model.h"
@@ -65,6 +65,7 @@ using Scanner = PET2D::Strip::Scanner<F, S>;
 using Phantom = PET2D::Phantom<RNG, F>;
 using Ellipse = PET2D::Ellipse<F>;
 using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner>;
+using Image = PET2D::PixelMap<PET2D::Pixel<S>, int>;
 
 int main(int argc, char* argv[]) {
 
@@ -139,10 +140,9 @@ int main(int argc, char* argv[]) {
           PET2D::Point<F>(-s_pixel * n_z_pixels / 2,
                           -s_pixel * n_y_pixels / 2));
 
-      auto n_pixels_total = n_z_pixels * n_y_pixels;
-      std::vector<int> image_emitted(n_pixels_total, 0);
-      std::vector<int> image_detected_exact(n_pixels_total, 0);
-      std::vector<int> image_detected_w_error(n_pixels_total, 0);
+      Image image_emitted(n_z_pixels, n_y_pixels);
+      Image image_detected_exact(n_z_pixels, n_y_pixels);
+      Image image_detected_w_error(n_z_pixels, n_y_pixels);
 
       util::progress progress(verbose, n_emissions, 10000);
       monte_carlo(
@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
           [&](const typename MonteCarlo::Event& event) {
             auto pixel = pixel_grid.pixel_at(event.center);
             if (pixel_grid.contains(pixel)) {
-              image_emitted[pixel.index(n_z_pixels)]++;
+              image_emitted[pixel]++;
             }
           },
           [&](const typename MonteCarlo::Event& event,
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
             {
               auto pixel = pixel_grid.pixel_at(event.center);
               if (pixel_grid.contains(pixel)) {
-                image_detected_exact[pixel.index(n_z_pixels)]++;
+                image_detected_exact[pixel]++;
               }
             }
             {
@@ -174,7 +174,7 @@ int main(int argc, char* argv[]) {
               auto pixel =
                   pixel_grid.pixel_at(PET2D::Point<F>(event.z, event.y));
               if (pixel_grid.contains(pixel)) {
-                image_detected_w_error[pixel.index(n_z_pixels)]++;
+                image_detected_w_error[pixel]++;
               }
             }
           },
@@ -189,11 +189,11 @@ int main(int argc, char* argv[]) {
       cfg << cl;
 
       util::png_writer png_wo_error(output_base_name + "_wo_error.png");
-      png_wo_error.write(n_z_pixels, n_y_pixels, image_detected_exact);
+      png_wo_error << image_detected_exact;
       util::png_writer png_emitted(output_base_name + "_emitted.png");
-      png_emitted.write(n_z_pixels, n_y_pixels, image_emitted);
+      png_emitted << image_emitted;
       util::png_writer png_w_error(output_base_name + ".png");
-      png_w_error.write(n_z_pixels, n_y_pixels, image_detected_w_error);
+      png_w_error << image_detected_w_error;
     }
   } catch (std::string& ex) {
     std::cerr << "error: " << ex << std::endl;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 #include <limits>
 
 namespace util {
@@ -48,13 +47,6 @@ class png_writer {
       }
       write_row(row);
     }
-  }
-
-  template <typename T>
-  void write(unsigned int width,
-             unsigned int height,
-             const std::vector<T>& output) {
-    write(width, height, output.data());
   }
 
  private:

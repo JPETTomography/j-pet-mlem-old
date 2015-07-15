@@ -51,21 +51,6 @@ using Hit = int;
 
 using Reconstruction = PET2D::Barrel::Reconstruction<F, S, Hit>;
 
-template <typename Iterator>
-void output_vector(std::ostream& out,
-                   Iterator it,
-                   Iterator end,
-                   int line_length) {
-  for (int c = 1; it != end; ++it, ++c) {
-    out << *it;
-    if (c % line_length == 0) {
-      out << "\n";
-    } else {
-      out << " ";
-    }
-  }
-}
-
 int main(int argc, char* argv[]) {
 
 #ifdef __SSE3__
@@ -145,13 +130,8 @@ int main(int argc, char* argv[]) {
       clock_t stop = clock();
       sec += static_cast<double>(stop - start) / CLOCKS_PER_SEC;
 
-      rho = reconstruction.rho();
-      rho_detected = reconstruction.rho_detected();
-      output_vector(out, rho.begin(), rho.end(), n_pixels_in_row);
-      output_vector(out_detected,
-                    rho_detected.begin(),
-                    rho_detected.end(),
-                    n_pixels_in_row);
+      out << reconstruction.rho();
+      out_detected << reconstruction.rho_detected();
     }
 
     if (use_sensitivity) {
@@ -173,7 +153,7 @@ int main(int argc, char* argv[]) {
       }
 
       util::png_writer png(output.wo_ext() + "_sensitivity.png");
-      png.write(n_pixels_in_row, n_pixels_in_row, reconstruction.sensitivity());
+      png << reconstruction.sensitivity();
     }
 
     std::cout << std::endl;
@@ -188,7 +168,7 @@ int main(int argc, char* argv[]) {
 
     // output reconstruction PNG
     util::png_writer png(output.wo_ext() + ".png");
-    png.write(n_pixels_in_row, n_pixels_in_row, rho);
+    png << rho;
 
     return 0;
   } catch (std::string& ex) {

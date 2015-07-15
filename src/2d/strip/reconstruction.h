@@ -182,7 +182,7 @@ class Reconstruction {
   void output_bitmap(FileWriter& fw, bool output_sensitivity = false) {
     fw.template write(scanner.n_z_pixels,
                       scanner.n_y_pixels,
-                      output_sensitivity ? sensitivity : rho);
+                      (output_sensitivity ? sensitivity : rho).data());
   }
 
  private:

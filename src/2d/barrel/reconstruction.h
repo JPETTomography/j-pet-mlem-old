@@ -10,6 +10,7 @@
 #include "sparse_matrix.h"
 #include "2d/geometry/pixel.h"
 #include "lor.h"
+#include "2d/geometry/pixel_map.h"
 
 #define DEBUG 0
 
@@ -33,30 +34,26 @@ class Reconstruction {
     Hit mean;
   } Mean;
   using Means = std::vector<Mean>;
-  using Output = std::vector<F>;
-  using Sensitivity = std::vector<Hit>;
+  using Output = PET2D::PixelMap<Pixel, F>;
+  using Sensitivity = PET2D::PixelMap<Pixel, Hit>;
   using Matrix = SparseMatrix<Pixel, LOR, Hit>;
 
   Reconstruction(Matrix& matrix,
                  std::istream& in_means,
                  bool use_sensitivity = true)
-      : matrix_(matrix) {
-
-    n_pixels_in_row_ = matrix_.n_pixels_in_row();
-    n_emissions_ = matrix_.n_emissions();
-    n_detectors_ = matrix_.n_detectors();
-
-    total_n_pixels_ = n_pixels_in_row_ * n_pixels_in_row_;
-
-    rho_.resize(total_n_pixels_);
-    rho_detected_.resize(total_n_pixels_, 1);
+      : n_detectors_(matrix.n_detectors()),
+        n_pixels_in_row_(matrix.n_pixels_in_row()),
+        total_n_pixels_(n_pixels_in_row_ * n_pixels_in_row_),
+        n_emissions_(matrix.n_emissions()),
+        sensitivity_(n_pixels_in_row_, n_pixels_in_row_),
+        scale_(n_pixels_in_row_, n_pixels_in_row_, 1),
+        rho_(n_pixels_in_row_, n_pixels_in_row_),
+        rho_detected_(n_pixels_in_row_, n_pixels_in_row_, 1),
+        matrix_(matrix) {
 
     if (use_sensitivity) {
-      sensitivity_.resize(total_n_pixels_, 0);
-      scale_.resize(total_n_pixels_, 0);
-
       for (const auto element : matrix_) {
-        sensitivity_[pixel_index(element.pixel)] += element.hits;
+        sensitivity_[element.pixel] += element.hits;
       }
 
       auto n_emissions = static_cast<F>(n_emissions_);
@@ -67,8 +64,6 @@ class Reconstruction {
           scale_[p] = static_cast<F>(n_emissions) / pixel_sensitivity;
         }
       }
-    } else {
-      scale_.resize(total_n_pixels_, 1);
     }
 
     // Read the mean (detector response file)
