@@ -8,9 +8,9 @@
 
 #include "matrix_pixel_major.h"
 
-using Pixel = PET2D::Pixel<float>;
+using Pixel = PET2D::Pixel<short>;
 using LOR = PET2D::Barrel::LOR<short>;
-using Matrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, LOR::S, int>;
+using Matrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, int>;
 
 TEST("2d/barrel/lor/ctor") {
 

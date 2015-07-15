@@ -42,8 +42,8 @@ using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 
 using Pixel = PET2D::Pixel<Scanner2D::S>;
 using LOR = Scanner2D::LOR;
-using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, LOR::S, S>;
-using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, LOR::S, S>;
+using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, S>;
+using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, S>;
 
 template <class ScannerClass, class ModelClass>
 void print_parameters(cmdline::parser& cl, const ScannerClass& scanner);
@@ -217,7 +217,7 @@ static SparseMatrix run(cmdline::parser& cl,
                                                              s_pixel,
                                                              m_pixel);
 
-  util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
+  util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
   monte_carlo(z_position, gen, model, n_emissions, progress);
 
 #ifdef __linux__

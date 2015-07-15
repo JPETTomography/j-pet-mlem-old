@@ -82,8 +82,8 @@ using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
 template <class ScannerClass, class ModelClass>
 void print_parameters(cmdline::parser& cl, const ScannerClass& scanner);
 
-using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, S, Hit>;
-using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, S, Hit>;
+using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
+using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, Hit>;
 
 template <class DetectorClass, class ModelClass>
 static SparseMatrix run(cmdline::parser& cl,
@@ -307,7 +307,7 @@ static SparseMatrix run(cmdline::parser& cl,
 
   PET2D::Barrel::MonteCarlo<DetectorClass, ComputeMatrix> monte_carlo(
       scanner, matrix, s_pixel, tof_step, m_pixel);
-  util::progress progress(verbose, matrix.total_n_pixels_in_triangle(), 1);
+  util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
   monte_carlo(gen, model, n_emissions, progress);
 
 #ifdef GPU_TOF_TEST

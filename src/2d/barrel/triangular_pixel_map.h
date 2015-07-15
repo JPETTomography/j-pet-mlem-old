@@ -10,46 +10,39 @@ namespace Barrel {
 /// Provides efficient storage for triangular map of pixels.
 /// \image html detector_ring2.pdf.png
 
-template <typename PixelType, typename SType, typename HitType>
-class TriangularPixelMap {
+template <typename PixelType, typename ValueType> class TriangularPixelMap {
  public:
   using Pixel = PixelType;
-  using S = SType;
-  using SS = typename std::make_signed<S>::type;
-  using Hit = HitType;
-  using Pixels = Hit*;
-  using BitmapPixel = uint8_t;
+  using S = typename Pixel::S;
+  using I = typename Pixel::I;
+  using Value = ValueType;
+  using Values = Value*;
 
   // reserve for pixel stats
   TriangularPixelMap(S n_pixels_in_row)
-      : n_pixels_in_row_(n_pixels_in_row),
-        n_pixels_in_row_half_(n_pixels_in_row / 2),
-        total_n_pixels_in_triangle_(
-            n_pixels_in_row / 2 * (n_pixels_in_row / 2 + 1) / 2),
-        end_pixel_(Pixel::end_for_n_pixels_in_row(n_pixels_in_row)) {
+      : n_pixels_in_row(n_pixels_in_row),
+        n_pixels_in_row_half(n_pixels_in_row / 2),
+        total_n_pixels_in_triangle(static_cast<I>(n_pixels_in_row) / 2 *
+                                   (n_pixels_in_row / 2 + 1) /
+                                   2),
+        begin_pixel(),
+        end_pixel(Pixel::end_for_n_pixels_in_row(n_pixels_in_row)) {
     if (n_pixels_in_row % 2)
       throw("number of pixels must be multiple of 2");
-    t_hits = new Hit[total_n_pixels_in_triangle_]();
+    values = new Value[total_n_pixels_in_triangle]();
   }
 
-  ~TriangularPixelMap() { delete[] t_hits; }
-
-  static Pixel begin_pixel() { return Pixel(); }
-  const Pixel& end_pixel() { return end_pixel_; }
-
-  S n_pixels_in_row() const { return n_pixels_in_row_; }
-  S n_pixels_in_row_half() const { return n_pixels_in_row_half_; }
-  S total_n_pixels_in_triangle() const { return total_n_pixels_in_triangle_; }
+  ~TriangularPixelMap() { delete[] values; }
 
   /// Computes pixel index and determines symmetry number based on pixel
   /// position
-  S pixel_index(Pixel p,     ///< pixel coordinate (0..n_pixels, 0..n_pixels)
+  I pixel_index(Pixel p,     ///< pixel coordinate (0..n_pixels, 0..n_pixels)
                 bool& diag,  ///<[out] true if abs(x)==abs(y)
                 S& symmetry  ///<[out] symmetry number (0..7)
                 ) const {
     // shift so 0,0 is now center
-    p.x -= n_pixels_in_row_half();
-    p.y -= n_pixels_in_row_half();
+    p.x -= n_pixels_in_row_half;
+    p.y -= n_pixels_in_row_half;
     // mirror
     symmetry = 0;
     if (p.x < 0) {
@@ -69,28 +62,31 @@ class TriangularPixelMap {
     return p.index();
   }
 
-  Hit operator[](Pixel& p) const {
+  Value operator[](Pixel& p) const {
     bool diag;
     S symmetry;
     auto i_pixel = pixel_index(p, diag, symmetry);
-    return t_hits[i_pixel] * (diag ? 2 : 1);
+    return values[i_pixel] * (diag ? 2 : 1);
   }
 
-  Hit operator[](Pixel p) const {
+  Value operator[](Pixel p) const {
     bool diag;
     S symmetry;
     auto i_pixel = pixel_index(p, diag, symmetry);
-    return t_hits[i_pixel] * (diag ? 2 : 1);
+    return values[i_pixel] * (diag ? 2 : 1);
   }
 
-  void hit(S i_pixel, S hits = 1) { t_hits[i_pixel] += hits; }
+  void hit(S i_pixel, S hits = 1) { values[i_pixel] += hits; }
+
+  const S n_pixels_in_row;
+  const S n_pixels_in_row_half;
+  const I total_n_pixels_in_triangle;
+  const Pixel begin_pixel;
+  const Pixel end_pixel;
 
  private:
-  Pixels t_hits;
-  S n_pixels_in_row_;
-  S n_pixels_in_row_half_;
-  S total_n_pixels_in_triangle_;
-  Pixel end_pixel_;
+  Values values;
 };
+
 }  // Barrel
 }  // PET2D

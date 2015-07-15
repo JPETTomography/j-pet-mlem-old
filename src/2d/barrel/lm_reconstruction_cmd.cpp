@@ -46,7 +46,7 @@
 
 using F = float;
 using S = int16_t;
-using H = int;
+using Hit = int;
 using RNG = std::mt19937;
 using Point = PET2D::Point<F>;
 using Pixel = PET2D::Pixel<S>;
@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
       geometry.erase_pixel_info();
       auto system_matrix_file_name = cl.get<cmdline::path>("system");
       util::ibstream system_matrix_istream(system_matrix_file_name);
-      PET2D::Barrel::SparseMatrix<Pixel, LOR, S, H> matrix(
+      PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit> matrix(
           system_matrix_istream);
       if (verbose) {
         std::cout << "read in system matrix" << std::endl;

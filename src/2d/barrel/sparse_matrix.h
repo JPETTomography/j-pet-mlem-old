@@ -16,27 +16,28 @@ namespace PET2D {
 namespace Barrel {
 
 /// Single element of sparse PET system matrix
-template <typename LORType,
-          typename PositionType,
-          typename PixelType,
-          typename HitType>
+template <typename LORType, typename PixelType, typename HitType>
 struct SparseElement {
-  SparseElement(LORType&& lor,
-                PositionType&& position,
-                PixelType&& pixel,
-                HitType&& hits)
+  using LOR = LORType;
+  using Position = typename LOR::S;
+  using Pixel = PixelType;
+  using Hit = HitType;
+
+  SparseElement(LOR&& lor, Position&& position, Pixel&& pixel, Hit&& hits)
       : lor(lor), position(position), pixel(pixel), hits(hits) {}
-  SparseElement(const LORType& lor,
-                const PositionType& position,
-                const PixelType& pixel,
-                const HitType& hits)
+
+  SparseElement(const LOR& lor,
+                const Position& position,
+                const Pixel& pixel,
+                const Hit& hits)
       : lor(lor), position(position), pixel(pixel), hits(hits) {}
+
   SparseElement() = default;
 
-  LORType lor;
-  PositionType position;
-  PixelType pixel;
-  HitType hits;
+  LOR lor;
+  Position position;
+  Pixel pixel;
+  Hit hits;
 };
 
 /// \page sparse_format Sparse system matrix binary file format
@@ -72,21 +73,18 @@ struct SparseElement {
 /// Made for efficient storage of large PET system matrix.
 /// \image html detector_ring2.pdf.png
 /// \see \ref sparse_format
-template <typename PixelType,
-          typename LORType,
-          typename SType,
-          typename HitType>
+template <typename PixelType, typename LORType, typename HitType>
 class SparseMatrix
-    : public std::vector<SparseElement<LORType, SType, PixelType, HitType>> {
-  using Base = std::vector<SparseElement<LORType, SType, PixelType, HitType>>;
+    : public std::vector<SparseElement<LORType, PixelType, HitType>> {
+  using Base = std::vector<SparseElement<LORType, PixelType, HitType>>;
 
  public:
   using Pixel = PixelType;
   using LOR = LORType;
-  using S = SType;
+  using S = typename std::common_type<typename Pixel::S, typename LOR::S>::type;
   using SS = typename std::make_signed<S>::type;
   using Hit = HitType;
-  using Element = SparseElement<LOR, SType, Pixel, Hit>;
+  using Element = SparseElement<LOR, Pixel, Hit>;
 
   // file representation types, size independent
   using BitmapPixel = uint8_t;

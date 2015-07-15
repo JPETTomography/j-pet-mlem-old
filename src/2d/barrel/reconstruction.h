@@ -35,7 +35,7 @@ class Reconstruction {
   using Means = std::vector<Mean>;
   using Output = std::vector<F>;
   using Sensitivity = std::vector<Hit>;
-  using Matrix = SparseMatrix<Pixel, LOR, S, Hit>;
+  using Matrix = SparseMatrix<Pixel, LOR, Hit>;
 
   Reconstruction(Matrix& matrix,
                  std::istream& in_means,

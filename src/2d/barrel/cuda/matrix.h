@@ -21,7 +21,7 @@ namespace GPU {
 
 using F = float;
 using S = short;
-using HitType = int;
+using Hit = int;
 using Point = PET2D::Point<F>;
 using Pixel = PET2D::Pixel<S>;
 using LOR = Barrel::LOR<S>;
@@ -30,7 +30,7 @@ using SquareDetector = Barrel::SquareDetector<F>;
 using Scanner = Barrel::GenericScanner<SquareDetector, S>;
 using Model = Common::ScintillatorAccept<F>;
 #if !__CUDACC__
-using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR, typename LOR::S, int>;
+using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR, Hit>;
 #endif
 
 /// \endcond

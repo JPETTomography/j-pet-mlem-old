@@ -8,20 +8,16 @@ namespace PET2D {
 namespace Barrel {
 
 /// 2D barrel PET system matrix
-template <typename PixelType,
-          typename LORType,
-          typename SType,
-          typename HitType>
-class Matrix : public TriangularPixelMap<PixelType, SType, HitType> {
-  using Base = TriangularPixelMap<PixelType, SType, HitType>;
+template <typename PixelType, typename LORType, typename HitType>
+class Matrix : public TriangularPixelMap<PixelType, HitType> {
+  using Base = TriangularPixelMap<PixelType, HitType>;
 
  public:
   using Pixel = PixelType;
   using LOR = LORType;
-  using S = SType;
-  using SS = typename std::make_signed<S>::type;
+  using S = typename std::common_type<typename Pixel::S, typename LOR::S>::type;
   using Hit = HitType;
-  using SparseMatrix = Barrel::SparseMatrix<PixelType, LORType, SType, HitType>;
+  using SparseMatrix = Barrel::SparseMatrix<PixelType, LORType, HitType>;
 
   Matrix(S n_pixels_in_row,     ///< number of pixels in each directions
          S n_detectors,         ///< number of detectors stored in the matrix

@@ -23,19 +23,15 @@ namespace Barrel {
 /// So this class has the possibility to write the matrix down in the
 /// triangular lor_major and full lor_major format.
 
-template <typename PixelType,
-          typename LORType,
-          typename SType,
-          typename HitType>
-class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
-  using Base = Matrix<PixelType, LORType, SType, HitType>;
+template <typename PixelType, typename LORType, typename HitType>
+class MatrixPixelMajor : public Matrix<PixelType, LORType, HitType> {
+  using Base = Matrix<PixelType, LORType, HitType>;
 
  public:
   using Pixel = PixelType;
   using LOR = LORType;
-  using S = SType;
+  using S = typename Base::S;
   using Hit = HitType;
-  using SS = typename std::make_signed<S>::type;
   using SparseMatrix = typename Base::SparseMatrix;
   using SparseElement = typename SparseMatrix::Element;
 
@@ -55,8 +51,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
       index_to_lor[lor.index()] = lor;
     }
     // store index to pixel mapping
-    for (auto pixel = this->begin_pixel(); pixel != this->end_pixel();
-         ++pixel) {
+    for (auto pixel = this->begin_pixel; pixel != this->end_pixel; ++pixel) {
       index_to_pixel[pixel.index()] = pixel;
     }
   }
@@ -137,7 +132,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, SType, HitType> {
   Pixel pixel_at_index(S i_pixel) { return index_to_pixel[i_pixel]; }
 
   SparseMatrix to_sparse() {
-    SparseMatrix sparse(this->n_pixels_in_row(),
+    SparseMatrix sparse(this->n_pixels_in_row,
                         this->n_detectors(),
                         this->n_emissions(),
                         this->n_tof_positions());
