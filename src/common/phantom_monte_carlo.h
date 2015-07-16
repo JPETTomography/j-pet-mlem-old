@@ -31,21 +31,36 @@ class PhantomMonteCarlo {
             class Progress>
   int operator()(RNG& rng,
                  ModelClass model,
-                 size_t n_emisions,
+                 size_t n_emissions,
                  EmitCallback emitted,
                  DetectCallback detected,
-                 Progress progress) {
+                 Progress progress,
+                 bool only_detected = false) {
     int n_events_detected = 0;
-    for (size_t i = 0; i < n_emisions; ++i) {
-      progress(i, false);
-      auto event = phantom_.gen_event(rng);
-      emitted(event);
-      FullResponse full_response;
-      if (detector_.exact_detect(rng, model, event, full_response) == 2) {
-        detected(event, full_response);
-        n_events_detected++;
+    if (only_detected) {
+      while (n_events_detected < n_emissions) {
+        progress(n_events_detected, false);
+        auto event = phantom_.gen_event(rng);
+        emitted(event);
+        FullResponse full_response;
+        if (detector_.exact_detect(rng, model, event, full_response) == 2) {
+          detected(event, full_response);
+          ++n_events_detected;
+        }
+        progress(n_events_detected, true);
       }
-      progress(i, true);
+    } else {
+      for (size_t i = 0; i < n_emissions; ++i) {
+        progress(i, false);
+        auto event = phantom_.gen_event(rng);
+        emitted(event);
+        FullResponse full_response;
+        if (detector_.exact_detect(rng, model, event, full_response) == 2) {
+          detected(event, full_response);
+          ++n_events_detected;
+        }
+        progress(i, true);
+      }
     }
     n_events_detected_ += n_events_detected;
     return n_events_detected;

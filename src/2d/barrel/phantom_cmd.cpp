@@ -205,6 +205,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
     auto output_base_name = output.wo_ext();
     auto ext = output.ext();
 
+    auto only_detected = cl.exist("detected");
     auto n_pixels = cl.get<int>("n-pixels");
     auto s_pixel = cl.get<double>("s-pixel");
     float ll = -s_pixel * n_pixels / 2;
@@ -268,7 +269,8 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
               }
             }
           },
-          progress);
+          progress,
+          only_detected);
 
       std::ofstream out_bins_wo_error(output_base_name + "_wo_error.txt");
       std::ofstream out_bins_w_error(output);
@@ -316,7 +318,8 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
               }
             }
           },
-          progress);
+          progress,
+          only_detected);
     }
     if (verbose) {
       std::cerr << std::endl
@@ -328,5 +331,8 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
     png_emitted << image_emitted;
     util::png_writer png_detected_wo_error(output_base_name + "_wo_error.png");
     png_detected_wo_error << image_detected_exact;
+
+    std::ofstream out_cfg(output_base_name + ".cfg");
+    out_cfg << cl;
   }
 }

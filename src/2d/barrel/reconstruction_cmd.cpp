@@ -100,15 +100,11 @@ int main(int argc, char* argv[]) {
     }
 
     auto n_pixels_in_row = reconstruction.n_pixels_in_row();
-    auto total_n_pixels = n_pixels_in_row * n_pixels_in_row;
-    Reconstruction::Output rho(total_n_pixels, 0.0);
-    Reconstruction::Output rho_detected(total_n_pixels, 0.0);
 
     // no output, just make reconstruction in place and exit!
     if (!cl.exist("output")) {
       for (int i = 0; i < n_i_blocks; ++i) {
         reconstruction.emt(cl.get<int>("iterations"));
-        rho = reconstruction.rho();
       }
       return 0;
     }
@@ -168,7 +164,9 @@ int main(int argc, char* argv[]) {
 
     // output reconstruction PNG
     util::png_writer png(output.wo_ext() + ".png");
-    png << rho;
+    png << reconstruction.rho();
+    util::png_writer png_detected(output.wo_ext() + "_detected.png");
+    png_detected << reconstruction.rho_detected();
 
     return 0;
   } catch (std::string& ex) {
