@@ -2,6 +2,35 @@
 #include <string>
 
 // \cond PRIVATE
+
+#define CMDLINE_TRY try {
+
+#define CMDLINE_CATCH                                                 \
+  return 0;                                                           \
+  }                                                                   \
+  catch (cmdline::exception & ex) {                                   \
+    if (ex.help()) {                                                  \
+      std::cerr << ex.usage();                                        \
+    }                                                                 \
+    for (auto& msg : ex.errors()) {                                   \
+      auto name = ex.name();                                          \
+      if (name) {                                                     \
+        std::cerr << "error at " << name << ": " << msg << std::endl; \
+      } else {                                                        \
+        std::cerr << "error: " << msg << std::endl;                   \
+      }                                                               \
+    }                                                                 \
+  }                                                                   \
+  catch (std::string & ex) {                                          \
+    std::cerr << "error: " << ex << std::endl;                        \
+    util::print_backtrace(std::cerr);                                 \
+  }                                                                   \
+  catch (const char* ex) {                                            \
+    std::cerr << "error: " << ex << std::endl;                        \
+    util::print_backtrace(std::cerr);                                 \
+  }                                                                   \
+  return 1;
+
 // redefine help formatting for greater readibility
 namespace cmdline {
 

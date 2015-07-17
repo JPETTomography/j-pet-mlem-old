@@ -48,145 +48,124 @@ FType strip_length = 0.300;
 #endif
 
 int main(int argc, char* argv[]) {
+  CMDLINE_TRY
 
-  try {
-    cmdline::parser cl;
-    // cl.add<int>("n-emissions", 'e', "number of emmisions", false, 0);
-    cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
-    cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
-    cl.add("small", 0, "small barrel");
-    cl.add("big", 0, "big barrel");
-    cl.add<std::string>(
-        "phantoms", '\0', "phantom description in JSON format", true);
-    cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
-    cl.add<double>("length", 0, "length of the detector", false, 0.3);
+  cmdline::parser cl;
+  // cl.add<int>("n-emissions", 'e', "number of emmisions", false, 0);
+  cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
+  cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
+  cl.add("small", 0, "small barrel");
+  cl.add("big", 0, "big barrel");
+  cl.add<std::string>(
+      "phantoms", '\0', "phantom description in JSON format", true);
+  cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
+  cl.add<double>("length", 0, "length of the detector", false, 0.3);
 
-    PET3D::Hybrid::add_phantom_options(cl);
+  PET3D::Hybrid::add_phantom_options(cl);
 
-    cl.parse_check(argc, argv);
+  cl.parse_check(argc, argv);
 
-    auto verbose = cl.exist("verbose");
+  auto verbose = cl.exist("verbose");
 
-    // check options
-    if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
-        !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
-      throw(
-          "need to specify either --w-detector, --d-detector or --n-detectors "
-          "or --small or --big");
-    }
-
-    if (cl.exist("small"))
-      PET3D::Hybrid::set_small_barrel_options(cl);
-    else if (cl.exist("big"))
-      PET3D::Hybrid::set_big_barrel_options(cl);
-    else
-      PET3D::Hybrid::calculate_scanner_options(cl);
-
-    auto output = cl.get<cmdline::path>("output");
-    auto output_base_name = output.wo_ext();
-    auto ext = output.ext();
-
-    Scanner scanner = Scanner::build_scanner_from_cl(cl);
-    scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
-
-    std::ofstream out_json(output_base_name + ".json");
-    out_json << json(scanner.barrel);
-
-    using RNG = std::mt19937;
-    RNG rng;
-    Phantom::RegionPtrList regions;
-
-    if (cl.exist("phantoms")) {
-      std::ifstream in(cl.get<std::string>("phantoms"));
-      if (!in.is_open()) {
-        throw("could not open file: " + cl.get<std::string>("phantoms"));
-      }
-      json j;
-      j << in;
-
-      if (!j.is_object()) {
-        throw("no JSON object in file:" + cl.get<std::string>("phantoms"));
-      }
-
-      const json& j_phantoms = j["phantoms"];
-      if (!j_phantoms.is_array()) {
-        throw("phantoms array missing in JSON file: " +
-              cl.get<std::string>("phantoms"));
-      }
-
-      for (const auto& j_phantom : j_phantoms) {
-        auto region = PET3D::create_phantom_region_from_json<RNG, F>(j_phantom);
-#if DEBUG
-        std::cerr << "Adding region\n";
-#endif
-        regions.push_back(region);
-      }
-
-    } else {
-      float angle = std::atan2(0.0025f, 0.190);
-      auto cylinder = new Phantom::CylinderRegion<>(
-          cl.get<float>("radius"),
-          cl.get<float>("height"),
-          1,
-          PET3D::Distribution::SphericalDistribution<float>(-angle, angle));
-      PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
-
-      auto rotated_cylinder = new Phantom::RotatedRegion(cylinder, R);
-      Vector translation(
-          cl.get<float>("x"), cl.get<float>("y"), cl.get<float>("z"));
-
-      auto translated_cylinder =
-          new Phantom::TranslatedRegion(rotated_cylinder, translation);
-      regions.push_back(translated_cylinder);
-    }
-
-    auto n_emissions = cl.get<int>("n-emissions");
-
-    Phantom phantom(regions);
-
-    Scintillator scintillator(0.100);
-    MonteCarlo monte_carlo(phantom, scanner);
-
-    std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
-    std::ofstream out_w_error(output);
-    std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
-    std::ofstream out_full_response(output_base_name + "_full_response" + ext);
-
-    util::progress progress(verbose, n_emissions, 10000);
-    monte_carlo(
-        rng,
-        scintillator,
-        n_emissions,
-        [](const typename MonteCarlo::Event&) {},
-        [&](const typename MonteCarlo::Event& event,
-            const typename MonteCarlo::FullResponse& full_response) {
-          out_exact_events << event << "\n";
-          out_full_response << full_response << "\n";
-          out_wo_error << scanner.response_wo_error(full_response) << "\n";
-          out_w_error << scanner.response_w_error(rng, full_response) << "\n";
-        },
-        progress);
-
-    return 0;
-  } catch (cmdline::exception& ex) {
-    if (ex.help()) {
-      std::cerr << ex.usage();
-    }
-    for (auto& msg : ex.errors()) {
-      auto name = ex.name();
-      if (name) {
-        std::cerr << "error at " << name << ": " << msg << std::endl;
-      } else {
-        std::cerr << "error: " << msg << std::endl;
-      }
-    }
-  } catch (std::string& ex) {
-    std::cerr << "error: " << ex << std::endl;
-    util::print_backtrace(std::cerr);
-  } catch (const char* ex) {
-    std::cerr << "error: " << ex << std::endl;
-    util::print_backtrace(std::cerr);
+  // check options
+  if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
+      !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
+    throw(
+        "need to specify either --w-detector, --d-detector or --n-detectors "
+        "or --small or --big");
   }
 
-  return 1;
+  if (cl.exist("small"))
+    PET3D::Hybrid::set_small_barrel_options(cl);
+  else if (cl.exist("big"))
+    PET3D::Hybrid::set_big_barrel_options(cl);
+  else
+    PET3D::Hybrid::calculate_scanner_options(cl);
+
+  auto output = cl.get<cmdline::path>("output");
+  auto output_base_name = output.wo_ext();
+  auto ext = output.ext();
+
+  Scanner scanner = Scanner::build_scanner_from_cl(cl);
+  scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
+
+  std::ofstream out_json(output_base_name + ".json");
+  out_json << json(scanner.barrel);
+
+  using RNG = std::mt19937;
+  RNG rng;
+  Phantom::RegionPtrList regions;
+
+  if (cl.exist("phantoms")) {
+    std::ifstream in(cl.get<std::string>("phantoms"));
+    if (!in.is_open()) {
+      throw("could not open file: " + cl.get<std::string>("phantoms"));
+    }
+    json j;
+    j << in;
+
+    if (!j.is_object()) {
+      throw("no JSON object in file:" + cl.get<std::string>("phantoms"));
+    }
+
+    const json& j_phantoms = j["phantoms"];
+    if (!j_phantoms.is_array()) {
+      throw("phantoms array missing in JSON file: " +
+            cl.get<std::string>("phantoms"));
+    }
+
+    for (const auto& j_phantom : j_phantoms) {
+      auto region = PET3D::create_phantom_region_from_json<RNG, F>(j_phantom);
+#if DEBUG
+      std::cerr << "Adding region\n";
+#endif
+      regions.push_back(region);
+    }
+
+  } else {
+    float angle = std::atan2(0.0025f, 0.190);
+    auto cylinder = new Phantom::CylinderRegion<>(
+        cl.get<float>("radius"),
+        cl.get<float>("height"),
+        1,
+        PET3D::Distribution::SphericalDistribution<float>(-angle, angle));
+    PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
+
+    auto rotated_cylinder = new Phantom::RotatedRegion(cylinder, R);
+    Vector translation(
+        cl.get<float>("x"), cl.get<float>("y"), cl.get<float>("z"));
+
+    auto translated_cylinder =
+        new Phantom::TranslatedRegion(rotated_cylinder, translation);
+    regions.push_back(translated_cylinder);
+  }
+
+  auto n_emissions = cl.get<int>("n-emissions");
+
+  Phantom phantom(regions);
+
+  Scintillator scintillator(0.100);
+  MonteCarlo monte_carlo(phantom, scanner);
+
+  std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
+  std::ofstream out_w_error(output);
+  std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
+  std::ofstream out_full_response(output_base_name + "_full_response" + ext);
+
+  util::progress progress(verbose, n_emissions, 10000);
+  monte_carlo(
+      rng,
+      scintillator,
+      n_emissions,
+      [](const typename MonteCarlo::Event&) {},
+      [&](const typename MonteCarlo::Event& event,
+          const typename MonteCarlo::FullResponse& full_response) {
+        out_exact_events << event << "\n";
+        out_full_response << full_response << "\n";
+        out_wo_error << scanner.response_wo_error(full_response) << "\n";
+        out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+      },
+      progress);
+
+  CMDLINE_CATCH
 }

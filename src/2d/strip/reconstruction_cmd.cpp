@@ -61,153 +61,145 @@ void print_statistics(std::ostream& out,
                       std::string prefix = std::string());
 
 int main(int argc, char* argv[]) {
+  CMDLINE_TRY
 
 #if SSE_FLUSH
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 #endif
 
-  try {
-    cmdline::parser cl;
-    PET2D::Strip::add_reconstruction_options(cl);
-    cl.parse_check(argc, argv);
-    PET2D::Strip::calculate_scanner_options(cl);
+  cmdline::parser cl;
+  PET2D::Strip::add_reconstruction_options(cl);
+  cl.parse_check(argc, argv);
+  PET2D::Strip::calculate_scanner_options(cl);
 
-    if (!cl.rest().size()) {
-      throw("at least one responses input file expected, consult --help");
-    }
-
-    cmdline::load_accompanying_config(cl);
-
-#if _OPENMP
-    if (cl.exist("n-threads")) {
-      omp_set_num_threads(cl.get<int>("n-threads"));
-    }
-#endif
-
-    Scanner scanner(PET2D_STRIP_SCANNER_CL(cl));
-    Reconstruction reconstruction(scanner);
-
-    auto verbose = cl.exist("verbose");
-    auto verbosity = cl.count("verbose");
-    if (verbose) {
-      std::cout << "# image: " << scanner.n_y_pixels << "x"
-                << scanner.n_z_pixels << std::endl;
-    }
-
-    for (auto& fn : cl.rest()) {
-      if (cmdline::path(fn).ext() == ".txt") {
-        std::ifstream in_responses(fn);
-        if (!in_responses.is_open()) {
-          throw("cannot open phantom responses file: " + fn);
-        }
-        reconstruction << in_responses;
-      } else {
-        util::ibstream in_responses(fn);
-        if (!in_responses.is_open()) {
-          throw("cannot open phantom responses file: " + fn);
-        }
-        reconstruction << in_responses;
-      }
-      if (verbose) {
-        std::cerr << "# read " << reconstruction.responses.size()
-                  << " responsess from " << fn << std::endl;
-      }
-
-      auto dl_is_time = cl.exist("dl-is-time");
-      if (cl.exist("scale-length")) {
-        auto scale = cl.get<double>("scale-length");
-        for (auto& response : reconstruction.responses) {
-          response.z_u *= scale;
-          response.z_d *= scale;
-          if (!dl_is_time)
-            response.dl *= scale;
-        }
-      }
-      if (dl_is_time) {
-        auto scale = cl.get<double>("scale-time");
-        auto speed_of_light = cl.get<double>("speed-of-light");
-        for (auto& response : reconstruction.responses) {
-          response.dl = response.dl * speed_of_light * scale;
-        }
-      }
-    }
-
-    auto n_blocks = cl.get<int>("blocks");
-    auto n_iterations = cl.get<int>("iterations");
-    auto output_name = cl.get<cmdline::path>("output");
-    auto output_base_name = output_name.wo_ext();
-    auto output_txt = output_name.ext() == ".txt";
-
-    util::progress progress(verbosity, n_blocks * n_iterations, 1);
-
-    const int n_file_digits = n_blocks * n_iterations >= 1000
-                                  ? 4
-                                  : n_blocks * n_iterations >= 100
-                                        ? 3
-                                        : n_blocks * n_iterations >= 10 ? 2 : 1;
-
-#if HAVE_CUDA
-    if (cl.exist("gpu")) {
-      PET2D::Strip::GPU::run_reconstruction(scanner,
-                                            reconstruction.responses,
-                                            n_blocks,
-                                            n_iterations,
-                                            cl.get<int>("cuda-device"),
-                                            cl.get<int>("cuda-blocks"),
-                                            cl.get<int>("cuda-threads"),
-                                            cl.exist("verbose"),
-                                            progress,
-                                            output_base_name,
-                                            output_txt,
-                                            n_file_digits);
-    } else
-#endif
-    {
-      if (output_base_name.length()) {
-        util::png_writer png(output_base_name + "_sensitivity.png");
-        reconstruction.output_bitmap(png, true);
-      }
-
-      for (int block = 0; block < n_blocks; block++) {
-        reconstruction(progress, n_iterations, block * n_iterations);
-
-        if (output_base_name.length()) {
-          std::stringstream fn;
-          fn << output_base_name << "_"      // phantom_
-             << std::setw(n_file_digits)     //
-             << std::setfill('0')            //
-             << (block + 1) * n_iterations;  // 001
-
-          util::png_writer png(fn.str() + ".png");
-          reconstruction.output_bitmap(png);
-
-          if (output_txt) {
-            std::ofstream txt(fn.str() + ".txt");
-            txt.precision(12);
-            txt << std::fixed;
-            reconstruction.output_tuples(txt);
-          } else {
-            util::obstream bin(fn.str() + ".bin");
-            reconstruction >> bin;
-          }
-        }
-      }
-#if USE_STATISTICS
-      if (verbose) {
-        print_statistics(
-            std::cout, reconstruction, n_iterations, n_blocks, "# ");
-      }
-#endif
-    }
-  } catch (std::string& ex) {
-    std::cerr << "error: " << ex << std::endl;
-    util::print_backtrace(std::cerr);
-  } catch (const char* ex) {
-    std::cerr << "error: " << ex << std::endl;
-    util::print_backtrace(std::cerr);
+  if (!cl.rest().size()) {
+    throw("at least one responses input file expected, consult --help");
   }
 
-  return 0;
+  cmdline::load_accompanying_config(cl);
+
+#if _OPENMP
+  if (cl.exist("n-threads")) {
+    omp_set_num_threads(cl.get<int>("n-threads"));
+  }
+#endif
+
+  Scanner scanner(PET2D_STRIP_SCANNER_CL(cl));
+  Reconstruction reconstruction(scanner);
+
+  auto verbose = cl.exist("verbose");
+  auto verbosity = cl.count("verbose");
+  if (verbose) {
+    std::cout << "# image: " << scanner.n_y_pixels << "x" << scanner.n_z_pixels
+              << std::endl;
+  }
+
+  for (auto& fn : cl.rest()) {
+    if (cmdline::path(fn).ext() == ".txt") {
+      std::ifstream in_responses(fn);
+      if (!in_responses.is_open()) {
+        throw("cannot open phantom responses file: " + fn);
+      }
+      reconstruction << in_responses;
+    } else {
+      util::ibstream in_responses(fn);
+      if (!in_responses.is_open()) {
+        throw("cannot open phantom responses file: " + fn);
+      }
+      reconstruction << in_responses;
+    }
+    if (verbose) {
+      std::cerr << "# read " << reconstruction.responses.size()
+                << " responsess from " << fn << std::endl;
+    }
+
+    auto dl_is_time = cl.exist("dl-is-time");
+    if (cl.exist("scale-length")) {
+      auto scale = cl.get<double>("scale-length");
+      for (auto& response : reconstruction.responses) {
+        response.z_u *= scale;
+        response.z_d *= scale;
+        if (!dl_is_time)
+          response.dl *= scale;
+      }
+    }
+    if (dl_is_time) {
+      auto scale = cl.get<double>("scale-time");
+      auto speed_of_light = cl.get<double>("speed-of-light");
+      for (auto& response : reconstruction.responses) {
+        response.dl = response.dl * speed_of_light * scale;
+      }
+    }
+  }
+
+  auto n_blocks = cl.get<int>("blocks");
+  auto n_iterations = cl.get<int>("iterations");
+  auto output_name = cl.get<cmdline::path>("output");
+  auto output_base_name = output_name.wo_ext();
+  auto output_txt = output_name.ext() == ".txt";
+
+  util::progress progress(verbosity, n_blocks * n_iterations, 1);
+
+  const int n_file_digits = n_blocks * n_iterations >= 1000
+                                ? 4
+                                : n_blocks * n_iterations >= 100
+                                      ? 3
+                                      : n_blocks * n_iterations >= 10 ? 2 : 1;
+
+#if HAVE_CUDA
+  if (cl.exist("gpu")) {
+    PET2D::Strip::GPU::run_reconstruction(scanner,
+                                          reconstruction.responses,
+                                          n_blocks,
+                                          n_iterations,
+                                          cl.get<int>("cuda-device"),
+                                          cl.get<int>("cuda-blocks"),
+                                          cl.get<int>("cuda-threads"),
+                                          cl.exist("verbose"),
+                                          progress,
+                                          output_base_name,
+                                          output_txt,
+                                          n_file_digits);
+  } else
+#endif
+  {
+    if (output_base_name.length()) {
+      util::png_writer png(output_base_name + "_sensitivity.png");
+      reconstruction.output_bitmap(png, true);
+    }
+
+    for (int block = 0; block < n_blocks; block++) {
+      reconstruction(progress, n_iterations, block * n_iterations);
+
+      if (output_base_name.length()) {
+        std::stringstream fn;
+        fn << output_base_name << "_"      // phantom_
+           << std::setw(n_file_digits)     //
+           << std::setfill('0')            //
+           << (block + 1) * n_iterations;  // 001
+
+        util::png_writer png(fn.str() + ".png");
+        reconstruction.output_bitmap(png);
+
+        if (output_txt) {
+          std::ofstream txt(fn.str() + ".txt");
+          txt.precision(12);
+          txt << std::fixed;
+          reconstruction.output_tuples(txt);
+        } else {
+          util::obstream bin(fn.str() + ".bin");
+          reconstruction >> bin;
+        }
+      }
+    }
+#if USE_STATISTICS
+    if (verbose) {
+      print_statistics(std::cout, reconstruction, n_iterations, n_blocks, "# ");
+    }
+#endif
+  }
+
+  CMDLINE_CATCH
 }
 
 #if USE_STATISTICS

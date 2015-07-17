@@ -96,44 +96,44 @@ void post_process(cmdline::parser& cl,
                   SparseMatrix& sparse_matrix);
 
 int main(int argc, char* argv[]) {
+  CMDLINE_TRY
 
-  try {
-    cmdline::parser cl;
-    PET2D::Barrel::add_matrix_options(cl);
-    cl.try_parse(argc, argv);
+  cmdline::parser cl;
+  PET2D::Barrel::add_matrix_options(cl);
+  cl.try_parse(argc, argv);
 
 #if _OPENMP
-    if (cl.exist("n-threads")) {
-      omp_set_num_threads(cl.get<int>("n-threads"));
-    }
+  if (cl.exist("n-threads")) {
+    omp_set_num_threads(cl.get<int>("n-threads"));
+  }
 #endif
 
-    // check options
-    if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
-        !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
-      throw(
-          "need to specify either --w-detector, --d-detector, --n-detectors, "
-          "--small or --big");
-    }
-    if (cl.exist("png") && !cl.exist("from")) {
-      throw("need to specify --from lor when output --png option is specified");
-    }
-    if (!cl.exist("png") && cl.exist("from")) {
-      throw("need to specify output --png option when --from is specified");
-    }
+  // check options
+  if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
+      !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
+    throw(
+        "need to specify either --w-detector, --d-detector, --n-detectors, "
+        "--small or --big");
+  }
+  if (cl.exist("png") && !cl.exist("from")) {
+    throw("need to specify --from lor when output --png option is specified");
+  }
+  if (!cl.exist("png") && cl.exist("from")) {
+    throw("need to specify output --png option when --from is specified");
+  }
 
-    cmdline::load_accompanying_config(cl, false);
+  cmdline::load_accompanying_config(cl, false);
 
-    if (cl.exist("small"))
-      PET2D::Barrel::set_small_barrel_options(cl);
-    else if (cl.exist("big"))
-      PET2D::Barrel::set_big_barrel_options(cl);
-    else
-      PET2D::Barrel::calculate_scanner_options(cl);
+  if (cl.exist("small"))
+    PET2D::Barrel::set_small_barrel_options(cl);
+  else if (cl.exist("big"))
+    PET2D::Barrel::set_big_barrel_options(cl);
+  else
+    PET2D::Barrel::calculate_scanner_options(cl);
 
-    const auto& shape = cl.get<std::string>("shape");
-    const auto& model_name = cl.get<std::string>("model");
-    const auto& length_scale = cl.get<double>("base-length");
+  const auto& shape = cl.get<std::string>("shape");
+  const auto& model_name = cl.get<std::string>("model");
+  const auto& length_scale = cl.get<double>("base-length");
 
 // these are wrappers running actual simulation
 #if HAVE_CUDA
@@ -152,50 +152,30 @@ int main(int argc, char* argv[]) {
   auto sparse_matrix = _RUN(cl, scanner, model);                          \
   post_process(cl, scanner, sparse_matrix)
 
-    // run simmulation on given detector model & shape
-    if (model_name == "always") {
-      if (shape == "square") {
-        RUN(SquareScanner, Common::AlwaysAccept<F>);
-      } else if (shape == "circle") {
-        RUN(CircleScanner, Common::AlwaysAccept<F>);
-      } else if (shape == "triangle") {
-        RUN(TriangleScanner, Common::AlwaysAccept<F>);
-      } else if (shape == "hexagon") {
-        RUN(HexagonalScanner, Common::AlwaysAccept<F>);
-      }
-    } else if (model_name == "scintillator") {
-      if (shape == "square") {
-        RUN(SquareScanner, Common::ScintillatorAccept<F>, (length_scale));
-      } else if (shape == "circle") {
-        RUN(CircleScanner, Common::ScintillatorAccept<F>, (length_scale));
-      } else if (shape == "triangle") {
-        RUN(TriangleScanner, Common::ScintillatorAccept<F>, (length_scale));
-      } else if (shape == "hexagon") {
-        RUN(HexagonalScanner, Common::ScintillatorAccept<F>, (length_scale));
-      }
+  // run simmulation on given detector model & shape
+  if (model_name == "always") {
+    if (shape == "square") {
+      RUN(SquareScanner, Common::AlwaysAccept<F>);
+    } else if (shape == "circle") {
+      RUN(CircleScanner, Common::AlwaysAccept<F>);
+    } else if (shape == "triangle") {
+      RUN(TriangleScanner, Common::AlwaysAccept<F>);
+    } else if (shape == "hexagon") {
+      RUN(HexagonalScanner, Common::AlwaysAccept<F>);
     }
-
-    return 0;
-  } catch (cmdline::exception& ex) {
-    if (ex.help()) {
-      std::cerr << ex.usage();
+  } else if (model_name == "scintillator") {
+    if (shape == "square") {
+      RUN(SquareScanner, Common::ScintillatorAccept<F>, (length_scale));
+    } else if (shape == "circle") {
+      RUN(CircleScanner, Common::ScintillatorAccept<F>, (length_scale));
+    } else if (shape == "triangle") {
+      RUN(TriangleScanner, Common::ScintillatorAccept<F>, (length_scale));
+    } else if (shape == "hexagon") {
+      RUN(HexagonalScanner, Common::ScintillatorAccept<F>, (length_scale));
     }
-    for (auto& msg : ex.errors()) {
-      auto name = ex.name();
-      if (name) {
-        std::cerr << "error at " << name << ": " << msg << std::endl;
-      } else {
-        std::cerr << "error: " << msg << std::endl;
-      }
-    }
-  } catch (std::string& ex) {
-    std::cerr << "error: " << ex << std::endl;
-    util::print_backtrace(std::cerr);
-  } catch (const char* ex) {
-    std::cerr << "error: " << ex << std::endl;
-    util::print_backtrace(std::cerr);
   }
-  return 1;
+
+  CMDLINE_CATCH
 }
 
 template <class ScannerClass, class ModelClass>
@@ -265,7 +245,7 @@ static SparseMatrix run(cmdline::parser& cl,
         std::cerr << "read sparse matrix: " << fn << std::endl;
         std::cerr << " pixels in row = " << in_sparse_matrix.n_pixels_in_row()
                   << std::endl;
-        std::cerr << " pixel size     = " << cl.get<float>("s-pixel");
+        std::cerr << " pixel size     = " << cl.get<double>("s-pixel");
         std::cerr << " TOF positions = " << in_sparse_matrix.n_tof_positions()
                   << std::endl;
         std::cerr << " emissions     = " << in_sparse_matrix.n_emissions()

@@ -59,82 +59,62 @@ void post_process(cmdline::parser& cl,
                   SparseMatrix& sparse_matrix);
 
 int main(int argc, char* argv[]) {
+  CMDLINE_TRY
 
-  try {
-    cmdline::parser cl;
+  cmdline::parser cl;
 
-    PET3D::Hybrid::add_matrix_options(cl);
-    cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
-    cl.add<double>("length", 0, "length of the detector", false, 0.3);
+  PET3D::Hybrid::add_matrix_options(cl);
+  cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
+  cl.add<double>("length", 0, "length of the detector", false, 0.3);
 
-    cl.try_parse(argc, argv);
+  cl.try_parse(argc, argv);
 
 #if _OPENMP
-    if (cl.exist("n-threads")) {
-      omp_set_num_threads(cl.get<int>("n-threads"));
-    }
+  if (cl.exist("n-threads")) {
+    omp_set_num_threads(cl.get<int>("n-threads"));
+  }
 #endif
 
-    // check options
-    if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
-        !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
-      throw(
-          "need to specify either --w-detector, --d-detector or --n-detectors "
-          "or --small or --big");
-    }
-    if (cl.exist("png") && !cl.exist("from")) {
-      throw("need to specify --from lor when output --png option is specified");
-    }
-    if (!cl.exist("png") && cl.exist("from")) {
-      throw("need to specify output --png option when --from is specified");
-    }
-
-    cmdline::load_accompanying_config(cl, false);
-    if (cl.exist("small"))
-      PET3D::Hybrid::set_small_barrel_options(cl);
-    else if (cl.exist("big"))
-      PET3D::Hybrid::set_big_barrel_options(cl);
-    else
-      PET3D::Hybrid::calculate_scanner_options(cl);
-
-    const auto& model_name = cl.get<std::string>("model");
-    const auto& length_scale = cl.get<double>("base-length");
-
-    Scanner scanner = Scanner::build_scanner_from_cl(cl);
-
-    if (model_name == "always") {
-      Common::AlwaysAccept<F> model;
-      auto sparse_matrix = run(cl, scanner, model);
-      post_process(cl, scanner, sparse_matrix);
-    } else if (model_name == "scintillator") {
-      Common::ScintillatorAccept<F> model(length_scale);
-      auto sparse_matrix = run(cl, scanner, model);
-      post_process(cl, scanner, sparse_matrix);
-    } else {
-      throw("unknown model: " + model_name);
-    }
-
-    return 0;
-  } catch (cmdline::exception& ex) {
-    if (ex.help()) {
-      std::cerr << ex.usage();
-    }
-    for (auto& msg : ex.errors()) {
-      auto name = ex.name();
-      if (name) {
-        std::cerr << "error at " << name << ": " << msg << std::endl;
-      } else {
-        std::cerr << "error: " << msg << std::endl;
-      }
-    }
-  } catch (std::string& ex) {
-    std::cerr << "error: " << ex << std::endl;
-    util::print_backtrace(std::cerr);
-  } catch (const char* ex) {
-    std::cerr << "error: " << ex << std::endl;
-    util::print_backtrace(std::cerr);
+  // check options
+  if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
+      !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
+    throw(
+        "need to specify either --w-detector, --d-detector or --n-detectors "
+        "or --small or --big");
   }
-  return 1;
+  if (cl.exist("png") && !cl.exist("from")) {
+    throw("need to specify --from lor when output --png option is specified");
+  }
+  if (!cl.exist("png") && cl.exist("from")) {
+    throw("need to specify output --png option when --from is specified");
+  }
+
+  cmdline::load_accompanying_config(cl, false);
+  if (cl.exist("small"))
+    PET3D::Hybrid::set_small_barrel_options(cl);
+  else if (cl.exist("big"))
+    PET3D::Hybrid::set_big_barrel_options(cl);
+  else
+    PET3D::Hybrid::calculate_scanner_options(cl);
+
+  const auto& model_name = cl.get<std::string>("model");
+  const auto& length_scale = cl.get<double>("base-length");
+
+  Scanner scanner = Scanner::build_scanner_from_cl(cl);
+
+  if (model_name == "always") {
+    Common::AlwaysAccept<F> model;
+    auto sparse_matrix = run(cl, scanner, model);
+    post_process(cl, scanner, sparse_matrix);
+  } else if (model_name == "scintillator") {
+    Common::ScintillatorAccept<F> model(length_scale);
+    auto sparse_matrix = run(cl, scanner, model);
+    post_process(cl, scanner, sparse_matrix);
+  } else {
+    throw("unknown model: " + model_name);
+  }
+
+  CMDLINE_CATCH
 }
 
 template <class ScannerClass, class ModelClass>

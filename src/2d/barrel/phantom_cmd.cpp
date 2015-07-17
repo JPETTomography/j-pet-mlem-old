@@ -89,91 +89,71 @@ template <class DetectorClass, class PhantomClass, class ModelClass>
 void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model);
 
 int main(int argc, char* argv[]) {
+  CMDLINE_TRY
 
-  try {
-    cmdline::parser cl;
-    PET2D::Barrel::add_phantom_options(cl);
-    cl.try_parse(argc, argv);
+  cmdline::parser cl;
+  PET2D::Barrel::add_phantom_options(cl);
+  cl.try_parse(argc, argv);
 
-    // check options
-    if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
-        !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
-      throw(
-          "need to specify either --w-detector, --d-detector or --n-detectors "
-          "or --small or --big");
-    }
+  // check options
+  if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
+      !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
+    throw(
+        "need to specify either --w-detector, --d-detector or --n-detectors "
+        "or --small or --big");
+  }
 
 #if _OPENMP
-    if (cl.exist("n-threads")) {
-      omp_set_num_threads(cl.get<int>("n-threads"));
-    }
+  if (cl.exist("n-threads")) {
+    omp_set_num_threads(cl.get<int>("n-threads"));
+  }
 #endif
 
-    if (cl.exist("small"))
-      PET2D::Barrel::set_small_barrel_options(cl);
-    else if (cl.exist("big"))
-      PET2D::Barrel::set_big_barrel_options(cl);
-    else
-      PET2D::Barrel::calculate_scanner_options(cl);
+  if (cl.exist("small"))
+    PET2D::Barrel::set_small_barrel_options(cl);
+  else if (cl.exist("big"))
+    PET2D::Barrel::set_big_barrel_options(cl);
+  else
+    PET2D::Barrel::calculate_scanner_options(cl);
 
-    const auto& shape = cl.get<std::string>("shape");
-    const auto& model_name = cl.get<std::string>("model");
-    const auto& length_scale = cl.get<double>("base-length");
+  const auto& shape = cl.get<std::string>("shape");
+  const auto& model_name = cl.get<std::string>("model");
+  const auto& length_scale = cl.get<double>("base-length");
 
-    Phantom phantom;
-    // Read phantom
-    for (auto& fn : cl.rest()) {
-      std::ifstream in_phantom(fn);
-      phantom.read_from_stream(in_phantom);
-    }
-    phantom.calculate_cdf();
-
-    // run simmulation on given detector model & shape
-    if (model_name == "always") {
-      Common::AlwaysAccept<F> model;
-      if (shape == "square") {
-        run<SquareScanner>(cl, phantom, model);
-      } else if (shape == "circle") {
-        run<CircleScanner>(cl, phantom, model);
-      } else if (shape == "triangle") {
-        run<TriangleScanner>(cl, phantom, model);
-      } else if (shape == "hexagon") {
-        run<HexagonalScanner>(cl, phantom, model);
-      }
-    } else if (model_name == "scintillator") {
-      Common::ScintillatorAccept<F> model(length_scale);
-      if (shape == "square") {
-        run<SquareScanner>(cl, phantom, model);
-      } else if (shape == "circle") {
-        run<CircleScanner>(cl, phantom, model);
-      } else if (shape == "triangle") {
-        run<TriangleScanner>(cl, phantom, model);
-      } else if (shape == "hexagon") {
-        run<HexagonalScanner>(cl, phantom, model);
-      }
-    }
-
-    return 0;
-  } catch (cmdline::exception& ex) {
-    if (ex.help()) {
-      std::cerr << ex.usage();
-    }
-    for (auto& msg : ex.errors()) {
-      auto name = ex.name();
-      if (name) {
-        std::cerr << "error at " << name << ": " << msg << std::endl;
-      } else {
-        std::cerr << "error: " << msg << std::endl;
-      }
-    }
-  } catch (std::string& ex) {
-    std::cerr << "error: " << ex << std::endl;
-    util::print_backtrace(std::cerr);
-  } catch (const char* ex) {
-    std::cerr << "error: " << ex << std::endl;
-    util::print_backtrace(std::cerr);
+  Phantom phantom;
+  // Read phantom
+  for (auto& fn : cl.rest()) {
+    std::ifstream in_phantom(fn);
+    phantom.read_from_stream(in_phantom);
   }
-  return 1;
+  phantom.calculate_cdf();
+
+  // run simmulation on given detector model & shape
+  if (model_name == "always") {
+    Common::AlwaysAccept<F> model;
+    if (shape == "square") {
+      run<SquareScanner>(cl, phantom, model);
+    } else if (shape == "circle") {
+      run<CircleScanner>(cl, phantom, model);
+    } else if (shape == "triangle") {
+      run<TriangleScanner>(cl, phantom, model);
+    } else if (shape == "hexagon") {
+      run<HexagonalScanner>(cl, phantom, model);
+    }
+  } else if (model_name == "scintillator") {
+    Common::ScintillatorAccept<F> model(length_scale);
+    if (shape == "square") {
+      run<SquareScanner>(cl, phantom, model);
+    } else if (shape == "circle") {
+      run<CircleScanner>(cl, phantom, model);
+    } else if (shape == "triangle") {
+      run<TriangleScanner>(cl, phantom, model);
+    } else if (shape == "hexagon") {
+      run<HexagonalScanner>(cl, phantom, model);
+    }
+  }
+
+  CMDLINE_CATCH
 }
 
 template <class DetectorClass, class PhantomClass, class ModelClass>
@@ -323,6 +303,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
     }
     if (verbose) {
       std::cerr << std::endl
+                << " emitted: " << monte_carlo.n_events_emitted() << " events"
                 << "detected: " << monte_carlo.n_events_detected() << " events"
                 << std::endl;
     }

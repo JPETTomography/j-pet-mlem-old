@@ -23,7 +23,10 @@ class PhantomMonteCarlo {
   using FullResponse = typename Detector::FullResponse;
 
   PhantomMonteCarlo(Phantom& phantom, Detector& detector)
-      : phantom_(phantom), detector_(detector), n_events_detected_() {}
+      : phantom_(phantom),
+        detector_(detector),
+        n_events_emitted_(),
+        n_events_detected_() {}
 
   template <class ModelClass,
             class EmitCallback,
@@ -31,14 +34,16 @@ class PhantomMonteCarlo {
             class Progress>
   int operator()(RNG& rng,
                  ModelClass model,
-                 size_t n_emissions,
+                 size_t n_emissions_or_detections,
                  EmitCallback emitted,
                  DetectCallback detected,
                  Progress progress,
                  bool only_detected = false) {
-    int n_events_detected = 0;
+    size_t n_events_detected = 0;
+    // (1) we run until we detected n_emissions_or_detections
     if (only_detected) {
-      while (n_events_detected < n_emissions) {
+      size_t n_events_emitted = 0;
+      while (n_events_detected < n_emissions_or_detections) {
         progress(n_events_detected, false);
         auto event = phantom_.gen_event(rng);
         emitted(event);
@@ -47,11 +52,17 @@ class PhantomMonteCarlo {
           detected(event, full_response);
           ++n_events_detected;
         }
+        ++n_events_emitted;
         progress(n_events_detected, true);
       }
-    } else {
-      for (size_t i = 0; i < n_emissions; ++i) {
-        progress(i, false);
+      n_events_emitted_ += n_events_emitted;
+    }
+    // (2) we run until we emit n_emissions_or_detections
+    else {
+      for (size_t n_events_emitted = 0;
+           n_events_emitted < n_emissions_or_detections;
+           ++n_events_emitted) {
+        progress(n_events_emitted, false);
         auto event = phantom_.gen_event(rng);
         emitted(event);
         FullResponse full_response;
@@ -59,18 +70,21 @@ class PhantomMonteCarlo {
           detected(event, full_response);
           ++n_events_detected;
         }
-        progress(i, true);
+        progress(n_events_emitted, true);
       }
+      n_events_emitted_ += n_emissions_or_detections;
     }
     n_events_detected_ += n_events_detected;
     return n_events_detected;
   }
 
+  int n_events_emitted() const { return n_events_emitted_; }
   int n_events_detected() const { return n_events_detected_; }
 
  private:
   Phantom& phantom_;
   Detector& detector_;
-  int n_events_detected_;
+  size_t n_events_emitted_;
+  size_t n_events_detected_;
 };
 }
