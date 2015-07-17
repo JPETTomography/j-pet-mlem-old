@@ -304,6 +304,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
     if (verbose) {
       std::cerr << std::endl
                 << " emitted: " << monte_carlo.n_events_emitted() << " events"
+                << std::endl
                 << "detected: " << monte_carlo.n_events_detected() << " events"
                 << std::endl;
     }

@@ -178,6 +178,7 @@ int main(int argc, char* argv[]) {
     if (verbose) {
       std::cerr << std::endl
                 << " emitted: " << monte_carlo.n_events_emitted() << " events"
+                << std::endl
                 << "detected: " << monte_carlo.n_events_detected() << " events"
                 << std::endl;
     }
