@@ -33,9 +33,9 @@ class progress {
       std::numeric_limits<unsigned long>::max())
       : verbosity(verbosity),
         total(total),
+        total_m_1(total - 1),
         start_time(clock_t::now()),
         mask(1),
-        last_completed(std::numeric_limits<unsigned long>::max()),
         total_ellapsed_ms(0) {
     // computes mask that shows percentage only ~ once per thousand of total
     auto total_resonable_update = total / 1000;
@@ -63,7 +63,8 @@ class progress {
                   ) {
 
     // limit updates so they are not too often
-    if (!verbosity || (completed & mask) != 0 || last_completed == completed)
+    if (!verbosity ||
+        ((completed < total_m_1 || !finished) && (completed & mask) != 0))
       return;
 #if _OPENMP
     if (omp_get_thread_num() != 0)
@@ -81,7 +82,7 @@ class progress {
         std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(2)
                   << std::setw(4) << (completed + 1) << " " << std::setw(10)
                   << ellapsed_ms << std::endl;
-        if (completed == total - 1) {
+        if (completed == total_m_1) {
           std::cout << "# av " << std::setw(10) << total_ellapsed_ms / total
                     << "   total " << total_ellapsed_ms << std::endl;
         }
@@ -90,22 +91,31 @@ class progress {
       }
       return;
     }
-
     // Estimate time mode
-    last_completed = completed;
+    else {
+      if (finished) {
+        if (completed < total_m_1)
+          return;
+        ++completed;
+      }
+      double persec = (double)completed / ellapsed();
 
-    double persec = (double)completed / ellapsed();
+      std::cerr << " " << std::round((double)completed / total * 100.0) << "% "
+                << completed << "/" << total;
 
-    std::cerr << " " << std::round((double)completed / total * 100.0) << "% "
-              << completed << "/" << total;
-
-    if (!std::isnan(persec) && completed > 0) {
-      std::cerr << " "
-                << timetostr(std::round((double)(total - completed) / persec))
-                << " left, ";
-      std::cerr << timetostr(std::round((double)total / persec)) << " total";
+      if (!std::isnan(persec) && completed > 0) {
+        std::cerr << " "
+                  << timetostr(std::round((double)(total - completed) / persec))
+                  << " left, ";
+        std::cerr << timetostr(std::round((double)total / persec))
+                  << " total  ";
+      }
+      if (finished && completed == total) {
+        std::cerr << std::endl;
+      } else {
+        std::cerr << "\r";
+      }
     }
-    std::cerr << "\r";
   }
 
  private:
@@ -127,9 +137,9 @@ class progress {
 
   int verbosity;
   unsigned long total;
+  unsigned long total_m_1;
   time_t start_time;
   unsigned long mask;
-  unsigned long last_completed;
   double total_ellapsed_ms;
 };
 }  // util
