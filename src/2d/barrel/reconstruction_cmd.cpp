@@ -110,12 +110,7 @@ int main(int argc, char* argv[]) {
   }
 
   auto output = cl.get<cmdline::path>("output");
-
-  std::ofstream out;
-  std::ofstream out_detected;
-
-  out.open(output);
-  out_detected.open(output.wo_ext() + "_detected" + output.ext());
+  std::ofstream out_rho(output);
 
   double sec = 0.0;
   auto n_iterations = cl.get<int>("iterations");
@@ -125,9 +120,7 @@ int main(int argc, char* argv[]) {
     reconstruction.emt(n_iterations);
     clock_t stop = clock();
     sec += static_cast<double>(stop - start) / CLOCKS_PER_SEC;
-
-    out << reconstruction.rho();
-    out_detected << reconstruction.rho_detected();
+    out_rho << reconstruction.rho();
   }
 
   if (use_sensitivity) {
@@ -159,14 +152,9 @@ int main(int argc, char* argv[]) {
               << std::endl;
   }
 
-  out.close();
-  out_detected.close();
-
   // output reconstruction PNG
   util::png_writer png(output.wo_ext() + ".png");
   png << reconstruction.rho();
-  util::png_writer png_detected(output.wo_ext() + "_detected.png");
-  png_detected << reconstruction.rho_detected();
 
   CMDLINE_CATCH
 }

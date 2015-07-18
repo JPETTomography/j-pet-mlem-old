@@ -41,14 +41,11 @@ class Reconstruction {
   Reconstruction(Matrix& matrix,
                  std::istream& in_means,
                  bool use_sensitivity = true)
-      : n_detectors_(matrix.n_detectors()),
-        n_pixels_in_row_(matrix.n_pixels_in_row()),
+      : n_pixels_in_row_(matrix.n_pixels_in_row()),
         total_n_pixels_(n_pixels_in_row_ * n_pixels_in_row_),
-        n_emissions_(matrix.n_emissions()),
         sensitivity_(n_pixels_in_row_, n_pixels_in_row_),
         scale_(n_pixels_in_row_, n_pixels_in_row_, 1),
-        rho_(n_pixels_in_row_, n_pixels_in_row_),
-        rho_detected_(n_pixels_in_row_, n_pixels_in_row_, 1),
+        rho_(n_pixels_in_row_, n_pixels_in_row_, 1),
         matrix_(matrix) {
 
     if (use_sensitivity) {
@@ -56,7 +53,7 @@ class Reconstruction {
         sensitivity_[element.pixel] += element.hits;
       }
 
-      auto n_emissions = static_cast<F>(n_emissions_);
+      auto n_emissions = static_cast<F>(matrix.n_emissions());
 
       for (Size p = 0; p < total_n_pixels_; ++p) {
         Hit pixel_sensitivity = sensitivity_[p];
@@ -88,7 +85,7 @@ class Reconstruction {
   }
 
   void emt(Size n_iterations) {
-    F* y = (F*)alloca(n_pixels_in_row_ * n_pixels_in_row_ * sizeof(F));
+    F* y = (F*)alloca(total_n_pixels_ * sizeof(F));
 
     for (Size i = 0; i < n_iterations; ++i) {
       std::cout << ".", std::cout.flush();
@@ -142,9 +139,12 @@ class Reconstruction {
 
           // count u for current LOR
           while (matrix_it->lor == lor && matrix_it->position == position) {
-            auto i_pixel = pixel_index(matrix_it->pixel);
-            u += rho_detected_[i_pixel] * static_cast<F>(matrix_it->hits)  //
-                 * scale_[i_pixel];
+            auto p = pixel_index(matrix_it->pixel);
+            u += rho_[p] * static_cast<F>(matrix_it->hits)
+#if IN_LOOP_SCALE
+                 * scale_[p];
+#endif
+            ;
             ++matrix_it;
           }
           F phi = means_it->mean / u;
@@ -152,10 +152,12 @@ class Reconstruction {
           // count y for current lor
           matrix_it = prev_it;
           while (matrix_it->lor == lor && matrix_it->position == position) {
-            auto i_pixel = pixel_index(matrix_it->pixel);
-            y[pixel_index(matrix_it->pixel)] +=
-                phi * static_cast<F>(matrix_it->hits)  //
-                * scale_[i_pixel];
+            auto p = pixel_index(matrix_it->pixel);
+            y[p] += phi * static_cast<F>(matrix_it->hits)
+#if IN_LOOP_SCALE
+                    * scale_[p];
+#endif
+            ;
             ++matrix_it;
           }
         } else {
@@ -167,12 +169,11 @@ class Reconstruction {
       }
 
       for (Size p = 0; p < total_n_pixels_; ++p) {
-        rho_detected_[p] *= y[p];
+        rho_[p] *= y[p]
+#if !IN_LOOP_SCALE
+                   * scale_[p];
+#endif
       }
-    }
-
-    for (Size p = 0; p < total_n_pixels_; ++p) {
-      rho_[p] = rho_detected_[p];
     }
   }
 
@@ -181,7 +182,6 @@ class Reconstruction {
   F rho(const Pixel& pixel) const { return rho_[pixel_index(pixel)]; }
   const Sensitivity& sensitivity() const { return sensitivity_; }
   const Output& rho() const { return rho_; }
-  const Output& rho_detected() const { return rho_detected_; }
   const Output& scale() const { return scale_; }
 
  private:
@@ -189,16 +189,13 @@ class Reconstruction {
     return p.y * static_cast<Size>(n_pixels_in_row_) + p.x;
   }
 
-  S n_detectors_;
-  S n_pixels_in_row_;
-  Size total_n_pixels_;
-  Size n_emissions_;
-  Sensitivity sensitivity_;
-  Output scale_;
-  Output rho_;
-  Output rho_detected_;
-  Matrix& matrix_;
-  Means means_;
+  S n_pixels_in_row_;        ///< number of pixels in row in image
+  Size total_n_pixels_;      ///< total number of pixel in image
+  Sensitivity sensitivity_;  ///< pixel sensitivity
+  Output scale_;             ///< inverse of sensitivity
+  Output rho_;               ///< reconstruction output
+  Matrix& matrix_;           ///< system matrix used for reconstruction
+  Means means_;              ///< input means (eg. from phantom simmulation)
 
   struct SortByLOR {
     bool operator()(const Mean& a, const Mean& b) const {
