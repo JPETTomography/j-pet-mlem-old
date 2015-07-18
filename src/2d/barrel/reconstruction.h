@@ -176,8 +176,9 @@ class Reconstruction {
       for (Size p = 0; p < total_n_pixels_; ++p) {
         rho_[p] *= y[p]
 #if !IN_LOOP_SCALE
-                   * scale_[p];
+                   * scale_[p]
 #endif
+            ;
       }
 
       progress(iteration + n_iterations_so_far, true);
