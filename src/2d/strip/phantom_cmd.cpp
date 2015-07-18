@@ -176,8 +176,7 @@ int main(int argc, char* argv[]) {
         },
         progress);
     if (verbose) {
-      std::cerr << std::endl
-                << " emitted: " << monte_carlo.n_events_emitted() << " events"
+      std::cerr << " emitted: " << monte_carlo.n_events_emitted() << " events"
                 << std::endl
                 << "detected: " << monte_carlo.n_events_detected() << " events"
                 << std::endl;
