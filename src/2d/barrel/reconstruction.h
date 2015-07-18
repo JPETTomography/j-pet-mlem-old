@@ -84,11 +84,16 @@ class Reconstruction {
     }
   }
 
-  void emt(Size n_iterations) {
+  /// Performs n_iterations of the EMT algorithm
+  template <typename ProgressCallback>
+  void operator()(ProgressCallback progress,   ///< progress callback
+                  int n_iterations,            ///< iterations to perform
+                  int n_iterations_so_far = 0  ///< iterations so far
+                  ) {
     F* y = (F*)alloca(total_n_pixels_ * sizeof(F));
 
-    for (Size i = 0; i < n_iterations; ++i) {
-      std::cout << ".", std::cout.flush();
+    for (Size iteration = 0; iteration < n_iterations; ++iteration) {
+      progress(iteration + n_iterations_so_far);
 
       for (Size p = 0; p < total_n_pixels_; ++p) {
         y[p] = static_cast<F>(0);
@@ -110,7 +115,7 @@ class Reconstruction {
                (matrix_it->lor > means_it->lor ||
                 (matrix_it->lor == means_it->lor &&
                  matrix_it->position > means_it->position))) {
-          if (i == 0) {
+          if (iteration == 0) {
             // this warning should not appear if system matrix is complete
             std::cerr << "warning: mean LOR (" << means_it->lor.first << ", "
                       << means_it->lor.second << ") position "
@@ -174,6 +179,8 @@ class Reconstruction {
                    * scale_[p];
 #endif
       }
+
+      progress(iteration + n_iterations_so_far, true);
     }
   }
 

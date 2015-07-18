@@ -29,8 +29,6 @@
 #include <pmmintrin.h>
 #endif
 
-#include <ctime>
-
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/bstream.h"
@@ -39,6 +37,7 @@
 #include "reconstruction.h"
 #include "util/png_writer.h"
 #include "util/backtrace.h"
+#include "util/progress.h"
 #include "options.h"
 
 #if _OPENMP
@@ -85,9 +84,6 @@ int main(int argc, char* argv[]) {
   if (!in_means.is_open())
     throw("cannot open input file: " + cl.get<cmdline::path>("mean"));
 
-  int n_i_blocks = cl.get<int>("blocks");
-  Reconstruction reconstruction(matrix, in_means, use_sensitivity);
-
   if (verbose) {
     std::cerr << "reconstruction:" << std::endl;
 #if _OPENMP
@@ -99,12 +95,17 @@ int main(int argc, char* argv[]) {
     std::cerr << " detectors     = " << matrix.n_detectors() << std::endl;
   }
 
+  auto n_blocks = cl.get<int>("blocks");
+  auto n_iterations = cl.get<int>("iterations");
+
+  Reconstruction reconstruction(matrix, in_means, use_sensitivity);
   auto n_pixels_in_row = reconstruction.n_pixels_in_row();
 
   // no output, just make reconstruction in place and exit!
   if (!cl.exist("output")) {
-    for (int i = 0; i < n_i_blocks; ++i) {
-      reconstruction.emt(cl.get<int>("iterations"));
+    util::progress progress(verbose, n_blocks * n_iterations, 1);
+    for (int block = 0; block < n_blocks; ++block) {
+      reconstruction(progress, n_iterations, block * n_iterations);
     }
     return 0;
   }
@@ -112,14 +113,9 @@ int main(int argc, char* argv[]) {
   auto output = cl.get<cmdline::path>("output");
   std::ofstream out_rho(output);
 
-  double sec = 0.0;
-  auto n_iterations = cl.get<int>("iterations");
-
-  for (int i = 0; i < n_i_blocks; ++i) {
-    clock_t start = clock();
-    reconstruction.emt(n_iterations);
-    clock_t stop = clock();
-    sec += static_cast<double>(stop - start) / CLOCKS_PER_SEC;
+  util::progress progress(verbose, n_blocks * n_iterations, 1);
+  for (int block = 0; block < n_blocks; ++block) {
+    reconstruction(progress, n_iterations, block * n_iterations);
     out_rho << reconstruction.rho();
   }
 
@@ -143,13 +139,6 @@ int main(int argc, char* argv[]) {
 
     util::png_writer png(output.wo_ext() + "_sensitivity.png");
     png << reconstruction.sensitivity();
-  }
-
-  std::cout << std::endl;
-  if (verbose) {
-    std::cout << "time = " << sec << "s "
-              << "time/iter = " << sec / (n_i_blocks * n_iterations) << "s"
-              << std::endl;
   }
 
   // output reconstruction PNG
