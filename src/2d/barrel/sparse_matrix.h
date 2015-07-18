@@ -292,11 +292,12 @@ class SparseMatrix
         out << count;
       }
       if (tof) {
-        out << it->position << static_cast<FileHalf>(pixel.x)
-            << static_cast<FileHalf>(pixel.y) << hits;
+        out << static_cast<FileInt>(it->position)  //
+            << static_cast<FileHalf>(pixel.x) << static_cast<FileHalf>(pixel.y)
+            << static_cast<FileInt>(hits);
       } else {
         out << static_cast<FileHalf>(pixel.x) << static_cast<FileHalf>(pixel.y)
-            << hits;
+            << static_cast<FileInt>(hits);
       }
     }
 
