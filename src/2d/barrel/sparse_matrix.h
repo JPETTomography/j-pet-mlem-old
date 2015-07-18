@@ -424,13 +424,14 @@ class SparseMatrix
           hits *= 2;
         }
 #endif
-        auto lor =
-            LOR(symmetry_descriptor.symmetric_detector(e.lor.first, symmetry),
-                symmetry_descriptor.symmetric_detector(e.lor.second, symmetry));
+        auto symmetric_lor_first =
+            symmetry_descriptor.symmetric_detector(e.lor.first, symmetry);
+        auto symmetric_lor_second =
+            symmetry_descriptor.symmetric_detector(e.lor.second, symmetry);
+        auto lor = LOR(symmetric_lor_first, symmetric_lor_second);
         auto position = e.position;
         // if LOR is swapped, then position should be too
-        if (lor.first < lor.second) {
-          std::swap(lor.first, lor.second);
+        if (symmetric_lor_first < symmetric_lor_second) {
           // position should be adjusted here so it always goes from
           // higher detector index to lower
           position = n_tof_positions_ - 1 - position;
