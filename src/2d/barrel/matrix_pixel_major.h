@@ -31,6 +31,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, HitType> {
   using Pixel = PixelType;
   using LOR = LORType;
   using S = typename Base::S;
+  using Size = typename LOR::Size;
   using Hit = HitType;
   using SparseMatrix = typename Base::SparseMatrix;
   using SparseElement = typename SparseMatrix::Element;
@@ -228,7 +229,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, HitType> {
   size_t n_elements_;
   Hit** pixel_lor_hits_ptr;
   std::vector<std::vector<SparseElement>> pixel_lor_hits;
-  std::vector<S> pixel_lor_count;
+  std::vector<Size> pixel_lor_count;
   std::vector<LOR> index_to_lor;
   std::vector<Pixel> index_to_pixel;
 };
