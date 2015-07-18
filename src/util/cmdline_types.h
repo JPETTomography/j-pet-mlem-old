@@ -21,12 +21,16 @@
       }                                                               \
     }                                                                 \
   }                                                                   \
-  catch (std::string & ex) {                                          \
+  catch (const std::string& ex) {                                     \
     std::cerr << "error: " << ex << std::endl;                        \
     util::print_backtrace(std::cerr);                                 \
   }                                                                   \
   catch (const char* ex) {                                            \
     std::cerr << "error: " << ex << std::endl;                        \
+    util::print_backtrace(std::cerr);                                 \
+  }                                                                   \
+  catch (const std::exception& ex) {                                  \
+    std::cerr << "error: " << ex.what() << std::endl;                 \
     util::print_backtrace(std::cerr);                                 \
   }                                                                   \
   return 1;
