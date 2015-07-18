@@ -86,7 +86,7 @@ class Reconstruction {
 
   /// Performs n_iterations of the EMT algorithm
   template <typename ProgressCallback>
-  void operator()(ProgressCallback progress,   ///< progress callback
+  void operator()(ProgressCallback& progress,  ///< progress callback
                   int n_iterations,            ///< iterations to perform
                   int n_iterations_so_far = 0  ///< iterations so far
                   ) {
