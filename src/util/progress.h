@@ -36,6 +36,7 @@ class progress {
         total_m_1(total - 1),
         start_time(clock_t::now()),
         mask(1),
+        last_completed(std::numeric_limits<unsigned long>::max()),
         total_ellapsed_ms(0) {
     // computes mask that shows percentage only ~ once per thousand of total
     auto total_resonable_update = total / 1000;
@@ -63,8 +64,8 @@ class progress {
                   ) {
 
     // limit updates so they are not too often
-    if (!verbosity ||
-        ((completed < total_m_1 || !finished) && (completed & mask) != 0))
+    if (!(verbosity &&
+          ((completed == total_m_1 && finished) || (completed & mask) == 0)))
       return;
 #if _OPENMP
     if (omp_get_thread_num() != 0)
@@ -98,6 +99,11 @@ class progress {
           return;
         ++completed;
       }
+
+      if (completed == last_completed)
+        return;
+      last_completed = completed;
+
       double persec = (double)completed / ellapsed();
 
       std::cerr << " " << std::round((double)completed / total * 100.0) << "% "
@@ -140,6 +146,7 @@ class progress {
   unsigned long total_m_1;
   time_t start_time;
   unsigned long mask;
+  unsigned long last_completed;
   double total_ellapsed_ms;
 };
 }  // util
