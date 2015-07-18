@@ -108,14 +108,18 @@ class Reconstruction {
           ++matrix_it;
         }
 
-        // skip LORs that does not exist in system matrix
-        while (means_it != means_.end() && (matrix_it->lor > means_it->lor)) {
-#if 1  // this warning should not appear if system matrix is complete
-          std::cerr << "warning: mean LOR (" << means_it->lor.first << ", "
-                    << means_it->lor.second << ") position "
-                    << means_it->position << " not found in system matrix"
-                    << std::endl;
-#endif
+        // skip LORs & positions that does not exist in system matrix
+        while (means_it != means_.end() &&
+               (matrix_it->lor > means_it->lor ||
+                (matrix_it->lor == means_it->lor &&
+                 matrix_it->position > means_it->position))) {
+          if (i == 0) {
+            // this warning should not appear if system matrix is complete
+            std::cerr << "warning: mean LOR (" << means_it->lor.first << ", "
+                      << means_it->lor.second << ") position "
+                      << means_it->position << " not found in system matrix"
+                      << std::endl;
+          }
           ++means_it;
         }
 
