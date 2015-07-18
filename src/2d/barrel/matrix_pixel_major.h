@@ -40,7 +40,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, HitType> {
         n_pixels_in_row_half(n_pixels_in_row / 2),
         n_pixels_(Pixel::end_for_n_pixels_in_row(n_pixels_in_row).index()),
         n_lors(LOR::end_for_detectors(n_detectors).index()),
-        size_(0),
+        n_elements_(0),
         pixel_lor_hits_ptr(new Hit*[n_pixels_]()),
         pixel_lor_hits(n_pixels_),
         pixel_lor_count(n_pixels_),
@@ -82,7 +82,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, HitType> {
                                     position];
     if (current_hits == 0) {
       pixel_lor_count[i_pixel]++;
-      size_++;
+      n_elements_++;
     }
     current_hits += hits;
   }
@@ -136,7 +136,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, HitType> {
                         this->n_detectors(),
                         this->n_emissions(),
                         this->n_tof_positions());
-    sparse.reserve(size_);
+    sparse.reserve(n_elements_);
     for (int i_pixel = 0; i_pixel < n_pixels_; ++i_pixel) {
       for (auto& e : pixel_lor_hits[i_pixel]) {
         sparse.push_back(e);
@@ -203,7 +203,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, HitType> {
     return it->hits;
   }
 
-  S size() const { return size_; }
+  size_t n_elements() const { return n_elements_; }
   int n_lors_at_pixel_index(S i_pixel) const {
     return pixel_lor_count[i_pixel];
   }
@@ -225,7 +225,7 @@ class MatrixPixelMajor : public Matrix<PixelType, LORType, HitType> {
   S n_pixels_in_row_half;
   int n_pixels_;
   int n_lors;
-  int size_;
+  size_t n_elements_;
   Hit** pixel_lor_hits_ptr;
   std::vector<std::vector<SparseElement>> pixel_lor_hits;
   std::vector<S> pixel_lor_count;
