@@ -70,12 +70,12 @@ class GenericScanner
                  F w_detector,        ///< width of single detector (along ring)
                  F h_detector,        ///< height/depth of single detector
                                       ///< (perpendicular to ring)
-                 F d_detector = 0     ///< diameter of circle single detector is
+                 F d_detector = 0,    ///< diameter of circle single detector is
                                       ///< inscribed in
+                 F sigma_dl = 0       ///< sigma delta-l
                  )
-      : Base(test_case, radius, w_detector, h_detector, d_detector) {}
-
-  void set_sigma_dl(F sigma_dl) { sigma_dl_ = sigma_dl; }
+      : Base(test_case, radius, w_detector, h_detector, d_detector),
+        sigma_dl_(sigma_dl) {}
 
   /// \brief Tries to detect given event.
   /// \return number of coincidences (detector hits)
@@ -138,9 +138,11 @@ class GenericScanner
 #if !__CUDACC__
   template <class RNG>
   Response response_w_error(RNG& rng, const FullResponse& response) const {
-    std::normal_distribution<F> dist_dl(0, sigma_dl_);
     Response response_w_error_(response);
-    response_w_error_.dl += dist_dl(rng);
+    if (sigma_dl_ > 0) {
+      std::normal_distribution<F> dist_dl(0, sigma_dl_);
+      response_w_error_.dl += dist_dl(rng);
+    }
     quantize_response(response_w_error_);
     return response_w_error_;
   }
@@ -193,6 +195,9 @@ class GenericScanner
   }
 
   F max_dl_error() const { return 5.0 * sigma_dl_; }
+
+  /// Sets TOF sigma-dl value
+  void set_sigma_dl(F sigma_dl) { sigma_dl_ = sigma_dl; }
 
  private:
   F sigma_dl_;
