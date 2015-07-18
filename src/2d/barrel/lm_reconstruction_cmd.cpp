@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
   cmdline::parser cl;
   cl.add<cmdline::path>("geometry", 0, "geometry information", true);
   cl.add<cmdline::path>("system", 0, "system maxtrix", false);
-  cl.add<double>("sigma", 0, "sigma dl", false, 0.060);
+  cl.add<double>("s-dl", 0, "TOF sigma delta-l", false, 0.060);
 
   cl.add<double>("length", 0, "length of the detector", false, 0.3);
   cl.add<cmdline::path>("response", 0, "detector responses", true);
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
   }
 
   PET2D::Barrel::LMReconstruction<F, S> reconstruction(
-      geometry, cl.get<double>("sigma") / 2);
+      geometry, cl.get<double>("s-dl") / 2);
   if (verbose)
     std::cout << "created reconstruction\n";
   if (cl.exist("system"))

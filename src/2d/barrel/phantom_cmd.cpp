@@ -168,7 +168,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
 
   auto scanner = ScannerBuilder<DetectorClass>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, typename DetectorClass::F));
-  scanner.set_sigma_dl(cl.get<float>("sigma"));
+  scanner.set_sigma_dl(cl.get<double>("s-dl"));
   if (cl.exist("tof-step"))
     scanner.set_tof_step(cl.get<double>("tof-step"));
 
