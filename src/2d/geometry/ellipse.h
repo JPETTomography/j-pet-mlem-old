@@ -24,12 +24,7 @@ template <typename FType> struct Ellipse {
 
 #if !__CUDACC__
   /// constructs Ellipse from stream
-  Ellipse(std::istream& in)
-      : Ellipse(util::read<F>(in),
-                util::read<F>(in),
-                util::read<F>(in),
-                util::read<F>(in),
-                util::read<F>(in)) {}
+  Ellipse(std::istream& in) : Ellipse(util::read<F>(in), in) {}
 #endif
 
   /// checks if ellipse contains given point
@@ -54,6 +49,15 @@ template <typename FType> struct Ellipse {
         B(s * s / (a * a) + c * c / (b * b)),
         C(s * c * (1 / (a * a) - 1 / (b * b))),
         area(M_PI * a * b) {}
+#if !__CUDACC__
+  // Ensure that ellipse params are read in correct order
+  Ellipse(F x, std::istream& in) : Ellipse(x, util::read<F>(in), in) {}
+  Ellipse(F x, F y, std::istream& in) : Ellipse(x, y, util::read<F>(in), in) {}
+  Ellipse(F x, F y, F a, std::istream& in)
+      : Ellipse(x, y, a, util::read<F>(in), in) {}
+  Ellipse(F x, F y, F a, F b, std::istream& in)
+      : Ellipse(x, y, a, b, util::read<F>(in)) {}
+#endif
 };
 
 /// Generates random points from given ellipse

@@ -39,23 +39,8 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
         grid(grid) {}
 
 #if !__CUDACC__
- private:
-  Geometry(uint32_t file_magic, S n_detectors, std::istream& in)
-      : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
-        n_detectors(n_detectors),
-        grid(in) {
-    if (file_magic != magic<F>())
-      throw("unknown binary geometry file");
-    while (in) {
-      LORInfo lor_info(in);
-      (*this)[lor_info.lor] = std::move(lor_info);
-    }
-  }
-
- public:
   /// Construct geometry out of the input streams
-  Geometry(std::istream& in)
-      : Geometry(util::read<uint32_t>(in), util::read<S>(in), in) {}
+  Geometry(std::istream& in) : Geometry(util::read<uint32_t>(in), in) {}
 
   /// Serialize geometry into binary output stream
   friend util::obstream& operator<<(util::obstream& out,
@@ -68,6 +53,23 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
     }
     return out;
   }
+
+ private:
+  Geometry(uint32_t file_magic, S n_detectors, std::istream& in)
+      : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
+        n_detectors(n_detectors),
+        grid(in) {
+    if (file_magic != magic<F>())
+      throw("unknown binary geometry file");
+    while (in) {
+      LORInfo lor_info(in);
+      (*this)[lor_info.lor] = std::move(lor_info);
+    }
+  }
+  Geometry(uint32_t file_magic, std::istream& in)
+      : Geometry(file_magic, util::read<S>(in), in) {}
+
+ public:
 #endif
 
   LORInfo& operator[](const LOR& lor) { return this->at(lor.index()); }
