@@ -126,7 +126,7 @@ static SparseMatrix run(cmdline::parser& cl,
   auto& m_pixel = cl.get<int>("m-pixel");
   auto& s_pixel = cl.get<double>("s-pixel");
   auto& n_emissions = cl.get<int>("n-emissions");
-  auto verbose = cl.exist("verbose");
+  auto verbose = cl.count("verbose");
   auto& z_position = cl.get<double>("z-position");
 
   if (verbose) {

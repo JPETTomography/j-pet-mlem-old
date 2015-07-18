@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 
   cl.parse_check(argc, argv);
 
-  auto verbose = cl.exist("verbose");
+  auto verbose = cl.count("verbose");
 
   // check options
   if (!cl.exist("w-detector") && !cl.exist("d-detector") &&

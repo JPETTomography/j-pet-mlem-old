@@ -164,7 +164,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
 
   auto& n_emissions = cl.get<int>("n-emissions");
 
-  auto verbose = cl.exist("verbose");
+  auto verbose = cl.count("verbose");
 
   auto scanner = ScannerBuilder<DetectorClass>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, typename DetectorClass::F));

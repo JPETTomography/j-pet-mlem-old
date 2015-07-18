@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 
   cl.parse_check(argc, argv);
 
-  auto verbose = cl.exist("verbose");
+  auto verbose = cl.count("verbose");
 
   auto scanner2d = PET2D::Barrel::ScannerBuilder<Scanner2D>::build_single_ring(
       inner_radius, 2, strip_width, strip_height);

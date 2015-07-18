@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
 
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();
-  bool verbose = cl.exist("verbose");
+  auto verbose = cl.count("verbose");
 
 #if _OPENMP
   if (cl.exist("n-threads")) {

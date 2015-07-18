@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
 #endif
 
   auto n_emissions = cl.get<int>("n-emissions");
-  auto verbose = cl.exist("verbose");
+  auto verbose = cl.count("verbose");
 
   Scanner scanner(PET2D_STRIP_SCANNER_CL(cl));
 

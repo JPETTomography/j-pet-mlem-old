@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
   auto scanner = PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, F));
 
-  auto verbose = cl.exist("verbose");
+  auto verbose = cl.count("verbose");
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();
 

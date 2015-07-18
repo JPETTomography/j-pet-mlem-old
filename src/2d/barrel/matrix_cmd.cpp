@@ -184,7 +184,7 @@ void print_parameters(cmdline::parser& cl, const ScannerClass& scanner) {
   auto& s_pixel = cl.get<double>("s-pixel");
   auto& n_emissions = cl.get<int>("n-emissions");
   auto& tof_step = cl.get<double>("tof-step");
-  auto verbose = cl.exist("verbose");
+  auto verbose = cl.count("verbose");
   int n_tof_positions = 1;
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
@@ -217,7 +217,7 @@ static SparseMatrix run(cmdline::parser& cl,
   auto& s_pixel = cl.get<double>("s-pixel");
   auto& n_emissions = cl.get<int>("n-emissions");
   auto& tof_step = cl.get<double>("tof-step");
-  auto verbose = cl.exist("verbose");
+  auto verbose = cl.count("verbose");
 
   std::random_device rd;
   util::random::tausworthe gen(rd());

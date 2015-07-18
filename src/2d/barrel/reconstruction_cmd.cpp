@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
   }
 #endif
 
-  auto verbose = cl.exist("verbose");
+  auto verbose = cl.count("verbose");
   auto use_sensitivity = !cl.exist("no-sensitivity");
 
   util::ibstream in_matrix(cl.get<cmdline::path>("system"));

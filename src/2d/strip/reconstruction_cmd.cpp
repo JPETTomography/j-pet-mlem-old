@@ -87,8 +87,7 @@ int main(int argc, char* argv[]) {
   Scanner scanner(PET2D_STRIP_SCANNER_CL(cl));
   Reconstruction reconstruction(scanner);
 
-  auto verbose = cl.exist("verbose");
-  auto verbosity = cl.count("verbose");
+  auto verbose = cl.count("verbose");
   if (verbose) {
     std::cout << "# image: " << scanner.n_y_pixels << "x" << scanner.n_z_pixels
               << std::endl;
@@ -138,7 +137,7 @@ int main(int argc, char* argv[]) {
   auto output_base_name = output_name.wo_ext();
   auto output_txt = output_name.ext() == ".txt";
 
-  util::progress progress(verbosity, n_blocks * n_iterations, 1);
+  util::progress progress(verbose, n_blocks * n_iterations, 1);
 
   const int n_file_digits = n_blocks * n_iterations >= 1000
                                 ? 4
