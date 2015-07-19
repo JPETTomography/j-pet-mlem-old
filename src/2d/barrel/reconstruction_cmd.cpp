@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
   }
 
   // output reconstruction PNG
-  util::png_writer png(output.wo_ext() + ".png");
+  util::png_writer png(output.wo_ext() + ".png", cl.get<double>("png-max"));
   png << reconstruction.rho();
 
   CMDLINE_CATCH

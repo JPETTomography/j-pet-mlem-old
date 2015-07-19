@@ -204,6 +204,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
   cl.add<cmdline::path>("mean", 'm', "mean file", true);
   cl.add<cmdline::path>("output", 'o', "output reconstruction", false);
   cl.add("no-sensitivity", 0, "do not correct for sensitivity");
+  cl.add<double>("png-max", 0, "maximum value mapped to 255 in PNG", false, 0);
 
   // additional options
   cl.add("verbose", 'v', "prints the iterations information on std::out");

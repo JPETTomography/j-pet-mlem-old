@@ -65,6 +65,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
                         false,
                         cmdline::path(),
                         cmdline::not_from_file);
+  cl.add<double>("png-max", 0, "maximum value mapped to 255 in PNG", false, 0);
 
 #if HAVE_CUDA
   cl.add("gpu", 'G', "run on GPU (via CUDA)");

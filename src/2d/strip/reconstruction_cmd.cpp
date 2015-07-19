@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
            << std::setfill('0')            //
            << (block + 1) * n_iterations;  // 001
 
-        util::png_writer png(fn.str() + ".png");
+        util::png_writer png(fn.str() + ".png", cl.get<double>("png-max"));
         reconstruction.output_bitmap(png);
 
         if (output_txt) {

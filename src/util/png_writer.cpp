@@ -14,7 +14,8 @@ struct png_writer_private {
 
 namespace util {
 
-png_writer::png_writer(std::string fn) {
+png_writer::png_writer(std::string fn, double scale_max)
+    : scale_max(scale_max) {
 #ifdef HAVE_LIBPNG
   priv = new png_writer_private;
   priv->fp = NULL;
