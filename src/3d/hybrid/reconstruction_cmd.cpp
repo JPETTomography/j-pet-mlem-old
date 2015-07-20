@@ -38,9 +38,8 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser cl;
   cl.add<std::string>("geometry", 0, "geometry information", true);
-  cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
-  cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
-
+  cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
+  cl.add<double>("s-dl", 0, "TOF sigma delta-l", false, 0.06);
   cl.add<double>("length", 0, "length of the detector", false, 0.3);
   cl.add<cmdline::path>("response", 0, "detector responses", true);
 
@@ -51,7 +50,7 @@ int main(int argc, char* argv[]) {
   cl.try_parse(argc, argv);
 
   Scanner scanner = Scanner::build_scanner_from_cl(cl);
-  scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
+  scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();
 

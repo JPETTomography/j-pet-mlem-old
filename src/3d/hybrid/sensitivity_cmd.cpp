@@ -34,8 +34,8 @@ int main(int argc, char* argv[]) {
   cl.add<int>(
       "n-pixels", 'n', "number of pixels in x and y  directions", false, 80);
   cl.add<int>("n-planes", '\0', "number pf z planes", false, 80);
-  cl.add<float>("s-pixel", 'p', "voxel size", false, 0.005);
-  cl.add<float>("fov-radius", '\0', "field of view radius", false, 0.400);
+  cl.add<double>("s-pixel", 'p', "voxel size", false, 0.005);
+  cl.add<double>("fov-radius", '\0', "field of view radius", false, 0.400);
   cl.add<int>("n-emissions", 'e', "number of emission", false, 0);
   cl.add<cmdline::path>(
       "output", 'o', "output files template", false, "out.bin");
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
       PET2D_BARREL_SCANNER_CL(cl, SquareDetector::F));
   Scanner scanner(barrel, 0.500);
   auto n_pixels = cl.get<int>("n-pixels");
-  auto s_pixel = cl.get<float>("s-pixel");
+  auto s_pixel = cl.get<double>("s-pixel");
   float ll = -s_pixel * n_pixels / 2;
   PET2D::PixelGrid<F, S> pixel_grid(
       n_pixels, n_pixels, s_pixel, PET2D::Point<F>(ll, ll));
@@ -65,9 +65,9 @@ int main(int argc, char* argv[]) {
   PET3D::VoxelSet<F, S> voxel_set(voxel_grid);
   if (cl.exist("z-plane")) {
     voxel_set.add_triangular_z_slice(cl.get<int>("z-plane"),
-                                     cl.get<float>("fov-radius"));
+                                     cl.get<double>("fov-radius"));
   } else if (cl.exist("y-plane")) {
-    voxel_set.add_y_slice(cl.get<int>("y-plane"), cl.get<float>("fov-radius"));
+    voxel_set.add_y_slice(cl.get<int>("y-plane"), cl.get<double>("fov-radius"));
   } else {
     throw("you must specify --y-plane or --z-plane");
   }

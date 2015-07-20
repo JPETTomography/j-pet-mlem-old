@@ -52,15 +52,15 @@ int main(int argc, char* argv[]) {
                         "phantom.txt",
                         cmdline::not_from_file);
   cl.add<int>("n-emissions", 'e', "number of emmisions", false, 0);
-  cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
-  cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
-  cl.add<float>("radius", 'r', "cylinder radius", false, 0.0015);
-  cl.add<float>("height", 'h', "cylinder height", false, 0.0020);
-  cl.add<float>("x", 'x', "cylinder center x", false, 0);
-  cl.add<float>("y", 'y', "cylinder center y", false, 0);
-  cl.add<float>("z", 'z', "cylinder center z", false, 0);
+  cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
+  cl.add<double>("s-dl", 0, "TOF sigma delta-l", false, 0.06);
+  cl.add<double>("radius", 'r', "cylinder radius", false, 0.0015);
+  cl.add<double>("height", 'h', "cylinder height", false, 0.0020);
+  cl.add<double>("x", 'x', "cylinder center x", false, 0);
+  cl.add<double>("y", 'y', "cylinder center y", false, 0);
+  cl.add<double>("z", 'z', "cylinder center z", false, 0);
   cl.add<std::string>(
-      "phantoms", '\0', "phantom description in JSON fromat", false);
+      "phantoms", 0, "phantom description in JSON fromat", false);
   cl.add("verbose", 'v', "prints the iterations information on std::out");
 
   cl.parse_check(argc, argv);
@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
       inner_radius, 2, strip_width, strip_height);
 
   Scanner scanner(scanner2d, strip_length);
-  scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
+  scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
 
   using RNG = std::mt19937;
   RNG rng;
@@ -107,15 +107,15 @@ int main(int argc, char* argv[]) {
   } else {
     float angle = std::atan2(0.0025f, 0.190);
     auto cylinder = new Phantom::CylinderRegion<>(
-        cl.get<float>("radius"),
-        cl.get<float>("height"),
+        cl.get<double>("radius"),
+        cl.get<double>("height"),
         1,
         PET3D::Distribution::SphericalDistribution<float>(-angle, angle));
     PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
     auto rotated_cylinder = new Phantom::RotatedRegion(cylinder, R);
     Vector translation(
-        cl.get<float>("x"), cl.get<float>("y"), cl.get<float>("z"));
+        cl.get<double>("x"), cl.get<double>("y"), cl.get<double>("z"));
 
     auto translated_cylinder =
         new Phantom::TranslatedRegion(rotated_cylinder, translation);

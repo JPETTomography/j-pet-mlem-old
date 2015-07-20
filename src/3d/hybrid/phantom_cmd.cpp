@@ -52,8 +52,8 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser cl;
   // cl.add<int>("n-emissions", 'e', "number of emmisions", false, 0);
-  cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
-  cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
+  cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
+  cl.add<double>("s-dl", 0, "TOF sigma delta-l", false, 0.06);
   cl.add<std::string>(
       "phantoms", 0, "phantom description in JSON format", true);
   cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
   auto ext = output.ext();
 
   Scanner scanner = Scanner::build_scanner_from_cl(cl);
-  scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
+  scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
 
   std::ofstream out_json(output_base_name + ".json");
   out_json << json(scanner.barrel);
@@ -107,15 +107,15 @@ int main(int argc, char* argv[]) {
   } else {
     float angle = std::atan2(0.0025f, 0.190);
     auto cylinder = new Phantom::CylinderRegion<>(
-        cl.get<float>("radius"),
-        cl.get<float>("height"),
+        cl.get<double>("radius"),
+        cl.get<double>("height"),
         1,
         PET3D::Distribution::SphericalDistribution<float>(-angle, angle));
     PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
     auto rotated_cylinder = new Phantom::RotatedRegion(cylinder, R);
     Vector translation(
-        cl.get<float>("x"), cl.get<float>("y"), cl.get<float>("z"));
+        cl.get<double>("x"), cl.get<double>("y"), cl.get<double>("z"));
 
     auto translated_cylinder =
         new Phantom::TranslatedRegion(rotated_cylinder, translation);
