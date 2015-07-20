@@ -1,11 +1,12 @@
 usage: ./2d_barrel_reconstruction --system=file --mean=file [options] ... 
 options:
-  -i, --blocks        number of iteration blocks (size [=0])
-  -I, --iterations    number of iterations (per block) (size [=1])
-  -s, --system        system matrix file (file)
-  -m, --mean          mean file (file)
-  -o, --output        output reconstruction (file [=])
-      --threshold     discretisation treshold (float [=auto])
-  -v, --verbose       prints the iterations information on std::out
-  -T, --n-threads     number of OpenMP threads (size [=0])
-  -?, --help          print this message
+  -i, --blocks            number of iteration blocks (size [=0])
+  -I, --iterations        number of iterations (per block) (size [=1])
+  -s, --system            system matrix file (file)
+  -m, --mean              mean file (file)
+  -o, --output            output reconstruction (file [=])
+      --no-sensitivity    do not correct for sensitivity
+      --png-max           maximum value mapped to 255 in PNG (float [=auto])
+  -v, --verbose           prints the iterations information on std::out
+  -T, --n-threads         number of OpenMP threads (size [=0])
+  -?, --help              print this message

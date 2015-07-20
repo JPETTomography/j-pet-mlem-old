@@ -1,0 +1,14 @@
+usage: ./3d_hybrid_2strip_phantom [options] ... 
+options:
+  -o, --output         output events file (file [=phantom.txt])
+  -e, --n-emissions    number of emmisions (size [=0])
+      --s-z            TOF sigma along z axis (float [=0.015])
+      --s-dl           TOF sigma delta-l (float [=0.06])
+  -r, --radius         cylinder radius (float [=0.0015])
+  -h, --height         cylinder height (float [=0.002])
+  -x, --x              cylinder center x (float [=auto])
+  -y, --y              cylinder center y (float [=auto])
+  -z, --z              cylinder center z (float [=auto])
+      --phantoms       phantom description in JSON fromat (string [=])
+  -v, --verbose        prints the iterations information on std::out
+  -?, --help           print this message

@@ -1,8 +1,5 @@
-usage: ./2d_barrel_phantom [options] ... phantom_description
+usage: ./3d_hybrid_sensitivity [options] ... 
 options:
-  -c, --config          load config file (file [=])
-  -n, --n-pixels        number of pixels in one dimension (size [=256])
-      --m-pixel         starting pixel for partial matrix (size [=0])
   -s, --shape           detector (scintillator) shape (square, circle, triangle, hexagon) (string [=square])
   -w, --w-detector      detector width (float [=auto])
   -h, --h-detector      detector height (float [=auto])
@@ -20,16 +17,12 @@ options:
       --n-detectors3     ... 3rd ring (size [=0])
       --n-detectors4     ... 4th ring (size [=0])
       --fov-radius      field of view radius (float [=auto])
-  -e, --n-emissions     number of emissions (size [=0])
-  -p, --s-pixel         pixel size (float [=auto])
-  -t, --tof-step        TOF quantisation step for distance delta (float [=auto])
-      --s-dl            TOF sigma delta-l (float [=0.06])
-      --bin             ouput number of hits in each lor position
-  -m, --model           acceptance model (string [=scintillator])
-  -l, --base-length     scintillator emission base length P(l)=1-e^(-1) (float [=0.1])
-  -o, --output          output lor hits for supplied phantom (file [=])
-      --detected        collects detected emissions
-  -v, --verbose         prints the iterations information on std::out
-  -S, --seed            random number generator seed (unsigned long [=0])
-  -T, --n-threads       number of OpenMP threads (size [=0])
+      --z-plane         z plane trianguler cut (size [=0])
+      --y-plane         y plane cut (size [=0])
+  -n, --n-pixels        number of pixels in x and y  directions (size [=80])
+      --n-planes        number pf z planes (size [=80])
+  -p, --s-pixel         voxel size (float [=0.005])
+  -e, --n-emissions     number of emission (size [=0])
+  -o, --output          output files template (file [=out.bin])
+  -T, --n-threads       number of threads (size [=0])
   -?, --help            print this message

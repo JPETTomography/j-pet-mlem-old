@@ -1,5 +1,9 @@
-usage: ./2d_barrel_phantom [options] ... phantom_description
+usage: ./3d_hybrid_phantom --phantoms=string [options] ... phantom_description
 options:
+      --s-z             TOF sigma along z axis (float [=0.015])
+      --phantoms        phantom description in JSON format (string)
+  -z, --z-position      position of the z plane (float [=auto])
+      --length          length of the detector (float [=0.3])
   -c, --config          load config file (file [=])
   -n, --n-pixels        number of pixels in one dimension (size [=256])
       --m-pixel         starting pixel for partial matrix (size [=0])

@@ -1,4 +1,6 @@
-usage: ./2d_barrel_phantom [options] ... phantom_description
+usage: ./3d_hybrid_matrix [options] ... matrix_file ...
+build: OpenMP/CUDA WARP
+note: All length options below should be expressed in meters.
 options:
   -c, --config          load config file (file [=])
   -n, --n-pixels        number of pixels in one dimension (size [=256])
@@ -20,16 +22,27 @@ options:
       --n-detectors3     ... 3rd ring (size [=0])
       --n-detectors4     ... 4th ring (size [=0])
       --fov-radius      field of view radius (float [=auto])
-  -e, --n-emissions     number of emissions (size [=0])
+  -e, --n-emissions     emissions per pixel (size [=0])
   -p, --s-pixel         pixel size (float [=auto])
   -t, --tof-step        TOF quantisation step for distance delta (float [=auto])
       --s-dl            TOF sigma delta-l (float [=0.06])
-      --bin             ouput number of hits in each lor position
-  -m, --model           acceptance model (string [=scintillator])
+  -m, --model           acceptance model (always, scintillator) (string [=scintillator])
   -l, --base-length     scintillator emission base length P(l)=1-e^(-1) (float [=0.1])
-  -o, --output          output lor hits for supplied phantom (file [=])
-      --detected        collects detected emissions
+  -o, --output          output binary triangular/full sparse system matrix (file [=])
+  -f, --full            output full non-triangular sparse system matrix
+      --png             output lor to png (file [=])
+      --from            lor start detector to output (size [=-1])
+      --to              lor end detector to output (size [=-1])
+      --pos             position to output (size [=-1])
+      --print           print triangular sparse system matrix
+      --stats           show stats
+      --wait            wait before exit
   -v, --verbose         prints the iterations information on std::out
-  -S, --seed            random number generator seed (unsigned long [=0])
+  -S, --seed            random number generator seed (seed [=0])
+  -G, --gpu             run on GPU (via CUDA)
+  -B, --cuda-blocks     CUDA blocks (size [=64])
+  -W, --cuda-threads    CUDA threads per block (size [=512])
   -T, --n-threads       number of OpenMP threads (size [=0])
+  -z, --z-position      position of the z plane (float [=auto])
+      --length          length of the detector (float [=0.3])
   -?, --help            print this message

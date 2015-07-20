@@ -4,14 +4,15 @@ note: All length options below should be expressed in meters.
 options:
       --geometry        geometry information (file)
       --system          system maxtrix (file [=])
-      --sigma           sigma dl (float [=0.06])
       --length          length of the detector (float [=0.3])
       --response        detector responses (file)
   -c, --config          load config file (file [=])
   -n, --n-pixels        number of pixels in one dimension (size [=256])
       --m-pixel         starting pixel for partial matrix (size [=0])
-      --small           small J-PET barrel
-      --big             big J-PET barrel
+  -s, --shape           detector (scintillator) shape (square, circle, triangle, hexagon) (string [=square])
+  -w, --w-detector      detector width (float [=auto])
+  -h, --h-detector      detector height (float [=auto])
+      --d-detector      inscribe detector shape into circle of given diameter (float [=auto])
   -r, --radius          inner detector ring radius (float [=auto])
       --radius2          ... 2nd ring (float [=auto])
       --radius3          ... 3rd ring (float [=auto])
@@ -28,10 +29,7 @@ options:
   -e, --n-emissions     emissions per pixel (size [=0])
   -p, --s-pixel         pixel size (float [=auto])
   -t, --tof-step        TOF quantisation step for distance delta (float [=auto])
-  -s, --shape           detector (scintillator) shape (square, circle, triangle, hexagon) (string [=square])
-  -w, --w-detector      detector width (float [=auto])
-  -h, --h-detector      detector height (float [=auto])
-      --d-detector      inscribe detector shape into circle of given diameter (float [=auto])
+      --s-dl            TOF sigma delta-l (float [=0.06])
   -m, --model           acceptance model (always, scintillator) (string [=scintillator])
   -l, --base-length     scintillator emission base length P(l)=1-e^(-1) (float [=0.1])
   -o, --output          output binary triangular/full sparse system matrix (file [=])
@@ -51,6 +49,6 @@ options:
   -T, --n-threads       number of OpenMP threads (size [=0])
   -i, --blocks          number of iteration blocks (size [=0])
   -I, --iterations      number of iterations (per block) (size [=1])
-  -g, --graph           make a graph
+  -g, --graphics        output mathematica .m graphics file
       --event           event number (size [=0])
   -?, --help            print this message
