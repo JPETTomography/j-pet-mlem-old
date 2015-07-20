@@ -4,6 +4,7 @@
 #include "2d/barrel/detector_set.h"
 #include "2d/geometry/point.h"
 #include "2d/barrel/lor.h"
+#include "2d/geometry/pixel_map.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -27,9 +28,11 @@ template <typename FType, typename SType> class LMReconstruction {
   using LOR = PET2D::Barrel::LOR<S>;
   using Geometry = PET2D::Barrel::Geometry<F, S>;
   using LORInfo = typename Geometry::LORInfo;
+  using Pixel = typename Geometry::Pixel;
   using PixelInfo = typename Geometry::PixelInfo;
   using PixelConstIterator = typename LORInfo::PixelInfoList::const_iterator;
-  using Output = std::vector<F>;
+  using RawOutput = std::vector<F>;
+  using Output = PET2D::PixelMap<Pixel, F>;
 
   struct BarrelEvent {
     LOR lor;
@@ -51,12 +54,12 @@ template <typename FType, typename SType> class LMReconstruction {
         n_pixels(geometry.grid.n_pixels),
         system_matrix_(false),
         sigma_(sigma),
+        rho_(geometry.grid.n_rows, geometry.grid.n_columns, 1),
+        sensitivity_(geometry.grid.n_rows, geometry.grid.n_columns),
         n_threads_(omp_get_max_threads()),
         thread_rhos_(n_threads_),
         thread_kernel_caches_(n_threads_),
-        n_events_per_thread_(n_threads_, 0) {
-    rho_.assign(n_pixels, 1);
-  }
+        n_events_per_thread_(n_threads_, 0) {}
 
   const Output& rho() const { return rho_; }
 
@@ -191,7 +194,7 @@ template <typename FType, typename SType> class LMReconstruction {
     }  // event loop
     event_count_ = 0;
 
-    rho_.assign(grid.n_pixels, 0);
+    rho_.assign(0);
     for (int thread = 0; thread < n_threads_; ++thread) {
       for (int i = 0; i < grid.n_pixels; ++i) {
         rho_[i] += thread_rhos_[thread][i];
@@ -204,7 +207,7 @@ template <typename FType, typename SType> class LMReconstruction {
 
   void calculate_weight() {
     auto& grid = geometry.grid;
-    sensitivity_.assign(grid.n_pixels, 0);
+
     for (auto& lor_info : geometry) {
 
       auto& segment = lor_info.segment;
@@ -226,9 +229,9 @@ template <typename FType, typename SType> class LMReconstruction {
 
   void calculate_sensitivity() {
     auto& grid = geometry.grid;
-    sensitivity_.assign(grid.n_pixels, 0);
-    for (auto& lor_info : geometry) {
 
+    sensitivity_.assign(0);
+    for (auto& lor_info : geometry) {
       for (auto& pixel_info : lor_info.pixels) {
         auto pixel = pixel_info.pixel;
         auto index = grid.index(pixel);
@@ -252,15 +255,15 @@ template <typename FType, typename SType> class LMReconstruction {
   F sigma_;
 
   Output rho_;
+  Output sensitivity_;
   int event_count_;
   int voxel_count_;
   int pixel_count_;
   int n_threads_;
 
-  std::vector<Output> thread_rhos_;
-  std::vector<Output> thread_kernel_caches_;
+  std::vector<RawOutput> thread_rhos_;
+  std::vector<RawOutput> thread_kernel_caches_;
   std::vector<int> n_events_per_thread_;
-  Output sensitivity_;
 };
 
 }  // Barrel

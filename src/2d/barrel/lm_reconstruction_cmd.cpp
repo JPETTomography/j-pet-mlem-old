@@ -132,8 +132,9 @@ int main(int argc, char* argv[]) {
   {
     std::ofstream out_sensitivity(output.wo_ext() + "_sensitivity" +
                                   output.ext());
-    for (auto& sens : reconstruction.sensitivity())
-      out_sensitivity << sens << "\n";
+    out_sensitivity << reconstruction.sensitivity();
+    util::png_writer png_sensitivity(output.wo_ext() + "_sensitivity.png");
+    png_sensitivity << reconstruction.sensitivity();
   }
 
   for (const auto& fn : cl.rest()) {
@@ -193,6 +194,8 @@ int main(int argc, char* argv[]) {
        << (block + 1) * n_iterations;  // 001
     util::obstream out(fn.str() + ".bin");
     out << reconstruction.rho();
+    util::png_writer png(fn.str() + ".png");
+    png << reconstruction.rho();
   }
 
   CMDLINE_CATCH
