@@ -319,52 +319,5 @@ void calculate_scanner_options(cmdline::parser& cl) {
   }
 }
 
-void set_small_barrel_options(cmdline::parser& cl) {
-  std::cerr << "setting small barrel\n";
-  auto& radius = cl.get<double>("radius");
-  auto& n_detectors = cl.get<int>("n-detectors");
-
-  auto& w_detector = cl.get<double>("w-detector");
-  auto& h_detector = cl.get<double>("h-detector");
-
-  auto& fov_radius = cl.get<double>("fov-radius");
-  if (!cl.exist("fov-radius"))
-    fov_radius = 0.150;
-
-  w_detector = 0.005;
-  h_detector = 0.019;
-  radius = 0.180 - h_detector / 2;
-  n_detectors = 24;
-}
-
-void set_big_barrel_options(cmdline::parser& cl) {
-  double width = 0.007;
-  double height = 0.019;
-  double r1 = 0.430 - height / 2;
-  double r2 = 0.475 - height / 2;
-  double r3 = 0.575 - height / 2;
-
-  cl.get<double>("w-detector") = width;
-  cl.get<double>("h-detector") = height;
-
-  cl.get<double>("radius") = r1;
-  cl.get<double>("radius2") = r2;
-  cl.get<double>("radius3") = r3;
-
-  cl.get<double>("rotation") = 0.0;
-  cl.get<double>("rotation2") = 0.5;
-  cl.get<double>("rotation3") = 0.5;
-
-  cl.get<int>("n-detectors") = 48;
-  cl.get<int>("n-detectors2") = 48;
-  cl.get<int>("n-detectors3") = 96;
-
-  cl.get<std::string>("model") = "scintillator";
-  cl.get<double>("base-length") = 0.100;
-
-  if (!cl.exist("fov-radius"))
-    cl.get<double>("fov-radius") = 0.400;
-}
-
 }  // Barrel
 }  // PET2D

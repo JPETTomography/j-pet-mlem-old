@@ -25,15 +25,5 @@ void calculate_scanner_options(cmdline::parser& cl) {
   PET2D::Barrel::calculate_scanner_options(cl);
 }
 
-void set_small_barrel_options(cmdline::parser& parser) {
-  PET2D::Barrel::set_small_barrel_options(parser);
-  parser.get<double>("length") = 0.3;
-}
-
-void set_big_barrel_options(cmdline::parser& parser) {
-  PET2D::Barrel::set_big_barrel_options(parser);
-  parser.get<double>("length") = 0.5;
-}
-
 }  // Hybrid
 }  // PET3D

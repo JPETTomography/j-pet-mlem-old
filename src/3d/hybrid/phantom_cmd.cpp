@@ -75,12 +75,7 @@ int main(int argc, char* argv[]) {
         "or --small or --big");
   }
 
-  if (cl.exist("small"))
-    PET3D::Hybrid::set_small_barrel_options(cl);
-  else if (cl.exist("big"))
-    PET3D::Hybrid::set_big_barrel_options(cl);
-  else
-    PET3D::Hybrid::calculate_scanner_options(cl);
+  PET3D::Hybrid::calculate_scanner_options(cl);
 
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();

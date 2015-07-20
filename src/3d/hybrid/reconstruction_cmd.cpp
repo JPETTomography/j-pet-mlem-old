@@ -50,8 +50,6 @@ int main(int argc, char* argv[]) {
 
   cl.try_parse(argc, argv);
 
-  PET3D::Hybrid::set_big_barrel_options(cl);
-
   Scanner scanner = Scanner::build_scanner_from_cl(cl);
   scanner.set_sigmas(cl.get<float>("sigma-z"), cl.get<float>("sigma-dl"));
   auto output = cl.get<cmdline::path>("output");
