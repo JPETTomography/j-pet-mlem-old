@@ -130,10 +130,10 @@ int main(int argc, char* argv[]) {
       out_sensitivity << sens << "\n";
   }
 
-  std::ifstream response_stream(cl.get<std::string>("response"));
-  reconstruction.fscanf_responses(response_stream);
-  if (verbose)
-    std::cout << "read in responses\n";
+  for (const auto& fn : cl.rest()) {
+    std::ifstream in_response(fn);
+    reconstruction << in_response;
+  }
 
   if (cl.exist("graphics")) {
     int event_num = cl.get<int>("event");

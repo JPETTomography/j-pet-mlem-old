@@ -37,15 +37,19 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
 
   struct Response {
     LOR lor;
-    F dl;
     S tof_position;
+    F dl;
 
 #if !__CUDACC__
+    Response() = default;
+
+    Response(std::istream& in)
+        : lor(in), tof_position(util::read<S>(in)), dl(util::read<F>(in)) {}
+
     friend std::ostream& operator<<(std::ostream& out,
                                     const Response& response) {
-      out << (int)response.lor.first << " " << (int)response.lor.second;
-      out << " " << response.tof_position;
-      out << " " << response.dl;
+      out << response.lor.first << " " << response.lor.second << " "
+          << response.tof_position << " " << response.dl;
       return out;
     }
 #endif

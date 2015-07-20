@@ -40,12 +40,12 @@ int main(int argc, char* argv[]) {
   cl.add<std::string>("geometry", 0, "geometry information", true);
   cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
   cl.add<double>("length", 0, "length of the detector", false, 0.3);
-  cl.add<cmdline::path>("response", 0, "detector responses", true);
 
   PET2D::Barrel::add_matrix_options(cl);
   cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
   cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
 
+  cl.footer("response ...");
   cl.parse_check(argc, argv);
   PET3D::Hybrid::calculate_scanner_options(cl, argc);
 
@@ -80,12 +80,14 @@ int main(int argc, char* argv[]) {
   reconstruction.calculate_weight();
   reconstruction.calculate_sensitivity();
 
-  std::ifstream response_stream(cl.get<std::string>("response"));
-  reconstruction.fscanf_responses(response_stream);
+  for (const auto& fn : cl.rest()) {
+    std::ifstream in_response(fn);
+    reconstruction << in_response;
+  }
 
   {
-    std::ofstream gout("event.m");
-    MathematicaGraphics graphics(gout);
+    std::ofstream out_graphics("event.m");
+    MathematicaGraphics graphics(out_graphics);
     graphics.add(scanner.barrel);
     reconstruction.graph_frame_event(graphics, 0);
   }

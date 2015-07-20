@@ -5,8 +5,10 @@
 
 #include "2d/barrel/generic_scanner.h"
 #include "3d/geometry/event.h"
-#include "cmdline.h"
 #include "3d/hybrid/options.h"
+
+#include "cmdline.h"
+#include "util/read.h"
 
 /// Three-dimensional PET
 namespace PET3D {
@@ -46,6 +48,18 @@ template <class Scanner2DClass> class Scanner {
     Point d2_entry, d2_exit, d2_deposition;
     Point origin;
 
+    FullResponse() = default;
+
+    FullResponse(std::istream& in)
+        : detector1(util::read<S>(in)),
+          detector2(util::read<S>(in)),
+          d1_entry(in),
+          d1_exit(in),
+          d1_deposition(in),
+          d2_entry(in),
+          d2_exit(in),
+          d2_deposition(in) {}
+
     friend std::ostream& operator<<(std::ostream& out,
                                     const FullResponse& response) {
 
@@ -65,6 +79,14 @@ template <class Scanner2DClass> class Scanner {
     F z_up;
     F z_dn;
     F dl;
+
+    Response() = default;
+
+    Response(std::istream& in)
+        : lor(in),
+          z_up(util::read<F>(in)),
+          z_dn(util::read<F>(in)),
+          dl(util::read<F>(in)) {}
 
     friend std::ostream& operator<<(std::ostream& out,
                                     const Response& response) {

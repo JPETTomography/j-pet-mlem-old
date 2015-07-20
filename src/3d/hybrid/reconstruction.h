@@ -141,15 +141,14 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     return S(std::floor((z - z_left) / lor_pixel_info.grid.pixel_size));
   }
 
-  int fscanf_responses(std::istream& in) {
-    int count = 0;
-    auto response = fscanf_response(in);
-    while (in) {
-      count++;
+  Reconstruction& operator<<(std::istream& in) {
+    for (;;) {
+      Response response(in);
+      if (!in)
+        break;
       events_.push_back(translate_to_frame(response));
-      response = fscanf_response(in);
     }
-    return count;
+    return *this;
   }
 
   int n_events() const { return events_.size(); }
@@ -294,15 +293,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     for (auto pix = event.first_pixel; pix != event.last_pixel; ++pix) {
       graphics.add_pixel(lor_pixel_info.grid, pix->pixel);
     }
-  }
-
- private:
-  Response fscanf_response(std::istream& in) {
-    S d1, d2;
-    Response response;
-    in >> d1 >> d2 >> response.z_up >> response.z_dn >> response.dl;
-    response.lor = LOR(d1, d2);
-    return response;
   }
 
  public:

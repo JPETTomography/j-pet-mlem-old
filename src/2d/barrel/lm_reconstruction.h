@@ -97,24 +97,25 @@ template <typename FType, typename SType> class LMReconstruction {
                            return a.t < b.t;
                          });
 
-    //    if (system_matrix_) {
-    //      event.last_pixel = lor_pixel_info[event.lor].pixels.end();
-    //      event.first_pixel = lor_pixel_info[event.lor].pixels.begin();
-    //    }
+#if SYSTEM_MATRIX
+    if (system_matrix_) {
+      event.last_pixel = lor_pixel_info[event.lor].pixels.end();
+      event.first_pixel = lor_pixel_info[event.lor].pixels.begin();
+    }
+#endif
     return event;
   }
 
-  int fscanf_responses(std::istream& in) {
-    int count = 0;
-    while (true) {
-      auto response = fscanf_response(in);
+  /// Load response from input stream
+  LMReconstruction& operator<<(std::istream& in) {
+    for (;;) {
+      Response response(in);
       if (!in)
         break;
-      count++;
       auto event = to_event(response);
       events_.push_back(event);
     }
-    return count;
+    return *this;
   }
 
   int operator()() {
@@ -244,14 +245,6 @@ template <typename FType, typename SType> class LMReconstruction {
   const int n_pixels;
 
  private:
-  Response fscanf_response(std::istream& in) {
-    S d1, d2;
-    Response response;
-    in >> d1 >> d2 >> response.tof_position >> response.dl;
-    response.lor = LOR(d1, d2);
-    return response;
-  }
-
   bool system_matrix_;
   std::vector<BarrelEvent> events_;
   F sigma_;
