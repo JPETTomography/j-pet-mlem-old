@@ -39,7 +39,6 @@ int main(int argc, char* argv[]) {
   cmdline::parser cl;
   cl.add<std::string>("geometry", 0, "geometry information", true);
   cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
-  cl.add<double>("s-dl", 0, "TOF sigma delta-l", false, 0.06);
   cl.add<double>("length", 0, "length of the detector", false, 0.3);
   cl.add<cmdline::path>("response", 0, "detector responses", true);
 

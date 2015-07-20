@@ -51,7 +51,6 @@ int main(int argc, char* argv[]) {
   cmdline::parser cl;
   // cl.add<int>("n-emissions", 'e', "number of emmisions", false, 0);
   cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
-  cl.add<double>("s-dl", 0, "TOF sigma delta-l", false, 0.06);
   cl.add<std::string>(
       "phantoms", 0, "phantom description in JSON format", true);
   cl.add<double>("z-position", 'z', "position of the z plane", false, 0);

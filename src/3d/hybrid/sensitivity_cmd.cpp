@@ -32,9 +32,8 @@ int main(int argc, char* argv[]) {
   cl.add<int>("y-plane", 0, "y plane cut", false);
   cl.add<int>(
       "n-pixels", 'n', "number of pixels in x and y  directions", false, 80);
-  cl.add<int>("n-planes", '\0', "number pf z planes", false, 80);
+  cl.add<int>("n-planes", 0, "number pf z planes", false, 80);
   cl.add<double>("s-pixel", 'p', "voxel size", false, 0.005);
-  cl.add<double>("fov-radius", '\0', "field of view radius", false, 0.400);
   cl.add<int>("n-emissions", 'e', "number of emission", false, 0);
   cl.add<cmdline::path>(
       "output", 'o', "output files template", false, "out.bin");
