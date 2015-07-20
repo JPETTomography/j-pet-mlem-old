@@ -26,8 +26,8 @@ void add_scanner_options(cmdline::parser& cl) {
   cl.add<int>("n-pixels", 'n', "number of pixels", cmdline::dontsave, 0);
   cl.add<int>("n-z-pixels", 0, "number of z pixels", false);
   cl.add<int>("n-y-pixels", 0, "number of y pixels", false);
-  cl.add<double>("s-z", 's', "Sigma z error", false, 0.010);
-  cl.add<double>("s-dl", 'd', "Sigma dl error", false, 0.042);
+  cl.add<double>("s-z", 's', "Sigma z error", false, 0.01);
+  cl.add<double>("s-dl", 'd', "Sigma dl error", false, 0.06);
 }
 
 static void add_common_options(cmdline::parser& cl) {

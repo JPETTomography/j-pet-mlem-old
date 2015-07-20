@@ -60,7 +60,7 @@ void add_matrix_options(cmdline::parser& cl) {
   cl.add<double>("s-pixel", 'p', "pixel size", false);
   cl.add<double>(
       "tof-step", 't', "TOF quantisation step for distance delta", false);
-  cl.add<double>("s-dl", 0, "TOF sigma delta-l", false, 0);
+  cl.add<double>("s-dl", 0, "TOF sigma delta-l", false, 0.06);
   cl.add<std::string>(
       "shape",
       's',
@@ -148,7 +148,7 @@ void add_phantom_options(cmdline::parser& cl) {
   cl.add<double>("s-pixel", 'p', "pixel size", false);
   cl.add<double>(
       "tof-step", 't', "TOF quantisation step for distance delta", false);
-  cl.add<double>("s-dl", 0, "TOF sigma delta-l", false, 0);
+  cl.add<double>("s-dl", 0, "TOF sigma delta-l", false, 0.06);
   cl.add("bin", 0, "ouput number of hits in each lor position");
 
   cl.add<std::string>(
