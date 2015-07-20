@@ -61,6 +61,8 @@ class VoxelMap : std::vector<ValueType> {
   Value& operator[](Size index) { return this->at(index); }
   const Value& operator[](Size index) const { return this->at(index); }
 
+  void assign(const Value& v) { Base::assign(this->size(), v); }
+
   iterator begin() { return Base::begin(); }
   const_iterator begin() const { return Base::begin(); }
   iterator end() { return Base::end(); }

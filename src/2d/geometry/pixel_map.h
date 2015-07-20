@@ -22,7 +22,7 @@ class PixelMap : std::vector<ValueType> {
   using const_iterator = typename Base::const_iterator;
 
   /// Creates new pixel map of given dimensions and default value
-  PixelMap(S width, S height, ValueType value = 0)
+  PixelMap(S width, S height, Value value = 0)
       : Base(static_cast<Size>(width) * height, value),
         width(width),
         height(height) {}
@@ -52,6 +52,8 @@ class PixelMap : std::vector<ValueType> {
   }
   Value& operator[](Size index) { return this->at(index); }
   const Value& operator[](Size index) const { return this->at(index); }
+
+  void assign(const Value& v) { Base::assign(this->size(), v); }
 
   iterator begin() { return Base::begin(); }
   const_iterator begin() const { return Base::begin(); }
