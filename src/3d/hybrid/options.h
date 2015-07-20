@@ -30,7 +30,7 @@ void add_phantom_options(cmdline::parser& parser);
 void add_reconstruction_options(cmdline::parser& parser);
 
 /// Calculates all empty values from existing other parameters.
-void calculate_scanner_options(cmdline::parser& parser);
+void calculate_scanner_options(cmdline::parser& parser, int argc = 1);
 
 /// Provides initialization list for creating detector.
 #define __PET3D_LONGITUDINAL(...) __VA_ARGS__  // just pass-through

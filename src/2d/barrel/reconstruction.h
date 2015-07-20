@@ -38,9 +38,7 @@ class Reconstruction {
   using Sensitivity = PET2D::PixelMap<Pixel, Hit>;
   using Matrix = SparseMatrix<Pixel, LOR, Hit>;
 
-  Reconstruction(Matrix& matrix,
-                 std::istream& in_means,
-                 bool use_sensitivity = true)
+  Reconstruction(Matrix& matrix, bool use_sensitivity = true)
       : n_pixels_in_row_(matrix.n_pixels_in_row()),
         total_n_pixels_(n_pixels_in_row_ * n_pixels_in_row_),
         sensitivity_(n_pixels_in_row_, n_pixels_in_row_),
@@ -63,6 +61,11 @@ class Reconstruction {
       }
     }
 
+    matrix_.sort_by_lor();
+  }
+
+  /// Reads means from given input stream
+  Reconstruction& operator<<(std::istream& in_means) {
     // Read the mean (detector response file)
     for (;;) {
       Mean mean;
@@ -75,13 +78,13 @@ class Reconstruction {
       means_.push_back(mean);
     }
 
-    matrix_.sort_by_lor();
-
     if (matrix_.n_tof_positions() > 1) {
       std::sort(means_.begin(), means_.end(), SortByLORNPosition());
     } else {
       std::sort(means_.begin(), means_.end(), SortByLOR());
     }
+
+    return *this;
   }
 
   /// Performs n_iterations of the EMT algorithm

@@ -30,7 +30,7 @@ void add_reconstruction_options(cmdline::parser& parser);
 void add_phantom_options(cmdline::parser& parser);
 
 /// calculates all empty values from existing other parameters
-void calculate_scanner_options(cmdline::parser& parser);
+void calculate_scanner_options(cmdline::parser& parser, int argc = 1);
 
 /// provides initialization list for creating scanner
 #define __PET2D_STRIP(...) __VA_ARGS__  // just pass-through

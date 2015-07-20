@@ -49,16 +49,23 @@ int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
   cmdline::parser cl;
-  // cl.add<int>("n-emissions", 'e', "number of emmisions", false, 0);
   cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
-  cl.add<std::string>(
-      "phantoms", 0, "phantom description in JSON format", true);
   cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
   cl.add<double>("length", 0, "length of the detector", false, 0.3);
 
   PET3D::Hybrid::add_phantom_options(cl);
+  cl.footer("phantom_description.json ...");
   cl.parse_check(argc, argv);
-  PET3D::Hybrid::calculate_scanner_options(cl);
+  PET3D::Hybrid::calculate_scanner_options(cl, argc);
+
+  if (!cl.rest().size()) {
+    if (argc == 1) {
+      std::cerr << cl.usage();
+      exit(0);
+    } else {
+      throw("at least one input phantom description expected, consult --help");
+    }
+  }
 
   auto verbose = cl.count("verbose");
   auto output = cl.get<cmdline::path>("output");
@@ -75,8 +82,8 @@ int main(int argc, char* argv[]) {
   RNG rng;
   Phantom::RegionPtrList regions;
 
-  if (cl.exist("phantoms")) {
-    std::ifstream in(cl.get<std::string>("phantoms"));
+  for (const auto& fn : cl.rest()) {
+    std::ifstream in(fn);
     if (!in.is_open()) {
       throw("could not open file: " + cl.get<std::string>("phantoms"));
     }
@@ -100,23 +107,6 @@ int main(int argc, char* argv[]) {
 #endif
       regions.push_back(region);
     }
-
-  } else {
-    F angle = std::atan2(F(0.0025), F(0.190));
-    auto cylinder = new Phantom::CylinderRegion<>(
-        cl.get<double>("radius"),
-        cl.get<double>("height"),
-        1,
-        PET3D::Distribution::SphericalDistribution<F>(-angle, angle));
-    PET3D::Matrix<F> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
-
-    auto rotated_cylinder = new Phantom::RotatedRegion(cylinder, R);
-    Vector translation(
-        cl.get<double>("x"), cl.get<double>("y"), cl.get<double>("z"));
-
-    auto translated_cylinder =
-        new Phantom::TranslatedRegion(rotated_cylinder, translation);
-    regions.push_back(translated_cylinder);
   }
 
   auto n_emissions = cl.get<int>("n-emissions");

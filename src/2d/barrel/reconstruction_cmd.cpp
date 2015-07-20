@@ -57,6 +57,7 @@ int main(int argc, char* argv[]) {
 #endif
 
   cmdline::parser cl;
+  cl.footer("means");
   PET2D::Barrel::add_reconstruction_options(cl);
   cl.parse_check(argc, argv);
 
@@ -78,10 +79,6 @@ int main(int argc, char* argv[]) {
     throw("matrix must be in full form");
   }
 
-  std::ifstream in_means(cl.get<cmdline::path>("mean"));
-  if (!in_means.is_open())
-    throw("cannot open input file: " + cl.get<cmdline::path>("mean"));
-
   if (verbose) {
     std::cerr << "reconstruction:" << std::endl;
 #if _OPENMP
@@ -96,7 +93,14 @@ int main(int argc, char* argv[]) {
   auto n_blocks = cl.get<int>("blocks");
   auto n_iterations = cl.get<int>("iterations");
 
-  Reconstruction reconstruction(matrix, in_means, use_sensitivity);
+  Reconstruction reconstruction(matrix, use_sensitivity);
+
+  for (const auto& fn : cl.rest()) {
+    std::ifstream in_means(fn);
+    if (!in_means.is_open())
+      throw("cannot open input file: " + cl.get<cmdline::path>("mean"));
+    reconstruction << in_means;
+  }
   auto n_pixels_in_row = reconstruction.n_pixels_in_row();
 
   // no output, just make reconstruction in place and exit!

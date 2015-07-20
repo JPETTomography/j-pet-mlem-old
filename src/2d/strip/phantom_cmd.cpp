@@ -74,12 +74,15 @@ int main(int argc, char* argv[]) {
   cmdline::parser cl;
   PET2D::Strip::add_phantom_options(cl);
   cl.parse_check(argc, argv);
-  PET2D::Strip::calculate_scanner_options(cl);
+  PET2D::Strip::calculate_scanner_options(cl, argc);
 
   if (!cl.rest().size()) {
-    throw(
-        "at least one input phantom description file expected, "
-        "consult --help");
+    if (argc == 1) {
+      std::cerr << cl.usage();
+      exit(0);
+    } else {
+      throw("at least one input phantom description expected, consult --help");
+    }
   }
 
 #if _OPENMP

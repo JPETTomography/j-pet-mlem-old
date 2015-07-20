@@ -26,7 +26,8 @@ void add_scanner_options(cmdline::parser& cl) {
   cl.add<int>("n-pixels", 'n', "number of pixels", cmdline::dontsave, 0);
   cl.add<int>("n-z-pixels", 0, "number of z pixels", false);
   cl.add<int>("n-y-pixels", 0, "number of y pixels", false);
-  cl.add<double>("s-z", 0, "TOF sigma along z axis", cmdline::alwayssave, 0.015);
+  cl.add<double>(
+      "s-z", 0, "TOF sigma along z axis", cmdline::alwayssave, 0.015);
   cl.add<double>("s-dl", 0, "TOF sigma delta-l", cmdline::alwayssave, 0.06);
 }
 
@@ -48,7 +49,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
   add_common_options(cl);
 
   std::ostringstream msg;
-  msg << "responses_file ..." << std::endl;
+  msg << "response ..." << std::endl;
   msg << "build: " << VARIANT << std::endl;
   msg << "note: All length options below should be expressed in milimeters.";
   cl.footer(msg.str());
@@ -89,7 +90,7 @@ void add_phantom_options(cmdline::parser& cl) {
                         cmdline::not_from_file);
 }
 
-void calculate_scanner_options(cmdline::parser& parser) {
+void calculate_scanner_options(cmdline::parser& parser, int) {
   if (parser.exist("n-pixels")) {
     parser.get<int>("n-z-pixels") = parser.get<int>("n-pixels");
     parser.get<int>("n-y-pixels") = parser.get<int>("n-pixels");

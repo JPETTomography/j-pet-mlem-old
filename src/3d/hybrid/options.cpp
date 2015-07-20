@@ -21,8 +21,8 @@ void add_reconstruction_options(cmdline::parser& cl) {
   PET2D::Barrel::add_reconstruction_options(cl);
 }
 
-void calculate_scanner_options(cmdline::parser& cl) {
-  PET2D::Barrel::calculate_scanner_options(cl);
+void calculate_scanner_options(cmdline::parser& cl, int argc) {
+  PET2D::Barrel::calculate_scanner_options(cl, argc);
 }
 
 }  // Hybrid

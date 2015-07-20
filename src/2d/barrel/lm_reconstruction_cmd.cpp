@@ -60,19 +60,8 @@ int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
   cmdline::parser cl;
-  cl.add<cmdline::path>("geometry", 0, "geometry information", true);
-  cl.add<cmdline::path>("system", 0, "system maxtrix", false);
-
-  cl.add<double>("length", 0, "length of the detector", false, 0.3);
-  cl.add<cmdline::path>("response", 0, "detector responses", true);
-
-  PET2D::Barrel::add_matrix_options(cl);
-  cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
-  cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
-  cl.add("graphics", 'g', "output mathematica .m graphics file", false);
-  cl.add("event", 0, "event number", false, 0);
-
-  cl.try_parse(argc, argv);
+  PET2D::Barrel::add_lm_reconstruction_options(cl);
+  cl.parse_check(argc, argv);
 
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();

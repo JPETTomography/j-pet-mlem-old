@@ -46,7 +46,8 @@ int main(int argc, char* argv[]) {
   cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
   cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
 
-  cl.try_parse(argc, argv);
+  cl.parse_check(argc, argv);
+  PET3D::Hybrid::calculate_scanner_options(cl, argc);
 
   Scanner scanner = Scanner::build_scanner_from_cl(cl);
   scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));

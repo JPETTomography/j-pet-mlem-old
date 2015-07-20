@@ -39,7 +39,8 @@ int main(int argc, char* argv[]) {
       "output", 'o', "output files template", false, "out.bin");
   cl.add<int>("n-threads", 'T', "number of threads", false);
 
-  cl.try_parse(argc, argv);
+  cl.parse_check(argc, argv);
+  PET3D::Hybrid::calculate_scanner_options(cl, argc);
 
 #if _OPENMP
   if (cl.exist("n-threads")) {

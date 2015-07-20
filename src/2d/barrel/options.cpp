@@ -45,13 +45,7 @@ void add_scanner_options(cmdline::parser& cl) {
   cl.add<double>("fov-radius", 0, "field of view radius", false);
 }
 
-void add_matrix_options(cmdline::parser& cl) {
-  std::ostringstream msg;
-  msg << "matrix_file ..." << std::endl;
-  msg << "build: " << VARIANT << std::endl;
-  msg << "note: All length options below should be expressed in meters.";
-  cl.footer(msg.str());
-
+static void add_scanner_model_options(cmdline::parser& cl) {
   cl.add<cmdline::path>("config",
                         'c',
                         "load config file",
@@ -60,15 +54,8 @@ void add_matrix_options(cmdline::parser& cl) {
                         cmdline::default_reader<cmdline::path>(),
                         cmdline::load);
   cl.add<int>("n-pixels", 'n', "number of pixels in one dimension", false, 256);
-  cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
-  add_scanner_options(cl);
-  cl.add<int>("n-emissions",
-              'e',
-              "emissions per pixel",
-              false,
-              0,
-              cmdline::not_from_file);
   cl.add<double>("s-pixel", 'p', "pixel size", false);
+  add_scanner_options(cl);
   cl.add<double>(
       "tof-step", 't', "TOF quantisation step for distance delta", false);
   cl.add<double>("s-dl", 0, "TOF sigma delta-l", cmdline::alwayssave, 0.06);
@@ -92,6 +79,23 @@ void add_matrix_options(cmdline::parser& cl) {
                  "scintillator emission base length P(l)=1-e^(-1)",
                  false,
                  0.1);
+}
+
+void add_matrix_options(cmdline::parser& cl) {
+  std::ostringstream msg;
+  msg << "matrix_file ..." << std::endl;
+  msg << "build: " << VARIANT << std::endl;
+  msg << "note: All length options below should be expressed in meters.";
+  cl.footer(msg.str());
+
+  add_scanner_model_options(cl);
+  cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
+  cl.add<int>("n-emissions",
+              'e',
+              "emissions per pixel",
+              false,
+              0,
+              cmdline::not_from_file);
   cl.add<cmdline::path>("output",
                         'o',
                         "output binary triangular/full sparse system matrix",
@@ -124,7 +128,7 @@ void add_matrix_options(cmdline::parser& cl) {
 }
 
 void add_phantom_options(cmdline::parser& cl) {
-  cl.footer("phantom_description");
+  cl.footer("phantom_description ...");
 
   cl.add<cmdline::path>("config",
                         'c',
@@ -177,16 +181,21 @@ void add_phantom_options(cmdline::parser& cl) {
   cl.add("verbose", 'v', "prints the iterations information on std::out");
   cl.add<std::mt19937::result_type>(
       "seed", 'S', "random number generator seed", cmdline::dontsave);
+
 #if _OPENMP
   cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
 #endif
 }
 
-void add_reconstruction_options(cmdline::parser& cl) {
+static void add_iteration_options(cmdline::parser& cl) {
   cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
   cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
+}
+
+void add_reconstruction_options(cmdline::parser& cl) {
+  cl.footer("means ...");
+  add_iteration_options(cl);
   cl.add<cmdline::path>("system", 's', "system matrix file", true);
-  cl.add<cmdline::path>("mean", 'm', "mean file", true);
   cl.add<cmdline::path>("output", 'o', "output reconstruction", false);
   cl.add("no-sensitivity", 0, "do not correct for sensitivity");
   cl.add<double>("png-max", 0, "maximum value mapped to 255 in PNG", false, 0);
@@ -199,11 +208,33 @@ void add_reconstruction_options(cmdline::parser& cl) {
 #endif
 }
 
-void calculate_scanner_options(cmdline::parser& cl) {
+void add_lm_reconstruction_options(cmdline::parser& cl) {
+  cl.footer("response ...");
+  add_iteration_options(cl);
+  cl.add<double>("length", 0, "length of the detector", false, 0.3);
+  cl.add<cmdline::path>("geometry", 0, "geometry information", true);
+  cl.add<cmdline::path>("system", 0, "system matrix file", false);
+  cl.add<cmdline::path>("output", 'o', "output reconstruction", false);
+  cl.add("graphics", 'g', "output mathematica .m graphics file", false);
+  cl.add("event", 0, "event number", false, 0);
+  add_scanner_model_options(cl);
+
+  // additional options
+  cl.add("verbose", 'v', "prints the iterations information on std::out");
+}
+
+void calculate_scanner_options(cmdline::parser& cl, int argc) {
   // check options
   if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
       !cl.exist("n-detectors")) {
-    throw("need to specify either --w-detector, --d-detector, --n-detectors");
+    if (argc == 1) {
+      std::cerr << cl.usage()
+                << "requires one of following options specified:" << std::endl
+                << "  --w-detector, --d-detector, --n-detectors" << std::endl;
+      exit(0);
+    } else {
+      throw("need to specify either --w-detector, --d-detector, --n-detectors");
+    }
   }
   // convert obsolete acceptance option to length scale
   auto& length_scale = cl.get<double>("base-length");

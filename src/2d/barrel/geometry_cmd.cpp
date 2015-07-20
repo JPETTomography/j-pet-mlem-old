@@ -75,8 +75,8 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser cl;
   PET2D::Barrel::add_matrix_options(cl);
-  cl.try_parse(argc, argv);
-  PET2D::Barrel::calculate_scanner_options(cl);
+  cl.parse_check(argc, argv);
+  PET2D::Barrel::calculate_scanner_options(cl, argc);
 
   auto scanner = PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, F));

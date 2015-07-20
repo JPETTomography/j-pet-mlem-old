@@ -59,8 +59,11 @@ void add_phantom_options(cmdline::parser& parser);
 /// Adds \ref cmd_2d_barrel_reconstruction specific command line options.
 void add_reconstruction_options(cmdline::parser& parser);
 
+/// Adds \ref cmd_2d_barrel_lm_reconstruction specific command line options.
+void add_lm_reconstruction_options(cmdline::parser& parser);
+
 /// Calculates all empty values from existing other parameters.
-void calculate_scanner_options(cmdline::parser& parser);
+void calculate_scanner_options(cmdline::parser& parser, int argc = 0);
 
 /// Provides initialization list for creating detector.
 #define __PET2D_BARREL(...) __VA_ARGS__  // just pass-through

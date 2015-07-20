@@ -91,8 +91,8 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser cl;
   PET2D::Barrel::add_phantom_options(cl);
-  cl.try_parse(argc, argv);
-  PET2D::Barrel::calculate_scanner_options(cl);
+  cl.parse_check(argc, argv);
+  PET2D::Barrel::calculate_scanner_options(cl, argc);
 
 #if _OPENMP
   if (cl.exist("n-threads")) {
