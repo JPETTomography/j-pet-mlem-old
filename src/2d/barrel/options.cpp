@@ -221,6 +221,10 @@ void add_lm_reconstruction_options(cmdline::parser& cl) {
 
   // additional options
   cl.add("verbose", 'v', "prints the iterations information on std::out");
+
+#if _OPENMP
+  cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
+#endif
 }
 
 void calculate_scanner_options(cmdline::parser& cl, int argc) {
