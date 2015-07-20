@@ -46,7 +46,8 @@ template <typename FType, typename SType> struct LORInfo {
 #if !__CUDACC__
   // Construct LOR info from stream
   LORInfo(std::istream& in) : lor(in), segment(in), width(util::read<F>(in)) {
-    auto n_pixels = util::read<int>(in);
+    size_t n_pixels;
+    in >> n_pixels;
     if (in && n_pixels) {
       pixels.resize(n_pixels);
       in.read((char*)&pixels[0], sizeof(PixelInfo) * n_pixels);
@@ -55,7 +56,8 @@ template <typename FType, typename SType> struct LORInfo {
 
   // Construct LOR info from binary stream
   LORInfo(util::ibstream& in) : lor(in), segment(in), width(in.read<F>()) {
-    auto n_pixels = util::read<int>(in);
+    size_t n_pixels;
+    in >> n_pixels;
     if (in && n_pixels) {
       pixels.resize(n_pixels);
       in.read((char*)&pixels[0], sizeof(PixelInfo) * n_pixels);
