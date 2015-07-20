@@ -1,4 +1,4 @@
-usage: ./2d_barrel_phantom [options] ... phantom_description
+usage: ./2d_barrel_phantom [options] ... phantom_description ...
 options:
   -c, --config          load config file (file [=])
   -n, --n-pixels        number of pixels in one dimension (size [=256])
@@ -33,3 +33,5 @@ options:
   -S, --seed            random number generator seed (unsigned long [=0])
   -T, --n-threads       number of OpenMP threads (size [=0])
   -?, --help            print this message
+requires one of following options specified:
+  --w-detector, --d-detector, --n-detectors

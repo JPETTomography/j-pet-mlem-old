@@ -26,3 +26,5 @@ options:
   -o, --output          output files template (file [=out.bin])
   -T, --n-threads       number of threads (size [=0])
   -?, --help            print this message
+requires one of following options specified:
+  --w-detector, --d-detector, --n-detectors

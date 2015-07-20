@@ -4,7 +4,7 @@ note: All length options below should be expressed in meters.
 options:
   -c, --config          load config file (file [=])
   -n, --n-pixels        number of pixels in one dimension (size [=256])
-      --m-pixel         starting pixel for partial matrix (size [=0])
+  -p, --s-pixel         pixel size (float [=auto])
   -s, --shape           detector (scintillator) shape (square, circle, triangle, hexagon) (string [=square])
   -w, --w-detector      detector width (float [=auto])
   -h, --h-detector      detector height (float [=auto])
@@ -22,12 +22,12 @@ options:
       --n-detectors3     ... 3rd ring (size [=0])
       --n-detectors4     ... 4th ring (size [=0])
       --fov-radius      field of view radius (float [=auto])
-  -e, --n-emissions     emissions per pixel (size [=0])
-  -p, --s-pixel         pixel size (float [=auto])
   -t, --tof-step        TOF quantisation step for distance delta (float [=auto])
       --s-dl            TOF sigma delta-l (float [=0.06])
   -m, --model           acceptance model (always, scintillator) (string [=scintillator])
   -l, --base-length     scintillator emission base length P(l)=1-e^(-1) (float [=0.1])
+      --m-pixel         starting pixel for partial matrix (size [=0])
+  -e, --n-emissions     emissions per pixel (size [=0])
   -o, --output          output binary triangular/full sparse system matrix (file [=])
   -f, --full            output full non-triangular sparse system matrix
       --png             output lor to png (file [=])
@@ -44,3 +44,5 @@ options:
   -W, --cuda-threads    CUDA threads per block (size [=512])
   -T, --n-threads       number of OpenMP threads (size [=0])
   -?, --help            print this message
+requires one of following options specified:
+  --w-detector, --d-detector, --n-detectors

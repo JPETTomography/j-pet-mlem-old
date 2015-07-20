@@ -1,9 +1,8 @@
-usage: ./2d_barrel_reconstruction --system=file --mean=file [options] ... 
+usage: ./2d_barrel_reconstruction --system=file [options] ... means ...
 options:
   -i, --blocks            number of iteration blocks (size [=0])
   -I, --iterations        number of iterations (per block) (size [=1])
   -s, --system            system matrix file (file)
-  -m, --mean              mean file (file)
   -o, --output            output reconstruction (file [=])
       --no-sensitivity    do not correct for sensitivity
       --png-max           maximum value mapped to 255 in PNG (float [=auto])

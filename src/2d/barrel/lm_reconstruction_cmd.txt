@@ -1,14 +1,16 @@
-usage: ./2d_barrel_lm_reconstruction --geometry=file --response=file [options] ... matrix_file ...
-build: OpenMP/CUDA WARP
-note: All length options below should be expressed in meters.
+usage: ./2d_barrel_lm_reconstruction --geometry=file [options] ... response ...
 options:
-      --geometry        geometry information (file)
-      --system          system maxtrix (file [=])
+  -i, --blocks          number of iteration blocks (size [=0])
+  -I, --iterations      number of iterations (per block) (size [=1])
       --length          length of the detector (float [=0.3])
-      --response        detector responses (file)
+      --geometry        geometry information (file)
+      --system          system matrix file (file [=])
+  -o, --output          output reconstruction (file [=])
+  -g, --graphics        output mathematica .m graphics file
+      --event           event number (size [=0])
   -c, --config          load config file (file [=])
   -n, --n-pixels        number of pixels in one dimension (size [=256])
-      --m-pixel         starting pixel for partial matrix (size [=0])
+  -p, --s-pixel         pixel size (float [=auto])
   -s, --shape           detector (scintillator) shape (square, circle, triangle, hexagon) (string [=square])
   -w, --w-detector      detector width (float [=auto])
   -h, --h-detector      detector height (float [=auto])
@@ -26,29 +28,9 @@ options:
       --n-detectors3     ... 3rd ring (size [=0])
       --n-detectors4     ... 4th ring (size [=0])
       --fov-radius      field of view radius (float [=auto])
-  -e, --n-emissions     emissions per pixel (size [=0])
-  -p, --s-pixel         pixel size (float [=auto])
   -t, --tof-step        TOF quantisation step for distance delta (float [=auto])
       --s-dl            TOF sigma delta-l (float [=0.06])
   -m, --model           acceptance model (always, scintillator) (string [=scintillator])
   -l, --base-length     scintillator emission base length P(l)=1-e^(-1) (float [=0.1])
-  -o, --output          output binary triangular/full sparse system matrix (file [=])
-  -f, --full            output full non-triangular sparse system matrix
-      --png             output lor to png (file [=])
-      --from            lor start detector to output (size [=-1])
-      --to              lor end detector to output (size [=-1])
-      --pos             position to output (size [=-1])
-      --print           print triangular sparse system matrix
-      --stats           show stats
-      --wait            wait before exit
   -v, --verbose         prints the iterations information on std::out
-  -S, --seed            random number generator seed (seed [=0])
-  -G, --gpu             run on GPU (via CUDA)
-  -B, --cuda-blocks     CUDA blocks (size [=64])
-  -W, --cuda-threads    CUDA threads per block (size [=512])
-  -T, --n-threads       number of OpenMP threads (size [=0])
-  -i, --blocks          number of iteration blocks (size [=0])
-  -I, --iterations      number of iterations (per block) (size [=1])
-  -g, --graphics        output mathematica .m graphics file
-      --event           event number (size [=0])
   -?, --help            print this message
