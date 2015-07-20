@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
   Scanner scanner(barrel, 0.500);
   auto n_pixels = cl.get<int>("n-pixels");
   auto s_pixel = cl.get<double>("s-pixel");
-  float ll = -s_pixel * n_pixels / 2;
+  auto ll = -s_pixel * n_pixels / 2;
   PET2D::PixelGrid<F, S> pixel_grid(
       n_pixels, n_pixels, s_pixel, PET2D::Point<F>(ll, ll));
 

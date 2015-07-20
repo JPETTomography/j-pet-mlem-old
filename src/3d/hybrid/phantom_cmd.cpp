@@ -105,13 +105,13 @@ int main(int argc, char* argv[]) {
     }
 
   } else {
-    float angle = std::atan2(0.0025f, 0.190);
+    F angle = std::atan2(F(0.0025), F(0.190));
     auto cylinder = new Phantom::CylinderRegion<>(
         cl.get<double>("radius"),
         cl.get<double>("height"),
         1,
-        PET3D::Distribution::SphericalDistribution<float>(-angle, angle));
-    PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
+        PET3D::Distribution::SphericalDistribution<F>(-angle, angle));
+    PET3D::Matrix<F> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
     auto rotated_cylinder = new Phantom::RotatedRegion(cylinder, R);
     Vector translation(
