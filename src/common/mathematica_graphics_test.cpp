@@ -13,7 +13,7 @@
 #include "common/types.h"
 
 using Detector = PET2D::Barrel::SquareDetector<F>;
-using Scanner = PET2D::Barrel::GenericScanner<Detector, S>;
+using Scanner = PET2D::Barrel::GenericScanner<Detector, int>;
 using ScannerBuilder = PET2D::Barrel::ScannerBuilder<Scanner>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
 
@@ -119,7 +119,7 @@ TEST("common/mathematica_graphics/big_barrel/pixel") {
     PET2D::PixelGrid<F, S> grid(n_columns, n_rows, 0.01, Point(-0.1, -0.1));
     for (int ix = 0; ix < n_columns; ++ix) {
       for (int iy = 0; iy < n_rows; ++iy) {
-        graphics.add_pixel(grid, ix, iy);
+        graphics.add_pixel(grid, PET2D::Pixel<S>(ix, iy));
       }
     }
   }
