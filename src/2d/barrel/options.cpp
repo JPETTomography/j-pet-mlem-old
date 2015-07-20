@@ -14,9 +14,20 @@ namespace PET2D {
 namespace Barrel {
 
 void add_scanner_options(cmdline::parser& cl) {
-  // hard-coded J-PET barrel types
-  cl.add("small", 0, "small J-PET barrel");
-  cl.add("big", 0, "big J-PET barrel");
+  // detector shape and dimensions
+  cl.add<std::string>(
+      "shape",
+      's',
+      "detector (scintillator) shape (square, circle, triangle, hexagon)",
+      false,
+      "square",
+      cmdline::oneof<std::string>("square", "circle", "triangle", "hexagon"));
+  cl.add<double>("w-detector", 'w', "detector width", false);
+  cl.add<double>("h-detector", 'h', "detector height", false);
+  cl.add<double>("d-detector",
+                 0,
+                 "inscribe detector shape into circle of given diameter",
+                 false);
 
   // custom barrel dimensions
   cl.add<double>("radius", 'r', "inner detector ring radius", false);
@@ -61,19 +72,6 @@ void add_matrix_options(cmdline::parser& cl) {
   cl.add<double>(
       "tof-step", 't', "TOF quantisation step for distance delta", false);
   cl.add<double>("s-dl", 0, "TOF sigma delta-l", cmdline::alwayssave, 0.06);
-  cl.add<std::string>(
-      "shape",
-      's',
-      "detector (scintillator) shape (square, circle, triangle, hexagon)",
-      false,
-      "square",
-      cmdline::oneof<std::string>("square", "circle", "triangle", "hexagon"));
-  cl.add<double>("w-detector", 'w', "detector width", false);
-  cl.add<double>("h-detector", 'h', "detector height", false);
-  cl.add<double>("d-detector",
-                 0,
-                 "inscribe detector shape into circle of given diameter",
-                 false);
   cl.add<std::string>(
       "model",
       'm',
@@ -215,6 +213,11 @@ void add_reconstruction_options(cmdline::parser& cl) {
 }
 
 void calculate_scanner_options(cmdline::parser& cl) {
+  // check options
+  if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
+      !cl.exist("n-detectors")) {
+    throw("need to specify either --w-detector, --d-detector, --n-detectors");
+  }
   // convert obsolete acceptance option to length scale
   auto& length_scale = cl.get<double>("base-length");
   if (cl.exist("acceptance") && !cl.exist("base-length")) {

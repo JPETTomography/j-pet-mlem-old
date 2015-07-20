@@ -54,29 +54,16 @@ int main(int argc, char* argv[]) {
   // cl.add<int>("n-emissions", 'e', "number of emmisions", false, 0);
   cl.add<float>("sigma-z", 0, "sigma-z", false, 0.015);
   cl.add<float>("sigma-dl", 0, "sigma-dl", false, 0.060);
-  cl.add("small", 0, "small barrel");
-  cl.add("big", 0, "big barrel");
   cl.add<std::string>(
-      "phantoms", '\0', "phantom description in JSON format", true);
+      "phantoms", 0, "phantom description in JSON format", true);
   cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
   cl.add<double>("length", 0, "length of the detector", false, 0.3);
 
   PET3D::Hybrid::add_phantom_options(cl);
-
   cl.parse_check(argc, argv);
-
-  auto verbose = cl.count("verbose");
-
-  // check options
-  if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
-      !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
-    throw(
-        "need to specify either --w-detector, --d-detector or --n-detectors "
-        "or --small or --big");
-  }
-
   PET3D::Hybrid::calculate_scanner_options(cl);
 
+  auto verbose = cl.count("verbose");
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();
   auto ext = output.ext();

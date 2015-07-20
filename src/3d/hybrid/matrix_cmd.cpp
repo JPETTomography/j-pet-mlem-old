@@ -68,6 +68,8 @@ int main(int argc, char* argv[]) {
   cl.add<double>("length", 0, "length of the detector", false, 0.3);
 
   cl.try_parse(argc, argv);
+  cmdline::load_accompanying_config(cl, false);
+  PET3D::Hybrid::calculate_scanner_options(cl);
 
 #if _OPENMP
   if (cl.exist("n-threads")) {
@@ -75,22 +77,12 @@ int main(int argc, char* argv[]) {
   }
 #endif
 
-  // check options
-  if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
-      !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
-    throw(
-        "need to specify either --w-detector, --d-detector or --n-detectors "
-        "or --small or --big");
-  }
   if (cl.exist("png") && !cl.exist("from")) {
     throw("need to specify --from lor when output --png option is specified");
   }
   if (!cl.exist("png") && cl.exist("from")) {
     throw("need to specify output --png option when --from is specified");
   }
-
-  cmdline::load_accompanying_config(cl, false);
-  PET3D::Hybrid::calculate_scanner_options(cl);
 
   const auto& model_name = cl.get<std::string>("model");
   const auto& length_scale = cl.get<double>("base-length");

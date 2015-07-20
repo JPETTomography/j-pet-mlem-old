@@ -28,8 +28,9 @@
 #include "util/progress.h"
 #include "util/backtrace.h"
 
-#include "2d/barrel/barrel_builder.h"
 #include "2d/barrel/square_detector.h"
+#include "2d/barrel/generic_scanner.h"
+#include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/options.h"
 #include "2d/barrel/lor_info.h"
 #include "2d/barrel/sparse_matrix.h"
@@ -53,7 +54,8 @@ using Pixel = PET2D::Pixel<S>;
 using LOR = PET2D::Barrel::LOR<S>;
 
 using SquareDetector = PET2D::Barrel::SquareDetector<F>;
-using BarrelBuilder = PET2D::Barrel::BarrelBuilder<SquareDetector, S>;
+using Scanner = PET2D::Barrel::GenericScanner<SquareDetector, S>;
+using ScannerBuilder = PET2D::Barrel::ScannerBuilder<Scanner>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
 
 int main(int argc, char* argv[]) {
@@ -151,12 +153,13 @@ int main(int argc, char* argv[]) {
 
     MathematicaGraphics graphics(out_graphics);
 
-    auto big_barrel = BarrelBuilder::make_big_barrel();
-    graphics.add(big_barrel);
+    auto scanner = ScannerBuilder::build_multiple_rings(
+        PET2D_BARREL_SCANNER_CL(cl, SquareDetector::F));
+    graphics.add(scanner);
 
     auto event = reconstruction.event(event_num);
     auto lor = event.lor;
-    graphics.add(big_barrel, lor);
+    graphics.add(scanner, lor);
     graphics.add(event.p);
     for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
       graphics.add_pixel(geometry.grid, it->pixel);

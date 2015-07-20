@@ -94,22 +94,13 @@ int main(int argc, char* argv[]) {
   cmdline::parser cl;
   PET2D::Barrel::add_phantom_options(cl);
   cl.try_parse(argc, argv);
-
-  // check options
-  if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
-      !cl.exist("n-detectors") && !cl.exist("small") && !cl.exist("big")) {
-    throw(
-        "need to specify either --w-detector, --d-detector or --n-detectors "
-        "or --small or --big");
-  }
+  PET2D::Barrel::calculate_scanner_options(cl);
 
 #if _OPENMP
   if (cl.exist("n-threads")) {
     omp_set_num_threads(cl.get<int>("n-threads"));
   }
 #endif
-
-  PET2D::Barrel::calculate_scanner_options(cl);
 
   const auto& shape = cl.get<std::string>("shape");
   const auto& model_name = cl.get<std::string>("model");

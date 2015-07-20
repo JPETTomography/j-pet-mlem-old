@@ -8,7 +8,9 @@
 #include "util/json.h"
 #include "util/backtrace.h"
 
-#include "2d/barrel/barrel_builder.h"
+#include "2d/barrel/generic_scanner.h"
+#include "2d/barrel/scanner_builder.h"
+#include "2d/barrel/options.h"
 #include "3d/hybrid/scanner.h"
 #include "3d/hybrid/sensitivity_mapper.h"
 #include "util/random.h"
@@ -18,14 +20,15 @@ using F = float;
 using S = int;
 
 using SquareDetector = PET2D::Barrel::SquareDetector<F>;
-using BarrelBuilder = PET2D::Barrel::BarrelBuilder<SquareDetector, S>;
-using Scanner2D = BarrelBuilder::BigBarrel;
+using Scanner2D = PET2D::Barrel::GenericScanner<SquareDetector, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
+using Scanner2DBuilder = PET2D::Barrel::ScannerBuilder<Scanner2D>;
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
   cmdline::parser cl;
+  PET2D::Barrel::add_scanner_options(cl);
   cl.add<int>("z-plane", 0, "z plane trianguler cut", false);
   cl.add<int>("y-plane", 0, "y plane cut", false);
   cl.add<int>(
@@ -46,7 +49,8 @@ int main(int argc, char* argv[]) {
   }
 #endif
 
-  Scanner2D barrel = BarrelBuilder::make_big_barrel();
+  auto barrel = Scanner2DBuilder::build_multiple_rings(
+      PET2D_BARREL_SCANNER_CL(cl, SquareDetector::F));
   Scanner scanner(barrel, 0.500);
   auto n_pixels = cl.get<int>("n-pixels");
   auto s_pixel = cl.get<float>("s-pixel");

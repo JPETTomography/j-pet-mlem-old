@@ -76,6 +76,7 @@ int main(int argc, char* argv[]) {
   cmdline::parser cl;
   PET2D::Barrel::add_matrix_options(cl);
   cl.try_parse(argc, argv);
+  PET2D::Barrel::calculate_scanner_options(cl);
 
   auto scanner = PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, F));
@@ -87,13 +88,12 @@ int main(int argc, char* argv[]) {
   std::vector<Polygon> detectors;
   std::vector<Point> detectors_centers;
 
-  F pixel_size = F(0.005);
-  if (cl.exist("s-pixel"))
-    pixel_size = cl.get<double>("s-pixel");
-  F fov_radius = cl.get<double>("fov-radius");
+  auto pixel_size = cl.get<double>("s-pixel");
+  auto fov_radius = cl.get<double>("fov-radius");
 
   if (verbose) {
-    std::cout << "fov " << fov_radius << " size " << pixel_size << std::endl;
+    std::cout << " fov: " << fov_radius << std::endl
+              << "size: " << pixel_size << std::endl;
   }
 
   S n_columns, n_rows;
@@ -105,7 +105,8 @@ int main(int argc, char* argv[]) {
   n_rows = n_columns;
 
   if (verbose) {
-    std::cout << "cols " << n_columns << " rows " << n_rows << std::endl;
+    std::cout << "cols: " << n_columns << std::endl
+              << "rows: " << n_rows << std::endl;
   }
 
   PET2D::PixelGrid<F, S> grid(

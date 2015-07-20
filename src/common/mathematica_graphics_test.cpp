@@ -5,17 +5,27 @@
 #include "mathematica_graphics.h"
 
 #include "2d/barrel/square_detector.h"
-#include "2d/barrel/barrel_builder.h"
+#include "2d/barrel/scanner_builder.h"
 #include "2d/geometry/line_segment.h"
 #include "2d/geometry/pixel_grid.h"
+#include "2d/barrel/options.h"
 
 using F = float;
 using S = int;
 
 using Detector = PET2D::Barrel::SquareDetector<F>;
-using BarrelBuilder = PET2D::Barrel::BarrelBuilder<Detector, S>;
-using Scanner = BarrelBuilder::BigBarrel;
+using Scanner = PET2D::Barrel::GenericScanner<Detector, S>;
+using ScannerBuilder = PET2D::Barrel::ScannerBuilder<Scanner>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
+
+static Scanner make_big_barrel() {
+  std::ifstream in_cfg("samples/config/big.cfg");
+  cmdline::parser cl;
+  PET2D::Barrel::add_scanner_options(cl);
+  cl.parse(in_cfg);
+  return ScannerBuilder::build_multiple_rings(
+      PET2D_BARREL_SCANNER_CL(cl, Detector::F));
+}
 
 TEST("common/mathematica_graphics/detector") {
   std::stringstream out;
@@ -39,7 +49,7 @@ TEST("common/mathematica_graphics/detector") {
 
 TEST("common/mathematica_graphics/big_barrel") {
   std::stringstream out;
-  auto scanner = BarrelBuilder::make_big_barrel();
+  auto scanner = make_big_barrel();
   {
     MathematicaGraphics graphics(out);
     graphics.add(scanner);
@@ -52,7 +62,7 @@ TEST("common/mathematica_graphics/big_barrel") {
 
 TEST("common/mathematica_graphics/big_barrel/lor") {
   std::stringstream out;
-  auto scanner = BarrelBuilder::make_big_barrel();
+  auto scanner = make_big_barrel();
   {
     MathematicaGraphics graphics(out);
     graphics.add(scanner);
@@ -66,7 +76,7 @@ TEST("common/mathematica_graphics/big_barrel/lor") {
 
 TEST("common/mathematica_graphics/big_barrel/segment") {
   std::stringstream out;
-  auto scanner = BarrelBuilder::make_big_barrel();
+  auto scanner = make_big_barrel();
   using Point = PET2D::Point<F>;
   {
     MathematicaGraphics graphics(out);
@@ -82,7 +92,7 @@ TEST("common/mathematica_graphics/big_barrel/segment") {
 
 TEST("common/mathematica_graphics/big_barrel/circle") {
   std::stringstream out;
-  auto scanner = BarrelBuilder::make_big_barrel();
+  auto scanner = make_big_barrel();
   {
     MathematicaGraphics graphics(out);
     graphics.add(scanner);
@@ -100,7 +110,7 @@ TEST("common/mathematica_graphics/big_barrel/circle") {
 
 TEST("common/mathematica_graphics/big_barrel/pixel") {
   std::stringstream out;
-  auto scanner = BarrelBuilder::make_big_barrel();
+  auto scanner = make_big_barrel();
   using Point = PET2D::Point<F>;
   {
     MathematicaGraphics graphics(out);
