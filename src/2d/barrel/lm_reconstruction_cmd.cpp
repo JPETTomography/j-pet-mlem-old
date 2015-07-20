@@ -74,6 +74,9 @@ int main(int argc, char* argv[]) {
 #endif
 
   util::ibstream in_geometry(cl.get<cmdline::path>("geometry"));
+  if (!in_geometry.is_open()) {
+    throw("cannot open geometry file: " + cl.get<cmdline::path>("geometry"));
+  }
   PET2D::Barrel::Geometry<F, S> geometry(in_geometry);
 
   if (verbose) {
