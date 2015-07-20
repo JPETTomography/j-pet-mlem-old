@@ -45,6 +45,54 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
   /// Construct geometry from binary stream
   Geometry(util::ibstream& in) : Geometry(in.read<uint32_t>(), in) {}
 
+ private:
+  Geometry(S n_detectors, std::istream& in)
+      : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
+        n_detectors(n_detectors),
+        grid(in) {
+    for (;;) {
+      LORInfo lor_info(in);
+      if (!in)
+        break;
+      (*this)[lor_info.lor] = std::move(lor_info);
+    }
+  }
+  Geometry(uint32_t file_magic, S n_detectors, util::ibstream& in)
+      : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
+        n_detectors(n_detectors),
+        grid(in) {
+    if (file_magic != magic<F>())
+      throw("unknown binary geometry file");
+    for (;;) {
+      LORInfo lor_info(in);
+      if (!in)
+        break;
+      (*this)[lor_info.lor] = std::move(lor_info);
+    }
+  }
+  Geometry(uint32_t file_magic, util::ibstream& in)
+      : Geometry(file_magic, in.read<S>(), in) {}
+
+ public:
+  /// Serialize geometry into output stream
+  friend std::ostream& operator<<(std::ostream& out, const Geometry& geometry) {
+    for (int d1 = 0; d1 < geometry.n_detectors; ++d1) {
+      for (int d2 = 0; d2 < d1; ++d2) {
+        LOR lor(d1, d2);
+        auto lor_index = lor.index();
+        if (geometry[lor_index].pixels.size() > 0) {
+          out << d1 << " " << d2 << " " << geometry[lor_index].width
+              << std::endl;
+          for (PixelInfo& info : geometry[lor_index].pixels) {
+            out << info.pixel.x << " " << info.pixel.y << " " << info.t << " "
+                << info.distance << " " << info.fill << std::endl;
+          }
+        }
+      }
+    }
+    return out;
+  }
+
   /// Serialize geometry into binary output stream
   friend util::obstream& operator<<(util::obstream& out,
                                     const Geometry& geometry) {
@@ -56,32 +104,6 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
     }
     return out;
   }
-
- private:
-  Geometry(S n_detectors, std::istream& in)
-      : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
-        n_detectors(n_detectors),
-        grid(in) {
-    while (in) {
-      LORInfo lor_info(in);
-      (*this)[lor_info.lor] = std::move(lor_info);
-    }
-  }
-  Geometry(uint32_t file_magic, S n_detectors, util::ibstream& in)
-      : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
-        n_detectors(n_detectors),
-        grid(in) {
-    if (file_magic != magic<F>())
-      throw("unknown binary geometry file");
-    while (in) {
-      LORInfo lor_info(in);
-      (*this)[lor_info.lor] = std::move(lor_info);
-    }
-  }
-  Geometry(uint32_t file_magic, util::ibstream& in)
-      : Geometry(file_magic, in.read<S>(), in) {}
-
- public:
 #endif
 
   LORInfo& operator[](const LOR& lor) { return this->at(lor.index()); }
@@ -115,23 +137,6 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
     for (auto& lor_info : *this) {
       lor_info.pixels.resize(0);
     }
-  }
-
-  friend std::ostream& operator<<(std::ostream& out, const Geometry& lpi) {
-    for (int d1 = 0; d1 < lpi.n_detectors; ++d1) {
-      for (int d2 = 0; d2 < d1; ++d2) {
-        LOR lor(d1, d2);
-        auto index = lor.index();
-        if (lpi[index].pixels.size() > 0) {
-          out << d1 << " " << d2 << " " << lpi[index].width << std::endl;
-          for (PixelInfo& info : lpi[index].pixels) {
-            out << info.pixel.x << " " << info.pixel.y << " " << info.t << " "
-                << info.distance << " " << info.fill << std::endl;
-          }
-        }
-      }
-    }
-    return out;
   }
 
   const S n_detectors;
