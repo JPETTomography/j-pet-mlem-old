@@ -29,6 +29,12 @@ class ibstream : public std::ifstream {
     std::ifstream::read(reinterpret_cast<char*>(ptr), sizeof(*ptr) * size);
     return *this;
   }
+
+  template <typename T> T read() {
+    T v;
+    std::ifstream::read(reinterpret_cast<char*>(&v), sizeof(v));
+    return v;
+  }
 };
 
 /// Binary output stream based on \c std::ifstream
