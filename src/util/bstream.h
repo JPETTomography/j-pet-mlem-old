@@ -18,7 +18,7 @@ namespace util {
 class ibstream : public std::ifstream {
  public:
   ibstream(std::string fn, std::ios_base::openmode mode = std::ios_base::in)
-      : std::ifstream(fn, mode | std::ios_base::in) {}
+      : std::ifstream(fn, mode | std::ios_base::in | std::ios_base::binary) {}
 
   template <typename T> ibstream& operator>>(T& v) {
     std::ifstream::read(reinterpret_cast<char*>(&v), sizeof(v));
@@ -45,7 +45,7 @@ class ibstream : public std::ifstream {
 class obstream : public std::ofstream {
  public:
   obstream(std::string fn, std::ios_base::openmode mode = std::ios_base::out)
-      : std::ofstream(fn, mode | std::ios_base::out) {}
+      : std::ofstream(fn, mode | std::ios_base::out | std::ios_base::binary) {}
 
   template <typename T> obstream& operator<<(const T v) {
     std::ofstream::write(reinterpret_cast<const char*>(&v), sizeof(v));
