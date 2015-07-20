@@ -36,6 +36,7 @@
 #include "2d/barrel/sparse_matrix.h"
 #include "2d/barrel/lm_reconstruction.h"
 
+#include "common/types.h"
 #include "common/mathematica_graphics.h"
 
 #if _OPENMP
@@ -45,9 +46,6 @@
 #define omp_get_thread_num() 0
 #endif
 
-using F = float;
-using S = int16_t;
-using Hit = int;
 using RNG = std::mt19937;
 using Point = PET2D::Point<F>;
 using Pixel = PET2D::Pixel<S>;

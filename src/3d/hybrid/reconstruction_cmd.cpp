@@ -16,6 +16,8 @@
 #include "3d/hybrid/scanner.h"
 #include "3d/hybrid/reconstruction.h"
 
+#include "common/types.h"
+
 #if _OPENMP
 #include <omp.h>
 #else
@@ -23,8 +25,6 @@
 #define omp_get_thread_num() 0
 #endif
 
-using F = float;
-using S = short;
 using RNG = std::mt19937;
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;

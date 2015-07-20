@@ -5,9 +5,8 @@
 #include "3d/geometry/voxel_set.h"
 
 #include "common/mathematica_graphics.h"
+#include "common/types.h"
 
-using F = float;
-using S = int;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
 
 TEST("3d/geometry/voxel_set") {

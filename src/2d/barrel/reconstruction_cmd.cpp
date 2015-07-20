@@ -40,13 +40,11 @@
 #include "util/progress.h"
 #include "options.h"
 
+#include "common/types.h"
+
 #if _OPENMP
 #include <omp.h>
 #endif
-
-using F = float;
-using S = short;
-using Hit = int;
 
 using Reconstruction = PET2D::Barrel::Reconstruction<F, S, Hit>;
 

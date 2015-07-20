@@ -10,8 +10,7 @@
 #include "2d/geometry/pixel_grid.h"
 #include "2d/barrel/options.h"
 
-using F = float;
-using S = int;
+#include "common/types.h"
 
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner = PET2D::Barrel::GenericScanner<Detector, S>;

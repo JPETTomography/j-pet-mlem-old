@@ -54,6 +54,8 @@
 #include "options.h"
 #include "monte_carlo.h"
 
+#include "common/types.h"
+
 #if _OPENMP
 #include <omp.h>
 #endif
@@ -61,10 +63,6 @@
 #if HAVE_CUDA
 #include "cuda/matrix.h"
 #endif
-
-using F = float;
-using S = short;
-using Hit = int;
 
 using Point = PET2D::Point<F>;
 using Pixel = PET2D::Pixel<S>;

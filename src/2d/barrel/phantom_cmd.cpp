@@ -52,17 +52,15 @@
 #include "options.h"
 
 #include "2d/geometry/phantom.h"
+#include "2d/geometry/pixel_map.h"
+
 #include "common/model.h"
 #include "common/phantom_monte_carlo.h"
-#include "2d/geometry/pixel_map.h"
+#include "common/types.h"
 
 #if _OPENMP
 #include <omp.h>
 #endif
-
-using F = float;
-using S = short;
-using Hit = int;
 
 using RNG = util::random::tausworthe;
 

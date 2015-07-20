@@ -28,13 +28,12 @@
 #include "util/backtrace.h"
 
 #include "options.h"
+
+#include "common/types.h"
+
 #if _OPENMP
 #include <omp.h>
 #endif
-
-using F = float;
-using S = int;
-using Hit = int;
 
 using SquareDetector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<SquareDetector, S>;

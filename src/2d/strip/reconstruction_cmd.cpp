@@ -42,13 +42,11 @@
 #include "response.h"
 #include "reconstruction.h"
 
+#include "common/types.h"
+
 #if HAVE_CUDA
 #include "cuda/reconstruction.h"
 #endif
-
-using F = float;
-using S = short;
-using Hit = int;
 
 using Kernel = PET2D::Strip::GaussianKernel<F>;
 using Reconstruction = PET2D::Strip::Reconstruction<F, Kernel>;

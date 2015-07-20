@@ -7,10 +7,9 @@
 #include "3d/hybrid/sensitivity_mapper.h"
 #include "3d/hybrid/scanner.h"
 #include "util/random.h"
-#include "common/model.h"
 
-using F = float;
-using S = int;
+#include "common/model.h"
+#include "common/types.h"
 
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;

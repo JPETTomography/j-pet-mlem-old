@@ -51,8 +51,8 @@
 #include "2d/geometry/pixel_grid.h"
 #include "2d/barrel/geometry.h"
 
-using F = float;
-using S = short;
+#include "common/types.h"
+
 using RNG = std::mt19937;
 
 using Detector = PET2D::Barrel::SquareDetector<F>;

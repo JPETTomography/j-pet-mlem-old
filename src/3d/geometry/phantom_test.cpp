@@ -7,7 +7,8 @@
 #include "matrix.h"
 #include "phantom.h"
 
-using F = float;
+#include "common/types.h"
+
 using RNG = std::mt19937;
 using Phantom = PET3D::Phantom<RNG, F>;
 using Point = Phantom::Point;

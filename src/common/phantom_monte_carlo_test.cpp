@@ -8,11 +8,11 @@
 #include "3d/geometry/voxel.h"
 #include "3d/geometry/voxel_map.h"
 
-#include "common/model.h"
 #include "phantom_monte_carlo.h"
 
-using F = float;
-using S = short;
+#include "common/model.h"
+#include "common/types.h"
+
 using RNG = std::mt19937;
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, short, 8>;

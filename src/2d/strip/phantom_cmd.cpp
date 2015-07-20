@@ -51,14 +51,11 @@
 
 #include "common/model.h"
 #include "common/phantom_monte_carlo.h"
+#include "common/types.h"
 
 #if _OPENMP
 #include <omp.h>
 #endif
-
-using F = float;
-using S = short;
-using Hit = int;
 
 using RNG = util::random::tausworthe;
 using Scanner = PET2D::Strip::Scanner<F, S>;
