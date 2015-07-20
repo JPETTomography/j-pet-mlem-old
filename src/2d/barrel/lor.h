@@ -3,7 +3,11 @@
 #include <type_traits>
 
 #include "util/cuda/compat.h"
+
+#if !__CUDACC__
 #include "util/read.h"
+#include "util/bstream.h"
+#endif
 
 namespace PET2D {
 namespace Barrel {
@@ -22,8 +26,11 @@ template <typename SType> class LOR {
   S first, second;
 
 #if !__CUDACC__
-  /// constructs Pixel from stream
+  /// Constructs LOR from stream
   LOR(std::istream& in) : first(util::read<S>(in)), second(util::read<S>(in)) {}
+
+  /// Constructs LOR from binary stream
+  LOR(util::ibstream& in) : first(in.read<S>()), second(in.read<S>()) {}
 #endif
 
   _ Size index() const {

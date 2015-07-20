@@ -32,6 +32,8 @@ template <typename FType> struct LineSegment {
 #if !__CUDACC__
   LineSegment(std::istream& in) : LineSegment(Point(in), Point(in)) {}
 
+  LineSegment(util::ibstream& in) : LineSegment(Point(in), Point(in)) {}
+
   friend util::obstream& operator<<(util::obstream& out,
                                     const LineSegment& segment) {
     out << segment.start;

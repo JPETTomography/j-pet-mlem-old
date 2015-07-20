@@ -1,10 +1,11 @@
 #pragma once
 
 #if !__CUDACC__
-#include "util/json.h"
 #include <istream>
-#include "util/read.h"
 #include <ostream>
+#include "util/json.h"
+#include "util/read.h"
+#include "util/bstream.h"
 #endif
 
 #include "util/cuda/compat.h"
@@ -25,11 +26,14 @@ template <typename FType> struct Point {
   F x, y;
 
 #if !__CUDACC__
-  /// construct Point from json
+  /// Construct Point from json
   Point(const json& j) : x(j[0]), y(j[1]) {}
 
-  /// construct Point from stream
+  /// Construct Point from stream
   Point(std::istream& in) : x(util::read<F>(in)), y(util::read<F>(in)) {}
+
+  /// Construct Point from binary stream
+  Point(util::ibstream& in) : x(in.read<F>()), y(in.read<F>()) {}
 #endif
 
   _ Point& operator+=(const Vector& v) {
