@@ -39,8 +39,11 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
         grid(grid) {}
 
 #if !__CUDACC__
-  /// Construct geometry out of the input streams
+  /// Construct geometry from stream
   Geometry(std::istream& in) : Geometry(util::read<uint32_t>(in), in) {}
+
+  /// Construct geometry from binary stream
+  Geometry(util::ibstream& in) : Geometry(in.read<uint32_t>(), in) {}
 
   /// Serialize geometry into binary output stream
   friend util::obstream& operator<<(util::obstream& out,
@@ -55,7 +58,16 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
   }
 
  private:
-  Geometry(uint32_t file_magic, S n_detectors, std::istream& in)
+  Geometry(S n_detectors, std::istream& in)
+      : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
+        n_detectors(n_detectors),
+        grid(in) {
+    while (in) {
+      LORInfo lor_info(in);
+      (*this)[lor_info.lor] = std::move(lor_info);
+    }
+  }
+  Geometry(uint32_t file_magic, S n_detectors, util::ibstream& in)
       : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
         n_detectors(n_detectors),
         grid(in) {
@@ -66,8 +78,8 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
       (*this)[lor_info.lor] = std::move(lor_info);
     }
   }
-  Geometry(uint32_t file_magic, std::istream& in)
-      : Geometry(file_magic, util::read<S>(in), in) {}
+  Geometry(uint32_t file_magic, util::ibstream& in)
+      : Geometry(file_magic, in.read<S>(), in) {}
 
  public:
 #endif
