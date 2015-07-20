@@ -43,7 +43,7 @@ TEST("2d/barrel/pix_major_system_matrix/add") {
 
   auto hits = matrix.lor_hits_at_pixel_index(lor, 13);
   CHECK(hits == 1);
-  CHECK(matrix.size() == 1);
+  CHECK(matrix.n_elements() == 1);
   CHECK(matrix.n_lors_at_pixel_index(13) == 1);
 
   hits = matrix.lor_hits_at_pixel_index(lor, 12);
@@ -63,7 +63,7 @@ TEST("2d/barrel/pix_major_system_matrix/add_twice") {
 
   auto hits = matrix.lor_hits_at_pixel_index(lor, 13);
   CHECK(hits == 2);
-  CHECK(matrix.size() == 1);
+  CHECK(matrix.n_elements() == 1);
   CHECK(matrix.n_lors_at_pixel_index(13) == 1);
 }
 
@@ -80,7 +80,7 @@ TEST("2d/barrel/pix_major_system_matrix/add_to_all") {
   for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
     auto hits = matrix.lor_hits_at_pixel_index(lor, i_pixel);
     CHECK(hits == 1);
-    CHECK(matrix.size() == matrix.n_pixels());
+    CHECK(matrix.n_elements() == matrix.n_pixels());
     CHECK(matrix.n_lors_at_pixel_index(i_pixel) == 1);
   }
 }
@@ -98,7 +98,7 @@ TEST("2d/barrel/pix_major_system_matrix/to_sparse") {
   for (int i_pixel = 0; i_pixel < matrix.n_pixels(); ++i_pixel) {
     auto hits = matrix.lor_hits_at_pixel_index(lor, i_pixel);
     CHECK(hits == 1);
-    CHECK(matrix.size() == matrix.n_pixels());
+    CHECK(matrix.n_elements() == matrix.n_pixels());
     CHECK(matrix.n_lors_at_pixel_index(i_pixel) == 1);
   }
 
