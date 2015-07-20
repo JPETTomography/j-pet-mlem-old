@@ -150,19 +150,6 @@ void add_phantom_options(cmdline::parser& cl) {
   cl.add("bin", 0, "ouput number of hits in each lor position");
 
   cl.add<std::string>(
-      "shape",
-      's',
-      "detector (scintillator) shape (square, circle, triangle, hexagon)",
-      false,
-      "square",
-      cmdline::oneof<std::string>("square", "circle", "triangle", "hexagon"));
-  cl.add<double>("w-detector", 'w', "detector width", false);
-  cl.add<double>("h-detector", 'h', "detector height", false);
-  cl.add<double>("d-detector",
-                 0,
-                 "inscribe detector shape into circle of given diameter",
-                 false);
-  cl.add<std::string>(
       "model",
       'm',
       "acceptance model",
