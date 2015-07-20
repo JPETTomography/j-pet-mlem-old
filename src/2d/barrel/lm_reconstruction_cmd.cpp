@@ -62,6 +62,7 @@ int main(int argc, char* argv[]) {
   cmdline::parser cl;
   PET2D::Barrel::add_lm_reconstruction_options(cl);
   cl.parse_check(argc, argv);
+  PET2D::Barrel::calculate_scanner_options(cl, argc);
 
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();
@@ -80,18 +81,25 @@ int main(int argc, char* argv[]) {
   PET2D::Barrel::Geometry<F, S> geometry(in_geometry);
 
   if (verbose) {
-    std::cout << geometry.n_detectors << std::endl;
-    std::cout << geometry.grid.n_columns << "x" << geometry.grid.n_rows << " "
-              << geometry.grid.pixel_size << std::endl;
+    std::cout << "LM reconstruction:" << std::endl
+              << "   detectors = " << geometry.n_detectors << std::endl
+              << "  pixel_grid = " << geometry.grid.n_columns << " x "
+              << geometry.grid.n_rows << " / " << geometry.grid.pixel_size
+              << std::endl;
   }
 
   if (cl.exist("system")) {
     geometry.erase_pixel_info();
     auto system_matrix_file_name = cl.get<cmdline::path>("system");
-    util::ibstream system_matrix_istream(system_matrix_file_name);
-    PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit> matrix(system_matrix_istream);
+    util::ibstream in_matrix(system_matrix_file_name);
+    if (!in_matrix.is_open()) {
+      throw("cannot open system matrix file: " +
+            cl.get<cmdline::path>("system"));
+    }
+    PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit> matrix(in_matrix);
     if (verbose) {
-      std::cout << "read in system matrix" << std::endl;
+      std::cout << "read in system matrix: " << cl.get<cmdline::path>("system")
+                << std::endl;
     }
     matrix.sort_by_lor_n_pixel();
     matrix.merge_duplicates();
@@ -113,16 +121,14 @@ int main(int argc, char* argv[]) {
 
   PET2D::Barrel::LMReconstruction<F, S> reconstruction(
       geometry, cl.get<double>("s-dl") / 2);
-  if (verbose)
-    std::cout << "created reconstruction\n";
-  if (cl.exist("system"))
+
+  if (cl.exist("system")) {
     reconstruction.use_system_matrix();
-  if (!cl.exist("system")) {
+  } else {
     reconstruction.calculate_weight();
   }
 
   reconstruction.calculate_sensitivity();
-
   {
     std::ofstream out_sensitivity(output.wo_ext() + "_sensitivity" +
                                   output.ext());
@@ -132,7 +138,13 @@ int main(int argc, char* argv[]) {
 
   for (const auto& fn : cl.rest()) {
     std::ifstream in_response(fn);
+    if (!in_response.is_open()) {
+      throw("cannot open response file: " + fn);
+    }
     reconstruction << in_response;
+  }
+  if (verbose) {
+    std::cout << "      events = " << reconstruction.n_events() << std::endl;
   }
 
   if (cl.exist("graphics")) {

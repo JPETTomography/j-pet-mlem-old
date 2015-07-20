@@ -241,6 +241,8 @@ template <typename FType, typename SType> class LMReconstruction {
 
   BarrelEvent event(int i) const { return events_[i]; }
 
+  size_t n_events() const { return events_.size(); }
+
   Geometry& geometry;
   const int n_pixels;
 

@@ -63,14 +63,25 @@ template <typename FType, typename SType> class PixelGrid {
   }
 
 #if !__CUDACC__
+  /// Construct pixel grid from stream
   PixelGrid(std::istream& in)
       : n_columns(util::read<S>(in)),
         n_rows(util::read<S>(in)),
-        pixel_size(util::read<S>(in)),
+        pixel_size(util::read<F>(in)),
         lower_left(in),
         lower_left_center(lower_left + Vector(pixel_size / 2, pixel_size / 2)),
         n_pixels(n_columns * n_rows) {}
 
+  /// Construct pixel grid from binary stream
+  PixelGrid(util::ibstream& in)
+      : n_columns(in.read<S>()),
+        n_rows(in.read<S>()),
+        pixel_size(in.read<F>()),
+        lower_left(in),
+        lower_left_center(lower_left + Vector(pixel_size / 2, pixel_size / 2)),
+        n_pixels(n_columns * n_rows) {}
+
+  /// Output pixel grid to binary stream
   friend util::obstream& operator<<(util::obstream& out, const PixelGrid& pg) {
     out << pg.n_columns << pg.n_rows << pg.pixel_size << pg.lower_left;
     return out;
