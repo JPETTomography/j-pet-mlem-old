@@ -16,13 +16,9 @@ using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Scanner2DBuilder = PET2D::Barrel::ScannerBuilder<Scanner2D>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 
-static Scanner2D make_big_barrel() {
-  std::ifstream in_cfg("samples/config/big.cfg");
-  cmdline::parser cl;
-  PET2D::Barrel::add_scanner_options(cl);
-  cl.parse(in_cfg);
+static Scanner2D make_barrel() {
   return Scanner2DBuilder::build_multiple_rings(
-      PET2D_BARREL_SCANNER_CL(cl, Detector::F));
+      { F(M_SQRT2), F(2) }, { F(0), F(0.5) }, { S(24), S(32) }, F(0.2), F(0.3));
 }
 
 TEST("3d/hybrid/sensitivity_mapper") {
@@ -36,7 +32,7 @@ TEST("3d/hybrid/sensitivity_mapper") {
   REQUIRE(voxel_set.size() == 0);
   voxel_set.push_back(Voxel(41, 41, 41));
 
-  auto barrel = make_big_barrel();
+  auto barrel = make_barrel();
   Scanner scanner(barrel, 0.500);
 
   PET3D::Hybrid::SensitivityMapper<Scanner> mapper(scanner, voxel_set);

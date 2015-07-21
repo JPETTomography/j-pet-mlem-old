@@ -12,18 +12,15 @@
 
 #include "common/types.h"
 
+using LOR = PET2D::Barrel::LOR<S>;
 using Detector = PET2D::Barrel::SquareDetector<F>;
-using Scanner = PET2D::Barrel::GenericScanner<Detector, int>;
+using Scanner = PET2D::Barrel::GenericScanner<Detector, S>;
 using ScannerBuilder = PET2D::Barrel::ScannerBuilder<Scanner>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
 
-static Scanner make_big_barrel() {
-  std::ifstream in_cfg("samples/config/big.cfg");
-  cmdline::parser cl;
-  PET2D::Barrel::add_scanner_options(cl);
-  cl.parse(in_cfg);
+static Scanner make_barrel() {
   return ScannerBuilder::build_multiple_rings(
-      PET2D_BARREL_SCANNER_CL(cl, Detector::F));
+      { F(M_SQRT2), F(2) }, { F(0), F(0.5) }, { S(24), S(32) }, F(0.2), F(0.3));
 }
 
 TEST("common/mathematica_graphics/detector") {
@@ -48,7 +45,7 @@ TEST("common/mathematica_graphics/detector") {
 
 TEST("common/mathematica_graphics/big_barrel") {
   std::stringstream out;
-  auto scanner = make_big_barrel();
+  auto scanner = make_barrel();
   {
     MathematicaGraphics graphics(out);
     graphics.add(scanner);
@@ -56,26 +53,26 @@ TEST("common/mathematica_graphics/big_barrel") {
   std::string line;
   TEST_LINE(out, line, "Graphics[{");
   TEST_LINE(out, line, "{{Polygon[{");
-  TEST_LINE(out, line, "  {0.439500004053, -0.00350001943298},");
+  TEST_LINE(out, line, "  {1.71421349049, -0.100000075996},");
 }
 
 TEST("common/mathematica_graphics/big_barrel/lor") {
   std::stringstream out;
-  auto scanner = make_big_barrel();
+  auto scanner = make_barrel();
   {
     MathematicaGraphics graphics(out);
     graphics.add(scanner);
-    graphics.add(scanner, PET2D::Barrel::LOR<int>(65, 0));
+    graphics.add(scanner, LOR(10, 0));
   }
   std::string line;
   TEST_LINE(out, line, "Graphics[{");
   TEST_LINE(out, line, "{{Polygon[{");
-  TEST_LINE(out, line, "  {0.439500004053, -0.00350001943298},");
+  TEST_LINE(out, line, "  {1.71421349049, -0.100000075996},");
 }
 
 TEST("common/mathematica_graphics/big_barrel/segment") {
   std::stringstream out;
-  auto scanner = make_big_barrel();
+  auto scanner = make_barrel();
   using Point = PET2D::Point<F>;
   {
     MathematicaGraphics graphics(out);
@@ -86,12 +83,12 @@ TEST("common/mathematica_graphics/big_barrel/segment") {
   std::string line;
   TEST_LINE(out, line, "Graphics[{");
   TEST_LINE(out, line, "{{Polygon[{");
-  TEST_LINE(out, line, "  {0.439500004053, -0.00350001943298},");
+  TEST_LINE(out, line, "  {1.71421349049, -0.100000075996},");
 }
 
 TEST("common/mathematica_graphics/big_barrel/circle") {
   std::stringstream out;
-  auto scanner = make_big_barrel();
+  auto scanner = make_barrel();
   {
     MathematicaGraphics graphics(out);
     graphics.add(scanner);
@@ -104,12 +101,12 @@ TEST("common/mathematica_graphics/big_barrel/circle") {
   std::string line;
   TEST_LINE(out, line, "Graphics[{");
   TEST_LINE(out, line, "{{Polygon[{");
-  TEST_LINE(out, line, "  {0.439500004053, -0.00350001943298},");
+  TEST_LINE(out, line, "  {1.71421349049, -0.100000075996},");
 }
 
 TEST("common/mathematica_graphics/big_barrel/pixel") {
   std::stringstream out;
-  auto scanner = make_big_barrel();
+  auto scanner = make_barrel();
   using Point = PET2D::Point<F>;
   {
     MathematicaGraphics graphics(out);
@@ -126,5 +123,5 @@ TEST("common/mathematica_graphics/big_barrel/pixel") {
   std::string line;
   TEST_LINE(out, line, "Graphics[{");
   TEST_LINE(out, line, "{{Polygon[{");
-  TEST_LINE(out, line, "  {0.439500004053, -0.00350001943298},");
+  TEST_LINE(out, line, "  {1.71421349049, -0.100000075996},");
 }

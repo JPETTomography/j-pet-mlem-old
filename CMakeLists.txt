@@ -257,12 +257,7 @@ add_custom_target(extra SOURCES
 file(GLOB_RECURSE TESTS src/*_test.cpp)
 include_directories(lib/catch/include)
 cmake_policy(SET CMP0037 OLD)
-foreach(f ${CL_2D_OPTIONS})
-  list(APPEND CL_2D_OPTIONS_SRC src/${f} )
-endforeach()
-add_executable(test src/util/test.cpp ${TESTS}
-  ${CL_2D_OPTIONS_SRC}
-  src/util/cmdline_hooks.cpp)
+add_executable(test src/util/test.cpp ${TESTS})
 set_target_properties(test PROPERTIES EXCLUDE_FROM_ALL 1)
 
 # clang doesn't print colored diagnostics when invoked from Ninja
