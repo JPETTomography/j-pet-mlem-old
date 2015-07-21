@@ -223,3 +223,38 @@ constructors taking input stream reference as an argument, eg.:
 
     Point(std::istream& in) { in >> x >> y; }
     Point(util::ibstream& in) { in >> x >> y; }
+
+GPU (CUDA) Compatible Code
+--------------------------
+
+This project uses C++11 extensively, it also targets *NVIDIA CUDA* version 7.0
+providing C++11 support.
+
+Most of the classes as reused between CPU & GPU code using following rules:
+
+1. All CUDA enabled class source files should include `util/cuda/compat.h`
+
+2. All class methods available to CUDA should be started with single `_`, that
+   will be turned into `__device__` when compiling via CUDA, eg.:
+
+       _ Vector operator+(const Vector& other) { ... }
+
+3. All CUDA enabled classes should NOT use `<cmath>` functions like `std::sin`,
+   but instead use `compat::sin` counterparts which will be mapped to proper
+   CUDA functions.
+
+4. All CUDA enabled classes should NOT use any STL containers or headers, if it
+   is necessary class may provide CPU only methods using preprocessor
+   conditional blocks, eg.:
+
+       #if !__CUDACC__
+       #include <ostream>
+       #endif
+       
+       ...
+       
+       #if !__CUDACC__
+       std::ostream& operator<<(std::ostream& out, const Point& p) {
+         return out << x << ' ' << y;
+       }
+       #endif
