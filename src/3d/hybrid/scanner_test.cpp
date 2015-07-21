@@ -29,36 +29,30 @@ using Point = PET3D::Point<F>;
 TEST("3d/hybrid/detector_set/escape_through_endcap") {
   Scanner2D scanner_2d(inner_radius, scintillator_height);
   Scanner scanner(scanner_2d, length);
-
   {
     PET3D::Event<F> event(Point(0, 0, 0), Vector(0, 0, 1));
     CHECK(scanner.escapes_through_endcap(event));
   }
-
   {
     PET3D::Event<F> event(Point(0, 0, 0),
                           Vector::from_euler_angles(0, M_PI / 2));
     CHECK(!scanner.escapes_through_endcap(event));
   }
-
   {
     PET3D::Event<F> event(Point(0, 0, 0),
                           Vector::from_euler_angles(1, M_PI / 2));
     CHECK(!scanner.escapes_through_endcap(event));
   }
-
   {
     PET3D::Event<F> event(Point(0, 0, 0),
                           Vector::from_euler_angles(0, M_PI / 4));
     CHECK(scanner.escapes_through_endcap(event));
   }
-
   {
     PET3D::Event<F> event(Point(0, 0, 0),
                           Vector::from_euler_angles(0, 0.99f * minimal_angle));
     CHECK(scanner.escapes_through_endcap(event));
   }
-
   {
     PET3D::Event<F> event(Point(0, 0, 0),
                           Vector::from_euler_angles(0, 1.01f * minimal_angle));
@@ -72,19 +66,14 @@ TEST("3d/hybrid/detector_set/detect", "detect") {
           inner_radius, 24, scintillator_height, scintillator_width);
   Scanner scanner(scanner_2d, length);
   Common::AlwaysAccept<F> model;
-
   {
     PET3D::Event<F> event(Point(0, 0, 0), Vector(0, 0, 1));
-
     Scanner::Response response;
-
     CHECK(!scanner.detect(model, model, event, response));
   }
-
   {
     PET3D::Event<F> event(Point(0, 0, 0),
                           Vector::from_euler_angles(0, M_PI / 2));
-
     Scanner::Response response;
 
     REQUIRE(scanner.detect(model, model, event, response));
@@ -95,7 +84,6 @@ TEST("3d/hybrid/detector_set/detect", "detect") {
     CHECK(response.z_dn == 0.0_e7);
     CHECK(response.dl == 0.0_e7);
   }
-
   {
     PET3D::Event<F> event(Point(0, 0, 0),
                           Vector::from_euler_angles(0, M_PI / 2.5f));

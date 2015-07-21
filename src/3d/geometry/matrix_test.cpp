@@ -1,4 +1,3 @@
-
 #include "util/test.h"
 
 #include "3d/geometry/matrix.h"
@@ -9,7 +8,6 @@
 using Matrix = PET3D::Matrix<F>;
 
 TEST("3d/geometry/matrix/initialisation") {
-
   Matrix mat;
 
   for (int i = 0; i < 3; i++)
@@ -49,7 +47,6 @@ TEST("3d/geometry/matrix/vector_multiplication") {
 
 TEST("3d/geometry/matrix/arithmetic_assignment_operators") {
   Matrix rhs{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-
   {
     Matrix mat{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     mat += rhs;
@@ -57,7 +54,6 @@ TEST("3d/geometry/matrix/arithmetic_assignment_operators") {
       REQUIRE(mat(i) == Approx(2 * (i + 1)).epsilon(1e-7));
     }
   }
-
   {
     Matrix mat{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     mat -= rhs;
@@ -69,7 +65,6 @@ TEST("3d/geometry/matrix/arithmetic_assignment_operators") {
 
 TEST("3d/geometry/matrix/arithmetic_operators") {
   Matrix rhs{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-
   Matrix lhs{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
   {
     Matrix mat;
@@ -79,7 +74,6 @@ TEST("3d/geometry/matrix/arithmetic_operators") {
       REQUIRE(mat(i) == Approx(2 * (i + 1)).epsilon(1e-7));
     }
   }
-
   {
     Matrix mat;
     mat = lhs - rhs;
@@ -91,7 +85,6 @@ TEST("3d/geometry/matrix/arithmetic_operators") {
 
 TEST("3d/geometry/matrix/scalar_multiplication") {
   Matrix rhs{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-
   {
     Matrix mat;
 
@@ -100,7 +93,6 @@ TEST("3d/geometry/matrix/scalar_multiplication") {
       REQUIRE(mat(i) == Approx(3 * (i + 1)).epsilon(1e-7));
     }
   }
-
   {
     Matrix mat;
     mat = F(3) * rhs;

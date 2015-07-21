@@ -12,7 +12,6 @@ using Pixel = PET2D::Pixel<S>;
 
 TEST("2d/geometry/line_drawing") {
   PixelGrid grid(128, 128, 0.005, Point(-64 * 0.005, -64 * 0.005));
-
   {
     Point start(0.001, 0.001);
     Point end(0.007, 0.003);
@@ -27,7 +26,6 @@ TEST("2d/geometry/line_drawing") {
     }
 #endif
   }
-
   {
     Point start(0.001, 0.001);
     Point end(0.001, -0.010);
@@ -42,7 +40,6 @@ TEST("2d/geometry/line_drawing") {
     }
 #endif
   }
-
   {
     Point start(0.001, 0.001);
     Point end(0.020, 0.001);
