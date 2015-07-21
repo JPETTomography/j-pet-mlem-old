@@ -192,3 +192,34 @@ representation, depending on the need, therefore:
        
        using Point = PET2D::Point<F>;
        using Pixel = PET2D::Point<S>;
+
+Serialization & Deserialization
+-------------------------------
+
+Project uses `std::istream` & `std::ostream` for textual
+serialization/deserialization, and special `util::ibstream` & `util::obstream`
+for binary serialization/deserialization.
+
+Since this project is not using virtual methods, if class uses both textual and
+binary serialization, it should define separate methods/constructors for both
+`std::` text streams and `util::` binary streams.
+
+#### Serialization
+
+All classes that can be serialized into `ostream` or `obstream` should define
+"friend" `operator<<` inside their body, eg.:
+
+    std::ostream& operator<<(std::ostream& out, const Point& p) {
+      return out << x << ' ' << y;
+    }
+    util::obstream& operator<<(util::obstream& out, const Point& p) {
+      return out << x << y;  // NOTE: no ' ' separator since it is binary stream
+    }
+
+#### Deserialization
+
+All classes that can be deserialized from input stream should provide
+constructors taking input stream reference as an argument, eg.:
+
+    Point(std::istream& in) { in >> x >> y; }
+    Point(util::ibstream& in) { in >> x >> y; }
