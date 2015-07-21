@@ -2,18 +2,21 @@
 
 #include "circle_detector.h"
 
-using namespace PET2D;
-using namespace PET2D::Barrel;
+#include "common/types.h"
+
+using Point = PET2D::Point<F>;
+using Event = PET2D::Barrel::Event<F>;
+using CircleDetector = PET2D::Barrel::CircleDetector<F>;
 
 TEST("2d/barrel/circle_detector/ctor") {
-  CircleDetector<float> circle(0.01);
+  CircleDetector circle(0.01);
 
   CHECK(circle.center.x == 0);
   CHECK(circle.center.y == 0);
 }
 
 TEST("2d/barrel/circle_detector/json") {
-  CircleDetector<float> circle(1, { 1, 2 });
+  CircleDetector circle(1, { 1, 2 });
 
   json j(circle);
   REQUIRE(j.dump() == "{\"Circle\":{\"center\":[1,2],\"radius\":1}}");
@@ -21,16 +24,16 @@ TEST("2d/barrel/circle_detector/json") {
 
 TEST("2d/barrel/circle_detector/move") {
 
-  CircleDetector<float> circle(0.01);
+  CircleDetector circle(0.01);
 
-  CircleDetector<float>::Vector v(0.5, 0.7);
+  CircleDetector::Vector v(0.5, 0.7);
   circle.center += v;
 
-  CHECK(circle.center.x == 0.5f);
-  CHECK(circle.center.y == 0.7f);
+  CHECK(circle.center.x == F(0.5));
+  CHECK(circle.center.y == F(0.7));
   auto phi = M_PI / 6.0;
 
-  CircleDetector<float> rcircle = circle;
+  CircleDetector rcircle = circle;
   rcircle.rotate(phi);
 
   auto x = circle.center.x;
@@ -45,8 +48,7 @@ TEST("2d/barrel/circle_detector/move") {
 }
 
 TEST("2d/barrel/circle_detector/intersection") {
-  using Event = PET2D::Barrel::Event<float>;
-  CircleDetector<float> circle(1, Point<float>(1, 1));
+  CircleDetector circle(1, Point(1, 1));
 
   CHECK(circle.center.x == 1);
   CHECK(circle.center.y == 1);

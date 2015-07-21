@@ -2,8 +2,10 @@
 
 #include "event_generator.h"
 
+#include "common/types.h"
+
 TEST("3d/geometry/distribution/spherical_distribution") {
-  using Distribution = PET3D::Distribution::SphericalDistribution<float>;
+  using Distribution = PET3D::Distribution::SphericalDistribution<F>;
   using Vector = Distribution::Vector;
 
   std::mt19937 rng;
@@ -20,7 +22,7 @@ TEST("3d/geometry/distribution/spherical_distribution") {
 }
 
 TEST("3d/geometry/distribution/cylinder_event_generator") {
-  using Distribution = PET3D::Distribution::CylinderPointDistribution<float>;
+  using Distribution = PET3D::Distribution::CylinderPointDistribution<F>;
   using Point = Distribution::Point;
   using F = Distribution::F;
 
@@ -38,7 +40,7 @@ TEST("3d/geometry/distribution/cylinder_event_generator") {
 }
 
 TEST("3d/geometry/distribution/ball_event_generator") {
-  using Distribution = PET3D::Distribution::BallPointDistribution<float>;
+  using Distribution = PET3D::Distribution::BallPointDistribution<F>;
   using Point = Distribution::Point;
   using F = Distribution::F;
 
@@ -53,7 +55,7 @@ TEST("3d/geometry/distribution/ball_event_generator") {
 }
 
 TEST("3d/geometry/distribution/ellipsoid_event_generator") {
-  using Distribution = PET3D::Distribution::EllipsoidPointDistribution<float>;
+  using Distribution = PET3D::Distribution::EllipsoidPointDistribution<F>;
   using Point = Distribution::Point;
   using F = Distribution::F;
 

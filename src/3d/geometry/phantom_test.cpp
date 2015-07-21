@@ -17,16 +17,16 @@ using AngularDistribution = PET3D::Distribution::SphericalDistribution<F>;
 TEST("3d/geometry/phantom/cylinder_region") {
   using Region = Phantom::CylinderRegion<AngularDistribution>;
 
-  Region region(2.0f, 3.0f, 1.0f, AngularDistribution(-M_PI / 3, M_PI / 3));
+  Region region(2, 3, 1, AngularDistribution(-M_PI / 3, M_PI / 3));
 
-  REQUIRE(region.volume() == Approx(4.0 * M_PI * 3.0).epsilon(1e-7));
+  REQUIRE(region.volume() == Approx(4 * M_PI * 3).epsilon(1e-7));
   REQUIRE(region.intensity == 1.0_e7);
 
-  Point p1(1.2f, 0.1f, 1.4f);
+  Point p1(1.2, 0.1, 1.4);
   REQUIRE(region.in(p1));
-  Point p2(1.2f, 0.0f, 1.7f);
+  Point p2(1.2, 0.0, 1.7);
   REQUIRE(!region.in(p2));
-  Point p3(-2.1f, 0.05f, -1.0f);
+  Point p3(-2.1, 0.05, -1.0);
   REQUIRE(!region.in(p3));
 
   std::mt19937 rng;
@@ -43,10 +43,10 @@ TEST("3d/geometry/phantom/cylinder_region") {
 TEST("3d/geometry/phantom/cylinder") {
   RNG rng;
   Phantom::RegionPtrList regions;
-  float angle = std::atan2(0.0025f, 0.400f);
+  F angle = std::atan2(0.0025, 0.400);
   auto cylinder = new Phantom::CylinderRegion<AngularDistribution>(
       0.0015, 0.001, 1, AngularDistribution(-angle, angle));
-  PET3D::Matrix<float> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
+  PET3D::Matrix<F> R{ 1, 0, 0, 0, 0, 1, 0, 1, 0 };
 
   auto rotated_cylinder = new Phantom::RotatedRegion(cylinder, R);
   regions.push_back(rotated_cylinder);
@@ -63,7 +63,7 @@ TEST("3d/geometry/phantom/ellipsoid") {
   using RNG = std::mt19937;
   RNG rng;
   Phantom::RegionPtrList regions;
-  float angle = std::atan2(0.0025f, 0.400f);
+  F angle = std::atan2(0.0025, 0.400);
   auto ellipsoid = new Phantom::EllipsoidRegion<AngularDistribution>(
       0.005, 0.01, 0.02, 1, AngularDistribution(-angle, angle));
 

@@ -7,28 +7,30 @@
 #include "ring_scanner.h"
 #include "scanner_builder.h"
 
+#include "common/types.h"
+
 TEST("2d/barrel/detector_set/math") {
   SECTION("square_detector") {
-    using SquareDetector = PET2D::Barrel::SquareDetector<double>;
-    using Scanner = PET2D::Barrel::GenericScanner<SquareDetector, short, 24>;
+    using SquareDetector = PET2D::Barrel::SquareDetector<F>;
+    using Scanner = PET2D::Barrel::GenericScanner<SquareDetector, S, 24>;
     using Event = Scanner::Event;
     using Point = Scanner::Point;
     Scanner scanner;
 
-    scanner.emplace_back(1., 1., 2., 2.);  // 0
-    scanner.emplace_back(1., 5., 2., 2.);  // 1
-    scanner.emplace_back(5., 1., 2., 2.);  // 2
-    scanner.emplace_back(5., 5., 2., 2.);  // 3
+    scanner.emplace_back(1, 1, 2, 2);  // 0
+    scanner.emplace_back(1, 5, 2, 2);  // 1
+    scanner.emplace_back(5, 1, 2, 2);  // 2
+    scanner.emplace_back(5, 5, 2, 2);  // 3
 
-    CHECK(Point(1., 1.) == scanner.circumscribed(0).center);
-    CHECK(Point(1., 5.) == scanner.circumscribed(1).center);
-    CHECK(Point(5., 1.) == scanner.circumscribed(2).center);
-    CHECK(Point(5., 5.) == scanner.circumscribed(3).center);
+    CHECK(Point(1, 1) == scanner.circumscribed(0).center);
+    CHECK(Point(1, 5) == scanner.circumscribed(1).center);
+    CHECK(Point(5, 1) == scanner.circumscribed(2).center);
+    CHECK(Point(5, 5) == scanner.circumscribed(3).center);
 
-    CHECK(std::sqrt(2.) == scanner.circumscribed(0).radius);
-    CHECK(std::sqrt(2.) == scanner.circumscribed(1).radius);
-    CHECK(std::sqrt(2.) == scanner.circumscribed(2).radius);
-    CHECK(std::sqrt(2.) == scanner.circumscribed(3).radius);
+    CHECK(F(M_SQRT2) == scanner.circumscribed(0).radius);
+    CHECK(F(M_SQRT2) == scanner.circumscribed(1).radius);
+    CHECK(F(M_SQRT2) == scanner.circumscribed(2).radius);
+    CHECK(F(M_SQRT2) == scanner.circumscribed(3).radius);
 
     SECTION("horizontal") {
       {
@@ -66,43 +68,43 @@ TEST("2d/barrel/detector_set/math") {
   }
 
   SECTION("circle_detector") {
-    using CircleDetector = PET2D::Barrel::CircleDetector<float>;
-    using Detector = PET2D::Barrel::GenericScanner<CircleDetector, short, 24>;
+    using CircleDetector = PET2D::Barrel::CircleDetector<F>;
+    using Detector = PET2D::Barrel::GenericScanner<CircleDetector, S, 24>;
     using Point = Detector::Point;
     Detector detector;
 
-    detector.emplace_back(2., Point(1., 1.));
-    detector.emplace_back(2., Point(1., 5.));
-    detector.emplace_back(2., Point(5., 1.));
-    detector.emplace_back(2., Point(5., 5.));
+    detector.emplace_back(2, Point(1, 1));
+    detector.emplace_back(2, Point(1, 5));
+    detector.emplace_back(2, Point(5, 1));
+    detector.emplace_back(2, Point(5, 5));
 
-    CHECK(Point(1., 1.) == detector.circumscribed(0).center);
-    CHECK(Point(1., 5.) == detector.circumscribed(1).center);
-    CHECK(Point(5., 1.) == detector.circumscribed(2).center);
-    CHECK(Point(5., 5.) == detector.circumscribed(3).center);
+    CHECK(Point(1, 1) == detector.circumscribed(0).center);
+    CHECK(Point(1, 5) == detector.circumscribed(1).center);
+    CHECK(Point(5, 1) == detector.circumscribed(2).center);
+    CHECK(Point(5, 5) == detector.circumscribed(3).center);
 
-    CHECK(2. == detector.circumscribed(0).radius);
-    CHECK(2. == detector.circumscribed(1).radius);
-    CHECK(2. == detector.circumscribed(2).radius);
-    CHECK(2. == detector.circumscribed(3).radius);
+    CHECK(2 == detector.circumscribed(0).radius);
+    CHECK(2 == detector.circumscribed(1).radius);
+    CHECK(2 == detector.circumscribed(2).radius);
+    CHECK(2 == detector.circumscribed(3).radius);
   }
 }
 
 TEST("2d/barrel/detector_set/detect") {
   SECTION("two_rings") {
 
-    using SquareDetector = PET2D::Barrel::SquareDetector<float>;
-    using Detector = PET2D::Barrel::GenericScanner<SquareDetector, short, 128>;
+    using SquareDetector = PET2D::Barrel::SquareDetector<F>;
+    using Detector = PET2D::Barrel::GenericScanner<SquareDetector, S, 128>;
     using Event = Detector::Event;
 
     using Response = typename Detector::Response;
 
     Detector inner_ring =
         PET2D::Barrel::ScannerBuilder<Detector>::build_single_ring(
-            1., 16, .1, .1);
+            1, 16, F(.1), F(.1));
     Detector outer_ring =
         PET2D::Barrel::ScannerBuilder<Detector>::build_single_ring(
-            1.4, 16, .1, .1);
+            14, 16, F(.1), F(.1));
 
     Detector detector;
 
@@ -114,7 +116,7 @@ TEST("2d/barrel/detector_set/detect") {
     }
     CHECK(32 == detector.size());
 
-    Common::AlwaysAccept<float> model;
+    Common::AlwaysAccept<F> model;
     Response response;
     SECTION("horizontal") {
       {
@@ -131,7 +133,7 @@ TEST("2d/barrel/detector_set/detect") {
         CHECK(2 == detector.detect(model, model, e, response));
       }
       {
-        Event e(0, .050001, 0);
+        Event e(0, F(.050001), 0);
         Detector::Indices left, right;
         detector.close_indices(e, left, right);
         CHECK(2 == left.size());
@@ -144,7 +146,7 @@ TEST("2d/barrel/detector_set/detect") {
         CHECK(0 == detector.detect(model, model, e, response));
       }
       {
-        Event e(0, .049999, 0);
+        Event e(0, F(.049999), 0);
         CHECK(2 == detector.detect(model, model, e, response));
       }
     }

@@ -4,7 +4,9 @@
 #include "3d/geometry/matrix.h"
 #include "3d/geometry/vector.h"
 
-using Matrix = PET3D::Matrix<float>;
+#include "common/types.h"
+
+using Matrix = PET3D::Matrix<F>;
 
 TEST("3d/geometry/matrix/initialisation") {
 
@@ -93,7 +95,7 @@ TEST("3d/geometry/matrix/scalar_multiplication") {
   {
     Matrix mat;
 
-    mat = rhs * 3.0f;
+    mat = rhs * F(3);
     for (int i = 0; i < 9; i++) {
       REQUIRE(mat(i) == Approx(3 * (i + 1)).epsilon(1e-7));
     }
@@ -101,7 +103,7 @@ TEST("3d/geometry/matrix/scalar_multiplication") {
 
   {
     Matrix mat;
-    mat = 3.0f * rhs;
+    mat = F(3) * rhs;
     for (int i = 0; i < 9; i++) {
       REQUIRE(mat(i) == Approx(3 * (i + 1)).epsilon(1e-7));
     }

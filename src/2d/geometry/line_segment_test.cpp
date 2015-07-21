@@ -2,13 +2,16 @@
 
 #include "line_segment.h"
 
-TEST("2d/geometry/line_segment") {
-  using Point = PET2D::Point<float>;
+#include "common/types.h"
 
+using Point = PET2D::Point<F>;
+using LineSegment = PET2D::LineSegment<F>;
+
+TEST("2d/geometry/line_segment") {
   Point start(3, 0);
   Point end(0, 6);
 
-  PET2D::LineSegment<float> segment(start, end);
+  LineSegment segment(start, end);
 
   Point p(4, 3);
 

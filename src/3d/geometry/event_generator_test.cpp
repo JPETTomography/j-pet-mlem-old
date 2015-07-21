@@ -2,17 +2,16 @@
 
 #include "event_generator.h"
 
-using namespace PET3D;
+#include "common/types.h"
+
+using VoxelEventGenerator = PET3D::VoxelEventGenerator<F>;
+using Event = VoxelEventGenerator::Event;
+using Vector = VoxelEventGenerator::Vector;
+using Point = VoxelEventGenerator::Point;
 
 TEST("3d/geometry/event_generator/voxel_event_generator") {
-
-  using Event = VoxelEventGenerator<float>::Event;
-  using Vector = VoxelEventGenerator<float>::Vector;
-  using Point = VoxelEventGenerator<float>::Point;
-
   std::mt19937 rng;
-  VoxelEventGenerator<float> event_generator(Point(1.0f, 2.0f, 3.0f),
-                                             Vector(0.1f, 0.2f, 0.3f));
+  VoxelEventGenerator event_generator(Point(1, 2, 3), Vector(0.1, 0.2, 0.3));
 
   for (int i = 0; i < 256; i++) {
     Event event = event_generator(rng);

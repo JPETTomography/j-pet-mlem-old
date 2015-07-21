@@ -2,11 +2,12 @@
 
 #include "3d/geometry/voxel_grid.h"
 
+#include "common/types.h"
+
 TEST("3d/geometry/voxel_grid") {
 
-  PET2D::PixelGrid<float, short> pixel_grid(
-      10, 8, 0.005, PET2D::Point<float>(0, 0));
-  PET3D::VoxelGrid<float, short> grid(pixel_grid, -0.015, 6);
+  PET2D::PixelGrid<F, S> pixel_grid(10, 8, 0.005, PET2D::Point<F>(0, 0));
+  PET3D::VoxelGrid<F, S> grid(pixel_grid, -0.015, 6);
 
   REQUIRE(grid.n_voxels == 10 * 8 * 6);
   {

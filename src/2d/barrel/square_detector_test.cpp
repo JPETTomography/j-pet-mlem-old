@@ -2,12 +2,13 @@
 
 #include "square_detector.h"
 
-using namespace PET2D;
-using namespace PET2D::Barrel;
+#include "common/types.h"
+
+using SquareDetector = PET2D::Barrel::SquareDetector<F>;
 
 TEST("2d/barrel/square_detector/intersection") {
 
-  SquareDetector<float> d(2., 1., 0.);
+  SquareDetector d(2., 1., 0.);
 
   CHECK(d[0].x == 1.);
   CHECK(d[0].y == .5);
@@ -18,8 +19,8 @@ TEST("2d/barrel/square_detector/intersection") {
   CHECK(d[3].x == -1.);
   CHECK(d[3].y == .5);
 
-  SquareDetector<float>::Event e1(1., 0., M_PI_4);
-  SquareDetector<float>::Event e2(1., -3., -M_PI_4);
+  SquareDetector::Event e1(1., 0., M_PI_4);
+  SquareDetector::Event e2(1., -3., -M_PI_4);
 
   CHECK(true == d.intersects(e1));
   CHECK(false == d.intersects(e2));

@@ -4,9 +4,10 @@
 #include "generic_scanner.h"
 #include "square_detector.h"
 
+#include "common/types.h"
+
 using Builder = PET2D::Barrel::ScannerBuilder<
-    PET2D::Barrel::
-        GenericScanner<PET2D::Barrel::SquareDetector<float>, short, 128>>;
+    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S, 128>>;
 
 TEST("2d/barrel/scanner_builder/single_ring/symmetry") {
 

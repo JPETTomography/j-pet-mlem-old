@@ -5,46 +5,50 @@
 
 #include "polygon.h"
 
-using namespace PET2D;
+#include "common/types.h"
+
+using Point = PET2D::Point<F>;
+using Polygon = PET2D::Polygon<4, F>;
+using Polygon3 = PET2D::Polygon<3, F>;
 
 TEST("2d/geometry/polygon/json") {
-  Polygon<4, float> ps;
-  ps.emplace_back(1., 1.);
-  ps.emplace_back(2., 1.);
-  ps.emplace_back(2., 2.);
-  ps.emplace_back(1., 2.);
+  Polygon ps;
+  ps.emplace_back(1, 1);
+  ps.emplace_back(2, 1);
+  ps.emplace_back(2, 2);
+  ps.emplace_back(1, 2);
 
   json j(ps);
   REQUIRE(j.dump() == "[[1,1],[2,1],[2,2],[1,2]]");
 }
 
 TEST("2d/geometry/polygon/center") {
-  Polygon<4, float> ps;
-  ps.emplace_back(1., 1.);
-  ps.emplace_back(2., 1.);
-  ps.emplace_back(2., 2.);
-  ps.emplace_back(1., 2.);
+  Polygon ps;
+  ps.emplace_back(1, 1);
+  ps.emplace_back(2, 1);
+  ps.emplace_back(2, 2);
+  ps.emplace_back(1, 2);
 
-  CHECK(ps.center() == Point<float>(1.5, 1.5));
+  CHECK(ps.center() == Point(1.5, 1.5));
 
-  Polygon<3, float> pt;
-  pt.emplace_back(1., 1.);
-  pt.emplace_back(2., 1.);
-  pt.emplace_back(1.5, 2.);
+  Polygon3 pt;
+  pt.emplace_back(1, 1);
+  pt.emplace_back(2, 1);
+  pt.emplace_back(1.5, 2);
 
-  CHECK(pt.center() == Point<float>(1.5, 4. / 3.));
+  CHECK(pt.center() == Point(1.5, 4. / 3.));
 }
 
 TEST("2d/geometry/polygon/intersection") {
-  Polygon<4, float> p;
-  p.emplace_back(1., 1.);
-  p.emplace_back(2., 1.);
-  p.emplace_back(2., 2.);
-  p.emplace_back(1., 2.);
+  Polygon p;
+  p.emplace_back(1, 1);
+  p.emplace_back(2, 1);
+  p.emplace_back(2, 2);
+  p.emplace_back(1, 2);
 
-  Polygon<4, float>::Event e1(0., 0.5, M_PI_4);
-  Polygon<4, float>::Event e2(0., 1.5, M_PI_4);
-  Polygon<4, float>::Event e3(0., 1.5, 0.);
+  Polygon::Event e1(0, 0.5, M_PI_4);
+  Polygon::Event e2(0, 1.5, M_PI_4);
+  Polygon::Event e3(0, 1.5, 0);
 
   CHECK(true == p.intersects(e1));
   CHECK(false == p.intersects(e2));
@@ -80,12 +84,12 @@ TEST("2d/geometry/polygon/intersection/math") {
   int n_events;
   in >> n_events;
 
-  Polygon<4, float> poly;
+  Polygon poly;
 
   for (int i = 0; i < 4; ++i) {
     double x, y;
     in >> x >> y;
-    Polygon<4, float>::Point p(x, y);
+    Point p(x, y);
     poly.push_back(p);
   }
 
@@ -99,7 +103,7 @@ TEST("2d/geometry/polygon/intersection/math") {
     size_t n_iters;
     in >> n_iters;
 
-    Polygon<4, float>::Event event(x, y, phi);
+    Polygon::Event event(x, y, phi);
     bool intersects = n_iters > 0;
 
     CHECKED_IF(poly.intersects(event) == intersects) {
@@ -108,12 +112,12 @@ TEST("2d/geometry/polygon/intersection/math") {
       CHECKED_IF(inters.size() == n_iters) {
 
         if (n_iters > 0) {
-          double ix, iy;
-          Polygon<4, float>::Intersections m_inters;
+          double in_x, in_y;
+          Polygon::Intersections m_inters;
 
           for (size_t j = 0; j < n_iters; ++j) {
-            in >> ix >> iy;
-            Polygon<4, float>::Point p(ix, iy);
+            in >> in_x >> in_y;
+            Point p(in_x, in_y);
             m_inters.push_back(p);
           }
 

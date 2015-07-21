@@ -2,4 +2,9 @@
 
 #include "2d/geometry/event.h"
 
-TEST("2d/geometry/event") { PET2D::Event<float>(0, 0, 1, 0); }
+#include "common/types.h"
+
+TEST("2d/geometry/event") {
+  // FIXME: This test is incomplete!
+  PET2D::Event<F>(0, 0, 1, 0);
+}
