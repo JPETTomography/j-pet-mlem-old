@@ -165,3 +165,30 @@ Naming Convention
 2. Lower case with underscores for class files, i.e.: `small_potato.h`
 3. Constants are upper case with underscores, i.e.: `BROWN_POTATO`
 4. Variables and instances using lower case, i.e.: `some_potato`
+5. Type template parameters should have `Type` suffix, i.e.: `SizeType`
+6. Class template parameters should have `Class` suffix, i.e.: `DetectorClass`
+
+Type Usage
+----------
+
+This project can be built to use `float` or `double` as floating point
+representation, depending on the need, therefore:
+
+1. All classes must be templates taking `FType` (aka floating point type),
+   `SType` (aka short integer type) when necessary. They should not use `float`,
+   `double` or `short` directly, eg.:
+
+       template <typename FType> struct Point {
+         using F = FType;
+         F x, y
+       };
+
+2. All template instantiations shall use `F` and `S` types respectively
+   including `common/types.h` prior instantiation, eg.:
+
+       #include "2d/geometry/point.h"
+       #include "2d/geometry/pixel.h"
+       #include "common/types.h"
+       
+       using Point = PET2D::Point<F>;
+       using Pixel = PET2D::Point<S>;
