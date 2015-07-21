@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <limits>
 
 #include "2d/barrel/generic_scanner.h"
 #include "symmetry_descriptor.h"
@@ -86,8 +87,8 @@ template <class ScannerClass> class ScannerBuilder {
       throw("number of numbers of detectors must be less or equal radiuses");
 
     for (unsigned int i = 0; i < radius.size(); ++i) {
-      if (std::abs(rotation[i]) >= 1e-6 &&
-          std::abs(rotation[i] - F(0.5)) > 1e-6) {
+      if (std::abs(rotation[i]) >= std::numeric_limits<F>::epsilon() &&
+          std::abs(rotation[i] - F(0.5)) > std::numeric_limits<F>::epsilon()) {
         throw("broken symmetry");
       }
     }
@@ -112,12 +113,13 @@ template <class ScannerClass> class ScannerBuilder {
 
     std::function<S(S, S)> symmetric_detector;
 
-    if (std::abs(rotation[0]) < 1e-6) {
+    if (std::abs(rotation[0]) < std::numeric_limits<F>::epsilon()) {
       symmetric_detector = [=](S d, S s) -> S {
         return symmetry_descriptor->ring_symmetric_detector(
             n_detectors[0], d, s);
       };
-    } else if (std::abs(rotation[0] - 0.5) < 1e-6) {
+    } else if (std::abs(rotation[0] - F(0.5)) <
+               std::numeric_limits<F>::epsilon()) {
       symmetric_detector = [=](S d, S s) -> S {
         return symmetry_descriptor->rotated_ring_symmetric_detector(
             n_detectors[0], d, s);
@@ -149,12 +151,13 @@ template <class ScannerClass> class ScannerBuilder {
           radius[i], n_detectors[i], w_detector, h_detector, d_detector);
       S detector_i = 0;
 
-      if (std::abs(rotation[i]) < 1e-6) {
+      if (std::abs(rotation[i]) < std::numeric_limits<F>::epsilon()) {
         symmetric_detector = [=](S d, S s) -> S {
           return symmetry_descriptor->ring_symmetric_detector(
               n_detectors[i], d, s);
         };
-      } else if (std::abs(rotation[i] - 0.5) < 1e-6) {
+      } else if (std::abs(rotation[i] - F(0.5)) <
+                 std::numeric_limits<F>::epsilon()) {
         symmetric_detector = [=](S d, S s) -> S {
           return symmetry_descriptor->rotated_ring_symmetric_detector(
               n_detectors[i], d, s);
