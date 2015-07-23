@@ -59,10 +59,6 @@ class Reconstruction {
         Hit pixel_sensitivity = sensitivity_[p];
         if (pixel_sensitivity > 0) {
           scale_[p] = static_cast<F>(n_emissions) / pixel_sensitivity;
-#if USE_RHO_DETECTED
-          // if rho starts from 1, then rho-detected must start from sensitivity
-          rho_[p] = 1 / scale_[p];
-#endif
         }
       }
     }
@@ -100,6 +96,14 @@ class Reconstruction {
                   int n_iterations_so_far = 0  ///< iterations so far
                   ) {
     F* y = (F*)alloca(total_n_pixels_ * sizeof(F));
+
+#if USE_RHO_DETECTED
+    // tranform rho -> rho-detected
+    // starting from constant 1 makes effectively rho=sensitivity
+    for (Size p = 0; p < total_n_pixels_; ++p) {
+      rho_[p] /= scale_[p];
+    }
+#endif
 
     for (Size iteration = 0; iteration < n_iterations; ++iteration) {
       progress(iteration + n_iterations_so_far);
@@ -206,6 +210,13 @@ class Reconstruction {
   F rho(const Pixel& pixel) const { return rho_[pixel_index(pixel)]; }
   const Sensitivity& sensitivity() const { return sensitivity_; }
   const Output& rho() const { return rho_; }
+  Output rho_detected() const {
+    Output rho_detected(rho_);
+    for (Size p = 0; p < total_n_pixels_; ++p) {
+      rho_detected[p] /= scale_[p];
+    }
+    return rho_detected;
+  }
   const Output& scale() const { return scale_; }
 
  private:

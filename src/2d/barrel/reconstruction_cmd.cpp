@@ -147,5 +147,9 @@ int main(int argc, char* argv[]) {
   util::png_writer png(output.wo_ext() + ".png", cl.get<double>("png-max"));
   png << reconstruction.rho();
 
+  util::png_writer png_detected(output.wo_ext() + "_detected.png",
+                                cl.get<double>("png-max"));
+  png_detected << reconstruction.rho_detected();
+
   CMDLINE_CATCH
 }
