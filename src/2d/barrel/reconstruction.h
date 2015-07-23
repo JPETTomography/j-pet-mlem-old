@@ -12,7 +12,9 @@
 #include "lor.h"
 #include "2d/geometry/pixel_map.h"
 
-#define DEBUG 0
+// This makes every iteration calculate rho-detected,
+// aka rho*sensitivity
+#define USE_RHO_DETECTED 0
 
 namespace PET2D {
 namespace Barrel {
@@ -57,6 +59,10 @@ class Reconstruction {
         Hit pixel_sensitivity = sensitivity_[p];
         if (pixel_sensitivity > 0) {
           scale_[p] = static_cast<F>(n_emissions) / pixel_sensitivity;
+#if USE_RHO_DETECTED
+          // if rho starts from 1, then rho-detected must start from sensitivity
+          rho_[p] = 1 / scale_[p];
+#endif
         }
       }
     }
@@ -149,7 +155,7 @@ class Reconstruction {
           while (matrix_it->lor == lor && matrix_it->position == position) {
             auto p = pixel_index(matrix_it->pixel);
             u += rho_[p] * static_cast<F>(matrix_it->hits)
-#if IN_LOOP_SCALE
+#if USE_RHO_DETECTED
                  * scale_[p];
 #endif
             ;
@@ -162,7 +168,7 @@ class Reconstruction {
           while (matrix_it->lor == lor && matrix_it->position == position) {
             auto p = pixel_index(matrix_it->pixel);
             y[p] += phi * static_cast<F>(matrix_it->hits)
-#if IN_LOOP_SCALE
+#if USE_RHO_DETECTED
                     * scale_[p];
 #endif
             ;
@@ -178,7 +184,7 @@ class Reconstruction {
 
       for (Size p = 0; p < total_n_pixels_; ++p) {
         rho_[p] *= y[p]
-#if !IN_LOOP_SCALE
+#if !USE_RHO_DETECTED
                    * scale_[p]
 #endif
             ;
@@ -186,6 +192,13 @@ class Reconstruction {
 
       progress(iteration + n_iterations_so_far, true);
     }
+
+#if USE_RHO_DETECTED
+    // apply sensitivity for final rho-detected -> rho
+    for (Size p = 0; p < total_n_pixels_; ++p) {
+      rho_[p] *= scale_[p];
+    }
+#endif
   }
 
   S n_pixels_in_row() { return n_pixels_in_row_; }
