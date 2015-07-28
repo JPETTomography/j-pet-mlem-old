@@ -38,6 +38,7 @@
 
 #include "cmdline.h"
 #include "util/cmdline_types.h"
+#include "util/cmdline_hooks.h"
 #include "util/random.h"
 #include "util/backtrace.h"
 #include "util/progress.h"

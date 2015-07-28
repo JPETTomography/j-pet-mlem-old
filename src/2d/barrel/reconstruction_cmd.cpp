@@ -31,6 +31,7 @@
 
 #include "cmdline.h"
 #include "util/cmdline_types.h"
+#include "util/cmdline_hooks.h"
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
 #include "util/cmdline_types.h"
