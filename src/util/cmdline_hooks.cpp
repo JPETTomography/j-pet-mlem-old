@@ -52,13 +52,14 @@ bool load(cmdline::parser& parser, path& value, const std::string& arg) {
   }
   std::ifstream in(path);
   if (!in.is_open()) {
-    // if we cannot load it, try to load it relatively to exe dir
+    // if we cannot load it, try to load it relatively to exe dir config/arg.cfg
     if (exe_dir.length() && arg[0] != DIR_SEP) {
-      in.open(exe_dir + arg);
+      auto fallback = exe_dir + "config" + DIR_SEP + arg + ".cfg";
+      in.open(fallback);
       if (!in.is_open()) {
         throw("cannot open input config file: " + path);
       } else {
-        path = exe_dir + arg;
+        path = fallback;
         if (verbose) {
           std::cout << "# falling back to: " << path << std::endl;
         }
