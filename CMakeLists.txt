@@ -245,7 +245,7 @@ if(Boost_FOUND)
 endif()
 
 # custom documentation and config files to be shown in project tree
-file(GLOB EXTRA scripts/* cmake/* src/3d/hybrid/*.js src/3d/hybrid/*.json src/3d/geometry/*.json)
+file(GLOB EXTRA scripts/* cmake/* config/* phantoms/*)
 add_custom_target(extra SOURCES
   README.md
   Doxyfile
