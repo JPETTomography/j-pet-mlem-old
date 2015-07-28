@@ -5,22 +5,69 @@
 
 namespace cmdline {
 
+namespace {
 static std::vector<std::string> dir_stack;
+static cmdline::path exe_dir;
+}
+
+#if defined(_WIN32) || defined(WIN32)
+#define DIR_SEP '\\'
+#else
+#define DIR_SEP '/'
+#endif
+
+void init(const char* argv0) {
+  cmdline::path cmd(argv0);
+  char buf[PATH_MAX];
+  if (!getcwd(buf, PATH_MAX))
+    return;
+  cmdline::path cwd(buf);
+  // remove relative components when starts with ../
+  while (cmd.length() > 3 && cmd[0] == '.' && cmd[1] == '.' &&
+         cmd[2] == DIR_SEP) {
+    auto cwd_dir_sep = cwd.find_last_of(DIR_SEP);
+    if (cwd_dir_sep == std::string::npos)
+      return;
+    cwd = cwd.substr(0, cwd_dir_sep);
+    cmd = cmd.substr(3);
+  }
+  auto cmd_dir_sep = cmd.find_last_of(DIR_SEP);
+  if (cmd_dir_sep != std::string::npos) {
+    exe_dir = cwd + DIR_SEP + cmd.substr(0, cmd_dir_sep) + DIR_SEP;
+  } else {
+    exe_dir = cwd + DIR_SEP;
+  }
+}
 
 bool load(cmdline::parser& parser, path& value, const std::string& arg) {
   (void)value;  // unused
   std::string path = arg;
-  if (!dir_stack.empty() && path.substr(0, 1) != "/") {
+  // if path is relative, use dir stack
+  if (!dir_stack.empty() && path[0] != DIR_SEP) {
     path = dir_stack.back() + path;
   }
-  if (parser.exist("verbose")) {
+  auto verbose = parser.exist("verbose");
+  if (verbose) {
     std::cout << "# load: " << path << std::endl;
   }
   std::ifstream in(path);
   if (!in.is_open()) {
-    throw("cannot open input config file: " + path);
+    // if we cannot load it, try to load it relatively to exe dir
+    if (exe_dir.length() && arg[0] != DIR_SEP) {
+      in.open(exe_dir + arg);
+      if (!in.is_open()) {
+        throw("cannot open input config file: " + path);
+      } else {
+        path = exe_dir + arg;
+        if (verbose) {
+          std::cout << "# falling back to: " << path << std::endl;
+        }
+      }
+    } else {
+      throw("cannot open input config file: " + path);
+    }
   }
-  auto dir_sep = path.find_last_of('/');
+  auto dir_sep = path.find_last_of(DIR_SEP);
   if (dir_sep != std::string::npos) {
     dir_stack.push_back(path.substr(0, dir_sep + 1));
   } else {

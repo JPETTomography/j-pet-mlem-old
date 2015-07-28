@@ -7,6 +7,9 @@
 
 namespace cmdline {
 
+/// Init command line hooks with command path
+void init(const char* argv0);
+
 /// Loads serialized command line parameters from config file given as
 /// argument
 bool load(cmdline::parser& parser, path& value, const std::string& arg);
@@ -20,7 +23,9 @@ void load_accompanying_config(cmdline::parser& parser, bool only_one = false);
 
 }  // cmdline
 
-#define CMDLINE_TRY try {
+#define CMDLINE_TRY       \
+  cmdline::init(argv[0]); \
+  try {
 
 #define CMDLINE_CATCH                                                 \
   return 0;                                                           \
