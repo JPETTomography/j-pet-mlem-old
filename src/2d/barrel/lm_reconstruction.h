@@ -102,8 +102,8 @@ template <typename FType, typename SType> class LMReconstruction {
 
 #if SYSTEM_MATRIX
     if (system_matrix_) {
-      event.last_pixel = lor_pixel_info[event.lor].pixels.end();
-      event.first_pixel = lor_pixel_info[event.lor].pixels.begin();
+      event.last_pixel = geometry[event.lor].pixels.end();
+      event.first_pixel = geometry[event.lor].pixels.begin();
     }
 #endif
     return event;
