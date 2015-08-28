@@ -8,11 +8,11 @@
 /// ----------------------------
 /// - Shepp like phantom
 ///
-///   \verbinclude samples/phantoms/s_shepp
+///   \verbinclude phantoms/s_shepp
 ///
 /// - Small Shepp like phantom
 ///
-///   \verbinclude samples/phantoms/s_shepp_scaled
+///   \verbinclude phantoms/s_shepp_scaled
 ///
 /// Authors
 /// -------
