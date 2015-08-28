@@ -188,7 +188,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     }
   }
 
-  int iterate() {
+  int operator()() {
     event_count_ = 0;
     voxel_count_ = 0;
     pixel_count_ = 0;
@@ -199,15 +199,14 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     for (auto& thread_kernel_cache : thread_kernel_caches_) {
       thread_kernel_cache.assign(v_grid.n_voxels, 0);
     }
-
     for (auto& n_events : n_events_per_thread_) {
       n_events = 0;
     }
 
-/* ------- Event loop ------*/
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
+    // --- event loop ----------------------------------------------------------
     for (int i = 0; i < n_events(); ++i) {
       int thread = omp_get_thread_num();
       n_events_per_thread_[thread]++;
@@ -216,7 +215,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       auto& segment = geometry[lor].segment;
       auto R = segment.length / 2;
 
-      /* ---------  Voxel loop  - denominator ----------- */
+      // -- voxel loop - denominator -------------------------------------------
       double denominator = 0;
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         pixel_count_++;
@@ -242,7 +241,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
           thread_kernel_caches_[thread][index] = weight;
           denominator += weight;
         }
-      }  // Voxel loop - denominator
+      }  // voxel loop - denominator
 
       F inv_denominator;
       if (denominator > 0) {
@@ -251,7 +250,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         throw("denminator == 0 !");
       }
 
-      /* ---------  Voxel loop ------------ */
+      // -- voxel loop ---------------------------------------------------------
       for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
         auto pix = it->pixel;
         auto ix = pix.x;
@@ -261,7 +260,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
           thread_rhos_[thread][index] +=
               thread_kernel_caches_[thread][index] * inv_denominator;
         }
-      }  // Voxel loop
+      }  // voxel loop
     }    // event loop
     event_count_ = 0;
 

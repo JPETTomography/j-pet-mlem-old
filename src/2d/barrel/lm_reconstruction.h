@@ -122,7 +122,6 @@ template <typename FType, typename SType> class LMReconstruction {
   }
 
   int operator()() {
-
     event_count_ = 0;
     voxel_count_ = 0;
     pixel_count_ = 0;
@@ -130,13 +129,11 @@ template <typename FType, typename SType> class LMReconstruction {
     for (auto& thread_rho : thread_rhos_) {
       thread_rho.assign(grid.n_pixels, 0);
     }
-
-    for (auto& n_events : n_events_per_thread_) {
-      n_events = 0;
-    }
-
     for (auto& thread_kernel_cache : thread_kernel_caches_) {
       thread_kernel_cache.assign(grid.n_pixels, 0);
+    }
+    for (auto& n_events : n_events_per_thread_) {
+      n_events = 0;
     }
 
 #if _OPENMP
@@ -146,7 +143,6 @@ template <typename FType, typename SType> class LMReconstruction {
     for (size_t i = 0; i < events_.size(); ++i) {
       int thread = omp_get_thread_num();
       n_events_per_thread_[thread]++;
-
       auto event = events_[i];
 
       // -- voxel loop - denominator -------------------------------------------
@@ -174,9 +170,7 @@ template <typename FType, typename SType> class LMReconstruction {
       double inv_denominator;
       if (denominator > 0) {
         inv_denominator = 1 / denominator;
-
       } else {
-
         continue;
       }
 
@@ -190,8 +184,7 @@ template <typename FType, typename SType> class LMReconstruction {
             thread_kernel_caches_[thread][index] * inv_denominator;
 
       }  // voxel loop
-
-    }  // event loop
+    }    // event loop
     event_count_ = 0;
 
     rho_.assign(0);
