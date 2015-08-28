@@ -16,6 +16,7 @@
 namespace PET2D {
 namespace Barrel {
 
+/// 2D barrel list-mode reconstuction
 template <typename FType, typename SType> class LMReconstruction {
   using Detector = PET2D::Barrel::SquareDetector<FType>;
   using Scanner2D = PET2D::Barrel::DetectorSet<Detector, SType>;
