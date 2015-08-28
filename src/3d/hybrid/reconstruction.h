@@ -248,8 +248,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       if (denominator > 0) {
         inv_denominator = 1 / denominator;
       } else {
-        std::cerr << "denminator == 0 !";
-        abort();
+        throw("denminator == 0 !");
       }
 
       /* ---------  Voxel loop ------------ */
