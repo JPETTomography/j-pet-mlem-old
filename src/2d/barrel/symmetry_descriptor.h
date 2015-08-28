@@ -12,6 +12,7 @@ namespace Barrel {
 
 enum Axis { X = 1, Y = 2, XY = 4 };
 
+/// Describes detector ring symmetries and symmetry transformations
 template <typename SType> class SymmetryDescriptor {
  public:
   using S = SType;

@@ -9,6 +9,7 @@
 namespace PET2D {
 namespace Barrel {
 
+/// Factory building scanners containing single or multiple rings of detector
 template <class ScannerClass> class ScannerBuilder {
  public:
   using Scanner = ScannerClass;

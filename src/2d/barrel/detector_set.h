@@ -17,6 +17,7 @@ namespace Barrel {
 
 template <class ScannerClass> class ScannerBuilder;
 
+/// Set of detectors and a base class for specific scanners
 template <class DetectorClass,
           typename SType,
           std::size_t MaxDetetectorsSize = 192>
@@ -35,6 +36,7 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
   using Indices = util::array<MaxDetetectorsSize, S>;
   using Event = Barrel::Event<F>;
 
+  /// A response of any scanner inheriting DetectorSet
   struct Response {
     LOR lor;
     S tof_position;
