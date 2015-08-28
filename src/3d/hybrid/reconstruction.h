@@ -81,12 +81,12 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   Point translate_to_point(const Response& response) {
 
     auto segment = geometry[response.lor].segment;
-    F t = 0.5 - response.dl / (2 * segment->length);
+    F t = F(0.5) - response.dl / (2 * segment->length);
     return Point(segment->start.x, segment->start.y, response.z_dn)
         .iterpolate(Point(segment->end.x, segment->end.y, response.z_up), t);
   }
 
-  F sigma_w(F width) const { return 0.3 * width; }
+  F sigma_w(F width) const { return F(0.3) * width; }
 
   FrameEvent translate_to_frame(const Response& response) {
 
