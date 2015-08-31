@@ -218,7 +218,7 @@ class SparseMatrix
                        this->end(),
                        [](const Element& a) -> bool { return a.hits == 0; }),
         this->end());
-  };
+  }
 
   SparseMatrix& operator<<(const SparseMatrix& other) {
 

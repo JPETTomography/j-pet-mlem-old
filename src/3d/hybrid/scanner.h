@@ -69,7 +69,7 @@ template <class Scanner2DClass> class Scanner {
       out << " " << response.d2_entry << " " << response.d2_exit << " "
           << response.d2_deposition;
       return out;
-    };
+    }
   };
   /// Scanner response
   ///
