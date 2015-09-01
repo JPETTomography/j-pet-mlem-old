@@ -1,7 +1,13 @@
 #include <fstream>
 #include <iostream>
 #include <climits>
+#if !_MSC_VER
 #include <unistd.h>
+#else
+#include <direct.h>
+#define getcwd _getcwd
+#define PATH_MAX _MAX_PATH
+#endif
 
 #include "cmdline_hooks.h"
 
