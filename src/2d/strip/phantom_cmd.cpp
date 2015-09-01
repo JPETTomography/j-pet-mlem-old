@@ -169,8 +169,10 @@ int main(int argc, char* argv[]) {
             }
           }
           {
-            auto event = scanner.from_projection_space_tan(response_w_error);
-            auto pixel = pixel_grid.pixel_at(PET2D::Point<F>(event.z, event.y));
+            auto event_w_error =
+                scanner.from_projection_space_tan(response_w_error);
+            auto pixel = pixel_grid.pixel_at(
+                PET2D::Point<F>(event_w_error.z, event_w_error.y));
             if (pixel_grid.contains(pixel)) {
               image_detected_w_error[pixel]++;
             }
