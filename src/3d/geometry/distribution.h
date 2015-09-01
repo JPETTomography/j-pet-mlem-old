@@ -19,10 +19,10 @@ template <typename FType> class SphericalDistribution {
   using F = FType;
   using Vector = PET3D::Vector<F>;
 
-  SphericalDistribution(F theta_min = -M_PI / 2, F theta_max = M_PI / 2)
+  SphericalDistribution(F theta_min = F(-M_PI) / 2, F theta_max = F(M_PI) / 2)
       : theta_min(theta_min),
         theta_max(theta_max),
-        phi_dist(-M_PI, M_PI),
+        phi_dist(F(-M_PI), F(M_PI)),
         z_dist(sin(theta_min), sin(theta_max)) {}
 
 #if !__CUDACC__
@@ -88,7 +88,7 @@ template <typename FType> class CylinderPointDistribution {
       : radius(radius),
         height(height),
         uni_h(-height / 2, height / 2),
-        uni_phi(0, 2 * M_PI),
+        uni_phi(0, 2 * F(M_PI)),
         uni_r(0, 1) {}
 
   template <class RNG> Point operator()(RNG& rng) {

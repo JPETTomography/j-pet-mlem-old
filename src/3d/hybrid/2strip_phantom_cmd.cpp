@@ -35,11 +35,11 @@ using Event = MonteCarlo::Event;
 using FullResponse = MonteCarlo::FullResponse;
 
 namespace {
-F strip_width = 0.005;
-F strip_height = 0.019;
-F strip_distance = 0.410;
+F strip_width = F(0.005);
+F strip_height = F(0.019);
+F strip_distance = F(0.410);
 F inner_radius = (strip_distance - strip_height) / 2;
-F strip_length = 0.300;
+F strip_length = F(0.300);
 }
 
 int main(int argc, char* argv[]) {
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
 
   Phantom phantom(regions);
 
-  Scintillator scintillator(0.100);
+  Scintillator scintillator(F(0.100));
   MonteCarlo monte_carlo(phantom, scanner);
 
   if (cl.exist("output")) {

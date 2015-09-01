@@ -39,11 +39,11 @@ using FullResponse = MonteCarlo::FullResponse;
 // either should be removed or applied to the code.
 #if HARDCODED_VALUES
 namespace {
-FType strip_width = 0.005;
-FType strip_height = 0.019;
-FType strip_distance = 0.410;
-FType inner_radius = (strip_distance - strip_height) / 2;
-FType strip_length = 0.300;
+F strip_width = F(0.005);
+F strip_height = F(0.019);
+F strip_distance = F(0.410);
+F inner_radius = (strip_distance - strip_height) / 2;
+F strip_length = F(0.300);
 }
 #endif
 
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
 
   Phantom phantom(regions);
 
-  Scintillator scintillator(0.100);
+  Scintillator scintillator(F(0.100));
   MonteCarlo monte_carlo(phantom, scanner);
 
   std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);

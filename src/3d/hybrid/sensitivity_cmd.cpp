@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 
   PET3D::Hybrid::SensitivityMapper<Scanner> mapper(scanner, voxel_set);
 
-  Common::ScintillatorAccept<F> scintillator(0.100);
+  Common::ScintillatorAccept<F> scintillator(F(0.100));
 
   util::random::tausworthe gen(12212);
   mapper.map(gen, scintillator, cl.get<int>("n-emissions"));
