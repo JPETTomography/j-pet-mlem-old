@@ -1,8 +1,7 @@
 #include <fstream>
 #include <iostream>
-
+#include <climits>
 #include <unistd.h>
-#include <sys/syslimits.h>
 
 #include "cmdline_hooks.h"
 
