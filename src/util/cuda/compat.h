@@ -83,13 +83,9 @@ template <typename F> F atan2(const F a, const F b) { return std::atan2(a, b); }
 template <typename F> F pow(const F a, const F b) { return std::pow(a, b); }
 template <typename F> F exp(const F a) { return std::exp(a); }
 template <typename F> F log(const F a) { return std::log(a); }
-#if !_MSC_VER
 template <typename F> constexpr F numeric_max() {
   return std::numeric_limits<F>::max();
 }
-#else
-template <typename F> F numeric_max() { return std::numeric_limits<F>::max(); }
-#endif
 
 /// \cond PRIVATE
 
