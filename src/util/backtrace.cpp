@@ -70,6 +70,6 @@ void print_backtrace(std::ostream& out) {
 
 #else
 namespace util {
-void print_backtrace(std::ostream& out) {}
+void print_backtrace(std::ostream& out) { (void)(out); }
 }
 #endif

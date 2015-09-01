@@ -1,9 +1,5 @@
 #pragma once
 
-#if _MSC_VER && !__CUDACC__
-#include <ctime>
-#endif
-
 #include "cuda/compat.h"
 
 /// Various utility classes and functions
@@ -59,14 +55,14 @@ class tausworthe {
 
   /// Randomizes generator with given seed value
   void seed(seed_type seed) {
-#if !_MSC_VER
+#if !_WIN32
     srand48(seed);
 #else
-    srand(time(NULL));
+    srand(seed);
 #endif
     for (size_t i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
       result_type r;
-#if !_MSC_VER
+#if !_WIN32
       while ((r = static_cast<result_type>(lrand48())) < 128)
 #else
       while ((r = static_cast<result_type>(rand())) < 128)
