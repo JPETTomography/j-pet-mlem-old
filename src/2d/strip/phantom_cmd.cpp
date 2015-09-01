@@ -64,6 +64,8 @@ using Phantom = PET2D::Phantom<RNG, F>;
 using Ellipse = PET2D::Ellipse<F>;
 using Image = PET2D::PixelMap<PET2D::Pixel<S>, int>;
 using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner, Image>;
+using Event = MonteCarlo::Event;
+using FullResponse = MonteCarlo::FullResponse;
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -117,7 +119,7 @@ int main(int argc, char* argv[]) {
 
   MonteCarlo monte_carlo(phantom, scanner);
 
-  typename Phantom::RNG rng;
+  RNG rng;
   Common::AlwaysAccept<F> model;
 
   if (!cl.exist("output")) {
@@ -148,14 +150,13 @@ int main(int argc, char* argv[]) {
         rng,
         model,
         n_emissions,
-        [&](const typename MonteCarlo::Event& event) {
+        [&](const Event& event) {
           auto pixel = pixel_grid.pixel_at(event.center);
           if (pixel_grid.contains(pixel)) {
             image_emitted[pixel]++;
           }
         },
-        [&](const typename MonteCarlo::Event& event,
-            const typename MonteCarlo::FullResponse& full_response) {
+        [&](const Event& event, const FullResponse& full_response) {
           out_exact_events << event << "\n";
           out_full_response << full_response << "\n";
           out_wo_error << scanner.response_wo_error(full_response) << "\n";

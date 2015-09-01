@@ -32,6 +32,8 @@ using Vector = PET3D::Vector<F>;
 using Voxel = PET3D::Voxel<S>;
 using Image = PET3D::VoxelMap<Voxel, F>;
 using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner, Image>;
+using Event = MonteCarlo::Event;
+using FullResponse = MonteCarlo::FullResponse;
 
 // FIXME: I don't know what is the purpose of this, but these are unused, so
 // either should be removed or applied to the code.
@@ -126,9 +128,8 @@ int main(int argc, char* argv[]) {
       rng,
       scintillator,
       n_emissions,
-      [](const typename MonteCarlo::Event&) {},
-      [&](const typename MonteCarlo::Event& event,
-          const typename MonteCarlo::FullResponse& full_response) {
+      [](const Event&) {},
+      [&](const Event& event, const FullResponse& full_response) {
         out_exact_events << event << "\n";
         out_full_response << full_response << "\n";
         out_wo_error << scanner.response_wo_error(full_response) << "\n";
