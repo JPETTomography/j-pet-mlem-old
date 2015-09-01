@@ -141,7 +141,7 @@ template <typename FType, typename SType> class LMReconstruction {
 #pragma omp parallel for schedule(dynamic)
 #endif
     // --- event loop ----------------------------------------------------------
-    for (size_t i = 0; i < events_.size(); ++i) {
+    for (int i = 0; i < (int)events_.size(); ++i) {
       int thread = omp_get_thread_num();
       n_events_per_thread_[thread]++;
       auto event = events_[i];

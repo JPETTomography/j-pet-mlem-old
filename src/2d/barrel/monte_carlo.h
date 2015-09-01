@@ -86,7 +86,7 @@ template <class DetectorClass, class MatrixClass> class MonteCarlo {
     // being upper right part or whole system matrix
     // NOTE: we must iterate pixel indices instead of x, y since we need proper
     // thread distribution when issuing on MIC
-    for (auto i_pixel = 0; i_pixel < matrix.total_n_pixels_in_triangle;
+    for (int i_pixel = 0; i_pixel < matrix.total_n_pixels_in_triangle;
          ++i_pixel) {
       progress(i_pixel);
       TRY;
