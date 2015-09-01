@@ -9,7 +9,7 @@
 # overridable settings
 set(PNG_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/libpng.ext.dir
   CACHE PATH   "Location on libpng internal installation folder")
-set(PNG_URL    "http://downloads.sourceforge.net/project/libpng/libpng15/1.5.20/libpng-1.5.20.tar.gz"
+set(PNG_URL    "http://downloads.sourceforge.net/project/libpng/libpng15/1.5.23/libpng-1.5.23.tar.gz"
   CACHE STRING "URL of libpng source")
 set(ZLIB_URL   "http://zlib.net/zlib-1.2.8.tar.gz"
   CACHE STRING "URL of zlib source")
