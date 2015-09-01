@@ -180,9 +180,14 @@ class Reconstruction {
 
   template <class FileWriter>
   void output_bitmap(FileWriter& fw, bool output_sensitivity = false) {
-    fw.template write(scanner.n_z_pixels,
-                      scanner.n_y_pixels,
-                      (output_sensitivity ? sensitivity : rho).data());
+#if !_MSC_VER
+    fw.template
+#else
+    fw.
+#endif
+        write(scanner.n_z_pixels,
+              scanner.n_y_pixels,
+              (output_sensitivity ? sensitivity : rho).data());
   }
 
  private:
