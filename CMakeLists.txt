@@ -85,6 +85,9 @@ if(OPENMP_FOUND)
 endif()
 
 # CUDA support
+if(CMAKE_VERSION VERSION_GREATER 3.3)
+  set(CUDA_USE_STATIC_CUDA_RUNTIME OFF CACHE BOOL "use the static CUDA runtime")
+endif()
 find_package(CUDA)
 if(CUDA_FOUND AND CUDA_VERSION VERSION_LESS "7.0")
   message(STATUS "Error: CUDA 7.0 or greater required for this project")
