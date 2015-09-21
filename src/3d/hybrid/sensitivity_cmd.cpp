@@ -27,18 +27,7 @@ int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
   cmdline::parser cl;
-  PET2D::Barrel::add_scanner_options(cl);
-  cl.add<int>("z-plane", 0, "z plane trianguler cut", false);
-  cl.add<int>("y-plane", 0, "y plane cut", false);
-  cl.add<int>(
-      "n-pixels", 'n', "number of pixels in x and y  directions", false, 80);
-  cl.add<int>("n-planes", 0, "number pf z planes", false, 80);
-  cl.add<double>("s-pixel", 'p', "voxel size", false, 0.005);
-  cl.add<int>("n-emissions", 'e', "number of emission", false, 0);
-  cl.add<cmdline::path>(
-      "output", 'o', "output files template", false, "out.bin");
-  cl.add<int>("n-threads", 'T', "number of threads", false);
-
+  PET3D::Hybrid::add_sensitivity_options(cl);
   cl.parse_check(argc, argv);
   PET3D::Hybrid::calculate_scanner_options(cl, argc);
 

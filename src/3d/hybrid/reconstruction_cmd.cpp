@@ -37,15 +37,7 @@ int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
   cmdline::parser cl;
-  cl.add<std::string>("geometry", 0, "geometry information", true);
-  cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
-  cl.add<double>("length", 0, "length of the detector", false, 0.3);
-
-  PET2D::Barrel::add_matrix_options(cl);
-  cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
-  cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
-
-  cl.footer("response ...");
+  PET3D::Hybrid::add_reconstruction_options(cl);
   cl.parse_check(argc, argv);
   PET3D::Hybrid::calculate_scanner_options(cl, argc);
 
