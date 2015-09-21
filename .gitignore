@@ -57,3 +57,4 @@
 
 # ignore OS X specific mess
 .DS_Store
+/*.dylib
