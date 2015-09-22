@@ -50,6 +50,15 @@ namespace Barrel {
 /// Adds scanner specific command line options.
 void add_scanner_options(cmdline::parser& parser);
 
+/// Adds custom config command line option.
+void add_config_option(cmdline::parser& parser);
+
+/// Adds pixel specific command line options.
+void add_pixel_options(cmdline::parser& parser);
+
+/// Adds probability model specific command line options.
+void add_model_options(cmdline::parser& parser);
+
 /// Adds \ref cmd_2d_barrel_matrix specific command line options.
 void add_matrix_options(cmdline::parser& parser);
 

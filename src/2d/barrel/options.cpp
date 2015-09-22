@@ -45,7 +45,7 @@ void add_scanner_options(cmdline::parser& cl) {
   cl.add<double>("fov-radius", 0, "field of view radius", false);
 }
 
-static void add_scanner_model_options(cmdline::parser& cl) {
+void add_config_option(cmdline::parser& cl) {
   cl.add<cmdline::path>("config",
                         'c',
                         "load config file",
@@ -53,9 +53,14 @@ static void add_scanner_model_options(cmdline::parser& cl) {
                         cmdline::path(),
                         cmdline::default_reader<cmdline::path>(),
                         cmdline::load);
+}
+
+void add_pixel_options(cmdline::parser& cl) {
   cl.add<int>("n-pixels", 'n', "number of pixels in one dimension", false, 256);
   cl.add<double>("s-pixel", 'p', "pixel size", false);
-  add_scanner_options(cl);
+}
+
+void add_model_options(cmdline::parser& cl) {
   cl.add<double>(
       "tof-step", 't', "TOF quantisation step for distance delta", false);
   cl.add<double>("s-dl", 0, "TOF sigma delta-l", cmdline::alwayssave, 0.06);
@@ -88,7 +93,11 @@ void add_matrix_options(cmdline::parser& cl) {
   msg << "note: All length options below should be expressed in meters.";
   cl.footer(msg.str());
 
-  add_scanner_model_options(cl);
+  add_config_option(cl);
+  add_pixel_options(cl);
+  add_scanner_options(cl);
+  add_model_options(cl);
+
   cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
   cl.add<int>("n-emissions",
               'e',
@@ -130,13 +139,8 @@ void add_matrix_options(cmdline::parser& cl) {
 void add_phantom_options(cmdline::parser& cl) {
   cl.footer("phantom_description ...");
 
-  cl.add<cmdline::path>("config",
-                        'c',
-                        "load config file",
-                        cmdline::dontsave,
-                        cmdline::path(),
-                        cmdline::default_reader<cmdline::path>(),
-                        cmdline::load);
+  add_config_option(cl);
+
   cl.add<int>("n-pixels", 'n', "number of pixels in one dimension", false, 256);
   cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
   add_scanner_options(cl);
@@ -194,7 +198,9 @@ static void add_iteration_options(cmdline::parser& cl) {
 
 void add_reconstruction_options(cmdline::parser& cl) {
   cl.footer("means ...");
+
   add_iteration_options(cl);
+
   cl.add<cmdline::path>("system", 's', "system matrix file", true);
   cl.add<cmdline::path>("output", 'o', "output reconstruction", false);
   cl.add("no-sensitivity", 0, "do not correct for sensitivity");
@@ -210,14 +216,19 @@ void add_reconstruction_options(cmdline::parser& cl) {
 
 void add_lm_reconstruction_options(cmdline::parser& cl) {
   cl.footer("response ...");
+
   add_iteration_options(cl);
+  add_config_option(cl);
+  add_pixel_options(cl);
+  add_scanner_options(cl);
+  add_model_options(cl);
+
   cl.add<double>("length", 0, "length of the detector", false, 0.3);
   cl.add<cmdline::path>("geometry", 0, "geometry information", true);
   cl.add<cmdline::path>("system", 0, "system matrix file", false);
   cl.add<cmdline::path>("output", 'o', "output reconstruction", false);
   cl.add("graphics", 'g', "output mathematica .m graphics file", false);
   cl.add("event", 0, "event number", false, 0);
-  add_scanner_model_options(cl);
 
   // additional options
   cl.add("verbose", 'v', "prints the iterations information on std::out");

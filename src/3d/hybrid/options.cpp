@@ -1,6 +1,7 @@
 #include "options.h"
 
 #include "2d/barrel/options.h"
+#include "2d/strip/options.h"
 #include "util/cmdline_types.h"
 
 namespace PET3D {
@@ -31,11 +32,13 @@ void add_reconstruction_options(cmdline::parser& cl) {
 }
 
 void add_sensitivity_options(cmdline::parser& cl) {
-  PET2D::Barrel::add_scanner_options(cl);
+  PET2D::Barrel::add_config_option(cl);
+  add_scanner_options(cl);
+
   cl.add<int>("z-plane", 0, "z plane trianguler cut", false);
   cl.add<int>("y-plane", 0, "y plane cut", false);
   cl.add<int>(
-      "n-pixels", 'n', "number of pixels in x and y  directions", false, 80);
+      "n-pixels", 'n', "number of pixels in x and y directions", false, 80);
   cl.add<int>("n-planes", 0, "number pf z planes", false, 80);
   cl.add<double>("s-pixel", 'p', "voxel size", false, 0.005);
   cl.add<int>("n-emissions", 'e', "number of emission", false, 0);
