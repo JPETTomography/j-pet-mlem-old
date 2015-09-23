@@ -8,13 +8,14 @@
 #include "util/bstream.h"
 #include "util/backtrace.h"
 
-#include "2d/barrel/options.h"
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/lor_info.h"
 #include "2d/strip/gausian_kernel.h"
-#include "3d/hybrid/scanner.h"
-#include "3d/hybrid/reconstruction.h"
+
+#include "scanner.h"
+#include "reconstruction.h"
+#include "options.h"
 
 #include "common/types.h"
 
@@ -41,7 +42,10 @@ int main(int argc, char* argv[]) {
   cl.parse_check(argc, argv);
   PET3D::Hybrid::calculate_scanner_options(cl, argc);
 
-  Scanner scanner = Scanner::build_scanner_from_cl(cl);
+  Scanner scanner(
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
+          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
+      F(cl.get<double>("length")));
   scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();

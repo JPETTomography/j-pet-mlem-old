@@ -22,7 +22,8 @@ template <class ScannerClass> class ScannerBuilder {
                                    int n_detectors,
                                    F w_detector,
                                    F h_detector,
-                                   F d_detector = 0) {
+                                   F d_detector = 0,
+                                   F fov_radius = 0) {
 
     if (n_detectors > static_cast<S>(Scanner::MaxDetectors))
       throw("buld single ring: too many detectors");
@@ -48,7 +49,7 @@ template <class ScannerClass> class ScannerBuilder {
     if (d_detector == 0)
       outer_radius = detector_base.max_distance();
 
-    Scanner detector_set(radius, outer_radius);
+    Scanner detector_set(radius, outer_radius, fov_radius);
 
     // produce detector ring rotating base detector n times
     for (auto n = 0; n < n_detectors; ++n) {
@@ -78,8 +79,9 @@ template <class ScannerClass> class ScannerBuilder {
       F w_detector,                   ///< width of single detector (along ring)
       F h_detector,                   ///< height/depth of single detector
                                       ///< (perpendicular to ring)
-      F d_detector = 0                ///< diameter of circle single detector is
+      F d_detector = 0,               ///< diameter of circle single detector is
                                       ///< inscribed in
+      F fov_radius = 0                ///< field of view radius (0-automatic)
       ) {
 
     if (!radius.size())
@@ -110,7 +112,7 @@ template <class ScannerClass> class ScannerBuilder {
     S start_detector = 0;
 
     Scanner detector_set = build_single_ring(
-        radius[0], n_detectors[0], w_detector, h_detector, d_detector);
+        radius[0], n_detectors[0], w_detector, h_detector, d_detector, fov_radius);
 
     std::function<S(S, S)> symmetric_detector;
 

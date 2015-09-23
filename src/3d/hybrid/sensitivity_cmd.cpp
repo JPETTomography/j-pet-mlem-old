@@ -10,9 +10,11 @@
 
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
-#include "2d/barrel/options.h"
-#include "3d/hybrid/scanner.h"
-#include "3d/hybrid/sensitivity_mapper.h"
+
+#include "scanner.h"
+#include "sensitivity_mapper.h"
+#include "options.h"
+
 #include "util/random.h"
 
 #include "common/model.h"
@@ -37,9 +39,11 @@ int main(int argc, char* argv[]) {
   }
 #endif
 
-  auto barrel = Scanner2DBuilder::build_multiple_rings(
-      PET2D_BARREL_SCANNER_CL(cl, SquareDetector::F));
-  Scanner scanner(barrel, 0.500);
+  Scanner scanner(
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
+          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
+      F(cl.get<double>("length")));
+
   auto n_pixels = cl.get<int>("n-pixels");
   auto s_pixel = cl.get<double>("s-pixel");
   auto ll = -s_pixel * n_pixels / 2;

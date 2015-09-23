@@ -57,8 +57,8 @@ class GenericScanner
   using FullResponse = typename Base::FullResponse;
 
   /// Makes an empty detector set.
-  GenericScanner(F radius = 1, F outer_radius = F(1.5))
-      : Base(radius, outer_radius) {}
+  GenericScanner(F radius = 1, F outer_radius = F(1.5), F fov_radius = 0)
+      : Base(radius, outer_radius, fov_radius) {}
 
   enum class TestCase {
     TEST_8_SQUARE_DETECTORS,
@@ -72,9 +72,10 @@ class GenericScanner
                                       ///< (perpendicular to ring)
                  F d_detector = 0,    ///< diameter of circle single detector is
                                       ///< inscribed in
+                 F fov_radius = 0,    ///< field of view radius (0-automatic)
                  F sigma_dl = 0       ///< sigma delta-l
                  )
-      : Base(test_case, radius, w_detector, h_detector, d_detector),
+      : Base(test_case, radius, w_detector, h_detector, d_detector, fov_radius),
         sigma_dl_(sigma_dl) {}
 
   /// \brief Tries to detect given event.

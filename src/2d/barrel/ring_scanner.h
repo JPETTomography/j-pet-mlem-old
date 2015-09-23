@@ -52,8 +52,8 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
   }
 #endif
 
-  RingScanner(F radius = 1, F outer_radius = F(1.5))
-      : Base(radius, outer_radius) {}
+  RingScanner(F radius = 1, F outer_radius = F(1.5), F fov_radius = 0)
+      : Base(radius, outer_radius, fov_radius) {}
 
  private:
   template <class RNG, class AcceptanceModel>

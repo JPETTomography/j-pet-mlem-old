@@ -15,6 +15,7 @@
 #include "3d/geometry/voxel_map.h"
 
 #include "scanner.h"
+#include "options.h"
 
 #include "common/model.h"
 #include "common/phantom_monte_carlo.h"
@@ -74,7 +75,10 @@ int main(int argc, char* argv[]) {
   auto output_base_name = output.wo_ext();
   auto ext = output.ext();
 
-  Scanner scanner = Scanner::build_scanner_from_cl(cl);
+  Scanner scanner(
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
+          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
+      F(cl.get<double>("length")));
   scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
 
   std::ofstream out_json(output_base_name + ".json");

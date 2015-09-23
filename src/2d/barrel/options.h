@@ -91,7 +91,8 @@ void calculate_scanner_options(cmdline::parser& parser, int argc = 0);
                    cl.get<int>("n-detectors4") },        \
                  cl.get<double>("w-detector"),           \
                  cl.get<double>("h-detector"),           \
-                 cl.get<double>("d-detector"))
+                 cl.get<double>("d-detector"),           \
+                 cl.get<double>("fov-radius"))
 
 }  // Barrel
 }  // PET2D

@@ -100,7 +100,10 @@ int main(int argc, char* argv[]) {
   const auto& model_name = cl.get<std::string>("model");
   const auto& length_scale = cl.get<double>("base-length");
 
-  Scanner scanner = Scanner::build_scanner_from_cl(cl);
+  Scanner scanner(
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
+          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
+      F(cl.get<double>("length")));
 
   if (model_name == "always") {
     Common::AlwaysAccept<F> model;

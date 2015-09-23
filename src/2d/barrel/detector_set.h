@@ -60,9 +60,9 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
   using FullResponse = Response;
 
   /// Makes an empty detector set.
-  DetectorSet(F radius = 1, F outer_radius = F(1.5))
+  DetectorSet(F radius = 1, F outer_radius = F(1.5), F fov_radius = 0)
       : Base(),
-        fov_radius_(radius / M_SQRT2),
+        fov_radius_(fov_radius > 0 ? fov_radius : radius / M_SQRT2),
         c_inner(radius),
         c_outer(outer_radius),
         n_symmetries_(0),
@@ -78,11 +78,12 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
               F w_detector,        ///< width of single detector (along ring)
               F h_detector,        ///< height/depth of single detector
                                    ///< (perpendicular to ring)
-              F d_detector = 0     ///< diameter of circle single detector is
+              F d_detector = 0,    ///< diameter of circle single detector is
                                    ///< inscribed in
+              F fov_radius = 0     ///< field of view radius (0-automatic)
               )
       : Base(),
-        fov_radius_(radius / M_SQRT2),
+        fov_radius_(fov_radius > 0 ? fov_radius : radius / M_SQRT2),
         c_inner(radius),
         c_outer(radius + (d_detector > 0 ? d_detector : h_detector)) {
 
@@ -105,8 +106,6 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
   }
 
   int n_symmetries() const { return n_symmetries_; }
-
-  void set_fov_radius(F fov_radius) { this->fov_radius_ = fov_radius; }
 
   F radius() const { return c_inner.radius; }
   F outer_radius() const { return c_outer.radius; }
