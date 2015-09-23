@@ -111,8 +111,12 @@ template <class ScannerClass> class ScannerBuilder {
 
     S start_detector = 0;
 
-    Scanner detector_set = build_single_ring(
-        radius[0], n_detectors[0], w_detector, h_detector, d_detector, fov_radius);
+    Scanner detector_set = build_single_ring(radius[0],
+                                             n_detectors[0],
+                                             w_detector,
+                                             h_detector,
+                                             d_detector,
+                                             fov_radius);
 
     std::function<S(S, S)> symmetric_detector;
 
