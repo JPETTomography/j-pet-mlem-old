@@ -70,11 +70,7 @@ int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
   cmdline::parser cl;
-
   PET3D::Hybrid::add_matrix_options(cl);
-  cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
-  cl.add<double>("length", 0, "length of the detector", false, 0.3);
-
   cl.parse_check(argc, argv);
   cmdline::load_accompanying_config(cl, false);
   PET3D::Hybrid::calculate_scanner_options(cl, argc);

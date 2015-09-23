@@ -13,6 +13,8 @@ void add_scanner_options(cmdline::parser& cl) {
 
 void add_matrix_options(cmdline::parser& cl) {
   PET2D::Barrel::add_matrix_options(cl);
+  cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
+  cl.add<double>("length", 'L', "length of the detector", false, 0.3);
 }
 
 void add_phantom_options(cmdline::parser& cl) {
