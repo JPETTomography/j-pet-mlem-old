@@ -50,9 +50,12 @@ template <class ScannerClass, class MatrixClass> class MonteCarlo {
       bool o_collect_mc_matrix = true,   ///< enable matrix generation
       bool o_collect_pixel_stats = true  ///< enable pixel stats
       ) {
-
     if (n_emissions <= 0)
       return;
+
+    const auto pixel_size2 = pixel_size * pixel_size;
+    const auto fov_radius2 =
+        scanner.barrel.fov_radius() * scanner.barrel.fov_radius();
 
     util::random::uniform_real_distribution<F> one_dis(0, 1);
     util::random::uniform_real_distribution<F> phi_dis(0, F(M_PI));
@@ -97,8 +100,7 @@ template <class ScannerClass, class MatrixClass> class MonteCarlo {
       auto pixel = matrix.pixel_at_index(i_pixel);
 
       if (pixel.x < start_pixel || pixel.y < start_pixel ||
-          (pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
-              scanner.barrel.fov_radius() * scanner.barrel.fov_radius())
+          (pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size2 > fov_radius2)
         continue;
 
       int pixel_hit_count = 0;
@@ -109,9 +111,9 @@ template <class ScannerClass, class MatrixClass> class MonteCarlo {
 #else
         auto& l_rng = rng;
 #endif
-        F rx = (pixel.x + one_dis(l_rng)) * pixel_size;
-        F ry = (pixel.y + one_dis(l_rng)) * pixel_size;
-        F rz = z + one_dis(l_rng) * pixel_size;
+        auto rx = (pixel.x + one_dis(l_rng)) * pixel_size;
+        auto ry = (pixel.y + one_dis(l_rng)) * pixel_size;
+        auto rz = z + one_dis(l_rng) * pixel_size;
         // ensure we are within a triangle
         if (rx > ry)
           continue;

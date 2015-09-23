@@ -104,10 +104,13 @@ int main(int argc, char* argv[]) {
 
   if (model_name == "always") {
     Common::AlwaysAccept<F> model;
+    print_parameters<Scanner2D, Common::AlwaysAccept<F>>(cl, scanner.barrel);
     auto sparse_matrix = run(cl, scanner, model);
     post_process(cl, scanner, sparse_matrix);
   } else if (model_name == "scintillator") {
     Common::ScintillatorAccept<F> model(length_scale);
+    print_parameters<Scanner2D, Common::ScintillatorAccept<F>>(cl,
+                                                               scanner.barrel);
     auto sparse_matrix = run(cl, scanner, model);
     post_process(cl, scanner, sparse_matrix);
   } else {
@@ -115,6 +118,27 @@ int main(int argc, char* argv[]) {
   }
 
   CMDLINE_CATCH
+}
+
+template <class ScannerClass, class ModelClass>
+void print_parameters(cmdline::parser& cl, const ScannerClass& scanner) {
+  auto& n_pixels = cl.get<int>("n-pixels");
+  auto& s_pixel = cl.get<double>("s-pixel");
+  auto& n_emissions = cl.get<int>("n-emissions");
+  auto verbose = cl.count("verbose");
+  double max_bias = 0;
+  if (verbose) {
+    std::cerr << "Monte-Carlo:" << std::endl;
+#if _OPENMP
+    std::cerr << "   OpenMP threads = " << omp_get_max_threads() << std::endl;
+#endif
+    std::cerr << "    pixels in row = " << n_pixels << std::endl;
+    std::cerr << "       pixel size = " << s_pixel << std::endl;
+    std::cerr << "       fov radius = " << scanner.fov_radius() << std::endl;
+    std::cerr << "     outer radius = " << scanner.outer_radius() << std::endl;
+    std::cerr << "         max bias = " << max_bias << std::endl;
+    std::cerr << "        emissions = " << n_emissions << std::endl;
+  }
 }
 
 template <class ScannerClass, class ModelClass>
@@ -150,12 +174,13 @@ static SparseMatrix run(cmdline::parser& cl,
       throw("cannot open input file: " + fn);
     try {
       ComputeMatrix::SparseMatrix in_sparse_matrix(in);
+      if (in_sparse_matrix.n_tof_positions() > 1)
+        throw("hybrid Monte-Carlo does not support TOF positions");
       if (verbose) {
         std::cerr << "read sparse matrix: " << fn << std::endl;
         std::cerr << " pixels in row = " << in_sparse_matrix.n_pixels_in_row()
                   << std::endl;
-        std::cerr << " TOF positions = " << in_sparse_matrix.n_tof_positions()
-                  << std::endl;
+        std::cerr << " pixel size     = " << cl.get<double>("s-pixel");
         std::cerr << " emissions     = " << in_sparse_matrix.n_emissions()
                   << std::endl;
         std::cerr << std::endl;
@@ -243,11 +268,11 @@ void post_process(cmdline::parser& cl,
       std::cerr << "warning: " << ex << std::endl;
     }
 
-    util::svg_ostream<typename Scanner::F> svg(fn_wo_ext + ".svg",
-                                               scanner.barrel.outer_radius(),
-                                               scanner.barrel.outer_radius(),
-                                               1024.,
-                                               1024.);
+    util::svg_ostream<F> svg(fn_wo_ext + ".svg",
+                             scanner.barrel.outer_radius(),
+                             scanner.barrel.outer_radius(),
+                             1024.,
+                             1024.);
     svg.link_image(fn_wo_path + ".png",
                    -(s_pixel * n_pixels) / 2,
                    -(s_pixel * n_pixels) / 2,
@@ -282,11 +307,11 @@ void post_process(cmdline::parser& cl,
       sparse_matrix.output_bitmap(png, lor, position);
     }
 
-    util::svg_ostream<typename Scanner::F> svg(fn_wo_ext + ".svg",
-                                               scanner.barrel.outer_radius(),
-                                               scanner.barrel.outer_radius(),
-                                               1024.,
-                                               1024.);
+    util::svg_ostream<F> svg(fn_wo_ext + ".svg",
+                             scanner.barrel.outer_radius(),
+                             scanner.barrel.outer_radius(),
+                             1024.,
+                             1024.);
     svg.link_image(fn_wo_path + ".png",
                    -(s_pixel * n_pixels) / 2,
                    -(s_pixel * n_pixels) / 2,

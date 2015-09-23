@@ -49,7 +49,10 @@ template <class ScannerClass, class MatrixClass> class MonteCarlo {
     if (n_emissions <= 0)
       return;
 
-    auto n_positions = scanner.n_tof_positions(tof_step, 0);
+    const auto n_positions = scanner.n_tof_positions(tof_step, 0);
+    const auto pixel_size2 = pixel_size * pixel_size;
+    const auto fov_radius2 = scanner.fov_radius() * scanner.fov_radius();
+
     bool tof = (tof_step > static_cast<F>(0));
     util::random::uniform_real_distribution<F> one_dis(0, 1);
     util::random::uniform_real_distribution<F> phi_dis(0, F(M_PI));
@@ -93,8 +96,7 @@ template <class ScannerClass, class MatrixClass> class MonteCarlo {
       auto pixel = matrix.pixel_at_index(i_pixel);
 
       if (pixel.x < start_pixel || pixel.y < start_pixel ||
-          (pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
-              scanner.fov_radius() * scanner.fov_radius())
+          (pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size2 > fov_radius2)
         continue;
 
       int pixel_hit_count = 0;
