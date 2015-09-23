@@ -105,8 +105,8 @@ class SparseMatrix
 
   SparseMatrix(S n_pixels_in_row,
                S n_detectors,
-               Hit n_emissions,
                S n_tof_positions = 1,
+               Hit n_emissions = 0,
                bool triangular = true)
       : n_pixels_in_row_(n_pixels_in_row),
         n_pixels_in_row_half_(n_pixels_in_row / 2),
@@ -405,7 +405,7 @@ class SparseMatrix
       return *this;
     }
     SparseMatrix full(
-        n_pixels_in_row_, n_detectors_, n_emissions_, n_tof_positions_, false);
+        n_pixels_in_row_, n_detectors_, n_tof_positions_, n_emissions_, false);
     full.reserve(this->size() * 8);
     for (auto& e : *this) {
       for (auto symmetry = 0; symmetry < 8; ++symmetry) {
