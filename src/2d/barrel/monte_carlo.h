@@ -10,12 +10,12 @@ namespace PET2D {
 namespace Barrel {
 
 /// Drives Monte-Carlo system matrix construction
-template <class DetectorClass, class MatrixClass> class MonteCarlo {
-  using Detector = DetectorClass;
-  using Event = typename Detector::Event;
+template <class ScannerClass, class MatrixClass> class MonteCarlo {
+  using Scanner = ScannerClass;
+  using Event = typename Scanner::Event;
   using Matrix = MatrixClass;
-  using F = typename Detector::F;
-  using S = typename Detector::S;
+  using F = typename Scanner::F;
+  using S = typename Scanner::S;
   using SS = typename std::make_signed<S>::type;
   using LOR = typename Matrix::LOR;
 
@@ -23,12 +23,12 @@ template <class DetectorClass, class MatrixClass> class MonteCarlo {
                 "matrix SType must be the same as detector SType");
 
  public:
-  MonteCarlo(const Detector& detector,
+  MonteCarlo(const Scanner& scanner,
              Matrix& matrix,
              F pixel_size,
              F tof_step,
              S start_pixel = static_cast<S>(0))
-      : detector(detector),
+      : scanner(scanner),
         matrix(matrix),
         pixel_size(pixel_size),
         tof_step(tof_step),
@@ -49,7 +49,7 @@ template <class DetectorClass, class MatrixClass> class MonteCarlo {
     if (n_emissions <= 0)
       return;
 
-    auto n_positions = detector.n_tof_positions(tof_step, 0);
+    auto n_positions = scanner.n_tof_positions(tof_step, 0);
     bool tof = (tof_step > static_cast<F>(0));
     util::random::uniform_real_distribution<F> one_dis(0, 1);
     util::random::uniform_real_distribution<F> phi_dis(0, F(M_PI));
@@ -94,7 +94,7 @@ template <class DetectorClass, class MatrixClass> class MonteCarlo {
 
       if (pixel.x < start_pixel || pixel.y < start_pixel ||
           (pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
-              detector.fov_radius() * detector.fov_radius())
+              scanner.fov_radius() * scanner.fov_radius())
         continue;
 
       int pixel_hit_count = 0;
@@ -112,14 +112,14 @@ template <class DetectorClass, class MatrixClass> class MonteCarlo {
           continue;
 
         auto angle = phi_dis(l_rng);
-        typename DetectorClass::Response response;
+        typename ScannerClass::Response response;
 
         Event event(rx, ry, angle);
-        auto hits = detector.detect(l_rng, model, event, response);
+        auto hits = scanner.detect(l_rng, model, event, response);
 
         S quantized_position = 0;
         if (tof)
-          quantized_position = Detector::quantize_tof_position(
+          quantized_position = Scanner::quantize_tof_position(
               response.dl, tof_step, n_positions);
 #ifdef DEBUG
         std::cerr << "quantized_position " << quantized_position << std::endl;
@@ -149,7 +149,7 @@ template <class DetectorClass, class MatrixClass> class MonteCarlo {
   }
 
  private:
-  const Detector& detector;
+  const Scanner& scanner;
   Matrix& matrix;
   F pixel_size;
   F tof_step;

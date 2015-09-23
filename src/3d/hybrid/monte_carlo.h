@@ -14,13 +14,10 @@ namespace PET3D {
 namespace Hybrid {
 
 /// Drives Monte-Carlo system matrix construction
-template <class DetectorClass,
-          class MatrixClass,
-          typename FType,
-          typename SType>
+template <class ScannerClass, class MatrixClass, typename FType, typename SType>
 class MonteCarlo {
-  using Detector = DetectorClass;
-  using Event = typename Detector::Event;
+  using Scanner = ScannerClass;
+  using Event = typename Scanner::Event;
   using Matrix = MatrixClass;
   using F = FType;
   using S = SType;
@@ -29,11 +26,11 @@ class MonteCarlo {
   using Point = PET3D::Point<F>;
 
  public:
-  MonteCarlo(const Detector& detector,
+  MonteCarlo(const Scanner& scanner,
              Matrix& matrix,
              F pixel_size,
              S start_pixel = static_cast<S>(0))
-      : detector(detector),
+      : scanner(scanner),
         matrix(matrix),
         pixel_size(pixel_size),
         start_pixel(start_pixel) {}
@@ -99,7 +96,7 @@ class MonteCarlo {
 
       if (pixel.x < start_pixel || pixel.y < start_pixel ||
           (pixel.x * pixel.x + pixel.y * pixel.y) * pixel_size * pixel_size >
-              detector.barrel.fov_radius() * detector.barrel.fov_radius())
+              scanner.barrel.fov_radius() * scanner.barrel.fov_radius())
         continue;
 
       int pixel_hit_count = 0;
@@ -117,10 +114,10 @@ class MonteCarlo {
         if (rx > ry)
           continue;
 
-        typename DetectorClass::Response response;
+        typename ScannerClass::Response response;
 
         Event event(PET3D::Point<float>(rx, ry, rz), direction(l_rng));
-        auto hits = detector.detect(l_rng, model, event, response);
+        auto hits = scanner.detect(l_rng, model, event, response);
 
         // do we have hit on both sides?
         if (hits >= 2) {
@@ -149,7 +146,7 @@ class MonteCarlo {
   }
 
  private:
-  const Detector& detector;
+  const Scanner& scanner;
   Matrix& matrix;
   F pixel_size;
   F tof_step;

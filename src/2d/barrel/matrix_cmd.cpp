@@ -68,8 +68,8 @@ using Point = PET2D::Point<F>;
 using Pixel = PET2D::Pixel<S>;
 using LOR = PET2D::Barrel::LOR<S>;
 
-template <class DetectorClass>
-using Scanner = PET2D::Barrel::GenericScanner<DetectorClass, S>;
+template <class ScannerClass>
+using Scanner = PET2D::Barrel::GenericScanner<ScannerClass, S>;
 
 // all available detector shapes
 using SquareScanner = Scanner<PET2D::Barrel::SquareDetector<F>>;
@@ -83,9 +83,9 @@ void print_parameters(cmdline::parser& cl, const ScannerClass& scanner);
 using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
 using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, Hit>;
 
-template <class DetectorClass, class ModelClass>
+template <class ScannerClass, class ModelClass>
 static SparseMatrix run(cmdline::parser& cl,
-                        DetectorClass& scanner,
+                        ScannerClass& scanner,
                         ModelClass& model);
 
 template <class ScannerClass>
@@ -191,9 +191,9 @@ void print_parameters(cmdline::parser& cl, const ScannerClass& scanner) {
   }
 }
 
-template <class DetectorClass, class ModelClass>
+template <class ScannerClass, class ModelClass>
 static SparseMatrix run(cmdline::parser& cl,
-                        DetectorClass& scanner,
+                        ScannerClass& scanner,
                         ModelClass& model) {
 
   auto& n_pixels = cl.get<int>("n-pixels");
@@ -269,7 +269,7 @@ static SparseMatrix run(cmdline::parser& cl,
   clock_gettime(CLOCK_REALTIME, &start);
 #endif
 
-  PET2D::Barrel::MonteCarlo<DetectorClass, ComputeMatrix> monte_carlo(
+  PET2D::Barrel::MonteCarlo<ScannerClass, ComputeMatrix> monte_carlo(
       scanner, matrix, s_pixel, tof_step, m_pixel);
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
   monte_carlo(gen, model, n_emissions, progress);
