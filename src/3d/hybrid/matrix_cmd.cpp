@@ -189,13 +189,8 @@ static SparseMatrix run(cmdline::parser& cl,
   clock_gettime(CLOCK_REALTIME, &start);
 #endif
 
-  PET3D::Hybrid::MonteCarlo<Scanner,
-                            ComputeMatrix,
-                            typename Scanner::F,
-                            typename Scanner::S> monte_carlo(scanner,
-                                                             matrix,
-                                                             s_pixel,
-                                                             m_pixel);
+  PET3D::Hybrid::MonteCarlo<Scanner, ComputeMatrix> monte_carlo(
+      scanner, matrix, s_pixel, m_pixel);
 
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
   monte_carlo(z_position, gen, model, n_emissions, progress);

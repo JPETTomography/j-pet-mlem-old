@@ -14,16 +14,18 @@ namespace PET3D {
 namespace Hybrid {
 
 /// Drives Monte-Carlo system matrix construction
-template <class ScannerClass, class MatrixClass, typename FType, typename SType>
-class MonteCarlo {
+template <class ScannerClass, class MatrixClass> class MonteCarlo {
   using Scanner = ScannerClass;
   using Event = typename Scanner::Event;
   using Matrix = MatrixClass;
-  using F = FType;
-  using S = SType;
+  using F = typename Scanner::F;
+  using S = typename Scanner::S;
   using SS = typename std::make_signed<S>::type;
   using LOR = typename Matrix::LOR;
   using Point = PET3D::Point<F>;
+
+  static_assert(std::is_same<typename Matrix::S, S>::value,
+                "matrix SType must be the same as detector SType");
 
  public:
   MonteCarlo(const Scanner& scanner,
