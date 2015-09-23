@@ -1,8 +1,17 @@
 /// \page cmd_3d_hybrid_matrix 3d_hybrid_matrix
 /// \brief 3D Longitudinal PET system matrix construction tool
 ///
-/// NYI
-/// ===
+/// Creates system matrix file and accomanying SVG & PNG files for single slice
+/// along z-axis.
+///
+/// Authors
+/// -------
+/// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+/// - Piotr Bialas    <piotr.bialas@uj.edu.pl>
+///
+/// Usage
+/// -----
+/// \verbinclude src/3d/hybrid/matrix_cmd.txt
 
 #include <random>
 
