@@ -44,14 +44,18 @@
 #include <omp.h>
 #endif
 
+#if HAVE_CUDA
+#include "cuda/matrix.h"
+#endif
+
 using SquareDetector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<SquareDetector, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 
 using Pixel = PET2D::Pixel<Scanner2D::S>;
 using LOR = Scanner2D::LOR;
-using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, S>;
-using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, S>;
+using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
+using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, Hit>;
 
 template <class ScannerClass, class ModelClass>
 void print_parameters(cmdline::parser& cl, const ScannerClass& scanner);
@@ -96,22 +100,28 @@ int main(int argc, char* argv[]) {
   const auto& model_name = cl.get<std::string>("model");
   const auto& length_scale = cl.get<double>("base-length");
 
-  Scanner scanner(
-      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
-          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
-      F(cl.get<double>("length")));
+// these are wrappers running actual simulation
+#if HAVE_CUDA
+#define _RUN(cl, scanner, model)                        \
+  cl.exist("gpu") ? PET3D::Hybrid::GPU::Matrix::run(cl) \
+                  : run(cl, scanner, model)
+#else
+#define _RUN(cl, scanner, model) run(cl, scanner, model)
+#endif
+#define RUN(model_type, ...)                                          \
+  Scanner scanner(                                                    \
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings( \
+          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),                      \
+      F(cl.get<double>("length")));                                   \
+  model_type model __VA_ARGS__;                                       \
+  print_parameters<Scanner2D, model_type>(cl, scanner.barrel);        \
+  auto sparse_matrix = _RUN(cl, scanner, model);                      \
+  post_process(cl, scanner, sparse_matrix)
 
   if (model_name == "always") {
-    Common::AlwaysAccept<F> model;
-    print_parameters<Scanner2D, Common::AlwaysAccept<F>>(cl, scanner.barrel);
-    auto sparse_matrix = run(cl, scanner, model);
-    post_process(cl, scanner, sparse_matrix);
+    RUN(Common::AlwaysAccept<F>);
   } else if (model_name == "scintillator") {
-    Common::ScintillatorAccept<F> model(length_scale);
-    print_parameters<Scanner2D, Common::ScintillatorAccept<F>>(cl,
-                                                               scanner.barrel);
-    auto sparse_matrix = run(cl, scanner, model);
-    post_process(cl, scanner, sparse_matrix);
+    RUN(Common::ScintillatorAccept<F>, (length_scale));
   } else {
     throw("unknown model: " + model_name);
   }

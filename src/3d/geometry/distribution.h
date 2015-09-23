@@ -1,10 +1,11 @@
 #pragma once
 
-#include <random>
-
 #include "event.h"
 #include "vector.h"
 #include "point.h"
+
+#include "util/cuda/compat.h"
+#include "util/random.h"
 
 #if !__CUDACC__
 #include "util/json.h"
@@ -19,7 +20,7 @@ template <typename FType> class SphericalDistribution {
   using F = FType;
   using Vector = PET3D::Vector<F>;
 
-  SphericalDistribution(F theta_min = F(-M_PI) / 2, F theta_max = F(M_PI) / 2)
+  _ SphericalDistribution(F theta_min = F(-M_PI) / 2, F theta_max = F(M_PI) / 2)
       : theta_min(theta_min),
         theta_max(theta_max),
         phi_dist(F(-M_PI), F(M_PI)),
@@ -37,10 +38,9 @@ template <typename FType> class SphericalDistribution {
   }
 #endif
 
-  template <class RNG> Vector operator()(RNG& rng) {
-
+  template <class RNG> _ Vector operator()(RNG& rng) {
     F z = z_dist(rng);
-    F r = std::sqrt(1 - z * z);
+    F r = compat::sqrt(1 - z * z);
     F phi = phi_dist(rng);
     F x = r * cos(phi);
     F y = r * sin(phi);
@@ -51,8 +51,8 @@ template <typename FType> class SphericalDistribution {
   const F theta_max;
 
  private:
-  std::uniform_real_distribution<F> phi_dist;
-  std::uniform_real_distribution<F> z_dist;
+  util::random::uniform_real_distribution<F> phi_dist;
+  util::random::uniform_real_distribution<F> z_dist;
 };
 
 template <typename FType> class SingleDirectionDistribution {
@@ -103,9 +103,9 @@ template <typename FType> class CylinderPointDistribution {
  private:
   const F radius;
   const F height;
-  std::uniform_real_distribution<F> uni_h;
-  std::uniform_real_distribution<F> uni_phi;
-  std::uniform_real_distribution<F> uni_r;
+  util::random::uniform_real_distribution<F> uni_h;
+  util::random::uniform_real_distribution<F> uni_phi;
+  util::random::uniform_real_distribution<F> uni_r;
 };
 
 template <typename FType> class BallPointDistribution {
@@ -127,7 +127,7 @@ template <typename FType> class BallPointDistribution {
   const F radius;
 
  private:
-  std::uniform_real_distribution<F> uni;
+  util::random::uniform_real_distribution<F> uni;
 };
 
 template <typename FType> class EllipsoidPointDistribution {

@@ -8,6 +8,8 @@
 #include "3d/geometry/point.h"
 #include "2d/barrel/event.h"
 
+#include "util/cuda/compat.h"
+
 namespace PET3D {
 
 /// Generic emitted 3D event
@@ -18,10 +20,10 @@ template <typename FType> class Event {
   using BarrelEvent = PET2D::Barrel::Event<FType>;
 
  public:
-  Event(const Point& origin, const Vector& direction)
+  _ Event(const Point& origin, const Vector& direction)
       : origin(origin), direction(direction) {}
 
-  BarrelEvent to_barrel_event() const {
+  _ BarrelEvent to_barrel_event() const {
     auto dir_2d = Vector2D(direction.x, direction.y);
     dir_2d.normalize();
     return BarrelEvent(origin.x, origin.y, dir_2d.x, dir_2d.y);

@@ -105,12 +105,12 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
     }
   }
 
-  int n_symmetries() const { return n_symmetries_; }
+  _ int n_symmetries() const { return n_symmetries_; }
 
-  F radius() const { return c_inner.radius; }
-  F outer_radius() const { return c_outer.radius; }
+  _ F radius() const { return c_inner.radius; }
+  _ F outer_radius() const { return c_outer.radius; }
 
-  F max_dl(F max_dl_error) const { return 2 * c_outer.radius + max_dl_error; }
+  _ F max_dl(F max_dl_error) const { return 2 * c_outer.radius + max_dl_error; }
 
   /// Quantizes position across lor
   _ static S quantize_tof_position(F position,    ///< position across lor

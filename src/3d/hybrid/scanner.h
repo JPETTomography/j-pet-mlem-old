@@ -6,7 +6,9 @@
 #include "2d/barrel/generic_scanner.h"
 #include "3d/geometry/event.h"
 
+#if !__CUDACC__
 #include "util/read.h"
+#endif
 
 /// Three-dimensional PET
 namespace PET3D {
@@ -40,6 +42,7 @@ template <class Scanner2DClass> class Scanner {
 
     FullResponse() = default;
 
+#if !__CUDACC__
     FullResponse(std::istream& in)
         : detector1(util::read<S>(in)),
           detector2(util::read<S>(in)),
@@ -60,6 +63,7 @@ template <class Scanner2DClass> class Scanner {
           << response.d2_deposition;
       return out;
     }
+#endif
   };
   /// Scanner response
   ///
@@ -72,6 +76,7 @@ template <class Scanner2DClass> class Scanner {
 
     Response() = default;
 
+#if !__CUDACC__
     Response(std::istream& in)
         : lor(in),
           z_up(util::read<F>(in)),
@@ -84,6 +89,7 @@ template <class Scanner2DClass> class Scanner {
       out << response.z_up << " " << response.z_dn << " " << response.dl;
       return out;
     }
+#endif
   };
 
   Scanner(const Scanner2D& barrel, F length)
@@ -98,7 +104,7 @@ template <class Scanner2DClass> class Scanner {
     sigma_dl_ = sigma_dl;
   }
 
-  bool escapes_through_endcap(const Event& event) const {
+  _ bool escapes_through_endcap(const Event& event) const {
     if (event.direction.z == 0.0)
       return false;
 
@@ -189,7 +195,7 @@ template <class Scanner2DClass> class Scanner {
     return 2;
   }
 
-  Response response_wo_error(const FullResponse& full_response) const {
+  _ Response response_wo_error(const FullResponse& full_response) const {
     Response response;
     F length1 = (full_response.d1_deposition - full_response.origin).length();
     F length2 = (full_response.d2_deposition - full_response.origin).length();
@@ -232,12 +238,12 @@ template <class Scanner2DClass> class Scanner {
     return 0;
   }
 
-  void reconstruct_3d_intersection_points(const Event& event,
-                                          F dir,
-                                          const Point2D& entry_xy,
-                                          const Point2D& exit_xy,
-                                          Point& entry,
-                                          Point& exit) const {
+  _ void reconstruct_3d_intersection_points(const Event& event,
+                                            F dir,
+                                            const Point2D& entry_xy,
+                                            const Point2D& exit_xy,
+                                            Point& entry,
+                                            Point& exit) const {
     Vector2D dir_xy = event.direction.xy();
     Point2D origin_xy = event.origin.xy();
     F dz_over_dx_dxy = dir * event.direction.z / dir_xy.length();
@@ -259,7 +265,7 @@ template <class Scanner2DClass> class Scanner {
     exit.z = dz_exit + event.origin.z;
 
     if (displacement_entry_length > displacement_exit_length)
-      std::swap(entry, exit);
+      compat::swap(entry, exit);
   }
 
   template <class RNG, class AcceptanceModel>

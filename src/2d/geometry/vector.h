@@ -46,19 +46,19 @@ template <typename FType> struct Vector {
     return *this;
   }
 
-  Vector& operator/=(F s) {
+  _ Vector& operator/=(F s) {
     x /= s;
     y /= s;
     return *this;
   }
 
-  Vector& normalize() {
+  _ Vector& normalize() {
     F length = this->length();
     (*this /= length);
     return *this;
   }
 
-  Vector normalized() {
+  _ Vector normalized() {
     Vector res(*this);
     res.normalize();
     return res;
