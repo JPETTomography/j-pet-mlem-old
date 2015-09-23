@@ -83,6 +83,11 @@ int main(int argc, char* argv[]) {
     throw("need to specify output --png option when --from is specified");
   }
 
+  const auto& shape = cl.get<std::string>("shape");
+  if (shape != "square") {
+    throw("only square is supported, unsupported shape: " + shape);
+  }
+
   const auto& model_name = cl.get<std::string>("model");
   const auto& length_scale = cl.get<double>("base-length");
 
