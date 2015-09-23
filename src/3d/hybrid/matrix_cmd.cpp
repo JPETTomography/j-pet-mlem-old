@@ -162,10 +162,7 @@ static SparseMatrix run(cmdline::parser& cl,
     gen.seed(cl.get<util::random::tausworthe::seed_type>("seed"));
   }
 
-  int n_tof_positions = 1;
-
-  ComputeMatrix::SparseMatrix sparse_matrix(
-      n_pixels, scanner.barrel.size(), n_tof_positions);
+  ComputeMatrix::SparseMatrix sparse_matrix(n_pixels, scanner.barrel.size());
 
   for (auto& fn : cl.rest()) {
     util::ibstream in(fn, std::ios::binary);
@@ -189,12 +186,6 @@ static SparseMatrix run(cmdline::parser& cl,
         // if we don't have stuff set, set it using matrix
         if (!cl.exist("n-pixels"))
           n_pixels = sparse_matrix.n_pixels_in_row();
-        if (!cl.exist("tof-step")) {
-          n_tof_positions = sparse_matrix.n_tof_positions();
-          if (n_emissions > 0) {
-            throw("TOF step must be specified for input TOF matrix: " + fn);
-          }
-        }
       } else {
         // join with previous matrix
         sparse_matrix << in_sparse_matrix;
@@ -206,7 +197,7 @@ static SparseMatrix run(cmdline::parser& cl,
     }
   }
 
-  ComputeMatrix matrix(n_pixels, scanner.barrel.size(), n_tof_positions);
+  ComputeMatrix matrix(n_pixels, scanner.barrel.size());
 
 #ifdef __linux__
   struct timespec start, stop;
