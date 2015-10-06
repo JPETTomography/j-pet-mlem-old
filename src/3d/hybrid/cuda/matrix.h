@@ -30,47 +30,31 @@ using Model = Common::ScintillatorAccept<F>;
 
 /// \endcond
 
+namespace Matrix {
+
 /// CUDA sink for unimplemented versions
-template <class ScannerClass> class Matrix {
- public:
-  static void run(ScannerClass& scanner,
-                  util::random::tausworthe& rng,
-                  int n_blocks,
-                  int n_threads_per_block,
-                  int n_emissions,
-                  double tof_step,
-                  int n_pixels,
-                  double s_pixel,
-                  double length_scale,
-                  util::delegate<void(int, bool)> progress,
-                  util::delegate<void(LOR, S, Pixel, Hit)> entry) {
-    // unused
-    (void)scanner, (void)rng, (void)n_blocks, (void)n_threads_per_block,
-        (void)n_emissions, (void)tof_step, (void)n_pixels, (void)s_pixel,
-        (void)length_scale, (void)progress, (void)entry;
-    throw("GPU does not support this scanner type");
-  }
-};
-
-/// CUDA optimized Monte-Carlo implementation
-template <> class Matrix<Scanner> {
- public:
-  Matrix(const F z,
-         const Scanner& scanner,
-         int n_threads_per_block,
+template <class ScannerClass>
+void run(ScannerClass& scanner,
+         util::random::tausworthe& rng,
          int n_blocks,
-         F pixel_size,
-         F length_scale,
-         util::random::tausworthe& rng);
+         int n_threads_per_block,
+         int n_emissions,
+         double z_position,
+         int n_pixels,
+         double s_pixel,
+         double length_scale,
+         util::delegate<void(int, bool)> progress,
+         util::delegate<void(LOR, Pixel, Hit)> entry) {
+  // unused
+  (void)scanner, (void)rng, (void)n_blocks, (void)n_threads_per_block,
+      (void)n_emissions, (void)z_position, (void)n_pixels, (void)s_pixel,
+      (void)length_scale, (void)progress, (void)entry;
+  throw("GPU does not support this scanner type");
+}
 
-  ~Matrix();
-
-  void operator()(const Pixel pixel,  ///< pixel to be processed
-                  int n_emissions,    ///< numer of emissions
-                  int* pixel_hits     ///<[out] result pixel hits
-                  );
-
-  static void run(Scanner& scanner,
+/// CUDA optimized Monte-Carlo implementation for square detector
+template <>
+void run<Scanner>(Scanner& scanner,
                   util::random::tausworthe& rng,
                   int n_blocks,
                   int n_threads_per_block,
@@ -82,19 +66,7 @@ template <> class Matrix<Scanner> {
                   util::delegate<void(int, bool)> progress,
                   util::delegate<void(LOR, Pixel, Hit)> entry);
 
- private:
-  const F z;
-  Scanner* gpu_scanner;
-  const int n_threads_per_block;
-  const int n_blocks;
-  const F pixel_size;
-  const F length_scale;
-  unsigned int* gpu_prng_seed;
-  const int pixel_hits_count;
-  const int pixel_hits_size;
-  int* gpu_pixel_hits;
-};
-
+}  // Matrix
 }  // GPU
-}  // Barrel
-}  // PET2D
+}  // Hybrid
+}  // PET3D

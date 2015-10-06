@@ -226,7 +226,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
 #if HAVE_CUDA
   // GPU computation
   if (cl.exist("gpu")) {
-    PET2D::Barrel::GPU::Matrix<ScannerClass>::run(
+    PET2D::Barrel::GPU::Matrix::run<ScannerClass>(
         scanner,
         rng,
         cl.get<int>("cuda-blocks"),

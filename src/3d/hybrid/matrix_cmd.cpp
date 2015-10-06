@@ -183,7 +183,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
 #if HAVE_CUDA
   // GPU computation
   if (cl.exist("gpu")) {
-    PET3D::Hybrid::GPU::Matrix<Scanner>::run(
+    PET3D::Hybrid::GPU::Matrix::run<Scanner>(
         scanner,
         rng,
         cl.get<int>("cuda-blocks"),
