@@ -209,27 +209,12 @@ static SparseMatrix run(cmdline::parser& cl,
 
   ComputeMatrix matrix(n_pixels, scanner.barrel.size());
 
-#ifdef __linux__
-  struct timespec start, stop;
-  clock_gettime(CLOCK_REALTIME, &start);
-#endif
-
   PET3D::Hybrid::MonteCarlo<Scanner, ComputeMatrix> monte_carlo(
       scanner, matrix, s_pixel, m_pixel);
 
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
   monte_carlo(z_position, gen, model, n_emissions, progress);
 
-#ifdef __linux__
-  if (verbose) {
-    clock_gettime(CLOCK_REALTIME, &stop);
-    std::cerr << "time : "
-              << ((1.0e9 * stop.tv_sec + stop.tv_nsec) -
-                  (1.0e9 * start.tv_sec + start.tv_nsec)) /
-                     1.0e9
-              << std::endl;
-  }
-#endif
   return matrix.to_sparse();
 }
 

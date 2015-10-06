@@ -264,11 +264,6 @@ static SparseMatrix run(cmdline::parser& cl,
     sparse_matrix.resize(0);
   }
 
-#ifdef __linux__
-  struct timespec start, stop;
-  clock_gettime(CLOCK_REALTIME, &start);
-#endif
-
   PET2D::Barrel::MonteCarlo<ScannerClass, ComputeMatrix> monte_carlo(
       scanner, matrix, s_pixel, tof_step, m_pixel);
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
@@ -276,17 +271,6 @@ static SparseMatrix run(cmdline::parser& cl,
 
 #ifdef GPU_TOF_TEST
   monte_carlo.test(gen, model, n_emissions);
-#endif
-
-#ifdef __linux__
-  if (verbose) {
-    clock_gettime(CLOCK_REALTIME, &stop);
-    std::cerr << "time : "
-              << ((1.0e9 * stop.tv_sec + stop.tv_nsec) -
-                  (1.0e9 * start.tv_sec + start.tv_nsec)) /
-                     1.0e9
-              << std::endl;
-  }
 #endif
 
   return matrix.to_sparse();
