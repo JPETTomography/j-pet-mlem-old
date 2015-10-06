@@ -76,12 +76,11 @@ using SquareScanner = Scanner<PET2D::Barrel::SquareDetector<F>>;
 using CircleScanner = Scanner<PET2D::Barrel::CircleDetector<F>>;
 using TriangleScanner = Scanner<PET2D::Barrel::TriangleDetector<F>>;
 using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
+using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
+using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, Hit>;
 
 template <class ScannerClass, class ModelClass>
 void print_parameters(cmdline::parser& cl, const ScannerClass& scanner);
-
-using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
-using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, Hit>;
 
 template <class ScannerClass, class ModelClass, typename... ModelArgs>
 static void run(cmdline::parser& cl, ModelArgs... args);
@@ -273,6 +272,7 @@ static SparseMatrix run(cmdline::parser& cl,
         [&](LOR lor, S position, Pixel pixel, Hit hits) {
           sparse_matrix.emplace_back(lor, position, pixel, hits);
         });
+    return sparse_matrix;
   }
 #endif
 

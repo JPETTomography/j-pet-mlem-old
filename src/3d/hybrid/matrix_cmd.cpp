@@ -60,6 +60,9 @@ using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, Hit>;
 template <class ScannerClass, class ModelClass>
 void print_parameters(cmdline::parser& cl, const ScannerClass& scanner);
 
+template <class ScannerClass, class ModelClass, typename... ModelArgs>
+static void run(cmdline::parser& cl, ModelArgs... args);
+
 template <class ScannerClass, class ModelClass>
 static SparseMatrix run(cmdline::parser& cl,
                         ScannerClass& scanner,
@@ -100,28 +103,10 @@ int main(int argc, char* argv[]) {
   const auto& model_name = cl.get<std::string>("model");
   const auto& length_scale = cl.get<double>("base-length");
 
-// these are wrappers running actual simulation
-#if HAVE_CUDA
-#define _RUN(cl, scanner, model)                        \
-  cl.exist("gpu") ? PET3D::Hybrid::GPU::Matrix::run(cl) \
-                  : run(cl, scanner, model)
-#else
-#define _RUN(cl, scanner, model) run(cl, scanner, model)
-#endif
-#define RUN(model_type, ...)                                          \
-  Scanner scanner(                                                    \
-      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings( \
-          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),                      \
-      F(cl.get<double>("length")));                                   \
-  model_type model __VA_ARGS__;                                       \
-  print_parameters<Scanner2D, model_type>(cl, scanner.barrel);        \
-  auto sparse_matrix = _RUN(cl, scanner, model);                      \
-  post_process(cl, scanner, sparse_matrix)
-
   if (model_name == "always") {
-    RUN(Common::AlwaysAccept<F>);
+    run<Scanner2D, Common::AlwaysAccept<F>>(cl);
   } else if (model_name == "scintillator") {
-    RUN(Common::ScintillatorAccept<F>, (length_scale));
+    run<Scanner2D, Common::ScintillatorAccept<F>>(cl, length_scale);
   } else {
     throw("unknown model: " + model_name);
   }
@@ -148,6 +133,18 @@ void print_parameters(cmdline::parser& cl, const ScannerClass& scanner) {
     std::cerr << "         max bias = " << max_bias << std::endl;
     std::cerr << "        emissions = " << n_emissions << std::endl;
   }
+}
+
+template <class ScannerClass, class ModelClass, typename... ModelArgs>
+static void run(cmdline::parser& cl, ModelArgs... args) {
+  Scanner scanner(
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
+          PET3D_LONGITUDINAL_SCANNER_CL(cl, Scanner::F)),
+      F(cl.get<double>("length")));
+  ModelClass model(args...);
+  print_parameters<ScannerClass, ModelClass>(cl, scanner.barrel);
+  auto sparse_matrix = run(cl, scanner, model);
+  post_process(cl, scanner, sparse_matrix);
 }
 
 template <class ScannerClass, class ModelClass>
@@ -208,11 +205,30 @@ static SparseMatrix run(cmdline::parser& cl,
   }
 
   ComputeMatrix matrix(n_pixels, scanner.barrel.size());
+  util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
+
+#if HAVE_CUDA
+  if (cl.exist("gpu")) {
+    PET3D::Hybrid::GPU::Matrix<ScannerClass>::run(
+        scanner,
+        cl.get<int>("cuda-blocks"),
+        cl.get<int>("cuda-threads"),
+        n_emissions,
+        z_position,
+        n_pixels,
+        s_pixel,
+        cl.get<double>("base-length"),
+        [&](int completed, bool finished) { progress(completed, finished); },
+        [&](LOR lor, Pixel pixel, Hit hits) {
+          sparse_matrix.emplace_back(lor, 0, pixel, hits);
+        });
+    return sparse_matrix;
+  }
+#endif
 
   PET3D::Hybrid::MonteCarlo<Scanner, ComputeMatrix> monte_carlo(
       scanner, matrix, s_pixel, m_pixel);
 
-  util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
   monte_carlo(z_position, gen, model, n_emissions, progress);
 
   return matrix.to_sparse();

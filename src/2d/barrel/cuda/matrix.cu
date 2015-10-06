@@ -177,7 +177,6 @@ void Matrix<Scanner>::run(Scanner& scanner,
   }
 
   auto end_pixel = Pixel::end_for_n_pixels_in_row(n_pixels / 2);
-
   for (Pixel pixel(0, 0); pixel < end_pixel; ++pixel) {
     progress(pixel.index(), false);
 
