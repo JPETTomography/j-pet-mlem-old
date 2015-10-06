@@ -233,6 +233,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
         cl.get<int>("cuda-threads"),
         n_emissions,
         tof_step,
+        n_tof_positions,
         n_pixels,
         s_pixel,
         cl.get<double>("base-length"),

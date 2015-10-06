@@ -8,10 +8,6 @@
 #include "2d/barrel/generic_scanner.h"
 #include "common/model.h"
 #include "common/types.h"
-#if !__CUDACC__
-#include "cmdline.h"
-#include "2d/barrel/sparse_matrix.h"
-#endif
 #include "util/delegate.h"
 #include "util/random.h"
 
@@ -29,9 +25,6 @@ using Event = Barrel::Event<F>;
 using SquareDetector = Barrel::SquareDetector<F>;
 using Scanner = Barrel::GenericScanner<SquareDetector, S>;
 using Model = Common::ScintillatorAccept<F>;
-#if !__CUDACC__
-using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR, Hit>;
-#endif
 
 /// \endcond
 
@@ -44,6 +37,7 @@ template <class ScannerClass> class Matrix {
                   int n_threads_per_block,
                   int n_emissions,
                   double tof_step,
+                  int n_tof_positions,
                   int n_pixels,
                   double s_pixel,
                   double length_scale,
@@ -51,8 +45,9 @@ template <class ScannerClass> class Matrix {
                   util::delegate<void(LOR, S, Pixel, Hit)> entry) {
     // unused
     (void)scanner, (void)rng, (void)n_blocks, (void)n_threads_per_block,
-        (void)n_emissions, (void)tof_step, (void)n_pixels, (void)s_pixel,
-        (void)length_scale, (void)progress, (void)entry;
+        (void)n_emissions, (void)tof_step, (void)n_tof_positions,
+        (void)n_pixels, (void)s_pixel, (void)length_scale, (void)progress,
+        (void)entry;
     throw("GPU does not support this scanner type");
   }
 };
@@ -67,7 +62,7 @@ template <> class Matrix<Scanner> {
          int n_positions,
          F tof_step,
          F length_scale,
-         unsigned int* prng_seed);
+         util::random::tausworthe& rng);
 
   ~Matrix();
 
@@ -82,6 +77,7 @@ template <> class Matrix<Scanner> {
                   int n_threads_per_block,
                   int n_emissions,
                   double tof_step,
+                  int n_tof_positions,
                   int n_pixels,
                   double s_pixel,
                   double length_scale,

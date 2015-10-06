@@ -68,7 +68,7 @@ Matrix<Scanner>::Matrix(const float z,
                         int n_blocks,
                         float pixel_size,
                         float length_scale,
-                        unsigned int* prng_seed)
+                        util::random::tausworthe& rng)
     : z(z),
       n_threads_per_block(n_threads_per_block),
       n_blocks(n_blocks),
@@ -82,7 +82,13 @@ Matrix<Scanner>::Matrix(const float z,
 
   cudaMalloc((void**)&gpu_pixel_hits, pixel_hits_size);
 
-  int prng_seed_size = n_blocks * n_threads_per_block * 4 * sizeof(*prng_seed);
+  // initalize RNG for all threads
+  int prng_seed_count = n_blocks * n_threads_per_block * 4;
+  unsigned int prng_seed[prng_seed_count];
+  int prng_seed_size = prng_seed_count * sizeof(*prng_seed);
+  for (int i = 0; i < prng_seed_count; ++i) {
+    prng_seed[i] = rng();
+  }
   cudaMalloc((void**)&gpu_prng_seed, prng_seed_size);
   cudaMemcpy(gpu_prng_seed, prng_seed, prng_seed_size, cudaMemcpyHostToDevice);
 }
@@ -135,12 +141,7 @@ void Matrix<Scanner>::run(Scanner& scanner,
   auto n_threads = n_blocks * n_threads_per_block;
   auto n_thread_emissions = (n_emissions + n_threads - 1) / n_threads;
   // Number of emissions will be rounded to block size
-  n_emissions = n_thread_emissions * n_blocks * n_threads_per_block;
-
-  unsigned int prng_seed[n_blocks * n_threads_per_block * 4];
-  for (int i = 0; i < 4 * n_blocks * n_threads_per_block; ++i) {
-    prng_seed[i] = rng();  // 53445 + i
-  }
+  n_emissions = n_thread_emissions * n_threads;
 
   GPU::Matrix<Scanner> gpu_matrix(z_position,
                                   scanner,
@@ -148,7 +149,7 @@ void Matrix<Scanner>::run(Scanner& scanner,
                                   n_blocks,
                                   s_pixel,
                                   length_scale,
-                                  prng_seed);
+                                  rng);
 
   const auto n_lors = LOR::end_for_detectors(scanner.barrel.size()).index();
   int pixel_hits[n_lors];

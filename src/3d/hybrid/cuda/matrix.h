@@ -9,10 +9,6 @@
 #include "2d/barrel/generic_scanner.h"
 #include "common/model.h"
 #include "common/types.h"
-#if !__CUDACC__
-#include "cmdline.h"
-#include "2d/barrel/sparse_matrix.h"
-#endif
 #include "util/delegate.h"
 #include "util/random.h"
 
@@ -31,9 +27,6 @@ using Scanner2D = PET2D::Barrel::GenericScanner<SquareDetector, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 using Event = Scanner::Event;
 using Model = Common::ScintillatorAccept<F>;
-#if !__CUDACC__
-using OutputMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
-#endif
 
 /// \endcond
 
@@ -68,7 +61,7 @@ template <> class Matrix<Scanner> {
          int n_blocks,
          F pixel_size,
          F length_scale,
-         unsigned int* prng_seed);
+         util::random::tausworthe& rng);
 
   ~Matrix();
 
