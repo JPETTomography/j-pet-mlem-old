@@ -79,21 +79,8 @@ using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
 using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
 using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, Hit>;
 
-template <class ScannerClass, class ModelClass>
-void print_parameters(cmdline::parser& cl, const ScannerClass& scanner);
-
 template <class ScannerClass, class ModelClass, typename... ModelArgs>
 static void run(cmdline::parser& cl, ModelArgs... args);
-
-template <class ScannerClass, class ModelClass>
-static SparseMatrix run(cmdline::parser& cl,
-                        ScannerClass& scanner,
-                        ModelClass& model);
-
-template <class ScannerClass>
-void post_process(cmdline::parser& cl,
-                  ScannerClass& scanner,
-                  SparseMatrix& sparse_matrix);
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -147,19 +134,35 @@ int main(int argc, char* argv[]) {
   CMDLINE_CATCH
 }
 
-template <class ScannerClass, class ModelClass>
-void print_parameters(cmdline::parser& cl, const ScannerClass& scanner) {
+template <class ScannerClass, class ModelClass, typename... ModelArgs>
+static void run(cmdline::parser& cl, ModelArgs... args) {
+
+  auto scanner =
+      PET2D::Barrel::ScannerBuilder<ScannerClass>::build_multiple_rings(
+          PET2D_BARREL_SCANNER_CL(cl, F));
+  ModelClass model(args...);
+
+  auto& n_detectors = cl.get<int>("n-detectors");
   auto& n_pixels = cl.get<int>("n-pixels");
+  auto& m_pixel = cl.get<int>("m-pixel");
   auto& s_pixel = cl.get<double>("s-pixel");
   auto& n_emissions = cl.get<int>("n-emissions");
   auto& tof_step = cl.get<double>("tof-step");
   auto verbose = cl.count("verbose");
+
   int n_tof_positions = 1;
   double max_bias = 0;
   if (cl.exist("tof-step") && tof_step > 0) {
     max_bias = 0;
     n_tof_positions = scanner.n_tof_positions(tof_step, max_bias);
   }
+
+  std::random_device rd;
+  util::random::tausworthe gen(rd());
+  if (cl.exist("seed")) {
+    gen.seed(cl.get<util::random::tausworthe::seed_type>("seed"));
+  }
+
   if (verbose) {
     std::cerr << "Monte-Carlo:" << std::endl;
 #if _OPENMP
@@ -173,43 +176,6 @@ void print_parameters(cmdline::parser& cl, const ScannerClass& scanner) {
     std::cerr << "         TOF step = " << tof_step << std::endl;
     std::cerr << "    TOF positions = " << n_tof_positions << std::endl;
     std::cerr << "        emissions = " << n_emissions << std::endl;
-  }
-}
-
-template <class ScannerClass, class ModelClass, typename... ModelArgs>
-static void run(cmdline::parser& cl, ModelArgs... args) {
-  auto scanner =
-      PET2D::Barrel::ScannerBuilder<ScannerClass>::build_multiple_rings(
-          PET2D_BARREL_SCANNER_CL(cl, F));
-  ModelClass model(args...);
-  print_parameters<ScannerClass, ModelClass>(cl, scanner);
-  auto sparse_matrix = run(cl, scanner, model);
-  post_process(cl, scanner, sparse_matrix);
-}
-
-template <class ScannerClass, class ModelClass>
-static SparseMatrix run(cmdline::parser& cl,
-                        ScannerClass& scanner,
-                        ModelClass& model) {
-
-  auto& n_pixels = cl.get<int>("n-pixels");
-  auto& m_pixel = cl.get<int>("m-pixel");
-  auto& s_pixel = cl.get<double>("s-pixel");
-  auto& n_emissions = cl.get<int>("n-emissions");
-  auto& tof_step = cl.get<double>("tof-step");
-  auto verbose = cl.count("verbose");
-
-  std::random_device rd;
-  util::random::tausworthe gen(rd());
-  if (cl.exist("seed")) {
-    gen.seed(cl.get<util::random::tausworthe::seed_type>("seed"));
-  }
-
-  int n_tof_positions = 1;
-  double max_bias = 0;
-  if (cl.exist("tof-step") && tof_step > 0) {
-    max_bias = 0;
-    n_tof_positions = scanner.n_tof_positions(tof_step, max_bias);
   }
 
   ComputeMatrix::SparseMatrix sparse_matrix(
@@ -258,6 +224,7 @@ static SparseMatrix run(cmdline::parser& cl,
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
 
 #if HAVE_CUDA
+  // GPU computation
   if (cl.exist("gpu")) {
     PET2D::Barrel::GPU::Matrix<ScannerClass>::run(
         scanner,
@@ -272,34 +239,19 @@ static SparseMatrix run(cmdline::parser& cl,
         [&](LOR lor, S position, Pixel pixel, Hit hits) {
           sparse_matrix.emplace_back(lor, position, pixel, hits);
         });
-    return sparse_matrix;
-  }
+  } else
 #endif
-
-  if (!sparse_matrix.empty()) {
-    matrix << sparse_matrix;
-    sparse_matrix.resize(0);
+  // CPU reference computation
+  {
+    if (!sparse_matrix.empty()) {
+      matrix << sparse_matrix;
+      sparse_matrix.resize(0);
+    }
+    PET2D::Barrel::MonteCarlo<ScannerClass, ComputeMatrix> monte_carlo(
+        scanner, matrix, s_pixel, tof_step, m_pixel);
+    monte_carlo(gen, model, n_emissions, progress);
+    sparse_matrix = matrix.to_sparse();
   }
-
-  PET2D::Barrel::MonteCarlo<ScannerClass, ComputeMatrix> monte_carlo(
-      scanner, matrix, s_pixel, tof_step, m_pixel);
-  monte_carlo(gen, model, n_emissions, progress);
-
-#ifdef GPU_TOF_TEST
-  monte_carlo.test(gen, model, n_emissions);
-#endif
-
-  return matrix.to_sparse();
-}
-
-template <class ScannerClass>
-void post_process(cmdline::parser& cl,
-                  ScannerClass& scanner,
-                  SparseMatrix& sparse_matrix) {
-
-  auto& n_pixels = cl.get<int>("n-pixels");
-  auto& s_pixel = cl.get<double>("s-pixel");
-  auto& n_detectors = cl.get<int>("n-detectors");
 
   // generate output
   if (cl.exist("output")) {

@@ -57,21 +57,8 @@ using LOR = Scanner2D::LOR;
 using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
 using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, Hit>;
 
-template <class ScannerClass, class ModelClass>
-void print_parameters(cmdline::parser& cl, const ScannerClass& scanner);
-
 template <class ScannerClass, class ModelClass, typename... ModelArgs>
 static void run(cmdline::parser& cl, ModelArgs... args);
-
-template <class ScannerClass, class ModelClass>
-static SparseMatrix run(cmdline::parser& cl,
-                        ScannerClass& scanner,
-                        ModelClass& model);
-
-template <class ScannerClass>
-void post_process(cmdline::parser& cl,
-                  ScannerClass& scanner,
-                  SparseMatrix& sparse_matrix);
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -114,44 +101,16 @@ int main(int argc, char* argv[]) {
   CMDLINE_CATCH
 }
 
-template <class ScannerClass, class ModelClass>
-void print_parameters(cmdline::parser& cl, const ScannerClass& scanner) {
-  auto& n_pixels = cl.get<int>("n-pixels");
-  auto& s_pixel = cl.get<double>("s-pixel");
-  auto& n_emissions = cl.get<int>("n-emissions");
-  auto verbose = cl.count("verbose");
-  double max_bias = 0;
-  if (verbose) {
-    std::cerr << "Monte-Carlo:" << std::endl;
-#if _OPENMP
-    std::cerr << "   OpenMP threads = " << omp_get_max_threads() << std::endl;
-#endif
-    std::cerr << "    pixels in row = " << n_pixels << std::endl;
-    std::cerr << "       pixel size = " << s_pixel << std::endl;
-    std::cerr << "       fov radius = " << scanner.fov_radius() << std::endl;
-    std::cerr << "     outer radius = " << scanner.outer_radius() << std::endl;
-    std::cerr << "         max bias = " << max_bias << std::endl;
-    std::cerr << "        emissions = " << n_emissions << std::endl;
-  }
-}
-
 template <class ScannerClass, class ModelClass, typename... ModelArgs>
 static void run(cmdline::parser& cl, ModelArgs... args) {
-  Scanner scanner(
+
+  auto scanner2D =
       PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
-          PET3D_LONGITUDINAL_SCANNER_CL(cl, Scanner::F)),
-      F(cl.get<double>("length")));
+          PET3D_LONGITUDINAL_SCANNER_CL(cl, Scanner::F));
+  Scanner scanner(scanner2D, F(cl.get<double>("length")));
   ModelClass model(args...);
-  print_parameters<ScannerClass, ModelClass>(cl, scanner.barrel);
-  auto sparse_matrix = run(cl, scanner, model);
-  post_process(cl, scanner, sparse_matrix);
-}
 
-template <class ScannerClass, class ModelClass>
-static SparseMatrix run(cmdline::parser& cl,
-                        ScannerClass& scanner,
-                        ModelClass& model) {
-
+  auto& n_detectors = cl.get<int>("n-detectors");
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
   auto& s_pixel = cl.get<double>("s-pixel");
@@ -163,10 +122,24 @@ static SparseMatrix run(cmdline::parser& cl,
     std::cerr << "  n pixels = " << n_pixels << std::endl;
     std::cerr << "pixel size = " << s_pixel << std::endl;
   }
+
   std::random_device rd;
   util::random::tausworthe gen(rd());
   if (cl.exist("seed")) {
     gen.seed(cl.get<util::random::tausworthe::seed_type>("seed"));
+  }
+
+  if (verbose) {
+    std::cerr << "Monte-Carlo:" << std::endl;
+#if _OPENMP
+    std::cerr << "   OpenMP threads = " << omp_get_max_threads() << std::endl;
+#endif
+    std::cerr << "    pixels in row = " << n_pixels << std::endl;
+    std::cerr << "       pixel size = " << s_pixel << std::endl;
+    std::cerr << "       fov radius = " << scanner2D.fov_radius() << std::endl;
+    std::cerr << "     outer radius = " << scanner2D.outer_radius()
+              << std::endl;
+    std::cerr << "        emissions = " << n_emissions << std::endl;
   }
 
   ComputeMatrix::SparseMatrix sparse_matrix(n_pixels, scanner.barrel.size());
@@ -208,8 +181,9 @@ static SparseMatrix run(cmdline::parser& cl,
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
 
 #if HAVE_CUDA
+  // GPU computation
   if (cl.exist("gpu")) {
-    PET3D::Hybrid::GPU::Matrix<ScannerClass>::run(
+    PET3D::Hybrid::GPU::Matrix<Scanner>::run(
         scanner,
         cl.get<int>("cuda-blocks"),
         cl.get<int>("cuda-threads"),
@@ -222,26 +196,15 @@ static SparseMatrix run(cmdline::parser& cl,
         [&](LOR lor, Pixel pixel, Hit hits) {
           sparse_matrix.emplace_back(lor, 0, pixel, hits);
         });
-    return sparse_matrix;
-  }
+  } else
 #endif
-
-  PET3D::Hybrid::MonteCarlo<Scanner, ComputeMatrix> monte_carlo(
-      scanner, matrix, s_pixel, m_pixel);
-
-  monte_carlo(z_position, gen, model, n_emissions, progress);
-
-  return matrix.to_sparse();
-}
-
-template <class ScannerClass>
-void post_process(cmdline::parser& cl,
-                  ScannerClass& scanner,
-                  SparseMatrix& sparse_matrix) {
-
-  auto& n_pixels = cl.get<int>("n-pixels");
-  auto& s_pixel = cl.get<double>("s-pixel");
-  auto& n_detectors = cl.get<int>("n-detectors");
+  // CPU reference computation
+  {
+    PET3D::Hybrid::MonteCarlo<Scanner, ComputeMatrix> monte_carlo(
+        scanner, matrix, s_pixel, m_pixel);
+    monte_carlo(z_position, gen, model, n_emissions, progress);
+    sparse_matrix = matrix.to_sparse();
+  }
 
   // generate output
   if (cl.exist("output")) {
