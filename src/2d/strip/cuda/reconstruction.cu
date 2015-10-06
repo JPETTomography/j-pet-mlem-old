@@ -6,6 +6,7 @@
 #include "../event.h"
 #include "../kernel.h"
 #include "gpu_events_soa.h"
+#include "reconstruction.h"
 
 texture<float, 2, cudaReadModeElementType> tex_sensitivity;
 texture<float, 2, cudaReadModeElementType> tex_rho;
@@ -21,36 +22,32 @@ texture<float, 2, cudaReadModeElementType> tex_rho;
 namespace PET2D {
 namespace Strip {
 namespace GPU {
+namespace Reconstruction {
 
 template <typename F>
 void fill_with_sensitivity(F* sensitivity, Scanner<F, short>& scanner);
 
 template <typename F>
-void run_reconstruction(Scanner<F, short>& scanner,
-                        Response<F>* responses,
-                        int n_responses,
-                        int n_iteration_blocks,
-                        int n_iterations_in_block,
-                        void (*output_callback)(Scanner<F, short>& scanner,
-                                                int iteration,
-                                                F* image,
-                                                void* context),
-                        void (*progress_callback)(int iteration,
-                                                  void* context,
-                                                  bool finished),
-                        void* context,
-                        int device,
-                        int n_blocks,
-                        int n_threads_per_block,
-                        bool verbose) {
+void run(Scanner<F, short>& scanner,
+         Response<F>* responses,
+         int n_responses,
+         int n_iteration_blocks,
+         int n_iterations_in_block,
+         util::delegate<void(int, F*)> output,
+         util::delegate<void(int, bool)> progress,
+         int device,
+         int n_blocks,
+         int n_threads_per_block) {
 
   cudaSetDevice(device);
   cudaDeviceProp prop;
   cudaGetDeviceProperties(&prop, device);
 
+#if NO_EXTRA_OUTPUT
   if (verbose) {
     fprintf(stdout, "# running on: %s\n", prop.name);
   }
+#endif
 
 #if __CUDACC__
   dim3 blocks(n_blocks);
@@ -68,7 +65,7 @@ void run_reconstruction(Scanner<F, short>& scanner,
 
   fill_with_sensitivity(cpu_sensitivity, scanner);
 
-  output_callback(scanner, -1, cpu_sensitivity, context);
+  output(-1, cpu_sensitivity);
 
   F* gpu_sensitivity;
   size_t pitch_sensitivity;
@@ -116,7 +113,7 @@ void run_reconstruction(Scanner<F, short>& scanner,
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {
-      progress_callback(ib * n_iterations_in_block + it, context, false);
+      progress(ib * n_iterations_in_block + it, false);
 
 #if USE_RHO_PER_WARP
       cudaMemset(gpu_output_rho, 0, n_blocks * image_size);
@@ -166,21 +163,20 @@ void run_reconstruction(Scanner<F, short>& scanner,
 #else
       cudaMemcpy(cpu_rho, gpu_output_rho, image_size, cudaMemcpyDeviceToHost);
 #endif
-      progress_callback(ib * n_iterations_in_block + it, context, true);
+      progress(ib * n_iterations_in_block + it, true);
 
       // always output first 5 iterations, and at 10, 15, 20, 30, 50, 100
       if (!ib && it < n_iterations_in_block - 1 &&
           (it < 5 || it == 9 || it == 14 || it == 19 || it == 29 || it == 49 ||
            it == 99)) {
-        output_callback(scanner, it + 1, cpu_rho, context);
+        output(it + 1, cpu_rho);
       }
     }
 
-    output_callback(
-        scanner, (ib + 1) * n_iterations_in_block, cpu_rho, context);
+    output((ib + 1) * n_iterations_in_block, cpu_rho);
   }
 
-  progress_callback(n_iteration_blocks * n_iterations_in_block, context, false);
+  progress(n_iteration_blocks * n_iterations_in_block, false);
 
   cudaUnbindTexture(&tex_sensitivity);
   cudaFree(gpu_sensitivity);
@@ -208,24 +204,18 @@ void fill_with_sensitivity(F* sensitivity, Scanner<F, short>& scanner) {
 }
 
 // Explicit template instantiation
+template void run(Scanner<float, short>& scanner,
+                  Response<float>* responses,
+                  int n_responses,
+                  int n_iteration_blocks,
+                  int n_iterations_in_block,
+                  util::delegate<void(int, float*)> output,
+                  util::delegate<void(int, bool)> progress,
+                  int device,
+                  int n_blocks,
+                  int n_threads_per_block);
 
-template void run_reconstruction<float>(
-    Scanner<float, short>& scanner,
-    Response<float>* responses,
-    int n_responses,
-    int n_iteration_blocks,
-    int n_iterations_in_block,
-    void (*output_callback)(Scanner<float, short>& scanner,
-                            int iteration,
-                            float* image,
-                            void* context),
-    void (*progress_callback)(int iteration, void* context, bool finished),
-    void* context,
-    int device,
-    int n_blocks,
-    int n_threads_per_block,
-    bool verbose);
-
+}  // Reconstruction
 }  // GPU
 }  // Strip
 }  // PET2D

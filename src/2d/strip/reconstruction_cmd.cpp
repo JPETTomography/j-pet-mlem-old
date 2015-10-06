@@ -150,18 +150,47 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
-    PET2D::Strip::GPU::run_reconstruction(scanner,
-                                          reconstruction.responses,
-                                          n_blocks,
-                                          n_iterations,
-                                          cl.get<int>("cuda-device"),
-                                          cl.get<int>("cuda-blocks"),
-                                          cl.get<int>("cuda-threads"),
-                                          cl.exist("verbose"),
-                                          progress,
-                                          output_base_name,
-                                          output_txt,
-                                          n_file_digits);
+    PET2D::Strip::GPU::Reconstruction::run<F>(
+        scanner,
+        reconstruction.responses.data(),
+        reconstruction.responses.size(),
+        n_blocks,
+        n_iterations,
+        [&](int iteration, F* output) {
+          std::stringstream fn;
+          fn << output_base_name << "_";  // phantom_
+          if (iteration >= 0) {
+            fn << std::setw(n_file_digits)    //
+               << std::setfill('0')           //
+               << iteration << std::setw(0);  // 001
+          } else {
+            fn << "sensitivity";
+          }
+
+          util::png_writer png(fn.str() + ".png");
+          png.write(scanner.n_z_pixels, scanner.n_y_pixels, output);
+
+          if (output_txt) {
+            std::ofstream txt(fn.str() + ".txt");
+            txt.precision(12);
+            txt << std::fixed;
+            for (int y = 0; y < scanner.n_y_pixels; ++y) {
+              for (auto x = 0; x < scanner.n_z_pixels; ++x) {
+                auto value = output[y * scanner.n_z_pixels + x];
+                if (value >= 0.000000000001f) {
+                  txt << x << ' ' << y << ' ' << value << std::endl;
+                }
+              }
+            }
+          } else {
+            util::obstream bin(fn.str() + ".bin");
+            bin.write(output, scanner.total_n_pixels);
+          }
+        },
+        [&](int completed, bool finished) { progress(completed, finished); },
+        cl.get<int>("cuda-device"),
+        cl.get<int>("cuda-blocks"),
+        cl.get<int>("cuda-threads"));
   } else
 #endif
   {
