@@ -23,7 +23,7 @@ __global__ static void kernel(const float z,
                               int* pixel_hits) {
   int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
-  util::random::tausworthe gen(&gpu_prng_seed[4 * tid]);
+  util::random::tausworthe rng(&gpu_prng_seed[4 * tid]);
   util::random::uniform_real_distribution<float> one_dis(0, 1);
   util::random::uniform_real_distribution<float> pi_dis(0, (float)M_PI);
   Distribution::SphericalDistribution<F> direction;
@@ -36,9 +36,9 @@ __global__ static void kernel(const float z,
   auto fov_radius2 = scanner.barrel.fov_radius() * scanner.barrel.fov_radius();
 
   for (int i = 0; i < n_emissions; ++i) {
-    auto rx = (pixel.x + one_dis(gen)) * pixel_size;
-    auto ry = (pixel.y + one_dis(gen)) * pixel_size;
-    auto rz = z + one_dis(gen) * pixel_size;
+    auto rx = (pixel.x + one_dis(rng)) * pixel_size;
+    auto ry = (pixel.y + one_dis(rng)) * pixel_size;
+    auto rz = z + one_dis(rng) * pixel_size;
 
     // ensure we are within a triangle
     if (rx > ry)
@@ -48,9 +48,9 @@ __global__ static void kernel(const float z,
     if (rx * rx + ry * ry > fov_radius2)
       continue;
 
-    Event event(PET3D::Point<float>(rx, ry, rz), direction(gen));
+    Event event(PET3D::Point<float>(rx, ry, rz), direction(rng));
     Scanner::Response response;
-    auto hits = scanner.detect(gen, model, event, response);
+    auto hits = scanner.detect(rng, model, event, response);
 
     // do we have hit on both sides?
     if (hits >= 2) {
@@ -59,7 +59,7 @@ __global__ static void kernel(const float z,
     }
   }
 
-  gen.save(&gpu_prng_seed[4 * tid]);
+  rng.save(&gpu_prng_seed[4 * tid]);
 }
 
 Matrix<Scanner>::Matrix(const float z,
@@ -119,6 +119,7 @@ void Matrix<Scanner>::operator()(Pixel pixel,
 }
 
 void Matrix<Scanner>::run(Scanner& scanner,
+                          util::random::tausworthe& rng,
                           int n_blocks,
                           int n_threads_per_block,
                           int n_emissions,
@@ -137,11 +138,8 @@ void Matrix<Scanner>::run(Scanner& scanner,
   n_emissions = n_thread_emissions * n_blocks * n_threads_per_block;
 
   unsigned int prng_seed[n_blocks * n_threads_per_block * 4];
-
-  util::random::tausworthe gen;
-  gen.seed(345555);
   for (int i = 0; i < 4 * n_blocks * n_threads_per_block; ++i) {
-    prng_seed[i] = gen();  // 53445 + i
+    prng_seed[i] = rng();  // 53445 + i
   }
 
   GPU::Matrix<Scanner> gpu_matrix(z_position,

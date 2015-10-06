@@ -158,9 +158,9 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
   }
 
   std::random_device rd;
-  util::random::tausworthe gen(rd());
+  util::random::tausworthe rng(rd());
   if (cl.exist("seed")) {
-    gen.seed(cl.get<util::random::tausworthe::seed_type>("seed"));
+    rng.seed(cl.get<util::random::tausworthe::seed_type>("seed"));
   }
 
   if (verbose) {
@@ -228,6 +228,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
   if (cl.exist("gpu")) {
     PET2D::Barrel::GPU::Matrix<ScannerClass>::run(
         scanner,
+        rng,
         cl.get<int>("cuda-blocks"),
         cl.get<int>("cuda-threads"),
         n_emissions,
@@ -249,7 +250,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
     }
     PET2D::Barrel::MonteCarlo<ScannerClass, ComputeMatrix> monte_carlo(
         scanner, matrix, s_pixel, tof_step, m_pixel);
-    monte_carlo(gen, model, n_emissions, progress);
+    monte_carlo(rng, model, n_emissions, progress);
     sparse_matrix = matrix.to_sparse();
   }
 

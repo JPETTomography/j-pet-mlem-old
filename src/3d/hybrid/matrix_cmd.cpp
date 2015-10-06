@@ -124,9 +124,9 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
   }
 
   std::random_device rd;
-  util::random::tausworthe gen(rd());
+  util::random::tausworthe rng(rd());
   if (cl.exist("seed")) {
-    gen.seed(cl.get<util::random::tausworthe::seed_type>("seed"));
+    rng.seed(cl.get<util::random::tausworthe::seed_type>("seed"));
   }
 
   if (verbose) {
@@ -185,6 +185,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
   if (cl.exist("gpu")) {
     PET3D::Hybrid::GPU::Matrix<Scanner>::run(
         scanner,
+        rng,
         cl.get<int>("cuda-blocks"),
         cl.get<int>("cuda-threads"),
         n_emissions,
@@ -202,7 +203,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
   {
     PET3D::Hybrid::MonteCarlo<Scanner, ComputeMatrix> monte_carlo(
         scanner, matrix, s_pixel, m_pixel);
-    monte_carlo(z_position, gen, model, n_emissions, progress);
+    monte_carlo(z_position, rng, model, n_emissions, progress);
     sparse_matrix = matrix.to_sparse();
   }
 

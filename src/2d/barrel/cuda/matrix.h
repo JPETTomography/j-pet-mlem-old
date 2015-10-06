@@ -13,6 +13,7 @@
 #include "2d/barrel/sparse_matrix.h"
 #endif
 #include "util/delegate.h"
+#include "util/random.h"
 
 namespace PET2D {
 namespace Barrel {
@@ -38,6 +39,7 @@ using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR, Hit>;
 template <class ScannerClass> class Matrix {
  public:
   static void run(ScannerClass& scanner,
+                  util::random::tausworthe& rng,
                   int n_blocks,
                   int n_threads_per_block,
                   int n_emissions,
@@ -48,9 +50,9 @@ template <class ScannerClass> class Matrix {
                   util::delegate<void(int, bool)> progress,
                   util::delegate<void(LOR, S, Pixel, Hit)> entry) {
     // unused
-    (void)scanner, (void)n_blocks, (void)n_threads_per_block, (void)n_emissions,
-        (void)tof_step, (void)n_pixels, (void)s_pixel, (void)length_scale,
-        (void)progress, (void)entry;
+    (void)scanner, (void)rng, (void)n_blocks, (void)n_threads_per_block,
+        (void)n_emissions, (void)tof_step, (void)n_pixels, (void)s_pixel,
+        (void)length_scale, (void)progress, (void)entry;
     throw("GPU does not support this scanner type");
   }
 };
@@ -75,6 +77,7 @@ template <> class Matrix<Scanner> {
                   );
 
   static void run(Scanner& scanner,
+                  util::random::tausworthe& rng,
                   int n_blocks,
                   int n_threads_per_block,
                   int n_emissions,
