@@ -12,6 +12,7 @@
 #include "cmdline.h"
 #include "2d/barrel/sparse_matrix.h"
 #endif
+#include "util/delegate.h"
 
 namespace PET2D {
 namespace Barrel {
@@ -33,8 +34,29 @@ using OutputMatrix = Barrel::SparseMatrix<Pixel, LOR, Hit>;
 
 /// \endcond
 
+/// CUDA sink for unimplemented versions
+template <class ScannerClass> class Matrix {
+ public:
+  static void run(ScannerClass& scanner,
+                  int n_blocks,
+                  int n_threads_per_block,
+                  int n_emissions,
+                  double tof_step,
+                  int n_pixels,
+                  double s_pixel,
+                  double length_scale,
+                  util::delegate<void(int, bool)> progress,
+                  util::delegate<void(LOR, S, Pixel, Hit)> entry) {
+    // unused
+    (void)scanner, (void)n_blocks, (void)n_threads_per_block, (void)n_emissions,
+        (void)tof_step, (void)n_pixels, (void)s_pixel, (void)length_scale,
+        (void)progress, (void)entry;
+    throw("GPU does not support this scanner type");
+  }
+};
+
 /// CUDA optimized Monte-Carlo implementation
-class Matrix {
+template <> class Matrix<Scanner> {
  public:
   Matrix(const Scanner& scanner,
          int n_threads_per_block,
@@ -52,9 +74,16 @@ class Matrix {
                   int* pixel_hits     ///<[out] result pixel hits
                   );
 
-#if !__CUDACC__
-  static OutputMatrix run(cmdline::parser& cl);
-#endif
+  static void run(Scanner& scanner,
+                  int n_blocks,
+                  int n_threads_per_block,
+                  int n_emissions,
+                  double tof_step,
+                  int n_pixels,
+                  double s_pixel,
+                  double length_scale,
+                  util::delegate<void(int, bool)> progress,
+                  util::delegate<void(LOR, S, Pixel, Hit)> entry);
 
  private:
   Scanner* gpu_scanner;
