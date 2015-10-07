@@ -30,27 +30,34 @@ class tausworthe {
   /// Creates new random number generator with seed taken from given memory.
   _ tausworthe(const state_type state) { load(state); }
 
+  /// Creates new random number generator with other RNG.
+  tausworthe(tausworthe& rng) {
+    for (size_t i = 0; i < sizeof(state) / sizeof(*state); ++i) {
+      state[i] = rng();
+    }
+  }
+
   /// Loads generator state
-  _ void load(const state_type state) {
-    for (size_t i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
-      seeds[i] = state[i];
+  _ void load(const state_type new_state) {
+    for (size_t i = 0; i < sizeof(state) / sizeof(*state); ++i) {
+      state[i] = new_state[i];
     }
   }
 
   /// Save generator state
-  _ void save(state_type state) const {
-    for (size_t i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
-      state[i] = seeds[i];
+  _ void save(state_type out_state) const {
+    for (size_t i = 0; i < sizeof(state) / sizeof(*state); ++i) {
+      out_state[i] = state[i];
     }
   }
 
   /// Returns random number
   _ result_type operator()() {
-    taus_step(seeds[0], 13, 19, 12, 4294967294u);
-    taus_step(seeds[1], 2, 25, 4, 4294967288u);
-    taus_step(seeds[2], 3, 11, 17, 4294967280u);
-    LCG_step(seeds[3], 1664525u, 1013904223u);
-    return seeds[0] ^ seeds[1] ^ seeds[2] ^ seeds[3];
+    taus_step(state[0], 13, 19, 12, 4294967294u);
+    taus_step(state[1], 2, 25, 4, 4294967288u);
+    taus_step(state[2], 3, 11, 17, 4294967280u);
+    LCG_step(state[3], 1664525u, 1013904223u);
+    return state[0] ^ state[1] ^ state[2] ^ state[3];
   }
 
   /// Randomizes generator with given seed value
@@ -60,7 +67,7 @@ class tausworthe {
 #else
     srand(seed);
 #endif
-    for (size_t i = 0; i < sizeof(seeds) / sizeof(*seeds); ++i) {
+    for (size_t i = 0; i < sizeof(state) / sizeof(*state); ++i) {
       result_type r;
 #if !_WIN32
       while ((r = static_cast<result_type>(lrand48())) < 128)
@@ -68,12 +75,12 @@ class tausworthe {
       while ((r = static_cast<result_type>(rand())) < 128)
 #endif
         ;
-      seeds[i] = r;
+      state[i] = r;
     }
   }
 
  private:
-  state_type seeds;
+  state_type state;
 
   template <typename T> _ void taus_step(T& z, int S1, int S2, int S3, T M) {
     unsigned b = (((z << S1) ^ z) >> S2);
