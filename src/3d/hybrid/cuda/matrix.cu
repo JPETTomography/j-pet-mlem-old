@@ -20,11 +20,11 @@ __global__ static void kernel(const float z,
                               int n_emissions,
                               float s_pixel,
                               float length_scale,
-                              unsigned int* gpu_rng_seed,
+                              util::random::tausworthe::state_type* rng_state,
                               int* pixel_hits) {
   int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
-  util::random::tausworthe rng(&gpu_rng_seed[4 * tid]);
+  util::random::tausworthe rng(rng_state[tid]);
   util::random::uniform_real_distribution<float> one_dis(0, 1);
   util::random::uniform_real_distribution<float> pi_dis(0, (float)M_PI);
   Distribution::SphericalDistribution<F> direction;
@@ -60,7 +60,7 @@ __global__ static void kernel(const float z,
     }
   }
 
-  rng.save(&gpu_rng_seed[4 * tid]);
+  rng.save(rng_state[tid]);
 }
 
 template <>
@@ -83,7 +83,6 @@ void run<Scanner>(Scanner& scanner,
   // Number of emissions will be rounded to block size
   n_emissions = n_thread_emissions * n_threads;
 
-  // (1) setup LORs:
   const auto end_lor = LOR::end_for_detectors(scanner.barrel.size());
   const auto n_lors = end_lor.index();
   LOR lor_map[n_lors];
@@ -91,57 +90,38 @@ void run<Scanner>(Scanner& scanner,
     lor_map[lor.index()] = lor;
   }
 
-  // (2) copy scanner to GPU:
-  Scanner* gpu_scanner;
-  cudaMalloc((void**)&gpu_scanner, sizeof(Scanner));
-  cudaMemcpy(gpu_scanner, &scanner, sizeof(Scanner), cudaMemcpyHostToDevice);
+  util::cuda::on_device<Scanner> scanner_on_device(scanner);
+  util::cuda::memory<int> pixel_hits(n_lors);
+  util::cuda::memory<util::random::tausworthe::state_type> rng_state(n_threads);
 
-  // (3) create empty pixel hits for GPU:
-  const int pixel_hits_len = n_lors;
-  const int pixel_hits_size = pixel_hits_len * sizeof(int);
-  int* gpu_pixel_hits;
-  int pixel_hits[pixel_hits_len];
-  cudaMalloc((void**)&gpu_pixel_hits, pixel_hits_size);
-
-  // (4) initalize RNG for all GPU threads:
-  int rng_seed_len = n_threads * 4;
-  unsigned int rng_seed[rng_seed_len];
-  int rng_seed_size = rng_seed_len * sizeof(*rng_seed);
-  for (int i = 0; i < rng_seed_len; ++i) {
-    rng_seed[i] = rng();
+  for (int i = 0; i < rng_state.size; ++i) {
+    util::random::tausworthe thread_rng(rng);
+    thread_rng.save(rng_state[i]);
   }
-  unsigned int* gpu_rng_seed;
-  cudaMalloc((void**)&gpu_rng_seed, rng_seed_size);
-  cudaMemcpy(gpu_rng_seed, rng_seed, rng_seed_size, cudaMemcpyHostToDevice);
+  rng_state.copy_to_device();
 
   auto end_pixel = Pixel::end_for_n_pixels_in_row(n_pixels / 2);
   for (Pixel pixel(0, 0); pixel < end_pixel; ++pixel) {
     progress(pixel.index(), false);
 
-    // (5) clear pixel hits on GPU:
-    cudaMemset(gpu_pixel_hits, 0, pixel_hits_size);
+    pixel_hits.zero_on_device();
 
 #if __CUDACC__
     dim3 blocks(n_blocks);
     dim3 threads(n_threads_per_block);
 #define kernel kernel<<<blocks, threads>>>
 #endif
-    // (6) run kernel:
     kernel(z_position,
            pixel,
-           gpu_scanner,
+           scanner_on_device,
            n_emissions,
            s_pixel,
            length_scale,
-           gpu_rng_seed,
-           gpu_pixel_hits);
+           rng_state,
+           pixel_hits);
 
-    // (7) copy back the data:
-    cudaThreadSynchronize();
-    cudaMemcpy(
-        pixel_hits, gpu_pixel_hits, pixel_hits_size, cudaMemcpyDeviceToHost);
+    pixel_hits.sync_copy_from_device();
 
-    // (8) inform callee about data:
     for (size_t lor_index = 0; lor_index < n_lors; ++lor_index) {
       auto lor = lor_map[lor_index];
       auto hits = pixel_hits[lor_index];
@@ -152,11 +132,6 @@ void run<Scanner>(Scanner& scanner,
 
     progress(pixel.index(), true);
   }
-
-  // (9) free the GPU data:
-  cudaFree(gpu_rng_seed);
-  cudaFree(gpu_pixel_hits);
-  cudaFree(gpu_scanner);
 }
 
 }  // Matrix
