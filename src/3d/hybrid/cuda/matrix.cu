@@ -101,7 +101,7 @@ void run<Scanner>(Scanner& scanner,
   util::cuda::memory<int> pixel_hits(n_lors);
   util::cuda::memory<util::random::tausworthe::state_type> rng_state(n_threads);
 
-  for (int i = 0; i < rng_state.size; ++i) {
+  for (size_t i = 0; i < rng_state.size; ++i) {
     util::random::tausworthe thread_rng(rng);
     thread_rng.save(rng_state[i]);
   }
@@ -129,7 +129,7 @@ void run<Scanner>(Scanner& scanner,
 
     pixel_hits.sync_copy_from_device();
 
-    for (size_t lor_index = 0; lor_index < n_lors; ++lor_index) {
+    for (int lor_index = 0; lor_index < n_lors; ++lor_index) {
       auto lor = lor_map[lor_index];
       auto hits = pixel_hits[lor_index];
       if (hits > 0) {
