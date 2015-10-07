@@ -36,19 +36,22 @@ namespace Matrix {
 template <class ScannerClass>
 void run(ScannerClass& scanner,
          util::random::tausworthe& rng,
-         int n_blocks,
-         int n_threads_per_block,
          int n_emissions,
          double z_position,
          int n_pixels,
          double s_pixel,
          double length_scale,
          util::delegate<void(int, bool)> progress,
-         util::delegate<void(LOR, Pixel, Hit)> entry) {
+         util::delegate<void(LOR, Pixel, Hit)> entry,
+         int device,
+         int n_blocks,
+         int n_threads_per_block,
+         util::delegate<void(const char*)> device_name) {
   // unused
-  (void)scanner, (void)rng, (void)n_blocks, (void)n_threads_per_block,
-      (void)n_emissions, (void)z_position, (void)n_pixels, (void)s_pixel,
-      (void)length_scale, (void)progress, (void)entry;
+  (void)scanner, (void)rng, (void)n_emissions, (void)z_position, (void)n_pixels,
+      (void)s_pixel, (void)length_scale, (void)progress, (void)entry,
+      (void)device, (void)n_blocks, (void)n_threads_per_block,
+      (void)device_name;
   throw("GPU does not support this scanner type");
 }
 
@@ -56,15 +59,17 @@ void run(ScannerClass& scanner,
 template <>
 void run<Scanner>(Scanner& scanner,
                   util::random::tausworthe& rng,
-                  int n_blocks,
-                  int n_threads_per_block,
                   int n_emissions,
                   double z_position,
                   int n_pixels,
                   double s_pixel,
                   double length_scale,
                   util::delegate<void(int, bool)> progress,
-                  util::delegate<void(LOR, Pixel, Hit)> entry);
+                  util::delegate<void(LOR, Pixel, Hit)> entry,
+                  int device,
+                  int n_blocks,
+                  int n_threads_per_block,
+                  util::delegate<void(const char*)> device_name);
 
 }  // Matrix
 }  // GPU

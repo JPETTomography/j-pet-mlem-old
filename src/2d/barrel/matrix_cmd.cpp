@@ -229,8 +229,6 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
     PET2D::Barrel::GPU::Matrix::run<ScannerClass>(
         scanner,
         rng,
-        cl.get<int>("cuda-blocks"),
-        cl.get<int>("cuda-threads"),
         n_emissions,
         tof_step,
         n_tof_positions,
@@ -240,6 +238,14 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
         [&](int completed, bool finished) { progress(completed, finished); },
         [&](LOR lor, S position, Pixel pixel, Hit hits) {
           sparse_matrix.emplace_back(lor, position, pixel, hits);
+        },
+        cl.get<int>("cuda-device"),
+        cl.get<int>("cuda-blocks"),
+        cl.get<int>("cuda-threads"),
+        [=](const char* device_name) {
+          if (verbose) {
+            std::cerr << "           device = " << device_name << std::endl;
+          }
         });
   } else
 #endif

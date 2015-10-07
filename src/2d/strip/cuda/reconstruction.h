@@ -30,7 +30,8 @@ void run(Scanner<F, short>& scanner,
          util::delegate<void(int, bool)> progress,
          int device,
          int n_blocks,
-         int n_threads_per_block);
+         int n_threads_per_block,
+         util::delegate<void(const char*)> device_name);
 
 }  // Reconstruction
 }  // GPU

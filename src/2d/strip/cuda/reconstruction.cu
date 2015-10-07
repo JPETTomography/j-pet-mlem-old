@@ -37,17 +37,13 @@ void run(Scanner<F, short>& scanner,
          util::delegate<void(int, bool)> progress,
          int device,
          int n_blocks,
-         int n_threads_per_block) {
+         int n_threads_per_block,
+         util::delegate<void(const char*)> device_name) {
 
   cudaSetDevice(device);
   cudaDeviceProp prop;
   cudaGetDeviceProperties(&prop, device);
-
-#if NO_EXTRA_OUTPUT
-  if (verbose) {
-    fprintf(stdout, "# running on: %s\n", prop.name);
-  }
-#endif
+  device_name(prop.name);
 
 #if __CUDACC__
   dim3 blocks(n_blocks);
@@ -213,7 +209,8 @@ template void run(Scanner<float, short>& scanner,
                   util::delegate<void(int, bool)> progress,
                   int device,
                   int n_blocks,
-                  int n_threads_per_block);
+                  int n_threads_per_block,
+                  util::delegate<void(const char*)> device_name);
 
 }  // Reconstruction
 }  // GPU

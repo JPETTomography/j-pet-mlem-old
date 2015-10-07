@@ -186,8 +186,6 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
     PET3D::Hybrid::GPU::Matrix::run<Scanner>(
         scanner,
         rng,
-        cl.get<int>("cuda-blocks"),
-        cl.get<int>("cuda-threads"),
         n_emissions,
         z_position,
         n_pixels,
@@ -196,6 +194,14 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
         [&](int completed, bool finished) { progress(completed, finished); },
         [&](LOR lor, Pixel pixel, Hit hits) {
           sparse_matrix.emplace_back(lor, 0, pixel, hits);
+        },
+        cl.get<int>("cuda-device"),
+        cl.get<int>("cuda-blocks"),
+        cl.get<int>("cuda-threads"),
+        [=](const char* device_name) {
+          if (verbose) {
+            std::cerr << "           device = " << device_name << std::endl;
+          }
         });
   } else
 #endif

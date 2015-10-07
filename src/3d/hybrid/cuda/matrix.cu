@@ -66,15 +66,22 @@ __global__ static void kernel(const float z,
 template <>
 void run<Scanner>(Scanner& scanner,
                   util::random::tausworthe& rng,
-                  int n_blocks,
-                  int n_threads_per_block,
                   int n_emissions,
                   double z_position,
                   int n_pixels,
                   double s_pixel,
                   double length_scale,
                   util::delegate<void(int, bool)> progress,
-                  util::delegate<void(LOR, Pixel, Hit)> entry) {
+                  util::delegate<void(LOR, Pixel, Hit)> entry,
+                  int device,
+                  int n_blocks,
+                  int n_threads_per_block,
+                  util::delegate<void(const char*)> device_name) {
+
+  cudaSetDevice(device);
+  cudaDeviceProp prop;
+  cudaGetDeviceProperties(&prop, device);
+  device_name(prop.name);
 
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -
   // each SMX can use 8 active blocks,

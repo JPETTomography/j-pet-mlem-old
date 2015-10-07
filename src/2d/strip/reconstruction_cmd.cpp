@@ -190,7 +190,12 @@ int main(int argc, char* argv[]) {
         [&](int completed, bool finished) { progress(completed, finished); },
         cl.get<int>("cuda-device"),
         cl.get<int>("cuda-blocks"),
-        cl.get<int>("cuda-threads"));
+        cl.get<int>("cuda-threads"),
+        [=](const char* device_name) {
+          if (verbose) {
+            std::cerr << "# device: " << device_name << std::endl;
+          }
+        });
   } else
 #endif
   {
