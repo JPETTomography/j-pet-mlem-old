@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "util/cuda/debug.h"  // catches all CUDA errors
+#include "util/cuda/memory.h"
 #include "../event.h"
 #include "../kernel.h"
 #include "gpu_events_soa.h"
@@ -55,109 +56,65 @@ void run(Scanner<F, short>& scanner,
   const int width = scanner.n_z_pixels;
   const int height = scanner.n_y_pixels;
 
-  cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
+  util::cuda::memory2D<F> sensitivity(tex_sensitivity, width, height);
+  fill_with_sensitivity(sensitivity.host_ptr, scanner);
+  output(-1, sensitivity.host_ptr);
 
-  F* cpu_sensitivity = new F[scanner.total_n_pixels];
-
-  fill_with_sensitivity(cpu_sensitivity, scanner);
-
-  output(-1, cpu_sensitivity);
-
-  F* gpu_sensitivity;
-  size_t pitch_sensitivity;
-  cudaMallocPitch(
-      &gpu_sensitivity, &pitch_sensitivity, sizeof(F) * width, height);
-  cudaMemcpy2D(gpu_sensitivity,
-               pitch_sensitivity,
-               cpu_sensitivity,
-               sizeof(F) * width,
-               sizeof(F) * width,
-               height,
-               cudaMemcpyHostToDevice);
-  delete[] cpu_sensitivity;
-
-  cudaBindTexture2D(NULL,
-                    &tex_sensitivity,
-                    gpu_sensitivity,
-                    &desc,
-                    width,
-                    height,
-                    pitch_sensitivity);
-
-  F* cpu_rho = new F[scanner.total_n_pixels];
+  util::cuda::memory2D<F> rho(tex_rho, width, height);
   for (int i = 0; i < scanner.total_n_pixels; ++i) {
-    cpu_rho[i] = 100;
+    rho[i] = 100;
   }
 
   // this class allocated CUDA pointers and deallocated them in destructor
-  GPU::ResponsesSOA<F> gpu_responses(responses, n_responses);
-
-  F* gpu_rho;
-  size_t pitch_rho;
-  cudaMallocPitch(&gpu_rho, &pitch_rho, sizeof(F) * width, height);
-  cudaBindTexture2D(NULL, &tex_rho, gpu_rho, &desc, width, height, pitch_rho);
-
-  F* gpu_output_rho;
+  GPU::ResponsesSOA<F> responses_soa(responses, n_responses);
 
 #if USE_RHO_PER_WARP
-  cudaMalloc((void**)&gpu_output_rho, n_blocks * image_size);
-  F* cpu_output_rho;
-  cpu_output_rho = new F[n_blocks * scanner.total_n_pixels];
+  util::cuda::memory<F> output_rho(n_blocks, image_size);
 #else
-  cudaMalloc((void**)&gpu_output_rho, image_size);
+  util::cuda::on_device<F> output_rho(image_size);
 #endif
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {
       progress(ib * n_iterations_in_block + it, false);
 
-#if USE_RHO_PER_WARP
-      cudaMemset(gpu_output_rho, 0, n_blocks * image_size);
-#else
-      cudaMemset(gpu_output_rho, 0, image_size);
-#endif
-      cudaMemcpy2D(gpu_rho,
-                   pitch_rho,
-                   cpu_rho,
-                   sizeof(F) * width,
-                   sizeof(F) * width,
-                   height,
-                   cudaMemcpyHostToDevice);
+      output_rho.zero_on_device();
+      rho.copy_to_device();
 
 #if __CUDACC__
 #define reconstruction reconstruction<Kernel><<<blocks, threads>>>
 #endif
       reconstruction(scanner,
-                     gpu_responses.z_u,
-                     gpu_responses.z_d,
-                     gpu_responses.dl,
+                     responses_soa.z_u,
+                     responses_soa.z_d,
+                     responses_soa.dl,
                      n_responses,
-                     gpu_output_rho,
+                     output_rho.device_ptr,
                      n_blocks,
                      n_threads_per_block);
 
       cudaThreadSynchronize();
 
 #if USE_RHO_PER_WARP
-      cudaMemcpy(cpu_output_rho,
-                 gpu_output_rho,
-                 n_blocks * image_size,
-                 cudaMemcpyDeviceToHost);
+      output_rho.copy_from_device();
 
       for (int i = 0; i < scanner.n_y_pixels; ++i) {
         for (int j = 0; j < scanner.n_z_pixels; ++j) {
           int pixel_adr = i * scanner.n_y_pixels + j;
-          cpu_rho[pixel_adr] = 0;
+          rho[pixel_adr] = 0;
           for (int block_id = 0; block_id < n_blocks; ++block_id) {
 
-            cpu_rho[i * scanner.n_y_pixels + j] +=
-                cpu_output_rho[block_id * scanner.n_y_pixels + pixel_adr];
+            rho[i * scanner.n_y_pixels + j] +=
+                output_rho[block_id * scanner.n_y_pixels + pixel_adr];
           }
         }
       }
 
 #else
-      cudaMemcpy(cpu_rho, gpu_output_rho, image_size, cudaMemcpyDeviceToHost);
+      cudaMemcpy(rho.host_ptr,
+                 output_rho.device_ptr,
+                 image_size,
+                 cudaMemcpyDeviceToHost);
 #endif
       progress(ib * n_iterations_in_block + it, true);
 
@@ -165,24 +122,14 @@ void run(Scanner<F, short>& scanner,
       if (!ib && it < n_iterations_in_block - 1 &&
           (it < 5 || it == 9 || it == 14 || it == 19 || it == 29 || it == 49 ||
            it == 99)) {
-        output(it + 1, cpu_rho);
+        output(it + 1, rho.host_ptr);
       }
     }
 
-    output((ib + 1) * n_iterations_in_block, cpu_rho);
+    output((ib + 1) * n_iterations_in_block, rho.host_ptr);
   }
 
   progress(n_iteration_blocks * n_iterations_in_block, false);
-
-  cudaUnbindTexture(&tex_sensitivity);
-  cudaFree(gpu_sensitivity);
-  cudaUnbindTexture(&tex_rho);
-  cudaFree(gpu_rho);
-  cudaFree(gpu_output_rho);
-  delete[] cpu_rho;
-#if USE_RHO_PER_WARP
-  delete[] cpu_output_rho;
-#endif
 }
 
 template <typename F>
