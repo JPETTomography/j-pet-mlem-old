@@ -1,7 +1,7 @@
+#include <random>
+
 #include "util/test.h"
-
 #include "event_generator.h"
-
 #include "common/types.h"
 
 TEST("3d/geometry/distribution/spherical_distribution") {

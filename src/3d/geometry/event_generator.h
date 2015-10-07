@@ -31,9 +31,9 @@ template <typename FType> class VoxelEventGenerator {
 
  private:
   const Point lover_left_corner;
-  std::uniform_real_distribution<F> uni_x;
-  std::uniform_real_distribution<F> uni_y;
-  std::uniform_real_distribution<F> uni_z;
+  util::random::uniform_real_distribution<F> uni_x;
+  util::random::uniform_real_distribution<F> uni_y;
+  util::random::uniform_real_distribution<F> uni_z;
   PET3D::Distribution::SphericalDistribution<F> spherical_distribution;
 };
 

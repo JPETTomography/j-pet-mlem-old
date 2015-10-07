@@ -1,3 +1,5 @@
+#include <random>
+
 #include "util/test.h"
 #include "util/json.h"
 

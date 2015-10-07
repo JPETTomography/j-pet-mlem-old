@@ -215,8 +215,8 @@ template <class RNGClass, typename FType> class Phantom {
   std::vector<std::vector<F>> output;
   std::vector<std::vector<F>> output_without_errors;
 
-  std::uniform_real_distribution<F> uniform;
-  std::uniform_real_distribution<F> uniform_angle;
+  util::random::uniform_real_distribution<F> uniform;
+  util::random::uniform_real_distribution<F> uniform_angle;
 
  public:
   Phantom(const RegionPtrList& el)
