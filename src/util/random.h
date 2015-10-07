@@ -51,6 +51,15 @@ class tausworthe {
     }
   }
 
+  /// Compare with other RNG comparing state.
+  bool operator==(tausworthe& other) const {
+    for (size_t i = 0; i < sizeof(state) / sizeof(*state); ++i) {
+      if (other.state[i] != state[i])
+        return false;
+    }
+    return true;
+  }
+
   /// Returns random number
   _ result_type operator()() {
     taus_step(state[0], 13, 19, 12, 4294967294u);
