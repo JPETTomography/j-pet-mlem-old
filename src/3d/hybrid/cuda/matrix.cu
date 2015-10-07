@@ -17,7 +17,7 @@ namespace Matrix {
 __global__ static void kernel(const float z,
                               const Pixel pixel,
                               const Scanner* scanner_ptr,
-                              int n_emissions,
+                              int n_thread_emissions,
                               float s_pixel,
                               float length_scale,
                               util::random::tausworthe::state_type* rng_state,
@@ -36,7 +36,7 @@ __global__ static void kernel(const float z,
   Model model(length_scale);
   auto fov_radius2 = scanner.barrel.fov_radius() * scanner.barrel.fov_radius();
 
-  for (int i = 0; i < n_emissions; ++i) {
+  for (int i = 0; i < n_thread_emissions; ++i) {
     auto rx = (pixel.x + one_dis(rng)) * s_pixel;
     auto ry = (pixel.y + one_dis(rng)) * s_pixel;
     auto rz = z + one_dis(rng) * s_pixel;
@@ -121,7 +121,7 @@ void run<Scanner>(Scanner& scanner,
     kernel(z_position,
            pixel,
            scanner_on_device,
-           n_emissions,
+           n_thread_emissions,
            s_pixel,
            length_scale,
            rng_state,

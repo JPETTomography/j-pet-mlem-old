@@ -14,7 +14,7 @@ namespace Matrix {
 
 __global__ static void kernel(const Pixel pixel,
                               const Scanner* scanner_ptr,
-                              int n_emissions,
+                              int n_thread_emissions,
                               float s_pixel,
                               int n_tof_positions,
                               float tof_step,
@@ -35,7 +35,7 @@ __global__ static void kernel(const Pixel pixel,
   Model model(length_scale);
   auto fov_radius2 = scanner.fov_radius() * scanner.fov_radius();
 
-  for (int i = 0; i < n_emissions; ++i) {
+  for (int i = 0; i < n_thread_emissions; ++i) {
     auto rx = (pixel.x + one_dis(rng)) * s_pixel;
     auto ry = (pixel.y + one_dis(rng)) * s_pixel;
     auto angle = pi_dis(rng);
@@ -126,7 +126,7 @@ void run<Scanner>(Scanner& scanner,
 #endif
     kernel(pixel,
            scanner_on_device,
-           n_emissions,
+           n_thread_emissions,
            s_pixel,
            n_tof_positions,
            tof_step,
