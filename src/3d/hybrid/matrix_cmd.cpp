@@ -132,14 +132,14 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
   if (verbose) {
     std::cerr << "Monte-Carlo:" << std::endl;
 #if _OPENMP
-    std::cerr << "   OpenMP threads = " << omp_get_max_threads() << std::endl;
+    if (!cl.exist("gpu"))
+      std::cerr << " OpenMP threads = " << omp_get_max_threads() << std::endl;
 #endif
-    std::cerr << "    pixels in row = " << n_pixels << std::endl;
-    std::cerr << "       pixel size = " << s_pixel << std::endl;
-    std::cerr << "       fov radius = " << scanner2D.fov_radius() << std::endl;
-    std::cerr << "     outer radius = " << scanner2D.outer_radius()
-              << std::endl;
-    std::cerr << "        emissions = " << n_emissions << std::endl;
+    std::cerr << "  pixels in row = " << n_pixels << std::endl;
+    std::cerr << "     pixel size = " << s_pixel << std::endl;
+    std::cerr << "     fov radius = " << scanner2D.fov_radius() << std::endl;
+    std::cerr << "   outer radius = " << scanner2D.outer_radius() << std::endl;
+    std::cerr << "      emissions = " << n_emissions << std::endl;
   }
 
   ComputeMatrix::SparseMatrix sparse_matrix(n_pixels, scanner.barrel.size());
@@ -154,10 +154,10 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
         throw("hybrid Monte-Carlo does not support TOF positions");
       if (verbose) {
         std::cerr << "read sparse matrix: " << fn << std::endl;
-        std::cerr << " pixels in row = " << in_sparse_matrix.n_pixels_in_row()
+        std::cerr << "  pixels in row = " << in_sparse_matrix.n_pixels_in_row()
                   << std::endl;
-        std::cerr << " pixel size     = " << cl.get<double>("s-pixel");
-        std::cerr << " emissions     = " << in_sparse_matrix.n_emissions()
+        std::cerr << "     pixel size = " << cl.get<double>("s-pixel");
+        std::cerr << "      emissions = " << in_sparse_matrix.n_emissions()
                   << std::endl;
         std::cerr << std::endl;
       }
@@ -204,7 +204,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
         cl.get<int>("cuda-threads"),
         [=](const char* device_name) {
           if (verbose) {
-            std::cerr << "           device = " << device_name << std::endl;
+            std::cerr << "    CUDA device = " << device_name << std::endl;
           }
         });
     if (!was_empty) {
