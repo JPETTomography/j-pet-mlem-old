@@ -53,14 +53,14 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   }
 
   // tests for intersection with generic form line equation
-  bool intersects(Event& e) const {
+  bool intersects(Event& event) const {
     auto p1 = this->back();
-    auto v1 = e(p1);
+    auto p1_distance = event.distance_from(p1);
     for (auto& p2 : *this) {
-      auto v2 = e(p2);
-      if (v1 * v2 <= 0)
+      auto p2_distance = event.distance_from(p2);
+      if (p1_distance * p2_distance <= 0)
         return true;
-      v1 = v2;
+      p1_distance = p2_distance;
     }
     return false;
   }
@@ -73,25 +73,32 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
     return distance;
   }
 
-  _ Intersections intersections(Event& e) const {
+  _ Intersections intersections(Event& event) const {
     auto p1 = this->back();
-    auto v1 = e(p1);
+    auto p1_distance = event.distance_from(p1);
     Intersections intersections;
     for (auto& p2 : *this) {
-      auto v2 = e(p2);
-      if (v2 == 0) {
+      auto p2_distance = event.distance_from(p2);
+      if (p2_distance == 0) {
         // v2 is crossing point
         intersections.push_back(p2);
-      } else if (v1 * v2 < 0) {
+      }
+      // points lie on opposite sides
+      else if (p1_distance * p2_distance < 0) {
         // calculate intersection
-        auto m = e.a * (p1.x - p2.x) + e.b * (p1.y - p2.y);
-        intersections.emplace_back(
-            (e.c * (p1.x - p2.x) + e.b * (p2.x * p1.y - p1.x * p2.y)) / m,
-            (e.c * (p1.y - p2.y) + e.a * (p1.x * p2.y - p2.x * p1.y)) / m);
+        auto direction = p1 - p2;
+        auto dot = event.normal.dot(direction);
+        auto perpendicular_dot = p1.x * p2.y - p1.y * p2.x;
+        intersections.emplace_back((event.distance_from_origin * direction.x -
+                                    event.normal.y * perpendicular_dot) /
+                                       dot,
+                                   (event.distance_from_origin * direction.y +
+                                    event.normal.x * perpendicular_dot) /
+                                       dot);
       }
       if (intersections.full())
         return intersections;
-      v1 = v2;
+      p1_distance = p2_distance;
       p1 = p2;
     }
     return intersections;

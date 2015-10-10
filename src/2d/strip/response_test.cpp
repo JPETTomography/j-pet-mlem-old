@@ -26,8 +26,8 @@ TEST("2d/strip/response/conversions1") {
   ImageSpaceEventAngle<double> re_img_angle =
       scanner.from_projection_space_angle(proj);
 
-  CHECK(re_img_angle.center.y == Approx(img_angle.center.y).epsilon(1e-13));
-  CHECK(re_img_angle.center.x == Approx(img_angle.center.x).epsilon(1e-13));
+  CHECK(re_img_angle.origin.y == Approx(img_angle.origin.y).epsilon(1e-13));
+  CHECK(re_img_angle.origin.x == Approx(img_angle.origin.x).epsilon(1e-13));
   // CHECK(re_img_angle.angle == Approx(img_angle.angle).epsilon(1e-13));
 }
 
@@ -49,7 +49,7 @@ TEST("2d/strip/response/conversions2") {
   ImageSpaceEventAngle<double> re_img_angle =
       scanner.from_projection_space_angle(proj);
 
-  CHECK(re_img_angle.center.y == Approx(img_angle.center.y).epsilon(1e-13));
-  CHECK(re_img_angle.center.x == Approx(img_angle.center.x).epsilon(1e-13));
+  CHECK(re_img_angle.origin.y == Approx(img_angle.origin.y).epsilon(1e-13));
+  CHECK(re_img_angle.origin.x == Approx(img_angle.origin.x).epsilon(1e-13));
   // CHECK(re_img_angle.angle == Approx(img_angle.angle).epsilon(1e-13));
 }

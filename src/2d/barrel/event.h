@@ -8,15 +8,15 @@
 namespace PET2D {
 namespace Barrel {
 
-/// Model for 2D barrel PET event
+/// 2D barrel PET emission event
 
-/// Event is described generally by point \f$ (x, y) \f$ and \f$ \phi \f$ angle,
-/// however for purpose of various intersection calculations this class holds
-/// general line equation \f$ a x + b y + c = 1 \f$ coefficients.
-/// This also stores several precalculated variables.
+/// This is extension to the PET2D::Event generic 2D event holding normal to the
+/// direction and distance to origin general line equation
+/// \f$ a x + b y + c = 1 \f$ coefficients, and also some pre-computed forms.
 ///
-/// \note Since \f$ a = sin(\phi), b = -cos(\phi) \f$ then
-/// \f$ a^2 + b^2 = 1 \f$.
+/// \note We do not normalize \f$ direction = (dx, dy)\f$ vector, since it
+/// comes usually from the angle, so \f$ normal = (a, b) = (-dy, dx) =
+/// sin(\phi), b = -cos(\phi) \f$ then \f$ a^2 + b^2 = 1 \f$.
 template <typename FType> struct Event : public PET2D::Event<FType> {
   using F = FType;
 
@@ -27,55 +27,62 @@ template <typename FType> struct Event : public PET2D::Event<FType> {
   /// Event requires usage of a concrete constructor.
   Event() = delete;
 
-  _ Event(const Point& center, const Vector& direction)
-      : Base(center, direction),
-        a(direction.y),
-        b(-direction.x),
+  _ Event(const Point& origin, const Vector& direction)
+      : Base(origin, direction),
+        normal(direction.cw_perpendicular()),
         // line equation c coefficient: a x + b y == c
-        c(a * center.x + b * center.y),
+        distance_from_origin(origin.as_vector().dot(normal)),
         // helper variables
-        b2c(b * b * c),
-        ac(a * c),
-        c2(c * c),
-        inv_b(1 / b) {}
+        b2c(normal.y * normal.y * distance_from_origin),
+        ac(normal.x * distance_from_origin),
+        c2(distance_from_origin * distance_from_origin),
+        inv_b(1 / normal.y) {}
 
-  _ Event(const Base& event) : Event(event.center, event.direction) {}
+  _ Event(const Base& event) : Event(event.origin, event.direction) {}
 
-  _ Event(const Point p, F phi)
-      : Event(p, Vector(std::cos(phi), std::sin(phi))) {}
+  /// Emission event at \f$ origin = (x, y) \f$ point and \f$ \phi \f$ angle.
 
+  /// \note Angle is counted from \f$ (1, 0) \f$ and grows counter-clockwise.
+  /// \todo FIXME: This is somehow different than PET2D::Event where
+  /// angle counted from \f$ (0, 1) \f$ and grows clockwise.
+  _ Event(const Point origin, F phi)
+      : Event(origin, Vector(std::cos(phi), std::sin(phi))) {}
+
+  /// Emission event at \f$ (x, y) \f$ point and \f$ \phi \f$ angle.
+
+  /// \note Angle is counted from \f$ (1, 0) \f$ and grows counter-clockwise.
   _ Event(F x, F y, F phi) : Event(Point(x, y), phi) {}
 
+  /// Emission event at \f$ (x, y) \f$ point with \f$ (dx, dy) \f$ direction.
   _ Event(F x, F y, F dx, F dy) : Event(Point(x, y), Vector(dx, dy)) {}
 
-  /// Make emission event at \f$ p = (x, y) \f$ point and \f$ \phi \f$ angle.
-  _ Event(Base p, F phi) : Event(p.x, p.y, phi) {}
-
   /// Evaluates line equation side on given point,
+
   /// 0 means points lies on the line, -1 left, 1 right
-  _ F operator()(const Point& p) const { return a * p.x + b * p.y - c; }
+  _ F distance_from(const Point& p) const {
+    return p.as_vector().dot(normal) - distance_from_origin;
+  }
 
   /// \brief Return perpendicular event line.
   /// \returns perpendicular event line
   _ Event perpendicular() const {
     return Event(
-        this->center.x, this->center.y, -this->direction.y, this->direction.x);
+        this->origin.x, this->origin.y, -this->direction.y, this->direction.x);
   }
 
   /// Make event translated with given vector.
   _ Event operator+(const Vector& p) const {
-    return Event(this->center + p, this->direction);
+    return Event(this->origin + p, this->direction);
   }
 
   /// Make event translated with given vector.
   _ Event operator-(const Vector& p) const {
-    return Event(this->center - p, this->direction);
+    return Event(this->origin - p, this->direction);
   }
 
   /// Line equation a b coefficients: \f$ a x + b y == c \f$
-  const F a;  ///< line equation coefficient \f$ a \f$
-  const F b;  ///< line equation coefficient \f$ b \f$
-  const F c;  ///< line equation coefficient \f$ c \f$
+  const Vector normal;           ///< line equation coefficients \f$ a, b \f$
+  const F distance_from_origin;  ///< line equation coefficient \f$ c \f$
 
   const F b2c;    ///< precalculated \f$ b^2 c \f$
   const F ac;     ///< precalculated \f$ a c \f$

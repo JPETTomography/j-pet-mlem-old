@@ -194,7 +194,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           model,
           n_emissions,
           [&](const typename MonteCarlo::Event& event) {
-            auto pixel = pixel_grid.pixel_at(event.center);
+            auto pixel = pixel_grid.pixel_at(event.origin);
             if (pixel_grid.contains(pixel)) {
               image_emitted[pixel]++;
             }
@@ -227,7 +227,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
             }
             // image without error
             {
-              auto pixel = pixel_grid.pixel_at(event.center);
+              auto pixel = pixel_grid.pixel_at(event.origin);
               if (pixel_grid.contains(pixel)) {
                 image_detected_exact[pixel]++;
               }
@@ -264,7 +264,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           model,
           n_emissions,
           [&](const typename MonteCarlo::Event& event) {
-            auto pixel = pixel_grid.pixel_at(event.center);
+            auto pixel = pixel_grid.pixel_at(event.origin);
             if (pixel_grid.contains(pixel)) {
               image_emitted[pixel]++;
             }
@@ -276,7 +276,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
             out_wo_error << scanner.response_wo_error(full_response) << "\n";
             out_w_error << scanner.response_w_error(rng, full_response) << "\n";
             {
-              auto pixel = pixel_grid.pixel_at(event.center);
+              auto pixel = pixel_grid.pixel_at(event.origin);
               if (pixel_grid.contains(pixel)) {
                 image_detected_exact[pixel]++;
               }

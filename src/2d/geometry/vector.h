@@ -21,10 +21,10 @@ template <typename FType> struct Vector {
   F x, y;
 
 #if !__CUDACC__
-  /// construct Vector from json
+  /// Construct Vector from JSON.
   Vector(const json& j) : x(j[0]), y(j[1]) {}
 
-  /// constructs Vector from stream
+  /// Constructs Vector from stream.
   Vector(std::istream& in) : x(util::read<F>(in)), y(util::read<F>(in)) {}
 #endif
 
@@ -71,13 +71,13 @@ template <typename FType> struct Vector {
 
   _ F length() const { return compat::sqrt(x * x + y * y); }
 
-  /// Rotate Vector around (0, 0) with given angle
+  /// Rotate Vector around \f$ (0, 0) \f$ with given angle.
 
   /// \note
   /// I know it is bad idea to count all over again
   /// \c sin/cos for given Vector, but this will be used
   /// only for initialization.
-  Vector& rotate(F phi) {
+  _ Vector& rotate(F phi) {
     F sin_phi = compat::sin(phi);
     F cos_phi = compat::cos(phi);
     F tx = x * cos_phi - y * sin_phi;
@@ -87,12 +87,16 @@ template <typename FType> struct Vector {
     return *this;
   }
 
-  Vector rotated(F phi) const {
+  _ Vector rotated(F phi) const {
     Vector tmp(*this);
     return tmp.rotate(phi);
   }
 
-  Vector perpendicular() const { return Vector(-y, x); }
+  /// Return counter-clockwise perpendicular vector.
+  _ Vector perpendicular() const { return Vector(-y, x); }
+
+  /// Return clockwise perpendicular vector.
+  _ Vector cw_perpendicular() const { return Vector(y, -x); }
 
   _ Vector operator+(const Vector& rhs) const {
     Vector vec(*this);

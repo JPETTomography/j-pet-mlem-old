@@ -84,23 +84,24 @@ class GenericScanner
   _ short exact_detect(
       RNG& rng,                ///< random number generator
       AcceptanceModel& model,  ///< acceptance model
-      const Event& e,          ///< event to be detected
+      const Event& event,      ///< event to be detected
       FullResponse& response   ///< scanner response (LOR+length)
       ) const {
     Indices left, right;
-    close_indices(e, left, right);
+    close_indices(event, left, right);
     S detector1, detector2;
     F depth1, depth2;
     Point d1_p1, d1_p2, d2_p1, d2_p2;
-    if (!check_for_hits(rng, model, left, e, detector1, depth1, d1_p1, d1_p2) ||
-        !check_for_hits(rng, model, right, e, detector2, depth2, d2_p1, d2_p2))
+    if (!check_for_hits(
+            rng, model, left, event, detector1, depth1, d1_p1, d1_p2) ||
+        !check_for_hits(
+            rng, model, right, event, detector2, depth2, d2_p1, d2_p2))
       return 0;
 
     response.lor = LOR(detector1, detector2);
 
-    Point origin(e.center.x, e.center.y);
-    F length1 = origin.nearest_distance(d1_p1, d1_p2) + depth1;
-    F length2 = origin.nearest_distance(d2_p1, d2_p2) + depth2;
+    F length1 = event.origin.nearest_distance(d1_p1, d1_p2) + depth1;
+    F length2 = event.origin.nearest_distance(d2_p1, d2_p2) + depth2;
 
     if (detector1 > detector2) {
       response.dl = length1 - length2;
@@ -150,17 +151,17 @@ class GenericScanner
 #endif
 
   /// Produce indices of detectors close to given event
-  _ void close_indices(const Event& e,     ///< event to be detected
-                       Indices& negative,  ///<[out] indices on one side
-                       Indices& positive   ///<[out] indices other side
+  _ void close_indices(const Event& event,  ///< event to be detected
+                       Indices& negative,   ///<[out] indices on one side
+                       Indices& positive    ///<[out] indices other side
                        ) const {
     F distances[MaxDetectors];
-    auto pe = e.perpendicular();
+    auto perpendicular_event = event.perpendicular();
     // select only these crossing circle circumscribed on detector
     for (int i = 0; i < static_cast<int>(Base::c_detectors.size()); ++i) {
       auto& circle = Base::c_detectors[i];
-      if (circle.intersects(e)) {
-        auto distance = pe(circle.center);
+      if (circle.intersects(event)) {
+        auto distance = perpendicular_event.distance_from(circle.center);
         distances[i] = distance;
         if (distance < 0) {
           negative.emplace_back(i);

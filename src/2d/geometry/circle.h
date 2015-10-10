@@ -47,15 +47,15 @@ template <typename FType> class Circle {
   /// Event line is described with line equation:
   /// \f$ ax + by + c = 0 \f$ with assumption \f$ a^2 + b^2 = 1 \f$ which is
   /// satisfied for Event since \f$ a = sin(\phi), b = -cos(\phi) \f$.
-  _ Secant secant(const Event& e) const {
-    auto diff = radius2 - e.c2;
+  _ Secant secant(const Event& event) const {
+    auto diff = radius2 - event.c2;
     if (diff > 0) {
-      auto sq = e.b * compat::sqrt(diff);
-      auto asq = e.a * sq;
-      return Secant{ Point(e.ac - sq, (e.b2c + asq) * e.inv_b),
-                     Point(e.ac + sq, (e.b2c - asq) * e.inv_b) };
+      auto sq = event.normal.y * compat::sqrt(diff);
+      auto asq = event.normal.x * sq;
+      return Secant{ Point(event.ac - sq, (event.b2c + asq) * event.inv_b),
+                     Point(event.ac + sq, (event.b2c - asq) * event.inv_b) };
     } else if (diff == 0) {
-      return Secant{ Point(e.ac, e.b2c * e.inv_b) };
+      return Secant{ Point(event.ac, event.b2c * event.inv_b) };
     } else {
       return Secant();
     }

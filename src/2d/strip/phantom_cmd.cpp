@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
         model,
         n_emissions,
         [&](const Event& event) {
-          auto pixel = pixel_grid.pixel_at(event.center);
+          auto pixel = pixel_grid.pixel_at(event.origin);
           if (pixel_grid.contains(pixel)) {
             image_emitted[pixel]++;
           }
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
           auto response_w_error = scanner.response_w_error(rng, full_response);
           out_w_error << response_w_error << "\n";
           {
-            auto pixel = pixel_grid.pixel_at(event.center);
+            auto pixel = pixel_grid.pixel_at(event.origin);
             if (pixel_grid.contains(pixel)) {
               image_detected_exact[pixel]++;
             }

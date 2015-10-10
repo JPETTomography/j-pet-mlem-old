@@ -24,7 +24,7 @@ struct ImageSpaceEventAngle : public PET2D::Event<FType> {
 
   _ ImageSpaceEventTan<F> to_tan() const {
     return ImageSpaceEventTan<F>(
-        this->center.y, this->center.x, this->direction.x / this->direction.y);
+        this->origin.y, this->origin.x, this->direction.x / this->direction.y);
   }
 };
 

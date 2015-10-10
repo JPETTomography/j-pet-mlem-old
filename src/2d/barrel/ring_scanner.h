@@ -104,7 +104,7 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
   template <class RNG, class AcceptanceModel>
   _ short detect(RNG& rng,                ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
-                 const Event& e,          ///< event to be detected
+                 const Event& event,      ///< event to be detected
                  Response& response       ///< scanner response (LOR+length)
                  ) const {
 
@@ -113,8 +113,8 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
     const auto& c_inner = this->c_inner;
     const auto& c_outer = this->c_outer;
 #endif
-    auto inner_secant = c_inner.secant(e);
-    auto outer_secant = c_outer.secant(e);
+    auto inner_secant = c_inner.secant(event);
+    auto outer_secant = c_outer.secant(event);
 
     if (inner_secant.size() != 2 || outer_secant.size() != 2)
       return 0;
@@ -125,8 +125,15 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
     F depth1;
 
     Point d1_p1, d1_p2;
-    if (!check_for_hits(
-            rng, model, i_inner, i_outer, e, detector1, depth1, d1_p1, d1_p2))
+    if (!check_for_hits(rng,
+                        model,
+                        i_inner,
+                        i_outer,
+                        event,
+                        detector1,
+                        depth1,
+                        d1_p1,
+                        d1_p2))
       return 0;
 
     i_inner = c_inner.section(c_inner.angle(inner_secant[1]), n_detectors);
@@ -134,8 +141,15 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
     S detector2;
     F depth2;
     Point d2_p1, d2_p2;
-    if (!check_for_hits(
-            rng, model, i_inner, i_outer, e, detector2, depth2, d2_p1, d2_p2))
+    if (!check_for_hits(rng,
+                        model,
+                        i_inner,
+                        i_outer,
+                        event,
+                        detector2,
+                        depth2,
+                        d2_p1,
+                        d2_p2))
       return 0;
 
     response.lor = LOR(detector1, detector2);
@@ -146,9 +160,8 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
       throw("invalid LOR");
 #endif
 
-    Point origin(e.center.x, e.center.y);
-    F length1 = origin.nearest_distance(d1_p1, d1_p2) + depth1;
-    F length2 = origin.nearest_distance(d2_p1, d2_p2) + depth2;
+    F length1 = event.origin.nearest_distance(d1_p1, d1_p2) + depth1;
+    F length2 = event.origin.nearest_distance(d2_p1, d2_p2) + depth2;
 
     if (detector1 > detector2) {
       response.dl = length1 - length2;

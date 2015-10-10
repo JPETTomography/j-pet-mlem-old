@@ -47,15 +47,17 @@ template <typename FType> struct LineSegment {
 #endif
 
   /// Returns distance from given Point to the line containing LineSegment.
-  F distance_from(const Point& p) {
+
+  /// 0 means points lies on the line, -1 left, 1 right
+  F distance_from(const Point& p) const {
     return p.as_vector().dot(normal) - distance_from_origin;
   }
 
   /// Returns Point projected to the line containing LineSegment.
-  F projection(const Point& p) { return (p - start).dot(direction); }
-  F projection_scaled(const Point& p) { return projection(p) / length; }
+  F projection(const Point& p) const { return (p - start).dot(direction); }
+  F projection_scaled(const Point& p) const { return projection(p) / length; }
 
-  F projection_relative_middle(const Point& p) {
+  F projection_relative_middle(const Point& p) const {
     return projection(p) - 0.5 * length;
   }
 
