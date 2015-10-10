@@ -3,6 +3,7 @@
 #include "util/random.h"
 #include "util/cuda/compat.h"
 
+/// Generic classes applicable to PET 2D & 3D and other tasks
 namespace Common {
 
 /// Model which always produces a decay
