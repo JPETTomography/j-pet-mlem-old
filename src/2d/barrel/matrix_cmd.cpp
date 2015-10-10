@@ -229,6 +229,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
 #if HAVE_CUDA
   // GPU computation
   else if (cl.exist("gpu")) {
+    bool was_empty = sparse_matrix.empty();
     PET2D::Barrel::GPU::Matrix::run<ScannerClass>(
         scanner,
         rng,
@@ -250,6 +251,10 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
             std::cerr << "           device = " << device_name << std::endl;
           }
         });
+    if (!was_empty) {
+      sparse_matrix.sort_by_lor_n_pixel();
+      sparse_matrix.merge_duplicates();
+    }
   }
 #endif
   // CPU reference computation
