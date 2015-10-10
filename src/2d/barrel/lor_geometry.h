@@ -23,12 +23,13 @@ template <typename FType, typename SType> struct LORGeometry {
   using LOR = PET2D::Barrel::LOR<S>;
   using LineSegment = PET2D::LineSegment<F>;
 
+  /// Information about given Pixel relative to the LOR
   struct PixelInfo {
-    Pixel pixel;
-    F t;
-    F distance;
-    F fill;
-    F weight;
+    Pixel pixel;  ///< pixel itself
+    F t;          ///< position of projected Pixel along the LOR
+    F distance;   ///< distance of Pixel to LOR
+    F fill;       ///< percentage of Pixel inside the LOR
+    F weight;     ///< custom weight of the Pixel eg. probability
   };
 
   using PixelInfoList = std::vector<PixelInfo>;
@@ -44,7 +45,7 @@ template <typename FType, typename SType> struct LORGeometry {
       : lor(lor), segment(segment), width(width) {}
 
 #if !__CUDACC__
-  // Construct LOR info from stream
+  /// Construct LOR info from stream.
   LORGeometry(std::istream& in)
       : lor(in), segment(in), width(util::read<F>(in)) {
     size_t n_pixels;
@@ -55,7 +56,7 @@ template <typename FType, typename SType> struct LORGeometry {
     }
   }
 
-  // Construct LOR info from binary stream
+  /// Construct LOR info from binary stream.
   LORGeometry(util::ibstream& in) : lor(in), segment(in), width(in.read<F>()) {
     size_t n_pixels;
     in >> n_pixels;
@@ -76,12 +77,14 @@ template <typename FType, typename SType> struct LORGeometry {
   }
 #endif
 
+  /// Sort Pixel infos using position along LOR.
   void sort() {
     std::sort(pixel_infos.begin(),
               pixel_infos.end(),
               [](const PixelInfo& a, const PixelInfo& b) { return a.t < b.t; });
   }
 
+  /// Append Pixel info to the list.
   void push_back(const PixelInfo& pixel_info) {
     pixel_infos.push_back(pixel_info);
   }
