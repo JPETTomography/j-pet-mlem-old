@@ -48,13 +48,11 @@ template <typename FType> struct Event : public PET2D::Event<FType> {
 
   _ Event(F x, F y, F dx, F dy) : Event(Point(x, y), Vector(dx, dy)) {}
 
- private:
- public:
   /// Make emission event at \f$ p = (x, y) \f$ point and \f$ \phi \f$ angle.
   _ Event(Base p, F phi) : Event(p.x, p.y, phi) {}
 
-  // evaluates line equation side on given point
-  // 0 means points lies on the line, -1 left, 1 right
+  /// Evaluates line equation side on given point,
+  /// 0 means points lies on the line, -1 left, 1 right
   _ F operator()(const Point& p) const { return a * p.x + b * p.y - c; }
 
   /// \brief Return perpendicular event line.
@@ -74,7 +72,7 @@ template <typename FType> struct Event : public PET2D::Event<FType> {
     return Event(this->center - p, this->direction);
   }
 
-  /// line equation a b coefficients: a x + b y == c
+  /// Line equation a b coefficients: \f$ a x + b y == c \f$
   const F a;  ///< line equation coefficient \f$ a \f$
   const F b;  ///< line equation coefficient \f$ b \f$
   const F c;  ///< line equation coefficient \f$ c \f$
