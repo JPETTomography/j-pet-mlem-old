@@ -29,3 +29,17 @@ TEST("2d/geometry/line_segment") {
       r ==
       Approx(std::sqrt(5.0) - 0.5 * std::sqrt(3 * 3 + 6 * 6)).epsilon(1.0e-7));
 }
+
+TEST("2d/geometry/distance_sign") {
+  // pointing up
+  {
+    Point start(0, 0);
+    Point end(0, 1);
+    LineSegment segment(start, end);
+
+    // point on right
+    REQUIRE(-1 == segment.distance_from(Point(1, 0)));
+    // point on left
+    REQUIRE(1 == segment.distance_from(Point(-1, 0)));
+  }
+}

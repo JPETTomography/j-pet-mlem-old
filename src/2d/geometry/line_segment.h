@@ -48,7 +48,9 @@ template <typename FType> struct LineSegment {
 
   /// Returns distance from given Point to the line containing LineSegment.
 
-  /// 0 means points lies on the line, -1 left, 1 right
+  /// \return 0 means points lies on the line, 1 left, -1 right
+  /// \todo FIXME: This is different from Barrel::Event::distance_from returning
+  /// opposite.
   F distance_from(const Point& p) const {
     return p.as_vector().dot(normal) - distance_from_origin;
   }

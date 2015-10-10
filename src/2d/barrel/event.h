@@ -58,7 +58,9 @@ template <typename FType> struct Event : public PET2D::Event<FType> {
 
   /// Evaluates line equation side on given point,
 
-  /// 0 means points lies on the line, -1 left, 1 right
+  /// \return 0 means points lies on the line, -1 left, 1 right
+  /// \todo FIXME: This is different from LineSegment::distance_from returning
+  /// opposite.
   _ F distance_from(const Point& p) const {
     return p.as_vector().dot(normal) - distance_from_origin;
   }
