@@ -1,5 +1,3 @@
-// http://codereview.stackexchange.com/questions/14730/impossibly-fast-delegate-in-c11
-
 #pragma once
 
 #include <memory>
@@ -9,8 +7,19 @@
 
 namespace util {
 
+/// \cond PRIVATE
 template <typename T> class delegate;
+/// \endcond
 
+/// \c std::function portable replacement
+
+/// This class has effectively same functionality like STL \c std::function
+/// class, but does not require all STL boilerplate and can be used in CUDA
+/// compiler.
+///
+/// \note
+/// The code was shared by anonymous author at StackExchange:
+/// http://codereview.stackexchange.com/questions/14730/impossibly-fast-delegate-in-c11
 template <class R, class... A> class delegate<R(A...)> {
   using stub_ptr_type = R (*)(void*, A&&...);
 
@@ -264,6 +273,7 @@ template <class R, class... A> class delegate<R(A...)> {
 }
 
 #if !__CUDACC__
+/// \cond PRIVATE
 namespace std {
 template <typename R, typename... A> struct hash<util::delegate<R(A...)>> {
   size_t operator()(util::delegate<R(A...)> const& d) const noexcept {
@@ -275,4 +285,5 @@ template <typename R, typename... A> struct hash<util::delegate<R(A...)>> {
   }
 };
 }
+/// \endcond
 #endif
