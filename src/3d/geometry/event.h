@@ -12,7 +12,10 @@
 
 namespace PET3D {
 
-/// Generic emitted 3D event
+/// Generic 3D emission event
+
+/// Emission event consist of origin (emission) point \f$ origin = (x, y, z) \f$
+/// and direction (vector) \f$ direction = (dx, dy, dz) \f$.
 template <typename FType> class Event {
   using Vector = PET3D::Vector<FType>;
   using Vector2D = PET2D::Vector<FType>;
@@ -24,9 +27,9 @@ template <typename FType> class Event {
       : origin(origin), direction(direction) {}
 
   _ BarrelEvent to_barrel_event() const {
-    auto dir_2d = Vector2D(direction.x, direction.y);
-    dir_2d.normalize();
-    return BarrelEvent(origin.x, origin.y, dir_2d.x, dir_2d.y);
+    auto direction_2d = Vector2D(direction.x, direction.y);
+    direction_2d.normalize();
+    return BarrelEvent(origin.x, origin.y, direction_2d.x, direction_2d.y);
   }
 
   const Point origin;
