@@ -33,20 +33,11 @@ __global__ static void kernel(const Pixel pixel,
   Scanner& scanner = *scanner_shared_storage;
 
   Model model(length_scale);
-  auto fov_radius2 = scanner.fov_radius() * scanner.fov_radius();
 
   for (int i = 0; i < n_thread_emissions; ++i) {
     auto rx = (pixel.x + one_dis(rng)) * s_pixel;
     auto ry = (pixel.y + one_dis(rng)) * s_pixel;
     auto angle = pi_dis(rng);
-
-    // ensure we are within a triangle
-    if (rx > ry)
-      continue;
-
-    // ensure we are within FOV
-    if (rx * rx + ry * ry > fov_radius2)
-      continue;
 
     Event event(rx, ry, angle);
     Scanner::Response response;
@@ -113,8 +104,15 @@ void run<Scanner>(Scanner& scanner,
   }
   rng_state.copy_to_device();
 
+  const auto pixel_fov_radius = scanner.fov_radius() / s_pixel;
+  const auto pixel_fov_radius2 = S(pixel_fov_radius * pixel_fov_radius);
+
   auto end_pixel = Pixel::end_for_n_pixels_in_row(n_pixels / 2);
   for (Pixel pixel(0, 0); pixel < end_pixel; ++pixel) {
+    // ensure we are within FOV
+    if (pixel.x * pixel.x + pixel.y * pixel.y > pixel_fov_radius2)
+      continue;
+
     progress(pixel.index(), false);
 
     pixel_hits.zero_on_device();
