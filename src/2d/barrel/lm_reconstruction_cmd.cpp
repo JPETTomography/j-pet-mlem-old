@@ -32,7 +32,7 @@
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/options.h"
-#include "2d/barrel/lor_info.h"
+#include "2d/barrel/lor_geometry.h"
 #include "2d/barrel/sparse_matrix.h"
 #include "2d/barrel/lm_reconstruction.h"
 
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
     auto lor = event.lor;
     graphics.add(scanner, lor);
     graphics.add(event.p);
-    for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
+    for (auto it = event.first_pixel_info; it != event.last_pixel_info; ++it) {
       graphics.add_pixel(geometry.grid, it->pixel);
     }
 

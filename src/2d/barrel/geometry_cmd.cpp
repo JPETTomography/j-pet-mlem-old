@@ -60,9 +60,9 @@ using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Point = PET2D::Point<F>;
 
 using Geometry = PET2D::Barrel::Geometry<F, S>;
-using LORInfo = PET2D::Barrel::LORInfo<F, S>;
+using LORGeometry = PET2D::Barrel::LORGeometry<F, S>;
 using PixelInfo = PET2D::Barrel::Geometry<F, S>::PixelInfo;
-using PixelInfoContainer = PET2D::Barrel::LORInfo<F, S>::PixelInfoList;
+using PixelInfoContainer = PET2D::Barrel::LORGeometry<F, S>::PixelInfoList;
 using LOR = PET2D::Barrel::LOR<S>;
 
 using BoostGeometryUtils = PET2D::Barrel::BoostGeometryUtils<F, S>;
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
         width2 = dist2;
     }
 
-    LORInfo lor_info(lor, segment, width1 + width2);
+    LORGeometry lor_geometry(lor, segment, width1 + width2);
 
     if (boost::geometry::intersects(lor_hull, fov_circle)) {
       for (int ix = 0; ix < grid.n_columns; ++ix)
@@ -228,14 +228,14 @@ int main(int argc, char* argv[]) {
               pixel_info.t = t;
               pixel_info.distance = distance;
               pixel_info.fill = fill;
-              lor_info.push_back(pixel_info);
+              lor_geometry.push_back(pixel_info);
             }
           }
         }
 
-      lor_info.sort();
+      lor_geometry.sort();
     }
-    geometry[lor] = lor_info;
+    geometry[lor] = lor_geometry;
 
     CATCH;
     progress(lor_index, true);

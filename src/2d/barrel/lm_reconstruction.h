@@ -28,18 +28,19 @@ template <typename FType, typename SType> class LMReconstruction {
   using Point = PET2D::Point<F>;
   using LOR = PET2D::Barrel::LOR<S>;
   using Geometry = PET2D::Barrel::Geometry<F, S>;
-  using LORInfo = typename Geometry::LORInfo;
+  using LORGeometry = typename Geometry::LORGeometry;
   using Pixel = typename Geometry::Pixel;
   using PixelInfo = typename Geometry::PixelInfo;
-  using PixelConstIterator = typename LORInfo::PixelInfoList::const_iterator;
+  using PixelInfoConstIterator =
+      typename LORGeometry::PixelInfoList::const_iterator;
   using RawOutput = std::vector<F>;
   using Output = PET2D::PixelMap<Pixel, F>;
 
   struct BarrelEvent {
     LOR lor;
     Point p;
-    PixelConstIterator first_pixel;
-    PixelConstIterator last_pixel;
+    PixelInfoConstIterator first_pixel_info;
+    PixelInfoConstIterator last_pixel_info;
     F t;
     F gauss_norm;
     F inv_sigma2;
@@ -85,17 +86,17 @@ template <typename FType, typename SType> class LMReconstruction {
     PixelInfo pix_info_up, pix_info_dn;
     pix_info_up.t = t + 3 * sigma_;
     pix_info_dn.t = t - 3 * sigma_;
-    event.last_pixel =
-        std::upper_bound(geometry[event.lor].pixels.begin(),
-                         geometry[event.lor].pixels.end(),
+    event.last_pixel_info =
+        std::upper_bound(geometry[event.lor].pixel_infos.begin(),
+                         geometry[event.lor].pixel_infos.end(),
                          pix_info_up,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
                          });
 
-    event.first_pixel =
-        std::lower_bound(geometry[event.lor].pixels.begin(),
-                         geometry[event.lor].pixels.end(),
+    event.first_pixel_info =
+        std::lower_bound(geometry[event.lor].pixel_infos.begin(),
+                         geometry[event.lor].pixel_infos.end(),
                          pix_info_dn,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
@@ -148,11 +149,12 @@ template <typename FType, typename SType> class LMReconstruction {
 
       // -- voxel loop - denominator -------------------------------------------
       double denominator = 0;
-      for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
+      for (auto it = event.first_pixel_info; it != event.last_pixel_info;
+           ++it) {
         pixel_count_++;
-        auto pix = it->pixel;
+        auto pixel = it->pixel;
 
-        int index = grid.index(pix.x, pix.y);
+        int index = grid.index(pixel.x, pixel.y);
         double kernel_z = it->weight / sensitivity_[index];
 
         auto gauss_norm_dl = 1 / (sigma_ * std::sqrt(2 * M_PI));
@@ -176,10 +178,11 @@ template <typename FType, typename SType> class LMReconstruction {
       }
 
       // -- voxel loop ---------------------------------------------------------
-      for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
-        auto pix = it->pixel;
+      for (auto it = event.first_pixel_info; it != event.last_pixel_info;
+           ++it) {
+        auto pixel = it->pixel;
 
-        int index = grid.index(pix.x, pix.y);
+        int index = grid.index(pixel.x, pixel.y);
 
         thread_rhos_[thread][index] +=
             thread_kernel_caches_[thread][index] * inv_denominator;
@@ -202,15 +205,15 @@ template <typename FType, typename SType> class LMReconstruction {
   void calculate_weight() {
     auto& grid = geometry.grid;
 
-    for (auto& lor_info : geometry) {
+    for (auto& lor_geometry : geometry) {
 
-      auto& segment = lor_info.segment;
+      auto& segment = lor_geometry.segment;
 
-      auto width = lor_info.width;
+      auto width = lor_geometry.width;
       auto gauss_norm_w = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
       auto inv_sigma2_w = 1 / (2 * sigma_w(width) * sigma_w(width));
 
-      for (auto& pixel_info : lor_info.pixels) {
+      for (auto& pixel_info : lor_geometry.pixel_infos) {
         auto pixel = pixel_info.pixel;
         auto center = grid.center_at(pixel.x, pixel.y);
         auto distance = segment.distance_from(center);
@@ -225,8 +228,8 @@ template <typename FType, typename SType> class LMReconstruction {
     auto& grid = geometry.grid;
 
     sensitivity_.assign(0);
-    for (auto& lor_info : geometry) {
-      for (auto& pixel_info : lor_info.pixels) {
+    for (auto& lor_geometry : geometry) {
+      for (auto& pixel_info : lor_geometry.pixel_infos) {
         auto pixel = pixel_info.pixel;
         auto index = grid.index(pixel);
         sensitivity_[index] += pixel_info.weight;

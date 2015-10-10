@@ -28,7 +28,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using F = typename Scanner::F;
   using S = typename Scanner::S;
   using Geometry = PET2D::Barrel::Geometry<F, S>;
-  using LORInfo = typename Geometry::LORInfo;
+  using LORGeometry = typename Geometry::LORGeometry;
   using Response = typename Scanner::Response;
   using LOR = PET2D::Barrel::LOR<S>;
   using StripEvent = PET2D::Strip::Response<F>;
@@ -37,7 +37,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using Point2D = PET2D::Point<F>;
   using Point = PET3D::Point<F>;
   using Vector2D = PET2D::Vector<F>;
-  using PixelConstIterator = typename LORInfo::PixelInfoList::const_iterator;
+  using PixelInfoConstIterator =
+      typename LORGeometry::PixelInfoList::const_iterator;
   using Output = std::vector<F>;
 
   struct FrameEvent {
@@ -48,8 +49,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     F sec;
     F half_box_up;
     F half_box_right;
-    PixelConstIterator first_pixel;
-    PixelConstIterator last_pixel;
+    PixelInfoConstIterator first_pixel_info;
+    PixelInfoConstIterator last_pixel_info;
     S first_plane;
     S last_plane;
     F gauss_norm;
@@ -117,17 +118,17 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     PixelInfo pix_info_up, pix_info_dn;
     pix_info_up.t = t_up;
     pix_info_dn.t = t_dn;
-    event.last_pixel =
-        std::upper_bound(geometry[event.lor].pixels.begin(),
-                         geometry[event.lor].pixels.end(),
+    event.last_pixel_info =
+        std::upper_bound(geometry[event.lor].pixel_infos.begin(),
+                         geometry[event.lor].pixel_infos.end(),
                          pix_info_up,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
                          });
 
-    event.first_pixel =
-        std::lower_bound(geometry[event.lor].pixels.begin(),
-                         geometry[event.lor].pixels.end(),
+    event.first_pixel_info =
+        std::lower_bound(geometry[event.lor].pixel_infos.begin(),
+                         geometry[event.lor].pixel_infos.end(),
                          pix_info_dn,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
@@ -156,15 +157,15 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   void calculate_weight() {
     auto& grid = geometry.grid;
     sensitivity_.assign(grid.n_pixels, 0);
-    for (auto& lor_info : geometry) {
+    for (auto& lor_geometry : geometry) {
 
-      auto& segment = lor_info.segment;
+      auto& segment = lor_geometry.segment;
 
-      auto width = lor_info.width;
+      auto width = lor_geometry.width;
       auto gauss_norm_w = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
       auto inv_sigma2_w = 1 / (2 * sigma_w(width) * sigma_w(width));
 
-      for (auto& pixel_info : lor_info.pixels) {
+      for (auto& pixel_info : lor_geometry.pixel_infos) {
         auto pixel = pixel_info.pixel;
         auto center = grid.center_at(pixel.x, pixel.y);
         auto distance = segment.distance_from(center);
@@ -178,9 +179,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   void calculate_sensitivity() {
     auto& grid = geometry.grid;
     sensitivity_.assign(grid.n_pixels, 0);
-    for (auto& lor_info : geometry) {
+    for (auto& lor_geometry : geometry) {
 
-      for (auto& pixel_info : lor_info.pixels) {
+      for (auto& pixel_info : lor_geometry.pixel_infos) {
         auto pixel = pixel_info.pixel;
         auto index = grid.index(pixel);
         sensitivity_[index] += pixel_info.weight;
@@ -217,11 +218,12 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
       // -- voxel loop - denominator -------------------------------------------
       double denominator = 0;
-      for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
+      for (auto it = event.first_pixel_info; it != event.last_pixel_info;
+           ++it) {
         pixel_count_++;
-        auto pix = it->pixel;
-        auto ix = pix.x;
-        auto iy = pix.y;
+        auto pixel = it->pixel;
+        auto ix = pixel.x;
+        auto iy = pixel.y;
 
         auto center = grid.center_at(ix, iy);
         auto up = segment.projection_relative_middle(center);
@@ -251,10 +253,11 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       }
 
       // -- voxel loop ---------------------------------------------------------
-      for (auto it = event.first_pixel; it != event.last_pixel; ++it) {
-        auto pix = it->pixel;
-        auto ix = pix.x;
-        auto iy = pix.y;
+      for (auto it = event.first_pixel_info; it != event.last_pixel_info;
+           ++it) {
+        auto pixel = it->pixel;
+        auto ix = pixel.x;
+        auto iy = pixel.y;
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
           int index = v_grid.index(ix, iy, iz);
           thread_rhos_[thread][index] +=
@@ -287,8 +290,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     auto lor = event.lor;
     graphics.add(scanner.barrel, lor);
     graphics.add(geometry[lor].segment);
-    for (auto pix = event.first_pixel; pix != event.last_pixel; ++pix) {
-      graphics.add_pixel(geometry.grid, pix->pixel);
+    for (auto it = event.first_pixel_info; it != event.last_pixel_info; ++it) {
+      graphics.add_pixel(geometry.grid, it->pixel);
     }
   }
 

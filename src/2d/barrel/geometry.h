@@ -5,7 +5,7 @@
 #include "util/read.h"
 #endif
 
-#include "lor_info.h"
+#include "lor_geometry.h"
 
 namespace PET2D {
 namespace Barrel {
@@ -20,18 +20,18 @@ template <> constexpr uint32_t magic<double>() { return "PETG"_4cc; }
 
 /// Keeps extended information about barrel, including grid and all LOR info
 template <typename FType, typename SType>
-class Geometry : public std::vector<LORInfo<FType, SType>> {
+class Geometry : public std::vector<LORGeometry<FType, SType>> {
  public:
   using F = FType;
   using S = SType;
 
-  using LORInfo = PET2D::Barrel::LORInfo<F, S>;
-  using Base = std::vector<LORInfo>;
+  using LORGeometry = PET2D::Barrel::LORGeometry<F, S>;
+  using Base = std::vector<LORGeometry>;
   using Pixel = PET2D::Pixel<S>;
   using LOR = PET2D::Barrel::LOR<S>;
   using PixelGrid = PET2D::PixelGrid<F, S>;
   using Point = PET2D::Point<F>;
-  using PixelInfo = typename LORInfo::PixelInfo;
+  using PixelInfo = typename LORGeometry::PixelInfo;
 
   Geometry(S n_detectors, const PixelGrid& grid)
       : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
@@ -51,10 +51,10 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
         n_detectors(n_detectors),
         grid(in) {
     for (;;) {
-      LORInfo lor_info(in);
+      LORGeometry lor_geometry(in);
       if (!in)
         break;
-      (*this)[lor_info.lor] = std::move(lor_info);
+      (*this)[lor_geometry.lor] = std::move(lor_geometry);
     }
   }
   Geometry(uint32_t file_magic, S n_detectors, util::ibstream& in)
@@ -64,10 +64,10 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
     if (file_magic != magic<F>())
       throw("unknown binary geometry file");
     for (;;) {
-      LORInfo lor_info(in);
+      LORGeometry lor_geometry(in);
       if (!in)
         break;
-      (*this)[lor_info.lor] = std::move(lor_info);
+      (*this)[lor_geometry.lor] = std::move(lor_geometry);
     }
   }
   Geometry(uint32_t file_magic, util::ibstream& in)
@@ -80,10 +80,10 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
       for (int d2 = 0; d2 < d1; ++d2) {
         LOR lor(d1, d2);
         auto lor_index = lor.index();
-        if (geometry[lor_index].pixels.size() > 0) {
+        if (geometry[lor_index].pixel_infos.size() > 0) {
           out << d1 << " " << d2 << " " << geometry[lor_index].width
               << std::endl;
-          for (PixelInfo& info : geometry[lor_index].pixels) {
+          for (PixelInfo& info : geometry[lor_index].pixel_infos) {
             out << info.pixel.x << " " << info.pixel.y << " " << info.t << " "
                 << info.distance << " " << info.fill << std::endl;
           }
@@ -99,27 +99,27 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
     out << magic<F>();
     out << geometry.n_detectors;
     out << geometry.grid;
-    for (const auto& lor_info : geometry) {
-      out << lor_info;
+    for (const auto& lor_geometry : geometry) {
+      out << lor_geometry;
     }
     return out;
   }
 #endif
 
-  LORInfo& operator[](const LOR& lor) { return this->at(lor.index()); }
+  LORGeometry& operator[](const LOR& lor) { return this->at(lor.index()); }
 
-  const LORInfo& operator[](const LOR& lor) const {
+  const LORGeometry& operator[](const LOR& lor) const {
     return this->at(lor.index());
   }
 
   void push_back_pixel_info(const LOR& lor, const PixelInfo& pixel_info) {
-    (*this)[lor].pixels.push_back(pixel_info);
+    (*this)[lor].pixel_infos.push_back(pixel_info);
   }
 
   void push_back_pixel(const LOR& lor, const Pixel& pixel, F weight) {
-    auto& lor_info = (*this)[lor];
+    auto& lor_geometry = (*this)[lor];
     auto center = grid.center_at(pixel.x, pixel.y);
-    auto t = lor_info.segment.projection_scaled(center);
+    auto t = lor_geometry.segment.projection_scaled(center);
     PixelInfo pixel_info;
     pixel_info.pixel = pixel;
     pixel_info.t = t;
@@ -128,14 +128,14 @@ class Geometry : public std::vector<LORInfo<FType, SType>> {
   }
 
   void sort_all() {
-    for (auto& lor_info : *this) {
-      lor_info.sort();
+    for (auto& lor_geometry : *this) {
+      lor_geometry.sort();
     }
   }
 
   void erase_pixel_info() {
-    for (auto& lor_info : *this) {
-      lor_info.pixels.resize(0);
+    for (auto& lor_geometry : *this) {
+      lor_geometry.pixel_infos.resize(0);
     }
   }
 

@@ -12,11 +12,11 @@
 namespace PET2D {
 namespace Barrel {
 
-/// Keeps extended information about LOR
+/// Keeps geometry information about LOR
 
-/// Keeps extended information about LOR such as pixels belonging to the LOR
+/// Keeps geometry information about LOR such as pixels belonging to the LOR
 /// together with their description using PixelInfo.
-template <typename FType, typename SType> struct LORInfo {
+template <typename FType, typename SType> struct LORGeometry {
   using F = FType;
   using S = SType;
   using Pixel = PET2D::Pixel<S>;
@@ -36,52 +36,55 @@ template <typename FType, typename SType> struct LORInfo {
   LOR lor;
   LineSegment segment;
   F width;
-  PixelInfoList pixels;
+  PixelInfoList pixel_infos;
 
-  LORInfo() = default;
+  LORGeometry() = default;
 
-  LORInfo(const LOR& lor, const LineSegment& segment, const F width)
+  LORGeometry(const LOR& lor, const LineSegment& segment, const F width)
       : lor(lor), segment(segment), width(width) {}
 
 #if !__CUDACC__
   // Construct LOR info from stream
-  LORInfo(std::istream& in) : lor(in), segment(in), width(util::read<F>(in)) {
+  LORGeometry(std::istream& in)
+      : lor(in), segment(in), width(util::read<F>(in)) {
     size_t n_pixels;
     in >> n_pixels;
     if (in && n_pixels) {
-      pixels.resize(n_pixels);
-      in.read((char*)&pixels[0], sizeof(PixelInfo) * n_pixels);
+      pixel_infos.resize(n_pixels);
+      in.read((char*)&pixel_infos[0], sizeof(PixelInfo) * n_pixels);
     }
   }
 
   // Construct LOR info from binary stream
-  LORInfo(util::ibstream& in) : lor(in), segment(in), width(in.read<F>()) {
+  LORGeometry(util::ibstream& in) : lor(in), segment(in), width(in.read<F>()) {
     size_t n_pixels;
     in >> n_pixels;
     if (in && n_pixels) {
-      pixels.resize(n_pixels);
-      in.read((char*)&pixels[0], sizeof(PixelInfo) * n_pixels);
+      pixel_infos.resize(n_pixels);
+      in.read((char*)&pixel_infos[0], sizeof(PixelInfo) * n_pixels);
     }
   }
 
   friend util::obstream& operator<<(util::obstream& out,
-                                    const LORInfo& lor_info) {
+                                    const LORGeometry& lor_info) {
     out << lor_info.lor;
     out << lor_info.segment;
     out << lor_info.width;
-    out << lor_info.pixels.size();
-    out << lor_info.pixels;
+    out << lor_info.pixel_infos.size();
+    out << lor_info.pixel_infos;
     return out;
   }
 #endif
 
   void sort() {
-    std::sort(pixels.begin(),
-              pixels.end(),
+    std::sort(pixel_infos.begin(),
+              pixel_infos.end(),
               [](const PixelInfo& a, const PixelInfo& b) { return a.t < b.t; });
   }
 
-  void push_back(const PixelInfo& pixel_info) { pixels.push_back(pixel_info); }
+  void push_back(const PixelInfo& pixel_info) {
+    pixel_infos.push_back(pixel_info);
+  }
 };
 
 }  // Barrel

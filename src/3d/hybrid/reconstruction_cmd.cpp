@@ -23,7 +23,7 @@
 
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
-#include "2d/barrel/lor_info.h"
+#include "2d/barrel/lor_geometry.h"
 #include "2d/strip/gausian_kernel.h"
 
 #include "scanner.h"
@@ -69,8 +69,7 @@ int main(int argc, char* argv[]) {
   }
 #endif
 
-  auto lor_info_file_name = cl.get<std::string>("geometry");
-  util::ibstream in_geometry(lor_info_file_name);
+  util::ibstream in_geometry(cl.get<std::string>("geometry"));
   Geometry geometry(in_geometry);
 
   if (geometry.n_detectors != (int)scanner.barrel.size()) {
