@@ -25,7 +25,7 @@ Prerequisites
 ##### Optional
 
 * [QtCreator][qtcreator] 3.1 for project editing via `CMakeLists.txt`
-* [CUDA][cuda] 7.0 (automatically detected by `cmake`)
+* [CUDA][cuda] 7.5 (automatically detected by `cmake`)
 * [Ninja][ninja] 1.4 for faster re-builds (with `cmake -G Ninja`)
 * `libpng` headers and libraries for PNG output
 * [Boost][boost] 1.58 for advanced geometry calculation (`2d_barrel_geometry`)
@@ -46,7 +46,7 @@ Prerequisites
 
 [xquartz]: http://xquartz.macosforge.org
 
-3. `CUDA` 7.0 is required to compile GPU C++11 code
+3. `CUDA` 7.5 is required to compile GPU C++11 code
 
 ### Windows build requirements
 
@@ -226,8 +226,8 @@ constructors taking input stream reference as an argument, eg.:
 GPU (CUDA) Compatible Code
 --------------------------
 
-This project uses C++11 extensively, it also targets *NVIDIA CUDA* version 7.0
-providing C++11 support.
+This project uses C++11 extensively, it also targets *NVIDIA CUDA* version 7.5
+providing complete C++11 support.
 
 Most of the classes as reused between CPU & GPU code using following rules:
 
