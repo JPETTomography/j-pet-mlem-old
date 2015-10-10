@@ -23,11 +23,10 @@ void add_scanner_options(cmdline::parser& parser);
 /// Adds \ref cmd_3d_hybrid_matrix specific command line options.
 void add_matrix_options(cmdline::parser& parser);
 
-// (disabled) Adds \ref cmd_3d_hybrid_phantom specific command line options.
+/// Adds \ref cmd_3d_hybrid_phantom specific command line options.
 void add_phantom_options(cmdline::parser& parser);
 
-// (disabled) Adds \ref cmd_3d_hybrid_reconstruction specific command line
-// options.
+/// Adds \ref cmd_3d_hybrid_reconstruction specific command line options.
 void add_reconstruction_options(cmdline::parser& parser);
 
 /// Adds \ref cmd_3d_hybrid_sensitivity specific command line options.
