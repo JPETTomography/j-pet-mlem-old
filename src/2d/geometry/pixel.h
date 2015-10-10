@@ -52,6 +52,10 @@ template <typename SType> struct Pixel {
     x = compat::min(br.x, compat::max(tl.x, x));
     y = compat::min(br.y, compat::max(tl.y, y));
   }
+
+  _ Size distance_from_origin2() const {
+    return static_cast<Size>(x) * x + static_cast<Size>(y) * y;
+  }
 };
 
 }  // PET2D

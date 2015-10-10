@@ -99,12 +99,12 @@ void run<Scanner>(Scanner& scanner,
   rng_state.copy_to_device();
 
   const auto pixel_fov_radius = scanner.barrel.fov_radius() / s_pixel;
-  const auto pixel_fov_radius2 = S(pixel_fov_radius * pixel_fov_radius);
+  const int pixel_fov_radius2 = pixel_fov_radius * pixel_fov_radius;
 
   auto end_pixel = Pixel::end_for_n_pixels_in_row(n_pixels / 2);
   for (Pixel pixel(0, 0); pixel < end_pixel; ++pixel) {
     // ensure we are within FOV
-    if (pixel.x * pixel.x + pixel.y * pixel.y > pixel_fov_radius2)
+    if (pixel.distance_from_origin2() > pixel_fov_radius2)
       continue;
 
     progress(pixel.index(), false);

@@ -41,6 +41,10 @@ template <typename SType> struct Voxel {
     y = compat::min(br.y, compat::max(tl.y, y));
     z = compat::min(br.z, compat::max(tl.z, z));
   }
+
+  _ Size distance_from_origin2() const {
+    return static_cast<Size>(x) * x + static_cast<Size>(y) * y * z;
+  }
 };
 
 }  // PET3D
