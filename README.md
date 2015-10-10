@@ -8,7 +8,7 @@ Authors
 
 * Piotr Bialas <pbialas@th.if.uj.edu.pl> (professor, project lead)
 * Adam Strzelecki <adam.strzelecki@uj.edu.pl> (PhD student, code maintainer)
-* Jakub Kowal <jakub.kowal@uj.edu.pl> (PhD student)
+* Jakub Kowal <jakub.kowal@uj.edu.pl> (former PhD student and project member)
 
 Prerequisites
 -------------
