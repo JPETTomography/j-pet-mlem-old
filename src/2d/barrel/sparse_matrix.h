@@ -411,10 +411,16 @@ class SparseMatrix
       for (auto symmetry = 0; symmetry < 8; ++symmetry) {
         auto pixel = e.pixel;
         auto hits = e.hits;
-// FIXME: this is not valid solution below, but converting to
-// full matrix we likely get two entries for same pixel, but this does
-// not hurt reconstruction though.
-#if 0
+
+        // FIXME: The solution below is not valid, but converting to full matrix
+        // we likely get two entries for same pixel, but this does not hurt
+        // reconstruction though.
+        //
+        // NOTE: Monte-Carlo implementations ensure that pixels on diagonal get
+        // only half of entries, because random emissions points inside diagonal
+        // pixels that overflow diagonal get discarded.
+        ;
+#if HANDLE_DIAGONALS_SPECIALLY
         // check if we are at diagonal
         if (pixel.x == pixel.y) {
           // avoid writing diagonals twice
