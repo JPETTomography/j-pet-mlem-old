@@ -40,7 +40,7 @@ template <typename FType> class Circle {
   using Secant = util::array<2, Point>;
   using SecantAngles = util::array<2, Angle>;
 
-  _ bool intersects(const Event& e) const { return radius2 > e.c2; }
+  _ bool intersects(const Event& event) const { return radius2 > event.c2; }
 
   /// \brief Returns secant for given event line
   ///
@@ -82,13 +82,15 @@ template <typename FType> class Circle {
            n_detectors;
   }
 
-//  SecantSections secant_sections(Event& e, S n_detectors) const {
-//    SecantSections ss;
-//    for (auto& sa : secant_angles(e)) {
-//      ss.push_back(section(sa, n_detectors));
-//    }
-//    return ss;
-//  }
+#if DISABLE_CODE
+  SecantSections secant_sections(Event& event, S n_detectors) const {
+    SecantSections ss;
+    for (auto& sa : secant_angles(event)) {
+      ss.push_back(section(sa, n_detectors));
+    }
+    return ss;
+  }
+#endif
 
 #if !__CUDACC__
   friend util::svg_ostream<F>& operator<<(util::svg_ostream<F>& svg,

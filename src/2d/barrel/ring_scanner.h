@@ -61,7 +61,7 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
                         AcceptanceModel& model,
                         S inner,
                         S outer,
-                        Event e,
+                        Event event,
                         S& detector,
                         F& depth,
                         Point& p1,
@@ -75,7 +75,7 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
                  : n_detectors - 1;
     S end = (outer + step) % n_detectors;
     for (auto i = inner; i != end; i = (i + step) % n_detectors) {
-      auto intersections = (*this)[i].intersections(e);
+      auto intersections = (*this)[i].intersections(event);
       // check if we got 2 point intersection
       // then test the model against these points distance
       if (intersections.size() == 2) {

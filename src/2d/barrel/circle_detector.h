@@ -63,13 +63,13 @@ template <typename FType> class CircleDetector : public Circle<FType> {
   /// \returns itself
   const CircleDetector& circumscribe_circle() const { return *this; }
 
-  _ bool intersects(typename Base::Event e) const {
-    return Base::intersects(e - center.as_vector());
+  _ bool intersects(const typename Base::Event& event) const {
+    return Base::intersects(event - center.as_vector());
   }
 
-  _ Intersections intersections(typename Base::Event e) const {
+  _ Intersections intersections(const typename Base::Event& event) const {
     Vector v = center.as_vector();
-    auto intersections = this->secant(e - v);
+    auto intersections = this->secant(event - v);
     for (auto& p : intersections) {
       p += v;
     }

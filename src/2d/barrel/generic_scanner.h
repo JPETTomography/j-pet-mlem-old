@@ -115,10 +115,10 @@ class GenericScanner
   template <class RNG, class AcceptanceModel>
   _ short detect(RNG& rng,                ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
-                 const Event& e,          ///< event to be detected
+                 const Event& event,      ///< event to be detected
                  FullResponse& response   ///< scanner response (LOR+length)
                  ) const {
-    return exact_detect(rng, model, e, response);
+    return exact_detect(rng, model, event, response);
   }
 
   void quantize_response(Response& response) const {
@@ -181,9 +181,9 @@ class GenericScanner
                     [&](S a, S b) { return distances[a] < distances[b]; });
   }
 
-  _ bool did_intersect(Event e, S detector, Point& p1, Point& p2) const {
+  _ bool did_intersect(Event event, S detector, Point& p1, Point& p2) const {
 
-    auto intersections = (*this)[detector].intersections(e);
+    auto intersections = (*this)[detector].intersections(event);
     // check if we got 2 point intersection
     // then test the model against these points distance
     if (intersections.size() == 2) {

@@ -128,15 +128,15 @@ template <class Scanner2DClass> class Scanner {
   template <class RNG, class AcceptanceModel>
   _ short exact_detect(RNG& rng,                ///< random number generator
                        AcceptanceModel& model,  ///< acceptance model
-                       const Event& e,          ///< event to be detected
+                       const Event& event,      ///< event to be detected
                        FullResponse& response   ///< response (LOR+zu+zd+dl)
                        ) const {
 
-    if (escapes_through_endcap(e))
+    if (escapes_through_endcap(event))
       return 0;
 
     Indices left, right;
-    Event2D event_xy = e.to_barrel_event();
+    Event2D event_xy = event.to_barrel_event();
 
     barrel.close_indices(event_xy, left, right);
 
@@ -148,7 +148,7 @@ template <class Scanner2DClass> class Scanner {
     if (!check_for_hits(rng,
                         model,
                         left,
-                        e,
+                        event,
                         -1.0,
                         event_xy,
                         detector1,
@@ -158,7 +158,7 @@ template <class Scanner2DClass> class Scanner {
         !check_for_hits(rng,
                         model,
                         right,
-                        e,
+                        event,
                         1.0f,
                         event_xy,
                         detector2,
@@ -190,7 +190,7 @@ template <class Scanner2DClass> class Scanner {
       response.d2_exit = d1_p2;
       response.d2_deposition = d1_deposit;
     }
-    response.origin = e.origin;
+    response.origin = event.origin;
 
     return 2;
   }
@@ -225,12 +225,12 @@ template <class Scanner2DClass> class Scanner {
   template <class RNG, class AcceptanceModel>
   _ short detect(RNG& rng,                ///< random number generator
                  AcceptanceModel& model,  ///< acceptance model
-                 const Event& e,          ///< event to be detected
+                 const Event& event,      ///< event to be detected
                  Response& response       ///< response (LOR+zu+zd+dl)
                  ) const {
 
     FullResponse full_response;
-    if (exact_detect(rng, model, e, full_response) == 2) {
+    if (exact_detect(rng, model, event, full_response) == 2) {
 
       response = response_wo_error(full_response);
       return 2;
@@ -284,7 +284,7 @@ template <class Scanner2DClass> class Scanner {
   _ bool check_for_hits(RNG& rng,
                         AcceptanceModel& model,
                         const Indices& indices,
-                        Event e,
+                        Event event,
                         F dir,
                         Event2D e_xy,
                         S& detector,
@@ -296,7 +296,8 @@ template <class Scanner2DClass> class Scanner {
       Point2D p1_xy, p2_xy;
       F depth;
       if (barrel.did_intersect(e_xy, i, p1_xy, p2_xy)) {
-        reconstruct_3d_intersection_points(e, dir, p1_xy, p2_xy, entry, exit);
+        reconstruct_3d_intersection_points(
+            event, dir, p1_xy, p2_xy, entry, exit);
         if (entry.z > half_length || entry.z < -half_length)
           return false;
         if (did_deposit(rng, model, entry, exit, depth)) {
