@@ -109,7 +109,7 @@ template <class ScannerClass, class MatrixClass> class MonteCarlo {
         auto rx = (pixel.x + one_dis(l_rng)) * pixel_size;
         auto ry = (pixel.y + one_dis(l_rng)) * pixel_size;
 
-        // ensure we are within a triangle
+        // ensure we are within a triangle, so we got only half hits on diagonal
         if (rx > ry)
           continue;
 

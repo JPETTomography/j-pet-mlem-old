@@ -38,6 +38,11 @@ __global__ static void kernel(const float z,
   for (int i = 0; i < n_thread_emissions; ++i) {
     auto rx = (pixel.x + one_dis(rng)) * s_pixel;
     auto ry = (pixel.y + one_dis(rng)) * s_pixel;
+
+    // ensure we are within a triangle, so we got only half hits on diagonal
+    if (rx > ry)
+      continue;
+
     auto rz = z + one_dis(rng) * s_pixel;
 
     Event event(PET3D::Point<float>(rx, ry, rz), direction(rng));
