@@ -12,6 +12,8 @@
 /// Usage
 /// -----
 /// \verbinclude src/3d/hybrid/matrix_cmd.txt
+///
+/// \sa \ref cmd_3d_hybrid_phantom
 
 #include <random>
 

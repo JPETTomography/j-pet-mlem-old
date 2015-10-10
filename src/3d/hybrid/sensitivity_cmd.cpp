@@ -1,3 +1,14 @@
+/// \page cmd_3d_hybrid_sensitivity 3d_hybrid_sensitivity
+/// \brief 3D Longitudinal PET sensitivity map construction tool
+///
+/// Creates sensitivity map for given scanner geometry.
+///
+/// Usage
+/// -----
+/// \verbinclude src/2d/barrel/matrix_cmd.txt
+///
+/// \sa \ref cmd_3d_hybrid_phantom, \ref cmd_3d_hybrid_matrix
+
 #if _OPENMP
 #include <omp.h>
 #endif

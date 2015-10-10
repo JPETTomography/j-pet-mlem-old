@@ -40,11 +40,12 @@ options:
   -v, --verbose         prints the iterations information on std::out
   -S, --seed            random number generator seed (seed [=0])
   -G, --gpu             run on GPU (via CUDA)
+  -D, --cuda-device     CUDA device (size [=0])
   -B, --cuda-blocks     CUDA blocks (size [=64])
   -W, --cuda-threads    CUDA threads per block (size [=512])
   -T, --n-threads       number of OpenMP threads (size [=0])
   -z, --z-position      position of the z plane (float [=auto])
-      --length          length of the detector (float [=0.3])
+  -L, --length          length of the detector (float [=0.3])
   -?, --help            print this message
 requires one of following options specified:
   --w-detector, --d-detector, --n-detectors

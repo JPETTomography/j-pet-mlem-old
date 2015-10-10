@@ -4,8 +4,9 @@
 /// Available tools
 /// ---------------
 /// - \subpage cmd_3d_hybrid_matrix
-// (disabled) - \subpage cmd_3d_hybrid_phantom
-// (disabled) - \subpage cmd_3d_hybrid_reconstruction
+/// - \subpage cmd_3d_hybrid_phantom
+/// - \subpage cmd_3d_hybrid_reconstruction
+/// - \subpage cmd_3d_hybrid_sensitivity
 ///
 /// \sa \ref cmd_2d_barrel, \ref cmd_2d_strip
 

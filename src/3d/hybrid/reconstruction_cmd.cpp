@@ -1,3 +1,16 @@
+/// \page cmd_3d_hybrid_reconstruction 3d_hybrid_reconstruction
+/// \brief 3D Longitudinal PET reconstruction tool
+///
+/// Reconstructs image using given system matrix produced by \ref
+/// cmd_3d_hybrid_matrix and mean file representing physical detector response
+/// or simulated response output from \ref cmd_3d_hybrid_phantom.
+///
+/// Usage
+/// -----
+/// \verbinclude src/3d/hybrid/reconstruction_cmd.txt
+///
+/// \sa \ref cmd_3d_hybrid_matrix, \ref cmd_3d_hybrid_phantom
+
 #include <iostream>
 #include <fstream>
 

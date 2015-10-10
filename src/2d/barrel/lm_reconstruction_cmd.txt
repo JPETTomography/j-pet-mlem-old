@@ -2,12 +2,6 @@ usage: ./2d_barrel_lm_reconstruction --geometry=file [options] ... response ...
 options:
   -i, --blocks          number of iteration blocks (size [=0])
   -I, --iterations      number of iterations (per block) (size [=1])
-      --length          length of the detector (float [=0.3])
-      --geometry        geometry information (file)
-      --system          system matrix file (file [=])
-  -o, --output          output reconstruction (file [=])
-  -g, --graphics        output mathematica .m graphics file
-      --event           event number (size [=0])
   -c, --config          load config file (file [=])
   -n, --n-pixels        number of pixels in one dimension (size [=256])
   -p, --s-pixel         pixel size (float [=auto])
@@ -32,5 +26,12 @@ options:
       --s-dl            TOF sigma delta-l (float [=0.06])
   -m, --model           acceptance model (always, scintillator) (string [=scintillator])
   -l, --base-length     scintillator emission base length P(l)=1-e^(-1) (float [=0.1])
+      --length          length of the detector (float [=0.3])
+      --geometry        geometry information (file)
+      --system          system matrix file (file [=])
+  -o, --output          output reconstruction (file [=])
+  -g, --graphics        output mathematica .m graphics file
+      --event           event number (size [=0])
   -v, --verbose         prints the iterations information on std::out
+  -T, --n-threads       number of OpenMP threads (size [=0])
   -?, --help            print this message

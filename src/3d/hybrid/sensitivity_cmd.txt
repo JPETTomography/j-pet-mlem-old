@@ -1,5 +1,6 @@
 usage: ./3d_hybrid_sensitivity [options] ... 
 options:
+  -c, --config          load config file (file [=])
   -s, --shape           detector (scintillator) shape (square, circle, triangle, hexagon) (string [=square])
   -w, --w-detector      detector width (float [=auto])
   -h, --h-detector      detector height (float [=auto])
@@ -19,7 +20,7 @@ options:
       --fov-radius      field of view radius (float [=auto])
       --z-plane         z plane trianguler cut (size [=0])
       --y-plane         y plane cut (size [=0])
-  -n, --n-pixels        number of pixels in x and y  directions (size [=80])
+  -n, --n-pixels        number of pixels in x and y directions (size [=80])
       --n-planes        number pf z planes (size [=80])
   -p, --s-pixel         voxel size (float [=0.005])
   -e, --n-emissions     number of emission (size [=0])

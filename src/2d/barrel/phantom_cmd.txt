@@ -30,7 +30,7 @@ options:
   -o, --output          output lor hits for supplied phantom (file [=])
       --detected        collects detected emissions
   -v, --verbose         prints the iterations information on std::out
-  -S, --seed            random number generator seed (unsigned long [=0])
+  -S, --seed            random number generator seed (unsigned int [=0])
   -T, --n-threads       number of OpenMP threads (size [=0])
   -?, --help            print this message
 requires one of following options specified:

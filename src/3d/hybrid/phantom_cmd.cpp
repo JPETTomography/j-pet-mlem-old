@@ -1,3 +1,15 @@
+/// \page cmd_3d_hybrid_phantom 3d_hybrid_phantom
+/// \brief 3D Longitudinal PET phantom generation tool
+///
+/// Simulates detector response for given virtual phantom and produces mean file
+/// for \ref cmd_3d_hybrid_reconstruction.
+///
+/// Usage
+/// -----
+/// \verbinclude src/3d/hybrid/phantom_cmd.txt
+///
+/// \sa \ref cmd_3d_hybrid_matrix, \ref cmd_3d_hybrid_reconstruction
+
 #include "cmdline.h"
 
 #include "util/cmdline_types.h"

@@ -1,11 +1,8 @@
-usage: ./3d_hybrid_reconstruction --geometry=string --response=file [options] ... matrix_file ...
-build: OpenMP/CUDA WARP
-note: All length options below should be expressed in meters.
+usage: ./3d_hybrid_reconstruction --geometry=string [options] ... response ...
 options:
       --geometry        geometry information (string)
       --s-z             TOF sigma along z axis (float [=0.015])
       --length          length of the detector (float [=0.3])
-      --response        detector responses (file)
   -c, --config          load config file (file [=])
   -n, --n-pixels        number of pixels in one dimension (size [=256])
   -p, --s-pixel         pixel size (float [=auto])
@@ -44,6 +41,7 @@ options:
   -v, --verbose         prints the iterations information on std::out
   -S, --seed            random number generator seed (seed [=0])
   -G, --gpu             run on GPU (via CUDA)
+  -D, --cuda-device     CUDA device (size [=0])
   -B, --cuda-blocks     CUDA blocks (size [=64])
   -W, --cuda-threads    CUDA threads per block (size [=512])
   -T, --n-threads       number of OpenMP threads (size [=0])

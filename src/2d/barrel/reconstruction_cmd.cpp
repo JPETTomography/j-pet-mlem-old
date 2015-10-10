@@ -3,8 +3,7 @@
 ///
 /// Reconstructs image using given system matrix produced by \ref
 /// cmd_2d_barrel_matrix and mean file representing physical detector response
-/// or
-/// simulated response output from \ref cmd_2d_barrel_phantom.
+/// or simulated response output from \ref cmd_2d_barrel_phantom.
 ///
 /// Authors
 /// -------
