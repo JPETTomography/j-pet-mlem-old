@@ -180,9 +180,12 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
   ComputeMatrix matrix(n_pixels, scanner.barrel.size());
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
 
+  if (!n_emissions) {
+    // don't run any simulation computation
+  }
 #if HAVE_CUDA
   // GPU computation
-  if (cl.exist("gpu")) {
+  else if (cl.exist("gpu")) {
     PET3D::Hybrid::GPU::Matrix::run<Scanner>(
         scanner,
         rng,
@@ -203,10 +206,14 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
             std::cerr << "           device = " << device_name << std::endl;
           }
         });
-  } else
+  }
 #endif
   // CPU reference computation
-  {
+  else {
+    if (!sparse_matrix.empty()) {
+      matrix << sparse_matrix;
+      sparse_matrix.resize(0);
+    }
     PET3D::Hybrid::MonteCarlo<Scanner, ComputeMatrix> monte_carlo(
         scanner, matrix, s_pixel, m_pixel);
     monte_carlo(z_position, rng, model, n_emissions, progress);

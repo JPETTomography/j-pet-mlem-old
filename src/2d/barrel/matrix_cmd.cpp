@@ -223,9 +223,12 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
   ComputeMatrix matrix(n_pixels, scanner.size(), n_tof_positions);
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
 
+  if (!n_emissions) {
+    // don't run any simulation computation
+  }
 #if HAVE_CUDA
   // GPU computation
-  if (cl.exist("gpu")) {
+  else if (cl.exist("gpu")) {
     PET2D::Barrel::GPU::Matrix::run<ScannerClass>(
         scanner,
         rng,
@@ -247,10 +250,10 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
             std::cerr << "           device = " << device_name << std::endl;
           }
         });
-  } else
+  }
 #endif
   // CPU reference computation
-  {
+  else {
     if (!sparse_matrix.empty()) {
       matrix << sparse_matrix;
       sparse_matrix.resize(0);
