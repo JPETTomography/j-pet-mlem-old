@@ -8,7 +8,7 @@
 (* read 2D PET binary matrix into Mathematica structure *)
 ReadPETMatrix[fileName_] := Module[{
     f = OpenRead[fileName, BinaryFormat -> True],
-    type, tof, triangular, output
+    type, tof, triangular, entrySize, output
   },
   type = StringJoin[BinaryReadList[f, "Character8", 4]];
   (* check if we have proper magic for file *)
@@ -17,6 +17,7 @@ ReadPETMatrix[fileName_] := Module[{
   ];
   tof = StringMatchQ[type, "TOF" ~~ _];
   triangular = StringMatchQ[type, ___ ~~ "p"];
+  entrySize = If[tof, 3, 2];
   output = {
     "Type" -> type,
     "TOF" -> tof,
@@ -27,25 +28,14 @@ ReadPETMatrix[fileName_] := Module[{
     "Detectors" -> BinaryRead[f, "UnsignedInteger32"],
     "TOF" -> tof,
     "Positions" -> If[tof, BinaryRead[f, "UnsignedInteger32"], 1],
-    "Data" -> With[{
-        format = If[tof,
-          (* TOF has extra 1st field for position *)
-          {"UnsignedInteger32",
-            "UnsignedInteger16", "UnsignedInteger16", "UnsignedInteger32"},
-          {"UnsignedInteger16", "UnsignedInteger16", "UnsignedInteger32"}
-        ]
-      },
-      First@Last@Reap@While[True,
-        With[{
-            (* single LOR pixels chunk *)
-            lor = BinaryReadList[f, "UnsignedInteger16", 2],
-            count = BinaryRead[f, "UnsignedInteger32"]
-          },
-          If[count == EndOfFile,
-            Break[]
-          ];
-          Sow[lor -> Developer`ToPackedArray@BinaryReadList[f, format, count]]
-        ]
+    "Data" -> First@Last@Reap@While[True,
+      With[{
+          lor = BinaryReadList[f, "UnsignedInteger16", 2],
+          count = BinaryRead[f, "UnsignedInteger32"]
+        },
+        If[count == EndOfFile, Break[]];
+        (* NOTE: we are reading whole data as linear 32-bit int array *)
+        Sow[lor -> BinaryReadList[f, "UnsignedInteger32", entrySize count]]
       ]
     ]
   };
@@ -61,22 +51,31 @@ ImagePETMatrix[m_, lors___] := Module[{
       "Data" /. m
     ],
     size = "Pixels" /. m,
-    total,
+    entrySize = If["TOF" /. m, 3, 2],
     (* for TOF 1st value is position *)
-    lor = If["TOF" /. m, 2 ;; 3, 1 ;; 2],
-    hits = If["TOF" /. m, 4, 3]
+    pixelAt = If["TOF" /. m, 2, 1],
+    hitsAt = If["TOF" /. m, 3, 2],
+    list, total,
+    previousOptions = SystemOptions["SparseArrayOptions"]
   },
-  (* enable merging repeating entries for sparse array *)
+  (* join multiple LOR lists into one *)
+  list = Join @@ (Last[#1] &) /@ data;
+  (* enable accumulating repeating entries for sparse array *)
   SetSystemOptions["SparseArrayOptions" -> {"TreatRepeatedEntries" -> 1}];
-  total = Total[(With[{list = Last[#1]},
-        Normal[SparseArray[list[[All, lor]] + 1 -> list[[All, hits]],
-            {size, size}]]] &) /@ data, 1];
-  SetSystemOptions["SparseArrayOptions" -> {"TreatRepeatedEntries" -> 0}];
-  (* if we have triangular, join it *)
-  If["Triangular" /. m,
-    total += Transpose[total]
+  (* duplicate pixel entries get accumulated here *)
+  total = Normal@Transpose@SparseArray[
+    (* pixel is kept as a single 32-bit integer for performance *)
+    (* we are splitting it into two 16-bit integers here *)
+    Transpose[{
+      BitShiftRight[list[[pixelAt ;; -1 ;; entrySize]], 16],
+      BitAnd[list[[pixelAt ;; -1 ;; entrySize]], 2^16 - 1]} + 1
+    ] -> list[[hitsAt ;; -1 ;; entrySize]],
+    {size, size}
   ];
-  total//Transpose
+  SystemOptions["SparseArrayOptions"]
+  (* if we have triangular, join it *)
+  If["Triangular" /. m, total += Transpose[total]];
+  total
 ];
 
 
