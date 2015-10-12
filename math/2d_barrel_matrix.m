@@ -72,7 +72,7 @@ ImagePETMatrix[m_, lors___] := Module[{
     ] -> list[[hitsAt ;; -1 ;; entrySize]],
     {size, size}
   ];
-  SystemOptions["SparseArrayOptions"]
+  SetSystemOptions@previousOptions;
   (* if we have triangular, join it *)
   If["Triangular" /. m, total += Transpose[total]];
   total
