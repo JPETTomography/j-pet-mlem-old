@@ -6,7 +6,7 @@
 namespace PET2D {
 
 /// Triangular pixel map
-
+////
 /// Provides efficient storage for triangular map of pixels.
 /// \image html detector_ring2.pdf.png
 

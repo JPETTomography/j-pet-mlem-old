@@ -11,7 +11,7 @@ constexpr uint32_t operator"" _4cc(const char* str, size_t) {
 namespace util {
 
 /// Binary input stream based on \c std::ifstream
-
+////
 /// Reads any type using its native binary representation.
 /// \note
 /// This class should not be used to read pointers such as \c char*.
@@ -38,7 +38,7 @@ class ibstream : public std::ifstream {
 };
 
 /// Binary output stream based on \c std::ifstream
-
+////
 /// Writes any type using its native binary representation.
 /// \note
 /// This class should not be used to read pointers such as \c char*.

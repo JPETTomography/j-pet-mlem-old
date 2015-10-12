@@ -24,7 +24,7 @@ _ void heap_sort_sift_down(T* a, int root, int count, Comparator compare) {
 }
 
 /// Sorts given data using \c begin and \c end iterators
-
+////
 /// This implements heapsort was invented by J. W. J. Williams with
 /// \f$ O(n \log n) \f$ worst and \f$ \Omega(n), O(n \log n) \f$ best case
 /// performance.

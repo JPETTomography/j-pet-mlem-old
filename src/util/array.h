@@ -11,7 +11,7 @@
 namespace util {
 
 /// Stack based replacement for \c std::vector
-
+////
 /// This class is drop-in replacement for \c std::vector for all cases when
 /// maximum size is known at compile time.
 /// This way we can pass everything via stack, omitting unnecessary allocations.

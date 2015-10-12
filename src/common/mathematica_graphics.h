@@ -9,7 +9,7 @@
 namespace Common {
 
 /// Outputs .m Mathematica file with given entities graphics
-
+////
 /// Creates .m Mathematica graphics for various classes.
 template <typename FType> class MathematicaGraphics {
  public:

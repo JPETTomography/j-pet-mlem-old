@@ -10,7 +10,7 @@
 #endif
 
 /// CUDA generic code compatibility macros & functions
-
+////
 /// Author
 /// ------
 /// Adam Strzelecki <adam.strzelecki@uj.edu.pl>

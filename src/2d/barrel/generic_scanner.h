@@ -17,7 +17,7 @@ namespace PET2D {
 namespace Barrel {
 
 /// Scanner made of several detectors
-
+////
 /// Represents scanner (PET) made of several detectors (scintillators)
 /// using any geometry, particuallary it may be one or several rings of
 /// detectors, or even detectors organized into other shapes.
@@ -34,7 +34,6 @@ namespace Barrel {
 /// - CircleDetector
 /// - TriangleDetector
 /// - PolygonalDetector
-
 template <class DetectorClass,
           typename SType,
           std::size_t MaxDetectorsSize = 192>

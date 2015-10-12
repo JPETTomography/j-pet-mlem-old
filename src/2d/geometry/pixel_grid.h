@@ -12,7 +12,7 @@
 namespace PET2D {
 
 /// 2D pixel grid description
-
+////
 /// 2D pixel grid description, without actual pixel storage
 template <typename FType, typename SType> class PixelGrid {
  public:

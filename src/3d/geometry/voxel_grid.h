@@ -6,7 +6,7 @@
 namespace PET3D {
 
 /// 3D voxel grid description
-
+////
 /// 3D voxel grid description, without actual voxels storage
 template <typename FType, typename SType> class VoxelGrid {
   using F = FType;

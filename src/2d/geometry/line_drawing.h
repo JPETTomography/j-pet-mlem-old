@@ -7,7 +7,7 @@
 namespace PET2D {
 
 /// A Fast Voxel Traversal Algorithm for Ray Tracing
-
+////
 /// Authors: John Amanatides, Andrew Woo
 template <typename Grid, typename I>
 void draw_line(const Point<typename Grid::F>& start,

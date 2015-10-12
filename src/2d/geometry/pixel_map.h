@@ -8,7 +8,7 @@
 namespace PET2D {
 
 /// Rectangular map of pixels aka 2D image
-
+////
 /// Can be used to write pixels to PNG or generic stream
 template <typename PixelType, typename ValueType>
 class PixelMap : std::vector<ValueType> {

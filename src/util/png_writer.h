@@ -19,7 +19,7 @@ class png_writer {
   }
 
   /// Writes image row
-
+  ////
   /// Provided array should match dimensions provided by \ref write_header
   template <typename byte_type = uint8_t> void write_row(byte_type* row) {
     priv_write_row(reinterpret_cast<unsigned char*>(row));

@@ -72,7 +72,7 @@ template <typename FType> struct Vector {
   _ F length() const { return compat::sqrt(x * x + y * y); }
 
   /// Rotate Vector around \f$ (0, 0) \f$ with given angle.
-
+  ////
   /// \note
   /// I know it is bad idea to count all over again
   /// \c sin/cos for given Vector, but this will be used

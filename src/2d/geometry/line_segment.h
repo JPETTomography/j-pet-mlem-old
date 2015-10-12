@@ -10,7 +10,7 @@
 namespace PET2D {
 
 /// Line segment
-
+////
 /// Gives some extra functions allowing calculation Point distance to the
 /// segment. The distance is calculated using normalized normal vector
 /// \f$ (A, B) \f$ and distance to origin \f$ C \f$ using formula:
@@ -47,7 +47,7 @@ template <typename FType> struct LineSegment {
 #endif
 
   /// Returns distance from given Point to the line containing LineSegment.
-
+  ////
   /// \return 0 means points lies on the line, 1 left, -1 right
   /// \todo FIXME: This is different from Barrel::Event::distance_from returning
   /// opposite.

@@ -6,7 +6,7 @@ namespace PET2D {
 namespace Barrel {
 
 /// Pixel-major memory ordered matrix
-
+////
 /// This class represents a system matrix that stores the content in
 /// "pixel major" mode. That is for each pixel a list of lors is kept.
 ///

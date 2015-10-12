@@ -9,7 +9,7 @@ namespace PET2D {
 namespace Barrel {
 
 /// 2D barrel PET emission event
-
+////
 /// This is extension to the PET2D::Event generic 2D event holding normal to the
 /// direction and distance to origin general line equation
 /// \f$ a x + b y + c = 1 \f$ coefficients, and also some pre-computed forms.
@@ -41,7 +41,7 @@ template <typename FType> struct Event : public PET2D::Event<FType> {
   _ Event(const Base& event) : Event(event.origin, event.direction) {}
 
   /// Emission event at \f$ origin = (x, y) \f$ point and \f$ \phi \f$ angle.
-
+  ////
   /// \note Angle is counted from \f$ (1, 0) \f$ and grows counter-clockwise.
   /// \todo FIXME: This is somehow different than PET2D::Event where
   /// angle counted from \f$ (0, 1) \f$ and grows clockwise.
@@ -49,7 +49,7 @@ template <typename FType> struct Event : public PET2D::Event<FType> {
       : Event(origin, Vector(std::cos(phi), std::sin(phi))) {}
 
   /// Emission event at \f$ (x, y) \f$ point and \f$ \phi \f$ angle.
-
+  ////
   /// \note Angle is counted from \f$ (1, 0) \f$ and grows counter-clockwise.
   _ Event(F x, F y, F phi) : Event(Point(x, y), phi) {}
 
@@ -57,7 +57,7 @@ template <typename FType> struct Event : public PET2D::Event<FType> {
   _ Event(F x, F y, F dx, F dy) : Event(Point(x, y), Vector(dx, dy)) {}
 
   /// Evaluates line equation side on given point,
-
+  ////
   /// \return 0 means points lies on the line, -1 left, 1 right
   /// \todo FIXME: This is different from LineSegment::distance_from returning
   /// opposite.

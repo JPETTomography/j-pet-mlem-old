@@ -10,7 +10,7 @@
 namespace PET2D {
 
 /// Generic 2D emission event
-
+////
 /// Emission event consist of origin (emission) point \f$ origin = (x, y) \f$
 /// and direction (vector) \f$ direction = (dx, dy) \f$.
 ///
@@ -32,7 +32,7 @@ template <typename FType> struct Event {
   _ Event(F x, F y, F dx, F dy) : Event(Point(x, y), Vector(dx, dy)) {}
 
   /// Emission event at \f$ origin = (x, y) \f$ point and \f$ \phi \f$ angle.
-
+  ////
   /// \note Angle is counted from \f$ (0, 1) \f$ and grows clockwise.
   /// \todo FIXME: This is somehow different than PET2D::Barrel::Event where
   /// angle counted from \f$ (1, 0) \f$ and grows counter-clockwise.

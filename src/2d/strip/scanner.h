@@ -18,7 +18,7 @@ namespace PET2D {
 namespace Strip {
 
 /// Strip-scanner made of two strip detectors (scintillators) and pixel grid
-
+////
 /// Represents scanner made of two scintillator strips and pixel grid
 ///
 /// \image html detector_frame.pdf.png

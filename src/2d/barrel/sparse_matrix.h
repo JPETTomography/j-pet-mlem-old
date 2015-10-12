@@ -69,7 +69,7 @@ struct SparseElement {
 /// \image html detector_ring2.pdf.png
 
 /// Sparse 2D barrel PET system matrix
-
+////
 /// Made for efficient storage of large PET system matrix.
 /// \image html detector_ring2.pdf.png
 /// \see \ref sparse_format

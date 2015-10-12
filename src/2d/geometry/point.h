@@ -57,7 +57,7 @@ template <typename FType> struct Point {
   _ F distance_from_origin() const { return compat::sqrt(x * x + y * y); }
 
   /// Rotate point around (0, 0) with given angle
-
+  ////
   /// \note
   /// I know it is bad idea to count all over again
   /// \c sin/cos for given point, but this will be used

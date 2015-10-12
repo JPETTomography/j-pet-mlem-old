@@ -7,7 +7,7 @@
 namespace Common {
 
 /// Model which always produces a decay
-
+////
 /// This model always produces a decay opposite to ScintillatorAccept.
 template <typename FType> class AlwaysAccept {
  public:
@@ -20,7 +20,7 @@ template <typename FType> class AlwaysAccept {
 };
 
 /// Model of scintilator acceptance
-
+////
 /// Represents model of scintilator where CDF of decay is given by:
 /// \f[
 ///     F = 1-e^{-scale * length}

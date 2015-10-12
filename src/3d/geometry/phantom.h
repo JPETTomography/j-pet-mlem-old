@@ -25,7 +25,7 @@ template <class RNGClass, typename FType> class Phantom {
   using Vector = PET3D::Vector<F>;
 
   /// Abstract phantom region (must subclass)
-
+  ////
   /// Must provide at least intensity for the region.
   struct Region {
     Region(F intensity) : intensity(intensity) {}

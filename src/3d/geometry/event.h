@@ -13,7 +13,7 @@
 namespace PET3D {
 
 /// Generic 3D emission event
-
+////
 /// Emission event consist of origin (emission) point \f$ origin = (x, y, z) \f$
 /// and direction (vector) \f$ direction = (dx, dy, dz) \f$.
 template <typename FType> class Event {

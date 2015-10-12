@@ -293,7 +293,7 @@ template <typename T> class on_device2D {
 };
 
 /// Provides underlying storage and fast copy using \c = operator
-
+////
 /// This can for example provide `__shared__` storage and copy data from global
 /// memory with:
 /// \code

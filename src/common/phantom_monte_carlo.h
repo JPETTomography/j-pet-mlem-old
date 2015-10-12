@@ -6,7 +6,7 @@
 namespace Common {
 
 /// Executes Monte-Carlo for given \c Phantom and \c Detector classes
-
+////
 /// This is wrapper class that executes Monte-Carlo on abstract \c Phantom that
 /// has to implement \c gen_event and \c Detector that has to implement \c
 /// exact_detect method.

@@ -12,7 +12,7 @@ template <typename T> class delegate;
 /// \endcond
 
 /// \c std::function portable replacement
-
+////
 /// This class has effectively same functionality like STL \c std::function
 /// class, but does not require all STL boilerplate and can be used in CUDA
 /// compiler.

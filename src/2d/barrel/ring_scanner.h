@@ -13,7 +13,7 @@ namespace PET2D {
 namespace Barrel {
 
 /// Scanner made of one 2D ring of detectors
-
+////
 /// This is optimized GenericScanner using assumption \b all detectors lie on
 /// ring, so some operations like possible secants can be done much quicker,
 /// approximately 2x faster than using GenericScanner.
@@ -99,7 +99,7 @@ class RingScanner : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
 
  public:
   /// Tries to detect given event.
-
+  ////
   /// \return number of coincidences (detector hits)
   template <class RNG, class AcceptanceModel>
   _ short detect(RNG& rng,                ///< random number generator

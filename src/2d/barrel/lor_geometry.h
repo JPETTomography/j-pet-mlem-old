@@ -13,7 +13,7 @@ namespace PET2D {
 namespace Barrel {
 
 /// Keeps geometry information about LOR
-
+////
 /// Keeps geometry information about LOR such as pixels belonging to the LOR
 /// together with their description using PixelInfo.
 template <typename FType, typename SType> struct LORGeometry {

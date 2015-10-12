@@ -8,7 +8,7 @@
 namespace PET3D {
 
 /// Cubical map of voxels aka 3D image
-
+////
 /// Can be used to write voxels to PNG or generic stream
 template <typename VoxelType, typename ValueType>
 class VoxelMap : std::vector<ValueType> {

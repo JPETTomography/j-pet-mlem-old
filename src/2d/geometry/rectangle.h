@@ -9,7 +9,7 @@
 namespace PET2D {
 
 /// Axis alligned & centered rectangle
-
+////
 /// Rectangle that is axis aligned and centered on \c center with $width = 2*a$
 /// and $height = 2*b$.
 template <typename FType> class Rectangle {
