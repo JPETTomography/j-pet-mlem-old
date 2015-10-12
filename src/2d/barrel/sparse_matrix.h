@@ -87,10 +87,11 @@ class SparseMatrix
   using Element = SparseElement<LOR, Pixel, Hit>;
 
   // file representation types, size independent
-  using BitmapPixel = uint8_t;
-  using FileInt = uint32_t;
-  using FileHalf = uint16_t;
+  using BitmapPixel = uint8_t;  ///< output bitmap pixel value type
+  using FileInt = uint32_t;     ///< file integer
+  using FileHalf = uint16_t;    ///< file half-size integer
 
+  /// First file word magic value representing type of matrix
   enum Magic : FileInt {
     // binary serialization                //  pixels detectors triangular
     // clang-format off
@@ -103,11 +104,13 @@ class SparseMatrix
     // clang-format on
   };
 
-  SparseMatrix(S n_pixels_in_row,
-               S n_detectors,
-               S n_tof_positions = 1,
-               Hit n_emissions = 0,
-               bool triangular = true)
+  /// Construct new sparse matrix with given parameters.
+  SparseMatrix(S n_pixels_in_row,      ///< number of pixels in row
+               S n_detectors,          ///< total number of detectors
+               S n_tof_positions = 1,  ///< number of TOF positions (1-no TOF)
+               Hit n_emissions = 0,    ///< number of future emissions
+               bool triangular = true  ///< is this matrix triangular
+               )
       : n_pixels_in_row_(n_pixels_in_row),
         n_pixels_in_row_half_(n_pixels_in_row / 2),
         n_detectors_(n_detectors),
@@ -116,11 +119,25 @@ class SparseMatrix
         triangular_(triangular),
         n_tof_positions_(n_tof_positions) {}
 
+  /// Returns number of pixels in row.
   S n_pixels_in_row() const { return n_pixels_in_row_; }
+
+  /// Returns half number of pixels in row.
+  ////
+  /// For triangular matrix, this is actual number of pixels covered by it,
+  /// since we just keep 1/8 of full matrix.
   S n_pixels_in_row_half() const { return n_pixels_in_row_half_; }
+
+  /// Returns number of detectors.
   S n_detectors() const { return n_detectors_; }
+
+  /// Returns number of emissions described by this matrix.
   Hit n_emissions() const { return n_emissions_; }
+
+  /// Returns number of TOF positions (1-means there is no TOF imformation).
   S n_tof_positions() const { return n_tof_positions_; }
+
+  /// True if matrix is triangular (keeps only 1/8 of full matrix information).
   bool triangular() const { return triangular_; }
 
   /// Increment number of emissions by given number.
@@ -204,6 +221,7 @@ class SparseMatrix
     }
   }
 
+  /// Merge duplicate hit entries pointing to same LOR-pixel-position.
   void merge_duplicates() {
     for (auto it_elem = this->begin(); it_elem != this->end(); ++it_elem) {
       auto next = it_elem + 1;
@@ -226,6 +244,7 @@ class SparseMatrix
         this->end());
   }
 
+  /// Append other sparse matrix to this matrix.
   SparseMatrix& operator<<(const SparseMatrix& other) {
 
     if (n_pixels_in_row_ != other.n_pixels_in_row_ ||
@@ -260,6 +279,7 @@ class SparseMatrix
     return *this;
   }
 
+  /// Output sparse matrix to binary stream.
   friend util::obstream& operator<<(util::obstream& out, SparseMatrix& sm) {
     auto tof = (sm.n_tof_positions_ > 1);
     if (sm.triangular_) {
@@ -310,7 +330,9 @@ class SparseMatrix
     return out;
   }
 
-  // text output (for validation)
+  /// Output sparse matrix text stream.
+  ////
+  /// Used for validation only.
   friend std::ostream& operator<<(std::ostream& out, SparseMatrix& sm) {
     out << "pixels in row: " << sm.n_pixels_in_row_ << std::endl;
     out << "    emissions: " << sm.n_emissions_ << std::endl;
@@ -332,6 +354,7 @@ class SparseMatrix
     return out;
   }
 
+  /// Output bitmap of sentitivity or lor (if non empty) to bitmap writer.
   template <class FileWriter>
   void output_bitmap(FileWriter& fw, LOR lor = LOR(), S position = -1) {
     Hit* pixels = new Hit[n_pixels_in_row_ * n_pixels_in_row_]();
@@ -386,6 +409,7 @@ class SparseMatrix
     }
   }
 
+  /// Sort matrix entries by LOR index.
   void sort_by_lor() {
     if (n_tof_positions_ > 1) {
       std::sort(Base::begin(), Base::end(), SortByLORNPosition());
@@ -393,18 +417,23 @@ class SparseMatrix
       std::sort(Base::begin(), Base::end(), SortByLOR());
     }
   }
+  /// Sort matrix entries by pixel index.
   void sort_by_pixel() { std::sort(Base::begin(), Base::end(), SortByPixel()); }
+  /// Sort matrix entries by LOR then pixel index.
   void sort_by_lor_n_pixel() {
     std::sort(Base::begin(), Base::end(), SortByLORNPositionNPixel());
   }
+  /// Sort matrix entries by pixel then LOR index.
   void sort_by_pixel_n_lor() {
     std::sort(Base::begin(), Base::end(), SortByPixelNPositionNLOR());
   }
+  /// Sort matrix entries by pixel then LOR index, leaving empty elements back.
   void sort_by_pixel_n_lor_leaving_empty() {
     std::sort(
         Base::begin(), Base::end(), SortByPixelNPositionNLORLeavingEmpty());
   }
 
+  /// Return full (non-triangular) sparse matrix.
   SparseMatrix to_full(
       const PET2D::Barrel::SymmetryDescriptor<S>& symmetry_descriptor) {
     if (!triangular_) {
@@ -527,6 +556,7 @@ class SparseMatrix
   };
 
  public:
+  /// Return symmetrix pixel for given symmetry index (symmetry mask).
   Pixel symmetric_pixel(Pixel p, S symmetry) const {
     if (symmetry & 2) {
       p.x = -p.x - 1;
