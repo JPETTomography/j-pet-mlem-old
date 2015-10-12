@@ -123,6 +123,12 @@ class SparseMatrix
   S n_tof_positions() const { return n_tof_positions_; }
   bool triangular() const { return triangular_; }
 
+  /// Increment number of emissions by given number.
+  ////
+  /// This is intended when some external Monte-Carlo appends simulation results
+  /// manually via \c push_back or \c emplace_back.
+  void increment_n_emissions(Hit increment) { n_emissions_ += increment; }
+
   SparseMatrix(util::ibstream& in) {
     FileInt in_magic;
     in >> in_magic;

@@ -65,25 +65,21 @@ __global__ static void kernel(const Pixel pixel,
 }
 
 template <>
-void run<Scanner>(Scanner& scanner,
-                  util::random::tausworthe& rng,
-                  int n_emissions,
-                  double tof_step,
-                  int n_tof_positions,
-                  int n_pixels,
-                  double s_pixel,
-                  double length_scale,
-                  util::delegate<void(int, bool)> progress,
-                  util::delegate<void(LOR, S, Pixel, Hit)> entry,
-                  int device,
-                  int n_blocks,
-                  int n_threads_per_block,
-                  util::delegate<void(const char*)> device_name) {
-
-  cudaSetDevice(device);
-  cudaDeviceProp prop;
-  cudaGetDeviceProperties(&prop, device);
-  device_name(prop.name);
+void run<Scanner>(
+    Scanner& scanner,
+    util::random::tausworthe& rng,
+    int n_emissions,
+    double tof_step,
+    int n_tof_positions,
+    int n_pixels,
+    double s_pixel,
+    double length_scale,
+    util::delegate<void(int completed, bool finished)> progress,
+    util::delegate<void(LOR lor, S position, Pixel pixel, Hit hits)> entry,
+    int device,
+    int n_blocks,
+    int n_threads_per_block,
+    util::delegate<void(const char* device_name, int n_emissions)> info) {
 
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -
   // each SMX can use 8 active blocks,
@@ -91,6 +87,11 @@ void run<Scanner>(Scanner& scanner,
   auto n_thread_emissions = (n_emissions + n_threads - 1) / n_threads;
   // Number of emissions will be rounded to block size
   n_emissions = n_thread_emissions * n_threads;
+
+  cudaSetDevice(device);
+  cudaDeviceProp prop;
+  cudaGetDeviceProperties(&prop, device);
+  info(prop.name, n_emissions);
 
   const auto end_lor = LOR::end_for_detectors(scanner.size());
   const auto n_lors = end_lor.index();

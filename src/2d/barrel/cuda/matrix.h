@@ -40,36 +40,37 @@ void run(ScannerClass& scanner,
          int n_pixels,
          double s_pixel,
          double length_scale,
-         util::delegate<void(int, bool)> progress,
-         util::delegate<void(LOR, S, Pixel, Hit)> entry,
+         util::delegate<void(int completed, bool finished)> progress,
+         util::delegate<void(LOR lor, S position, Pixel pixel, Hit hits)> entry,
          int device,
          int n_blocks,
          int n_threads_per_block,
-         util::delegate<void(const char*)> device_name) {
+         util::delegate<void(const char* device_name, int n_emissions)> info) {
   // unused
   (void)scanner, (void)rng, (void)n_emissions, (void)tof_step,
       (void)n_tof_positions, (void)n_pixels, (void)s_pixel, (void)length_scale,
       (void)progress, (void)entry, (void)device, (void)n_blocks,
-      (void)n_threads_per_block, (void)device_name;
+      (void)n_threads_per_block, (void)info;
   throw("GPU does not support this scanner type");
 }
 
 /// CUDA optimized Monte-Carlo implementation for square detector
 template <>
-void run<Scanner>(Scanner& scanner,
-                  util::random::tausworthe& rng,
-                  int n_emissions,
-                  double tof_step,
-                  int n_tof_positions,
-                  int n_pixels,
-                  double s_pixel,
-                  double length_scale,
-                  util::delegate<void(int, bool)> progress,
-                  util::delegate<void(LOR, S, Pixel, Hit)> entry,
-                  int device,
-                  int n_blocks,
-                  int n_threads_per_block,
-                  util::delegate<void(const char*)> device_name);
+void run<Scanner>(
+    Scanner& scanner,
+    util::random::tausworthe& rng,
+    int n_emissions,
+    double tof_step,
+    int n_tof_positions,
+    int n_pixels,
+    double s_pixel,
+    double length_scale,
+    util::delegate<void(int completed, bool finished)> progress,
+    util::delegate<void(LOR lor, S position, Pixel pixel, Hit hits)> entry,
+    int device,
+    int n_blocks,
+    int n_threads_per_block,
+    util::delegate<void(const char* device_name, int n_emissions)> info);
 
 }  // Matrix
 }  // GPU

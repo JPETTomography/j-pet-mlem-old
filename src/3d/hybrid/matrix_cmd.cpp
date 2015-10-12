@@ -204,11 +204,14 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
         cl.get<int>("cuda-device"),
         cl.get<int>("cuda-blocks"),
         cl.get<int>("cuda-threads"),
-        [=](const char* device_name) {
+        [&](const char* device_name, int n_final_emissions) {
+          n_emissions = n_final_emissions;
           if (verbose) {
             std::cerr << "    CUDA device = " << device_name << std::endl;
+            std::cerr << "final emissions = " << n_final_emissions << std::endl;
           }
         });
+    sparse_matrix.increment_n_emissions(n_emissions);
     if (!was_empty) {
       sparse_matrix.sort_by_lor_n_pixel();
       sparse_matrix.merge_duplicates();
