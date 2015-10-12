@@ -10,6 +10,7 @@
 namespace PET2D {
 namespace Barrel {
 
+/// \cond PRIVATE
 #if !__CUDACC__
 namespace {
 template <typename FType> constexpr uint32_t magic() { return 0; }
@@ -17,8 +18,15 @@ template <> constexpr uint32_t magic<float>() { return "PETg"_4cc; }
 template <> constexpr uint32_t magic<double>() { return "PETG"_4cc; }
 }
 #endif
+/// \endcond
 
 /// Keeps extended information about barrel, including grid and all LOR info
+////
+/// This class is complementary to PET2D::Barrel::SparseMatrix, the difference
+/// is that it keeps geometry information for LOR-pixel pairs, like pixel
+/// distance to LOR line, its position along LOR line, etc.
+///
+/// \see PET2D::Barrel::SparseMatrix
 template <typename FType, typename SType>
 class Geometry : public std::vector<LORGeometry<FType, SType>> {
  public:
@@ -33,7 +41,10 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
   using Point = PET2D::Point<F>;
   using PixelInfo = typename LORGeometry::PixelInfo;
 
-  Geometry(S n_detectors, const PixelGrid& grid)
+  /// Construct geometry for given number of detector and grid description.
+  Geometry(S n_detectors,         ///< total number of detectors
+           const PixelGrid& grid  ///< pixel grid description
+           )
       : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
         n_detectors(n_detectors),
         grid(grid) {}
@@ -106,16 +117,20 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
   }
 #endif
 
+  /// Returns LOR geometry description for given LOR.
   LORGeometry& operator[](const LOR& lor) { return this->at(lor.index()); }
 
+  /// Returns constant LOR geometry description for given LOR.
   const LORGeometry& operator[](const LOR& lor) const {
     return this->at(lor.index());
   }
 
+  /// Append pixel info for given LOR.
   void push_back_pixel_info(const LOR& lor, const PixelInfo& pixel_info) {
     (*this)[lor].pixel_infos.push_back(pixel_info);
   }
 
+  /// Append pixel weight for given LOR.
   void push_back_pixel(const LOR& lor, const Pixel& pixel, F weight) {
     auto& lor_geometry = (*this)[lor];
     auto center = grid.center_at(pixel.x, pixel.y);
@@ -127,20 +142,24 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
     push_back_pixel_info(lor, pixel_info);
   }
 
+  /// Sort all LOR geometry descriptions.
+  ////
+  /// This does not affect order of LOR gemetry descriptions here.
   void sort_all() {
     for (auto& lor_geometry : *this) {
       lor_geometry.sort();
     }
   }
 
+  /// Remove all pixel information from all LOR geometry descriptions.
   void erase_pixel_info() {
     for (auto& lor_geometry : *this) {
       lor_geometry.pixel_infos.resize(0);
     }
   }
 
-  const S n_detectors;
-  const PixelGrid grid;
+  const S n_detectors;   ///< number of detectors
+  const PixelGrid grid;  ///< pixel grid description
 };
 
 }  // Barrel

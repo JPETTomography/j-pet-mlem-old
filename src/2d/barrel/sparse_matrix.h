@@ -73,6 +73,7 @@ struct SparseElement {
 /// Made for efficient storage of large PET system matrix.
 /// \image html detector_ring2.pdf.png
 /// \see \ref sparse_format
+/// \see PET2D::Barrel::Geometry
 template <typename PixelType, typename LORType, typename HitType>
 class SparseMatrix
     : public std::vector<SparseElement<LORType, PixelType, HitType>> {
