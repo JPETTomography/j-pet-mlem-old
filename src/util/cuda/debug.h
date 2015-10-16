@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <stdio.h>
+
 static cudaError cudbgLastError;
 
 #define CUDBG(f, ...)                                           \

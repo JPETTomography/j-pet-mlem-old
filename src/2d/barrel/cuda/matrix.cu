@@ -1,5 +1,4 @@
 #include <cuda_runtime.h>
-#include <stdio.h>
 
 #include "util/cuda/debug.h"  // catches all CUDA errors
 #include "util/cuda/memory.h"
