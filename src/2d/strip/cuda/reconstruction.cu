@@ -111,10 +111,7 @@ void run(Scanner<F, short>& scanner,
       }
 
 #else
-      cudaMemcpy(rho.host_ptr,
-                 output_rho.device_ptr,
-                 image_size,
-                 cudaMemcpyDeviceToHost);
+      rho.copy_from_device(output_rho);
 #endif
       progress(ib * n_iterations_in_block + it, true);
 
