@@ -105,6 +105,15 @@ class SparseMatrix
     // clang-format on
   };
 
+  enum Sort {
+    UNSORTED = 0,
+    BY_LOR,
+    BY_PIXEL,
+    BY_LOR_N_PIXEL,
+    BY_PIXEL_N_LOR,
+    BY_PIXEL_N_LOR_LEAVING_EMPTY,
+  };
+
   /// Construct new sparse matrix with given parameters.
   SparseMatrix(S n_pixels_in_row,      ///< number of pixels in row
                S n_detectors,          ///< total number of detectors
@@ -118,7 +127,11 @@ class SparseMatrix
         n_emissions_(n_emissions),
         n_lors_(LOR::end_for_detectors(n_detectors).index()),
         triangular_(triangular),
-        n_tof_positions_(n_tof_positions) {}
+        n_tof_positions_(n_tof_positions),
+        sorted_(UNSORTED) {}
+
+  /// Returns matrix current sort method.
+  Sort sorted() const { return sorted_; }
 
   /// Returns number of pixels in row.
   S n_pixels_in_row() const { return n_pixels_in_row_; }
@@ -147,7 +160,7 @@ class SparseMatrix
   /// manually via \c push_back or \c emplace_back.
   void increment_n_emissions(Hit increment) { n_emissions_ += increment; }
 
-  SparseMatrix(util::ibstream& in) {
+  SparseMatrix(util::ibstream& in) : sorted_(BY_LOR_N_PIXEL) {
     FileInt in_magic;
     in >> in_magic;
     if (in_magic != Magic::VERSION_TRIANGULAR &&
@@ -277,6 +290,7 @@ class SparseMatrix
                                         Element(LOR(), 0, Pixel(), 0),
                                         SortByPixelNPositionNLORLeavingEmpty());
     this->resize(first_empty - this->begin());
+    sorted_ = BY_PIXEL_N_LOR;
     return *this;
   }
 
@@ -412,26 +426,43 @@ class SparseMatrix
 
   /// Sort matrix entries by LOR index.
   void sort_by_lor() {
+    if (sorted_ == BY_LOR_N_PIXEL || sorted_ == BY_LOR)
+      return;
     if (n_tof_positions_ > 1) {
       std::sort(Base::begin(), Base::end(), SortByLORNPosition());
     } else {
       std::sort(Base::begin(), Base::end(), SortByLOR());
     }
+    sorted_ = BY_LOR;
   }
   /// Sort matrix entries by pixel index.
-  void sort_by_pixel() { std::sort(Base::begin(), Base::end(), SortByPixel()); }
+  void sort_by_pixel() {
+    if (sorted_ == BY_PIXEL_N_LOR || sorted_ == BY_PIXEL)
+      return;
+    std::sort(Base::begin(), Base::end(), SortByPixel());
+    sorted_ = BY_PIXEL;
+  }
   /// Sort matrix entries by LOR then pixel index.
   void sort_by_lor_n_pixel() {
+    if (sorted_ == BY_LOR_N_PIXEL)
+      return;
     std::sort(Base::begin(), Base::end(), SortByLORNPositionNPixel());
+    sorted_ = BY_LOR_N_PIXEL;
   }
   /// Sort matrix entries by pixel then LOR index.
   void sort_by_pixel_n_lor() {
+    if (sorted_ == BY_PIXEL_N_LOR)
+      return;
     std::sort(Base::begin(), Base::end(), SortByPixelNPositionNLOR());
+    sorted_ = BY_PIXEL_N_LOR;
   }
   /// Sort matrix entries by pixel then LOR index, leaving empty elements back.
   void sort_by_pixel_n_lor_leaving_empty() {
+    if (sorted_ == BY_PIXEL_N_LOR_LEAVING_EMPTY)
+      return;
     std::sort(
         Base::begin(), Base::end(), SortByPixelNPositionNLORLeavingEmpty());
+    sorted_ = BY_PIXEL_N_LOR_LEAVING_EMPTY;
   }
 
   /// Return full (non-triangular) sparse matrix.
@@ -493,6 +524,7 @@ class SparseMatrix
   int n_lors_;
   bool triangular_;
   S n_tof_positions_;
+  Sort sorted_;
 
   struct SortByPixel {
     bool operator()(const Element& a, const Element& b) const {
