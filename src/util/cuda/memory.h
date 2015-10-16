@@ -17,13 +17,31 @@ template <typename T> inline T* device_alloc(size_t bytes) {
   return device_ptr;
 }
 
+/// \cond PRIVATE
+// Forward declarations
+template <typename T> class memory;
+template <typename T> class memory2D;
+template <typename T> class on_device;
+template <typename T> class on_device2D;
+/// \endcond
+
 /// Host-device memory.
+////
+/// It can be implicitly casted to device pointer. So using \c device_ptr is not
+/// necessary.
 template <typename T> class memory {
   memory(size_t size, size_t bytes)
       : size(size),
         bytes(bytes),
         host_ptr(new T[size]),
         device_ptr(device_alloc<T>(bytes)) {}
+
+ protected:
+  memory(size_t size, size_t bytes, T* device_ptr)
+      : size(size),
+        bytes(bytes),
+        host_ptr(new T[size]),
+        device_ptr(device_ptr) {}
 
  public:
   /// Allocate memory of given size on both host & device.
@@ -39,15 +57,31 @@ template <typename T> class memory {
     cudaMemcpy(device_ptr, host_ptr, bytes, cudaMemcpyHostToDevice);
   }
 
+  /// Copy host memory to other on device memory.
+  template <class OtherMemory> void copy_to_device(OtherMemory& other) {
+    cudaMemcpy(other.device_ptr, host_ptr, bytes, cudaMemcpyHostToDevice);
+  }
+
   /// Copy device memory to host.
   void copy_from_device() {
     cudaMemcpy(host_ptr, device_ptr, bytes, cudaMemcpyDeviceToHost);
+  }
+
+  /// Copy from other on device memory to host.
+  template <class OtherMemory> void copy_from_device(const OtherMemory& other) {
+    cudaMemcpy(host_ptr, other.device_ptr, bytes, cudaMemcpyDeviceToHost);
   }
 
   /// Sync & copy device memory to host.
   void sync_copy_from_device() {
     cudaThreadSynchronize();
     copy_from_device();
+  }
+
+  /// Copy from other on device memory buffer.
+  template <class OtherMemory> memory& operator=(const OtherMemory& other) {
+    cudaMemcpy(device_ptr, other.device_ptr, bytes, cudaMemcpyDeviceToDevice);
+    return *this;
   }
 
   /// Set device memory to given value.
@@ -68,7 +102,7 @@ template <typename T> class memory {
 };
 
 /// Host-device 2D texture backed memory.
-template <typename T> class memory2D {
+template <typename T> class memory2D : public memory<T> {
  public:
   using texture_type = texture<T, 2, cudaReadModeElementType>;
 
@@ -79,20 +113,19 @@ template <typename T> class memory2D {
            size_t size,
            size_t bytes,
            size_t host_pitch)
-      : tex(tex),
+      : memory<T>(size, bytes, nullptr),
+        tex(tex),
         width(width),
         height(height),
-        size(size),
-        bytes(bytes),
         host_pitch(host_pitch),
-        device_pitch(0),
-        host_ptr(new T[size]),
-        device_ptr(nullptr) {
-    cudaMallocPitch(
-        (void**)&device_ptr, (size_t*)&device_pitch, host_pitch, height);
+        device_pitch(0) {
+    cudaMallocPitch((void**)&(this->device_ptr),
+                    (size_t*)&device_pitch,
+                    host_pitch,
+                    height);
     cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
     cudaBindTexture2D(
-        NULL, &tex, device_ptr, &desc, width, height, device_pitch);
+        NULL, &tex, this->device_ptr, &desc, width, height, device_pitch);
   }
 
   memory2D(texture_type& tex, size_t width, size_t height, size_t size)
@@ -109,63 +142,28 @@ template <typename T> class memory2D {
   memory2D(texture_type& tex, size_t width, size_t height)
       : memory2D(tex, width, height, width * height) {}
 
-  ~memory2D() {
-    cudaUnbindTexture(&tex);
-    cudaFree(device_ptr);
-    delete[] host_ptr;
+  ~memory2D() { cudaUnbindTexture(&tex); }
+
+  /// Copy from other on device memory buffer.
+  template <class OtherMemory> memory2D& operator=(const OtherMemory& other) {
+    cudaMemcpy(this->device_ptr,
+               other.device_ptr,
+               this->bytes,
+               cudaMemcpyDeviceToDevice);
+    return *this;
   }
 
-  /// Copy host memory to device.
-  void copy_to_device() {
-    cudaMemcpy2D(device_ptr,
-                 device_pitch,
-                 host_ptr,
-                 host_pitch,
-                 host_pitch,
-                 height,
-                 cudaMemcpyHostToDevice);
-  }
-
-  /// Copy device memory to host.
-  void copy_from_device() {
-    cudaMemcpy2D(host_ptr,
-                 host_pitch,
-                 device_ptr,
-                 device_pitch,
-                 host_pitch,
-                 height,
-                 cudaMemcpyDeviceToHost);
-  }
-
-  /// Sync & copy device memory to host.
-  void sync_copy_from_device() {
-    cudaThreadSynchronize();
-    copy_from_device();
-  }
-
-  /// Set device memory to given value.
-  void set_on_device(int value) { cudaMemset(device_ptr, value, bytes); }
-
-  /// Zero device memory.
-  void zero_on_device() { set_on_device(0); }
-
-  T& operator[](size_t i) { return host_ptr[i]; }
-  const T& operator[](size_t i) const { return host_ptr[i]; }
-
-  operator T*() { return device_ptr; }
-
-  T* const host_ptr;
-  T* const device_ptr;
   const texture_type& tex;
   const size_t width;
   const size_t height;
-  const size_t size;
-  const size_t bytes;
   const size_t host_pitch;
   const size_t device_pitch;
 };
 
 /// Device only memory.
+////
+/// It can be implicitly casted to device pointer. So using \c device_ptr is not
+/// necessary.
 template <typename T> class on_device {
   on_device(const T& on_host, size_t bytes)
       : bytes(bytes), device_ptr(device_alloc<T>(bytes)) {
@@ -179,6 +177,10 @@ template <typename T> class on_device {
 
   on_device(size_t, size_t bytes)
       : bytes(bytes), device_ptr(device_alloc<T>(bytes)) {}
+
+ protected:
+  on_device(size_t bytes, T* device_ptr)
+      : bytes(bytes), device_ptr(device_ptr) {}
 
  public:
   /// Allocate and copy from host.
@@ -202,6 +204,12 @@ template <typename T> class on_device {
   /// Zero device memory.
   void zero_on_device() { set_on_device(0); }
 
+  /// Copy from other on device memory buffer.
+  template <class OtherMemory> on_device& operator=(const OtherMemory& other) {
+    cudaMemcpy(device_ptr, other.device_ptr, bytes, cudaMemcpyDeviceToDevice);
+    return *this;
+  }
+
   operator T*() { return device_ptr; }
 
   T* const device_ptr;
@@ -209,7 +217,7 @@ template <typename T> class on_device {
 };
 
 /// Device only 2D texture backed memory.
-template <typename T> class on_device2D {
+template <typename T> class on_device2D : public on_device<T> {
  public:
   using texture_type = texture<T, 2, cudaReadModeElementType>;
 
@@ -219,13 +227,15 @@ template <typename T> class on_device2D {
               size_t height,
               size_t bytes,
               size_t host_pitch)
-      : tex(tex), bytes(bytes), device_ptr(nullptr) {
+      : on_device<T>(bytes, nullptr), tex(tex) {
     size_t device_pitch;
-    cudaMallocPitch(
-        (void**)&device_ptr, (size_t*)&device_pitch, host_pitch, height);
+    cudaMallocPitch((void**)&(this->device_ptr),
+                    (size_t*)&device_pitch,
+                    host_pitch,
+                    height);
     cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
     cudaBindTexture2D(
-        NULL, &tex, device_ptr, &desc, width, height, device_pitch);
+        NULL, &tex, this->device_ptr, &desc, width, height, device_pitch);
   }
 
   on_device2D(texture_type& tex, size_t width, size_t height, size_t size)
@@ -237,11 +247,13 @@ template <typename T> class on_device2D {
               size_t height,
               size_t bytes,
               size_t host_pitch)
-      : tex(tex), bytes(bytes), device_ptr(nullptr) {
+      : on_device<T>(bytes, nullptr), tex(tex) {
     size_t device_pitch;
-    cudaMallocPitch(
-        (void**)&device_ptr, (size_t*)&device_pitch, host_pitch, height);
-    cudaMemcpy2D(device_ptr,
+    cudaMallocPitch((void**)&(this->device_ptr),
+                    (size_t*)&device_pitch,
+                    host_pitch,
+                    height);
+    cudaMemcpy2D(this->device_ptr,
                  device_pitch,
                  on_host,
                  host_pitch,
@@ -250,7 +262,7 @@ template <typename T> class on_device2D {
                  cudaMemcpyHostToDevice);
     cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
     cudaBindTexture2D(
-        NULL, &tex, device_ptr, &desc, width, height, device_pitch);
+        NULL, &tex, this->device_ptr, &desc, width, height, device_pitch);
   }
 
   on_device2D(texture_type& tex,
@@ -274,22 +286,19 @@ template <typename T> class on_device2D {
   on_device2D(texture_type& tex, T* on_host, size_t width, size_t height)
       : on_device2D(tex, on_host, width, height, width * height) {}
 
-  ~on_device2D() {
-    cudaUnbindTexture(&tex);
-    cudaFree(device_ptr);
+  ~on_device2D() { cudaUnbindTexture(&tex); }
+
+  /// Copy from other on device memory buffer.
+  template <class OtherMemory>
+  on_device2D& operator=(const OtherMemory& other) {
+    cudaMemcpy(this->device_ptr,
+               other.device_ptr,
+               this->bytes,
+               cudaMemcpyDeviceToDevice);
+    return *this;
   }
 
-  /// Set device memory to given value.
-  void set_on_device(int value) { cudaMemset(device_ptr, value, bytes); }
-
-  /// Zero device memory.
-  void zero_on_device() { set_on_device(0); }
-
-  operator T*() { return device_ptr; }
-
-  T* const device_ptr;
   const texture_type& tex;
-  const size_t bytes;
 };
 
 /// Provides underlying storage and fast copy using \c = operator
@@ -321,6 +330,7 @@ template <typename T> class copy {
     __syncthreads();
     return *this;
   }
+
   __device__ T& operator*() { return *reinterpret_cast<T*>(&storage); }
 
  private:
