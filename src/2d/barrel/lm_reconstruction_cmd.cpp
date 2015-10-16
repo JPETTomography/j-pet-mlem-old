@@ -163,8 +163,8 @@ int main(int argc, char* argv[]) {
     auto lor = event.lor;
     graphics.add(scanner, lor);
     graphics.add(event.p);
-    for (auto it = event.first_pixel_info; it != event.last_pixel_info; ++it) {
-      graphics.add_pixel(geometry.grid, it->pixel);
+    for (const auto& pixel_info : event) {
+      graphics.add_pixel(geometry.grid, pixel_info.pixel);
     }
 
     return 0;

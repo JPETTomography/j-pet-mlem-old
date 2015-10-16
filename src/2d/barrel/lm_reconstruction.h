@@ -44,6 +44,9 @@ template <typename FType, typename SType> class LMReconstruction {
     F t;
     F gauss_norm;
     F inv_sigma2;
+
+    PixelInfoConstIterator begin() const { return first_pixel_info; }
+    PixelInfoConstIterator end() const { return last_pixel_info; }
   };
 
   struct PixelKernelInfo {
@@ -56,6 +59,8 @@ template <typename FType, typename SType> class LMReconstruction {
         n_pixels(geometry.grid.n_pixels),
         system_matrix_(false),
         sigma_(sigma),
+        gauss_norm_dl_(1 / (sigma * std::sqrt(2 * M_PI))),
+        inv_sigma2_dl_(1 / (2 * sigma * sigma)),
         rho_(geometry.grid.n_rows, geometry.grid.n_columns, 1),
         sensitivity_(geometry.grid.n_rows, geometry.grid.n_columns),
         n_threads_(omp_get_max_threads()),
@@ -123,6 +128,11 @@ template <typename FType, typename SType> class LMReconstruction {
     return *this;
   }
 
+  F kernel_l(const BarrelEvent& event, const PixelInfo& pixel_info) const {
+    auto diff_t = pixel_info.t - event.t;
+    return gauss_norm_dl_ * compat::exp(-diff_t * diff_t * inv_sigma2_dl_);
+  }
+
   int operator()() {
     event_count_ = 0;
     voxel_count_ = 0;
@@ -149,20 +159,14 @@ template <typename FType, typename SType> class LMReconstruction {
 
       // -- voxel loop - denominator -------------------------------------------
       double denominator = 0;
-      for (auto it = event.first_pixel_info; it != event.last_pixel_info;
-           ++it) {
+      for (const auto& pixel_info : event) {
         pixel_count_++;
-        auto pixel = it->pixel;
+        auto pixel = pixel_info.pixel;
 
         int index = grid.index(pixel.x, pixel.y);
-        double kernel_z = it->weight / sensitivity_[index];
+        double kernel_z = pixel_info.weight / sensitivity_[index];
 
-        auto gauss_norm_dl = 1 / (sigma_ * std::sqrt(2 * M_PI));
-        auto inv_sigma2_dl = 1 / (2 * sigma_ * sigma_);
-
-        F kernel_l = gauss_norm_dl * exp(-(it->t - event.t) *
-                                         (it->t - event.t) * inv_sigma2_dl);
-        F weight = kernel_l * kernel_z * rho_[index];
+        F weight = kernel_l(event, pixel_info) * kernel_z * rho_[index];
 
         thread_kernel_caches_[thread][index] = weight;
 
@@ -178,10 +182,8 @@ template <typename FType, typename SType> class LMReconstruction {
       }
 
       // -- voxel loop ---------------------------------------------------------
-      for (auto it = event.first_pixel_info; it != event.last_pixel_info;
-           ++it) {
-        auto pixel = it->pixel;
-
+      for (const auto& pixel_info : event) {
+        auto pixel = pixel_info.pixel;
         int index = grid.index(pixel.x, pixel.y);
 
         thread_rhos_[thread][index] +=
@@ -250,6 +252,8 @@ template <typename FType, typename SType> class LMReconstruction {
   bool system_matrix_;
   std::vector<BarrelEvent> events_;
   F sigma_;
+  F gauss_norm_dl_;
+  F inv_sigma2_dl_;
 
   Output rho_;
   Output sensitivity_;

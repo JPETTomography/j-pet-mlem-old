@@ -55,6 +55,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     S last_plane;
     F gauss_norm;
     F inv_sigma2;
+
+    PixelInfoConstIterator begin() const { return first_pixel_info; }
+    PixelInfoConstIterator end() const { return last_pixel_info; }
   };
 
   struct VoxelKernelInfo {
@@ -218,10 +221,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
       // -- voxel loop - denominator -------------------------------------------
       double denominator = 0;
-      for (auto it = event.first_pixel_info; it != event.last_pixel_info;
-           ++it) {
+      for (const auto& pixel_info : event) {
         pixel_count_++;
-        auto pixel = it->pixel;
+        auto pixel = pixel_info.pixel;
         auto ix = pixel.x;
         auto iy = pixel.y;
 
@@ -236,7 +238,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
           auto diff = Point2D(up, z) - Point2D(event.up, event.right);
           auto kernel2d = kernel_(
               event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
-          auto kernel_z = it->weight;
+          auto kernel_z = pixel_info.weight;
           auto weight = kernel2d * kernel_z * rho_[index] /
                         sensitivity_[grid.index(ix, iy)];
 
@@ -253,9 +255,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       }
 
       // -- voxel loop ---------------------------------------------------------
-      for (auto it = event.first_pixel_info; it != event.last_pixel_info;
-           ++it) {
-        auto pixel = it->pixel;
+      for (const auto& pixel_info : event) {
+        auto pixel = pixel_info.pixel;
         auto ix = pixel.x;
         auto iy = pixel.y;
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
@@ -290,8 +291,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     auto lor = event.lor;
     graphics.add(scanner.barrel, lor);
     graphics.add(geometry[lor].segment);
-    for (auto it = event.first_pixel_info; it != event.last_pixel_info; ++it) {
-      graphics.add_pixel(geometry.grid, it->pixel);
+    for (const auto& pixel_info : event) {
+      graphics.add_pixel(geometry.grid, pixel_info.pixel);
     }
   }
 
