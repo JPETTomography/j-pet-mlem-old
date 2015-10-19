@@ -64,6 +64,7 @@ void run(Scanner<F, short>& scanner,
   for (int i = 0; i < scanner.total_n_pixels; ++i) {
     rho[i] = 100;
   }
+  rho.copy_to_device();
 
   // this class allocated CUDA pointers and deallocated them in destructor
   GPU::ResponsesSOA<F> responses_soa(responses, n_responses);
@@ -79,7 +80,6 @@ void run(Scanner<F, short>& scanner,
       progress(ib * n_iterations_in_block + it, false);
 
       output_rho.zero_on_device();
-      rho.copy_to_device();
 
 #if __CUDACC__
 #define reconstruction reconstruction<Kernel><<<blocks, threads>>>
@@ -111,7 +111,7 @@ void run(Scanner<F, short>& scanner,
       }
 
 #else
-      rho.copy_from_device(output_rho);
+      rho = output_rho;
 #endif
       progress(ib * n_iterations_in_block + it, true);
 
@@ -123,6 +123,7 @@ void run(Scanner<F, short>& scanner,
       }
     }
 
+    rho.copy_from_device();
     output((ib + 1) * n_iterations_in_block, rho.host_ptr);
   }
 

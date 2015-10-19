@@ -131,7 +131,9 @@ void run<Scanner>(
            rng_state,
            pixel_hits);
 
-    pixel_hits.sync_copy_from_device();
+    cudaThreadSynchronize();
+
+    pixel_hits.copy_from_device();
 
     for (int lor_index = 0; lor_index < n_lors; ++lor_index) {
       auto lor = lor_map[lor_index];

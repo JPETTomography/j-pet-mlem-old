@@ -137,7 +137,7 @@ void run(const SimpleGeometry& geometry,
       progress(ib * n_iterations_in_block + it, true);
     }
 
-    rho.sync_copy_from_device();
+    rho.copy_from_device();
     output((ib + 1) * n_iterations_in_block, rho.host_ptr);
   }
 
