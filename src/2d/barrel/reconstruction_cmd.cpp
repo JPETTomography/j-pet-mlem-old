@@ -144,6 +144,15 @@ int main(int argc, char* argv[]) {
                         : output_base_name + "_sensitivity";
           util::png_writer png(fn + ".png");
           png.write(n_pixels_in_row, n_pixels_in_row, output);
+          std::ofstream txt(fn + ".txt");
+          for (int i = 0; i < n_pixels_in_row * n_pixels_in_row; ++i) {
+            txt << output[i];
+            if ((i + 1) % n_pixels_in_row == 0) {
+              txt << "\n";
+            } else {
+              txt << " ";
+            }
+          }
         },
         [&](int completed, bool finished) { progress(completed, finished); },
         cl.get<int>("cuda-device"),
