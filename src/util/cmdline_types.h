@@ -31,9 +31,10 @@ class path : public std::string {
   }
 
   path add_index(int index, int max) const {
+    // NOTE: This assumes index is <= max (not index < max).
     int n_digits = 1;
     int max_for_digits = 10;
-    while (max_for_digits < max) {
+    while (max_for_digits <= max) {
       ++n_digits;
       max_for_digits *= 10;
     }
