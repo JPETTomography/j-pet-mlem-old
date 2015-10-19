@@ -210,6 +210,13 @@ void add_reconstruction_options(cmdline::parser& cl) {
   // additional options
   cl.add("verbose", 'v', "prints the iterations information on std::out");
 
+#if HAVE_CUDA
+  cl.add("gpu", 'G', "run on GPU (via CUDA)");
+  cl.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
+  cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 64);
+  cl.add<int>(
+      "cuda-threads", 'W', "CUDA threads per block", cmdline::dontsave, 512);
+#endif
 #if _OPENMP
   cl.add<int>("n-threads", 'T', "number of OpenMP threads", false);
 #endif

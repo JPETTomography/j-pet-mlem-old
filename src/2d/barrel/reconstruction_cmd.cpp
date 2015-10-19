@@ -46,7 +46,15 @@
 #include <omp.h>
 #endif
 
+#if HAVE_CUDA
+#include "cuda/reconstruction.h"
+#include "simple_geometry.h"
+#endif
+
 using Reconstruction = PET2D::Barrel::Reconstruction<F, S, Hit>;
+#if HAVE_CUDA
+using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
+#endif
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -113,16 +121,60 @@ int main(int argc, char* argv[]) {
   }
 
   auto output = cl.get<cmdline::path>("output");
-  std::ofstream out_rho(output);
+  auto output_base_name = output.wo_ext();
 
   util::progress progress(verbose, n_blocks * n_iterations, 1);
-  for (int block = 0; block < n_blocks; ++block) {
-    reconstruction(progress, n_iterations, block * n_iterations);
-    out_rho << reconstruction.rho();
+
+  const int n_file_digits = n_blocks * n_iterations >= 1000
+                                ? 4
+                                : n_blocks * n_iterations >= 100
+                                      ? 3
+                                      : n_blocks * n_iterations >= 10 ? 2 : 1;
+
+#if HAVE_CUDA
+  if (cl.exist("gpu")) {
+    SimpleGeometry geometry(matrix);
+    PET2D::Barrel::GPU::Reconstruction::run(
+        geometry,
+        reconstruction.means().data(),
+        reconstruction.means().size(),
+        n_pixels_in_row,
+        n_pixels_in_row,
+        n_blocks,
+        n_iterations,
+        [&](int iteration, float* output) {
+          std::stringstream fn;
+          fn << output_base_name << "_";  // phantom_
+          if (iteration >= 0) {
+            fn << std::setw(n_file_digits)    //
+               << std::setfill('0')           //
+               << iteration << std::setw(0);  // 001
+          } else {
+            fn << "sensitivity";
+          }
+
+          util::png_writer png(fn.str() + ".png");
+          png.write(n_pixels_in_row, n_pixels_in_row, output);
+        },
+        [&](int completed, bool finished) { progress(completed, finished); },
+        cl.get<int>("cuda-device"),
+        cl.get<int>("cuda-blocks"),
+        cl.get<int>("cuda-threads"),
+        [](const char* device_name) {
+          std::cerr << "   CUDA device = " << device_name << std::endl;
+        });
+  } else
+#endif
+  {
+    std::ofstream out_rho(output);
+    for (int block = 0; block < n_blocks; ++block) {
+      reconstruction(progress, n_iterations, block * n_iterations);
+      out_rho << reconstruction.rho();
+    }
   }
 
   if (use_sensitivity) {
-    std::ofstream out_sensitivity(output.wo_ext() + "_sensitivity" +
+    std::ofstream out_sensitivity(output_base_name + "_sensitivity" +
                                   output.ext());
     int n_row = 0;
     for (auto& scale : reconstruction.scale()) {
@@ -139,15 +191,15 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    util::png_writer png(output.wo_ext() + "_sensitivity.png");
+    util::png_writer png(output_base_name + "_sensitivity.png");
     png << reconstruction.sensitivity();
   }
 
   // output reconstruction PNG
-  util::png_writer png(output.wo_ext() + ".png", cl.get<double>("png-max"));
+  util::png_writer png(output_base_name + ".png", cl.get<double>("png-max"));
   png << reconstruction.rho();
 
-  util::png_writer png_detected(output.wo_ext() + "_detected.png",
+  util::png_writer png_detected(output_base_name + "_detected.png",
                                 cl.get<double>("png-max"));
   png_detected << reconstruction.rho_detected();
 
