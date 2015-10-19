@@ -35,6 +35,8 @@ class Reconstruction {
     S position;
     Hit mean;
   } Mean;
+
+#if !__CUDACC__
   using Means = std::vector<Mean>;
   using Output = PET2D::PixelMap<Pixel, F>;
   using Sensitivity = PET2D::PixelMap<Pixel, Hit>;
@@ -218,6 +220,7 @@ class Reconstruction {
     return rho_detected;
   }
   const Output& scale() const { return scale_; }
+  const Means& means() const { return means_; }
 
  private:
   Size pixel_index(const Pixel& p) const {
@@ -243,6 +246,7 @@ class Reconstruction {
       return a.lor < b.lor || (a.lor == b.lor && a.position < b.position);
     }
   };
+#endif
 };
 }  // Barrel
 }  // PET2D
