@@ -101,18 +101,16 @@ int main(int argc, char* argv[]) {
   }
 
   auto n_blocks = cl.get<int>("blocks");
-  auto n_iter = cl.get<int>("iterations");
+  auto n_iterations_in_block = cl.get<int>("iterations");
+  auto n_iterations = n_blocks * n_iterations_in_block;
 
   for (int block = 0; block < n_blocks; ++block) {
-    for (int i = 0; i < n_iter; i++) {
-      std::cout << block * n_iter + i << " " << reconstruction() << "\n";
+    for (int i = 0; i < n_iterations_in_block; i++) {
+      std::cout << block * n_iterations_in_block + i << " " << reconstruction()
+                << "\n";
     }
-    char rho_file_name[64];
-    sprintf(rho_file_name,
-            "%s_%03d.bin",
-            output_base_name.c_str(),
-            (block + 1) * n_iter);
-    util::obstream out(rho_file_name);
+    util::obstream out(output_base_name.add_index(
+        (block + 1) * n_iterations_in_block, n_iterations));
     out << reconstruction.rho();
   }
   std::cout << reconstruction.event_count() << " "

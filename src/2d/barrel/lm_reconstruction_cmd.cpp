@@ -171,30 +171,22 @@ int main(int argc, char* argv[]) {
   }
 
   auto n_blocks = cl.get<int>("blocks");
-  auto n_iterations = cl.get<int>("iterations");
+  auto n_iterations_in_block = cl.get<int>("iterations");
+  auto n_iterations = n_blocks * n_iterations_in_block;
 
-  const int n_file_digits = n_blocks * n_iterations >= 1000
-                                ? 4
-                                : n_blocks * n_iterations >= 100
-                                      ? 3
-                                      : n_blocks * n_iterations >= 10 ? 2 : 1;
-
-  util::progress progress(verbose, n_blocks * n_iterations, 1);
+  util::progress progress(verbose, n_iterations, 1);
 
   for (int block = 0; block < n_blocks; ++block) {
-    for (int i = 0; i < n_iterations; i++) {
-      progress(block * n_iterations + i);
+    for (int i = 0; i < n_iterations_in_block; i++) {
+      progress(block * n_iterations_in_block + i);
       reconstruction();
-      progress(block * n_iterations + i, true);
+      progress(block * n_iterations_in_block + i, true);
     }
-    std::stringstream fn;
-    fn << output_base_name << "_"      // phantom_
-       << std::setw(n_file_digits)     //
-       << std::setfill('0')            //
-       << (block + 1) * n_iterations;  // 001
-    util::obstream out(fn.str() + ".bin");
+    auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
+                                         n_iterations);
+    util::obstream out(fn + ".bin");
     out << reconstruction.rho();
-    util::png_writer png(fn.str() + ".png");
+    util::png_writer png(fn + ".png");
     png << reconstruction.rho();
   }
 

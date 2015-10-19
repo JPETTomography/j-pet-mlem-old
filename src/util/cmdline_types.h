@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <sstream>
+#include <iomanip>
 
 // \cond PRIVATE
 
@@ -26,6 +28,20 @@ class path : public std::string {
   path ext() const {
     auto fn_ext = ext_pos(sep_pos());
     return substr(fn_ext != std::string::npos ? fn_ext : size(), size());
+  }
+
+  path add_index(int index, int max) const {
+    int n_digits = 1;
+    int max_for_digits = 10;
+    while (max_for_digits < max) {
+      ++n_digits;
+      max_for_digits *= 10;
+    }
+    std::stringstream fn;
+    fn << *this << "_" << std::setw(n_digits)  //
+       << std::setfill('0')                    //
+       << index << std::setw(0);               // 001
+    return fn.str();
   }
 
  private:

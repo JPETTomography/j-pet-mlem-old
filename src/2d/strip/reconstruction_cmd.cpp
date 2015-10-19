@@ -20,10 +20,7 @@
 
 #include <iostream>
 #include <ostream>
-
 #include <vector>
-#include <sstream>
-#include <iomanip>
 
 #if SSE_FLUSH
 #include <xmmintrin.h>
@@ -135,18 +132,13 @@ int main(int argc, char* argv[]) {
   }
 
   auto n_blocks = cl.get<int>("blocks");
-  auto n_iterations = cl.get<int>("iterations");
+  auto n_iterations_in_block = cl.get<int>("iterations");
+  auto n_iterations = n_blocks * n_iterations_in_block;
   auto output_name = cl.get<cmdline::path>("output");
   auto output_base_name = output_name.wo_ext();
   auto output_txt = output_name.ext() == ".txt";
 
-  util::progress progress(verbose, n_blocks * n_iterations, 1);
-
-  const int n_file_digits = n_blocks * n_iterations >= 1000
-                                ? 4
-                                : n_blocks * n_iterations >= 100
-                                      ? 3
-                                      : n_blocks * n_iterations >= 10 ? 2 : 1;
+  util::progress progress(verbose, n_iterations, 1);
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
@@ -155,23 +147,17 @@ int main(int argc, char* argv[]) {
         reconstruction.responses.data(),
         reconstruction.responses.size(),
         n_blocks,
-        n_iterations,
+        n_iterations_in_block,
         [&](int iteration, F* output) {
-          std::stringstream fn;
-          fn << output_base_name << "_";  // phantom_
-          if (iteration >= 0) {
-            fn << std::setw(n_file_digits)    //
-               << std::setfill('0')           //
-               << iteration << std::setw(0);  // 001
-          } else {
-            fn << "sensitivity";
-          }
+          auto fn = iteration >= 0
+                        ? output_base_name.add_index(iteration, n_iterations)
+                        : "_sensitivity";
 
-          util::png_writer png(fn.str() + ".png");
+          util::png_writer png(fn + ".png");
           png.write(scanner.n_z_pixels, scanner.n_y_pixels, output);
 
           if (output_txt) {
-            std::ofstream txt(fn.str() + ".txt");
+            std::ofstream txt(fn + ".txt");
             txt.precision(12);
             txt << std::fixed;
             for (int y = 0; y < scanner.n_y_pixels; ++y) {
@@ -183,7 +169,7 @@ int main(int argc, char* argv[]) {
               }
             }
           } else {
-            util::obstream bin(fn.str() + ".bin");
+            util::obstream bin(fn + ".bin");
             bin.write(output, scanner.total_n_pixels);
           }
         },
@@ -205,25 +191,23 @@ int main(int argc, char* argv[]) {
     }
 
     for (int block = 0; block < n_blocks; block++) {
-      reconstruction(progress, n_iterations, block * n_iterations);
+      reconstruction(
+          progress, n_iterations_in_block, block * n_iterations_in_block);
 
       if (output_base_name.length()) {
-        std::stringstream fn;
-        fn << output_base_name << "_"      // phantom_
-           << std::setw(n_file_digits)     //
-           << std::setfill('0')            //
-           << (block + 1) * n_iterations;  // 001
+        auto fn = output_base_name.add_index(
+            (block + 1) * n_iterations_in_block, n_iterations);
 
-        util::png_writer png(fn.str() + ".png", cl.get<double>("png-max"));
+        util::png_writer png(fn + ".png", cl.get<double>("png-max"));
         reconstruction.output_bitmap(png);
 
         if (output_txt) {
-          std::ofstream txt(fn.str() + ".txt");
+          std::ofstream txt(fn + ".txt");
           txt.precision(12);
           txt << std::fixed;
           reconstruction.output_tuples(txt);
         } else {
-          util::obstream bin(fn.str() + ".bin");
+          util::obstream bin(fn + ".bin");
           reconstruction >> bin;
         }
       }

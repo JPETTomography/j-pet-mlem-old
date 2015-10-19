@@ -99,7 +99,8 @@ int main(int argc, char* argv[]) {
   }
 
   auto n_blocks = cl.get<int>("blocks");
-  auto n_iterations = cl.get<int>("iterations");
+  auto n_iterations_in_block = cl.get<int>("iterations");
+  auto n_iterations = n_blocks * n_iterations_in_block;
 
   Reconstruction reconstruction(matrix, use_sensitivity);
 
@@ -113,9 +114,10 @@ int main(int argc, char* argv[]) {
 
   // no output, just make reconstruction in place and exit!
   if (!cl.exist("output")) {
-    util::progress progress(verbose, n_blocks * n_iterations, 1);
+    util::progress progress(verbose, n_iterations, 1);
     for (int block = 0; block < n_blocks; ++block) {
-      reconstruction(progress, n_iterations, block * n_iterations);
+      reconstruction(
+          progress, n_iterations_in_block, block * n_iterations_in_block);
     }
     return 0;
   }
@@ -123,13 +125,7 @@ int main(int argc, char* argv[]) {
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();
 
-  util::progress progress(verbose, n_blocks * n_iterations, 1);
-
-  const int n_file_digits = n_blocks * n_iterations >= 1000
-                                ? 4
-                                : n_blocks * n_iterations >= 100
-                                      ? 3
-                                      : n_blocks * n_iterations >= 10 ? 2 : 1;
+  util::progress progress(verbose, n_iterations, 1);
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
@@ -141,19 +137,12 @@ int main(int argc, char* argv[]) {
         n_pixels_in_row,
         n_pixels_in_row,
         n_blocks,
-        n_iterations,
+        n_iterations_in_block,
         [&](int iteration, float* output) {
-          std::stringstream fn;
-          fn << output_base_name << "_";  // phantom_
-          if (iteration >= 0) {
-            fn << std::setw(n_file_digits)    //
-               << std::setfill('0')           //
-               << iteration << std::setw(0);  // 001
-          } else {
-            fn << "sensitivity";
-          }
-
-          util::png_writer png(fn.str() + ".png");
+          auto fn = iteration >= 0
+                        ? output_base_name.add_index(iteration, n_iterations)
+                        : output_base_name + "_sensitivity";
+          util::png_writer png(fn + ".png");
           png.write(n_pixels_in_row, n_pixels_in_row, output);
         },
         [&](int completed, bool finished) { progress(completed, finished); },
@@ -168,7 +157,8 @@ int main(int argc, char* argv[]) {
   {
     std::ofstream out_rho(output);
     for (int block = 0; block < n_blocks; ++block) {
-      reconstruction(progress, n_iterations, block * n_iterations);
+      reconstruction(
+          progress, n_iterations_in_block, block * n_iterations_in_block);
       out_rho << reconstruction.rho();
     }
   }
