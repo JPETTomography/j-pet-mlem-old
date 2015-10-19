@@ -6,11 +6,14 @@
 #include <algorithm>
 #include <type_traits>
 
+#include "lor.h"
+#include "2d/geometry/pixel.h"
+
+#if !__CUDACC__
 #include "ring_scanner.h"
 #include "sparse_matrix.h"
-#include "2d/geometry/pixel.h"
-#include "lor.h"
 #include "2d/geometry/pixel_map.h"
+#endif
 
 // This makes every iteration calculate rho-detected,
 // aka rho*sensitivity
