@@ -60,6 +60,7 @@ __global__ static void kernel_1(const PixelInfo* pixel_infos,
 
 // foreach p: count output_rho[p] *= rho[p]
 __global__ static void kernel_2(float* output_rho,
+                                const float* scale,
                                 const int width,
                                 const int height,
                                 const int n_blocks,
@@ -79,7 +80,57 @@ __global__ static void kernel_2(float* output_rho,
     }
     Pixel pixel(pixel_index % width, pixel_index / width);
     // there is no collision there, so we don't need atomics
-    output_rho[pixel_index] *= tex2D(tex_rho, pixel.x, pixel.y);
+    output_rho[pixel_index] *=
+        tex2D(tex_rho, pixel.x, pixel.y) * scale[pixel_index];
+  }
+}
+
+// calculates sensitivity out of given pixel_infos
+__global__ static void sensitivity_kernel(const PixelInfo* pixel_infos,
+                                          const size_t n_pixel_infos,
+                                          float* output,
+                                          const int width,
+                                          const int n_blocks,
+                                          const int n_threads_per_block) {
+
+  const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+
+  const auto n_threads = n_blocks * n_threads_per_block;
+  const auto n_chunks = (n_pixel_infos + n_threads - 1) / n_threads;
+
+  for (int chunk = 0; chunk < n_chunks; ++chunk) {
+    int index = chunk * n_threads + tid;
+    // check if we are still on the list
+    if (index >= n_pixel_infos) {
+      break;
+    }
+    PixelInfo pixel_info = pixel_infos[index];
+    auto pixel = pixel_info.pixel;
+    atomicAdd(&output[pixel.y * width + pixel.x], pixel_info.weight);
+  }
+}
+
+// inverts values in input_output
+__global__ static void invert_kernel(float* input_output,
+                                     const size_t size,
+                                     const int n_blocks,
+                                     const int n_threads_per_block) {
+
+  const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+
+  const auto n_threads = n_blocks * n_threads_per_block;
+  const auto n_chunks = (size + n_threads - 1) / n_threads;
+
+  for (int chunk = 0; chunk < n_chunks; ++chunk) {
+    int index = chunk * n_threads + tid;
+    // check if we are still on the list
+    if (index >= size) {
+      break;
+    }
+    auto input = input_output[index];
+    if (input > 0) {
+      input_output[index] = 1 / input;
+    }
   }
 }
 
@@ -123,6 +174,22 @@ void run(const SimpleGeometry& geometry,
   }
   rho.copy_to_device();
 
+  util::cuda::on_device<F> scale((size_t)width * height);
+#if __CUDACC__
+#define sensitivity_kernel sensitivity_kernel<<<blocks, threads>>>
+#define invert_kernel invert_kernel<<<blocks, threads>>>
+#endif
+  scale.zero_on_device();
+  sensitivity_kernel(device_pixel_infos,
+                     geometry.n_pixel_infos,
+                     scale,
+                     width,
+                     n_blocks,
+                     n_threads_per_block);
+  cudaThreadSynchronize();
+  invert_kernel(scale, width * height, n_blocks, n_threads_per_block);
+  cudaThreadSynchronize();
+
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {
       progress(ib * n_iterations_in_block + it, false);
@@ -146,7 +213,7 @@ void run(const SimpleGeometry& geometry,
 
       cudaThreadSynchronize();
 
-      kernel_2(output_rho, width, height, n_blocks, n_threads_per_block);
+      kernel_2(output_rho, scale, width, height, n_blocks, n_threads_per_block);
 
       cudaThreadSynchronize();
 
