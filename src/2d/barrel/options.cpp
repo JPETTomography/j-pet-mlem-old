@@ -157,6 +157,8 @@ void add_phantom_options(cmdline::parser& cl) {
       "tof-step", 't', "TOF quantisation step for distance delta", false);
   cl.add<double>("s-dl", 0, "TOF sigma delta-l", cmdline::alwayssave, 0.06);
   cl.add("bin", 0, "ouput number of hits in each lor position");
+  cl.add<double>(
+      "scale", 0, "Scale phantom with given constant", cmdline::alwayssave, 1);
 
   cl.add<std::string>(
       "model",

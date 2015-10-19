@@ -104,10 +104,10 @@ int main(int argc, char* argv[]) {
               << std::endl;
   }
 
-  Phantom phantom;
+  Phantom phantom(cl.get<double>("scale"));
   for (auto& fn : cl.rest()) {
-    std::ifstream infile(fn);
-    phantom.read_from_stream(infile);
+    std::ifstream in_phantom(fn);
+    phantom << in_phantom;
   }
 
   phantom.calculate_cdf();

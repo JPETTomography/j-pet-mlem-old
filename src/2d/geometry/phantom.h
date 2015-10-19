@@ -93,13 +93,15 @@ template <class RNGClass, typename FType> class Phantom {
   RegionPtrList regions;
   std::vector<F> CDF;
 
+  F scale;
   std::uniform_real_distribution<F> uniform;
   std::uniform_real_distribution<F> uniform_angle;
 
  public:
-  Phantom() : uniform_angle(-1, 1) {}
+  Phantom(const F scale = 1) : scale(scale), uniform_angle(-1, 1) {}
 
-  Phantom(const RegionPtrList& el) : uniform_angle(-1, 1), regions(el) {
+  Phantom(const RegionPtrList& el, const F scale = 1)
+      : scale(scale), uniform_angle(-1, 1), regions(el) {
     calculate_cdf();
   }
 
@@ -120,10 +122,10 @@ template <class RNGClass, typename FType> class Phantom {
 
   void push_back_region(Region* region) { regions.push_back(region); }
 
-  int read_from_stream(std::istream& infile) {
+  std::istream& operator<<(std::istream& in) {
     std::string line;
     int count = 0;
-    while (std::getline(infile, line)) {
+    while (std::getline(in, line)) {
       std::istringstream iss(line);
       std::string type;
       iss >> type;
@@ -134,7 +136,8 @@ template <class RNGClass, typename FType> class Phantom {
         if (!(iss >> x >> y >> a >> b >> angle >> acceptance))
           break;
 
-        Ellipse<F> el(x, y, a, b, angle * RADIAN);
+        Ellipse<F> el(
+            x * scale, y * scale, a * scale, b * scale, angle * RADIAN);
 
         auto region = new EllipticalRegion(el, acceptance);
         push_back_region(region);
@@ -146,7 +149,7 @@ template <class RNGClass, typename FType> class Phantom {
         if (!(iss >> x >> y >> a >> b >> acceptance))
           break;
 
-        Rectangle<F> rec(x, y, a, b);
+        Rectangle<F> rec(x * scale, y * scale, a * scale, b * scale);
 
         auto region = new RectangularRegion(rec, acceptance);
         push_back_region(region);
@@ -155,7 +158,7 @@ template <class RNGClass, typename FType> class Phantom {
         throw("unknown phantom type: " + type);
       }
     }
-    return count;
+    return in;
   }
 
   size_t choose_region(RNG& rng) {

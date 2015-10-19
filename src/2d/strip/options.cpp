@@ -80,6 +80,8 @@ void add_reconstruction_options(cmdline::parser& cl) {
 void add_phantom_options(cmdline::parser& cl) {
   add_scanner_options(cl);
   add_common_options(cl);
+  cl.add<double>(
+      "scale", 0, "Scale phantom with given constant", cmdline::alwayssave, 1);
 
   cl.footer("phantom_description");
   cl.add<cmdline::path>("output",
