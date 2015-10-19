@@ -13,20 +13,18 @@ namespace Reconstruction {
 
 texture<float, 2, cudaReadModeElementType> tex_rho;
 
-__global__ static void kernel(const PixelInfo* pixel_infos,
-                              const size_t* lor_pixel_info_start,
-                              const size_t* lor_pixel_info_end,
-                              const Mean* means,
-                              const int n_means,
-                              float* output_rho,
-                              const int width,
-                              const int height,
-                              const int n_blocks,
-                              const int n_threads_per_block) {
+// foreach p: count y[p] and store it in output_rho[p]
+__global__ static void kernel_1(const PixelInfo* pixel_infos,
+                                const size_t* lor_pixel_info_start,
+                                const size_t* lor_pixel_info_end,
+                                const Mean* means,
+                                const int n_means,
+                                float* output_rho,
+                                const int width,
+                                const int n_blocks,
+                                const int n_threads_per_block) {
 
   const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
-
-  // count output_rho[p] = y[p] -----------------------------------------------
 
   const auto n_threads = n_blocks * n_threads_per_block;
   const auto n_chunks = (n_means + n_threads - 1) / n_threads;
@@ -58,21 +56,30 @@ __global__ static void kernel(const PixelInfo* pixel_infos,
                 phi * pixel_info.weight);
     }
   }
+}
 
-  // count output_rho[p] *= rho[p] --------------------------------------------
+// foreach p: count output_rho[p] *= rho[p]
+__global__ static void kernel_2(float* output_rho,
+                                const int width,
+                                const int height,
+                                const int n_blocks,
+                                const int n_threads_per_block) {
 
+  const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+
+  const auto n_threads = n_blocks * n_threads_per_block;
   const auto n_pixels = width * height;
   const auto n_pixel_chunks = (n_pixels + n_threads - 1) / n_threads;
 
   for (int chunk = 0; chunk < n_pixel_chunks; ++chunk) {
     int pixel_index = chunk * n_threads + tid;
-    Pixel pixel(pixel_index % width, pixel_index / width);
     // check if we are still on the list
     if (pixel_index >= n_pixels) {
       break;
     }
+    Pixel pixel(pixel_index % width, pixel_index / width);
     // there is no collision there, so we don't need atomics
-    output_rho[pixel.y * width + pixel.x] *= tex2D(tex_rho, pixel.x, pixel.y);
+    output_rho[pixel_index] *= tex2D(tex_rho, pixel.x, pixel.y);
   }
 }
 
@@ -111,7 +118,10 @@ void run(const SimpleGeometry& geometry,
   util::cuda::memory2D<F> rho(tex_rho, width, height);
   util::cuda::on_device<F> output_rho((size_t)width * height);
 
-  rho.set_on_device(1);
+  for (auto& v : rho) {
+    v = 1;
+  }
+  rho.copy_to_device();
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {
@@ -120,18 +130,25 @@ void run(const SimpleGeometry& geometry,
       output_rho.zero_on_device();
 
 #if __CUDACC__
-#define kernel kernel<<<blocks, threads>>>
+#define kernel_1 kernel_1<<<blocks, threads>>>
+#define kernel_2 kernel_2<<<blocks, threads>>>
 #endif
-      kernel(device_pixel_infos,
-             device_lor_pixel_info_start,
-             device_lor_pixel_info_end,
-             device_means,
-             n_means,
-             output_rho,
-             width,
-             height,
-             n_blocks,
-             n_threads_per_block);
+
+      kernel_1(device_pixel_infos,
+               device_lor_pixel_info_start,
+               device_lor_pixel_info_end,
+               device_means,
+               n_means,
+               output_rho,
+               width,
+               n_blocks,
+               n_threads_per_block);
+
+      cudaThreadSynchronize();
+
+      kernel_2(output_rho, width, height, n_blocks, n_threads_per_block);
+
+      cudaThreadSynchronize();
 
       rho = output_rho;
       progress(ib * n_iterations_in_block + it, true);
