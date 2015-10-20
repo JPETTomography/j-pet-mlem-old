@@ -75,7 +75,8 @@ file(GLOB COMMON
   src/util/png_writer.cpp
   src/util/cmdline_hooks.cpp
   src/util/backtrace.cpp
-  src/common/*.h)
+  src/common/*.h
+  src/common/options.cpp)
 
 # OpenMP support
 find_package(OpenMP)

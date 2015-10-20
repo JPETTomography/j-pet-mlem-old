@@ -181,18 +181,24 @@ int main(int argc, char* argv[]) {
 
   util::progress progress(verbose, n_iterations, 1);
 
-  for (int block = 0; block < n_blocks; ++block) {
-    for (int i = 0; i < n_iterations_in_block; i++) {
-      progress(block * n_iterations_in_block + i);
-      reconstruction();
-      progress(block * n_iterations_in_block + i, true);
+#if HAVE_CUDA
+  if (true) {
+  } else
+#endif
+  {
+    for (int block = 0; block < n_blocks; ++block) {
+      for (int i = 0; i < n_iterations_in_block; i++) {
+        progress(block * n_iterations_in_block + i);
+        reconstruction();
+        progress(block * n_iterations_in_block + i, true);
+      }
+      auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
+                                           n_iterations);
+      util::obstream out(fn + ".bin");
+      out << reconstruction.rho();
+      util::png_writer png(fn + ".png");
+      png << reconstruction.rho();
     }
-    auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
-                                         n_iterations);
-    util::obstream out(fn + ".bin");
-    out << reconstruction.rho();
-    util::png_writer png(fn + ".png");
-    png << reconstruction.rho();
   }
 
   CMDLINE_CATCH

@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "cmdline.h"
+#include "common/options.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 #include "util/variant.h"
@@ -39,9 +39,8 @@ static void add_common_options(cmdline::parser& cl) {
               0,
               cmdline::not_from_file);
   cl.add("verbose", 'v', "print progress information (-v) or benchmark (-vv)");
-#if _OPENMP
-  cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
-#endif
+
+  Common::add_openmp_options(cl);
 }
 
 void add_reconstruction_options(cmdline::parser& cl) {
@@ -68,13 +67,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
                         cmdline::not_from_file);
   cl.add<double>("png-max", 0, "maximum value mapped to 255 in PNG", false, 0);
 
-#if HAVE_CUDA
-  cl.add("gpu", 'G', "run on GPU (via CUDA)");
-  cl.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
-  cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 32);
-  cl.add<int>(
-      "cuda-threads", 'W', "CUDA threads per block", cmdline::dontsave, 512);
-#endif
+  Common::add_cuda_options(cl);
 }
 
 void add_phantom_options(cmdline::parser& cl) {

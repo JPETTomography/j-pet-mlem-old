@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "cmdline.h"
+#include "common/options.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 #include "util/variant.h"
@@ -125,16 +125,8 @@ void add_matrix_options(cmdline::parser& cl) {
   cl.add<util::random::tausworthe::seed_type>(
       "seed", 'S', "random number generator seed", cmdline::dontsave);
 
-#if HAVE_CUDA
-  cl.add("gpu", 'G', "run on GPU (via CUDA)");
-  cl.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
-  cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 64);
-  cl.add<int>(
-      "cuda-threads", 'W', "CUDA threads per block", cmdline::dontsave, 512);
-#endif
-#if _OPENMP
-  cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
-#endif
+  Common::add_cuda_options(cl);
+  Common::add_openmp_options(cl);
 }
 
 void add_phantom_options(cmdline::parser& cl) {
@@ -189,9 +181,7 @@ void add_phantom_options(cmdline::parser& cl) {
   cl.add<std::mt19937::result_type>(
       "seed", 'S', "random number generator seed", cmdline::dontsave);
 
-#if _OPENMP
-  cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
-#endif
+  Common::add_openmp_options(cl);
 }
 
 static void add_iteration_options(cmdline::parser& cl) {
@@ -212,16 +202,8 @@ void add_reconstruction_options(cmdline::parser& cl) {
   // additional options
   cl.add("verbose", 'v', "prints the iterations information on std::out");
 
-#if HAVE_CUDA
-  cl.add("gpu", 'G', "run on GPU (via CUDA)");
-  cl.add<int>("cuda-device", 'D', "CUDA device", cmdline::dontsave, 0);
-  cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 64);
-  cl.add<int>(
-      "cuda-threads", 'W', "CUDA threads per block", cmdline::dontsave, 512);
-#endif
-#if _OPENMP
-  cl.add<int>("n-threads", 'T', "number of OpenMP threads", false);
-#endif
+  Common::add_cuda_options(cl);
+  Common::add_openmp_options(cl);
 }
 
 void add_lm_reconstruction_options(cmdline::parser& cl) {
@@ -243,9 +225,8 @@ void add_lm_reconstruction_options(cmdline::parser& cl) {
   // additional options
   cl.add("verbose", 'v', "prints the iterations information on std::out");
 
-#if _OPENMP
-  cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
-#endif
+  Common::add_cuda_options(cl);
+  Common::add_openmp_options(cl);
 }
 
 void calculate_scanner_options(cmdline::parser& cl, int argc) {
