@@ -1,10 +1,12 @@
 #pragma once
 
-#include "2d/barrel/geometry.h"
 #include "2d/barrel/detector_set.h"
 #include "2d/geometry/point.h"
 #include "2d/barrel/lor.h"
 #include "2d/geometry/pixel_map.h"
+#if !__CUDACC__
+#include "2d/barrel/geometry.h"
+#endif
 
 #if _OPENMP
 #include <omp.h>
@@ -27,27 +29,26 @@ template <typename FType, typename SType> class LMReconstruction {
   using Response = typename Scanner2D::Response;
   using Point = PET2D::Point<F>;
   using LOR = PET2D::Barrel::LOR<S>;
+
+  struct Event {
+    LOR lor;
+    F t;
+#if FULL_EVENT_INFO
+    Point p;
+    F gauss_norm;
+    F inv_sigma2;
+#endif
+    size_t first_pixel_info_index;
+    size_t last_pixel_info_index;
+  };
+
+#if !__CUDACC__
   using Geometry = PET2D::Barrel::Geometry<F, S>;
   using LORGeometry = typename Geometry::LORGeometry;
   using Pixel = typename Geometry::Pixel;
   using PixelInfo = typename Geometry::PixelInfo;
-  using PixelInfoConstIterator =
-      typename LORGeometry::PixelInfoList::const_iterator;
   using RawOutput = std::vector<F>;
   using Output = PET2D::PixelMap<Pixel, F>;
-
-  struct BarrelEvent {
-    LOR lor;
-    Point p;
-    PixelInfoConstIterator first_pixel_info;
-    PixelInfoConstIterator last_pixel_info;
-    F t;
-    F gauss_norm;
-    F inv_sigma2;
-
-    PixelInfoConstIterator begin() const { return first_pixel_info; }
-    PixelInfoConstIterator end() const { return last_pixel_info; }
-  };
 
   struct PixelKernelInfo {
     S ix, iy;
@@ -74,38 +75,44 @@ template <typename FType, typename SType> class LMReconstruction {
 
   F sigma_w(F width) const { return 0.3 * width; }
 
-  BarrelEvent to_event(const Response& response) {
-    BarrelEvent event;
+  Event to_event(const Response& response) {
+    Event event;
     event.lor = response.lor;
 
     auto& segment = geometry[response.lor].segment;
 
+#if FULL_EVENT_INFO
     auto width = geometry[event.lor].width;
     event.gauss_norm = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
     event.inv_sigma2 = 1 / (2 * sigma_w(width) * sigma_w(width));
-
+#endif
     F t = 0.5 - response.dl / (2 * segment.length);
     event.t = t;
+#if FULL_EVENT_INFO
     event.p = segment.start.interpolate(segment.end, t);
+#endif
 
     PixelInfo pix_info_up, pix_info_dn;
     pix_info_up.t = t + 3 * sigma_;
     pix_info_dn.t = t - 3 * sigma_;
-    event.last_pixel_info =
-        std::upper_bound(geometry[event.lor].pixel_infos.begin(),
-                         geometry[event.lor].pixel_infos.end(),
+    const auto& lor_geometry = geometry[event.lor];
+    event.last_pixel_info_index =
+        std::upper_bound(lor_geometry.pixel_infos.begin(),
+                         lor_geometry.pixel_infos.end(),
                          pix_info_up,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
-                         });
+                         }) -
+        lor_geometry.pixel_infos.begin();
 
-    event.first_pixel_info =
-        std::lower_bound(geometry[event.lor].pixel_infos.begin(),
-                         geometry[event.lor].pixel_infos.end(),
+    event.first_pixel_info_index =
+        std::lower_bound(lor_geometry.pixel_infos.begin(),
+                         lor_geometry.pixel_infos.end(),
                          pix_info_dn,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
-                         });
+                         }) -
+        lor_geometry.pixel_infos.begin();
 
 #if SYSTEM_MATRIX
     if (system_matrix_) {
@@ -128,7 +135,7 @@ template <typename FType, typename SType> class LMReconstruction {
     return *this;
   }
 
-  F kernel_l(const BarrelEvent& event, const PixelInfo& pixel_info) const {
+  F kernel_l(const Event& event, const PixelInfo& pixel_info) const {
     auto diff_t = pixel_info.t - event.t;
     return gauss_norm_dl_ * compat::exp(-diff_t * diff_t * inv_sigma2_dl_);
   }
@@ -159,7 +166,11 @@ template <typename FType, typename SType> class LMReconstruction {
 
       // -- voxel loop - denominator -------------------------------------------
       double denominator = 0;
-      for (const auto& pixel_info : event) {
+      const auto& lor_geometry = geometry[event.lor];
+      for (auto i = event.first_pixel_info_index;
+           i < event.last_pixel_info_index;
+           ++i) {
+        const auto& pixel_info = lor_geometry.pixel_infos[i];
         pixel_count_++;
         auto pixel = pixel_info.pixel;
 
@@ -182,7 +193,10 @@ template <typename FType, typename SType> class LMReconstruction {
       }
 
       // -- voxel loop ---------------------------------------------------------
-      for (const auto& pixel_info : event) {
+      for (auto i = event.first_pixel_info_index;
+           i < event.last_pixel_info_index;
+           ++i) {
+        const auto& pixel_info = lor_geometry.pixel_infos[i];
         auto pixel = pixel_info.pixel;
         int index = grid.index(pixel.x, pixel.y);
 
@@ -241,7 +255,7 @@ template <typename FType, typename SType> class LMReconstruction {
 
   const Output& sensitivity() const { return sensitivity_; }
 
-  BarrelEvent event(int i) const { return events_[i]; }
+  Event event(int i) const { return events_[i]; }
 
   size_t n_events() const { return events_.size(); }
 
@@ -250,7 +264,7 @@ template <typename FType, typename SType> class LMReconstruction {
 
  private:
   bool system_matrix_;
-  std::vector<BarrelEvent> events_;
+  std::vector<Event> events_;
   F sigma_;
   F gauss_norm_dl_;
   F inv_sigma2_dl_;
@@ -265,6 +279,7 @@ template <typename FType, typename SType> class LMReconstruction {
   std::vector<RawOutput> thread_rhos_;
   std::vector<RawOutput> thread_kernel_caches_;
   std::vector<int> n_events_per_thread_;
+#endif
 };
 
 }  // Barrel

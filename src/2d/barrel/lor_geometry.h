@@ -1,8 +1,6 @@
 #pragma once
 
-#if !__CUDACC__
 #include "util/bstream.h"
-#endif
 
 #include "2d/barrel/lor.h"
 #include "2d/geometry/pixel_grid.h"
@@ -44,7 +42,6 @@ template <typename FType, typename SType> struct LORGeometry {
   LORGeometry(const LOR& lor, const LineSegment& segment, const F width)
       : lor(lor), segment(segment), width(width) {}
 
-#if !__CUDACC__
   /// Construct LOR info from stream.
   LORGeometry(std::istream& in)
       : lor(in), segment(in), width(util::read<F>(in)) {
@@ -75,7 +72,6 @@ template <typename FType, typename SType> struct LORGeometry {
     out << lor_info.pixel_infos;
     return out;
   }
-#endif
 
   /// Sort Pixel infos using position along LOR.
   void sort() {

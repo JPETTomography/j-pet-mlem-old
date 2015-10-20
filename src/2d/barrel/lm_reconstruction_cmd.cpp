@@ -162,8 +162,13 @@ int main(int argc, char* argv[]) {
     auto event = reconstruction.event(event_num);
     auto lor = event.lor;
     graphics.add(scanner, lor);
+#if FULL_EVENT_INFO
     graphics.add(event.p);
-    for (const auto& pixel_info : event) {
+#endif
+    const auto& lor_geometry = geometry[event.lor];
+    for (auto i = event.first_pixel_info_index; i < event.last_pixel_info_index;
+         ++i) {
+      const auto& pixel_info = lor_geometry.pixel_infos[i];
       graphics.add_pixel(geometry.grid, pixel_info.pixel);
     }
 

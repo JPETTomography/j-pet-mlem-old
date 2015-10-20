@@ -5,6 +5,7 @@
 #if !__CUDACC__
 #include "lor_geometry.h"
 #include "sparse_matrix.h"
+#include "geometry.h"
 #endif
 
 namespace PET2D {
@@ -20,6 +21,7 @@ class SimpleGeometry {
   using LOR = PET2D::Barrel::LOR<S>;
 #if !__CUDACC__
   using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
+  using Geometry = PET2D::Barrel::Geometry<F, S>;
 #endif
 
   struct PixelInfo {
@@ -66,6 +68,23 @@ class SimpleGeometry {
       pixel_infos[index].weight =
           (F)element.hits / (F)sparse_matrix.n_emissions();
       ++index;
+    }
+  }
+
+  SimpleGeometry(const Geometry& geometry)
+      : SimpleGeometry(geometry.n_detectors(), geometry.n_pixel_infos()) {
+    size_t size = 0;
+    for (const auto& lor_geometry : geometry) {
+      const auto& lor = lor_geometry.lor;
+      auto lor_index = lor.index();
+      lor_pixel_info_start[lor_index] = size;
+      for (const auto& geometry_pixel_info : lor_geometry) {
+        auto& pixel_info = pixel_infos[size++];
+        pixel_info.pixel = geometry_pixel_info.pixel;
+        pixel_info.t = geometry_pixel_info.t;
+        pixel_info.weight = geometry_pixel_info.weight;
+      }
+      lor_pixel_info_end[lor_index] = size;
     }
   }
 #endif

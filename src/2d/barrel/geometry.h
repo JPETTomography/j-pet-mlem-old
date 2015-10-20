@@ -158,6 +158,13 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
     }
   }
 
+  size_t n_pixel_infos() const {
+    size_t total = 0;
+    for (const auto& lor_geometry : *this) {
+      total += lor_geometry.pixel_infos.size();
+    }
+  }
+
   const S n_detectors;   ///< number of detectors
   const PixelGrid grid;  ///< pixel grid description
 };
