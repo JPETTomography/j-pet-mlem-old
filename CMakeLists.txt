@@ -183,14 +183,17 @@ function(pet_target DIM TYPE CMD)
   # find all possible kernels
   file(GLOB CUDA src/${DIM}/${TYPE}/cuda/${CMD}*.cu)
   if(CUDA_FOUND AND CUDA AND NO_CUDA EQUAL -1)
+    file(GLOB CUDA_COMMON src/common/cuda/*.cu)
     # compile kernel sources
-    cuda_compile(CUDA ${CUDA})
+    cuda_compile(CUDA ${CUDA} ${CUDA_COMMON})
     # append CUDA specific headers & wrappers
     file(GLOB CUDA_HEADERS
       src/${DIM}/${TYPE}/cuda/*.h
       src/util/cuda/*.h
       src/${DIM}/${TYPE}/cuda/*.cuh
-      src/${DIM}/${TYPE}/cuda/${CMD}*.cpp)
+      src/${DIM}/${TYPE}/cuda/${CMD}*.cpp
+      src/common/cuda/*.h
+      src/common/cuda/*.cuh)
     list(APPEND CUDA ${CUDA_HEADERS})
   endif()
   # add other files

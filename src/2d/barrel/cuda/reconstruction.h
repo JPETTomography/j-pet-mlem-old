@@ -20,9 +20,9 @@ namespace GPU {
 using Point = PET2D::Point<F>;
 using Pixel = PET2D::Pixel<S>;
 using LOR = Barrel::LOR<S>;
+using Mean = Barrel::Reconstruction<F, S, Hit>::Mean;
 using SimpleGeometry = Barrel::SimpleGeometry<F, S, Hit>;
 using PixelInfo = SimpleGeometry::PixelInfo;
-using Mean = Barrel::Reconstruction<F, S, Hit>::Mean;
 
 /// \endcond
 
