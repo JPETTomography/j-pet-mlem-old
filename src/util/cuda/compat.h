@@ -33,22 +33,24 @@ namespace compat {
 
 #define _ __device__ __host__
 
-_ int min(const int a, const int b) { return ::min(a, b); }
-_ int max(const int a, const int b) { return ::max(a, b); }
-_ float min(const float a, const float b) { return fminf(a, b); }
-_ float max(const float a, const float b) { return fmaxf(a, b); }
-_ float round(const float a) { return roundf(a); }
-_ float ceil(const float a) { return ceilf(a); }
-_ float floor(const float a) { return floorf(a); }
-_ float sqrt(const float a) { return sqrtf(a); }
-_ float sin(const float a) { return sinf(a); }
-_ float cos(const float a) { return cosf(a); }
-_ float tan(const float a) { return tanf(a); }
-_ float atan(const float a) { return atanf(a); }
-_ float atan2(const float a, const float b) { return atan2f(a, b); }
-_ float pow(const float a, const float b) { return powf(a, b); }
-_ float exp(const float a) { return expf(a); }
-_ float log(const float a) { return logf(a); }
+_ static inline int min(const int a, const int b) { return ::min(a, b); }
+_ static inline int max(const int a, const int b) { return ::max(a, b); }
+_ static inline float min(const float a, const float b) { return fminf(a, b); }
+_ static inline float max(const float a, const float b) { return fmaxf(a, b); }
+_ static inline float round(const float a) { return roundf(a); }
+_ static inline float ceil(const float a) { return ceilf(a); }
+_ static inline float floor(const float a) { return floorf(a); }
+_ static inline float sqrt(const float a) { return sqrtf(a); }
+_ static inline float sin(const float a) { return sinf(a); }
+_ static inline float cos(const float a) { return cosf(a); }
+_ static inline float tan(const float a) { return tanf(a); }
+_ static inline float atan(const float a) { return atanf(a); }
+_ static inline float atan2(const float a, const float b) {
+  return atan2f(a, b);
+}
+_ static inline float pow(const float a, const float b) { return powf(a, b); }
+_ static inline float exp(const float a) { return expf(a); }
+_ static inline float log(const float a) { return logf(a); }
 
 template <typename F> _ constexpr F numeric_max();
 template <> _ constexpr float numeric_max<float>() { return FLT_MAX; }
