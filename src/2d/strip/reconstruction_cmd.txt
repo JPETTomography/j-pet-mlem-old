@@ -24,6 +24,6 @@ options:
       --png-max           maximum value mapped to 255 in PNG (float [=auto])
   -G, --gpu               run on GPU (via CUDA)
   -D, --cuda-device       CUDA device (size [=0])
-  -B, --cuda-blocks       CUDA blocks (size [=32])
+  -B, --cuda-blocks       CUDA blocks (size [=64])
   -W, --cuda-threads      CUDA threads per block (size [=512])
   -?, --help              print this message

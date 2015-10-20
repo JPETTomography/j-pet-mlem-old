@@ -12,5 +12,6 @@ options:
   -e, --n-emissions    number of emissions (size [=0])
   -v, --verbose        print progress information (-v) or benchmark (-vv)
   -T, --n-threads      number of OpenMP threads (size [=0])
+      --scale          Scale phantom with given constant (float [=1])
   -o, --output         responses file (file [=phantom.bin])
   -?, --help           print this message

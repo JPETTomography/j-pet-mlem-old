@@ -25,6 +25,7 @@ options:
   -t, --tof-step        TOF quantisation step for distance delta (float [=auto])
       --s-dl            TOF sigma delta-l (float [=0.06])
       --bin             ouput number of hits in each lor position
+      --scale           Scale phantom with given constant (float [=1])
   -m, --model           acceptance model (string [=scintillator])
   -l, --base-length     scintillator emission base length P(l)=1-e^(-1) (float [=0.1])
   -o, --output          output lor hits for supplied phantom (file [=])
