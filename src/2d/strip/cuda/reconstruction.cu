@@ -89,9 +89,7 @@ void run(Scanner<F, short>& scanner,
                      responses_soa.z_d,
                      responses_soa.dl,
                      n_responses,
-                     output_rho.device_ptr,
-                     n_blocks,
-                     n_threads_per_block);
+                     output_rho.device_ptr);
 
       cudaThreadSynchronize();
 

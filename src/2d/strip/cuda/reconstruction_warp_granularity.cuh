@@ -20,18 +20,16 @@ __global__ void reconstruction(Scanner<F, short> scanner,
                                F* reponses_z_d,
                                F* reponses_dl,
                                const int n_responses,
-                               F* output_rho,
-                               const int n_blocks,
-                               const int n_threads_per_block) {
+                               F* output_rho) {
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
   using Pixel = PET2D::Pixel<short>;
   using Response = Strip::Response<F>;
 
-  const int n_warps_per_block = n_threads_per_block / WARP_SIZE;
-  const int n_warps = n_blocks * n_warps_per_block;
-  const int max_reponses_per_warp = (n_responses + n_warps - 1) / n_warps;
-  const int warp_index = threadIdx.x / WARP_SIZE;
+  const auto n_warps_per_block = blockDim.x / WARP_SIZE;
+  const auto n_warps = gridDim.x * n_warps_per_block;
+  const auto max_reponses_per_warp = (n_responses + n_warps - 1) / n_warps;
+  const auto warp_index = threadIdx.x / WARP_SIZE;
 
 #if CACHE_ELLIPSE_PIXELS
   // gathers all pixel coordinates inside 3 sigma ellipse

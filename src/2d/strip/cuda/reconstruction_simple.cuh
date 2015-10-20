@@ -17,9 +17,7 @@ __global__ void reconstruction(Scanner<F> scanner,
                                F* responses_z_d,
                                F* responses_dl,
                                const int n_responses,
-                               F* output_rho,
-                               const int n_blocks,
-                               const int n_threads_per_block) {
+                               F* output_rho) {
   using Point = PET2D::Point<F>;
   using Pixel = PET2D::Pixel<>;
   using Response = Strip::Response<F>;
@@ -27,10 +25,9 @@ __global__ void reconstruction(Scanner<F> scanner,
   // mark variables used
   (void)(responses_dl);
 
-  int n_threads = n_blocks * n_threads_per_block;
-  int n_chunks = (n_responses + n_threads - 1) / n_threads;
-
-  int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+  const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+  const auto n_threads = gridDim.x * blockDim.x;
+  const auto n_chunks = (n_responses + n_threads - 1) / n_threads;
 
   for (int chunk = 0; chunk < n_chunks; ++chunk) {
     int i = chunk * n_threads + tid;
