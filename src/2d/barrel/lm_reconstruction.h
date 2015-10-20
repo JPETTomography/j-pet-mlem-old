@@ -140,6 +140,13 @@ template <typename FType, typename SType> class LMReconstruction {
     return gauss_norm_dl_ * compat::exp(-diff_t * diff_t * inv_sigma2_dl_);
   }
 
+  F kernel(const Event& event, const PixelInfo& pixel_info) const {
+    const auto pixel = pixel_info.pixel;
+    const auto pixel_index = geometry.grid.index(pixel);
+    const auto kernel_z = pixel_info.weight / sensitivity_[pixel_index];
+    return kernel_l(event, pixel_info) * kernel_z * rho_[pixel_index];
+  }
+
   int operator()() {
     event_count_ = 0;
     voxel_count_ = 0;
@@ -159,49 +166,39 @@ template <typename FType, typename SType> class LMReconstruction {
 #pragma omp parallel for schedule(dynamic)
 #endif
     // --- event loop ----------------------------------------------------------
-    for (int i = 0; i < (int)events_.size(); ++i) {
+    for (int event_index = 0; event_index < (int)events_.size();
+         ++event_index) {
       int thread = omp_get_thread_num();
       n_events_per_thread_[thread]++;
-      auto event = events_[i];
+      auto event = events_[event_index];
 
       // -- voxel loop - denominator -------------------------------------------
-      double denominator = 0;
+      F denominator = 0;
       const auto& lor_geometry = geometry[event.lor];
-      for (auto i = event.first_pixel_info_index;
-           i < event.last_pixel_info_index;
-           ++i) {
-        const auto& pixel_info = lor_geometry.pixel_infos[i];
+      for (auto info_index = event.first_pixel_info_index;
+           info_index < event.last_pixel_info_index;
+           ++info_index) {
         pixel_count_++;
-        auto pixel = pixel_info.pixel;
-
-        int index = grid.index(pixel.x, pixel.y);
-        double kernel_z = pixel_info.weight / sensitivity_[index];
-
-        F weight = kernel_l(event, pixel_info) * kernel_z * rho_[index];
-
-        thread_kernel_caches_[thread][index] = weight;
-
+        const auto& pixel_info = lor_geometry.pixel_infos[info_index];
+        const auto weight = kernel(event, pixel_info);
+        thread_kernel_caches_[thread][grid.index(pixel_info.pixel)] = weight;
         denominator += weight;
 
       }  // voxel loop - denominator
 
-      double inv_denominator;
-      if (denominator > 0) {
-        inv_denominator = 1 / denominator;
-      } else {
+      if (denominator == 0)
         continue;
-      }
+
+      const auto inv_denominator = 1 / denominator;
 
       // -- voxel loop ---------------------------------------------------------
-      for (auto i = event.first_pixel_info_index;
-           i < event.last_pixel_info_index;
-           ++i) {
-        const auto& pixel_info = lor_geometry.pixel_infos[i];
-        auto pixel = pixel_info.pixel;
-        int index = grid.index(pixel.x, pixel.y);
-
-        thread_rhos_[thread][index] +=
-            thread_kernel_caches_[thread][index] * inv_denominator;
+      for (auto info_index = event.first_pixel_info_index;
+           info_index < event.last_pixel_info_index;
+           ++info_index) {
+        const auto& pixel_info = lor_geometry.pixel_infos[info_index];
+        const auto pixel_index = grid.index(pixel_info.pixel);
+        thread_rhos_[thread][pixel_index] +=
+            thread_kernel_caches_[thread][pixel_index] * inv_denominator;
 
       }  // voxel loop
     }    // event loop
