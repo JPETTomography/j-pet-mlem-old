@@ -52,8 +52,8 @@ template <typename FType, typename SType> class PixelGrid {
 
   Pixel pixel_at(Point p) const {
     Vector v = p - lower_left;
-    S column = static_cast<S>(floor(v.x / pixel_size));
-    S row = static_cast<S>(floor(v.y / pixel_size));
+    S column = static_cast<S>(compat::floor(v.x / pixel_size));
+    S row = static_cast<S>(compat::floor(v.y / pixel_size));
     return Pixel(column, row);
   }
 
