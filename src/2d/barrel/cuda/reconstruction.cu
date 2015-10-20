@@ -22,103 +22,6 @@ __global__ static void reconstruction_1(const PixelInfo* pixel_infos,
                                         const Mean* means,
                                         const int n_means,
                                         float* output_rho,
-                                        const int width);
-
-// foreach p: count output_rho[p] *= rho[p]
-__global__ static void reconstruction_2(float* output_rho,
-                                        const float* scale,
-                                        const int width,
-                                        const int height);
-
-void run(const SimpleGeometry& geometry,
-         const Mean* means,
-         int n_means,
-         int width,
-         int height,
-         int n_iteration_blocks,
-         int n_iterations_in_block,
-         util::delegate<void(int iteration, float* rho)> output,
-         util::delegate<void(int completed, bool finished)> progress,
-         int device,
-         int n_blocks,
-         int n_threads_per_block,
-         util::delegate<void(const char* device_name)> info) {
-
-#if __CUDACC__
-  dim3 blocks(n_blocks);
-  dim3 threads(n_threads_per_block);
-#define KERNEL <<<blocks, threads>>>
-#else
-  (void)n_blocks, n_threads_per_block;
-#define KERNEL
-#endif
-
-  cudaSetDevice(device);
-  cudaDeviceProp prop;
-  cudaGetDeviceProperties(&prop, device);
-  info(prop.name);
-
-  util::cuda::on_device<PixelInfo> device_pixel_infos(geometry.pixel_infos,
-                                                      geometry.n_pixel_infos);
-  util::cuda::on_device<size_t> device_lor_pixel_info_start(
-      geometry.lor_pixel_info_start, geometry.n_lors);
-  util::cuda::on_device<size_t> device_lor_pixel_info_end(
-      geometry.lor_pixel_info_end, geometry.n_lors);
-  util::cuda::on_device<Mean> device_means(means, n_means);
-
-  util::cuda::memory2D<F> rho(tex_rho, width, height);
-  util::cuda::on_device<F> output_rho((size_t)width * height);
-
-  for (auto& v : rho) {
-    v = 1;
-  }
-  rho.copy_to_device();
-
-  util::cuda::on_device<F> scale((size_t)width * height);
-  scale.zero_on_device();
-
-  Common::GPU::sensitivity KERNEL(
-      device_pixel_infos, geometry.n_pixel_infos, scale, width);
-  cudaThreadSynchronize();
-
-  Common::GPU::invert KERNEL(scale, width * height);
-  cudaThreadSynchronize();
-
-  for (int ib = 0; ib < n_iteration_blocks; ++ib) {
-    for (int it = 0; it < n_iterations_in_block; ++it) {
-      progress(ib * n_iterations_in_block + it, false);
-
-      output_rho.zero_on_device();
-
-      reconstruction_1 KERNEL(device_pixel_infos,
-                              device_lor_pixel_info_start,
-                              device_lor_pixel_info_end,
-                              device_means,
-                              n_means,
-                              output_rho,
-                              width);
-      cudaThreadSynchronize();
-
-      reconstruction_2 KERNEL(output_rho, scale, width, height);
-      cudaThreadSynchronize();
-
-      rho = output_rho;
-      progress(ib * n_iterations_in_block + it, true);
-    }
-
-    rho.copy_from_device();
-    output((ib + 1) * n_iterations_in_block, rho.host_ptr);
-  }
-
-  progress(n_iteration_blocks * n_iterations_in_block, false);
-}
-
-__global__ static void reconstruction_1(const PixelInfo* pixel_infos,
-                                        const size_t* lor_pixel_info_start,
-                                        const size_t* lor_pixel_info_end,
-                                        const Mean* means,
-                                        const int n_means,
-                                        float* output_rho,
                                         const int width) {
 
   const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -154,6 +57,7 @@ __global__ static void reconstruction_1(const PixelInfo* pixel_infos,
   }
 }
 
+// foreach p: count output_rho[p] *= rho[p]
 __global__ static void reconstruction_2(float* output_rho,
                                         const float* scale,
                                         const int width,
@@ -175,6 +79,91 @@ __global__ static void reconstruction_2(float* output_rho,
     output_rho[pixel_index] *=
         tex2D(tex_rho, pixel.x, pixel.y) * scale[pixel_index];
   }
+}
+
+void run(const SimpleGeometry& geometry,
+         const Mean* means,
+         int n_means,
+         int width,
+         int height,
+         int n_iteration_blocks,
+         int n_iterations_in_block,
+         util::delegate<void(int iteration, float* rho)> output,
+         util::delegate<void(int completed, bool finished)> progress,
+         int device,
+         int n_blocks,
+         int n_threads_per_block,
+         util::delegate<void(const char* device_name)> info) {
+
+#if __CUDACC__
+  dim3 blocks(n_blocks);
+  dim3 threads(n_threads_per_block);
+#define sensitivity sensitivity<<<blocks, threads>>>
+#define invert invert<<<blocks, threads>>>
+#define reconstruction_1 reconstruction_1<<<blocks, threads>>>
+#define reconstruction_2 reconstruction_2<<<blocks, threads>>>
+#else
+  (void)n_blocks, n_threads_per_block;  // mark used
+#endif
+
+  cudaSetDevice(device);
+  cudaDeviceProp prop;
+  cudaGetDeviceProperties(&prop, device);
+  info(prop.name);
+
+  util::cuda::on_device<PixelInfo> device_pixel_infos(geometry.pixel_infos,
+                                                      geometry.n_pixel_infos);
+  util::cuda::on_device<size_t> device_lor_pixel_info_start(
+      geometry.lor_pixel_info_start, geometry.n_lors);
+  util::cuda::on_device<size_t> device_lor_pixel_info_end(
+      geometry.lor_pixel_info_end, geometry.n_lors);
+  util::cuda::on_device<Mean> device_means(means, n_means);
+
+  util::cuda::memory2D<F> rho(tex_rho, width, height);
+  util::cuda::on_device<F> output_rho((size_t)width * height);
+
+  for (auto& v : rho) {
+    v = 1;
+  }
+  rho.copy_to_device();
+
+  util::cuda::on_device<F> scale((size_t)width * height);
+  scale.zero_on_device();
+
+  Common::GPU::sensitivity(
+      device_pixel_infos, geometry.n_pixel_infos, scale, width);
+  cudaThreadSynchronize();
+
+  Common::GPU::invert(scale, width * height);
+  cudaThreadSynchronize();
+
+  for (int ib = 0; ib < n_iteration_blocks; ++ib) {
+    for (int it = 0; it < n_iterations_in_block; ++it) {
+      progress(ib * n_iterations_in_block + it, false);
+
+      output_rho.zero_on_device();
+
+      reconstruction_1(device_pixel_infos,
+                       device_lor_pixel_info_start,
+                       device_lor_pixel_info_end,
+                       device_means,
+                       n_means,
+                       output_rho,
+                       width);
+      cudaThreadSynchronize();
+
+      reconstruction_2(output_rho, scale, width, height);
+      cudaThreadSynchronize();
+
+      rho = output_rho;
+      progress(ib * n_iterations_in_block + it, true);
+    }
+
+    rho.copy_from_device();
+    output((ib + 1) * n_iterations_in_block, rho.host_ptr);
+  }
+
+  progress(n_iteration_blocks * n_iterations_in_block, false);
 }
 
 }  // Reconstruction

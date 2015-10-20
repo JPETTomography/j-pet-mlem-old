@@ -41,15 +41,19 @@ void run(Scanner<F, short>& scanner,
          int n_threads_per_block,
          util::delegate<void(const char*)> device_name) {
 
+#if __CUDACC__
+  dim3 blocks(n_blocks);
+  dim3 threads(n_threads_per_block);
+#define reconstruction reconstruction<Kernel><<<blocks, threads>>>
+#else
+  (void)n_blocks, n_threads_per_block;  // mark used
+#define reconstruction reconstruction<Kernel>
+#endif
+
   cudaSetDevice(device);
   cudaDeviceProp prop;
   cudaGetDeviceProperties(&prop, device);
   device_name(prop.name);
-
-#if __CUDACC__
-  dim3 blocks(n_blocks);
-  dim3 threads(n_threads_per_block);
-#endif
 
   size_t image_size = scanner.total_n_pixels * sizeof(F);
 
@@ -81,16 +85,12 @@ void run(Scanner<F, short>& scanner,
 
       output_rho.zero_on_device();
 
-#if __CUDACC__
-#define reconstruction reconstruction<Kernel><<<blocks, threads>>>
-#endif
       reconstruction(scanner,
                      responses_soa.z_u,
                      responses_soa.z_d,
                      responses_soa.dl,
                      n_responses,
                      output_rho.device_ptr);
-
       cudaThreadSynchronize();
 
 #if USE_RHO_PER_WARP

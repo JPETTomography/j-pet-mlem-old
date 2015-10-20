@@ -80,6 +80,12 @@ void run<Scanner>(
     int n_threads_per_block,
     util::delegate<void(const char* device_name, int n_emissions)> info) {
 
+#if __CUDACC__
+  dim3 blocks(n_blocks);
+  dim3 threads(n_threads_per_block);
+#define kernel kernel<<<blocks, threads>>>
+#endif
+
   // GTX 770 - 8 SMX * 192 cores = 1536 cores -
   // each SMX can use 8 active blocks,
   auto n_threads = n_blocks * n_threads_per_block;
@@ -122,11 +128,6 @@ void run<Scanner>(
 
     pixel_hits.zero_on_device();
 
-#if __CUDACC__
-    dim3 blocks(n_blocks);
-    dim3 threads(n_threads_per_block);
-#define kernel kernel<<<blocks, threads>>>
-#endif
     kernel(pixel,
            scanner_on_device,
            n_thread_emissions,
@@ -136,7 +137,6 @@ void run<Scanner>(
            length_scale,
            rng_state,
            pixel_hits);
-
     cudaThreadSynchronize();
 
     pixel_hits.copy_from_device();
