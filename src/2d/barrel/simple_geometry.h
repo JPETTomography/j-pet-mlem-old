@@ -11,6 +11,14 @@
 namespace PET2D {
 namespace Barrel {
 
+/// Keeps flat information about barrel, including grid and all LOR info
+////
+/// This class is simplification of PET2D::Barrel::Geometry, the difference
+/// is that it keeps geometry as flat array of \c PixelInfo structures, not
+/// using \c std::vector or any STL containers.
+///
+/// \see PET2D::Barrel::Geometry
+/// \see PET2D::Barrel::SparseMatrix
 template <typename FType, typename SType, typename HitType>
 class SimpleGeometry {
  public:
@@ -24,13 +32,17 @@ class SimpleGeometry {
   using Geometry = PET2D::Barrel::Geometry<F, S>;
 #endif
 
+  /// Information about single pixel in context of certain LOR
   struct PixelInfo {
     Pixel pixel;  ///< pixel itself
     F t;          ///< position of projected Pixel along the LOR
     F weight;     ///< custom weight of the Pixel eg. probability
   };
 
-  SimpleGeometry(S n_detectors, size_t n_pixel_infos)
+  /// Construct empty geometry information for given number of detectors.
+  SimpleGeometry(S n_detectors,        ///< number of detectors
+                 size_t n_pixel_infos  ///< total number of pixel infos
+                 )
       : n_detectors(n_detectors),
         n_lors(((size_t(n_detectors) + 1) * size_t(n_detectors)) / 2),
         n_pixel_infos(n_pixel_infos),
@@ -45,7 +57,9 @@ class SimpleGeometry {
   }
 
 #if !__CUDACC__
-  SimpleGeometry(const SparseMatrix& sparse_matrix)
+  /// Construct geometry information out of sparse matrix.
+  SimpleGeometry(const SparseMatrix& sparse_matrix  ///< sparse matrix
+                 )
       : SimpleGeometry(sparse_matrix.n_detectors(), sparse_matrix.size()) {
     const auto end_lor = LOR::end_for_detectors(n_detectors);
     auto lor = end_lor;
@@ -71,14 +85,18 @@ class SimpleGeometry {
     }
   }
 
-  SimpleGeometry(const Geometry& geometry)
-      : SimpleGeometry(geometry.n_detectors(), geometry.n_pixel_infos()) {
+  /// Construct geometry information out of more advanced geometry.
+  ////
+  /// Takes PET2D::Barrel::Geometry class instance and flattens it.
+  SimpleGeometry(const Geometry& geometry  ///< advanced geometry
+                 )
+      : SimpleGeometry(geometry.n_detectors, geometry.n_pixel_infos()) {
     size_t size = 0;
     for (const auto& lor_geometry : geometry) {
       const auto& lor = lor_geometry.lor;
       auto lor_index = lor.index();
       lor_pixel_info_start[lor_index] = size;
-      for (const auto& geometry_pixel_info : lor_geometry) {
+      for (const auto& geometry_pixel_info : lor_geometry.pixel_infos) {
         auto& pixel_info = pixel_infos[size++];
         pixel_info.pixel = geometry_pixel_info.pixel;
         pixel_info.t = geometry_pixel_info.t;
@@ -89,12 +107,14 @@ class SimpleGeometry {
   }
 #endif
 
-  const S n_detectors;
-  const size_t n_lors;
-  const size_t n_pixel_infos;
-  PixelInfo* const pixel_infos;
-  size_t* const lor_pixel_info_start;
-  size_t* const lor_pixel_info_end;
+  const S n_detectors;                 ///< number of detectors
+  const size_t n_lors;                 ///< total number of LORs
+  const size_t n_pixel_infos;          ///< total number of pixel infos
+  PixelInfo* const pixel_infos;        ///< pointer to pixel infos array
+  size_t* const lor_pixel_info_start;  ///< pointer to array holding start of
+                                       ///  pixel infos for given LOR
+  size_t* const lor_pixel_info_end;    ///< pointer to array holding end of
+                                       ///  pixel infos for given LOR
 };
 
 }  // Barrel

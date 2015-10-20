@@ -253,8 +253,10 @@ template <typename FType, typename SType> class LMReconstruction {
   const Output& sensitivity() const { return sensitivity_; }
 
   Event event(int i) const { return events_[i]; }
-
+  const std::vector<Event> events() const { return events_; }
   size_t n_events() const { return events_.size(); }
+
+  F sigma() const { return sigma_; }
 
   Geometry& geometry;
   const int n_pixels;

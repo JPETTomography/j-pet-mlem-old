@@ -41,9 +41,11 @@
 
 #if _OPENMP
 #include <omp.h>
-#else
-#define omp_get_max_threads() 1
-#define omp_get_thread_num() 0
+#endif
+
+#if HAVE_CUDA
+#include "cuda/lm_reconstruction.h"
+#include "simple_geometry.h"
 #endif
 
 using RNG = std::mt19937;
@@ -55,6 +57,9 @@ using SquareDetector = PET2D::Barrel::SquareDetector<F>;
 using Scanner = PET2D::Barrel::GenericScanner<SquareDetector, S>;
 using ScannerBuilder = PET2D::Barrel::ScannerBuilder<Scanner>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
+#if HAVE_CUDA
+using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
+#endif
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -182,7 +187,41 @@ int main(int argc, char* argv[]) {
   util::progress progress(verbose, n_iterations, 1);
 
 #if HAVE_CUDA
-  if (true) {
+  if (cl.exist("gpu")) {
+    SimpleGeometry simple_geometry(geometry);
+    PET2D::Barrel::GPU::LMReconstruction::run(
+        simple_geometry,
+        reconstruction.events().data(),
+        reconstruction.n_events(),
+        reconstruction.sigma(),
+        geometry.grid.n_columns,
+        geometry.grid.n_rows,
+        n_blocks,
+        n_iterations_in_block,
+        [&](int iteration, float* output) {
+          auto fn = iteration >= 0
+                        ? output_base_name.add_index(iteration, n_iterations)
+                        : output_base_name + "_sensitivity";
+          util::png_writer png(fn + ".png");
+          png.write(geometry.grid.n_columns, geometry.grid.n_rows, output);
+          std::ofstream txt(fn + ".txt");
+          for (int i = 0; i < geometry.grid.n_columns * geometry.grid.n_rows;
+               ++i) {
+            txt << output[i];
+            if ((i + 1) % geometry.grid.n_columns == 0) {
+              txt << "\n";
+            } else {
+              txt << " ";
+            }
+          }
+        },
+        [&](int completed, bool finished) { progress(completed, finished); },
+        cl.get<int>("cuda-device"),
+        cl.get<int>("cuda-blocks"),
+        cl.get<int>("cuda-threads"),
+        [](const char* device_name) {
+          std::cerr << "   CUDA device = " << device_name << std::endl;
+        });
   } else
 #endif
   {

@@ -27,6 +27,7 @@ template <> constexpr uint32_t magic<double>() { return "PETG"_4cc; }
 /// distance to LOR line, its position along LOR line, etc.
 ///
 /// \see PET2D::Barrel::SparseMatrix
+/// \see PET2D::Barrel::SimpleGeometry
 template <typename FType, typename SType>
 class Geometry : public std::vector<LORGeometry<FType, SType>> {
  public:
@@ -158,11 +159,13 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
     }
   }
 
+  /// Return total number of pixel infos hold for all LORs.
   size_t n_pixel_infos() const {
     size_t total = 0;
     for (const auto& lor_geometry : *this) {
       total += lor_geometry.pixel_infos.size();
     }
+    return total;
   }
 
   const S n_detectors;   ///< number of detectors

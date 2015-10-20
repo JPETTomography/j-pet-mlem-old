@@ -15,18 +15,51 @@ namespace LMReconstruction {
 
 texture<float, 2, cudaReadModeElementType> tex_rho;
 
+template <typename FType, typename SType> struct Kernel {
+  using F = FType;
+  using S = SType;
+
+  __device__ Kernel(const F* scale, F sigma, S width)
+      : scale(scale),
+        sigma(sigma),
+        gauss_norm_dl(1 / (sigma * compat::sqrt(2 * M_PI))),
+        inv_sigma2_dl(1 / (2 * sigma * sigma)),
+        width(width) {}
+
+  __device__ F l(const Event& event, const PixelInfo& pixel_info) {
+    auto diff_t = pixel_info.t - event.t;
+    return gauss_norm_dl * compat::exp(-diff_t * diff_t * inv_sigma2_dl);
+  }
+
+  __device__ F operator()(const Event& event, const PixelInfo& pixel_info) {
+    const auto pixel = pixel_info.pixel;
+    const auto pixel_index = pixel.y * width + pixel.x;
+    const auto kernel_z = pixel_info.weight * scale[pixel_index];
+    return l(event, pixel_info) * kernel_z * tex2D(tex_rho, pixel.x, pixel.y);
+  }
+
+  const F* scale;
+  const F sigma;
+  const F gauss_norm_dl;
+  const F inv_sigma2_dl;
+  const S width;
+};
+
 __global__ static void reconstruction(const PixelInfo* pixel_infos,
-                                      const size_t* lor_pixel_info_start,
-                                      const size_t* lor_pixel_info_end,
                                       const Event* events,
                                       const int n_events,
                                       float* output_rho,
+                                      const float* scale,
+                                      const float sigma,
                                       const int width) {
 
   const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
   const auto n_threads = gridDim.x * blockDim.x;
   const auto n_chunks = (n_events + n_threads - 1) / n_threads;
 
+  Kernel<float, int> kernel(scale, sigma, width);
+
+  // --- event loop ----------------------------------------------------------
   for (int chunk = 0; chunk < n_chunks; ++chunk) {
     int event_index = chunk * n_threads + tid;
     // check if we are still on the list
@@ -34,31 +67,57 @@ __global__ static void reconstruction(const PixelInfo* pixel_infos,
       break;
     }
 
-    auto event = events[event_index];
-    auto lor_index = event.lor.index();
-    auto pixel_info_start = lor_pixel_info_start[lor_index];
-    auto pixel_info_end = lor_pixel_info_end[lor_index];
+    const auto event = events[event_index];
+    F denominator = 0;
 
-    // count u for current lor
-    F u = 0;
-    for (auto i = pixel_info_start; i < pixel_info_end; ++i) {
-      auto pixel_info = pixel_infos[i];
-      auto pixel = pixel_info.pixel;
-      u += tex2D(tex_rho, pixel.x, pixel.y) * pixel_info.weight;
+    // -- voxel loop - denominator -------------------------------------------
+    for (auto info_index = event.first_pixel_info_index;
+         info_index < event.last_pixel_info_index;
+         ++info_index) {
+      const auto& pixel_info = pixel_infos[info_index];
+      denominator += kernel(event, pixel_info);
+    }  // voxel loop - denominator
+
+    if (denominator == 0)
+      continue;
+
+    const auto inv_denominator = 1 / denominator;
+
+    // -- voxel loop ---------------------------------------------------------
+    for (auto info_index = event.first_pixel_info_index;
+         info_index < event.last_pixel_info_index;
+         ++info_index) {
+      const auto& pixel_info = pixel_infos[info_index];
+      const auto pixel_index = pixel_info.pixel.y * width + pixel_info.pixel.x;
+      atomicAdd(&output_rho[pixel_index],
+                kernel(event, pixel_info) * inv_denominator);
+    }  // voxel loop
+  }    // event loop
+}
+
+__global__ static void add_offsets(Event* events,
+                                   const int n_events,
+                                   const size_t* lor_pixel_info_start) {
+  const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+  const auto n_threads = gridDim.x * blockDim.x;
+  const auto n_chunks = (n_events + n_threads - 1) / n_threads;
+  for (int chunk = 0; chunk < n_chunks; ++chunk) {
+    int event_index = chunk * n_threads + tid;
+    // check if we are still on the list
+    if (event_index >= n_events) {
+      break;
     }
-    F phi = event.t / u;
-    for (auto i = pixel_info_start; i < pixel_info_end; ++i) {
-      auto pixel_info = pixel_infos[i];
-      auto pixel = pixel_info.pixel;
-      atomicAdd(&output_rho[pixel.y * width + pixel.x],
-                phi * pixel_info.weight);
-    }
+    auto& event = events[event_index];
+    const auto pixel_info_start = lor_pixel_info_start[event.lor.index()];
+    event.first_pixel_info_index += pixel_info_start;
+    event.last_pixel_info_index += pixel_info_start;
   }
 }
 
 void run(const SimpleGeometry& geometry,
          const Event* events,
          int n_events,
+         float sigma,
          int width,
          int height,
          int n_iteration_blocks,
@@ -76,6 +135,7 @@ void run(const SimpleGeometry& geometry,
 #define sensitivity sensitivity<<<blocks, threads>>>
 #define invert invert<<<blocks, threads>>>
 #define reconstruction reconstruction<<<blocks, threads>>>
+#define add_offsets add_offsets<<<blocks, threads>>>
 #else
   (void)n_blocks, n_threads_per_block;  // mark used
 #endif
@@ -89,9 +149,9 @@ void run(const SimpleGeometry& geometry,
                                                       geometry.n_pixel_infos);
   util::cuda::on_device<size_t> device_lor_pixel_info_start(
       geometry.lor_pixel_info_start, geometry.n_lors);
-  util::cuda::on_device<size_t> device_lor_pixel_info_end(
-      geometry.lor_pixel_info_end, geometry.n_lors);
   util::cuda::on_device<Event> device_events(events, n_events);
+
+  add_offsets(device_events, n_events, device_lor_pixel_info_start);
 
   util::cuda::memory2D<F> rho(tex_rho, width, height);
   util::cuda::on_device<F> output_rho((size_t)width * height);
@@ -118,11 +178,11 @@ void run(const SimpleGeometry& geometry,
       output_rho.zero_on_device();
 
       reconstruction(device_pixel_infos,
-                     device_lor_pixel_info_start,
-                     device_lor_pixel_info_end,
                      device_events,
                      n_events,
                      output_rho,
+                     scale,
+                     sigma,
                      width);
       cudaThreadSynchronize();
 
