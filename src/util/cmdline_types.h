@@ -57,7 +57,7 @@ class path : public std::string {
 };
 
 namespace detail {
-template <> inline std::string readable_typename<int>() { return "size"; }
+template <> inline std::string readable_typename<int>() { return "int"; }
 template <> inline std::string readable_typename<long>() { return "seed"; }
 template <> inline std::string readable_typename<double>() { return "float"; }
 template <> inline std::string readable_typename<path>() { return "file"; }
