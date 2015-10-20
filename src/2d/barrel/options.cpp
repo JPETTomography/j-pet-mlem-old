@@ -272,10 +272,6 @@ void calculate_scanner_options(cmdline::parser& cl, int argc) {
     model_name = "scintillator";
   }
 
-  if (cl.exist("verbose")) {
-    std::cerr << "assumed:" << std::endl;
-  }
-
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& radius = cl.get<double>("radius");
   auto& n_detectors = cl.get<int>("n-detectors");
@@ -284,6 +280,8 @@ void calculate_scanner_options(cmdline::parser& cl, int argc) {
   auto& d_detector = cl.get<double>("d-detector");
   auto& shape = cl.get<std::string>("shape");
   auto& fov_radius = cl.get<double>("fov-radius");
+
+  std::stringstream assumed;
 
   // 1. Automatic radius size
 
@@ -295,21 +293,21 @@ void calculate_scanner_options(cmdline::parser& cl, int argc) {
     } else {
       radius = s_pixel * n_pixels / M_SQRT2;
     }
-    std::cerr << "--radius=" << radius << std::endl;
+    assumed << "--radius=" << radius << std::endl;
   }
 
   // 2. Set fov-radius matching radius
 
   if (!cl.exist("fov-radius")) {
     fov_radius = radius / M_SQRT2;
-    std::cerr << "--fov-radius=" << fov_radius << std::endl;
+    assumed << "--fov-radius=" << fov_radius << std::endl;
   }
 
   // 3. Automatic pixel size
 
   if (!cl.exist("s-pixel")) {
     s_pixel = 2 * fov_radius / n_pixels;
-    std::cerr << "--s-pixel=" << s_pixel << std::endl;
+    assumed << "--s-pixel=" << s_pixel << std::endl;
   }
 
   // 4. Automatic detector size
@@ -339,7 +337,7 @@ void calculate_scanner_options(cmdline::parser& cl, int argc) {
         w_detector = d_detector * std::sin(M_PI / sides) * mult;
       }
     }
-    std::cerr << "--w-detector=" << w_detector << std::endl;
+    assumed << "--w-detector=" << w_detector << std::endl;
   }
 
   // 5. Automatic detector count
@@ -361,7 +359,11 @@ void calculate_scanner_options(cmdline::parser& cl, int argc) {
     if (!n_detectors) {
       throw("detector width is too big for given detector ring radius");
     }
-    std::cerr << "--n-detectors=" << n_detectors << std::endl;
+    assumed << "--n-detectors=" << n_detectors << std::endl;
+  }
+
+  if (cl.exist("verbose") && assumed.str().size()) {
+    std::cerr << "assumed:" << std::endl << assumed.str();
   }
 }
 
