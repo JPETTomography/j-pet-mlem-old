@@ -278,7 +278,7 @@ template <typename FType, typename SType> class LMReconstruction {
   std::vector<RawOutput> thread_rhos_;
   std::vector<RawOutput> thread_kernel_caches_;
   std::vector<int> n_events_per_thread_;
-#endif
+#endif //!__CUDACC__
 };
 
 }  // Barrel
