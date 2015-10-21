@@ -57,9 +57,12 @@ using SquareDetector = PET2D::Barrel::SquareDetector<F>;
 using Scanner = PET2D::Barrel::GenericScanner<SquareDetector, S>;
 using ScannerBuilder = PET2D::Barrel::ScannerBuilder<Scanner>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
+using Output = PET2D::Barrel::LMReconstruction<F,S>::Output;
 #if HAVE_CUDA
 using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
 #endif
+
+
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -234,7 +237,7 @@ int main(int argc, char* argv[]) {
       auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
                                            n_iterations);
       util::obstream out(fn + ".bin");
-      out << reconstruction.rho();
+      out << reconstruction.rho().as_vector();
       util::png_writer png(fn + ".png");
       png << reconstruction.rho();
     }

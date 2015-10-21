@@ -60,6 +60,8 @@ class PixelMap : std::vector<ValueType> {
   iterator end() { return Base::end(); }
   const_iterator end() const { return Base::end(); }
 
+  const std::vector<Value>& as_vector() const { return *this; }
+
   const S width;
   const S height;
 
@@ -68,6 +70,8 @@ class PixelMap : std::vector<ValueType> {
     png.write(map.width, map.height, map.data());
     return png;
   }
+
+
 
   friend std::ostream& operator<<(std::ostream& out, const PixelMap& map) {
     auto it = map.begin();
