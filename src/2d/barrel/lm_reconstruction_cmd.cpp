@@ -57,12 +57,10 @@ using SquareDetector = PET2D::Barrel::SquareDetector<F>;
 using Scanner = PET2D::Barrel::GenericScanner<SquareDetector, S>;
 using ScannerBuilder = PET2D::Barrel::ScannerBuilder<Scanner>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
-using Output = PET2D::Barrel::LMReconstruction<F,S>::Output;
+using Output = PET2D::Barrel::LMReconstruction<F, S>::Output;
 #if HAVE_CUDA
 using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
 #endif
-
-
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY

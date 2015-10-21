@@ -71,8 +71,6 @@ class PixelMap : std::vector<ValueType> {
     return png;
   }
 
-
-
   friend std::ostream& operator<<(std::ostream& out, const PixelMap& map) {
     auto it = map.begin();
     auto end = map.end();
