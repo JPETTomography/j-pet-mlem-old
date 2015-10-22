@@ -129,7 +129,7 @@ void read_in_response_files(const cmdline::parser& cl,
 }
 
 void plot_event_to_mathematica(int event_num,
-                               const cmdline::parser cl,
+                               const cmdline::parser& cl,
                                const cmdline::path& output,
                                const Geometry& geometry,
                                const Reconstruction& reconstruction) {

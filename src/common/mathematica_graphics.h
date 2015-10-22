@@ -56,6 +56,7 @@ template <typename FType> class MathematicaGraphics {
     for (const PET2D::Point<F>& p : detector1) {
       delimiter(next1) << pair(p.x, p.y);
     }
+    delimiter();
     auto detector2 = scanner[lor.second];
     bool next2 = false;
     for (const PET2D::Point<F>& p : detector2) {
