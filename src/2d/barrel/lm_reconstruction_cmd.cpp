@@ -58,9 +58,104 @@ using Scanner = PET2D::Barrel::GenericScanner<SquareDetector, S>;
 using ScannerBuilder = PET2D::Barrel::ScannerBuilder<Scanner>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
 using Output = PET2D::Barrel::LMReconstruction<F, S>::Output;
+using Geometry = PET2D::Barrel::Geometry<F, S>;
+using Reconstruction = PET2D::Barrel::LMReconstruction<F, S>;
 #if HAVE_CUDA
 using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
 #endif
+
+void print_geometry_info(const Geometry& geometry) {
+  std::cout << "LM reconstruction:" << std::endl
+            << "   detectors = " << geometry.n_detectors << std::endl
+            << "  pixel_grid = " << geometry.grid.n_columns << " x "
+            << geometry.grid.n_rows << " / " << geometry.grid.pixel_size
+            << std::endl;
+}
+
+void read_system_matrix_into_geometry(std::string system_matrix_file_name,
+                                      Geometry& geometry,
+                                      bool verbose = false) {
+  geometry.erase_pixel_info();
+
+  util::ibstream in_matrix(system_matrix_file_name);
+  if (!in_matrix.is_open()) {
+    throw("cannot open system matrix file: " + system_matrix_file_name);
+  }
+  PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit> matrix(in_matrix);
+  if (verbose) {
+    std::cout << "read in system matrix: " << system_matrix_file_name
+              << std::endl;
+  }
+  matrix.sort_by_lor_n_pixel();
+  matrix.merge_duplicates();
+  F n_emissions = F(matrix.n_emissions());
+  if (geometry.grid.n_columns != matrix.n_pixels_in_row()) {
+    throw("mismatch in number of pixels with matrix");
+  }
+  if (matrix.triangular()) {
+    throw("matrix is not full");
+  }
+
+  for (auto& element : matrix) {
+    auto lor = element.lor;
+    F weight = element.hits / n_emissions;
+    geometry.push_back_pixel(lor, element.pixel, weight);
+  }
+  geometry.sort_all();
+}
+
+void output_sensitivity(const cmdline::path& output,
+                        const Output& sensitivity) {
+  std::ofstream out_sensitivity(output.wo_ext() + "_sensitivity" +
+                                output.ext());
+  out_sensitivity << sensitivity;
+  util::png_writer png_sensitivity(output.wo_ext() + "_sensitivity.png");
+  png_sensitivity << sensitivity;
+}
+
+void read_in_response_files(const cmdline::parser& cl,
+                            Reconstruction& reconstruction,
+                            bool verbose = false) {
+  for (const auto& fn : cl.rest()) {
+    std::ifstream in_response(fn);
+    if (!in_response.is_open()) {
+      throw("cannot open response file: " + fn);
+    }
+    reconstruction << in_response;
+  }
+  if (verbose) {
+    std::cout << "      events = " << reconstruction.n_events() << std::endl;
+  }
+}
+
+void plot_event_to_mathematica(int event_num,
+                               const cmdline::parser cl,
+                               const cmdline::path& output,
+                               const Geometry& geometry,
+                               const Reconstruction& reconstruction) {
+
+  auto graphics_file_name = output.wo_ext() + ".m";
+  std::ofstream out_graphics(graphics_file_name);
+
+  MathematicaGraphics graphics(out_graphics);
+
+  auto scanner = ScannerBuilder::build_multiple_rings(
+      PET2D_BARREL_SCANNER_CL(cl, SquareDetector::F));
+  graphics.add(scanner);
+
+  auto event = reconstruction.event(event_num);
+  auto lor = event.lor;
+  graphics.add(scanner, lor);
+#if FULL_EVENT_INFO
+  graphics.add(event.p);
+#endif
+  const auto& lor_geometry = geometry[event.lor];
+  for (auto i = event.first_pixel_info_index; i < event.last_pixel_info_index;
+       ++i) {
+    const auto& pixel_info = lor_geometry.pixel_infos[i];
+    graphics.add_pixel(geometry.grid, pixel_info.pixel);
+  }
+}
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -87,42 +182,13 @@ int main(int argc, char* argv[]) {
   PET2D::Barrel::Geometry<F, S> geometry(in_geometry);
 
   if (verbose) {
-    std::cout << "LM reconstruction:" << std::endl
-              << "   detectors = " << geometry.n_detectors << std::endl
-              << "  pixel_grid = " << geometry.grid.n_columns << " x "
-              << geometry.grid.n_rows << " / " << geometry.grid.pixel_size
-              << std::endl;
+    print_geometry_info(geometry);
   }
 
   if (cl.exist("system")) {
-    geometry.erase_pixel_info();
     auto system_matrix_file_name = cl.get<cmdline::path>("system");
-    util::ibstream in_matrix(system_matrix_file_name);
-    if (!in_matrix.is_open()) {
-      throw("cannot open system matrix file: " +
-            cl.get<cmdline::path>("system"));
-    }
-    PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit> matrix(in_matrix);
-    if (verbose) {
-      std::cout << "read in system matrix: " << cl.get<cmdline::path>("system")
-                << std::endl;
-    }
-    matrix.sort_by_lor_n_pixel();
-    matrix.merge_duplicates();
-    F n_emissions = F(matrix.n_emissions());
-    if (geometry.grid.n_columns != matrix.n_pixels_in_row()) {
-      throw("mismatch in number of pixels with matrix");
-    }
-    if (matrix.triangular()) {
-      throw("matrix is not full");
-    }
-
-    for (auto& element : matrix) {
-      auto lor = element.lor;
-      F weight = element.hits / n_emissions;
-      geometry.push_back_pixel(lor, element.pixel, weight);
-    }
-    geometry.sort_all();
+    read_system_matrix_into_geometry(
+        system_matrix_file_name, geometry, verbose);
   }
 
   PET2D::Barrel::LMReconstruction<F, S> reconstruction(
@@ -135,49 +201,14 @@ int main(int argc, char* argv[]) {
   }
 
   reconstruction.calculate_sensitivity();
-  {
-    std::ofstream out_sensitivity(output.wo_ext() + "_sensitivity" +
-                                  output.ext());
-    out_sensitivity << reconstruction.sensitivity();
-    util::png_writer png_sensitivity(output.wo_ext() + "_sensitivity.png");
-    png_sensitivity << reconstruction.sensitivity();
-  }
 
-  for (const auto& fn : cl.rest()) {
-    std::ifstream in_response(fn);
-    if (!in_response.is_open()) {
-      throw("cannot open response file: " + fn);
-    }
-    reconstruction << in_response;
-  }
-  if (verbose) {
-    std::cout << "      events = " << reconstruction.n_events() << std::endl;
-  }
+  output_sensitivity(output, reconstruction.sensitivity());
+
+  read_in_response_files(cl, reconstruction, verbose);
 
   if (cl.exist("graphics")) {
     int event_num = cl.get<int>("event");
-    auto graphics_file_name = output.wo_ext() + ".m";
-    std::ofstream out_graphics(graphics_file_name);
-
-    MathematicaGraphics graphics(out_graphics);
-
-    auto scanner = ScannerBuilder::build_multiple_rings(
-        PET2D_BARREL_SCANNER_CL(cl, SquareDetector::F));
-    graphics.add(scanner);
-
-    auto event = reconstruction.event(event_num);
-    auto lor = event.lor;
-    graphics.add(scanner, lor);
-#if FULL_EVENT_INFO
-    graphics.add(event.p);
-#endif
-    const auto& lor_geometry = geometry[event.lor];
-    for (auto i = event.first_pixel_info_index; i < event.last_pixel_info_index;
-         ++i) {
-      const auto& pixel_info = lor_geometry.pixel_infos[i];
-      graphics.add_pixel(geometry.grid, pixel_info.pixel);
-    }
-
+    plot_event_to_mathematica(event_num, cl, output, geometry, reconstruction);
     return 0;
   }
 

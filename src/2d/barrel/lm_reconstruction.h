@@ -182,7 +182,7 @@ template <typename FType, typename SType> class LMReconstruction {
         const auto& pixel_info = lor_geometry.pixel_infos[info_index];
         const auto weight = kernel(event, pixel_info);
         thread_kernel_caches_[thread][grid.index(pixel_info.pixel)] = weight;
-        denominator += weight;
+        denominator += weight*sensitivity_[grid.index(pixel_info.pixel)];
 
       }  // voxel loop - denominator
 
