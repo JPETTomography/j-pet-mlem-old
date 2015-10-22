@@ -152,15 +152,8 @@ template <typename FType, typename SType> class LMReconstruction {
     voxel_count_ = 0;
     pixel_count_ = 0;
     auto grid = geometry.grid;
-    for (auto& thread_rho : thread_rhos_) {
-      thread_rho.assign(grid.n_pixels, 0);
-    }
-    for (auto& thread_kernel_cache : thread_kernel_caches_) {
-      thread_kernel_cache.assign(grid.n_pixels, 0);
-    }
-    for (auto& n_events : n_events_per_thread_) {
-      n_events = 0;
-    }
+
+    reset_thread_data();
 
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
@@ -182,7 +175,7 @@ template <typename FType, typename SType> class LMReconstruction {
         const auto& pixel_info = lor_geometry.pixel_infos[info_index];
         const auto weight = kernel(event, pixel_info);
         thread_kernel_caches_[thread][grid.index(pixel_info.pixel)] = weight;
-        denominator += weight;
+        denominator += weight * sensitivity_[grid.index(pixel_info.pixel)];
 
       }  // voxel loop - denominator
 
@@ -262,6 +255,19 @@ template <typename FType, typename SType> class LMReconstruction {
   const int n_pixels;
 
  private:
+  void reset_thread_data() {
+    const auto n_pixels = geometry.grid.n_pixels;
+    for (auto& thread_rho : thread_rhos_) {
+      thread_rho.assign(n_pixels, 0);
+    }
+    for (auto& thread_kernel_cache : thread_kernel_caches_) {
+      thread_kernel_cache.assign(n_pixels, 0);
+    }
+    for (auto& n_events : n_events_per_thread_) {
+      n_events = 0;
+    }
+  }
+
   bool system_matrix_;
   std::vector<Event> events_;
   F sigma_;
