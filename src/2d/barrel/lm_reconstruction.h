@@ -15,6 +15,8 @@
 #define omp_get_thread_num() 0
 #endif
 
+#define FULL_EVENT_INFO 1
+
 namespace PET2D {
 namespace Barrel {
 
@@ -136,7 +138,10 @@ template <typename FType, typename SType> class LMReconstruction {
   }
 
   F kernel_l(const Event& event, const PixelInfo& pixel_info) const {
-    auto diff_t = pixel_info.t - event.t;
+
+    auto lor = event.lor;
+    auto segment = geometry[lor].segment;
+    auto diff_t = (pixel_info.t - event.t) * segment.length;
     return gauss_norm_dl_ * compat::exp(-diff_t * diff_t * inv_sigma2_dl_);
   }
 
@@ -246,7 +251,7 @@ template <typename FType, typename SType> class LMReconstruction {
   const Output& sensitivity() const { return sensitivity_; }
 
   Event event(int i) const { return events_[i]; }
-  const std::vector<Event> events() const { return events_; }
+  const std::vector<Event>& events() const { return events_; }
   size_t n_events() const { return events_.size(); }
 
   F sigma() const { return sigma_; }
