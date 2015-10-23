@@ -110,7 +110,7 @@ template <typename VoxelType, typename ValueType> class VoxelMap {
 #if !__CUDACC__
   friend util::png_writer& operator<<(util::png_writer& png,
                                       const VoxelMap& map) {
-    png.write(map.width, map.height * map.depth, map.data());
+    png.write(map.width, map.height * map.depth, map.data);
     return png;
   }
 

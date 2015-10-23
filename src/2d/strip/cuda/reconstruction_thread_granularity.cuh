@@ -11,6 +11,7 @@
 namespace PET2D {
 namespace Strip {
 namespace GPU {
+namespace Reconstruction {
 
 template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(Scanner<F> scanner,
@@ -19,8 +20,6 @@ __global__ void reconstruction(Scanner<F> scanner,
                                F* responses_dl,
                                const int n_responses,
                                F* output_rho) {
-  using Point = PET2D::Point<F>;
-  using Pixel = PET2D::Pixel<>;
   using Response = Strip::Response<F>;
 
   Kernel<F> kernel(scanner.sigma_z, scanner.sigma_dl);
@@ -108,6 +107,7 @@ template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
   return (length + F(0.5)) / pixel_size;
 }
 
+}  // Reconstruction
 }  // GPU
 }  // Strip
 }  // PET2D

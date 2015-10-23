@@ -122,7 +122,7 @@ void run(const SimpleGeometry& geometry,
          int height,
          int n_iteration_blocks,
          int n_iterations_in_block,
-         util::delegate<void(int iteration, float* rho)> output,
+         util::delegate<void(int iteration, const Output& output)> output,
          util::delegate<void(int completed, bool finished)> progress,
          int device,
          int n_blocks,
@@ -191,7 +191,8 @@ void run(const SimpleGeometry& geometry,
     }
 
     rho.copy_from_device();
-    output((ib + 1) * n_iterations_in_block, rho.host_ptr);
+    Output rho_output(width, height, rho.host_ptr);
+    output((ib + 1) * n_iterations_in_block, rho_output);
   }
 
   progress(n_iteration_blocks * n_iterations_in_block, false);

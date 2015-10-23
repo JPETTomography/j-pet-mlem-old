@@ -11,6 +11,7 @@
 namespace PET2D {
 namespace Strip {
 namespace GPU {
+namespace Reconstruction {
 
 template <typename F> __device__ void reduce(F& value);
 
@@ -21,9 +22,7 @@ __global__ void reconstruction(Scanner<F, short> scanner,
                                F* reponses_dl,
                                const int n_responses,
                                F* output_rho) {
-  using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
-  using Pixel = PET2D::Pixel<short>;
   using Response = Strip::Response<F>;
 
   const auto n_warps_per_block = blockDim.x / WARP_SIZE;
@@ -159,14 +158,11 @@ template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
 }
 
 template <typename F>
-__device__ Pixel<short> warp_space_pixel(int offset,
-                                         Pixel<short> tl,
-                                         int width,
-                                         F inv_width,
-                                         int& index) {
+__device__ Pixel
+warp_space_pixel(int offset, Pixel tl, int width, F inv_width, int& index) {
   // threadIdx.x % WARP_SIZE + offset : works for WARP_SIZE = 2^n
   index = (threadIdx.x & (WARP_SIZE - 1)) + offset;
-  Pixel<short> pixel;
+  Pixel pixel;
   pixel.y = index * inv_width;  // index/width but faster
   pixel.x = index - width * pixel.y;
   pixel.x += tl.x;
@@ -194,6 +190,7 @@ template <typename F> __device__ void reduce(F& value) {
 #endif
 }
 
+}  // Reconstruction
 }  // GPU
 }  // Strip
 }  // PET2D

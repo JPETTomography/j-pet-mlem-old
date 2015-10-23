@@ -103,6 +103,7 @@ int main(int argc, char* argv[]) {
   auto n_iterations = n_blocks * n_iterations_in_block;
 
   Reconstruction reconstruction(matrix, use_sensitivity);
+  auto n_pixels_in_row = reconstruction.n_pixels_in_row();
 
   for (const auto& fn : cl.rest()) {
     std::ifstream in_means(fn);
@@ -110,20 +111,11 @@ int main(int argc, char* argv[]) {
       throw("cannot open input file: " + cl.get<cmdline::path>("mean"));
     reconstruction << in_means;
   }
-  auto n_pixels_in_row = reconstruction.n_pixels_in_row();
 
-  // no output, just make reconstruction in place and exit!
-  if (!cl.exist("output")) {
-    util::progress progress(verbose, n_iterations, 1);
-    for (int block = 0; block < n_blocks; ++block) {
-      reconstruction(
-          progress, n_iterations_in_block, block * n_iterations_in_block);
-    }
-    return 0;
-  }
-
-  auto output = cl.get<cmdline::path>("output");
-  auto output_base_name = output.wo_ext();
+  auto output_name = cl.get<cmdline::path>("output");
+  auto output_base_name = output_name.wo_ext();
+  auto output_ext = output_name.ext();
+  auto output_txt = output_ext == ".txt";
 
   util::progress progress(verbose, n_iterations, 1);
 
@@ -138,20 +130,21 @@ int main(int argc, char* argv[]) {
         n_pixels_in_row,
         n_blocks,
         n_iterations_in_block,
-        [&](int iteration, float* output) {
+        [&](int iteration,
+            const PET2D::Barrel::GPU::Reconstruction::Output& output) {
+          if (!output_base_name.length())
+            return;
           auto fn = iteration >= 0
                         ? output_base_name.add_index(iteration, n_iterations)
                         : output_base_name + "_sensitivity";
           util::png_writer png(fn + ".png");
-          png.write(n_pixels_in_row, n_pixels_in_row, output);
-          std::ofstream txt(fn + ".txt");
-          for (int i = 0; i < n_pixels_in_row * n_pixels_in_row; ++i) {
-            txt << output[i];
-            if ((i + 1) % n_pixels_in_row == 0) {
-              txt << "\n";
-            } else {
-              txt << " ";
-            }
+          png << output;
+          if (output_txt) {
+            std::ofstream txt(fn + ".txt");
+            txt << output;
+          } else {
+            util::obstream bin(fn + output_ext);
+            bin << output;
           }
         },
         [&](int completed, bool finished) { progress(completed, finished); },
@@ -164,43 +157,46 @@ int main(int argc, char* argv[]) {
   } else
 #endif
   {
-    std::ofstream out_rho(output);
+    if (use_sensitivity && output_base_name.length()) {
+      std::ofstream out_sensitivity(output_base_name + "_sensitivity" +
+                                    output_ext);
+      // FIXME: simplify sensitivity output here
+      int n_row = 0;
+      for (auto& scale : reconstruction.scale()) {
+        if (scale > 0)
+          out_sensitivity << 1 / scale;
+        else
+          out_sensitivity << 0;
+
+        if (++n_row >= n_pixels_in_row) {
+          n_row = 0;
+          out_sensitivity << "\n";
+        } else {
+          out_sensitivity << " ";
+        }
+      }
+      util::png_writer png(output_base_name + "_sensitivity.png");
+      png << reconstruction.sensitivity();
+    }
+
     for (int block = 0; block < n_blocks; ++block) {
       reconstruction(
           progress, n_iterations_in_block, block * n_iterations_in_block);
-      out_rho << reconstruction.rho();
-    }
-  }
-
-  if (use_sensitivity) {
-    std::ofstream out_sensitivity(output_base_name + "_sensitivity" +
-                                  output.ext());
-    int n_row = 0;
-    for (auto& scale : reconstruction.scale()) {
-      if (scale > 0)
-        out_sensitivity << 1 / scale;
-      else
-        out_sensitivity << 0;
-
-      if (++n_row >= n_pixels_in_row) {
-        n_row = 0;
-        out_sensitivity << "\n";
+      if (!output_base_name.length())
+        continue;
+      auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
+                                           n_iterations);
+      util::png_writer png(fn + ".png");
+      png << reconstruction.rho();
+      if (output_txt) {
+        std::ofstream txt(fn + ".txt");
+        txt << reconstruction.rho();
       } else {
-        out_sensitivity << " ";
+        util::obstream bin(fn + output_ext);
+        bin << reconstruction.rho();
       }
     }
-
-    util::png_writer png(output_base_name + "_sensitivity.png");
-    png << reconstruction.sensitivity();
   }
-
-  // output reconstruction PNG
-  util::png_writer png(output_base_name + ".png", cl.get<double>("png-max"));
-  png << reconstruction.rho();
-
-  util::png_writer png_detected(output_base_name + "_detected.png",
-                                cl.get<double>("png-max"));
-  png_detected << reconstruction.rho_detected();
 
   CMDLINE_CATCH
 }

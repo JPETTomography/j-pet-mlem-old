@@ -69,8 +69,6 @@ int main(int argc, char* argv[]) {
   cl.parse_check(argc, argv);
   PET2D::Barrel::calculate_scanner_options(cl, argc);
 
-  auto output = cl.get<cmdline::path>("output");
-  auto output_base_name = output.wo_ext();
   auto verbose = cl.count("verbose");
 
 #if _OPENMP
@@ -132,15 +130,7 @@ int main(int argc, char* argv[]) {
   } else {
     reconstruction.calculate_weight();
   }
-
   reconstruction.calculate_sensitivity();
-  {
-    std::ofstream out_sensitivity(output.wo_ext() + "_sensitivity" +
-                                  output.ext());
-    out_sensitivity << reconstruction.sensitivity();
-    util::png_writer png_sensitivity(output.wo_ext() + "_sensitivity.png");
-    png_sensitivity << reconstruction.sensitivity();
-  }
 
   for (const auto& fn : cl.rest()) {
     std::ifstream in_response(fn);
@@ -153,9 +143,14 @@ int main(int argc, char* argv[]) {
     std::cout << "      events = " << reconstruction.n_events() << std::endl;
   }
 
+  auto output_name = cl.get<cmdline::path>("output");
+  auto output_base_name = output_name.wo_ext();
+  auto output_ext = output_name.ext();
+  auto output_txt = output_ext == ".txt";
+
   if (cl.exist("graphics")) {
     int event_num = cl.get<int>("event");
-    auto graphics_file_name = output.wo_ext() + ".m";
+    auto graphics_file_name = output_base_name + ".m";
     std::ofstream out_graphics(graphics_file_name);
 
     MathematicaGraphics graphics(out_graphics);
@@ -198,21 +193,21 @@ int main(int argc, char* argv[]) {
         geometry.grid.n_rows,
         n_blocks,
         n_iterations_in_block,
-        [&](int iteration, float* output) {
+        [&](int iteration,
+            const PET2D::Barrel::GPU::LMReconstruction::Output& output) {
+          if (!output_base_name.length())
+            return;
           auto fn = iteration >= 0
                         ? output_base_name.add_index(iteration, n_iterations)
                         : output_base_name + "_sensitivity";
           util::png_writer png(fn + ".png");
-          png.write(geometry.grid.n_columns, geometry.grid.n_rows, output);
-          std::ofstream txt(fn + ".txt");
-          for (int i = 0; i < geometry.grid.n_columns * geometry.grid.n_rows;
-               ++i) {
-            txt << output[i];
-            if ((i + 1) % geometry.grid.n_columns == 0) {
-              txt << "\n";
-            } else {
-              txt << " ";
-            }
+          png << output;
+          if (output_txt) {
+            std::ofstream txt(fn + ".txt");
+            txt << output;
+          } else {
+            util::obstream bin(fn + output_ext);
+            bin << output;
           }
         },
         [&](int completed, bool finished) { progress(completed, finished); },
@@ -225,18 +220,33 @@ int main(int argc, char* argv[]) {
   } else
 #endif
   {
+    if (output_base_name.length()) {
+      std::ofstream out_sensitivity(output_base_name + "_sensitivity" +
+                                    output_ext);
+      out_sensitivity << reconstruction.sensitivity();
+      util::png_writer png_sensitivity(output_base_name + "_sensitivity.png");
+      png_sensitivity << reconstruction.sensitivity();
+    }
+
     for (int block = 0; block < n_blocks; ++block) {
       for (int i = 0; i < n_iterations_in_block; i++) {
         progress(block * n_iterations_in_block + i);
         reconstruction();
         progress(block * n_iterations_in_block + i, true);
       }
+      if (!output_base_name.length())
+        continue;
       auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
                                            n_iterations);
-      util::obstream out(fn + ".bin");
-      out << reconstruction.rho();
       util::png_writer png(fn + ".png");
       png << reconstruction.rho();
+      if (output_txt) {
+        std::ofstream txt(fn + ".txt");
+        txt << reconstruction.rho();
+      } else {
+        util::obstream bin(fn + output_ext);
+        bin << reconstruction.rho();
+      }
     }
   }
 

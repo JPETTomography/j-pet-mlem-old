@@ -20,6 +20,7 @@
 #include "util/cmdline_hooks.h"
 #include "util/bstream.h"
 #include "util/backtrace.h"
+#include "util/png_writer.h"
 
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
@@ -60,8 +61,6 @@ int main(int argc, char* argv[]) {
           PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
       F(cl.get<double>("length")));
   scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
-  auto output = cl.get<cmdline::path>("output");
-  auto output_base_name = output.wo_ext();
 
 #if _OPENMP
   if (cl.exist("n-threads")) {
@@ -104,14 +103,27 @@ int main(int argc, char* argv[]) {
   auto n_iterations_in_block = cl.get<int>("iterations");
   auto n_iterations = n_blocks * n_iterations_in_block;
 
+  auto output_name = cl.get<cmdline::path>("output");
+  auto output_base_name = output_name.wo_ext();
+  auto output_ext = output_name.ext();
+  auto output_txt = output_ext == ".txt";
+
   for (int block = 0; block < n_blocks; ++block) {
     for (int i = 0; i < n_iterations_in_block; i++) {
       std::cout << block * n_iterations_in_block + i << " " << reconstruction()
                 << "\n";
     }
-    util::obstream out(output_base_name.add_index(
-        (block + 1) * n_iterations_in_block, n_iterations));
-    out << reconstruction.rho();
+    auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
+                                         n_iterations);
+    util::png_writer png(fn + ".png");
+    png << reconstruction.rho();
+    if (output_txt) {
+      std::ofstream txt(fn + ".txt");
+      txt << reconstruction.rho();
+    } else {
+      util::obstream bin(fn + output_ext);
+      bin << reconstruction.rho();
+    }
   }
   std::cout << reconstruction.event_count() << " "
             << reconstruction.voxel_count() << " "
@@ -122,9 +134,6 @@ int main(int argc, char* argv[]) {
   std::cout << (double)reconstruction.pixel_count() /
                    reconstruction.event_count()
             << "\n";
-
-  util::obstream out(output);
-  out << reconstruction.rho();
 
   CMDLINE_CATCH
 }

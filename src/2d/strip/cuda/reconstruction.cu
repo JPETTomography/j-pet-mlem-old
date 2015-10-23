@@ -26,20 +26,20 @@ namespace GPU {
 namespace Reconstruction {
 
 template <typename F>
-void fill_with_sensitivity(F* sensitivity, Scanner<F, short>& scanner);
+void fill_with_sensitivity(F* sensitivity, Scanner<F, S>& scanner);
 
 template <typename F>
-void run(Scanner<F, short>& scanner,
+void run(Scanner<F, S>& scanner,
          Response<F>* responses,
          int n_responses,
          int n_iteration_blocks,
          int n_iterations_in_block,
-         util::delegate<void(int, F*)> output,
-         util::delegate<void(int, bool)> progress,
+         util::delegate<void(int iteration, const Output& output)> output,
+         util::delegate<void(int completed, bool finished)> progress,
          int device,
          int n_blocks,
          int n_threads_per_block,
-         util::delegate<void(const char*)> device_name) {
+         util::delegate<void(const char* device_name)> device_name) {
 
 #if __CUDACC__
   dim3 blocks(n_blocks);
@@ -61,10 +61,12 @@ void run(Scanner<F, short>& scanner,
   const int height = scanner.n_y_pixels;
 
   util::cuda::memory2D<F> sensitivity(tex_sensitivity, width, height);
+  Output sensitivity_output(width, height, sensitivity.host_ptr);
   fill_with_sensitivity(sensitivity.host_ptr, scanner);
-  output(-1, sensitivity.host_ptr);
+  output(-1, sensitivity_output);
 
   util::cuda::memory2D<F> rho(tex_rho, width, height);
+  Output rho_output(width, height, rho.host_ptr);
   for (int i = 0; i < scanner.total_n_pixels; ++i) {
     rho[i] = 100;
   }
@@ -117,43 +119,43 @@ void run(Scanner<F, short>& scanner,
       if (!ib && it < n_iterations_in_block - 1 &&
           (it < 5 || it == 9 || it == 14 || it == 19 || it == 29 || it == 49 ||
            it == 99)) {
-        output(it + 1, rho.host_ptr);
+        output(it + 1, rho_output);
       }
     }
 
     rho.copy_from_device();
-    output((ib + 1) * n_iterations_in_block, rho.host_ptr);
+    output((ib + 1) * n_iterations_in_block, rho_output);
   }
 
   progress(n_iteration_blocks * n_iterations_in_block, false);
 }
 
 template <typename F>
-void fill_with_sensitivity(F* sensitivity, Scanner<F, short>& scanner) {
+void fill_with_sensitivity(F* sensitivity, Scanner<F, S>& scanner) {
 
   size_t width = scanner.n_z_pixels;
   size_t height = scanner.n_y_pixels;
 
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      sensitivity[y * width + x] =
-          scanner.pixel_sensitivity(Pixel<short>(x, y));
+      sensitivity[y * width + x] = scanner.pixel_sensitivity(Pixel(x, y));
     }
   }
 }
 
 // Explicit template instantiation
-template void run(Scanner<float, short>& scanner,
-                  Response<float>* responses,
-                  int n_responses,
-                  int n_iteration_blocks,
-                  int n_iterations_in_block,
-                  util::delegate<void(int, float*)> output,
-                  util::delegate<void(int, bool)> progress,
-                  int device,
-                  int n_blocks,
-                  int n_threads_per_block,
-                  util::delegate<void(const char*)> device_name);
+template void run(
+    Scanner<float, S>& scanner,
+    Response<float>* responses,
+    int n_responses,
+    int n_iteration_blocks,
+    int n_iterations_in_block,
+    util::delegate<void(int iteration, const Output& output)> output,
+    util::delegate<void(int completed, bool finished)> progress,
+    int device,
+    int n_blocks,
+    int n_threads_per_block,
+    util::delegate<void(const char* device_name)> device_name);
 
 }  // Reconstruction
 }  // GPU
