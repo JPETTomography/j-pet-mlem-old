@@ -82,10 +82,10 @@ template <typename VoxelType, typename ValueType> class VoxelMap {
   }
 
   Value& operator[](const Voxel& voxel) {
-    return data[voxel.index(width, depth)];
+    return data[voxel.index(width, height)];
   }
   const Value& operator[](const Voxel& voxel) const {
-    return data[voxel.index(width, depth)];
+    return data[voxel.index(width, height)];
   }
   Value& operator[](Size index) { return data[index]; }
   const Value& operator[](Size index) const { return data[index]; }

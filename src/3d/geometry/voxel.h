@@ -24,8 +24,8 @@ template <typename SType> struct Voxel {
 #endif
 
   /// Index for given width & depth
-  _ Size index(S width, S depth) const {
-    return (static_cast<Size>(z) * depth + y) * width + x;
+  _ Size index(S width, S height) const {
+    return (static_cast<Size>(z) * height + y) * width + x;
   }
 
   _ bool operator!=(const Voxel& v) const { return x != v.x || y != v.y; }
