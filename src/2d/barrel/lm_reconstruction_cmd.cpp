@@ -162,6 +162,7 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser cl;
   PET2D::Barrel::add_lm_reconstruction_options(cl);
+  cl.add("events", '\0', "print events");
   cl.parse_check(argc, argv);
   PET2D::Barrel::calculate_scanner_options(cl, argc);
 
@@ -209,6 +210,14 @@ int main(int argc, char* argv[]) {
   if (cl.exist("graphics")) {
     int event_num = cl.get<int>("event");
     plot_event_to_mathematica(event_num, cl, output, geometry, reconstruction);
+    return 0;
+  }
+
+  if (cl.exist("events")) {
+    std::ofstream out(output.wo_ext() + "_events.txt");
+    for (size_t i = 0; i < reconstruction.n_events(); i++) {
+      out << reconstruction.event(i).p << " "<< reconstruction.event(i).t<<"\n";
+    }
     return 0;
   }
 
