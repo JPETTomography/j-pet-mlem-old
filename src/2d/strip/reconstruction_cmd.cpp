@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
           if (output_txt) {
             std::ofstream txt(fn + ".txt");
             txt << output;
-          } else {
+          } else if (output_ext != ".png") {
             util::obstream bin(fn + output_ext);
             bin << output;
           }
@@ -194,13 +194,12 @@ int main(int argc, char* argv[]) {
 
       util::png_writer png(fn + ".png", cl.get<double>("png-max"));
       reconstruction.output_bitmap(png);
-
       if (output_txt) {
         std::ofstream txt(fn + ".txt");
         txt.precision(12);
         txt << std::fixed;
         reconstruction.output_tuples(txt);
-      } else {
+      } else if (output_ext != ".png") {
         util::obstream bin(fn + ".bin");
         reconstruction >> bin;
       }

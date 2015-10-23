@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
           if (output_txt) {
             std::ofstream txt(fn + ".txt");
             txt << output;
-          } else {
+          } else if (output_ext != ".png") {
             util::obstream bin(fn + output_ext);
             bin << output;
           }
@@ -191,7 +191,7 @@ int main(int argc, char* argv[]) {
       if (output_txt) {
         std::ofstream txt(fn + ".txt");
         txt << reconstruction.rho();
-      } else {
+      } else if (output_ext != ".png") {
         util::obstream bin(fn + output_ext);
         bin << reconstruction.rho();
       }
