@@ -48,13 +48,11 @@ class obstream : public std::ofstream {
       : std::ofstream(fn, mode | std::ios_base::out | std::ios_base::binary) {}
 
   template <typename T> obstream& operator<<(const T v) {
-
     std::ofstream::write(reinterpret_cast<const char*>(&v), sizeof(v));
     return *this;
   }
 
   template <typename T> obstream& operator<<(const std::vector<T>& vector) {
-
     for (auto&& v : vector) {
       *this << v;
     }

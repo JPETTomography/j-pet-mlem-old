@@ -7,6 +7,8 @@
 #include "2d/strip/response.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/voxel_grid.h"
+#include "3d/geometry/voxel.h"
+#include "3d/geometry/voxel_map.h"
 
 #include "common/mathematica_graphics.h"
 
@@ -34,12 +36,13 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using StripEvent = PET2D::Strip::Response<F>;
   using PixelInfo = typename Geometry::PixelInfo;
   using Pixel = typename Geometry::Pixel;
+  using Voxel = PET3D::Voxel<S>;
   using Point2D = PET2D::Point<F>;
   using Point = PET3D::Point<F>;
   using Vector2D = PET2D::Vector<F>;
   using PixelInfoConstIterator =
       typename LORGeometry::PixelInfoList::const_iterator;
-  using Output = std::vector<F>;
+  using Output = PET3D::VoxelMap<Voxel, F>;
 
   struct FrameEvent {
     LOR lor;
@@ -74,13 +77,18 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         z_left(z_left),
         n_planes(n_planes),
         v_grid(geometry.grid, z_left, n_planes),
-        n_voxels(geometry.grid.n_columns * geometry.grid.n_rows * n_planes),
         kernel_(scanner.sigma_z(), scanner.sigma_dl()),
-        rho_(n_voxels, F(1.0)),
+        rho_(geometry.grid.n_columns, geometry.grid.n_rows, n_planes, 1),
         n_threads_(omp_get_max_threads()),
-        thread_rhos_(n_threads_),
-        thread_kernel_caches_(n_threads_),
-        n_events_per_thread_(n_threads_, 0) {}
+        n_events_per_thread_(n_threads_, 0),
+        sensitivity_(geometry.grid.n_columns, geometry.grid.n_rows, n_planes) {
+    for (int i = 0; i < n_threads_; ++i) {
+      thread_rhos_.emplace_back(
+          geometry.grid.n_columns, geometry.grid.n_rows, n_planes);
+      thread_kernel_caches_.emplace_back(
+          geometry.grid.n_columns, geometry.grid.n_rows, n_planes);
+    }
+  }
 
   Point translate_to_point(const Response& response) {
 
@@ -159,7 +167,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
   void calculate_weight() {
     auto& grid = geometry.grid;
-    sensitivity_.assign(grid.n_pixels, 0);
+    sensitivity_.assign(0);
     for (auto& lor_geometry : geometry) {
 
       auto& segment = lor_geometry.segment;
@@ -181,7 +189,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
   void calculate_sensitivity() {
     auto& grid = geometry.grid;
-    sensitivity_.assign(grid.n_pixels, 0);
+    sensitivity_.assign(0);
     for (auto& lor_geometry : geometry) {
 
       for (auto& pixel_info : lor_geometry.pixel_infos) {
@@ -198,10 +206,10 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     pixel_count_ = 0;
     auto grid = geometry.grid;
     for (auto& thread_rho : thread_rhos_) {
-      thread_rho.assign(v_grid.n_voxels, 0);
+      thread_rho.assign(0);
     }
     for (auto& thread_kernel_cache : thread_kernel_caches_) {
-      thread_kernel_cache.assign(v_grid.n_voxels, 0);
+      thread_kernel_cache.assign(0);
     }
     for (auto& n_events : n_events_per_thread_) {
       n_events = 0;
@@ -268,7 +276,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     }    // event loop
     event_count_ = 0;
 
-    rho_.assign(v_grid.n_voxels, 0);
+    rho_.assign(0);
     for (int thread = 0; thread < n_threads_; ++thread) {
       for (int i = 0; i < v_grid.n_voxels; ++i) {
         rho_[i] += thread_rhos_[thread][i];
@@ -302,7 +310,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   const F z_left;
   const S n_planes;
   const PET3D::VoxelGrid<F, S> v_grid;
-  const int n_voxels;
 
  private:
   std::vector<FrameEvent> events_;

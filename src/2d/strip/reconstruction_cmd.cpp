@@ -136,7 +136,8 @@ int main(int argc, char* argv[]) {
   auto n_iterations = n_blocks * n_iterations_in_block;
   auto output_name = cl.get<cmdline::path>("output");
   auto output_base_name = output_name.wo_ext();
-  auto output_txt = output_name.ext() == ".txt";
+  auto output_ext = output_name.ext();
+  auto output_txt = output_ext == ".txt";
 
   util::progress progress(verbose, n_iterations, 1);
 
@@ -148,29 +149,21 @@ int main(int argc, char* argv[]) {
         reconstruction.responses.size(),
         n_blocks,
         n_iterations_in_block,
-        [&](int iteration, F* output) {
+        [&](int iteration,
+            const PET2D::Strip::GPU::Reconstruction::Output& output) {
+          if (!output_base_name.length())
+            return;
           auto fn = iteration >= 0
                         ? output_base_name.add_index(iteration, n_iterations)
                         : "_sensitivity";
-
           util::png_writer png(fn + ".png");
-          png.write(scanner.n_z_pixels, scanner.n_y_pixels, output);
-
+          png << output;
           if (output_txt) {
             std::ofstream txt(fn + ".txt");
-            txt.precision(12);
-            txt << std::fixed;
-            for (int y = 0; y < scanner.n_y_pixels; ++y) {
-              for (auto x = 0; x < scanner.n_z_pixels; ++x) {
-                auto value = output[y * scanner.n_z_pixels + x];
-                if (value >= 0.000000000001f) {
-                  txt << x << ' ' << y << ' ' << value << std::endl;
-                }
-              }
-            }
+            txt << output;
           } else {
-            util::obstream bin(fn + ".bin");
-            bin.write(output, scanner.total_n_pixels);
+            util::obstream bin(fn + output_ext);
+            bin << output;
           }
         },
         [&](int completed, bool finished) { progress(completed, finished); },
@@ -194,22 +187,22 @@ int main(int argc, char* argv[]) {
       reconstruction(
           progress, n_iterations_in_block, block * n_iterations_in_block);
 
-      if (output_base_name.length()) {
-        auto fn = output_base_name.add_index(
-            (block + 1) * n_iterations_in_block, n_iterations);
+      if (!output_base_name.length())
+        continue;
+      auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
+                                           n_iterations);
 
-        util::png_writer png(fn + ".png", cl.get<double>("png-max"));
-        reconstruction.output_bitmap(png);
+      util::png_writer png(fn + ".png", cl.get<double>("png-max"));
+      reconstruction.output_bitmap(png);
 
-        if (output_txt) {
-          std::ofstream txt(fn + ".txt");
-          txt.precision(12);
-          txt << std::fixed;
-          reconstruction.output_tuples(txt);
-        } else {
-          util::obstream bin(fn + ".bin");
-          reconstruction >> bin;
-        }
+      if (output_txt) {
+        std::ofstream txt(fn + ".txt");
+        txt.precision(12);
+        txt << std::fixed;
+        reconstruction.output_tuples(txt);
+      } else {
+        util::obstream bin(fn + ".bin");
+        reconstruction >> bin;
       }
     }
 #if USE_STATISTICS

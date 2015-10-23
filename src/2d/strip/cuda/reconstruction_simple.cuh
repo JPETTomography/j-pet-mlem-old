@@ -10,6 +10,7 @@
 namespace PET2D {
 namespace Strip {
 namespace GPU {
+namespace Reconstruction {
 
 template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(Scanner<F> scanner,
@@ -18,8 +19,6 @@ __global__ void reconstruction(Scanner<F> scanner,
                                F* responses_dl,
                                const int n_responses,
                                F* output_rho) {
-  using Point = PET2D::Point<F>;
-  using Pixel = PET2D::Pixel<>;
   using Response = Strip::Response<F>;
 
   // mark variables used
@@ -80,6 +79,7 @@ __global__ void reconstruction(Scanner<F> scanner,
   }
 }
 
+}  // Reconstruction
 }  // GPU
 }  // Strip
 }  // PET2D

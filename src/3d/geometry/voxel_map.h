@@ -1,80 +1,116 @@
 #pragma once
 
-#include <vector>
+#if !__CUDACC__
 #include <ostream>
-
 #include "util/png_writer.h"
+#include "util/bstream.h"
+#endif
 
 namespace PET3D {
 
 /// Cubical map of voxels aka 3D image
 ////
 /// Can be used to write voxels to PNG or generic stream
-template <typename VoxelType, typename ValueType>
-class VoxelMap : std::vector<ValueType> {
+template <typename VoxelType, typename ValueType> class VoxelMap {
  public:
   using Voxel = VoxelType;
   using S = typename Voxel::S;
   using Size = typename Voxel::Size;
   using Value = ValueType;
-  using Base = std::vector<Value>;
-  using iterator = typename Base::iterator;
-  using const_iterator = typename Base::const_iterator;
+  using iterator = Value*;
+  using const_iterator = const Value*;
+
+  /// Creates new voxel map of given dimensions initialized to zero
+  VoxelMap(S width, S height, S depth)
+      : size(static_cast<Size>(width) * height * depth),
+        width(width),
+        height(height),
+        depth(depth),
+        data(new Value[size]()),
+        owning(true) {}
 
   /// Creates new voxel map of given dimensions and default value
-  VoxelMap(S width, S height, S depth, ValueType value = 0)
-      : Base(static_cast<Size>(width) * height * depth, value),
+  VoxelMap(S width, S height, S depth, const Value& value)
+      : size(static_cast<Size>(width) * height * depth),
         width(width),
-        height(height) {}
+        height(height),
+        depth(depth),
+        data(new Value[size]),
+        owning(true) {
+    assign(value);
+  }
+
+  /// Creates new voxel map of given dimensions and existing data
+  VoxelMap(S width, S height, S depth, Value* data)
+      : size(static_cast<Size>(width) * height * depth),
+        width(width),
+        height(height),
+        depth(depth),
+        data(data),
+        owning(false) {}
+
   /// Copy constructor
   VoxelMap(const VoxelMap& other)
-      : Base(other),
+      : size(other.size),
         width(other.width),
         height(other.height),
-        depth(other.depth) {}
+        depth(other.depth),
+        data(other.owning ? new Value[size] : other.data),
+        owning(other.owning) {
+    if (owning) {
+      memcpy(data, other.data, size * sizeof(Value));
+    }
+  }
+
   /// Move constructor
   VoxelMap(VoxelMap&& other)
-      : Base(other),
+      : size(other.size),
         width(other.width),
         height(other.height),
-        depth(other.depth) {}
-
-  VoxelMap& operator=(const VoxelMap& other) {
-    if (other.width != width || other.height != height || other.depth != depth)
-      throw("cannot assign voxel map of diffent size");
-    Base::operator=(other);
-    return *this;
+        depth(other.depth),
+        data(other.data),
+        owning(other.owning) {
+    // make other object not to release its memory
+    other.owning = false;
   }
-  VoxelMap& operator=(VoxelMap&& other) {
-    if (other.width != width || other.height != height || other.depth != depth)
-      throw("cannot assign voxel map of diffent size");
-    Base::operator=(other);
-    return *this;
+
+  /// Destroys underlying data (only if it is managed)
+  ~VoxelMap() {
+    if (owning && data) {
+      delete[] data;
+    }
   }
 
   Value& operator[](const Voxel& voxel) {
-    return this->at(voxel.index(width, depth));
+    return data[voxel.index(width, height)];
   }
   const Value& operator[](const Voxel& voxel) const {
-    return this->at(voxel.index(width, depth));
+    return data[voxel.index(width, height)];
   }
-  Value& operator[](Size index) { return this->at(index); }
-  const Value& operator[](Size index) const { return this->at(index); }
+  Value& operator[](Size index) { return data[index]; }
+  const Value& operator[](Size index) const { return data[index]; }
 
-  void assign(const Value& v) { Base::assign(this->size(), v); }
+  void assign(const Value& value) {
+    for (auto& element : *this) {
+      element = value;
+    }
+  }
 
-  iterator begin() { return Base::begin(); }
-  const_iterator begin() const { return Base::begin(); }
-  iterator end() { return Base::end(); }
-  const_iterator end() const { return Base::end(); }
+  iterator begin() { return data; }
+  const_iterator begin() const { return data; }
+  iterator end() { return &data[size]; }
+  const_iterator end() const { return &data[size]; }
 
+  const Size size;
   const S width;
   const S height;
   const S depth;
+  Value* const data;
 
+#if !__CUDACC__
   friend util::png_writer& operator<<(util::png_writer& png,
                                       const VoxelMap& map) {
-    png.write(map.width, map.height * map.depth, map.data());
+    png.write(map.width, map.height * map.depth, map.data);
     return png;
   }
 
@@ -92,6 +128,15 @@ class VoxelMap : std::vector<ValueType> {
     }
     return out;
   }
+
+  friend util::obstream& operator<<(util::obstream& out, const VoxelMap& map) {
+    out.write(map.data, map.size);
+    return out;
+  }
+#endif
+
+ private:
+  bool owning;  ///< are we owning the data pointer?
 };
 
 }  // PET2D

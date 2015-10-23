@@ -2,6 +2,7 @@
 
 #include "../../geometry/point.h"
 #include "../../geometry/pixel.h"
+#include "../../geometry/pixel_map.h"
 
 #include "../lor.h"
 #include "../simple_geometry.h"
@@ -14,19 +15,17 @@ namespace PET2D {
 namespace Barrel {
 /// CUDA optimized subimplementation
 namespace GPU {
+namespace LMReconstruction {
 
 /// \cond PRIVATE
-
 using Point = PET2D::Point<F>;
 using Pixel = PET2D::Pixel<S>;
 using LOR = Barrel::LOR<S>;
 using Event = Barrel::LMReconstruction<F, S>::Event;
 using SimpleGeometry = Barrel::SimpleGeometry<F, S, Hit>;
 using PixelInfo = SimpleGeometry::PixelInfo;
-
+using Output = PixelMap<Pixel, F>;
 /// \endcond
-
-namespace LMReconstruction {
 
 /// CUDA optimized reconstruction implementation
 void run(const SimpleGeometry& geometry,
@@ -37,7 +36,7 @@ void run(const SimpleGeometry& geometry,
          int height,
          int n_iteration_blocks,
          int n_iterations_in_block,
-         util::delegate<void(int iteration, float* rho)> output,
+         util::delegate<void(int iteration, const Output& output)> output,
          util::delegate<void(int completed, bool finished)> progress,
          int device,
          int n_blocks,
