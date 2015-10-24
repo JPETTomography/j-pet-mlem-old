@@ -34,4 +34,60 @@ TEST("2d/barrel/generic_scanner/detection/") {
     CHECK(full_response.dl == Approx(0));
   }
 
+  SECTION("non central event right") {
+    Event e(0.2, 0.0, 0);
+    FullResponse full_response;
+    RNG rng;
+    Common::AlwaysAccept<F> model;
+    auto hits = scanner.detect(rng, model, e, full_response);
+
+    CHECK(hits == 2);
+
+    CHECK(full_response.lor.first == 16);
+    CHECK(full_response.lor.second == 0);
+    CHECK(full_response.dl == Approx(0.43 + 0.2 - (0.43 - 0.2)));
+  }
+
+  SECTION("non central event left ") {
+    Event e(-0.2, 0.0, 0);
+    FullResponse full_response;
+    RNG rng;
+    Common::AlwaysAccept<F> model;
+    auto hits = scanner.detect(rng, model, e, full_response);
+
+    CHECK(hits == 2);
+
+    CHECK(full_response.lor.first == 16);
+    CHECK(full_response.lor.second == 0);
+    CHECK(full_response.dl == Approx(0.43 - 0.2 - (0.43 + 0.2)));
+  }
+
+
+  SECTION("non central event 90 degrees") {
+    Event e(0.0, 0.2, M_PI/2);
+    FullResponse full_response;
+    RNG rng;
+    Common::AlwaysAccept<F> model;
+    auto hits = scanner.detect(rng, model, e, full_response);
+
+    CHECK(hits == 2);
+
+    CHECK(full_response.lor.first == 24);
+    CHECK(full_response.lor.second == 8);
+    CHECK(full_response.dl == Approx(0.43 + 0.2 - (0.43 - 0.2)));
+  }
+
+  SECTION("non central event 90 degrees oposite") {
+    Event e(0.0, -0.2, M_PI/2);
+    FullResponse full_response;
+    RNG rng;
+    Common::AlwaysAccept<F> model;
+    auto hits = scanner.detect(rng, model, e, full_response);
+
+    CHECK(hits == 2);
+
+    CHECK(full_response.lor.first == 24);
+    CHECK(full_response.lor.second == 8);
+    CHECK(full_response.dl == Approx(0.43 - 0.2 - (0.43 + 0.2)));
+  }
 }
