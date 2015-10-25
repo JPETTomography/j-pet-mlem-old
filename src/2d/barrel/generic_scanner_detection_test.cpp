@@ -20,11 +20,13 @@ TEST("2d/barrel/generic_scanner/detection/") {
   Detector scanner = PET2D::Barrel::ScannerBuilder<Detector>::build_single_ring(
       0.43, 32, F(.005), F(.019));
 
+  Common::AlwaysAccept<F> model;
+
   SECTION("central event") {
     Event e(0, 0, 0);
     FullResponse full_response;
     RNG rng;
-    Common::AlwaysAccept<F> model;
+
     auto hits = scanner.detect(rng, model, e, full_response);
 
     CHECK(hits == 2);
@@ -38,7 +40,7 @@ TEST("2d/barrel/generic_scanner/detection/") {
     Event e(0.2, 0.0, 0);
     FullResponse full_response;
     RNG rng;
-    Common::AlwaysAccept<F> model;
+
     auto hits = scanner.detect(rng, model, e, full_response);
 
     CHECK(hits == 2);
@@ -52,7 +54,7 @@ TEST("2d/barrel/generic_scanner/detection/") {
     Event e(-0.2, 0.0, 0);
     FullResponse full_response;
     RNG rng;
-    Common::AlwaysAccept<F> model;
+
     auto hits = scanner.detect(rng, model, e, full_response);
 
     CHECK(hits == 2);
@@ -62,12 +64,11 @@ TEST("2d/barrel/generic_scanner/detection/") {
     CHECK(full_response.dl == Approx(0.43 - 0.2 - (0.43 + 0.2)));
   }
 
-
   SECTION("non central event 90 degrees") {
-    Event e(0.0, 0.2, M_PI/2);
+    Event e(0.0, 0.2, M_PI / 2);
     FullResponse full_response;
     RNG rng;
-    Common::AlwaysAccept<F> model;
+
     auto hits = scanner.detect(rng, model, e, full_response);
 
     CHECK(hits == 2);
@@ -78,10 +79,10 @@ TEST("2d/barrel/generic_scanner/detection/") {
   }
 
   SECTION("non central event 90 degrees oposite") {
-    Event e(0.0, -0.2, M_PI/2);
+    Event e(0.0, -0.2, M_PI / 2);
     FullResponse full_response;
     RNG rng;
-    Common::AlwaysAccept<F> model;
+
     auto hits = scanner.detect(rng, model, e, full_response);
 
     CHECK(hits == 2);
