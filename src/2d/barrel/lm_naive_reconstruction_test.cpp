@@ -55,5 +55,46 @@ TEST("2d/barrel/lm_reconstruction/naive") {
     CHECK(response.dl == Approx(0));
 
     reconstruction.add(response);
+
+    auto event = reconstruction.event(0);
+
+    auto p = event.p;
+
+    CHECK(p.x == Approx(0));
+    CHECK(p.y == Approx(0));
+
   }
+
+  SECTION("right event") {
+    Event e(0.2, 0, 0);
+    FullResponse full_response;
+    RNG rng;
+
+    auto hits = scanner.detect(rng, model, e, full_response);
+
+    CHECK(hits == 2);
+
+    CHECK(full_response.lor.first == 16);
+    CHECK(full_response.lor.second == 0);
+    CHECK(full_response.dl == Approx(0.4));
+
+    Response response = scanner.response_wo_error(full_response);
+
+    CHECK(response.lor.first == 16);
+    CHECK(response.lor.second == 0);
+    CHECK(response.dl == Approx(0.4));
+
+    reconstruction.add(response);
+
+
+    auto event = reconstruction.event(0);
+
+    auto p = event.p;
+
+
+    CHECK(p.x == Approx(0.2));
+    CHECK(p.y == Approx(0));
+
+  }
+
 }
