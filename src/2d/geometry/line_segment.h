@@ -34,9 +34,23 @@ template <typename FType> struct LineSegment {
         distance_from_origin(start.as_vector().dot(normal)) {}
 
 #if !__CUDACC__
-  LineSegment(std::istream& in) : LineSegment(Point(in), Point(in)) {}
+  LineSegment(std::istream& in)
+      : start(in),
+        end(in),
+        mid_point(Point((start.x + end.x) / 2, (start.y + end.y) / 2)),
+        direction((end - start).normalized()),
+        normal(direction.perpendicular()),
+        length((end - start).length()),
+        distance_from_origin(start.as_vector().dot(normal)) {}
 
-  LineSegment(util::ibstream& in) : LineSegment(Point(in), Point(in)) {}
+  LineSegment(util::ibstream& in)
+      : start(in),
+        end(in),
+        mid_point(Point((start.x + end.x) / 2, (start.y + end.y) / 2)),
+        direction((end - start).normalized()),
+        normal(direction.perpendicular()),
+        length((end - start).length()),
+        distance_from_origin(start.as_vector().dot(normal)) {}
 
   friend util::obstream& operator<<(util::obstream& out,
                                     const LineSegment& segment) {

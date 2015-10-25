@@ -43,3 +43,21 @@ TEST("2d/geometry/distance_sign") {
     REQUIRE(1 == segment.distance_from(Point(-1, 0)));
   }
 }
+
+
+TEST("2d/geometry/line_segment/write_read") {
+  Point start(3, 0);
+  Point end(0, 6);
+
+  LineSegment segment(start, end);
+
+  util::obstream out("test_output/segment_test");
+  out<<segment;
+  out.close();
+
+  util::ibstream in("test_output/segment_test");
+  LineSegment segment_copy(in);
+
+  CHECK(segment.start == segment_copy.start);
+
+}

@@ -18,8 +18,13 @@ TEST("2d/barrel/lm_reconstruction/naive") {
   using Response = typename Detector::Response;
   using FullResponse = typename Detector::FullResponse;
 
+  const int N_DETECTORS = 32;
+  const float radius = 0.43;
+  const float height = 0.019;
+  const float width = 0.005;
+
   Detector scanner = PET2D::Barrel::ScannerBuilder<Detector>::build_single_ring(
-      0.43, 32, F(.005), F(.019));
+      radius, N_DETECTORS, F(width), F(height));
 
   util::ibstream in_geometry("test_input/g_test");
   REQUIRE(in_geometry.is_open());
@@ -31,7 +36,7 @@ TEST("2d/barrel/lm_reconstruction/naive") {
   CHECK(geometry.grid.n_rows == 64);
   CHECK(geometry.grid.pixel_size == Approx(0.01));
 
-  PET2D::Barrel::LMReconstruction<F, S,32> reconstruction(geometry, 0.04);
+  PET2D::Barrel::LMReconstruction<F, S, 32> reconstruction(geometry, 0.04);
 
   Common::AlwaysAccept<F> model;
 
@@ -62,7 +67,6 @@ TEST("2d/barrel/lm_reconstruction/naive") {
 
     CHECK(p.x == Approx(0));
     CHECK(p.y == Approx(0));
-
   }
 
   SECTION("right event") {
@@ -80,21 +84,31 @@ TEST("2d/barrel/lm_reconstruction/naive") {
 
     Response response = scanner.response_wo_error(full_response);
 
+
+
     CHECK(response.lor.first == 16);
     CHECK(response.lor.second == 0);
     CHECK(response.dl == Approx(0.4));
 
+    auto c=scanner[response.lor.second].center();
+    CHECK(c.x==Approx(radius + height / 2));
+
     reconstruction.add(response);
 
-
     auto event = reconstruction.event(0);
+    CHECK(event.t ==
+          Approx((radius + height / 2 - 0.2) / (2 * radius + height)));
+
+    auto lor_geometry = geometry[response.lor];
+    auto segment = lor_geometry.segment;
+    auto start = segment.start;
+    auto end = segment.end;
+
+    CHECK(start.x == Approx(radius + height / 2));
+    CHECK(end.x == Approx(-(radius + height / 2)));
 
     auto p = event.p;
-
-
     CHECK(p.x == Approx(0.2));
     CHECK(p.y == Approx(0));
-
   }
-
 }
