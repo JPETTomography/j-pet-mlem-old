@@ -85,10 +85,12 @@ TEST("2d/geometry/circle/secant") {
 }
 
 TEST("2d/geometry/circle/secant/math") {
-  std::ifstream in("math/secant_test.tab");
+  std::ifstream in("test_input/secant_test.tab");
 
   if (!in) {
-    WARN("cannot open file `math/secant_test.tab'");
+    WARN(
+        "cannot open file `test_input/secant_test.tab', "
+        "evaluate `math/secant_test.nb'");
     return;
   }
 

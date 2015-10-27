@@ -1,9 +1,38 @@
 Notebook[{
+
+Cell[CellGroupData[{
+Cell["Setup test_input directory", "Section"],
+
 Cell[BoxData[
  RowBox[{"SetDirectory", "@", 
   RowBox[{"FileNameJoin", "@", 
    RowBox[{"{", 
     RowBox[{"NotebookDirectory", "[", "]"}], "}"}]}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"If", "[", 
+  RowBox[{
+   RowBox[{"DirectoryQ", "@", 
+    RowBox[{"FileNameJoin", "@", 
+     RowBox[{"{", 
+      RowBox[{"\"\<..\>\"", ",", "\"\<test_input\>\""}], "}"}]}]}], ",", ",", 
+   
+   RowBox[{"CreateDirectory", "@", 
+    RowBox[{"FileNameJoin", "@", 
+     RowBox[{"{", 
+      RowBox[{"\"\<..\>\"", ",", "\"\<test_input\>\""}], "}"}]}]}]}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"SetDirectory", "@", 
+  RowBox[{"FileNameJoin", "@", 
+   RowBox[{"{", 
+    RowBox[{"\"\<..\>\"", ",", "\"\<test_input\>\""}], "}"}]}]}]], "Input"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Produce data", "Section"],
 
 Cell[BoxData[
  RowBox[{
@@ -229,13 +258,14 @@ Cell[BoxData[
 
 Cell[BoxData[
  RowBox[{"Close", "[", "chanel", "]"}]], "Input"]
+}, Open  ]]
 },
 WindowSize->{1434, 1040},
 WindowMargins->{{Automatic, 68}, {Automatic, 0}},
 PrivateNotebookOptions->{"FileOutlineCache"->False},
 TrackCellChangeTimes->False,
-FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (September 9, \
-2014)",
+FrontEndVersion->"10.2 for Mac OS X x86 (32-bit, 64-bit Kernel) (July 6, \
+2015)",
 StyleDefinitions->"Default.nb"
 ]
 

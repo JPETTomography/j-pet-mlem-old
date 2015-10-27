@@ -1,9 +1,38 @@
 Notebook[{
+
+Cell[CellGroupData[{
+Cell["Setup test_input directory", "Section"],
+
 Cell[BoxData[
  RowBox[{"SetDirectory", "@", 
   RowBox[{"FileNameJoin", "@", 
    RowBox[{"{", 
     RowBox[{"NotebookDirectory", "[", "]"}], "}"}]}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"If", "[", 
+  RowBox[{
+   RowBox[{"DirectoryQ", "@", 
+    RowBox[{"FileNameJoin", "@", 
+     RowBox[{"{", 
+      RowBox[{"\"\<..\>\"", ",", "\"\<test_input\>\""}], "}"}]}]}], ",", ",", 
+   
+   RowBox[{"CreateDirectory", "@", 
+    RowBox[{"FileNameJoin", "@", 
+     RowBox[{"{", 
+      RowBox[{"\"\<..\>\"", ",", "\"\<test_input\>\""}], "}"}]}]}]}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"SetDirectory", "@", 
+  RowBox[{"FileNameJoin", "@", 
+   RowBox[{"{", 
+    RowBox[{"\"\<..\>\"", ",", "\"\<test_input\>\""}], "}"}]}]}]], "Input"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Prepare data", "Section"],
 
 Cell[BoxData[{
  RowBox[{
@@ -150,8 +179,6 @@ Cell[BoxData[
       RowBox[{"{", 
        RowBox[{"x", ",", "y"}], "}"}], "-", "center"}], ")"}]}], "+", 
    "center"}]}]], "Input"],
-
-Cell[BoxData[""], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -460,8 +487,6 @@ Cell[BoxData[
          RowBox[{"r", "^", "2"}]}]}], ")"}], "&"}]}], "]"}]}], 
   ";"}]], "Input"],
 
-Cell[BoxData[""], "Input"],
-
 Cell[BoxData[
  RowBox[{
   RowBox[{"lines", "=", 
@@ -494,8 +519,6 @@ Cell[BoxData[
      RowBox[{"sdata", ",", "lengths", ",", "inters"}], "]"}]}]}], 
   ";"}]], "Input"],
 
-Cell[BoxData[""], "Input"],
-
 Cell[BoxData[{
  RowBox[{"out", "=", 
   RowBox[{
@@ -512,13 +535,14 @@ Cell[BoxData[{
   RowBox[{"out", ",", "exp", ",", "\"\<Table\>\""}], 
   "]"}], "\[IndentingNewLine]", 
  RowBox[{"Close", "[", "out", "]"}]}], "Input"]
+}, Open  ]]
 },
-WindowSize->{1075, 986},
-WindowMargins->{{Automatic, 12}, {-230, 0}},
+WindowSize->{1219, 986},
+WindowMargins->{{Automatic, 12}, {Automatic, 0}},
 PrivateNotebookOptions->{"FileOutlineCache"->False},
 TrackCellChangeTimes->False,
-FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (December 4, \
-2014)",
+FrontEndVersion->"10.2 for Mac OS X x86 (32-bit, 64-bit Kernel) (July 6, \
+2015)",
 StyleDefinitions->"Default.nb"
 ]
 

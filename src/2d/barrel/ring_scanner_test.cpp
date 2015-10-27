@@ -15,10 +15,12 @@ using Model = Common::AlwaysAccept<F>;
 
 TEST("2d/barrel/scanner/math") {
 
-  std::ifstream in("math/scanner_test.tab");
+  std::ifstream in("test_input/scanner_test.tab");
 
   if (!in) {
-    WARN("cannot open file `math/scanner_test.tab'");
+    WARN(
+        "cannot open file `test_input/scanner_test.tab', "
+        "evaluate `math/polygon_test.nb'");
     return;
   }
 
