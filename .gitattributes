@@ -1,0 +1,4 @@
+*.cpp  filter=format
+*.h    filter=format
+*.cu   filter=format
+*.cuh  filter=format

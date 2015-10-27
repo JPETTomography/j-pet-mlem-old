@@ -147,15 +147,26 @@ This project follows *C++11* and [Chromium/Google source coding style][style]
 with custom settings described in `.clang-format`.
 
 Prior committing code should be formatted using [clang-format][clang-format]
-script calling:
+using following methods:
 
-	./scripts/format
+1. Automatically using *Git* clean filter executed on each change introduced to
+   index.
+
+   This is set up running following command in root of the project:
+
+       git config filter.format.clean $PWD/scripts/format-filter
+
+2. Manually, calling following script in root of the project:
+
+       ./scripts/format
+
+3. Using *Qt Creator* 3.1 or newer *ClangFormat* beautifier.
+
+   *File* format must be selected in *Settings > Beautifier > Clang Format >
+   Style*.
 
 When using *Qt Creator* code style used in this project can be imported using
 *Settings > C++ > Code Style > Import* from `src/Google.xml` file.
-
-*Qt Creator* 3.1 supports also *ClangFormat* beautifier, however *File* format
-should be selected in *Settings > Beautifier > Clang Format > Style*.
 
 Naming Convention
 -----------------
