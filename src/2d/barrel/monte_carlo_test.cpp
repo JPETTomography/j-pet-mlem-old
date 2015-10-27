@@ -32,6 +32,6 @@ F strip_length = 0.300;
 }
 
 TEST("2d/barrel/phantom_monte_carlo") {
-    auto scanner2d = PET2D::Barrel::ScannerBuilder<Scanner>::build_single_ring(
-        inner_radius, 32, strip_width, strip_height);
+  auto scanner2d = PET2D::Barrel::ScannerBuilder<Scanner>::build_single_ring(
+      inner_radius, 32, strip_width, strip_height);
 }

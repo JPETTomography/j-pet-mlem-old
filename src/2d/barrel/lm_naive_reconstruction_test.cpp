@@ -84,14 +84,12 @@ TEST("2d/barrel/lm_reconstruction/naive") {
 
     Response response = scanner.response_wo_error(full_response);
 
-
-
     CHECK(response.lor.first == 16);
     CHECK(response.lor.second == 0);
     CHECK(response.dl == Approx(0.4));
 
-    auto c=scanner[response.lor.second].center();
-    CHECK(c.x==Approx(radius + height / 2));
+    auto c = scanner[response.lor.second].center();
+    CHECK(c.x == Approx(radius + height / 2));
 
     reconstruction.add(response);
 

@@ -44,7 +44,6 @@ TEST("2d/geometry/distance_sign") {
   }
 }
 
-
 TEST("2d/geometry/line_segment/write_read") {
   Point start(3, 0);
   Point end(0, 6);
@@ -52,12 +51,11 @@ TEST("2d/geometry/line_segment/write_read") {
   LineSegment segment(start, end);
 
   util::obstream out("test_output/segment_test");
-  out<<segment;
+  out << segment;
   out.close();
 
   util::ibstream in("test_output/segment_test");
   LineSegment segment_copy(in);
 
   CHECK(segment.start == segment_copy.start);
-
 }

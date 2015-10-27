@@ -21,9 +21,11 @@ namespace PET2D {
 namespace Barrel {
 
 /// 2D barrel list-mode reconstuction
-template <typename FType, typename SType, std::size_t MaxDetectorsSize = 192> class LMReconstruction {
+template <typename FType, typename SType, std::size_t MaxDetectorsSize = 192>
+class LMReconstruction {
   using Detector = PET2D::Barrel::SquareDetector<FType>;
-  using Scanner2D = PET2D::Barrel::DetectorSet<Detector, SType, MaxDetectorsSize>;
+  using Scanner2D =
+      PET2D::Barrel::DetectorSet<Detector, SType, MaxDetectorsSize>;
 
  public:
   using F = FType;
