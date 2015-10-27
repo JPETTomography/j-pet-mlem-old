@@ -63,6 +63,15 @@ template <typename FType, typename SType> struct LORGeometry {
     }
   }
 
+  friend std::ostream& operator<<(std::ostream& out,
+                                  const LORGeometry& lor_info) {
+    out << lor_info.lor.first << ' ' << lor_info.lor.second << ' '
+        << lor_info.segment << ' '  //
+        << lor_info.width << ' '    //
+        << 0;  // FIXME: unsupported serialization to text stream
+    return out;
+  }
+
   friend util::obstream& operator<<(util::obstream& out,
                                     const LORGeometry& lor_info) {
     out << lor_info.lor;

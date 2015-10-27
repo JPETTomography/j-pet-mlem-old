@@ -81,6 +81,13 @@ template <typename FType, typename SType> class PixelGrid {
         lower_left_center(lower_left + Vector(pixel_size / 2, pixel_size / 2)),
         n_pixels(n_columns * n_rows) {}
 
+  /// Output pixel grid to text stream
+  friend std::ostream& operator<<(std::ostream& out, const PixelGrid& pg) {
+    out << pg.n_columns << ' ' << pg.n_rows << ' ' << pg.pixel_size << ' '
+        << pg.lower_left;
+    return out;
+  }
+
   /// Output pixel grid to binary stream
   friend util::obstream& operator<<(util::obstream& out, const PixelGrid& pg) {
     out << pg.n_columns << pg.n_rows << pg.pixel_size << pg.lower_left;

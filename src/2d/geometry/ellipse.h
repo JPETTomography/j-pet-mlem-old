@@ -57,6 +57,13 @@ template <typename FType> struct Ellipse {
       : Ellipse(x, y, a, util::read<F>(in), in) {}
   Ellipse(F x, F y, F a, F b, std::istream& in)
       : Ellipse(x, y, a, b, util::read<F>(in)) {}
+
+ public:
+  friend std::ostream& operator<<(std::ostream& out, const Ellipse& ellipse) {
+    out << ellipse.center << ' ' << ellipse.a << ' ' << ellipse.b << ' '
+        << ellipse.angle;
+    return out;
+  }
 #endif
 };
 

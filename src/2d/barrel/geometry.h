@@ -58,6 +58,7 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
   Geometry(util::ibstream& in) : Geometry(in.read<uint32_t>(), in) {}
 
  private:
+  // This private proxy constructor guarantee proper read order
   Geometry(S n_detectors, std::istream& in)
       : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
         n_detectors(n_detectors),
@@ -88,19 +89,9 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
  public:
   /// Serialize geometry into output stream
   friend std::ostream& operator<<(std::ostream& out, const Geometry& geometry) {
-    for (int d1 = 0; d1 < geometry.n_detectors; ++d1) {
-      for (int d2 = 0; d2 < d1; ++d2) {
-        LOR lor(d1, d2);
-        auto lor_index = lor.index();
-        if (geometry[lor_index].pixel_infos.size() > 0) {
-          out << d1 << ' ' << d2 << ' ' << geometry[lor_index].width
-              << std::endl;
-          for (PixelInfo& info : geometry[lor_index].pixel_infos) {
-            out << info.pixel.x << ' ' << info.pixel.y << ' ' << info.t << " "
-                << info.distance << ' ' << info.fill << std::endl;
-          }
-        }
-      }
+    out << geometry.n_detectors << '\n' << geometry.grid;
+    for (const auto& lor_geometry : geometry) {
+      out << '\n' << lor_geometry;
     }
     return out;
   }
