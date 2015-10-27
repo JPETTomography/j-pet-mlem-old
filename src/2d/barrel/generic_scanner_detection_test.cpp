@@ -14,7 +14,6 @@ TEST("2d/barrel/generic_scanner/detection/") {
   using Event = Detector::Event;
   using RNG = std::mt19937_64;
 
-  using Response = typename Detector::Response;
   using FullResponse = typename Detector::FullResponse;
 
   Detector scanner = PET2D::Barrel::ScannerBuilder<Detector>::build_single_ring(
