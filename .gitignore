@@ -11,6 +11,9 @@
 # ignore articles
 /articles/
 
+# generated test input
+/test_input/
+
 # Doxygen output
 /doc/html/
 /doc/doxygen_sqlite3.db

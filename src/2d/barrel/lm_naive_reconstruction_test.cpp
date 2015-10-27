@@ -29,7 +29,7 @@ TEST("2d/barrel/lm_reconstruction/naive") {
   util::ibstream in_geometry("test_input/g_test");
 
   if (!in_geometry) {
-    WARN("cannot open file `test_input/g_test'");
+    WARN("cannot open file `test_input/g_test', use `scripts/prepare_test.sh'");
     return;
   }
 
