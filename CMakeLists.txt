@@ -261,6 +261,8 @@ add_custom_target(extra SOURCES
   Doxyfile
   DoxygenLayout.xml
   .clang-format
+  .gitignore
+  .gitattributes
   ${EXTRA})
 
 # tests
