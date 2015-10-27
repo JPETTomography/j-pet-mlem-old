@@ -37,9 +37,9 @@ template <typename FType> class Event {
 
 #if !__CUDACC__
   friend std::ostream& operator<<(std::ostream& out, const Event& event) {
-    out << event.origin.x << " " << event.origin.y << " " << event.origin.z
+    out << event.origin.x << ' ' << event.origin.y << ' ' << event.origin.z
         << " ";
-    out << event.direction.x << " " << event.direction.y << " "
+    out << event.direction.x << ' ' << event.direction.y << " "
         << event.direction.z;
     return out;
   }

@@ -56,10 +56,10 @@ template <class Scanner2DClass> class Scanner {
     friend std::ostream& operator<<(std::ostream& out,
                                     const FullResponse& response) {
 
-      out << response.detector1 << " " << response.detector2;
-      out << " " << response.d1_entry << " " << response.d1_exit << " "
+      out << response.detector1 << ' ' << response.detector2;
+      out << ' ' << response.d1_entry << ' ' << response.d1_exit << " "
           << response.d1_deposition;
-      out << " " << response.d2_entry << " " << response.d2_exit << " "
+      out << ' ' << response.d2_entry << ' ' << response.d2_exit << " "
           << response.d2_deposition;
       return out;
     }
@@ -85,8 +85,8 @@ template <class Scanner2DClass> class Scanner {
 
     friend std::ostream& operator<<(std::ostream& out,
                                     const Response& response) {
-      out << (int)response.lor.first << " " << (int)response.lor.second << " ";
-      out << response.z_up << " " << response.z_dn << " " << response.dl;
+      out << (int)response.lor.first << ' ' << (int)response.lor.second << " ";
+      out << response.z_up << ' ' << response.z_dn << ' ' << response.dl;
       return out;
     }
 #endif

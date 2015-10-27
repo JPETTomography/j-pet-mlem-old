@@ -50,8 +50,8 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
 
     friend std::ostream& operator<<(std::ostream& out,
                                     const Response& response) {
-      out << response.lor.first << " " << response.lor.second << " "
-          << response.tof_position << " " << response.dl;
+      out << response.lor.first << ' ' << response.lor.second << " "
+          << response.tof_position << ' ' << response.dl;
       return out;
     }
 #endif

@@ -246,10 +246,10 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
             int bin_index =
                 d1 * n_detectors * n_tof_positions + d2 * n_tof_positions + tof;
             if (bins_wo_error[bin_index] > 0)
-              out_bins_wo_error << d1 << " " << d2 << " " << tof << " "
+              out_bins_wo_error << d1 << ' ' << d2 << ' ' << tof << " "
                                 << bins_wo_error[bin_index] << "\n";
             if (bins_w_error[bin_index] > 0)
-              out_bins_w_error << d1 << " " << d2 << " " << tof << " "
+              out_bins_w_error << d1 << ' ' << d2 << ' ' << tof << " "
                                << bins_w_error[bin_index] << "\n";
           }
     } else {

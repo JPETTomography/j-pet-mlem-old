@@ -35,7 +35,7 @@ template <class ScannerClass> class SensitivityMapper {
         voxel_set.grid.lower_left_at(voxel.x, voxel.y, voxel.z);
 
 #if DEBUG
-    std::cout << "emitting from pixel at " << ll.x << " " << ll.y << " " << ll.z
+    std::cout << "emitting from pixel at " << ll.x << ' ' << ll.y << ' ' << ll.z
               << std::endl;
 #endif
 
@@ -47,7 +47,7 @@ template <class ScannerClass> class SensitivityMapper {
 
       auto dir = direction(rng);
 #if DEBUG
-      std::cout << dir.x << " " << dir.y << " " << dir.z << std::endl;
+      std::cout << dir.x << ' ' << dir.y << ' ' << dir.z << std::endl;
 #endif
       Event event(PET3D::Point<F>(rx, ry, rz), dir);
 

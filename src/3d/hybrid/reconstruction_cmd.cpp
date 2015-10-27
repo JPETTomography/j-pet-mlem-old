@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
 
   for (int block = 0; block < n_blocks; ++block) {
     for (int i = 0; i < n_iterations_in_block; i++) {
-      std::cout << block * n_iterations_in_block + i << " " << reconstruction()
+      std::cout << block * n_iterations_in_block + i << ' ' << reconstruction()
                 << "\n";
     }
     auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,

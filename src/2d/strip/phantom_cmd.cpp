@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
   phantom.calculate_cdf();
 
   if (verbose) {
-    std::cerr << "scanner: " << scanner.size_y << " " << scanner.tl_y_half_h
+    std::cerr << "scanner: " << scanner.size_y << ' ' << scanner.tl_y_half_h
               << std::endl;
   }
 

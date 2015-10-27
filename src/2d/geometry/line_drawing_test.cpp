@@ -22,7 +22,7 @@ TEST("2d/geometry/line_drawing") {
     // FIXME: this is NOT a test
     std::cout << "----\n";
     for (Pixel p : pixels) {
-      std::cout << p.x << " " << p.y << "\n";
+      std::cout << p.x << ' ' << p.y << "\n";
     }
 #endif
   }
@@ -36,7 +36,7 @@ TEST("2d/geometry/line_drawing") {
     // FIXME: this is NOT a test
     std::cout << "----\n";
     for (Pixel p : pixels) {
-      std::cout << p.x << " " << p.y << "\n";
+      std::cout << p.x << ' ' << p.y << "\n";
     }
 #endif
   }
@@ -50,7 +50,7 @@ TEST("2d/geometry/line_drawing") {
     // FIXME: this is NOT a test
     std::cout << "----\n";
     for (Pixel p : pixels) {
-      std::cout << p.x << " " << p.y << "\n";
+      std::cout << p.x << ' ' << p.y << "\n";
     }
 #endif
   }

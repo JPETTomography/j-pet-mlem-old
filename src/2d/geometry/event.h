@@ -44,7 +44,7 @@ template <typename FType> struct Event {
 
 #if !__CUDACC__
   friend std::ostream& operator<<(std::ostream& out, const Event& event) {
-    out << event.origin << " " << event.direction;
+    out << event.origin << ' ' << event.direction;
     return out;
   }
 #endif

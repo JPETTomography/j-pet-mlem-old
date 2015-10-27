@@ -93,11 +93,11 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
         LOR lor(d1, d2);
         auto lor_index = lor.index();
         if (geometry[lor_index].pixel_infos.size() > 0) {
-          out << d1 << " " << d2 << " " << geometry[lor_index].width
+          out << d1 << ' ' << d2 << ' ' << geometry[lor_index].width
               << std::endl;
           for (PixelInfo& info : geometry[lor_index].pixel_infos) {
-            out << info.pixel.x << " " << info.pixel.y << " " << info.t << " "
-                << info.distance << " " << info.fill << std::endl;
+            out << info.pixel.x << ' ' << info.pixel.y << ' ' << info.t << " "
+                << info.distance << ' ' << info.fill << std::endl;
           }
         }
       }

@@ -138,7 +138,7 @@ template <class ScannerClass> class ScannerBuilder {
     for (S d = 0; d < n_detectors[0]; ++d) {
       for (S s = 0; s < SymmetryDescriptor<S>::EIGHT; ++s) {
 #if DEBUG
-        std::cerr << d << " " << s << " " << symmetric_detector(d, s) << "\n";
+        std::cerr << d << ' ' << s << ' ' << symmetric_detector(d, s) << "\n";
 #endif
         symmetry_descriptor->set_symmetric_detector(
             d, s, symmetric_detector(d, s));
@@ -179,7 +179,7 @@ template <class ScannerClass> class ScannerBuilder {
 
         for (S s = 0; s < SymmetryDescriptor<S>::EIGHT; ++s) {
 #if DEBUG
-          std::cerr << start_detector << " " << detector_i << " " << s << " "
+          std::cerr << start_detector << ' ' << detector_i << ' ' << s << " "
                     << symmetric_detector(detector_i, s) << "\n";
 #endif
           symmetry_descriptor->set_symmetric_detector(

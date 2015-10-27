@@ -233,7 +233,7 @@ class Reconstruction {
     for (int iy = top_left.y; iy < bottom_right.y; ++iy) {
       for (int iz = top_left.x; iz < bottom_right.x; ++iz) {
 #if DEBUG
-        std::cout << iy << " " << iz << " ";
+        std::cout << iy << ' ' << iz << " ";
 #endif
         stats_.n_pixels_processed_by();
         Pixel pixel(iz, iy);
@@ -242,7 +242,7 @@ class Reconstruction {
         if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
           Vector r = point - ellipse_center;
 #if DEBUG
-          std::cout << r.x << " " << r.y << " ";
+          std::cout << r.x << ' ' << r.y << " ";
 #endif
           auto pixel_index = pixel.index(scanner.n_z_pixels);
 

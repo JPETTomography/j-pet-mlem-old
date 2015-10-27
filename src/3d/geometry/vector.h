@@ -122,7 +122,7 @@ template <typename FType> struct Vector {
   operator json() const { return json{ x, y, z }; }
 
   friend std::ostream& operator<<(std::ostream& out, const Vector& vec) {
-    out << vec.x << " " << vec.y << " " << vec.z;
+    out << vec.x << ' ' << vec.y << ' ' << vec.z;
     return out;
   }
 #endif

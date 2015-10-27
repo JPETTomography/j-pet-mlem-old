@@ -81,7 +81,7 @@ class progress {
         total_ellapsed_ms += ellapsed_ms;
         auto prev_precision = std::cout.precision();
         std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(2)
-                  << std::setw(4) << (completed + 1) << " " << std::setw(10)
+                  << std::setw(4) << (completed + 1) << ' ' << std::setw(10)
                   << ellapsed_ms << std::endl;
         if (completed == total_m_1) {
           std::cout << "# av " << std::setw(10) << total_ellapsed_ms / total
@@ -106,7 +106,7 @@ class progress {
 
       double persec = (double)completed / ellapsed();
 
-      std::cerr << " " << std::round((double)completed / total * 100.0) << "% "
+      std::cerr << ' ' << std::round((double)completed / total * 100.0) << "% "
                 << completed << "/" << total;
 
       if (!std::isnan(persec) && completed > 0) {

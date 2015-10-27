@@ -38,7 +38,7 @@ template <typename FType> struct Response {
 
 #if !__CUDACC__
   friend std::ostream& operator<<(std::ostream& out, const Response& response) {
-    out << response.z_u << " " << response.z_d << " " << response.dl;
+    out << response.z_u << ' ' << response.z_d << ' ' << response.dl;
     return out;
   }
 #endif
