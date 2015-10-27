@@ -34,24 +34,17 @@ template <typename FType> struct LineSegment {
         distance_from_origin(start.as_vector().dot(normal)) {}
 
 #if !__CUDACC__
-  LineSegment(std::istream& in)
-      : start(in),
-        end(in),
-        mid_point(Point((start.x + end.x) / 2, (start.y + end.y) / 2)),
-        direction((end - start).normalized()),
-        normal(direction.perpendicular()),
-        length((end - start).length()),
-        distance_from_origin(start.as_vector().dot(normal)) {}
+  LineSegment(std::istream& in) : LineSegment(Point(in), in) {}
+  LineSegment(util::ibstream& in) : LineSegment(Point(in), in) {}
 
-  LineSegment(util::ibstream& in)
-      : start(in),
-        end(in),
-        mid_point(Point((start.x + end.x) / 2, (start.y + end.y) / 2)),
-        direction((end - start).normalized()),
-        normal(direction.perpendicular()),
-        length((end - start).length()),
-        distance_from_origin(start.as_vector().dot(normal)) {}
+ private:
+  // This private proxy constructors guarantee proper read order:
+  LineSegment(const Point&& start, std::istream& in)
+      : LineSegment(start, Point(in)) {}
+  LineSegment(const Point&& start, util::ibstream& in)
+      : LineSegment(start, Point(in)) {}
 
+ public:
   friend util::obstream& operator<<(util::obstream& out,
                                     const LineSegment& segment) {
     out << segment.start;
