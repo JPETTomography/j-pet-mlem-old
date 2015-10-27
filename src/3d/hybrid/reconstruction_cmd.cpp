@@ -7,7 +7,7 @@
 ///
 /// Usage
 /// -----
-/// \verbinclude src/3d/hybrid/reconstruction_cmd.txt
+/// \verboutput 3d_hybrid_reconstruction
 ///
 /// \sa \ref cmd_3d_hybrid_matrix, \ref cmd_3d_hybrid_phantom
 

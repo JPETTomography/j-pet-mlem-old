@@ -21,7 +21,7 @@
 ///
 /// Usage
 /// -----
-/// \verbinclude src/2d/strip/phantom_cmd.txt
+/// \verboutput 2d_strip_phantom
 ///
 /// \sa \ref cmd_2d_strip_reconstruction
 

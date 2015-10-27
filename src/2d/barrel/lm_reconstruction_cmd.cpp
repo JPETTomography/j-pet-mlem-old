@@ -12,7 +12,7 @@
 ///
 /// Usage
 /// -----
-/// \verbinclude src/2d/barrel/lm_reconstruction_cmd.txt
+/// \verboutput 2d_barrel_lm_reconstruction
 ///
 /// \sa \ref cmd_2d_barrel_geometry, \ref cmd_2d_barrel_phantom
 

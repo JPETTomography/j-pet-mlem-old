@@ -21,7 +21,7 @@
 ///
 /// Usage
 /// -----
-/// \verbinclude src/2d/barrel/matrix_cmd.txt
+/// \verboutput 2d_barrel_matrix
 ///
 /// \sa \ref cmd_2d_barrel_phantom, \ref cmd_2d_barrel_reconstruction
 

@@ -19,7 +19,7 @@
 ///
 /// Usage
 /// -----
-/// \verbinclude src/2d/barrel/reconstruction_cmd.txt
+/// \verboutput 2d_barrel_reconstruction
 ///
 /// \sa \ref cmd_2d_barrel_matrix, \ref cmd_2d_barrel_phantom
 

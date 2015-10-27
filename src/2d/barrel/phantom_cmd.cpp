@@ -22,7 +22,7 @@
 ///
 /// Usage
 /// -----
-/// \verbinclude src/2d/barrel/phantom_cmd.txt
+/// \verboutput 2d_barrel_phantom
 ///
 /// \sa \ref cmd_2d_barrel_matrix, \ref cmd_2d_barrel_reconstruction
 

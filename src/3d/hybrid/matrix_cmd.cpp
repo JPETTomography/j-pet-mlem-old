@@ -11,7 +11,7 @@
 ///
 /// Usage
 /// -----
-/// \verbinclude src/3d/hybrid/matrix_cmd.txt
+/// \verboutput 3d_hybrid_matrix
 ///
 /// \sa \ref cmd_3d_hybrid_phantom
 

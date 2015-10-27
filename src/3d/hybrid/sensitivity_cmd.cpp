@@ -5,7 +5,7 @@
 ///
 /// Usage
 /// -----
-/// \verbinclude src/2d/barrel/matrix_cmd.txt
+/// \verboutput 3d_hybrid_sensitivity
 ///
 /// \sa \ref cmd_3d_hybrid_phantom, \ref cmd_3d_hybrid_matrix
 

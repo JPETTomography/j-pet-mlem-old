@@ -24,7 +24,7 @@
 ///
 /// Usage
 /// -----
-/// \verbinclude src/2d/barrel/geometry_cmd.txt
+/// \verboutput 2d_barrel_geometry
 ///
 /// \sa \ref cmd_2d_barrel_phantom, \ref cmd_2d_barrel_lm_reconstruction
 
