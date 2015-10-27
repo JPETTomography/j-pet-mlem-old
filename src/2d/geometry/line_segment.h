@@ -45,10 +45,14 @@ template <typename FType> struct LineSegment {
       : LineSegment(start, Point(in)) {}
 
  public:
+  friend std::ostream& operator<<(std::ostream& out,
+                                  const LineSegment& segment) {
+    out << segment.start << ' ' << segment.end;
+    return out;
+  }
   friend util::obstream& operator<<(util::obstream& out,
                                     const LineSegment& segment) {
-    out << segment.start;
-    out << segment.end;
+    out << segment.start << segment.end;
     return out;
   }
 #endif

@@ -49,19 +49,34 @@ TEST("2d/geometry/line_segment/write_read") {
   Point end(0, 6);
 
   LineSegment segment(start, end);
+  {
+    auto fn = "segment_test.txt"_temp;
+    std::ofstream out(fn);
+    out << segment;
+    out.close();
 
-  auto fn = "segment_test"_temp;
+    std::ifstream in(fn);
+    REQUIRE(in);
+    LineSegment segment_read(in);
+    in.close();
 
-  util::obstream out(fn);
-  out << segment;
-  out.close();
+    CHECK(segment.start == segment_read.start);
 
-  util::ibstream in(fn);
-  REQUIRE(in);
-  LineSegment segment_copy(in);
-  in.close();
+    REQUIRE(std::remove(fn.c_str()) == 0);
+  }
+  {
+    auto fn = "segment_test.bin"_temp;
+    util::obstream out(fn);
+    out << segment;
+    out.close();
 
-  CHECK(segment.start == segment_copy.start);
+    util::ibstream in(fn);
+    REQUIRE(in);
+    LineSegment segment_read(in);
+    in.close();
 
-  REQUIRE(std::remove(fn.c_str()) == 0);
+    CHECK(segment.start == segment_read.start);
+
+    REQUIRE(std::remove(fn.c_str()) == 0);
+  }
 }
