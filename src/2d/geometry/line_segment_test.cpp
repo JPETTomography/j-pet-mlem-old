@@ -50,12 +50,18 @@ TEST("2d/geometry/line_segment/write_read") {
 
   LineSegment segment(start, end);
 
-  util::obstream out("test_output/segment_test");
+  auto fn = "segment_test"_temp;
+
+  util::obstream out(fn);
   out << segment;
   out.close();
 
-  util::ibstream in("test_output/segment_test");
+  util::ibstream in(fn);
+  REQUIRE(in);
   LineSegment segment_copy(in);
+  in.close();
 
   CHECK(segment.start == segment_copy.start);
+
+  REQUIRE(std::remove(fn.c_str()) == 0);
 }
