@@ -127,7 +127,7 @@ class Reconstruction {
 #if BB_UPDATE
         auto response = responses[e];
         F tan, y, z;
-        response.transform(scanner.radius, tan, y, z);
+        response.calculate_tan_y_z(scanner.radius, tan, y, z);
         bb_update(Point(z, y), y, tan, thread_rhos[thread]);
 #else
         F y = responses[e].z_u;

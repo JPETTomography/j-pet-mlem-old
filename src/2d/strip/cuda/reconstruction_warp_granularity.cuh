@@ -53,7 +53,7 @@ __global__ void reconstruction(Scanner<F, short> scanner,
     F denominator = 0;
 
     F tan, y, z;
-    reponse.transform(scanner.radius, tan, y, z);
+    reponse.calculate_tan_y_z(scanner.radius, tan, y, z);
 
     F sec, A, B, C, bb_y, bb_z;
     kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);

@@ -19,7 +19,7 @@ template <typename FType> struct Response {
   _ Response(F z_u, F z_d, F dl) : z_u(z_u), z_d(z_d), dl(dl) {}
   _ Response() {}
 
-  _ void transform(F R, F& tan, F& y, F& z) const {
+  _ void calculate_tan_y_z(F R, F& tan, F& y, F& z) const {
     tan = this->tan(R);
     y = this->y(tan);
     z = this->z(y, tan);

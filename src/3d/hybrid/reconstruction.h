@@ -90,6 +90,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     }
   }
 
+  F sigma_w(F width) const { return F(0.3) * width; }
+
   Point translate_to_point(const Response& response) {
 
     auto segment = geometry[response.lor].segment;
@@ -97,8 +99,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     return Point(segment->start.x, segment->start.y, response.z_dn)
         .iterpolate(Point(segment->end.x, segment->end.y, response.z_up), t);
   }
-
-  F sigma_w(F width) const { return F(0.3) * width; }
 
   FrameEvent translate_to_frame(const Response& response) {
 
@@ -111,7 +111,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     auto width = geometry[event.lor].width;
     event.gauss_norm = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
     event.inv_sigma2 = 1 / (2 * sigma_w(width) * sigma_w(width));
-    strip_event.transform(R, event.tan, event.up, event.right);
+
+    strip_event.calculate_tan_y_z(R, event.tan, event.up, event.right);
+
     F A, B, C;
     kernel_.ellipse_bb(
         event.tan, event.sec, A, B, C, event.half_box_up, event.half_box_right);

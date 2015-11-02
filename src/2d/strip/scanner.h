@@ -122,7 +122,7 @@ template <typename FType, typename SType> class Scanner {
   ImageSpaceEventTan<F> from_projection_space_tan(
       const Response& response) const {
     F tan, y, z;
-    response.transform(radius, tan, y, z);
+    response.calculate_tan_y_z(radius, tan, y, z);
     return ImageSpaceEventTan<F>(y, z, tan);
   }
 

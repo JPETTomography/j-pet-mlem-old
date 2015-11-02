@@ -134,6 +134,13 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
     push_back_pixel_info(lor, pixel_info);
   }
 
+
+
+  void put_pixel(const LOR& lor, const Pixel& pixel, F weight) {
+     auto& lor_geometry = (*this)[lor];
+     lor_geometry.put_pixel(pixel, weight);
+  }
+
   /// Sort all LOR geometry descriptions.
   ////
   /// This does not affect order of LOR gemetry descriptions here.
@@ -142,6 +149,13 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
       lor_geometry.sort();
     }
   }
+
+  void sort_all_by_index() {
+    for (auto& lor_geometry : *this) {
+      lor_geometry.sort_by_index();
+    }
+  }
+
 
   /// Remove all pixel information from all LOR geometry descriptions.
   void erase_pixel_info() {

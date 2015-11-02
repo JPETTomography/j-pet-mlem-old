@@ -89,6 +89,32 @@ template <typename FType, typename SType> struct LORGeometry {
               [](const PixelInfo& a, const PixelInfo& b) { return a.t < b.t; });
   }
 
+  void sort_by_index() {
+    std::sort(pixel_infos.begin(),
+              pixel_infos.end(),
+              [](const PixelInfo& a, const PixelInfo& b) {
+                return a.pixel.index() < b.pixel.index();
+              });
+  }
+
+  // assumes that pixels in LOR are sorted by index !!
+  void put_pixel(const Pixel& pixel, F weight) {
+
+    PixelInfo pi;
+    pi.pixel = pixel;
+    auto p = std::lower_bound(this->begin(),
+                              this->end(),
+                              pi,
+                              [](const PixelInfo& a, const PixelInfo& b) {
+                                return a.pixel.index() < b.pixel.index();
+                              });
+    if (p->pixel.index() != pixel.index) {
+      throw "pixel not found in LOR";
+    }
+
+    p->weight += weight;
+  }
+
   /// Append Pixel info to the list.
   void push_back(const PixelInfo& pixel_info) {
     pixel_infos.push_back(pixel_info);

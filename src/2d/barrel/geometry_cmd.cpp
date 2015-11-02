@@ -228,6 +228,7 @@ int main(int argc, char* argv[]) {
               pixel_info.t = t;
               pixel_info.distance = distance;
               pixel_info.fill = fill;
+              pixel_info.weight = F(0);
               lor_geometry.push_back(pixel_info);
             }
           }
