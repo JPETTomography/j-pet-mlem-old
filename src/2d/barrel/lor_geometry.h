@@ -102,14 +102,16 @@ template <typename FType, typename SType> struct LORGeometry {
 
     PixelInfo pi;
     pi.pixel = pixel;
-    auto p = std::lower_bound(this->begin(),
-                              this->end(),
+    auto p = std::lower_bound(pixel_infos.begin(),
+                              pixel_infos.end(),
                               pi,
                               [](const PixelInfo& a, const PixelInfo& b) {
                                 return a.pixel.index() < b.pixel.index();
                               });
-    if (p->pixel.index() != pixel.index) {
-      throw "pixel not found in LOR";
+    if ((p->pixel).index() != pixel.index()) {
+      std::stringstream msg;
+      msg << "pixel not found in LOR";
+      throw msg.str();
     }
 
     p->weight += weight;

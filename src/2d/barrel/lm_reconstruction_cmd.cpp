@@ -63,7 +63,7 @@ using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
 #endif
 
 void load_system_matrix(const cmdline::parser& cl, Geometry& geometry) {
-  geometry.erase_pixel_info();
+  //geometry.erase_pixel_info();
   auto system_matrix_file_name = cl.get<cmdline::path>("system");
   util::ibstream in_matrix(system_matrix_file_name);
   if (!in_matrix.is_open()) {
@@ -75,7 +75,7 @@ void load_system_matrix(const cmdline::parser& cl, Geometry& geometry) {
               << std::endl;
   }
   matrix.sort_by_lor_n_pixel();
-  matrix.merge_duplicates();
+  //matrix.merge_duplicates();
   F n_emissions = F(matrix.n_emissions());
   if (geometry.grid.n_columns != matrix.n_pixels_in_row()) {
     throw("mismatch in number of pixels with matrix");
@@ -87,7 +87,7 @@ void load_system_matrix(const cmdline::parser& cl, Geometry& geometry) {
   for (auto& element : matrix) {
     auto lor = element.lor;
     F weight = element.hits / n_emissions;
-    geometry.push_back_pixel(lor, element.pixel, weight);
+    geometry.put_pixel(lor, element.pixel, weight);
   }
   geometry.sort_all();
 }
