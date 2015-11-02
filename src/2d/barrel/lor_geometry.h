@@ -117,8 +117,8 @@ template <typename FType, typename SType> struct LORGeometry {
         msg << i.pixel.index() << " (" << i.pixel.x << "," << i.pixel.y
             << ")\n";
       }
-      //throw msg.str();
-      return ;
+      // throw msg.str();
+      return;
     }
 
     p->weight += weight;

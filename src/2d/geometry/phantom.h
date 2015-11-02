@@ -42,7 +42,7 @@ template <class RNGClass, typename FType> class Phantom {
   };
 
   class PointRegion : public Region {
-  public:
+   public:
     PointRegion(Point p, F intensity) : Region(intensity), p(p) {}
     virtual bool contains(Point p) const { return p == this->p; }
     virtual F weight() const { return this->intensity; }

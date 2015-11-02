@@ -24,9 +24,7 @@ template <typename SType> class SymmetryDescriptor {
     detectors_ = new S[n_detectors * n_symmetries];
   }
 
-  ~SymmetryDescriptor() {
-      delete detectors_;
-  }
+  ~SymmetryDescriptor() { delete detectors_; }
 
   /// Symmetric detector
   S symmetric_detector(S detector, S symmetry) const {
