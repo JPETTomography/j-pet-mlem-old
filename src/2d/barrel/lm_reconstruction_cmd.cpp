@@ -33,6 +33,7 @@
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/options.h"
 #include "2d/barrel/lor_geometry.h"
+#include "2d/barrel/geometry_matrix_loader.h"
 #include "2d/barrel/sparse_matrix.h"
 #include "2d/barrel/lm_reconstruction.h"
 
@@ -61,37 +62,6 @@ using Geometry = PET2D::Barrel::Geometry<F, S>;
 #if HAVE_CUDA
 using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
 #endif
-
-void load_system_matrix(std::string system_matrix_file_name, Geometry& geometry, bool verbose) {
-  // geometry.erase_pixel_info();
-
-  util::ibstream in_matrix(system_matrix_file_name);
-  if (!in_matrix.is_open()) {
-    throw("cannot open system matrix file: " + system_matrix_file_name);
-  }
-  PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit> matrix(in_matrix);
-  if (verbose) {
-    std::cout << "read in system matrix: " << system_matrix_file_name
-              << std::endl;
-  }
-  matrix.sort_by_lor_n_pixel();
-  geometry.sort_all_by_index();
-  // matrix.merge_duplicates();
-  F n_emissions = F(matrix.n_emissions());
-  if (geometry.grid.n_columns != matrix.n_pixels_in_row()) {
-    throw("mismatch in number of pixels with matrix");
-  }
-  if (matrix.triangular()) {
-    throw("matrix is not full");
-  }
-
-  for (auto& element : matrix) {
-    auto lor = element.lor;
-    F weight = element.hits / n_emissions;
-    geometry.put_pixel(lor, element.pixel, weight);
-  }
-  geometry.sort_all();
-}
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -125,7 +95,8 @@ int main(int argc, char* argv[]) {
   }
 
   if (cl.exist("system")) {
-    load_system_matrix(cl.get<cmdline::path>("system"), geometry, verbose);
+    load_system_matrix_from_file<F, S, Hit>(
+        cl.get<cmdline::path>("system"), geometry, verbose);
     std::cerr << "loaded system matrix" << std::endl;
   }
 
