@@ -27,6 +27,9 @@
 #include "2d/barrel/lor_geometry.h"
 #include "2d/strip/gausian_kernel.h"
 
+#include "2d/barrel/geometry_matrix_loader.h"
+#include "2d/barrel/sparse_matrix.h"
+
 #include "scanner.h"
 #include "reconstruction.h"
 #include "options.h"
@@ -53,8 +56,13 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser cl;
   PET3D::Hybrid::add_reconstruction_options(cl);
+  cl.add<float>("z-left", 0, "left extent in z direction");
+  cl.add<int>("n-planes", 0, "number of voxels in z direction");
+  cl.add<cmdline::path>("system", 0, "system matrix file", false);
   cl.parse_check(argc, argv);
   PET3D::Hybrid::calculate_scanner_options(cl, argc);
+
+  auto verbose = cl.count("verbose");
 
   Scanner scanner(
       PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
@@ -81,10 +89,19 @@ int main(int argc, char* argv[]) {
               << geometry.grid.pixel_size << std::endl;
   }
 
-  PET3D::Hybrid::Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>>
-      reconstruction(scanner, geometry, -0.200, 80);
+  if (cl.exist("system")) {
+    load_system_matrix_from_file<F, S, Hit>(
+        cl.get<cmdline::path>("system"), geometry, verbose);
+    std::cerr << "loaded system matrix" << std::endl;
+  }
 
-  reconstruction.calculate_weight();
+  PET3D::Hybrid::Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>>
+  reconstruction(
+      scanner, geometry, cl.get<float>("z-left"), cl.get<int>("n-planes"));
+
+  if (!cl.exist("system")) {
+    reconstruction.calculate_weight();
+  }
   reconstruction.calculate_sensitivity();
 
   for (const auto& fn : cl.rest()) {
