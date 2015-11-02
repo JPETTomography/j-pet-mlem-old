@@ -62,16 +62,16 @@ using Geometry = PET2D::Barrel::Geometry<F, S>;
 using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
 #endif
 
-void load_system_matrix(const cmdline::parser& cl, Geometry& geometry) {
+void load_system_matrix(std::string system_matrix_file_name, Geometry& geometry, bool verbose) {
   // geometry.erase_pixel_info();
-  auto system_matrix_file_name = cl.get<cmdline::path>("system");
+
   util::ibstream in_matrix(system_matrix_file_name);
   if (!in_matrix.is_open()) {
-    throw("cannot open system matrix file: " + cl.get<cmdline::path>("system"));
+    throw("cannot open system matrix file: " + system_matrix_file_name);
   }
   PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit> matrix(in_matrix);
-  if (cl.count("verbose")) {
-    std::cout << "read in system matrix: " << cl.get<cmdline::path>("system")
+  if (verbose) {
+    std::cout << "read in system matrix: " << system_matrix_file_name
               << std::endl;
   }
   matrix.sort_by_lor_n_pixel();
@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (cl.exist("system")) {
-    load_system_matrix(cl, geometry);
+    load_system_matrix(cl.get<cmdline::path>("system"), geometry, verbose);
     std::cerr << "loaded system matrix" << std::endl;
   }
 
