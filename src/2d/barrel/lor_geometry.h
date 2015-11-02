@@ -99,7 +99,6 @@ template <typename FType, typename SType> struct LORGeometry {
 
   // assumes that pixels in LOR are sorted by index !!
   void put_pixel(const Pixel& pixel, F weight) {
-
     PixelInfo pi;
     pi.pixel = pixel;
     auto p = std::lower_bound(pixel_infos.begin(),
@@ -108,10 +107,18 @@ template <typename FType, typename SType> struct LORGeometry {
                               [](const PixelInfo& a, const PixelInfo& b) {
                                 return a.pixel.index() < b.pixel.index();
                               });
-    if ((p->pixel).index() != pixel.index()) {
+
+    if (p == pixel_infos.end() || (p->pixel).index() != pixel.index()) {
       std::stringstream msg;
-      msg << "pixel not found in LOR";
-      throw msg.str();
+      msg << "pixel not found in LOR ";
+      msg << lor.first << ":" << lor.second << " ";
+      msg << pixel.index() << ", (" << pixel.x << "," << pixel.y << ")\n";
+      for (auto i : pixel_infos) {
+        msg << i.pixel.index() << " (" << i.pixel.x << "," << i.pixel.y
+            << ")\n";
+      }
+      //throw msg.str();
+      return ;
     }
 
     p->weight += weight;

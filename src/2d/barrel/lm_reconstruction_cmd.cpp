@@ -75,6 +75,7 @@ void load_system_matrix(const cmdline::parser& cl, Geometry& geometry) {
               << std::endl;
   }
   matrix.sort_by_lor_n_pixel();
+  geometry.sort_all_by_index();
   //matrix.merge_duplicates();
   F n_emissions = F(matrix.n_emissions());
   if (geometry.grid.n_columns != matrix.n_pixels_in_row()) {
@@ -125,6 +126,7 @@ int main(int argc, char* argv[]) {
 
   if (cl.exist("system")) {
     load_system_matrix(cl, geometry);
+    std::cerr<<"loaded system matrix"<<std::endl;
   }
 
   PET2D::Barrel::LMReconstruction<F, S> reconstruction(
