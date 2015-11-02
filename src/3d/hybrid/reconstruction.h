@@ -285,7 +285,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       }
       event_count_ += n_events_per_thread_[thread];
     }
-    // std::swap(rho_, rho_new_);
     return event_count_;
   }
 

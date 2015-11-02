@@ -41,6 +41,15 @@ template <class RNGClass, typename FType> class Phantom {
     const F intensity;
   };
 
+  class PointRegion : public Region {
+  public:
+    PointRegion(Point p, F intensity) : Region(intensity), p(p) {}
+    virtual bool contains(Point p) const { return p == this->p; }
+    virtual F weight() const { return this->intensity; }
+    virtual Point random_point(RNG&) { return p; }
+    const Point p;
+  };
+
   /// Region that represent custom shape
   template <class Shape> class ShapeRegion : public Region {
    public:
@@ -152,6 +161,13 @@ template <class RNGClass, typename FType> class Phantom {
         Rectangle<F> rec(x * scale, y * scale, a * scale, b * scale);
 
         auto region = new RectangularRegion(rec, acceptance);
+        push_back_region(region);
+        count++;
+      } else if (type == "point") {
+        double x, y, acceptance;
+        if (!(iss >> x >> y >> acceptance))
+          break;
+        auto region = new PointRegion(Point(x, y), acceptance);
         push_back_region(region);
         count++;
       } else {

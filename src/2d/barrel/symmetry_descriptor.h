@@ -24,12 +24,16 @@ template <typename SType> class SymmetryDescriptor {
     detectors_ = new S[n_detectors * n_symmetries];
   }
 
+  ~SymmetryDescriptor() {
+      delete detectors_;
+  }
+
   /// Symmetric detector
   S symmetric_detector(S detector, S symmetry) const {
     return detectors_[detector * EIGHT + symmetry];
   }
 
-  // converts the pixels from the trainulra cut
+  // converts the pixels from the triangular cut
   // to full pixel_grid pixels
   template <typename FType>
   static Pixel<S> full_grid_pixel(const PET2D::PixelGrid<FType, S> grid,
