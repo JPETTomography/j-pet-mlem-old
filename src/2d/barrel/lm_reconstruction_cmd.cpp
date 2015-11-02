@@ -57,9 +57,40 @@ using SquareDetector = PET2D::Barrel::SquareDetector<F>;
 using Scanner = PET2D::Barrel::GenericScanner<SquareDetector, S>;
 using ScannerBuilder = PET2D::Barrel::ScannerBuilder<Scanner>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
+using Geometry = PET2D::Barrel::Geometry<F, S>;
 #if HAVE_CUDA
 using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
 #endif
+
+void load_system_matrix(const cmdline::parser& cl, Geometry& geometry) {
+  geometry.erase_pixel_info();
+  auto system_matrix_file_name = cl.get<cmdline::path>("system");
+  util::ibstream in_matrix(system_matrix_file_name);
+  if (!in_matrix.is_open()) {
+    throw("cannot open system matrix file: " + cl.get<cmdline::path>("system"));
+  }
+  PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit> matrix(in_matrix);
+  if (cl.count("verbose")) {
+    std::cout << "read in system matrix: " << cl.get<cmdline::path>("system")
+              << std::endl;
+  }
+  matrix.sort_by_lor_n_pixel();
+  matrix.merge_duplicates();
+  F n_emissions = F(matrix.n_emissions());
+  if (geometry.grid.n_columns != matrix.n_pixels_in_row()) {
+    throw("mismatch in number of pixels with matrix");
+  }
+  if (matrix.triangular()) {
+    throw("matrix is not full");
+  }
+
+  for (auto& element : matrix) {
+    auto lor = element.lor;
+    F weight = element.hits / n_emissions;
+    geometry.push_back_pixel(lor, element.pixel, weight);
+  }
+  geometry.sort_all();
+}
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -82,7 +113,7 @@ int main(int argc, char* argv[]) {
   if (!in_geometry.is_open()) {
     throw("cannot open geometry file: " + cl.get<cmdline::path>("geometry"));
   }
-  PET2D::Barrel::Geometry<F, S> geometry(in_geometry);
+  Geometry geometry(in_geometry);
 
   if (verbose) {
     std::cout << "LM reconstruction:" << std::endl
@@ -93,34 +124,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (cl.exist("system")) {
-    geometry.erase_pixel_info();
-    auto system_matrix_file_name = cl.get<cmdline::path>("system");
-    util::ibstream in_matrix(system_matrix_file_name);
-    if (!in_matrix.is_open()) {
-      throw("cannot open system matrix file: " +
-            cl.get<cmdline::path>("system"));
-    }
-    PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit> matrix(in_matrix);
-    if (verbose) {
-      std::cout << "read in system matrix: " << cl.get<cmdline::path>("system")
-                << std::endl;
-    }
-    matrix.sort_by_lor_n_pixel();
-    matrix.merge_duplicates();
-    F n_emissions = F(matrix.n_emissions());
-    if (geometry.grid.n_columns != matrix.n_pixels_in_row()) {
-      throw("mismatch in number of pixels with matrix");
-    }
-    if (matrix.triangular()) {
-      throw("matrix is not full");
-    }
-
-    for (auto& element : matrix) {
-      auto lor = element.lor;
-      F weight = element.hits / n_emissions;
-      geometry.push_back_pixel(lor, element.pixel, weight);
-    }
-    geometry.sort_all();
+    load_system_matrix(cl, geometry);
   }
 
   PET2D::Barrel::LMReconstruction<F, S> reconstruction(
