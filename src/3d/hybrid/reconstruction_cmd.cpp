@@ -103,6 +103,7 @@ int main(int argc, char* argv[]) {
     reconstruction.calculate_weight();
   }
   reconstruction.calculate_sensitivity();
+  reconstruction.normalize_geometry_weights();
 
   for (const auto& fn : cl.rest()) {
     std::ifstream in_response(fn);

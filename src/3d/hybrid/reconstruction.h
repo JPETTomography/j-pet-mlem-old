@@ -104,8 +104,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     auto R = geometry[event.lor].segment.length / 2;
     StripEvent strip_event(response.z_up, response.z_dn, response.dl);
 
-    auto width = geometry[event.lor].width;
-
     strip_event.calculate_tan_y_z(R, event.tan, event.up, event.right);
 
     F A, B, C;
@@ -261,14 +259,13 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
           auto kernel_z = pixel_info.weight;
 
           auto weight = kernel2d * kernel_z * rho_[index];
-          denominator += weight;
+          denominator += weight * sensitivity_[grid.index(ix, iy)];
 
           if (weight < 0) {
             std::cout << "weight < 0 !\n";
           }
 
-          thread_kernel_caches_[thread][index] =
-              weight / sensitivity_[grid.index(ix, iy)];
+          thread_kernel_caches_[thread][index] = weight;
         }
       }  // voxel loop - denominator
 
