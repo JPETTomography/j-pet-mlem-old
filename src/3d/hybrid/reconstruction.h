@@ -54,6 +54,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     PixelInfoConstIterator last_pixel_info;
     S first_plane;
     S last_plane;
+
     PixelInfoConstIterator begin() const { return first_pixel_info; }
     PixelInfoConstIterator end() const { return last_pixel_info; }
   };
@@ -192,6 +193,20 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         auto pixel = pixel_info.pixel;
         auto index = grid.index(pixel);
         sensitivity_[index] += pixel_info.weight;
+      }
+    }
+  }
+
+  void normalize_geometry_weights() {
+    auto& grid = geometry.grid;
+
+    for (auto& lor_geometry : geometry) {
+
+      for (auto& pixel_info : lor_geometry.pixel_infos) {
+        auto pixel = pixel_info.pixel;
+        auto index = grid.index(pixel);
+        if (sensitivity_[index] > 0)
+          pixel_info.weight /= sensitivity_[index];
       }
     }
   }
