@@ -57,7 +57,7 @@ template <typename FType> class GaussianKernel {
     F pixel_center_y_p_y = pixel_center.y + y;
     FVec vec_a = { -(pixel_center_y_p_y - R) * sec_sq,
                    -(pixel_center_y_p_y + R) * sec_sq,
-                   -2 * pixel_center_y_p_y * sec * tan };
+                   -F(2.0) * pixel_center_y_p_y * sec * tan };
 
     F vec_b_pq = pixel_center.x - pixel_center.y * tan;
     FVec vec_b = { vec_b_pq, vec_b_pq, -2 * pixel_center.y * sec };

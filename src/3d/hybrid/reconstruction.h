@@ -243,6 +243,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         auto pixel = pixel_info.pixel;
         auto ix = pixel.x;
         auto iy = pixel.y;
+        auto index=grid.index(ix, iy);
 
         auto center = grid.center_at(ix, iy);
         auto up = segment.projection_relative_middle(center);
@@ -250,22 +251,18 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
           voxel_count_++;
           auto z = v_grid.center_z_at(ix, iy, iz);
-          int index = v_grid.index(ix, iy, iz);
-          if (index < 0)
-            std::cout << "index <0! " << ix << ":" << iy << ":" << iz << "\n";
+          int v_index = v_grid.index(ix, iy, iz);
+
+
           auto diff = Point2D(up, z) - Point2D(event.up, event.right);
           auto kernel2d = kernel_(
               event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
-          auto kernel_z = pixel_info.weight;
+          auto kernel_t = pixel_info.weight;
 
-          auto weight = kernel2d * kernel_z * rho_[index];
-          denominator += weight * sensitivity_[grid.index(ix, iy)];
+          auto weight = kernel2d * kernel_t * rho_[v_index];
+          denominator += weight * sensitivity_[index];
 
-          if (weight < 0) {
-            std::cout << "weight < 0 !\n";
-          }
-
-          thread_kernel_caches_[thread][index] = weight;
+          thread_kernel_caches_[thread][v_index] = weight;
         }
       }  // voxel loop - denominator
 
