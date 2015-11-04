@@ -120,8 +120,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
     auto ev_z_left = event.right - event.half_box_right;
     auto ev_z_right = event.right + event.half_box_right;
-    event.first_plane = plane(ev_z_left);
-    event.last_plane = plane(ev_z_right) + 1;
+    event.first_plane = std::max((short)0, plane(ev_z_left));
+    event.last_plane = std::min(plane(ev_z_right) + 1, v_grid.n_planes - 1);
 
     auto y_up = event.up + event.half_box_up;
     auto y_dn = event.up - event.half_box_up;
@@ -244,16 +244,22 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
           voxel_count_++;
           auto z = v_grid.center_z_at(ix, iy, iz);
           int index = v_grid.index(ix, iy, iz);
-
+          if (index < 0)
+            std::cout << "index <0! " << ix << ":" << iy << ":" << iz << "\n";
           auto diff = Point2D(up, z) - Point2D(event.up, event.right);
           auto kernel2d = kernel_(
               event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
           auto kernel_z = pixel_info.weight;
-          auto weight = kernel2d * kernel_z * rho_[index] /
-                        sensitivity_[grid.index(ix, iy)];
 
-          thread_kernel_caches_[thread][index] = weight;
+          auto weight = kernel2d * kernel_z * rho_[index];
           denominator += weight;
+
+          if (weight < 0) {
+            std::cout << "weight < 0 !\n";
+          }
+
+          thread_kernel_caches_[thread][index] =
+              weight / sensitivity_[grid.index(ix, iy)];
         }
       }  // voxel loop - denominator
 
@@ -271,6 +277,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         auto iy = pixel.y;
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
           int index = v_grid.index(ix, iy, iz);
+
           thread_rhos_[thread][index] +=
               thread_kernel_caches_[thread][index] * inv_denominator;
         }

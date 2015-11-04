@@ -98,6 +98,11 @@ int main(int argc, char* argv[]) {
 
   using RNG = std::mt19937;
   RNG rng;
+  if (cl.exist("seed")) {
+    rng.seed(cl.get<unsigned int>("seed"));
+  }
+  // std::cout<<cl.get<unsigned int>("seed");
+
   Phantom::RegionPtrList regions;
 
   for (const auto& fn : cl.rest()) {

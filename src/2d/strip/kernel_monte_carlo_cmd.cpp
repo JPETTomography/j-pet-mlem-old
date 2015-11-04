@@ -11,9 +11,9 @@ int main() {
 
   F y = 0.1;
   F R = 0.5;
-  F angle= M_PI/4;
+  F angle = M_PI / 4;
   F tan = std::tan(angle);
-  F sec = 1/cos(angle);
+  F sec = 1 / cos(angle);
 
   F d = 0.01;
   double sum = 0.0;
