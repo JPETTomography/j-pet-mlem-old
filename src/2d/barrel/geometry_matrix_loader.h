@@ -11,10 +11,9 @@ template <typename F, typename S, typename Hit>
 void load_system_matrix_from_file(std::string system_matrix_file_name,
                                   PET2D::Barrel::Geometry<F, S>& geometry,
                                   bool verbose) {
-  using Point = PET2D::Point<F>;
+
   using Pixel = PET2D::Pixel<S>;
   using LOR = PET2D::Barrel::LOR<S>;
-  // geometry.erase_pixel_info();
 
   util::ibstream in_matrix(system_matrix_file_name);
   if (!in_matrix.is_open()) {
@@ -27,7 +26,7 @@ void load_system_matrix_from_file(std::string system_matrix_file_name,
   }
   matrix.sort_by_lor_n_pixel();
   geometry.sort_all_by_index();
-  // matrix.merge_duplicates();
+
   F n_emissions = F(matrix.n_emissions());
   if (geometry.grid.n_columns != matrix.n_pixels_in_row()) {
     throw("mismatch in number of pixels with matrix");
