@@ -50,15 +50,10 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     F right;
     F tan;
     F sec;
-    F half_box_up;
-    F half_box_right;
     PixelInfoConstIterator first_pixel_info;
     PixelInfoConstIterator last_pixel_info;
     S first_plane;
     S last_plane;
-    F gauss_norm;
-    F inv_sigma2;
-
     PixelInfoConstIterator begin() const { return first_pixel_info; }
     PixelInfoConstIterator end() const { return last_pixel_info; }
   };
@@ -109,22 +104,21 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     StripEvent strip_event(response.z_up, response.z_dn, response.dl);
 
     auto width = geometry[event.lor].width;
-    event.gauss_norm = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
-    event.inv_sigma2 = 1 / (2 * sigma_w(width) * sigma_w(width));
 
     strip_event.calculate_tan_y_z(R, event.tan, event.up, event.right);
 
     F A, B, C;
+    F half_box_up, half_box_right;
     kernel_.ellipse_bb(
-        event.tan, event.sec, A, B, C, event.half_box_up, event.half_box_right);
+        event.tan, event.sec, A, B, C, half_box_up, half_box_right);
 
-    auto ev_z_left = event.right - event.half_box_right;
-    auto ev_z_right = event.right + event.half_box_right;
+    auto ev_z_left = event.right - half_box_right;
+    auto ev_z_right = event.right + half_box_right;
     event.first_plane = std::max((short)0, plane(ev_z_left));
     event.last_plane = std::min(plane(ev_z_right) + 1, v_grid.n_planes - 1);
 
-    auto y_up = event.up + event.half_box_up;
-    auto y_dn = event.up - event.half_box_up;
+    auto y_up = event.up + half_box_up;
+    auto y_dn = event.up - half_box_up;
     auto t_up = (y_up + R) / (2 * R);
     auto t_dn = (y_dn + R) / (2 * R);
 
