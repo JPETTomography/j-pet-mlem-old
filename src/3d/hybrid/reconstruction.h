@@ -243,7 +243,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         auto pixel = pixel_info.pixel;
         auto ix = pixel.x;
         auto iy = pixel.y;
-        auto index=grid.index(ix, iy);
+        auto index = grid.index(ix, iy);
 
         auto center = grid.center_at(ix, iy);
         auto up = segment.projection_relative_middle(center);
@@ -252,7 +252,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
           voxel_count_++;
           auto z = v_grid.center_z_at(ix, iy, iz);
           int v_index = v_grid.index(ix, iy, iz);
-
 
           auto diff = Point2D(up, z) - Point2D(event.up, event.right);
           auto kernel2d = kernel_(
