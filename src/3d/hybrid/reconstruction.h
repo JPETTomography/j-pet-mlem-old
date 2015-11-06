@@ -40,8 +40,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using Point2D = PET2D::Point<F>;
   using Point = PET3D::Point<F>;
   using Vector2D = PET2D::Vector<F>;
-  using PixelInfoConstIterator =
-      typename LORGeometry::PixelInfoList::const_iterator;
   using Output = PET3D::VoxelMap<Voxel, F>;
 
   struct FrameEvent {
@@ -50,13 +48,10 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     F right;
     F tan;
     F sec;
-    PixelInfoConstIterator first_pixel_info;
-    PixelInfoConstIterator last_pixel_info;
+    size_t first_pixel_info_index;
+    size_t last_pixel_info_index;
     S first_plane;
     S last_plane;
-
-    PixelInfoConstIterator begin() const { return first_pixel_info; }
-    PixelInfoConstIterator end() const { return last_pixel_info; }
   };
 
   struct VoxelKernelInfo {
@@ -124,21 +119,23 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     PixelInfo pix_info_up, pix_info_dn;
     pix_info_up.t = t_up;
     pix_info_dn.t = t_dn;
-    event.last_pixel_info =
+    event.last_pixel_info_index =
         std::upper_bound(geometry[event.lor].pixel_infos.begin(),
                          geometry[event.lor].pixel_infos.end(),
                          pix_info_up,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
-                         });
+                         }) -
+        geometry[event.lor].pixel_infos.begin();
 
-    event.first_pixel_info =
+    event.first_pixel_info_index =
         std::lower_bound(geometry[event.lor].pixel_infos.begin(),
                          geometry[event.lor].pixel_infos.end(),
                          pix_info_dn,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
-                         });
+                         }) -
+        geometry[event.lor].pixel_infos.begin();
 
     return event;
   }
@@ -238,8 +235,12 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
       // -- voxel loop - denominator -------------------------------------------
       double denominator = 0;
-      for (const auto& pixel_info : event) {
+      const auto& lor_geometry = geometry[event.lor];
+      for (auto info_index = event.first_pixel_info_index;
+           info_index < event.last_pixel_info_index;
+           ++info_index) {
         pixel_count_++;
+        const auto& pixel_info = lor_geometry.pixel_infos[info_index];
         auto pixel = pixel_info.pixel;
         auto ix = pixel.x;
         auto iy = pixel.y;
@@ -273,7 +274,10 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       }
 
       // -- voxel loop ---------------------------------------------------------
-      for (const auto& pixel_info : event) {
+      for (auto info_index = event.first_pixel_info_index;
+           info_index < event.last_pixel_info_index;
+           ++info_index) {
+        const auto& pixel_info = lor_geometry.pixel_infos[info_index];
         auto pixel = pixel_info.pixel;
         auto ix = pixel.x;
         auto iy = pixel.y;
@@ -309,7 +313,10 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     auto lor = event.lor;
     graphics.add(scanner.barrel, lor);
     graphics.add(geometry[lor].segment);
-    for (const auto& pixel_info : event) {
+    for (auto info_index = event.first_pixel_info_index;
+         info_index < event.last_pixel_info_index;
+         ++info_index) {
+      const auto& pixel_info = geometry[lor].pixel_infos[info_index];
       graphics.add_pixel(geometry.grid, pixel_info.pixel);
     }
   }
