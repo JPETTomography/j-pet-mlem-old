@@ -3,6 +3,7 @@
 #if !__CUDACC__
 #include <ostream>
 #include "util/png_writer.h"
+#include "util/nrrd_writer.h"
 #include "util/bstream.h"
 #endif
 
@@ -104,6 +105,13 @@ template <typename PixelType, typename ValueType> class PixelMap {
                                       const PixelMap& map) {
     png.write(map.width, map.height, map.data);
     return png;
+  }
+
+  friend util::nrrd_writer& operator<<(util::nrrd_writer& nrrd,
+                                       const PixelMap& map) {
+    size_t dimensions[2] = { (size_t)map.width, (size_t)map.height };
+    nrrd.write_header<ValueType, 2>(dimensions);
+    return nrrd;
   }
 
   friend std::ostream& operator<<(std::ostream& out, const PixelMap& map) {

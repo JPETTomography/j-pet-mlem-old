@@ -3,6 +3,7 @@
 #if !__CUDACC__
 #include <ostream>
 #include "util/png_writer.h"
+#include "util/nrrd_writer.h"
 #include "util/bstream.h"
 #endif
 
@@ -112,6 +113,15 @@ template <typename VoxelType, typename ValueType> class VoxelMap {
                                       const VoxelMap& map) {
     png.write(map.width, map.height * map.depth, map.data);
     return png;
+  }
+
+  friend util::nrrd_writer& operator<<(util::nrrd_writer& nrrd,
+                                       const VoxelMap& map) {
+    size_t dimensions[3] = {
+      (size_t)map.width, (size_t)map.height, (size_t)map.depth
+    };
+    nrrd.write_header<ValueType, 3>(dimensions);
+    return nrrd;
   }
 
   friend std::ostream& operator<<(std::ostream& out, const VoxelMap& map) {

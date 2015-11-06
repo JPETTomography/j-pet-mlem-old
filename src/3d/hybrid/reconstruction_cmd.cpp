@@ -21,6 +21,7 @@
 #include "util/bstream.h"
 #include "util/backtrace.h"
 #include "util/png_writer.h"
+#include "util/nrrd_writer.h"
 
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
@@ -133,8 +134,8 @@ int main(int argc, char* argv[]) {
     }
     auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
                                          n_iterations);
-    util::png_writer png(fn + ".png");
-    png << reconstruction.rho();
+    util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
+    nrrd << reconstruction.rho();
     if (output_txt) {
       std::ofstream txt(fn + ".txt");
       txt << reconstruction.rho();
