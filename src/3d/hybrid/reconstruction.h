@@ -1,16 +1,18 @@
 #pragma once
 
+#if !__CUDACC__
 #include <vector>
 #include <algorithm>
 
+#include "common/mathematica_graphics.h"
 #include "2d/barrel/geometry.h"
+#endif
+
 #include "2d/strip/response.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/voxel_grid.h"
 #include "3d/geometry/voxel.h"
 #include "3d/geometry/voxel_map.h"
-
-#include "common/mathematica_graphics.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -29,13 +31,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using Kernel2D = Kernel2DClass;
   using F = typename Scanner::F;
   using S = typename Scanner::S;
-  using Geometry = PET2D::Barrel::Geometry<F, S>;
-  using LORGeometry = typename Geometry::LORGeometry;
   using Response = typename Scanner::Response;
   using LOR = PET2D::Barrel::LOR<S>;
   using StripEvent = PET2D::Strip::Response<F>;
-  using PixelInfo = typename Geometry::PixelInfo;
-  using Pixel = typename Geometry::Pixel;
   using Voxel = PET3D::Voxel<S>;
   using Point2D = PET2D::Point<F>;
   using Point = PET3D::Point<F>;
@@ -58,6 +56,12 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     S ix, iy, iz;
     F weight;
   };
+
+#if !__CUDACC__
+  using Geometry = PET2D::Barrel::Geometry<F, S>;
+  using LORGeometry = typename Geometry::LORGeometry;
+  using PixelInfo = typename Geometry::PixelInfo;
+  using Pixel = typename Geometry::Pixel;
 
   Reconstruction(const Scanner& scanner,
                  Geometry& geometry,
@@ -155,6 +159,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   }
 
   int n_events() const { return events_.size(); }
+  const std::vector<FrameEvent>& events() const { return events_; }
   FrameEvent frame_event(int i) const { return events_[i]; }
 
   void calculate_weight() {
@@ -341,6 +346,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   std::vector<VoxelKernelInfo> voxel_cache_;
   std::vector<int> n_events_per_thread_;
   Output sensitivity_;
+#endif  // !__CUDACC__
 };
 
 }  // Hybrid

@@ -22,6 +22,7 @@
 #include "util/backtrace.h"
 #include "util/png_writer.h"
 #include "util/nrrd_writer.h"
+#include "util/progress.h"
 
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
@@ -42,6 +43,10 @@
 #else
 #define omp_get_max_threads() 1
 #define omp_get_thread_num() 0
+#endif
+
+#if HAVE_CUDA
+#include "cuda/reconstruction.h"
 #endif
 
 using RNG = std::mt19937;
@@ -127,32 +132,77 @@ int main(int argc, char* argv[]) {
   auto output_ext = output_name.ext();
   auto output_txt = output_ext == ".txt";
 
-  for (int block = 0; block < n_blocks; ++block) {
-    for (int i = 0; i < n_iterations_in_block; i++) {
-      std::cout << block * n_iterations_in_block + i << ' ' << reconstruction()
-                << "\n";
+  util::progress progress(verbose, n_iterations, 1);
+
+#if HAVE_CUDA
+  if (cl.exist("gpu")) {
+    PET3D::Hybrid::GPU::Reconstruction::SimpleGeometry simple_geometry(
+        geometry);
+    PET3D::Hybrid::GPU::Reconstruction::run(
+        simple_geometry,
+        reconstruction.events().data(),
+        reconstruction.n_events(),
+        reconstruction.scanner.sigma_z(),
+        reconstruction.scanner.sigma_dl(),
+        geometry.grid.n_columns,
+        geometry.grid.n_rows,
+        reconstruction.n_planes,
+        n_blocks,
+        n_iterations_in_block,
+        [&](int iteration,
+            const PET3D::Hybrid::GPU::Reconstruction::Output& output) {
+          if (!output_base_name.length())
+            return;
+          auto fn = iteration >= 0
+                        ? output_base_name.add_index(iteration, n_iterations)
+                        : output_base_name + "_sensitivity";
+          util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
+          nrrd << output;
+          if (output_txt) {
+            std::ofstream txt(fn + ".txt");
+            txt << output;
+          } else {
+            util::obstream bin(fn + output_ext);
+            bin << output;
+          }
+        },
+        [&](int completed, bool finished) { progress(completed, finished); },
+        cl.get<int>("cuda-device"),
+        cl.get<int>("cuda-blocks"),
+        cl.get<int>("cuda-threads"),
+        [](const char* device_name) {
+          std::cerr << "   CUDA device = " << device_name << std::endl;
+        });
+  } else
+#endif
+  {
+    for (int block = 0; block < n_blocks; ++block) {
+      for (int i = 0; i < n_iterations_in_block; i++) {
+        std::cout << block * n_iterations_in_block + i << ' '
+                  << reconstruction() << "\n";
+      }
+      auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
+                                           n_iterations);
+      util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
+      nrrd << reconstruction.rho();
+      if (output_txt) {
+        std::ofstream txt(fn + ".txt");
+        txt << reconstruction.rho();
+      } else {
+        util::obstream bin(fn + output_ext);
+        bin << reconstruction.rho();
+      }
     }
-    auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
-                                         n_iterations);
-    util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
-    nrrd << reconstruction.rho();
-    if (output_txt) {
-      std::ofstream txt(fn + ".txt");
-      txt << reconstruction.rho();
-    } else {
-      util::obstream bin(fn + output_ext);
-      bin << reconstruction.rho();
-    }
+    std::cout << reconstruction.event_count() << " "
+              << reconstruction.voxel_count() << " "
+              << reconstruction.pixel_count() << "\n";
+    std::cout << (double)reconstruction.voxel_count() /
+                     reconstruction.event_count()
+              << " ";
+    std::cout << (double)reconstruction.pixel_count() /
+                     reconstruction.event_count()
+              << "\n";
   }
-  std::cout << reconstruction.event_count() << " "
-            << reconstruction.voxel_count() << " "
-            << reconstruction.pixel_count() << "\n";
-  std::cout << (double)reconstruction.voxel_count() /
-                   reconstruction.event_count()
-            << " ";
-  std::cout << (double)reconstruction.pixel_count() /
-                   reconstruction.event_count()
-            << "\n";
 
   CMDLINE_CATCH
 }
