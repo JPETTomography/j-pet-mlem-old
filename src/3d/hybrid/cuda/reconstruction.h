@@ -25,8 +25,8 @@ using LOR = PET2D::Barrel::LOR<S>;
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
-using ReconstructionBase =
-    PET3D::Hybrid::Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>>;
+using Kernel = PET2D::Strip::GaussianKernel<F>;
+using ReconstructionBase = PET3D::Hybrid::Reconstruction<Scanner, Kernel>;
 using Event = ReconstructionBase::FrameEvent;
 using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
 using PixelInfo = SimpleGeometry::PixelInfo;

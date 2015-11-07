@@ -14,7 +14,7 @@ void run_gpu_phantom(int n_threads_per_block,
                      int n_blocks,
                      int n_emissions,
                      int n_pixels_in_row,
-                     float s_size,
+                     F s_size,
                      Pixel* lookup_table_pixel,
                      int* pixel_hits) {
   cudaSetDevice(1);
@@ -81,7 +81,7 @@ void run_gpu_phantom(int n_threads_per_block,
            n_emissions,
            total_emissions);
 
-    float fov_radius = radius / M_SQRT2;
+    F fov_radius = radius / M_SQRT2;
     if ((i * i + j * j) * s_size * s_size < fov_radius * fov_radius) {
 #if __CUDACC__
 #define gpu_phantom_generation gpu_phantom_generation<<<blocks, threads>>>
@@ -108,7 +108,7 @@ void run_gpu_phantom(int n_threads_per_block,
 
     if (p == 0) {
       for (int i = 0; i < LORS; i++) {
-        float temp = 0.f;
+        F temp = 0.f;
         for (int j = 0; j < n_blocks; ++j) {
 
           temp += cpu_matrix[j].hit[i];

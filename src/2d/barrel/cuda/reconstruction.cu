@@ -13,7 +13,7 @@ namespace Barrel {
 namespace GPU {
 namespace Reconstruction {
 
-texture<float, 2, cudaReadModeElementType> tex_rho;
+texture<F, 2, cudaReadModeElementType> tex_rho;
 
 // foreach p: count y[p] and store it in output_rho[p]
 __global__ static void reconstruction_1(const PixelInfo* pixel_infos,
@@ -21,7 +21,7 @@ __global__ static void reconstruction_1(const PixelInfo* pixel_infos,
                                         const size_t* lor_pixel_info_end,
                                         const Mean* means,
                                         const int n_means,
-                                        float* output_rho,
+                                        F* output_rho,
                                         const int width) {
 
   const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -58,8 +58,8 @@ __global__ static void reconstruction_1(const PixelInfo* pixel_infos,
 }
 
 // foreach p: count output_rho[p] *= rho[p]
-__global__ static void reconstruction_2(float* output_rho,
-                                        const float* scale,
+__global__ static void reconstruction_2(F* output_rho,
+                                        const F* scale,
                                         const int width,
                                         const int height) {
 

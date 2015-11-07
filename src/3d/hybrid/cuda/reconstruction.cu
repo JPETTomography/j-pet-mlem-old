@@ -13,15 +13,15 @@ namespace Hybrid {
 namespace GPU {
 namespace Reconstruction {
 
-texture<float, 3, cudaReadModeElementType> tex_rho;
+texture<F, 3, cudaReadModeElementType> tex_rho;
 
 __global__ static void reconstruction(const PixelInfo* pixel_infos,
                                       const Event* events,
                                       const int n_events,
-                                      float* output_rho,
-                                      const float* scale,
-                                      const float sigma_z,
-                                      const float sigma_dl,
+                                      F* output_rho,
+                                      const F* scale,
+                                      const F sigma_z,
+                                      const F sigma_dl,
                                       const int width,
                                       const int height) {
 
@@ -46,8 +46,8 @@ __global__ static void reconstruction(const PixelInfo* pixel_infos,
 void run(const SimpleGeometry& geometry,
          const Event* events,
          int n_events,
-         float sigma_z,
-         float sigma_dl,
+         F sigma_z,
+         F sigma_dl,
          int width,
          int height,
          int depth,

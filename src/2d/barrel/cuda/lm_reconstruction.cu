@@ -13,7 +13,7 @@ namespace Barrel {
 namespace GPU {
 namespace LMReconstruction {
 
-texture<float, 2, cudaReadModeElementType> tex_rho;
+texture<F, 2, cudaReadModeElementType> tex_rho;
 
 template <typename FType, typename SType> struct Kernel {
   using F = FType;
@@ -48,16 +48,16 @@ template <typename FType, typename SType> struct Kernel {
 __global__ static void reconstruction(const PixelInfo* pixel_infos,
                                       const Event* events,
                                       const int n_events,
-                                      float* output_rho,
-                                      const float* scale,
-                                      const float sigma,
+                                      F* output_rho,
+                                      const F* scale,
+                                      const F sigma,
                                       const int width) {
 
   const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
   const auto n_threads = gridDim.x * blockDim.x;
   const auto n_chunks = (n_events + n_threads - 1) / n_threads;
 
-  Kernel<float, int> kernel(scale, sigma, width);
+  Kernel<F, int> kernel(scale, sigma, width);
 
   // --- event loop ----------------------------------------------------------
   for (int chunk = 0; chunk < n_chunks; ++chunk) {
@@ -117,7 +117,7 @@ __global__ static void add_offsets(Event* events,
 void run(const SimpleGeometry& geometry,
          const Event* events,
          int n_events,
-         float sigma,
+         F sigma,
          int width,
          int height,
          int n_iteration_blocks,

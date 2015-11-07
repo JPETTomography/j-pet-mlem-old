@@ -14,18 +14,18 @@ namespace Matrix {
 __global__ static void kernel(const Pixel pixel,
                               const Scanner* scanner_ptr,
                               int n_thread_emissions,
-                              float s_pixel,
+                              F s_pixel,
                               int n_tof_positions,
-                              float tof_step,
-                              float length_scale,
+                              F tof_step,
+                              F length_scale,
                               util::random::tausworthe::state_type* rng_state,
                               int* pixel_hits) {
   bool tof = tof_step > 0;
   int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
   util::random::tausworthe rng(rng_state[tid]);
-  util::random::uniform_real_distribution<float> one_dis(0, 1);
-  util::random::uniform_real_distribution<float> pi_dis(0, (float)M_PI);
+  util::random::uniform_real_distribution<F> one_dis(0, 1);
+  util::random::uniform_real_distribution<F> pi_dis(0, (F)M_PI);
 
   __shared__ util::cuda::copy<Scanner> scanner_shared_storage;
   scanner_shared_storage = scanner_ptr;
