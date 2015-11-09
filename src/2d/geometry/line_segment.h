@@ -71,7 +71,7 @@ template <typename FType> struct LineSegment {
   F projection_scaled(const Point& p) const { return projection(p) / length; }
 
   F projection_relative_middle(const Point& p) const {
-    return projection(p) - 0.5 * length;
+    return (p - mid_point).dot(direction);
   }
 
   // FIXME: these should be const, but making them const breaks too much code
