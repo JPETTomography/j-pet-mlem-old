@@ -20,8 +20,10 @@ namespace Reconstruction {
 
 /// \cond PRIVATE
 using Point = PET3D::Point<F>;
+using Point2D = PET2D::Point<F>;
 using Voxel = PET3D::Voxel<S>;
 using LOR = PET2D::Barrel::LOR<S>;
+using LineSegment = PET2D::LineSegment<F>;
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;

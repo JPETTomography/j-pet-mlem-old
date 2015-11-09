@@ -15,7 +15,8 @@ namespace Reconstruction {
 
 texture<F, 3, cudaReadModeElementType> tex_rho;
 
-__global__ static void reconstruction(const PixelInfo* pixel_infos,
+__global__ static void reconstruction(const LineSegment* lor_line_segments,
+                                      const PixelInfo* pixel_infos,
                                       const Event* events,
                                       const int n_events,
                                       F* output_rho,
@@ -38,9 +39,39 @@ __global__ static void reconstruction(const PixelInfo* pixel_infos,
     }
 
     const auto event = events[event_index];
-    (void)event;  // FIXME: implement me!
+    const auto lor = event.lor;
+    const auto lor_index = lor.index();
+    const auto segment = lor_line_segments[lor_index];
+    const auto R = segment.length / 2;
+    F denominator = 0;
 
-  }  // event loop
+    // -- voxel loop - denominator -------------------------------------------
+    for (auto info_index = event.first_pixel_info_index;
+         info_index < event.last_pixel_info_index;
+         ++info_index) {
+      const auto& pixel_info = pixel_infos[info_index];
+      auto pixel = pixel_info.pixel;
+      auto pixel_index = pixel.index(width);
+      auto center = Point2D(0, 0);  // FIXME: wrong!! temporary
+      auto up = segment.projection_relative_middle(center);
+
+      for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
+      }
+    }  // voxel loop - denominator
+
+    if (denominator == 0)
+      continue;
+
+    const auto inv_denominator = 1 / denominator;
+
+    // -- voxel loop ---------------------------------------------------------
+    for (auto info_index = event.first_pixel_info_index;
+         info_index < event.last_pixel_info_index;
+         ++info_index) {
+      const auto& pixel_info = pixel_infos[info_index];
+      auto pixel = pixel_info.pixel;
+    }  // voxel loop
+  }    // event loop
 }
 
 void run(const SimpleGeometry& geometry,
@@ -76,6 +107,8 @@ void run(const SimpleGeometry& geometry,
   cudaGetDeviceProperties(&prop, device);
   info(prop.name);
 
+  util::cuda::on_device<LineSegment> device_lor_line_segments(
+      geometry.lor_line_segments, geometry.n_lors);
   util::cuda::on_device<PixelInfo> device_pixel_infos(geometry.pixel_infos,
                                                       geometry.n_pixel_infos);
   util::cuda::on_device<size_t> device_lor_pixel_info_start(
@@ -106,7 +139,8 @@ void run(const SimpleGeometry& geometry,
 
       output_rho.zero_on_device();
 
-      reconstruction(device_pixel_infos,
+      reconstruction(device_lor_line_segments,
+                     device_pixel_infos,
                      device_events,
                      n_events,
                      output_rho,
