@@ -2,6 +2,7 @@
 
 #include "lor.h"
 #include "../geometry/pixel.h"
+#include "../geometry/line_segment.h"
 #if !__CUDACC__
 #include "lor_geometry.h"
 #include "sparse_matrix.h"
@@ -27,6 +28,7 @@ class SimpleGeometry {
   using Hit = HitType;
   using Pixel = PET2D::Pixel<S>;
   using LOR = PET2D::Barrel::LOR<S>;
+  using LineSegment = PET2D::LineSegment<F>;
 #if !__CUDACC__
   using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
   using Geometry = PET2D::Barrel::Geometry<F, S>;
@@ -45,12 +47,14 @@ class SimpleGeometry {
                  )
       : n_detectors(n_detectors),
         n_lors(((size_t(n_detectors) + 1) * size_t(n_detectors)) / 2),
+        lor_line_segments(new LineSegment[n_lors]),
         n_pixel_infos(n_pixel_infos),
         pixel_infos(new PixelInfo[n_pixel_infos]),
         lor_pixel_info_start(new size_t[n_lors]),
         lor_pixel_info_end(new size_t[n_lors]) {}
 
   ~SimpleGeometry() {
+    delete[] lor_line_segments;
     delete[] pixel_infos;
     delete[] lor_pixel_info_start;
     delete[] lor_pixel_info_end;
@@ -95,6 +99,7 @@ class SimpleGeometry {
     for (const auto& lor_geometry : geometry) {
       const auto& lor = lor_geometry.lor;
       auto lor_index = lor.index();
+      lor_line_segments[lor_index] = lor_geometry.segment;
       lor_pixel_info_start[lor_index] = size;
       for (const auto& geometry_pixel_info : lor_geometry.pixel_infos) {
         auto& pixel_info = pixel_infos[size++];
@@ -107,14 +112,15 @@ class SimpleGeometry {
   }
 #endif
 
-  const S n_detectors;                 ///< number of detectors
-  const size_t n_lors;                 ///< total number of LORs
-  const size_t n_pixel_infos;          ///< total number of pixel infos
-  PixelInfo* const pixel_infos;        ///< pointer to pixel infos array
-  size_t* const lor_pixel_info_start;  ///< pointer to array holding start of
-                                       ///  pixel infos for given LOR
-  size_t* const lor_pixel_info_end;    ///< pointer to array holding end of
-                                       ///  pixel infos for given LOR
+  const S n_detectors;                   ///< number of detectors
+  const size_t n_lors;                   ///< total number of LORs
+  LineSegment* const lor_line_segments;  ///< LOR line segments array
+  const size_t n_pixel_infos;            ///< total number of pixel infos
+  PixelInfo* const pixel_infos;          ///< pointer to pixel infos array
+  size_t* const lor_pixel_info_start;    ///< pointer to array holding start of
+                                         ///  pixel infos for given LOR
+  size_t* const lor_pixel_info_end;      ///< pointer to array holding end of
+                                         ///  pixel infos for given LOR
 };
 
 }  // Barrel
