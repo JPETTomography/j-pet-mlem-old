@@ -31,7 +31,7 @@ using Output = PixelMap<Pixel, F>;
 void run(const SimpleGeometry& geometry,
          const Event* events,
          int n_events,
-         float sigma,
+         F sigma,
          int width,
          int height,
          int n_iteration_blocks,

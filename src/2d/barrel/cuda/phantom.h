@@ -9,6 +9,7 @@
 #include "cmdline.h"
 #include "2d/barrel/sparse_matrix.h"
 #endif
+#include "common/types.h"
 
 namespace PET2D {
 namespace Barrel {
@@ -16,11 +17,11 @@ namespace GPU {
 
 /// \cond PRIVATE
 
-using Point = PET2D::Point<float>;
-using Pixel = PET2D::Pixel<int>;
-using LOR = Barrel::LOR<int>;
-using SquareDetector = Barrel::SquareDetector<float>;
-using Scanner = Barrel::RingScanner<SquareDetector, short>;
+using Point = PET2D::Point<F>;
+using Pixel = PET2D::Pixel<S>;
+using LOR = Barrel::LOR<S>;
+using SquareDetector = Barrel::SquareDetector<F>;
+using Scanner = Barrel::RingScanner<SquareDetector, S>;
 
 /// \endcond
 

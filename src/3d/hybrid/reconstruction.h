@@ -1,16 +1,18 @@
 #pragma once
 
+#if !__CUDACC__
 #include <vector>
 #include <algorithm>
 
+#include "common/mathematica_graphics.h"
 #include "2d/barrel/geometry.h"
+#endif
+
 #include "2d/strip/response.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/voxel_grid.h"
 #include "3d/geometry/voxel.h"
 #include "3d/geometry/voxel_map.h"
-
-#include "common/mathematica_graphics.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -29,19 +31,13 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using Kernel2D = Kernel2DClass;
   using F = typename Scanner::F;
   using S = typename Scanner::S;
-  using Geometry = PET2D::Barrel::Geometry<F, S>;
-  using LORGeometry = typename Geometry::LORGeometry;
   using Response = typename Scanner::Response;
   using LOR = PET2D::Barrel::LOR<S>;
   using StripEvent = PET2D::Strip::Response<F>;
-  using PixelInfo = typename Geometry::PixelInfo;
-  using Pixel = typename Geometry::Pixel;
   using Voxel = PET3D::Voxel<S>;
   using Point2D = PET2D::Point<F>;
   using Point = PET3D::Point<F>;
   using Vector2D = PET2D::Vector<F>;
-  using PixelInfoConstIterator =
-      typename LORGeometry::PixelInfoList::const_iterator;
   using Output = PET3D::VoxelMap<Voxel, F>;
 
   struct FrameEvent {
@@ -50,19 +46,22 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     F right;
     F tan;
     F sec;
-    PixelInfoConstIterator first_pixel_info;
-    PixelInfoConstIterator last_pixel_info;
+    size_t first_pixel_info_index;
+    size_t last_pixel_info_index;
     S first_plane;
     S last_plane;
-
-    PixelInfoConstIterator begin() const { return first_pixel_info; }
-    PixelInfoConstIterator end() const { return last_pixel_info; }
   };
 
   struct VoxelKernelInfo {
     S ix, iy, iz;
     F weight;
   };
+
+#if !__CUDACC__
+  using Geometry = PET2D::Barrel::Geometry<F, S>;
+  using LORGeometry = typename Geometry::LORGeometry;
+  using PixelInfo = typename Geometry::PixelInfo;
+  using Pixel = typename Geometry::Pixel;
 
   Reconstruction(const Scanner& scanner,
                  Geometry& geometry,
@@ -124,21 +123,23 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     PixelInfo pix_info_up, pix_info_dn;
     pix_info_up.t = t_up;
     pix_info_dn.t = t_dn;
-    event.last_pixel_info =
+    event.last_pixel_info_index =
         std::upper_bound(geometry[event.lor].pixel_infos.begin(),
                          geometry[event.lor].pixel_infos.end(),
                          pix_info_up,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
-                         });
+                         }) -
+        geometry[event.lor].pixel_infos.begin();
 
-    event.first_pixel_info =
+    event.first_pixel_info_index =
         std::lower_bound(geometry[event.lor].pixel_infos.begin(),
                          geometry[event.lor].pixel_infos.end(),
                          pix_info_dn,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
-                         });
+                         }) -
+        geometry[event.lor].pixel_infos.begin();
 
     return event;
   }
@@ -158,6 +159,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   }
 
   int n_events() const { return events_.size(); }
+  const std::vector<FrameEvent>& events() const { return events_; }
   FrameEvent frame_event(int i) const { return events_[i]; }
 
   void calculate_weight() {
@@ -238,12 +240,16 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
       // -- voxel loop - denominator -------------------------------------------
       double denominator = 0;
-      for (const auto& pixel_info : event) {
+      const auto& lor_geometry = geometry[event.lor];
+      for (auto info_index = event.first_pixel_info_index;
+           info_index < event.last_pixel_info_index;
+           ++info_index) {
         pixel_count_++;
+        const auto& pixel_info = lor_geometry.pixel_infos[info_index];
         auto pixel = pixel_info.pixel;
         auto ix = pixel.x;
         auto iy = pixel.y;
-        auto index=grid.index(ix, iy);
+        auto index = grid.index(ix, iy);
 
         auto center = grid.center_at(ix, iy);
         auto up = segment.projection_relative_middle(center);
@@ -252,7 +258,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
           voxel_count_++;
           auto z = v_grid.center_z_at(ix, iy, iz);
           int v_index = v_grid.index(ix, iy, iz);
-
 
           auto diff = Point2D(up, z) - Point2D(event.up, event.right);
           auto kernel2d = kernel_(
@@ -274,7 +279,10 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       }
 
       // -- voxel loop ---------------------------------------------------------
-      for (const auto& pixel_info : event) {
+      for (auto info_index = event.first_pixel_info_index;
+           info_index < event.last_pixel_info_index;
+           ++info_index) {
+        const auto& pixel_info = lor_geometry.pixel_infos[info_index];
         auto pixel = pixel_info.pixel;
         auto ix = pixel.x;
         auto iy = pixel.y;
@@ -310,7 +318,10 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     auto lor = event.lor;
     graphics.add(scanner.barrel, lor);
     graphics.add(geometry[lor].segment);
-    for (const auto& pixel_info : event) {
+    for (auto info_index = event.first_pixel_info_index;
+         info_index < event.last_pixel_info_index;
+         ++info_index) {
+      const auto& pixel_info = geometry[lor].pixel_infos[info_index];
       graphics.add_pixel(geometry.grid, pixel_info.pixel);
     }
   }
@@ -335,6 +346,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   std::vector<VoxelKernelInfo> voxel_cache_;
   std::vector<int> n_events_per_thread_;
   Output sensitivity_;
+#endif  // !__CUDACC__
 };
 
 }  // Hybrid

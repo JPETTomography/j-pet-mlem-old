@@ -13,7 +13,7 @@ namespace Strip {
 namespace GPU {
 namespace Reconstruction {
 
-template <template <typename Float> class Kernel, typename F>
+template <template <typename FType> class Kernel, typename F>
 __global__ void reconstruction(Scanner<F> scanner,
                                F* responses_z_u,
                                F* responses_z_d,

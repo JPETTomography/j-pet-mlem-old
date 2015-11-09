@@ -151,6 +151,73 @@ template <typename T> class memory2D : public memory<T> {
   const size_t device_pitch;
 };
 
+/// Host-device 3D texture backed memory.
+template <typename T> class memory3D : public memory<T> {
+ public:
+  using texture_type = texture<T, 3, cudaReadModeElementType>;
+
+ private:
+  memory3D(texture_type& tex,
+           size_t width,
+           size_t height,
+           size_t depth,
+           size_t size,
+           size_t bytes)
+      : memory<T>(size, bytes, nullptr),
+        tex(tex),
+        volumeSize(make_cudaExtent(width, height, depth)) {
+    cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
+    cudaMalloc3DArray((cudaArray_t*)&this->device_ptr, &desc, volumeSize);
+    cudaBindTextureToArray(tex, (cudaArray_t) this->device_ptr, desc);
+  }
+
+  memory3D(texture_type& tex,
+           size_t width,
+           size_t height,
+           size_t depth,
+           size_t size)
+      : memory3D(tex, width, height, depth, size, size * sizeof(T)) {}
+
+  /// Private helper method, since 3D texture binds to special array not to
+  /// linear memory, we need to handle copying differently than other classes.
+  void copy_to_device(void* src_ptr, enum cudaMemcpyKind kind) {
+    cudaMemcpy3DParms params = { 0 };
+    params.srcPtr = make_cudaPitchedPtr(src_ptr,
+                                        volumeSize.width * sizeof(T),
+                                        volumeSize.width,
+                                        volumeSize.height);
+    params.dstArray = (cudaArray_t) this->device_ptr;
+    params.extent = volumeSize;
+    params.kind = kind;
+    cudaMemcpy3D(&params);
+  }
+
+ public:
+  /// Allocate memory of given dimensions on both host & device and bind to
+  /// given texture.
+  memory3D(texture_type& tex, size_t width, size_t height, size_t depth)
+      : memory3D(tex, width, height, depth, width * height * depth) {}
+
+  ~memory3D() { cudaUnbindTexture(&tex); }
+
+  /// Copy host memory to device.
+  void copy_to_device() {
+    copy_to_device(this->host_ptr, cudaMemcpyHostToDevice);
+  }
+
+  /// Copy from other on device memory buffer.
+  memory3D& operator=(const on_device<T>& other) {
+    copy_to_device(other.device_ptr, cudaMemcpyDeviceToDevice);
+    return *this;
+  }
+
+  /// Copy device memory to host is NOT SUPPORTED for 3D memory.
+  void copy_from_device() {}
+
+  const texture_type& tex;
+  const cudaExtent volumeSize;
+};
+
 /// Device only memory.
 ////
 /// It can be implicitly casted to device pointer. So using \c device_ptr is not

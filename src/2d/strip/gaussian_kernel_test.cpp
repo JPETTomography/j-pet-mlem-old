@@ -10,7 +10,7 @@ using Vector = PET2D::Vector<F>;
 
 const float sigma_z = 0.01;
 const float sigma_dl = 0.04;
-const float epsilon=1e-6;
+const float epsilon = 1e-6;
 
 TEST("2d/strip/gaussian_kernel") {
 
@@ -47,6 +47,4 @@ TEST("2d/strip/gaussian_kernel") {
     CHECK(gaussian(y, tan, sec, R, Vector(-0.05, -0.05)) ==
           Approx(42993.19771499309000).epsilon(epsilon));
   }
-
-
 }
