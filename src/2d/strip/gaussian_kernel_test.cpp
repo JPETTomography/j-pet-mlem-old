@@ -38,8 +38,6 @@ TEST("2d/strip/gaussian_kernel") {
     F tan = std::tan(angle);
     F y = -0.3;
 
-    F res = gaussian(y, tan, sec, R, Vector(0, 0));
-
     CHECK(gaussian(y, tan, sec, R, Vector(0, 0)) ==
           Approx(2.3969145992977610e07).epsilon(epsilon));
     CHECK(gaussian(y, tan, sec, R, Vector(0.05, 0.1)) ==
