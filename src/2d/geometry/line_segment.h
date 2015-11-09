@@ -62,15 +62,24 @@ template <typename FType> struct LineSegment {
   /// \return 0 means points lies on the line, 1 left, -1 right
   /// \todo FIXME: This is different from Barrel::Event::distance_from returning
   /// opposite.
-  F distance_from(const Point& p) const {
+  _ F distance_from(const Point& p) const {
     return p.as_vector().dot(normal) - distance_from_origin;
   }
 
   /// Returns Point projected to the line containing LineSegment.
-  F projection(const Point& p) const { return (p - start).dot(direction); }
-  F projection_scaled(const Point& p) const { return projection(p) / length; }
+  ////
+  /// Projection space origin is at the start point of the segment.
+  _ F projection(const Point& p) const { return (p - start).dot(direction); }
 
-  F projection_relative_middle(const Point& p) const {
+  /// Returns Point projected to the line containing LineSegment, length scaled.
+  ////
+  /// Projection space origin is at the start point of the segment.
+  _ F projection_scaled(const Point& p) const { return projection(p) / length; }
+
+  /// Returns Point projected to the line containing LineSegment.
+  ////
+  /// Projection space origin is at the mid point of the segment.
+  _ F projection_relative_middle(const Point& p) const {
     return (p - mid_point).dot(direction);
   }
 
