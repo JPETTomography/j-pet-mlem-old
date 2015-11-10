@@ -144,7 +144,7 @@ int main(int argc, char* argv[]) {
         reconstruction.n_events(),
         reconstruction.scanner.sigma_z(),
         reconstruction.scanner.sigma_dl(),
-        reconstruction.v_grid,
+        reconstruction.grid,
         n_blocks,
         n_iterations_in_block,
         [&](int iteration,
