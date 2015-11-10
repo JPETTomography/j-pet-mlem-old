@@ -21,6 +21,7 @@ namespace Reconstruction {
 /// \cond PRIVATE
 using Point = PET3D::Point<F>;
 using Point2D = PET2D::Point<F>;
+using Vector2D = PET2D::Vector<F>;
 using Voxel = PET3D::Voxel<S>;
 using LOR = PET2D::Barrel::LOR<S>;
 using LineSegment = PET2D::LineSegment<F>;
