@@ -84,7 +84,7 @@ template <typename FType> class MathematicaGraphics {
 
   template <typename S>
   void add_pixel(const PET2D::PixelGrid<F, S>& grid,
-                 const PET2D::Pixel<F> pixel) {
+                 const PET2D::Pixel<S> pixel) {
     auto ll = grid.lower_left_at(pixel);
     delimiter();
     out_ << "{FaceForm[], EdgeForm[Black], Polygon[{\n";
@@ -92,12 +92,6 @@ template <typename FType> class MathematicaGraphics {
     out_ << pair(ll.x + grid.pixel_size, ll.y) << ", ";
     out_ << pair(ll.x + grid.pixel_size, ll.y + grid.pixel_size) << ", ";
     out_ << pair(ll.x, ll.y + grid.pixel_size) << "}]}";
-  }
-
-  template <typename S>
-  void add_pixel(const PET2D::PixelGrid<F, S>& grid,
-                 const PET2D::Pixel<S> pixel) {
-    add_pixel(grid, pixel);
   }
 
   void add(const PET2D::Point<F>& p) {
