@@ -3,10 +3,10 @@
 namespace Common {
 namespace GPU {
 
-__global__ void sensitivity(const PixelInfo* pixel_infos,
-                            const size_t n_pixel_infos,
-                            float* output,
-                            const int width) {
+__global__ void reduce_to_sensitivity(const PixelInfo* pixel_infos,
+                                      const size_t n_pixel_infos,
+                                      float* output,
+                                      const int width) {
 
   const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
   const auto n_threads = gridDim.x * blockDim.x;

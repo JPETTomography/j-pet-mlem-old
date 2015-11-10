@@ -98,7 +98,7 @@ void run(const SimpleGeometry& geometry,
 #if __CUDACC__
   dim3 blocks(n_blocks);
   dim3 threads(n_threads_per_block);
-#define sensitivity sensitivity<<<blocks, threads>>>
+#define reduce_to_sensitivity reduce_to_sensitivity<<<blocks, threads>>>
 #define invert invert<<<blocks, threads>>>
 #define reconstruction_1 reconstruction_1<<<blocks, threads>>>
 #define reconstruction_2 reconstruction_2<<<blocks, threads>>>
@@ -119,18 +119,18 @@ void run(const SimpleGeometry& geometry,
       geometry.lor_pixel_info_end, geometry.n_lors);
   util::cuda::on_device<Mean> device_means(means, n_means);
 
-  util::cuda::memory2D<F> rho(tex_rho, width, height);
-  util::cuda::on_device<F> output_rho((size_t)width * height);
+  util::cuda::texture2D<F> rho(tex_rho, width, height);
+  util::cuda::memory<F> output_rho((size_t)width * height);
 
-  for (auto& v : rho) {
+  for (auto& v : output_rho) {
     v = 1;
   }
-  rho.copy_to_device();
+  output_rho.copy_to_device();
 
   util::cuda::on_device<F> scale((size_t)width * height);
   scale.zero_on_device();
 
-  Common::GPU::sensitivity(
+  Common::GPU::reduce_to_sensitivity(
       device_pixel_infos, geometry.n_pixel_infos, scale, width);
   cudaThreadSynchronize();
 
@@ -141,6 +141,7 @@ void run(const SimpleGeometry& geometry,
     for (int it = 0; it < n_iterations_in_block; ++it) {
       progress(ib * n_iterations_in_block + it, false);
 
+      rho = output_rho;
       output_rho.zero_on_device();
 
       reconstruction_1(device_pixel_infos,
@@ -155,12 +156,11 @@ void run(const SimpleGeometry& geometry,
       reconstruction_2(output_rho, scale, width, height);
       cudaThreadSynchronize();
 
-      rho = output_rho;
       progress(ib * n_iterations_in_block + it, true);
     }
 
-    rho.copy_from_device();
-    Output rho_output(width, height, rho.host_ptr);
+    output_rho.copy_from_device();
+    Output rho_output(width, height, output_rho.host_ptr);
     output((ib + 1) * n_iterations_in_block, rho_output);
   }
 

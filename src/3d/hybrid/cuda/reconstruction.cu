@@ -139,7 +139,7 @@ void run(const SimpleGeometry& geometry,
 #if __CUDACC__
   dim3 blocks(n_blocks);
   dim3 threads(n_threads_per_block);
-#define sensitivity sensitivity<<<blocks, threads>>>
+#define reduce_to_sensitivity reduce_to_sensitivity<<<blocks, threads>>>
 #define invert invert<<<blocks, threads>>>
 #define reconstruction reconstruction<<<blocks, threads>>>
 #define add_offsets add_offsets<<<blocks, threads>>>
@@ -162,10 +162,10 @@ void run(const SimpleGeometry& geometry,
 
   add_offsets(device_events, n_events, device_lor_pixel_info_start);
 
-  util::cuda::on_device3D<F> rho(tex_rho,
-                                 grid.pixel_grid.n_columns,
-                                 grid.pixel_grid.n_rows,
-                                 grid.n_planes);
+  util::cuda::texture3D<F> rho(tex_rho,
+                               grid.pixel_grid.n_columns,
+                               grid.pixel_grid.n_rows,
+                               grid.n_planes);
   util::cuda::memory<F> output_rho((size_t)grid.n_voxels);
 
   for (auto& v : output_rho) {
@@ -173,15 +173,25 @@ void run(const SimpleGeometry& geometry,
   }
   output_rho.copy_to_device();
 
-  util::cuda::memory2D<F> sensitivity2d(
+  util::cuda::texture2D<F> sensitivity(
       tex_sensitivity, grid.pixel_grid.n_columns, grid.pixel_grid.n_rows);
-  sensitivity2d.zero_on_device();
+  {
+    util::cuda::memory<F> output_sensitivity((size_t)grid.pixel_grid.n_pixels);
+    output_sensitivity.zero_on_device();
+    Common::GPU::reduce_to_sensitivity(device_pixel_infos,
+                                       geometry.n_pixel_infos,
+                                       output_sensitivity,
+                                       grid.pixel_grid.n_columns);
+    cudaThreadSynchronize();
+    sensitivity = output_sensitivity;
 
-  Common::GPU::sensitivity(device_pixel_infos,
-                           geometry.n_pixel_infos,
-                           sensitivity2d,
-                           grid.pixel_grid.n_columns);
-  cudaThreadSynchronize();
+    output_sensitivity.copy_from_device();
+    Output sensitivity_output(grid.pixel_grid.n_columns,
+                              grid.pixel_grid.n_rows,
+                              1,
+                              output_sensitivity.host_ptr);
+    output(-1, sensitivity_output);
+  }
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {

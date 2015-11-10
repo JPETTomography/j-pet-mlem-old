@@ -18,6 +18,16 @@ template <typename T> inline T* device_alloc(size_t bytes) {
 }
 
 template <typename T>
+inline cudaArray_t device_alloc_array(
+    const size_t width,
+    const size_t height,
+    const cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>()) {
+  cudaArray_t array;
+  cudaMallocArray(&array, &desc, width, height);
+  return array;
+}
+
+template <typename T>
 inline cudaArray_t device_alloc_array3D(
     const cudaExtent volumeSize,
     const cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>()) {
@@ -100,68 +110,6 @@ template <typename T> class memory {
   const size_t bytes;
 };
 
-/// Host-device 2D texture backed memory.
-template <typename T> class memory2D : public memory<T> {
- public:
-  using texture_type = texture<T, 2, cudaReadModeElementType>;
-
- private:
-  memory2D(texture_type& tex,
-           size_t width,
-           size_t height,
-           size_t size,
-           size_t bytes,
-           size_t host_pitch)
-      : memory<T>(size, bytes, nullptr),
-        tex(tex),
-        width(width),
-        height(height),
-        host_pitch(host_pitch),
-        device_pitch(0) {
-    cudaMallocPitch((void**)&(this->device_ptr),
-                    (size_t*)&device_pitch,
-                    host_pitch,
-                    height);
-    cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
-    cudaBindTexture2D(
-        NULL, &tex, this->device_ptr, &desc, width, height, device_pitch);
-  }
-
-  memory2D(texture_type& tex, size_t width, size_t height, size_t size)
-      : memory2D(tex,
-                 width,
-                 height,
-                 size,
-                 size * sizeof(T),
-                 width * sizeof(T)) {}
-
- public:
-  /// Allocate memory of given dimensions on both host & device and bind to
-  /// given texture.
-  memory2D(texture_type& tex, size_t width, size_t height)
-      : memory2D(tex, width, height, width * height) {}
-
-  ~memory2D() { cudaUnbindTexture(&tex); }
-
-  /// Copy from other on device memory buffer.
-  memory2D& operator=(const on_device<T>& other) {
-    cudaMemcpy2D(this->device_ptr,
-                 device_pitch,
-                 other.device_ptr,
-                 host_pitch,
-                 host_pitch,
-                 height,
-                 cudaMemcpyDeviceToDevice);
-    return *this;
-  }
-
-  const texture_type& tex;
-  const size_t width;
-  const size_t height;
-  const size_t host_pitch;
-  const size_t device_pitch;
-};
-
 /// Device only memory.
 ////
 /// It can be implicitly casted to device pointer. So using \c device_ptr is not
@@ -224,93 +172,80 @@ template <typename T> class on_device {
   const size_t bytes;
 };
 
-/// Device only 2D texture backed memory.
-template <typename T> class on_device2D : public on_device<T> {
+/// Device 2D texture backed memory.
+template <typename T> class texture2D {
  public:
   using texture_type = texture<T, 2, cudaReadModeElementType>;
 
  private:
-  on_device2D(texture_type& tex,
-              size_t width,
-              size_t height,
-              size_t bytes,
-              size_t host_pitch)
-      : on_device<T>(bytes, nullptr), tex(tex) {
-    size_t device_pitch;
-    cudaMallocPitch((void**)&(this->device_ptr),
-                    (size_t*)&device_pitch,
-                    host_pitch,
-                    height);
-    cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
-    cudaBindTexture2D(
-        NULL, &tex, this->device_ptr, &desc, width, height, device_pitch);
+  texture2D(texture_type& tex,
+            size_t width,
+            size_t height,
+            cudaChannelFormatDesc desc)
+      : tex(tex),
+        width(width),
+        height(height),
+        array(device_alloc_array<T>(width, height, desc)) {
+    cudaBindTextureToArray(tex, array, desc);
   }
 
-  on_device2D(texture_type& tex, size_t width, size_t height, size_t size)
-      : on_device2D(tex, width, height, size * sizeof(T), width * sizeof(T)) {}
-
-  on_device2D(texture_type& tex,
-              T* on_host,
-              size_t width,
-              size_t height,
-              size_t bytes,
-              size_t host_pitch)
-      : on_device<T>(bytes, nullptr), tex(tex) {
-    size_t device_pitch;
-    cudaMallocPitch((void**)&(this->device_ptr),
-                    (size_t*)&device_pitch,
-                    host_pitch,
-                    height);
-    cudaMemcpy2D(this->device_ptr,
-                 device_pitch,
-                 on_host,
-                 host_pitch,
-                 host_pitch,
-                 height,
-                 cudaMemcpyHostToDevice);
-    cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
-    cudaBindTexture2D(
-        NULL, &tex, this->device_ptr, &desc, width, height, device_pitch);
+  /// Private helper method, since 3D texture binds to special array not to
+  /// linear memory, we need to handle copying differently than other classes.
+  void copy_to_array(const void* src_ptr, enum cudaMemcpyKind kind) {
+    cudaMemcpy2DToArray(array,
+                        0,
+                        0,
+                        src_ptr,
+                        width * sizeof(T),
+                        width * sizeof(T),
+                        height,
+                        kind);
   }
-
-  on_device2D(texture_type& tex,
-              T* on_host,
-              size_t width,
-              size_t height,
-              size_t size)
-      : on_device2D(tex,
-                    on_host,
-                    width,
-                    height,
-                    size * sizeof(T),
-                    width * sizeof(T)) {}
 
  public:
-  /// Just allocate with given dimensions on device and bind to texture.
-  on_device2D(texture_type& tex, size_t width, size_t height)
-      : on_device2D(tex, width, height, width * height) {}
+  /// Allocate memory of given dimensions on device and bind to given texture.
+  texture2D(texture_type& tex, size_t width, size_t height)
+      : texture2D(tex, width, height, cudaCreateChannelDesc<T>()) {}
 
-  /// Allocate with given dimensions, copy from host and bind to texture.
-  on_device2D(texture_type& tex, T* on_host, size_t width, size_t height)
-      : on_device2D(tex, on_host, width, height, width * height) {}
+  ~texture2D() {
+    cudaUnbindTexture(&tex);
+    cudaFreeArray(array);
+  }
 
-  ~on_device2D() { cudaUnbindTexture(&tex); }
+  /// Copy from host memory buffer.
+  texture2D& operator=(const T* other_ptr) {
+    copy_to_array(other_ptr, cudaMemcpyHostToDevice);
+    return *this;
+  }
+
+  /// Copy from other on device memory buffer.
+  texture2D& operator=(const memory<T>& other) {
+    copy_to_array(other.device_ptr, cudaMemcpyDeviceToDevice);
+    return *this;
+  }
+
+  /// Copy from other on device memory buffer.
+  texture2D& operator=(const on_device<T>& other) {
+    copy_to_array(other.device_ptr, cudaMemcpyDeviceToDevice);
+    return *this;
+  }
 
   const texture_type& tex;
+  const size_t width;
+  const size_t height;
+  const cudaArray_t array;
 };
 
-/// Host-device 3D texture backed memory.
-template <typename T> class on_device3D : public on_device<T> {
+/// Device 3D texture backed memory.
+template <typename T> class texture3D {
  public:
   using texture_type = texture<T, 3, cudaReadModeElementType>;
 
  private:
-  on_device3D(texture_type& tex,
-              cudaExtent volumeSize,
-              cudaChannelFormatDesc desc,
-              size_t bytes)
-      : on_device<T>(bytes, nullptr),
-        tex(tex),
+  texture3D(texture_type& tex,
+            cudaExtent volumeSize,
+            cudaChannelFormatDesc desc)
+      : tex(tex),
         volumeSize(volumeSize),
         array(device_alloc_array3D<T>(volumeSize, desc)) {
     cudaBindTextureToArray(tex, array, desc);
@@ -331,38 +266,34 @@ template <typename T> class on_device3D : public on_device<T> {
   }
 
  public:
-  /// Allocate memory of given dimensions on both host & device and bind to
-  /// given texture.
-  on_device3D(texture_type& tex, size_t width, size_t height, size_t depth)
-      : on_device3D(tex,
-                    make_cudaExtent(width, height, depth),
-                    cudaCreateChannelDesc<T>(),
-                    width * height * depth * sizeof(T)) {}
+  /// Allocate memory of given dimensions on device and bind to given texture.
+  texture3D(texture_type& tex, size_t width, size_t height, size_t depth)
+      : texture3D(tex,
+                  make_cudaExtent(width, height, depth),
+                  cudaCreateChannelDesc<T>()) {}
 
-  ~on_device3D() {
+  ~texture3D() {
     cudaUnbindTexture(&tex);
     cudaFreeArray(array);
   }
 
-  /// Copy host memory to device.
-  void copy_to_device() {
-    copy_to_array(this->host_ptr, cudaMemcpyHostToDevice);
+  /// Copy from host memory buffer.
+  texture3D& operator=(const T* other_ptr) {
+    copy_to_array(other_ptr, cudaMemcpyHostToDevice);
+    return *this;
   }
 
   /// Copy from other on device memory buffer.
-  on_device3D& operator=(const memory<T>& other) {
+  texture3D& operator=(const memory<T>& other) {
     copy_to_array(other.device_ptr, cudaMemcpyDeviceToDevice);
     return *this;
   }
 
   /// Copy from other on device memory buffer.
-  on_device3D& operator=(const on_device<T>& other) {
+  texture3D& operator=(const on_device<T>& other) {
     copy_to_array(other.device_ptr, cudaMemcpyDeviceToDevice);
     return *this;
   }
-
-  /// Copy device memory to host is NOT SUPPORTED for 3D memory.
-  void copy_from_device() {}
 
   const texture_type& tex;
   const cudaExtent volumeSize;
