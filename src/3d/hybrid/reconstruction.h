@@ -237,9 +237,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       auto lor = event.lor;
       auto& segment = geometry[lor].segment;
       auto R = segment.length / 2;
+      F denominator = 0;
 
       // -- voxel loop - denominator -------------------------------------------
-      double denominator = 0;
       const auto& lor_geometry = geometry[event.lor];
       for (auto info_index = event.first_pixel_info_index;
            info_index < event.last_pixel_info_index;
