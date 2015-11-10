@@ -141,16 +141,16 @@ void run(const SimpleGeometry& geometry,
       geometry.lor_pixel_info_start, geometry.n_lors);
   util::cuda::on_device<Event> device_events(events, n_events);
 
-  util::cuda::memory3D<F> rho(tex_rho,
-                              grid.pixel_grid.n_columns,
-                              grid.pixel_grid.n_rows,
-                              grid.n_planes);
-  util::cuda::on_device<F> output_rho((size_t)grid.n_voxels);
+  util::cuda::on_device3D<F> rho(tex_rho,
+                                 grid.pixel_grid.n_columns,
+                                 grid.pixel_grid.n_rows,
+                                 grid.n_planes);
+  util::cuda::memory<F> output_rho((size_t)grid.n_voxels);
 
-  for (auto& v : rho) {
+  for (auto& v : output_rho) {
     v = 1;
   }
-  rho.copy_to_device();
+  output_rho.copy_to_device();
 
   util::cuda::memory2D<F> sensitivity2d(
       tex_sensitivity, grid.pixel_grid.n_columns, grid.pixel_grid.n_rows);
@@ -166,6 +166,7 @@ void run(const SimpleGeometry& geometry,
     for (int it = 0; it < n_iterations_in_block; ++it) {
       progress(ib * n_iterations_in_block + it, false);
 
+      rho = output_rho;
       output_rho.zero_on_device();
 
       reconstruction(device_lor_line_segments,
@@ -178,15 +179,14 @@ void run(const SimpleGeometry& geometry,
                      grid);
       cudaThreadSynchronize();
 
-      rho = output_rho;
       progress(ib * n_iterations_in_block + it, true);
     }
 
-    rho.copy_from_device();
+    output_rho.copy_from_device();
     Output rho_output(grid.pixel_grid.n_columns,
                       grid.pixel_grid.n_rows,
                       grid.n_planes,
-                      rho.host_ptr);
+                      output_rho.host_ptr);
     output((ib + 1) * n_iterations_in_block, rho_output);
   }
 
