@@ -17,6 +17,15 @@ template <typename T> inline T* device_alloc(size_t bytes) {
   return device_ptr;
 }
 
+template <typename T>
+inline cudaArray_t device_alloc_array3D(
+    const cudaExtent volumeSize,
+    const cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>()) {
+  cudaArray_t array;
+  cudaMalloc3DArray(&array, &desc, volumeSize);
+  return array;
+}
+
 /// \cond PRIVATE
 // Forward declarations
 template <typename T> class memory;
@@ -48,8 +57,10 @@ template <typename T> class memory {
   memory(size_t size) : memory(size, size * sizeof(T)) {}
 
   ~memory() {
-    cudaFree(device_ptr);
-    delete[] host_ptr;
+    if (device_ptr)
+      cudaFree(device_ptr);
+    if (host_ptr)
+      delete[] host_ptr;
   }
 
   /// Copy host memory to device.
@@ -158,17 +169,15 @@ template <typename T> class memory3D : public memory<T> {
 
  private:
   memory3D(texture_type& tex,
-           size_t width,
-           size_t height,
-           size_t depth,
+           cudaExtent volumeSize,
+           cudaChannelFormatDesc desc,
            size_t size,
            size_t bytes)
       : memory<T>(size, bytes, nullptr),
         tex(tex),
-        volumeSize(make_cudaExtent(width, height, depth)) {
-    cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
-    cudaMalloc3DArray((cudaArray_t*)&this->device_ptr, &desc, volumeSize);
-    cudaBindTextureToArray(tex, (cudaArray_t) this->device_ptr, desc);
+        volumeSize(volumeSize),
+        array(device_alloc_array3D<T>(volumeSize, desc)) {
+    cudaBindTextureToArray(tex, array, desc);
   }
 
   memory3D(texture_type& tex,
@@ -176,17 +185,21 @@ template <typename T> class memory3D : public memory<T> {
            size_t height,
            size_t depth,
            size_t size)
-      : memory3D(tex, width, height, depth, size, size * sizeof(T)) {}
+      : memory3D(tex,
+                 make_cudaExtent(width, height, depth),
+                 cudaCreateChannelDesc<T>(),
+                 size,
+                 size * sizeof(T)) {}
 
   /// Private helper method, since 3D texture binds to special array not to
   /// linear memory, we need to handle copying differently than other classes.
-  void copy_to_device(void* src_ptr, enum cudaMemcpyKind kind) {
+  void copy_to_array(void* src_ptr, enum cudaMemcpyKind kind) {
     cudaMemcpy3DParms params = { 0 };
     params.srcPtr = make_cudaPitchedPtr(src_ptr,
                                         volumeSize.width * sizeof(T),
                                         volumeSize.width,
                                         volumeSize.height);
-    params.dstArray = (cudaArray_t) this->device_ptr;
+    params.dstArray = array;
     params.extent = volumeSize;
     params.kind = kind;
     cudaMemcpy3D(&params);
@@ -198,16 +211,19 @@ template <typename T> class memory3D : public memory<T> {
   memory3D(texture_type& tex, size_t width, size_t height, size_t depth)
       : memory3D(tex, width, height, depth, width * height * depth) {}
 
-  ~memory3D() { cudaUnbindTexture(&tex); }
+  ~memory3D() {
+    cudaUnbindTexture(&tex);
+    cudaFreeArray(array);
+  }
 
   /// Copy host memory to device.
   void copy_to_device() {
-    copy_to_device(this->host_ptr, cudaMemcpyHostToDevice);
+    copy_to_array(this->host_ptr, cudaMemcpyHostToDevice);
   }
 
   /// Copy from other on device memory buffer.
   memory3D& operator=(const on_device<T>& other) {
-    copy_to_device(other.device_ptr, cudaMemcpyDeviceToDevice);
+    copy_to_array(other.device_ptr, cudaMemcpyDeviceToDevice);
     return *this;
   }
 
@@ -216,6 +232,7 @@ template <typename T> class memory3D : public memory<T> {
 
   const texture_type& tex;
   const cudaExtent volumeSize;
+  const cudaArray_t array;
 };
 
 /// Device only memory.
