@@ -206,6 +206,18 @@ template <typename T> class on_device {
   /// Zero device memory.
   void zero_on_device() { set_on_device(0); }
 
+  /// Copy from other on device memory buffer.
+  on_device& operator=(const memory<T>& other) {
+    cudaMemcpy(device_ptr, other.device_ptr, bytes, cudaMemcpyDeviceToDevice);
+    return *this;
+  }
+
+  /// Copy from other on device memory buffer.
+  on_device& operator=(const on_device& other) {
+    cudaMemcpy(device_ptr, other.device_ptr, bytes, cudaMemcpyDeviceToDevice);
+    return *this;
+  }
+
   operator T*() { return device_ptr; }
 
   T* const device_ptr;
