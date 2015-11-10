@@ -116,7 +116,6 @@ void add_matrix_options(cmdline::parser& cl) {
   cl.add<int>("from", 0, "lor start detector to output", cmdline::dontsave, -1);
   cl.add<int>("to", 0, "lor end detector to output", cmdline::dontsave, -1);
   cl.add<int>("pos", 0, "position to output", cmdline::dontsave, -1);
-
   // printing & stats params
   cl.add("print", 0, "print triangular sparse system matrix");
   cl.add("stats", 0, "show stats");
@@ -124,7 +123,6 @@ void add_matrix_options(cmdline::parser& cl) {
   cl.add("verbose", 'v', "prints the iterations information on std::out");
   cl.add<util::random::tausworthe::seed_type>(
       "seed", 'S', "random number generator seed", cmdline::dontsave);
-
   Common::add_cuda_options(cl);
   Common::add_openmp_options(cl);
 }

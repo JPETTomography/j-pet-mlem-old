@@ -211,6 +211,12 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     }
   }
 
+  void set_sensitivity_to_one() {
+      auto& grid = geometry.grid;
+      for(int p=0;p<grid.n_pixels;p++)
+          sensitivity_[p]=1.0;
+  }
+
   int operator()() {
     event_count_ = 0;
     voxel_count_ = 0;

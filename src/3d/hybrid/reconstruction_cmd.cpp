@@ -65,6 +65,7 @@ int main(int argc, char* argv[]) {
   cl.add<float>("z-left", 0, "left extent in z direction");
   cl.add<int>("n-planes", 0, "number of voxels in z direction");
   cl.add<cmdline::path>("system", 0, "system matrix file", false);
+  cl.add("sens-to-one", 0, "sets sensitivity to one", false);
   cl.parse_check(argc, argv);
   PET3D::Hybrid::calculate_scanner_options(cl, argc);
 
@@ -108,7 +109,10 @@ int main(int argc, char* argv[]) {
   if (!cl.exist("system")) {
     reconstruction.calculate_weight();
   }
-  reconstruction.calculate_sensitivity();
+  if (cl.exist("sens-to-one"))
+    reconstruction.set_sensitivity_to_one();
+  else
+    reconstruction.calculate_sensitivity();
   reconstruction.normalize_geometry_weights();
 
   for (const auto& fn : cl.rest()) {
