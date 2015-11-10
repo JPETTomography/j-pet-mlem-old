@@ -47,10 +47,10 @@ template <typename FType, typename SType> class BoostGeometryUtils {
   using Point2D = boost::geometry::model::d2::point_xy<F>;
   using Polygon = boost::geometry::model::polygon<Point2D>;
   using Point = PET2D::Point<F>;
-  using PixelGrid = PET2D::PixelGrid<F, S>;
-  using Pixel = typename PixelGrid::Pixel;
+  using Grid = PET2D::PixelGrid<F, S>;
+  using Pixel = typename Grid::Pixel;
 
-  static Polygon make_pixel(const PixelGrid& grid, const Pixel pixel_coord) {
+  static Polygon make_pixel(const Grid& grid, const Pixel pixel_coord) {
     auto size = grid.pixel_size;
     Point ll = grid.lower_left_at(pixel_coord);
     auto x = ll.x;

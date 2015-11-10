@@ -38,13 +38,13 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
   using Base = std::vector<LORGeometry>;
   using Pixel = PET2D::Pixel<S>;
   using LOR = PET2D::Barrel::LOR<S>;
-  using PixelGrid = PET2D::PixelGrid<F, S>;
+  using Grid = PET2D::PixelGrid<F, S>;
   using Point = PET2D::Point<F>;
   using PixelInfo = typename LORGeometry::PixelInfo;
 
   /// Construct geometry for given number of detector and grid description.
-  Geometry(S n_detectors,         ///< total number of detectors
-           const PixelGrid& grid  ///< pixel grid description
+  Geometry(S n_detectors,    ///< total number of detectors
+           const Grid& grid  ///< pixel grid description
            )
       : Base(((int(n_detectors) + 1) * (n_detectors)) / 2),
         n_detectors(n_detectors),
@@ -170,8 +170,8 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
     return total;
   }
 
-  const S n_detectors;   ///< number of detectors
-  const PixelGrid grid;  ///< pixel grid description
+  const S n_detectors;  ///< number of detectors
+  const Grid grid;      ///< pixel grid description
 };
 
 }  // Barrel

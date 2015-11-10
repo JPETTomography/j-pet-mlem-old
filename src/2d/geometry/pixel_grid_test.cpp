@@ -6,10 +6,10 @@
 
 using Point = PET2D::Point<F>;
 using Pixel = PET2D::Pixel<S>;
-using PixelGrid = PET2D::PixelGrid<F, S>;
+using Grid = PET2D::PixelGrid<F, S>;
 
 TEST("2d/geometry/pixel_grid/pixel_at") {
-  PixelGrid grid(128, 64, 0.005, Point(-0.005 * 64, -0.005 * 32));
+  Grid grid(128, 64, 0.005, Point(-0.005 * 64, -0.005 * 32));
   {
     Pixel p = grid.pixel_at(Point(0, 0));
     REQUIRE(p.x == 64);
@@ -23,7 +23,7 @@ TEST("2d/geometry/pixel_grid/pixel_at") {
 }
 
 TEST("2d/geometry/pixel_grid/point_at") {
-  PixelGrid grid(128, 64, 0.005, Point(-0.005 * 64, -0.005 * 32));
+  Grid grid(128, 64, 0.005, Point(-0.005 * 64, -0.005 * 32));
   {
     Point p = grid.lower_left_at(Pixel(64, 32));
     REQUIRE(p.x == 0.0_e7);

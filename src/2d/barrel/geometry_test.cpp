@@ -7,13 +7,13 @@
 #include "common/types.h"
 
 using Geometry = PET2D::Barrel::Geometry<F, S>;
-using PixelGrid = PET2D::PixelGrid<F, S>;
+using Grid = PET2D::PixelGrid<F, S>;
 using Point = PET2D::Point<F>;
 
 TEST("2d/geometry/geometry") {}
 
 TEST("2d/geometry/geometry/write_read") {
-  PixelGrid grid(192, 128, 0.1, Point(-1, -1));
+  Grid grid(192, 128, 0.1, Point(-1, -1));
   Geometry geometry(48, grid);
   {
     auto fn = "geometry_test.txt"_temp;
