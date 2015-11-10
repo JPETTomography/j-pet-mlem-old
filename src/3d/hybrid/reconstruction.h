@@ -9,6 +9,7 @@
 #endif
 
 #include "2d/strip/response.h"
+#include "2d/geometry/pixel_map.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/voxel_grid.h"
 #include "3d/geometry/voxel.h"
@@ -41,6 +42,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using Output = PET3D::VoxelMap<Voxel, F>;
   using Grid = PET3D::VoxelGrid<F, S>;
   using PixelGrid = typename Grid::PixelGrid;
+  using Pixel = typename PixelGrid::Pixel;
+  using Map2D = PET2D::PixelMap<Pixel, F>;
 
   struct FrameEvent {
     LOR lor;
@@ -63,7 +66,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using Geometry = PET2D::Barrel::Geometry<F, S>;
   using LORGeometry = typename Geometry::LORGeometry;
   using PixelInfo = typename Geometry::PixelInfo;
-  using Pixel = typename Geometry::Pixel;
 
   Reconstruction(const Scanner& scanner,
                  Geometry& geometry,
@@ -76,7 +78,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         rho_(geometry.grid.n_columns, geometry.grid.n_rows, n_planes, 1),
         n_threads_(omp_get_max_threads()),
         n_events_per_thread_(n_threads_, 0),
-        sensitivity_(geometry.grid.n_columns, geometry.grid.n_rows, n_planes) {
+        sensitivity_(geometry.grid.n_columns, geometry.grid.n_rows) {
     for (int i = 0; i < n_threads_; ++i) {
       thread_rhos_.emplace_back(
           grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, n_planes);
@@ -185,28 +187,20 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   }
 
   void calculate_sensitivity() {
-    const auto& pixel_grid = grid.pixel_grid;
     sensitivity_.assign(0);
     for (auto& lor_geometry : geometry) {
-
       for (auto& pixel_info : lor_geometry.pixel_infos) {
-        auto pixel = pixel_info.pixel;
-        auto pixel_index = pixel_grid.index(pixel);
-        sensitivity_[pixel_index] += pixel_info.weight;
+        sensitivity_[pixel_info.pixel] += pixel_info.weight;
       }
     }
   }
 
   void normalize_geometry_weights() {
-    const auto& pixel_grid = grid.pixel_grid;
-
     for (auto& lor_geometry : geometry) {
-
       for (auto& pixel_info : lor_geometry.pixel_infos) {
         auto pixel = pixel_info.pixel;
-        auto pixel_index = pixel_grid.index(pixel);
-        if (sensitivity_[pixel_index] > 0)
-          pixel_info.weight /= sensitivity_[pixel_index];
+        if (sensitivity_[pixel] > 0)
+          pixel_info.weight /= sensitivity_[pixel];
       }
     }
   }
@@ -340,7 +334,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   std::vector<Output> thread_kernel_caches_;
   std::vector<VoxelKernelInfo> voxel_cache_;
   std::vector<int> n_events_per_thread_;
-  Output sensitivity_;
+  Map2D sensitivity_;
 #endif  // !__CUDACC__
 };
 
