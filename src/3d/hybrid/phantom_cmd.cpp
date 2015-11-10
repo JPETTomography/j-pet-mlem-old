@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
 
   Phantom phantom(regions);
 
-  Scintillator scintillator(F(0.100));
+  Scintillator scintillator(F(cl.get<double>("base-length")));
   MonteCarlo monte_carlo(phantom, scanner);
 
   std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
