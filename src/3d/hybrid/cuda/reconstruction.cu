@@ -102,6 +102,25 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
   }    // event loop
 }
 
+__global__ static void add_offsets(Event* events,
+                                   const int n_events,
+                                   const size_t* lor_pixel_info_start) {
+  const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+  const auto n_threads = gridDim.x * blockDim.x;
+  const auto n_chunks = (n_events + n_threads - 1) / n_threads;
+  for (int chunk = 0; chunk < n_chunks; ++chunk) {
+    int event_index = chunk * n_threads + tid;
+    // check if we are still on the list
+    if (event_index >= n_events) {
+      break;
+    }
+    auto& event = events[event_index];
+    const auto pixel_info_start = lor_pixel_info_start[event.lor.index()];
+    event.first_pixel_info_index += pixel_info_start;
+    event.last_pixel_info_index += pixel_info_start;
+  }
+}
+
 void run(const SimpleGeometry& geometry,
          const Event* events,
          int n_events,
@@ -140,6 +159,8 @@ void run(const SimpleGeometry& geometry,
   util::cuda::on_device<size_t> device_lor_pixel_info_start(
       geometry.lor_pixel_info_start, geometry.n_lors);
   util::cuda::on_device<Event> device_events(events, n_events);
+
+  add_offsets(device_events, n_events, device_lor_pixel_info_start);
 
   util::cuda::on_device3D<F> rho(tex_rho,
                                  grid.pixel_grid.n_columns,
