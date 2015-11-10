@@ -9,10 +9,12 @@ namespace PET3D {
 template <typename FType, typename SType> class VoxelSet {
   using F = FType;
   using S = SType;
-  using Voxel = PET3D::Voxel<S>;
+  using VoxelGrid = PET3D::VoxelGrid<F, S>;
+  using Voxel = typename VoxelGrid::Voxel;
+  using Pixel = typename VoxelGrid::Pixel;
 
  public:
-  VoxelSet(const PET3D::VoxelGrid<F, S>& grid) : grid(grid) {}
+  VoxelSet(const VoxelGrid& grid) : grid(grid) {}
 
   typename std::vector<Voxel>::const_iterator begin() const {
     return voxels_.begin();
@@ -41,7 +43,7 @@ template <typename FType, typename SType> class VoxelSet {
     auto ciy = pixel_grid.n_rows / 2;
     for (S ix = cix; ix < pixel_grid.n_columns; ix++)
       for (S iy = ciy; iy <= ix; iy++) {
-        auto p = pixel_grid.center_at(ix, iy);
+        auto p = pixel_grid.center_at(Pixel(ix, iy));
         if (p.x * p.x + p.y * p.y <= fov_radius * fov_radius) {
           emplace_back(ix, iy, iz);
         }
@@ -54,7 +56,7 @@ template <typename FType, typename SType> class VoxelSet {
     auto ciz = grid.n_planes / 2;
     for (S ix = cix; ix < pixel_grid.n_columns; ix++) {
       for (S iz = ciz; iz <= grid.n_planes; iz++) {
-        auto p = pixel_grid.center_at(ix, iy);
+        auto p = pixel_grid.center_at(Pixel(ix, iy));
         if (p.x * p.x + p.y * p.y <= fov_radius * fov_radius) {
           emplace_back(ix, iy, iz);
         }
@@ -62,7 +64,7 @@ template <typename FType, typename SType> class VoxelSet {
     }
   }
 
-  const PET3D::VoxelGrid<F, S> grid;
+  const VoxelGrid grid;
 
  private:
   std::vector<Voxel> voxels_;

@@ -83,19 +83,15 @@ template <typename FType> class MathematicaGraphics {
   void add_circle(F radius) { add_circle(PET2D::Point<F>(0, 0), radius); }
 
   template <typename S>
-  void add_pixel(const PET2D::PixelGrid<F, S>& grid, S ix, S iy) {
-    auto ll = grid.lower_left_at(ix, iy);
+  void add_pixel(const PET2D::PixelGrid<F, S>& grid,
+                 const PET2D::Pixel<S> pixel) {
+    auto ll = grid.lower_left_at(pixel);
     delimiter();
     out_ << "{FaceForm[], EdgeForm[Black], Polygon[{\n";
     out_ << pair(ll.x, ll.y) << ", ";
     out_ << pair(ll.x + grid.pixel_size, ll.y) << ", ";
     out_ << pair(ll.x + grid.pixel_size, ll.y + grid.pixel_size) << ", ";
     out_ << pair(ll.x, ll.y + grid.pixel_size) << "}]}";
-  }
-
-  template <typename S>
-  void add_pixel(const PET2D::PixelGrid<F, S>& grid, PET2D::Pixel<S> pix) {
-    add_pixel(grid, pix.x, pix.y);
   }
 
   void add(const PET2D::Point<F>& p) {

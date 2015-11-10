@@ -22,7 +22,7 @@ template <typename FType, typename SType> class PixelGrid {
   using Vector = PET2D::Vector<F>;
   using Pixel = PET2D::Pixel<S>;
 
-  PixelGrid(S n_columns, S n_rows, F pixel_size, const Point& lower_left)
+  _ PixelGrid(S n_columns, S n_rows, F pixel_size, const Point& lower_left)
       : n_columns(n_columns),
         n_rows(n_rows),
         pixel_size(pixel_size),
@@ -37,27 +37,26 @@ template <typename FType, typename SType> class PixelGrid {
   const Point lower_left_center;
   const int n_pixels;
 
-  int index(S column, S row) const { return column + n_columns * row; }
-  int index(const Pixel& pixel) const { return index(pixel.x, pixel.y); }
+  _ int index(Pixel pixel) const { return pixel.x + n_columns * pixel.y; }
 
-  Point lower_left_at(S column, S row) const {
-    Vector displacement(column * pixel_size, row * pixel_size);
+  _ Point lower_left_at(Pixel pixel) const {
+    Vector displacement(pixel.x * pixel_size, pixel.y * pixel_size);
     return lower_left + displacement;
   }
 
-  Point center_at(S column, S row) const {
-    Vector displacement(column * pixel_size, row * pixel_size);
+  _ Point center_at(Pixel pixel) const {
+    Vector displacement(pixel.x * pixel_size, pixel.y * pixel_size);
     return lower_left_center + displacement;
   }
 
-  Pixel pixel_at(Point p) const {
+  _ Pixel pixel_at(Point p) const {
     Vector v = p - lower_left;
     S column = static_cast<S>(compat::floor(v.x / pixel_size));
     S row = static_cast<S>(compat::floor(v.y / pixel_size));
     return Pixel(column, row);
   }
 
-  bool contains(Pixel pixel) const {
+  _ bool contains(Pixel pixel) const {
     return pixel.x >= 0 && pixel.y >= 0 && pixel.x < n_columns &&
            pixel.y < n_rows;
   }

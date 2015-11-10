@@ -58,6 +58,7 @@ using RNG = std::mt19937;
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Point = PET2D::Point<F>;
+using Pixel = PET2D::Pixel<S>;
 
 using Geometry = PET2D::Barrel::Geometry<F, S>;
 using LORGeometry = PET2D::Barrel::LORGeometry<F, S>;
@@ -210,9 +211,9 @@ int main(int argc, char* argv[]) {
     if (boost::geometry::intersects(lor_hull, fov_circle)) {
       for (int ix = 0; ix < grid.n_columns; ++ix)
         for (int iy = 0; iy < grid.n_rows; ++iy) {
-
-          Point center = grid.center_at(ix, iy);
-          Polygon pixel = BoostGeometryUtils::make_pixel(grid, ix, iy);
+          Pixel pixel_coord(ix, iy);
+          Point center = grid.center_at(pixel_coord);
+          Polygon pixel = BoostGeometryUtils::make_pixel(grid, pixel_coord);
           if (boost::geometry::intersects(pixel, fov_circle)) {
             boost::geometry::model::multi_polygon<Polygon> inter;
             boost::geometry::intersection(lor_hull, pixel, inter);

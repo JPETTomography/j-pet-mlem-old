@@ -15,6 +15,7 @@ TEST("3d/geometry/voxel_set") {
   using VoxelGrid = PET3D::VoxelGrid<F, S>;
   using Point = PET2D::Point<F>;
   using PixelGrid = PET2D::PixelGrid<F, S>;
+  using Pixel = PET2D::Pixel<S>;
 
   PixelGrid pixel_grid(80, 80, 0.005, Point(-0.200, -0.200));
   VoxelGrid voxel_grid(pixel_grid, -0.200, 80);
@@ -41,7 +42,7 @@ TEST("3d/geometry/voxel_set") {
     std::stringstream out;
     MathematicaGraphics graphics(out);
     for (auto& voxel : voxel_set) {
-      graphics.add_pixel(pixel_grid, voxel.x, voxel.y);
+      graphics.add_pixel(pixel_grid, Pixel(voxel.x, voxel.y));
     }
   }
 
@@ -51,7 +52,7 @@ TEST("3d/geometry/voxel_set") {
     std::stringstream out;
     MathematicaGraphics graphics(out);
     for (auto& voxel : voxel_set) {
-      graphics.add_pixel(pixel_grid, voxel.z, voxel.x);
+      graphics.add_pixel(pixel_grid, Pixel(voxel.z, voxel.x));
     }
   }
 }

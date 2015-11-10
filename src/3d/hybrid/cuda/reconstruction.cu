@@ -14,18 +14,18 @@ namespace GPU {
 namespace Reconstruction {
 
 texture<F, 3, cudaReadModeElementType> tex_rho;
+texture<F, 2, cudaReadModeElementType> tex_sensitivity;
 
 __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                       const PixelInfo* pixel_infos,
                                       const Event* events,
                                       const int n_events,
                                       F* output_rho,
-                                      const F* scale,
                                       const F sigma_z,
                                       const F sigma_dl,
-                                      const int width,
-                                      const int height) {
+                                      const Grid grid) {
 
+  const Kernel kernel(sigma_z, sigma_dl);
   const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
   const auto n_threads = gridDim.x * blockDim.x;
   const auto n_chunks = (n_events + n_threads - 1) / n_threads;
@@ -51,11 +51,21 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
          ++info_index) {
       const auto& pixel_info = pixel_infos[info_index];
       auto pixel = pixel_info.pixel;
-      auto pixel_index = pixel.index(width);
-      auto center = Point2D(0, 0);  // FIXME: wrong!! temporary
+      auto center = grid.pixel_grid.center_at(pixel);
       auto up = segment.projection_relative_middle(center);
 
       for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
+        // kernel calculation:
+        Voxel voxel(pixel.x, pixel.y, iz);
+        auto z = grid.center_z_at(voxel);
+        auto diff = Point2D(up, z) - Point2D(event.up, event.right);
+        auto kernel2d =
+            kernel(event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
+        auto kernel_t = pixel_info.weight;
+        auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
+                      tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
+        // end of kernel calculation
+        denominator += weight * tex2D(tex_sensitivity, voxel.x, voxel.y);
       }
     }  // voxel loop - denominator
 
@@ -70,6 +80,24 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
          ++info_index) {
       const auto& pixel_info = pixel_infos[info_index];
       auto pixel = pixel_info.pixel;
+      auto center = grid.pixel_grid.center_at(pixel);
+      auto up = segment.projection_relative_middle(center);
+
+      for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
+        // kernel calculation:
+        Voxel voxel(pixel.x, pixel.y, iz);
+        auto z = grid.center_z_at(voxel);
+        auto diff = Point2D(up, z) - Point2D(event.up, event.right);
+        auto kernel2d =
+            kernel(event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
+        auto kernel_t = pixel_info.weight;
+        auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
+                      tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
+        // end of kernel calculation
+
+        int voxel_index = grid.index(voxel);
+        atomicAdd(&output_rho[voxel_index], weight * inv_denominator);
+      }
     }  // voxel loop
   }    // event loop
 }
@@ -79,9 +107,7 @@ void run(const SimpleGeometry& geometry,
          int n_events,
          F sigma_z,
          F sigma_dl,
-         int width,
-         int height,
-         int depth,
+         const Grid& grid,
          int n_iteration_blocks,
          int n_iterations_in_block,
          util::delegate<void(int iteration, const Output& output)> output,
@@ -115,22 +141,25 @@ void run(const SimpleGeometry& geometry,
       geometry.lor_pixel_info_start, geometry.n_lors);
   util::cuda::on_device<Event> device_events(events, n_events);
 
-  util::cuda::memory3D<F> rho(tex_rho, width, height, depth);
-  util::cuda::on_device<F> output_rho((size_t)width * height * depth);
+  util::cuda::memory3D<F> rho(tex_rho,
+                              grid.pixel_grid.n_columns,
+                              grid.pixel_grid.n_rows,
+                              grid.n_planes);
+  util::cuda::on_device<F> output_rho((size_t)grid.n_voxels);
 
   for (auto& v : rho) {
     v = 1;
   }
   rho.copy_to_device();
 
-  util::cuda::on_device<F> scale((size_t)width * height);
-  scale.zero_on_device();
+  util::cuda::memory2D<F> sensitivity2d(
+      tex_sensitivity, grid.pixel_grid.n_columns, grid.pixel_grid.n_rows);
+  sensitivity2d.zero_on_device();
 
-  Common::GPU::sensitivity(
-      device_pixel_infos, geometry.n_pixel_infos, scale, width);
-  cudaThreadSynchronize();
-
-  Common::GPU::invert(scale, width * height);
+  Common::GPU::sensitivity(device_pixel_infos,
+                           geometry.n_pixel_infos,
+                           sensitivity2d,
+                           grid.pixel_grid.n_columns);
   cudaThreadSynchronize();
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
@@ -144,11 +173,9 @@ void run(const SimpleGeometry& geometry,
                      device_events,
                      n_events,
                      output_rho,
-                     scale,
                      sigma_z,
                      sigma_dl,
-                     width,
-                     height);
+                     grid);
       cudaThreadSynchronize();
 
       rho = output_rho;
@@ -156,7 +183,10 @@ void run(const SimpleGeometry& geometry,
     }
 
     rho.copy_from_device();
-    Output rho_output(width, height, depth, rho.host_ptr);
+    Output rho_output(grid.pixel_grid.n_columns,
+                      grid.pixel_grid.n_rows,
+                      grid.n_planes,
+                      rho.host_ptr);
     output((ib + 1) * n_iterations_in_block, rho_output);
   }
 

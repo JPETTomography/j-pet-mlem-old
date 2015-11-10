@@ -32,7 +32,7 @@ void draw_line(const Point<typename Grid::F>& start,
   typename Grid::S step_x = (end.x >= start.x) ? 1 : -1;
   typename Grid::S step_y = (end.y >= start.y) ? 1 : -1;
 
-  Point start_pixel_center = grid.center_at(start_pix.x, start_pix.y);
+  Point start_pixel_center = grid.center_at(start_pix);
   F x_border = start_pixel_center.x + step_x * grid.pixel_size / 2;
   F y_border = start_pixel_center.y + step_y * grid.pixel_size / 2;
 

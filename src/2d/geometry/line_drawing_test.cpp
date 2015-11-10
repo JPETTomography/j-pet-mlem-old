@@ -6,12 +6,12 @@
 
 #include "common/types.h"
 
-using PixelGrid = PET2D::PixelGrid<F, S>;
+using Grid = PET2D::PixelGrid<F, S>;
 using Point = PET2D::Point<F>;
 using Pixel = PET2D::Pixel<S>;
 
 TEST("2d/geometry/line_drawing") {
-  PixelGrid grid(128, 128, 0.005, Point(-64 * 0.005, -64 * 0.005));
+  Grid grid(128, 128, 0.005, Point(-64 * 0.005, -64 * 0.005));
   {
     Point start(0.001, 0.001);
     Point end(0.007, 0.003);

@@ -2,6 +2,7 @@
 
 #include "2d/geometry/pixel_grid.h"
 #include "3d/geometry/point.h"
+#include "3d/geometry/voxel.h"
 
 namespace PET3D {
 
@@ -9,40 +10,43 @@ namespace PET3D {
 ////
 /// 3D voxel grid description, without actual voxels storage
 template <typename FType, typename SType> class VoxelGrid {
+ public:
   using F = FType;
   using S = SType;
   using PixelGrid = PET2D::PixelGrid<F, S>;
+  using Pixel = typename PixelGrid::Pixel;
   using Point = PET3D::Point<F>;
+  using Voxel = PET3D::Voxel<S>;
 
- public:
-  VoxelGrid(const PixelGrid& pixel_grid, F z_left, S n_planes)
+  _ VoxelGrid(const PixelGrid& pixel_grid, F z_left, S n_planes)
       : pixel_grid(pixel_grid),
         z_left(z_left),
         n_planes(n_planes),
         n_voxels(pixel_grid.n_pixels * n_planes) {}
 
-  Point lower_left_at(S column, S row, S plane) const {
-    auto p2d = pixel_grid.lower_left_at(column, row);
-    F z = plane * pixel_grid.pixel_size + z_left;
+  _ Point lower_left_at(Voxel voxel) const {
+    auto point2d = pixel_grid.lower_left_at(Pixel(voxel.x, voxel.y));
+    F z = voxel.z * pixel_grid.pixel_size + z_left;
+    return Point(point2d.x, point2d.y, z);
+  }
+
+  _ Point center_at(Voxel voxel) const {
+    auto p2d = pixel_grid.center_at(Pixel(voxel.x, voxel.y));
+    F z = center_z_at(voxel);
     return Point(p2d.x, p2d.y, z);
   }
 
-  Point center_at(S column, S row, S plane) const {
-    auto p2d = pixel_grid.center_at(column, row);
-    F z = center_z_at(column, row, plane);
-    return Point(p2d.x, p2d.y, z);
+  _ F center_z_at(Voxel voxel) const {
+    return (voxel.z + F(0.5)) * pixel_grid.pixel_size + z_left;
   }
 
-  F center_z_at(S /*column*/, S /*row*/, S plane) const {
-    return (plane + F(0.5)) * pixel_grid.pixel_size + z_left;
+  _ int index(Voxel voxel) const {
+    return pixel_grid.index(Pixel(voxel.x, voxel.y)) +
+           voxel.z * pixel_grid.n_pixels;
+    // Experiments with better "cache aware" indexing no real speed up:
+    // return pixel_grid.index(column, row) * n_planes + plane;
   }
 
-  int index(S column, S row, S plane) const {
-    return pixel_grid.index(column, row) + plane * pixel_grid.n_pixels;
-    /* Experiments with better "cache aware" indexing
-     * no real speed up */
-    // return pixel_grid.index(column, row)*n_planes + plane;
-  }
   const PixelGrid pixel_grid;
   const F z_left;
   const S n_planes;
