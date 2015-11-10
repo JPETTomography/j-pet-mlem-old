@@ -191,8 +191,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
       for (auto& pixel_info : lor_geometry.pixel_infos) {
         auto pixel = pixel_info.pixel;
-        auto index = pixel_grid.index(pixel);
-        sensitivity_[index] += pixel_info.weight;
+        auto pixel_index = pixel_grid.index(pixel);
+        sensitivity_[pixel_index] += pixel_info.weight;
       }
     }
   }
@@ -204,9 +204,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
       for (auto& pixel_info : lor_geometry.pixel_infos) {
         auto pixel = pixel_info.pixel;
-        auto index = pixel_grid.index(pixel);
-        if (sensitivity_[index] > 0)
-          pixel_info.weight /= sensitivity_[index];
+        auto pixel_index = pixel_grid.index(pixel);
+        if (sensitivity_[pixel_index] > 0)
+          pixel_info.weight /= sensitivity_[pixel_index];
       }
     }
   }
@@ -247,7 +247,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         pixel_count_++;
         const auto& pixel_info = lor_geometry.pixel_infos[info_index];
         auto pixel = pixel_info.pixel;
-        auto index = pixel_grid.index(pixel);
+        auto pixel_index = pixel_grid.index(pixel);
         auto center = pixel_grid.center_at(pixel);
         auto up = segment.projection_relative_middle(center);
 
@@ -255,17 +255,17 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
           voxel_count_++;
           Voxel voxel(pixel.x, pixel.y, iz);
           auto z = grid.center_z_at(voxel);
-          int v_index = grid.index(voxel);
+          int voxel_index = grid.index(voxel);
 
           auto diff = Point2D(up, z) - Point2D(event.up, event.right);
           auto kernel2d = kernel_(
               event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
           auto kernel_t = pixel_info.weight;
 
-          auto weight = kernel2d * kernel_t * rho_[v_index];
-          denominator += weight * sensitivity_[index];
+          auto weight = kernel2d * kernel_t * rho_[voxel_index];
+          denominator += weight * sensitivity_[pixel_index];
 
-          thread_kernel_caches_[thread][v_index] = weight;
+          thread_kernel_caches_[thread][voxel_index] = weight;
         }
       }  // voxel loop - denominator
 
@@ -284,10 +284,10 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         auto pixel = pixel_info.pixel;
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
           Voxel voxel(pixel.x, pixel.y, iz);
-          int index = grid.index(voxel);
+          int voxel_index = grid.index(voxel);
 
-          thread_rhos_[thread][index] +=
-              thread_kernel_caches_[thread][index] * inv_denominator;
+          thread_rhos_[thread][voxel_index] +=
+              thread_kernel_caches_[thread][voxel_index] * inv_denominator;
         }
       }  // voxel loop
     }    // event loop

@@ -248,8 +248,8 @@ class LMReconstruction {
     for (auto& lor_geometry : geometry) {
       for (auto& pixel_info : lor_geometry.pixel_infos) {
         auto pixel = pixel_info.pixel;
-        auto index = grid.index(pixel);
-        sensitivity_[index] += pixel_info.weight;
+        auto pixel_index = grid.index(pixel);
+        sensitivity_[pixel_index] += pixel_info.weight;
       }
     }
   }
