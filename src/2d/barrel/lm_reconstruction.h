@@ -232,7 +232,7 @@ class LMReconstruction {
 
       for (auto& pixel_info : lor_geometry.pixel_infos) {
         auto pixel = pixel_info.pixel;
-        auto center = grid.center_at(pixel.x, pixel.y);
+        auto center = grid.center_at(pixel);
         auto distance = segment.distance_from(center);
         auto kernel_z =
             gauss_norm_w * std::exp(-distance * distance * inv_sigma2_w);

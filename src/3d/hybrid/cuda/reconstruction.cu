@@ -23,8 +23,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                       const F* scale,
                                       const F sigma_z,
                                       const F sigma_dl,
-                                      const int width,
-                                      const int height) {
+                                      const Grid grid) {
 
   const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
   const auto n_threads = gridDim.x * blockDim.x;
@@ -51,8 +50,9 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
          ++info_index) {
       const auto& pixel_info = pixel_infos[info_index];
       auto pixel = pixel_info.pixel;
-      auto pixel_index = pixel.index(width);
-      auto center = Point2D(0, 0);  // FIXME: wrong!! temporary
+      auto pixel_index = grid.pixel_grid.index(pixel);
+      auto center =
+          grid.pixel_grid.center_at(pixel);  // FIXME: wrong!! temporary
       auto up = segment.projection_relative_middle(center);
 
       for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
@@ -79,9 +79,7 @@ void run(const SimpleGeometry& geometry,
          int n_events,
          F sigma_z,
          F sigma_dl,
-         int width,
-         int height,
-         int depth,
+         const Grid& grid,
          int n_iteration_blocks,
          int n_iterations_in_block,
          util::delegate<void(int iteration, const Output& output)> output,
@@ -115,22 +113,27 @@ void run(const SimpleGeometry& geometry,
       geometry.lor_pixel_info_start, geometry.n_lors);
   util::cuda::on_device<Event> device_events(events, n_events);
 
-  util::cuda::memory3D<F> rho(tex_rho, width, height, depth);
-  util::cuda::on_device<F> output_rho((size_t)width * height * depth);
+  util::cuda::memory3D<F> rho(tex_rho,
+                              grid.pixel_grid.n_columns,
+                              grid.pixel_grid.n_rows,
+                              grid.n_planes);
+  util::cuda::on_device<F> output_rho((size_t)grid.n_voxels);
 
   for (auto& v : rho) {
     v = 1;
   }
   rho.copy_to_device();
 
-  util::cuda::on_device<F> scale((size_t)width * height);
+  util::cuda::on_device<F> scale((size_t)grid.pixel_grid.n_pixels);
   scale.zero_on_device();
 
-  Common::GPU::sensitivity(
-      device_pixel_infos, geometry.n_pixel_infos, scale, width);
+  Common::GPU::sensitivity(device_pixel_infos,
+                           geometry.n_pixel_infos,
+                           scale,
+                           grid.pixel_grid.n_columns);
   cudaThreadSynchronize();
 
-  Common::GPU::invert(scale, width * height);
+  Common::GPU::invert(scale, grid.pixel_grid.n_pixels);
   cudaThreadSynchronize();
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
@@ -147,8 +150,7 @@ void run(const SimpleGeometry& geometry,
                      scale,
                      sigma_z,
                      sigma_dl,
-                     width,
-                     height);
+                     grid);
       cudaThreadSynchronize();
 
       rho = output_rho;
@@ -156,7 +158,10 @@ void run(const SimpleGeometry& geometry,
     }
 
     rho.copy_from_device();
-    Output rho_output(width, height, depth, rho.host_ptr);
+    Output rho_output(grid.pixel_grid.n_columns,
+                      grid.pixel_grid.n_rows,
+                      grid.n_planes,
+                      rho.host_ptr);
     output((ib + 1) * n_iterations_in_block, rho_output);
   }
 

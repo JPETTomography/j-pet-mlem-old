@@ -33,6 +33,7 @@ using Event = ReconstructionBase::FrameEvent;
 using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
 using PixelInfo = SimpleGeometry::PixelInfo;
 using Output = VoxelMap<Voxel, F>;
+using Grid = PET3D::VoxelGrid<F, S>;
 /// \endcond
 
 /// CUDA optimized reconstruction implementation
@@ -41,9 +42,7 @@ void run(const SimpleGeometry& geometry,
          int n_events,
          float sigma_z,
          float sigma_dl,
-         int width,
-         int height,
-         int depth,
+         const Grid& grid,
          int n_iteration_blocks,
          int n_iterations_in_block,
          util::delegate<void(int iteration, const Output& output)> output,

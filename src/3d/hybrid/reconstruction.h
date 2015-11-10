@@ -175,7 +175,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
       for (auto& pixel_info : lor_geometry.pixel_infos) {
         auto pixel = pixel_info.pixel;
-        auto center = grid.center_at(pixel.x, pixel.y);
+        auto center = grid.center_at(pixel);
         auto distance = segment.distance_from(center);
         auto kernel_z =
             gauss_norm_w * std::exp(-distance * distance * inv_sigma2_w);
@@ -247,17 +247,15 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         pixel_count_++;
         const auto& pixel_info = lor_geometry.pixel_infos[info_index];
         auto pixel = pixel_info.pixel;
-        auto ix = pixel.x;
-        auto iy = pixel.y;
-        auto index = grid.index(ix, iy);
-
-        auto center = grid.center_at(ix, iy);
+        auto index = grid.index(pixel);
+        auto center = grid.center_at(pixel);
         auto up = segment.projection_relative_middle(center);
 
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
           voxel_count_++;
-          auto z = v_grid.center_z_at(ix, iy, iz);
-          int v_index = v_grid.index(ix, iy, iz);
+          Voxel voxel(pixel.x, pixel.y, iz);
+          auto z = v_grid.center_z_at(voxel);
+          int v_index = v_grid.index(voxel);
 
           auto diff = Point2D(up, z) - Point2D(event.up, event.right);
           auto kernel2d = kernel_(
@@ -284,10 +282,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
            ++info_index) {
         const auto& pixel_info = lor_geometry.pixel_infos[info_index];
         auto pixel = pixel_info.pixel;
-        auto ix = pixel.x;
-        auto iy = pixel.y;
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
-          int index = v_grid.index(ix, iy, iz);
+          Voxel voxel(pixel.x, pixel.y, iz);
+          int index = v_grid.index(voxel);
 
           thread_rhos_[thread][index] +=
               thread_kernel_caches_[thread][index] * inv_denominator;

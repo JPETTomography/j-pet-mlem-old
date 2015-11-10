@@ -25,22 +25,22 @@ TEST("2d/geometry/pixel_grid/pixel_at") {
 TEST("2d/geometry/pixel_grid/point_at") {
   PixelGrid grid(128, 64, 0.005, Point(-0.005 * 64, -0.005 * 32));
   {
-    Point p = grid.lower_left_at(64, 32);
+    Point p = grid.lower_left_at(Pixel(64, 32));
     REQUIRE(p.x == 0.0_e7);
     REQUIRE(p.y == 0.0_e7);
   }
   {
-    Point p = grid.center_at(64, 32);
+    Point p = grid.center_at(Pixel(64, 32));
     REQUIRE(p.x == 0.0025_e7);
     REQUIRE(p.y == 0.0025_e7);
   }
   {
-    Point p = grid.lower_left_at(66, 35);
+    Point p = grid.lower_left_at(Pixel(66, 35));
     REQUIRE(p.x == 0.010_e7);
     REQUIRE(p.y == 0.015_e7);
   }
   {
-    Point p = grid.center_at(66, 35);
+    Point p = grid.center_at(Pixel(66, 35));
     REQUIRE(p.x == 0.0125_e7);
     REQUIRE(p.y == 0.0175_e7);
   }
