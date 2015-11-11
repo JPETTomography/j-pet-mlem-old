@@ -88,10 +88,12 @@ int main(int argc, char* argv[]) {
     throw("n_detectors mismatch");
   }
 
-  if (cl.exist("verbose")) {
-    std::cout << geometry.n_detectors << std::endl;
-    std::cout << geometry.grid.n_columns << "x" << geometry.grid.n_rows << " "
-              << geometry.grid.pixel_size << std::endl;
+  if (verbose) {
+    std::cout << "3D hybrid reconstruction:" << std::endl
+              << "    detectors = " << geometry.n_detectors << std::endl;
+    std::cerr << "   pixel grid = "  // grid size:
+              << geometry.grid.n_columns << " x " << geometry.grid.n_rows
+              << " / " << geometry.grid.pixel_size << std::endl;
   }
 
   if (cl.exist("system")) {
@@ -105,6 +107,13 @@ int main(int argc, char* argv[]) {
   PET3D::Hybrid::Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>>
   reconstruction(
       scanner, geometry, cl.get<float>("z-left"), cl.get<int>("n-planes"));
+
+  if (verbose) {
+    std::cerr << "   voxel grid = "  // grid size:
+              << reconstruction.grid.pixel_grid.n_columns << " x "
+              << reconstruction.grid.pixel_grid.n_columns << " x "
+              << reconstruction.grid.n_planes << std::endl;
+  }
 
   if (!cl.exist("system")) {
     reconstruction.calculate_weight();
@@ -182,9 +191,12 @@ int main(int argc, char* argv[]) {
   {
     for (int block = 0; block < n_blocks; ++block) {
       for (int i = 0; i < n_iterations_in_block; i++) {
-        std::cout << block * n_iterations_in_block + i << ' '
-                  << reconstruction() << "\n";
+        progress(block * n_iterations_in_block + i);
+        reconstruction();
+        progress(block * n_iterations_in_block + i, true);
       }
+      if (!output_base_name.length())
+        continue;
       auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
                                            n_iterations);
       util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
@@ -197,15 +209,18 @@ int main(int argc, char* argv[]) {
         bin << reconstruction.rho();
       }
     }
-    std::cout << reconstruction.event_count() << " "
-              << reconstruction.voxel_count() << " "
-              << reconstruction.pixel_count() << "\n";
-    std::cout << (double)reconstruction.voxel_count() /
+
+    // final reconstruction statistics
+    std::cerr << "  event count = " << reconstruction.event_count()
+              << std::endl;
+    std::cerr << "  voxel count = " << reconstruction.voxel_count() << "("
+              << (double)reconstruction.voxel_count() /
                      reconstruction.event_count()
-              << " ";
-    std::cout << (double)reconstruction.pixel_count() /
+              << " / event)" << std::endl;
+    std::cerr << "  pixel count = " << reconstruction.pixel_count() << "("
+              << (double)reconstruction.pixel_count() /
                      reconstruction.event_count()
-              << "\n";
+              << " / event)" << std::endl;
   }
 
   CMDLINE_CATCH

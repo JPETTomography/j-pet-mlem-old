@@ -87,10 +87,10 @@ int main(int argc, char* argv[]) {
 
   if (verbose) {
     std::cout << "LM reconstruction:" << std::endl
-              << "   detectors = " << geometry.n_detectors << std::endl
-              << "  pixel_grid = " << geometry.grid.n_columns << " x "
-              << geometry.grid.n_rows << " / " << geometry.grid.pixel_size
-              << std::endl;
+              << "    detectors = " << geometry.n_detectors << std::endl
+              << "   pixel_grid = "  // grid size:
+              << geometry.grid.n_columns << " x " << geometry.grid.n_rows
+              << " / " << geometry.grid.pixel_size << std::endl;
   }
 
   if (cl.exist("system")) {
