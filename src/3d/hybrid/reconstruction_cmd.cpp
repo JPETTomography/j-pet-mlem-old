@@ -172,8 +172,10 @@ int main(int argc, char* argv[]) {
         cl.get<int>("cuda-device"),
         cl.get<int>("cuda-blocks"),
         cl.get<int>("cuda-threads"),
-        [](const char* device_name) {
-          std::cerr << "   CUDA device = " << device_name << std::endl;
+        [=](const char* device_name) {
+          if (verbose) {
+            std::cerr << "   CUDA device = " << device_name << std::endl;
+          }
         });
   } else
 #endif
