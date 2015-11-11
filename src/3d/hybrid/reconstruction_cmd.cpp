@@ -27,10 +27,8 @@
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/lor_geometry.h"
-#include "2d/strip/gausian_kernel.h"
-
-#include "2d/barrel/geometry_matrix_loader.h"
 #include "2d/barrel/sparse_matrix.h"
+#include "2d/strip/gausian_kernel.h"
 
 #include "scanner.h"
 #include "reconstruction.h"
@@ -97,9 +95,11 @@ int main(int argc, char* argv[]) {
   }
 
   if (cl.exist("system")) {
-    load_system_matrix_from_file<F, S, Hit>(
-        cl.get<cmdline::path>("system"), geometry, verbose);
-    std::cerr << "loaded system matrix" << std::endl;
+    auto fn = cl.get<cmdline::path>("system");
+    if (verbose) {
+      std::cerr << "system matrix = " << fn << std::endl;
+    }
+    geometry.load_system_matrix_from_file<Hit>(fn);
   }
 
   PET3D::Hybrid::Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>>

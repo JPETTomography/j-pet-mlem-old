@@ -3,6 +3,7 @@
 #if !__CUDACC__
 #include "util/bstream.h"
 #include "util/read.h"
+#include "sparse_matrix.h"
 #endif
 
 #include "lor_geometry.h"
@@ -172,6 +173,35 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
 
   const S n_detectors;  ///< number of detectors
   const Grid grid;      ///< pixel grid description
+
+#if !__CUDACC__
+  template <typename HitType>
+  void load_system_matrix_from_file(std::string system_matrix_fn) {
+    using Hit = HitType;
+    util::ibstream in_matrix(system_matrix_fn);
+    if (!in_matrix.is_open()) {
+      throw("cannot open system matrix file: " + system_matrix_fn);
+    }
+    PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit> matrix(in_matrix);
+    matrix.sort_by_lor_n_pixel();
+    sort_all_by_index();
+
+    F n_emissions = F(matrix.n_emissions());
+    if (grid.n_columns != matrix.n_pixels_in_row()) {
+      throw("mismatch in number of pixels with matrix");
+    }
+    if (matrix.triangular()) {
+      throw("matrix is not full");
+    }
+
+    for (auto& element : matrix) {
+      auto lor = element.lor;
+      F weight = element.hits / n_emissions;
+      put_pixel(lor, element.pixel, weight);
+    }
+    sort_all();
+  }
+#endif
 };
 
 }  // Barrel
