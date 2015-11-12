@@ -154,6 +154,7 @@ int main(int argc, char* argv[]) {
         geometry);
     PET3D::Hybrid::GPU::Reconstruction::run(
         simple_geometry,
+        reconstruction.sensitivity(),
         reconstruction.events().data(),
         reconstruction.n_events(),
         reconstruction.scanner.sigma_z(),

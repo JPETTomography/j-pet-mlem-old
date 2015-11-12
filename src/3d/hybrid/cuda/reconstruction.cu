@@ -122,6 +122,7 @@ __global__ static void add_offsets(Event* events,
 }
 
 void run(const SimpleGeometry& geometry,
+         const Sensitivity& sensitivity,
          const Event* events,
          int n_events,
          F sigma_z,
@@ -173,25 +174,11 @@ void run(const SimpleGeometry& geometry,
   }
   output_rho.copy_to_device();
 
-  util::cuda::texture2D<F> sensitivity(
-      tex_sensitivity, grid.pixel_grid.n_columns, grid.pixel_grid.n_rows);
-  {
-    util::cuda::memory<F> output_sensitivity((size_t)grid.pixel_grid.n_pixels);
-    output_sensitivity.zero_on_device();
-    Common::GPU::reduce_to_sensitivity(device_pixel_infos,
-                                       geometry.n_pixel_infos,
-                                       output_sensitivity,
-                                       grid.pixel_grid.n_columns);
-    cudaThreadSynchronize();
-    sensitivity = output_sensitivity;
-
-    output_sensitivity.copy_from_device();
-    Output sensitivity_output(grid.pixel_grid.n_columns,
-                              grid.pixel_grid.n_rows,
-                              1,
-                              output_sensitivity.host_ptr);
-    output(-1, sensitivity_output);
-  }
+  util::cuda::texture2D<F> device_sensitivity(tex_sensitivity,
+                                              (size_t)sensitivity.width,
+                                              (size_t)sensitivity.height,
+                                              sensitivity.data);
+  (void)device_sensitivity;  // device sensitivity is used via tex_sensitivity
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {
