@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
     out_full_response.open(output_base_name + "_full_response" + ext);
   }
 
-  util::progress progress(verbose, n_emissions, 10000);
+  util::progress progress(verbose, n_emissions, 1000000);
   monte_carlo(
       rng,
       scintillator,
