@@ -206,15 +206,14 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   }
 
   void set_sensitivity_to_one() {
-      auto& grid = geometry.grid;
-      for(int p=0;p<grid.n_pixels;p++)
-          sensitivity_[p]=1.0;
+    auto& grid = geometry.grid;
+    for (int p = 0; p < grid.n_pixels; p++)
+      sensitivity_[p] = 1.0;
   }
 
   int operator()() {
-    event_count_ = 0;
-    voxel_count_ = 0;
-    pixel_count_ = 0;
+    size_t used_pixels = 0, used_voxels = 0, used_events = 0;
+
     const auto& pixel_grid = grid.pixel_grid;
     for (auto& thread_rho : thread_rhos_) {
       thread_rho.assign(0);
@@ -237,14 +236,14 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       auto lor = event.lor;
       auto& segment = geometry[lor].segment;
       auto R = segment.length / 2;
+      F denominator = 0;
 
       // -- voxel loop - denominator -------------------------------------------
-      double denominator = 0;
       const auto& lor_geometry = geometry[event.lor];
       for (auto info_index = event.first_pixel_info_index;
            info_index < event.last_pixel_info_index;
            ++info_index) {
-        pixel_count_++;
+        used_pixels++;  // statistics
         const auto& pixel_info = lor_geometry.pixel_infos[info_index];
         auto pixel = pixel_info.pixel;
         auto pixel_index = pixel_grid.index(pixel);
@@ -252,7 +251,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         auto up = segment.projection_relative_middle(center);
 
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
-          voxel_count_++;
+          used_voxels++;  // statistics
           Voxel voxel(pixel.x, pixel.y, iz);
           auto z = grid.center_z_at(voxel);
           int voxel_index = grid.index(voxel);
@@ -291,23 +290,25 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         }
       }  // voxel loop
     }    // event loop
-    event_count_ = 0;
 
     rho_.assign(0);
     for (int thread = 0; thread < n_threads_; ++thread) {
       for (int i = 0; i < grid.n_voxels; ++i) {
         rho_[i] += thread_rhos_[thread][i];
       }
-      event_count_ += n_events_per_thread_[thread];
+      used_events += n_events_per_thread_[thread];
     }
-    return event_count_;
+
+    // save statistics
+    statistics_.used_pixels = used_pixels;
+    statistics_.used_voxels = used_voxels;
+    statistics_.used_events = used_events;
+
+    return used_events;
   }
 
   const Output& rho() const { return rho_; }
-
-  int voxel_count() const { return voxel_count_; }
-  int pixel_count() const { return pixel_count_; }
-  int event_count() const { return event_count_; }
+  const Map2D& sensitivity() const { return sensitivity_; }
 
   void graph_frame_event(Common::MathematicaGraphics<F>& graphics,
                          int event_index) {
@@ -323,6 +324,54 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     }
   }
 
+  /// Event statistics
+  struct EventStatistics {
+    size_t min_pixels, max_pixels;  ///< min/max of 2D barrel pixel number
+    size_t min_planes, max_planes;  ///< min/max of 2D strip plane number
+    size_t min_voxels, max_voxels;  ///< min/max of voxel number
+    double avg_pixels, avg_planes, avg_voxels;  ///< averages
+  };
+
+  /// Calculates event statistics
+  void event_statistics(EventStatistics& st) {
+    st.min_pixels = st.min_planes = st.min_voxels = grid.n_voxels;
+    st.max_pixels = st.max_planes = st.max_voxels = 0;
+    size_t total_pixels = 0, total_planes = 0, total_voxels = 0;
+    for (const auto& event : events_) {
+      auto pixels = event.last_pixel_info_index - event.first_pixel_info_index;
+      auto planes = event.last_plane - event.first_plane;
+      auto voxels = pixels * planes;
+      total_pixels += pixels;
+      total_planes += planes;
+      total_voxels += voxels;
+      if (pixels < st.min_pixels)
+        st.min_pixels = pixels;
+      if (planes < st.min_planes)
+        st.min_planes = planes;
+      if (voxels < st.min_voxels)
+        st.min_voxels = voxels;
+      if (pixels > st.max_pixels)
+        st.max_pixels = pixels;
+      if (planes > st.max_planes)
+        st.max_planes = planes;
+      if (voxels > st.max_voxels)
+        st.max_voxels = voxels;
+    }
+    st.avg_pixels = (double)total_pixels / n_events();
+    st.avg_planes = (double)total_planes / n_events();
+    st.avg_voxels = (double)total_voxels / n_events();
+  }
+
+  /// Reconstruction statistics
+  struct Statistics {
+    size_t used_pixels;  ///< number of pixels used for reconstruction
+    size_t used_voxels;  ///< number of voxels used for reconstruction
+    size_t used_events;  ///< number of events used for reconstruction
+  };
+
+  /// Return reconstruction statistics
+  const Statistics& statistics() const { return statistics_; }
+
  public:
   const Scanner& scanner;
   Geometry& geometry;
@@ -332,9 +381,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   std::vector<FrameEvent> events_;
   Kernel2D kernel_;
   Output rho_;
-  int event_count_;
-  int voxel_count_;
-  int pixel_count_;
+  Statistics statistics_;
   int n_threads_;
   std::vector<Output> thread_rhos_;
   std::vector<Output> thread_kernel_caches_;

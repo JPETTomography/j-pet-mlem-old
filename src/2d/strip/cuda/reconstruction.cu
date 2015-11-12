@@ -60,31 +60,31 @@ void run(Scanner<F, S>& scanner,
   const int width = scanner.n_z_pixels;
   const int height = scanner.n_y_pixels;
 
-  util::cuda::memory2D<F> sensitivity(tex_sensitivity, width, height);
-  Output sensitivity_output(width, height, sensitivity.host_ptr);
-  fill_with_sensitivity(sensitivity.host_ptr, scanner);
-  output(-1, sensitivity_output);
-
-  util::cuda::memory2D<F> rho(tex_rho, width, height);
-  Output rho_output(width, height, rho.host_ptr);
-  for (int i = 0; i < scanner.total_n_pixels; ++i) {
-    rho[i] = 100;
+  util::cuda::texture2D<F> sensitivity(tex_sensitivity, width, height);
+  {
+    F output_sensitivity[width * height];
+    fill_with_sensitivity(output_sensitivity, scanner);
+    sensitivity = output_sensitivity;
+    Output sensitivity_output(width, height, output_sensitivity);
+    output(-1, sensitivity_output);
   }
-  rho.copy_to_device();
+
+  util::cuda::texture2D<F> rho(tex_rho, width, height);
+  util::cuda::memory<F> output_rho(image_size);
+  Output rho_output(width, height, output_rho.host_ptr);
+  for (int i = 0; i < scanner.total_n_pixels; ++i) {
+    output_rho[i] = 100;
+  }
+  output_rho.copy_to_device();
 
   // this class allocated CUDA pointers and deallocated them in destructor
   GPU::ResponsesSOA<F> responses_soa(responses, n_responses);
-
-#if USE_RHO_PER_WARP
-  util::cuda::memory<F> output_rho(n_blocks, image_size);
-#else
-  util::cuda::on_device<F> output_rho(image_size);
-#endif
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {
       progress(ib * n_iterations_in_block + it, false);
 
+      rho = output_rho;
       output_rho.zero_on_device();
 
       reconstruction(scanner,
@@ -95,24 +95,6 @@ void run(Scanner<F, S>& scanner,
                      output_rho.device_ptr);
       cudaThreadSynchronize();
 
-#if USE_RHO_PER_WARP
-      output_rho.copy_from_device();
-
-      for (int i = 0; i < scanner.n_y_pixels; ++i) {
-        for (int j = 0; j < scanner.n_z_pixels; ++j) {
-          int pixel_adr = i * scanner.n_y_pixels + j;
-          rho[pixel_adr] = 0;
-          for (int block_id = 0; block_id < n_blocks; ++block_id) {
-
-            rho[i * scanner.n_y_pixels + j] +=
-                output_rho[block_id * scanner.n_y_pixels + pixel_adr];
-          }
-        }
-      }
-
-#else
-      rho = output_rho;
-#endif
       progress(ib * n_iterations_in_block + it, true);
 
       // always output first 5 iterations, and at 10, 15, 20, 30, 50, 100
@@ -123,7 +105,7 @@ void run(Scanner<F, S>& scanner,
       }
     }
 
-    rho.copy_from_device();
+    output_rho.copy_from_device();
     output((ib + 1) * n_iterations_in_block, rho_output);
   }
 

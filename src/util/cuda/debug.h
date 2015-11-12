@@ -38,6 +38,7 @@ static cudaError cudbgLastError;
 #define cudaCreateTextureObject(...)  CUDBG(CreateTextureObject, __VA_ARGS__)
 #define cudaDestroyTextureObject(...) CUDBG(DestroyTextureObject, __VA_ARGS__)
 #define cudaFree(...)                 CUDBG(Free, __VA_ARGS__)
+#define cudaFreeArray(...)            CUDBG(FreeArray, __VA_ARGS__)
 #define cudaMalloc(...)               CUDBG(Malloc, __VA_ARGS__)
 #define cudaMalloc3DArray(...)        CUDBG(Malloc3DArray, __VA_ARGS__)
 #define cudaMallocArray(...)          CUDBG(MallocArray, __VA_ARGS__)

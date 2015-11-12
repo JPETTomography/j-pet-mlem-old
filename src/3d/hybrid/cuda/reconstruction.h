@@ -23,6 +23,7 @@ using Point = PET3D::Point<F>;
 using Point2D = PET2D::Point<F>;
 using Vector2D = PET2D::Vector<F>;
 using Voxel = PET3D::Voxel<S>;
+using Pixel = PET2D::Pixel<S>;
 using LOR = PET2D::Barrel::LOR<S>;
 using LineSegment = PET2D::LineSegment<F>;
 using Detector = PET2D::Barrel::SquareDetector<F>;
@@ -34,11 +35,13 @@ using Event = ReconstructionBase::FrameEvent;
 using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
 using PixelInfo = SimpleGeometry::PixelInfo;
 using Output = VoxelMap<Voxel, F>;
+using Sensitivity = PET2D::PixelMap<Pixel, F>;
 using Grid = PET3D::VoxelGrid<F, S>;
 /// \endcond
 
 /// CUDA optimized reconstruction implementation
 void run(const SimpleGeometry& geometry,
+         const Sensitivity& sensitivity,
          const Event* events,
          int n_events,
          float sigma_z,

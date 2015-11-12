@@ -15,6 +15,8 @@ void add_cuda_options(cmdline::parser& cl) {
 void add_openmp_options(cmdline::parser& cl) {
 #if _OPENMP
   cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
+#else
+  (void)cl;  // mark cl as unsued when not using OpenMP
 #endif
 }
 

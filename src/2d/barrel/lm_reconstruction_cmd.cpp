@@ -33,7 +33,6 @@
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/options.h"
 #include "2d/barrel/lor_geometry.h"
-#include "2d/barrel/geometry_matrix_loader.h"
 #include "2d/barrel/sparse_matrix.h"
 #include "2d/barrel/lm_reconstruction.h"
 
@@ -88,16 +87,18 @@ int main(int argc, char* argv[]) {
 
   if (verbose) {
     std::cout << "LM reconstruction:" << std::endl
-              << "   detectors = " << geometry.n_detectors << std::endl
-              << "  pixel_grid = " << geometry.grid.n_columns << " x "
-              << geometry.grid.n_rows << " / " << geometry.grid.pixel_size
-              << std::endl;
+              << "    detectors = " << geometry.n_detectors << std::endl
+              << "   pixel_grid = "  // grid size:
+              << geometry.grid.n_columns << " x " << geometry.grid.n_rows
+              << " / " << geometry.grid.pixel_size << std::endl;
   }
 
   if (cl.exist("system")) {
-    load_system_matrix_from_file<F, S, Hit>(
-        cl.get<cmdline::path>("system"), geometry, verbose);
-    std::cerr << "loaded system matrix" << std::endl;
+    auto fn = cl.get<cmdline::path>("system");
+    if (verbose) {
+      std::cerr << "system matrix = " << fn << std::endl;
+    }
+    geometry.load_system_matrix_from_file<Hit>(fn);
   }
 
   PET2D::Barrel::LMReconstruction<F, S> reconstruction(
@@ -201,8 +202,10 @@ int main(int argc, char* argv[]) {
         cl.get<int>("cuda-device"),
         cl.get<int>("cuda-blocks"),
         cl.get<int>("cuda-threads"),
-        [](const char* device_name) {
-          std::cerr << "   CUDA device = " << device_name << std::endl;
+        [=](const char* device_name) {
+          if (verbose) {
+            std::cerr << "   CUDA device = " << device_name << std::endl;
+          }
         });
   } else
 #endif
