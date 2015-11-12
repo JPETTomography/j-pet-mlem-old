@@ -54,6 +54,8 @@ using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 using Point = PET2D::Point<F>;
 using Geometry = PET2D::Barrel::Geometry<F, S>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
+using Kernel = PET2D::Strip::GaussianKernel<F>;
+using Reconstruction = PET3D::Hybrid::Reconstruction<Scanner, Kernel>;
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -104,8 +106,7 @@ int main(int argc, char* argv[]) {
     geometry.load_system_matrix_from_file<Hit>(fn);
   }
 
-  PET3D::Hybrid::Reconstruction<Scanner, PET2D::Strip::GaussianKernel<F>>
-  reconstruction(
+  Reconstruction reconstruction(
       scanner, geometry, cl.get<float>("z-left"), cl.get<int>("n-planes"));
 
   if (verbose) {
@@ -127,6 +128,28 @@ int main(int argc, char* argv[]) {
   for (const auto& fn : cl.rest()) {
     std::ifstream in_response(fn);
     reconstruction << in_response;
+  }
+
+  // print input events statistics
+  if (verbose) {
+    Reconstruction::EventStatistics st;
+    reconstruction.event_statistics(st);
+    std::cerr
+        // event pixels ranges:
+        << "  pixels: "
+        << "min = " << st.min_pixels << ", "
+        << "max = " << st.max_pixels << ", "
+        << "avg = " << st.avg_pixels << std::endl
+        // event planes ranges:
+        << "  planes: "
+        << "min = " << st.min_planes << ", "
+        << "max = " << st.max_planes << ", "
+        << "avg = " << st.avg_planes << std::endl
+        // event voxels ranges:
+        << "  voxels: "
+        << "min = " << st.min_voxels << ", "
+        << "max = " << st.max_voxels << ", "
+        << "avg = " << st.avg_voxels << std::endl;
   }
 
   auto n_blocks = cl.get<int>("blocks");
@@ -185,7 +208,7 @@ int main(int argc, char* argv[]) {
         cl.get<int>("cuda-threads"),
         [=](const char* device_name) {
           if (verbose) {
-            std::cerr << "   CUDA device = " << device_name << std::endl;
+            std::cerr << "  CUDA device = " << device_name << std::endl;
           }
         });
   } else

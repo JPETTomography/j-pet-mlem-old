@@ -324,6 +324,44 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     }
   }
 
+  /// Event statistics
+  struct EventStatistics {
+    size_t min_pixels, max_pixels;  ///< min/max of 2D barrel pixel number
+    size_t min_planes, max_planes;  ///< min/max of 2D strip plane number
+    size_t min_voxels, max_voxels;  ///< min/max of voxel number
+    double avg_pixels, avg_planes, avg_voxels;  ///< averages
+  };
+
+  /// Calculates event statistics
+  void event_statistics(EventStatistics& st) {
+    st.min_pixels = st.min_planes = st.min_voxels = grid.n_voxels;
+    st.max_pixels = st.max_planes = st.max_voxels = 0;
+    size_t total_pixels = 0, total_planes = 0, total_voxels = 0;
+    for (const auto& event : events_) {
+      auto pixels = event.last_pixel_info_index - event.first_pixel_info_index;
+      auto planes = event.last_plane - event.first_plane;
+      auto voxels = pixels * planes;
+      total_pixels += pixels;
+      total_planes += planes;
+      total_voxels += voxels;
+      if (pixels < st.min_pixels)
+        st.min_pixels = pixels;
+      if (planes < st.min_planes)
+        st.min_planes = planes;
+      if (voxels < st.min_voxels)
+        st.min_voxels = voxels;
+      if (pixels > st.max_pixels)
+        st.max_pixels = pixels;
+      if (planes > st.max_planes)
+        st.max_planes = planes;
+      if (voxels > st.max_voxels)
+        st.max_voxels = voxels;
+    }
+    st.avg_pixels = (double)total_pixels / n_events();
+    st.avg_planes = (double)total_planes / n_events();
+    st.avg_voxels = (double)total_voxels / n_events();
+  }
+
  public:
   const Scanner& scanner;
   Geometry& geometry;
