@@ -121,6 +121,7 @@ void run(const SimpleGeometry& geometry,
 
   util::cuda::texture2D<F> rho(tex_rho, width, height);
   util::cuda::memory<F> output_rho((size_t)width * height);
+  Output rho_output(width, height, output_rho.host_ptr);
 
   for (auto& v : output_rho) {
     v = 1;
@@ -157,10 +158,17 @@ void run(const SimpleGeometry& geometry,
       cudaThreadSynchronize();
 
       progress(ib * n_iterations_in_block + it, true);
+
+      // always output first 5 iterations, and at 10, 15, 20, 30, 50, 100
+      if (!ib && it < n_iterations_in_block - 1 &&
+          (it < 5 || it == 9 || it == 14 || it == 19 || it == 29 || it == 49 ||
+           it == 99)) {
+        output_rho.copy_from_device();
+        output(it + 1, rho_output);
+      }
     }
 
     output_rho.copy_from_device();
-    Output rho_output(width, height, output_rho.host_ptr);
     output((ib + 1) * n_iterations_in_block, rho_output);
   }
 

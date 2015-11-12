@@ -101,6 +101,7 @@ void run(Scanner<F, S>& scanner,
       if (!ib && it < n_iterations_in_block - 1 &&
           (it < 5 || it == 9 || it == 14 || it == 19 || it == 29 || it == 49 ||
            it == 99)) {
+        output_rho.copy_from_device();
         output(it + 1, rho_output);
       }
     }

@@ -85,6 +85,10 @@ void run(const SimpleGeometry& geometry,
                                grid.pixel_grid.n_rows,
                                grid.n_planes);
   util::cuda::memory<F> output_rho((size_t)grid.n_voxels);
+  Output rho_output(grid.pixel_grid.n_columns,
+                    grid.pixel_grid.n_rows,
+                    grid.n_planes,
+                    output_rho.host_ptr);
 
   for (auto& v : output_rho) {
     v = 1;
@@ -115,13 +119,17 @@ void run(const SimpleGeometry& geometry,
       cudaThreadSynchronize();
 
       progress(ib * n_iterations_in_block + it, true);
+
+      // always output first 5 iterations, and at 10, 15, 20, 30, 50, 100
+      if (!ib && it < n_iterations_in_block - 1 &&
+          (it < 5 || it == 9 || it == 14 || it == 19 || it == 29 || it == 49 ||
+           it == 99)) {
+        output_rho.copy_from_device();
+        output(it + 1, rho_output);
+      }
     }
 
     output_rho.copy_from_device();
-    Output rho_output(grid.pixel_grid.n_columns,
-                      grid.pixel_grid.n_rows,
-                      grid.n_planes,
-                      output_rho.host_ptr);
     output((ib + 1) * n_iterations_in_block, rho_output);
   }
 
