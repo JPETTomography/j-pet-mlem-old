@@ -26,7 +26,7 @@ __global__ void reconstruction(Scanner<F, short> scanner,
 
   const auto n_warps_per_block = blockDim.x / WARP_SIZE;
   const auto n_warps = gridDim.x * n_warps_per_block;
-  const auto max_reponses_per_warp = (n_responses + n_warps - 1) / n_warps;
+  const auto n_chunks = (n_responses + n_warps - 1) / n_warps;
   const auto warp_index = threadIdx.x / WARP_SIZE;
 
 #if CACHE_ELLIPSE_PIXELS
@@ -37,17 +37,16 @@ __global__ void reconstruction(Scanner<F, short> scanner,
 
   Kernel<F> kernel(scanner.sigma_z, scanner.sigma_dl);
 
-  for (int i = 0; i < max_reponses_per_warp; ++i) {
-
-    int reponse_index =
-        i * n_warps + blockIdx.x * n_warps_per_block + warp_index;
-
-    if (reponse_index >= n_responses)
+  for (int chunk_index = 0; chunk_index < n_chunks; ++chunk_index) {
+    int response_index =
+        chunk_index * n_warps + blockIdx.x * n_warps_per_block + warp_index;
+    // check if we are still on the list
+    if (response_index >= n_responses)
       break;
 
-    Response reponse(responses_z_u[reponse_index],
-                     reponses_z_d[reponse_index],
-                     reponses_dl[reponse_index]);
+    Response reponse(responses_z_u[response_index],
+                     reponses_z_d[response_index],
+                     reponses_dl[response_index]);
 
     F denominator = 0;
 
@@ -118,7 +117,7 @@ __global__ void reconstruction(Scanner<F, short> scanner,
     // reduce denominator so all threads now share same value
     Common::GPU::reduce(denominator);
 
-    F inv_acc = 1 / denominator;
+    F inv_denominator = 1 / denominator;
 
 #if CACHE_ELLIPSE_PIXELS
     for (int p = 0; p < n_ellipse_pixels; ++p) {
@@ -144,21 +143,26 @@ __global__ void reconstruction(Scanner<F, short> scanner,
         F kernel_value =
             USE_KERNEL ? kernel(y, tan, sec, scanner.radius, r) : 1;
 
-        atomicAdd(&output_rho[PIXEL_INDEX(pixel)],
-                  kernel_value * tex2D(tex_rho, pixel.x, pixel.y) * inv_acc);
+        atomicAdd(
+            &output_rho[PIXEL_INDEX(pixel)],
+            kernel_value * tex2D(tex_rho, pixel.x, pixel.y) * inv_denominator);
       }
     }
 #endif
   }
 }
 
-template <typename F> _ int n_pixels_in_line(F length, F pixel_size) {
+template <typename F>
+__device__ inline int n_pixels_in_line(F length, F pixel_size) {
   return (length + F(0.5)) / pixel_size;
 }
 
 template <typename F>
-__device__ Pixel
-warp_space_pixel(int offset, Pixel tl, int width, F inv_width, int& index) {
+__device__ inline Pixel warp_space_pixel(int offset,
+                                         Pixel tl,
+                                         int width,
+                                         F inv_width,
+                                         int& index) {
   // threadIdx.x % WARP_SIZE + offset : works for WARP_SIZE = 2^n
   index = (threadIdx.x & (WARP_SIZE - 1)) + offset;
   Pixel pixel;
