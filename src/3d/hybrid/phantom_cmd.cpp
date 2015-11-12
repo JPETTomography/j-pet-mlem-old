@@ -136,6 +136,7 @@ int main(int argc, char* argv[]) {
   }
 
   auto n_emissions = cl.get<int>("n-emissions");
+  auto only_detected = cl.exist("detected");
 
   Phantom phantom(regions);
 
@@ -162,7 +163,8 @@ int main(int argc, char* argv[]) {
         out_wo_error << scanner.response_wo_error(full_response) << "\n";
         out_w_error << scanner.response_w_error(rng, full_response) << "\n";
       },
-      progress);
+      progress,
+      only_detected);
 
   CMDLINE_CATCH
 }
