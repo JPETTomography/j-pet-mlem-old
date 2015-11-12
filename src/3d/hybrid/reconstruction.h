@@ -304,6 +304,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   }
 
   const Output& rho() const { return rho_; }
+  const Map2D& sensitivity() const { return sensitivity_; }
 
   int voxel_count() const { return voxel_count_; }
   int pixel_count() const { return pixel_count_; }
