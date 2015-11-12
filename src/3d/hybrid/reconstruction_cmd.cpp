@@ -236,16 +236,14 @@ int main(int argc, char* argv[]) {
     }
 
     // final reconstruction statistics
-    std::cerr << "  event count = " << reconstruction.event_count()
+    const auto st = reconstruction.statistics();
+    std::cerr << "  event count = " << st.used_events << std::endl;
+    std::cerr << "  voxel count = " << st.used_voxels << "("
+              << (double)st.used_voxels / st.used_events << " / event)"
               << std::endl;
-    std::cerr << "  voxel count = " << reconstruction.voxel_count() << "("
-              << (double)reconstruction.voxel_count() /
-                     reconstruction.event_count()
-              << " / event)" << std::endl;
-    std::cerr << "  pixel count = " << reconstruction.pixel_count() << "("
-              << (double)reconstruction.pixel_count() /
-                     reconstruction.event_count()
-              << " / event)" << std::endl;
+    std::cerr << "  pixel count = " << st.used_pixels << "("
+              << (double)st.used_pixels / st.used_events << " / event)"
+              << std::endl;
   }
 
   CMDLINE_CATCH

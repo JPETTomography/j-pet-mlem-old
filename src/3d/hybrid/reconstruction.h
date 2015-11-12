@@ -212,9 +212,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   }
 
   int operator()() {
-    event_count_ = 0;
-    voxel_count_ = 0;
-    pixel_count_ = 0;
+    size_t used_pixels = 0, used_voxels = 0, used_events = 0;
+
     const auto& pixel_grid = grid.pixel_grid;
     for (auto& thread_rho : thread_rhos_) {
       thread_rho.assign(0);
@@ -244,7 +243,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       for (auto info_index = event.first_pixel_info_index;
            info_index < event.last_pixel_info_index;
            ++info_index) {
-        pixel_count_++;
+        used_pixels++;  // statistics
         const auto& pixel_info = lor_geometry.pixel_infos[info_index];
         auto pixel = pixel_info.pixel;
         auto pixel_index = pixel_grid.index(pixel);
@@ -252,7 +251,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         auto up = segment.projection_relative_middle(center);
 
         for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
-          voxel_count_++;
+          used_voxels++;  // statistics
           Voxel voxel(pixel.x, pixel.y, iz);
           auto z = grid.center_z_at(voxel);
           int voxel_index = grid.index(voxel);
@@ -291,24 +290,25 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         }
       }  // voxel loop
     }    // event loop
-    event_count_ = 0;
 
     rho_.assign(0);
     for (int thread = 0; thread < n_threads_; ++thread) {
       for (int i = 0; i < grid.n_voxels; ++i) {
         rho_[i] += thread_rhos_[thread][i];
       }
-      event_count_ += n_events_per_thread_[thread];
+      used_events += n_events_per_thread_[thread];
     }
-    return event_count_;
+
+    // save statistics
+    statistics_.used_pixels = used_pixels;
+    statistics_.used_voxels = used_voxels;
+    statistics_.used_events = used_events;
+
+    return used_events;
   }
 
   const Output& rho() const { return rho_; }
   const Map2D& sensitivity() const { return sensitivity_; }
-
-  int voxel_count() const { return voxel_count_; }
-  int pixel_count() const { return pixel_count_; }
-  int event_count() const { return event_count_; }
 
   void graph_frame_event(Common::MathematicaGraphics<F>& graphics,
                          int event_index) {
@@ -362,6 +362,16 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     st.avg_voxels = (double)total_voxels / n_events();
   }
 
+  /// Reconstruction statistics
+  struct Statistics {
+    size_t used_pixels;  ///< number of pixels used for reconstruction
+    size_t used_voxels;  ///< number of voxels used for reconstruction
+    size_t used_events;  ///< number of events used for reconstruction
+  };
+
+  /// Return reconstruction statistics
+  const Statistics& statistics() const { return statistics_; }
+
  public:
   const Scanner& scanner;
   Geometry& geometry;
@@ -371,9 +381,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   std::vector<FrameEvent> events_;
   Kernel2D kernel_;
   Output rho_;
-  int event_count_;
-  int voxel_count_;
-  int pixel_count_;
+  Statistics statistics_;
   int n_threads_;
   std::vector<Output> thread_rhos_;
   std::vector<Output> thread_kernel_caches_;
