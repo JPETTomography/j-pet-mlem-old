@@ -74,7 +74,43 @@ template <> inline std::string default_value<ssize_t>(ssize_t def) {
   return detail::lexical_cast<std::string>(def);
 }
 #endif
+
+// teach cmdline handle k, m, g suffixes
+namespace {
+static inline long cast_to_long(const std::string& str) {
+  const char* cstr = str.c_str();
+  char* endstr;
+  auto ret = std::strtol(cstr, &endstr, 10);
+  if (endstr[0] && !endstr[1]) {
+    switch (std::tolower(endstr[0])) {
+      case 'k':
+        ret *= 1000;
+        break;
+      case 'm':
+        ret *= 1000000;
+        break;
+      case 'g':
+        ret *= 1000000000;
+        break;
+      default:
+        throw std::bad_cast();
+    }
+  } else if (endstr[0] && endstr[1])
+    throw std::bad_cast();
+  return ret;
+}
 }
 
+template <> class lexical_cast_t<int, std::string, false> {
+ public:
+  static int cast(const std::string& arg) { return cast_to_long(arg); }
+};
+
+template <> class lexical_cast_t<long, std::string, false> {
+ public:
+  static int cast(const std::string& arg) { return cast_to_long(arg); }
+};
+
+}  // detail
 }  // cmdline
 // \endcond
