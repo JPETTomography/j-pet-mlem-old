@@ -181,11 +181,15 @@ template <typename T> class texture2D {
   texture2D(texture_type& tex,
             size_t width,
             size_t height,
-            cudaChannelFormatDesc desc)
+            cudaChannelFormatDesc desc,
+            const T* values)
       : tex(tex),
         width(width),
         height(height),
         array(device_alloc_array<T>(width, height, desc)) {
+    if (values) {
+      copy_to_array(values, cudaMemcpyHostToDevice);
+    }
     cudaBindTextureToArray(tex, array, desc);
   }
 
@@ -204,8 +208,13 @@ template <typename T> class texture2D {
 
  public:
   /// Allocate memory of given dimensions on device and bind to given texture.
-  texture2D(texture_type& tex, size_t width, size_t height)
-      : texture2D(tex, width, height, cudaCreateChannelDesc<T>()) {}
+  texture2D(texture_type& tex,         ///< texture reference to bind to
+            size_t width,              ///< width of the texture
+            size_t height,             ///< height of the texture
+            const T* values = nullptr  ///< host values to copy to texture
+                                       ///  (pass \c nullptr to skip)
+            )
+      : texture2D(tex, width, height, cudaCreateChannelDesc<T>(), values) {}
 
   ~texture2D() {
     cudaUnbindTexture(&tex);
@@ -244,18 +253,23 @@ template <typename T> class texture3D {
  private:
   texture3D(texture_type& tex,
             cudaExtent volumeSize,
-            cudaChannelFormatDesc desc)
+            cudaChannelFormatDesc desc,
+            const T* values)
       : tex(tex),
         volumeSize(volumeSize),
         array(device_alloc_array3D<T>(volumeSize, desc)) {
+    if (values) {
+      copy_to_array(values, cudaMemcpyHostToDevice);
+    }
     cudaBindTextureToArray(tex, array, desc);
   }
 
   /// Private helper method, since 3D texture binds to special array not to
   /// linear memory, we need to handle copying differently than other classes.
-  void copy_to_array(void* src_ptr, enum cudaMemcpyKind kind) {
+  void copy_to_array(const void* src_ptr, enum cudaMemcpyKind kind) {
     cudaMemcpy3DParms params = { 0 };
-    params.srcPtr = make_cudaPitchedPtr(src_ptr,
+    // FIXME: for some reason make_cudaPitchedPtr wants void* not const void*
+    params.srcPtr = make_cudaPitchedPtr(const_cast<void*>(src_ptr),
                                         volumeSize.width * sizeof(T),
                                         volumeSize.width,
                                         volumeSize.height);
@@ -267,10 +281,17 @@ template <typename T> class texture3D {
 
  public:
   /// Allocate memory of given dimensions on device and bind to given texture.
-  texture3D(texture_type& tex, size_t width, size_t height, size_t depth)
+  texture3D(texture_type& tex,         ///< texture reference to bind to
+            size_t width,              ///< width of the texture
+            size_t height,             ///< height of the texture
+            size_t depth,              ///< depth of the texture
+            const T* values = nullptr  ///< host values to copy to texture
+                                       ///  (pass \c nullptr to skip)
+            )
       : texture3D(tex,
                   make_cudaExtent(width, height, depth),
-                  cudaCreateChannelDesc<T>()) {}
+                  cudaCreateChannelDesc<T>(),
+                  values) {}
 
   ~texture3D() {
     cudaUnbindTexture(&tex);
