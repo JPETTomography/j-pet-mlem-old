@@ -122,70 +122,73 @@ int main(int argc, char* argv[]) {
   RNG rng;
   Common::AlwaysAccept<F> model;
 
-  if (!cl.exist("output")) {
-    auto output = cl.get<cmdline::path>("output");
-    auto output_base_name = output.wo_ext();
-    auto ext = output.ext();
+  auto output = cl.get<cmdline::path>("output");
+  auto output_base_name = output.wo_ext();
+  auto ext = output.ext();
 
-    std::ofstream out_wo_error(output_base_name + "_wo_error" + ext);
-    std::ofstream out_w_error(output);
-    std::ofstream out_exact_events(output_base_name + "_events" + ext);
-    std::ofstream out_full_response(output_base_name + "_full_response" + ext);
+  std::ofstream out_wo_error, out_w_error, out_exact_events, out_full_response;
+  if (output_base_name.length()) {
+    out_wo_error.open(output_base_name + "_wo_error" + ext);
+    out_w_error.open(output);
+    out_exact_events.open(output_base_name + "_events" + ext);
+    out_full_response.open(output_base_name + "_full_response" + ext);
+  }
 
-    auto n_z_pixels = cl.get<int>("n-z-pixels");
-    auto n_y_pixels = cl.get<int>("n-y-pixels");
-    auto s_pixel = cl.get<double>("s-pixel");
-    PET2D::PixelGrid<F, S> pixel_grid(
-        n_z_pixels,
-        n_y_pixels,
-        s_pixel,
-        PET2D::Point<F>(-s_pixel * n_z_pixels / 2, -s_pixel * n_y_pixels / 2));
+  auto n_z_pixels = cl.get<int>("n-z-pixels");
+  auto n_y_pixels = cl.get<int>("n-y-pixels");
+  auto s_pixel = cl.get<double>("s-pixel");
+  PET2D::PixelGrid<F, S> pixel_grid(
+      n_z_pixels,
+      n_y_pixels,
+      s_pixel,
+      PET2D::Point<F>(-s_pixel * n_z_pixels / 2, -s_pixel * n_y_pixels / 2));
 
-    Image image_emitted(n_z_pixels, n_y_pixels);
-    Image image_detected_exact(n_z_pixels, n_y_pixels);
-    Image image_detected_w_error(n_z_pixels, n_y_pixels);
+  Image image_emitted(n_z_pixels, n_y_pixels);
+  Image image_detected_exact(n_z_pixels, n_y_pixels);
+  Image image_detected_w_error(n_z_pixels, n_y_pixels);
 
-    util::progress progress(verbose, n_emissions, 10000);
-    monte_carlo(
-        rng,
-        model,
-        n_emissions,
-        [&](const Event& event) {
+  util::progress progress(verbose, n_emissions, 10000);
+  monte_carlo(
+      rng,
+      model,
+      n_emissions,
+      [&](const Event& event) {
+        auto pixel = pixel_grid.pixel_at(event.origin);
+        if (pixel_grid.contains(pixel)) {
+          image_emitted[pixel]++;
+        }
+      },
+      [&](const Event& event, const FullResponse& full_response) {
+        out_exact_events << event << "\n";
+        out_full_response << full_response << "\n";
+        out_wo_error << scanner.response_wo_error(full_response) << "\n";
+        auto response_w_error = scanner.response_w_error(rng, full_response);
+        out_w_error << response_w_error << "\n";
+        {
           auto pixel = pixel_grid.pixel_at(event.origin);
           if (pixel_grid.contains(pixel)) {
-            image_emitted[pixel]++;
+            image_detected_exact[pixel]++;
           }
-        },
-        [&](const Event& event, const FullResponse& full_response) {
-          out_exact_events << event << "\n";
-          out_full_response << full_response << "\n";
-          out_wo_error << scanner.response_wo_error(full_response) << "\n";
-          auto response_w_error = scanner.response_w_error(rng, full_response);
-          out_w_error << response_w_error << "\n";
-          {
-            auto pixel = pixel_grid.pixel_at(event.origin);
-            if (pixel_grid.contains(pixel)) {
-              image_detected_exact[pixel]++;
-            }
+        }
+        {
+          auto event_w_error =
+              scanner.from_projection_space_tan(response_w_error);
+          auto pixel = pixel_grid.pixel_at(
+              PET2D::Point<F>(event_w_error.z, event_w_error.y));
+          if (pixel_grid.contains(pixel)) {
+            image_detected_w_error[pixel]++;
           }
-          {
-            auto event_w_error =
-                scanner.from_projection_space_tan(response_w_error);
-            auto pixel = pixel_grid.pixel_at(
-                PET2D::Point<F>(event_w_error.z, event_w_error.y));
-            if (pixel_grid.contains(pixel)) {
-              image_detected_w_error[pixel]++;
-            }
-          }
-        },
-        progress);
-    if (verbose) {
-      std::cerr << " emitted: " << monte_carlo.n_events_emitted() << " events"
-                << std::endl
-                << "detected: " << monte_carlo.n_events_detected() << " events"
-                << std::endl;
-    }
+        }
+      },
+      progress);
+  if (verbose) {
+    std::cerr << " emitted: " << monte_carlo.n_events_emitted() << " events"
+              << std::endl
+              << "detected: " << monte_carlo.n_events_detected() << " events"
+              << std::endl;
+  }
 
+  if (output_base_name.length()) {
     std::ofstream cfg(output_base_name + ".cfg");
     cfg << cl;
 

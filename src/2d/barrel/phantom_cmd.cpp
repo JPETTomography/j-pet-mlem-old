@@ -236,8 +236,11 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
           progress,
           only_detected);
 
-      std::ofstream out_bins_wo_error(output_base_name + "_wo_error.txt");
-      std::ofstream out_bins_w_error(output);
+      std::ofstream out_bins_wo_error, out_bins_w_error;
+      if (output_base_name.length()) {
+        out_bins_wo_error.open(output_base_name + "_wo_error.txt");
+        out_bins_w_error.open(output);
+      }
 
       // dump bins into files
       for (int d1 = 0; d1 < n_detectors; d1++)
@@ -253,11 +256,14 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
                                << bins_w_error[bin_index] << "\n";
           }
     } else {
-      std::ofstream out_wo_error(output_base_name + "_wo_error" + ext);
-      std::ofstream out_w_error(output);
-      std::ofstream out_exact_events(output_base_name + "_events" + ext);
-      std::ofstream out_full_response(output_base_name + "_full_response" +
-                                      ext);
+      std::ofstream out_wo_error, out_w_error, out_exact_events,
+          out_full_response;
+      if (output_base_name.length()) {
+        out_wo_error.open(output_base_name + "_wo_error" + ext);
+        out_w_error.open(output);
+        out_exact_events.open(output_base_name + "_events" + ext);
+        out_full_response.open(output_base_name + "_full_response" + ext);
+      }
 
       monte_carlo(
           rng,
@@ -292,12 +298,15 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
                 << std::endl;
     }
 
-    util::png_writer png_emitted(output_base_name + "_emitted.png");
-    png_emitted << image_emitted;
-    util::png_writer png_detected_wo_error(output_base_name + "_wo_error.png");
-    png_detected_wo_error << image_detected_exact;
+    if (output_base_name.length()) {
+      util::png_writer png_emitted(output_base_name + "_emitted.png");
+      png_emitted << image_emitted;
+      util::png_writer png_detected_wo_error(output_base_name +
+                                             "_wo_error.png");
+      png_detected_wo_error << image_detected_exact;
 
-    std::ofstream out_cfg(output_base_name + ".cfg");
-    out_cfg << cl;
+      std::ofstream out_cfg(output_base_name + ".cfg");
+      out_cfg << cl;
+    }
   }
 }

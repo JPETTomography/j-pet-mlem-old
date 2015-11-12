@@ -95,8 +95,10 @@ int main(int argc, char* argv[]) {
       F(cl.get<double>("length")));
   scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
 
-  std::ofstream out_json(output_base_name + ".json");
-  out_json << json(scanner.barrel);
+  if (output_base_name.length()) {
+    std::ofstream out_json(output_base_name + ".json");
+    out_json << json(scanner.barrel);
+  }
 
   std::random_device rd;
   RNG rng(rd());
@@ -140,10 +142,13 @@ int main(int argc, char* argv[]) {
   Scintillator scintillator(F(cl.get<double>("base-length")));
   MonteCarlo monte_carlo(phantom, scanner);
 
-  std::ofstream out_wo_error(output_base_name + "_geom_only" + ext);
-  std::ofstream out_w_error(output);
-  std::ofstream out_exact_events(output_base_name + "_exact_events" + ext);
-  std::ofstream out_full_response(output_base_name + "_full_response" + ext);
+  std::ofstream out_wo_error, out_w_error, out_exact_events, out_full_response;
+  if (output_base_name.length()) {
+    out_wo_error.open(output_base_name + "_wo_error" + ext);
+    out_w_error.open(output);
+    out_exact_events.open(output_base_name + "_events" + ext);
+    out_full_response.open(output_base_name + "_full_response" + ext);
+  }
 
   util::progress progress(verbose, n_emissions, 10000);
   monte_carlo(
