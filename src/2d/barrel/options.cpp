@@ -176,7 +176,7 @@ void add_phantom_options(cmdline::parser& cl) {
 
   // printing & stats params
   cl.add("verbose", 'v', "prints the iterations information on std::out");
-  cl.add<std::mt19937::result_type>(
+  cl.add<util::random::tausworthe::seed_type>(
       "seed", 'S', "random number generator seed", cmdline::dontsave);
 
   Common::add_openmp_options(cl);

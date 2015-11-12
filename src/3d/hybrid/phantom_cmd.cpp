@@ -10,6 +10,8 @@
 ///
 /// \sa \ref cmd_3d_hybrid_matrix, \ref cmd_3d_hybrid_reconstruction
 
+#include <random>
+
 #include "cmdline.h"
 
 #include "util/cmdline_types.h"
@@ -33,7 +35,7 @@
 #include "common/phantom_monte_carlo.h"
 #include "common/types.h"
 
-using RNG = std::mt19937;
+using RNG = util::random::tausworthe;
 using Detector = PET2D::Barrel::SquareDetector<F>;
 using Scanner2D = PET2D::Barrel::GenericScanner<Detector, S>;
 using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
@@ -96,12 +98,11 @@ int main(int argc, char* argv[]) {
   std::ofstream out_json(output_base_name + ".json");
   out_json << json(scanner.barrel);
 
-  using RNG = std::mt19937;
-  RNG rng;
+  std::random_device rd;
+  RNG rng(rd());
   if (cl.exist("seed")) {
-    rng.seed(cl.get<unsigned int>("seed"));
+    rng.seed(cl.get<util::random::tausworthe::seed_type>("seed"));
   }
-  // std::cout<<cl.get<unsigned int>("seed");
 
   Phantom::RegionPtrList regions;
 

@@ -161,7 +161,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
   std::random_device rd;
   RNG rng(rd());
   if (cl.exist("seed")) {
-    rng.seed(cl.get<std::mt19937::result_type>("seed"));
+    rng.seed(cl.get<util::random::tausworthe::seed_type>("seed"));
   }
 
   if (cl.exist("output")) {
