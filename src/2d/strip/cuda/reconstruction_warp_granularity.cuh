@@ -5,6 +5,7 @@
 #include "2d/geometry/point.h"
 #include "../response.h"
 #include "../scanner.h"
+#include "common/cuda/kernels.h"
 
 #define PIXEL_INDEX(p) (((p).y * scanner.n_z_pixels) + (p).x)
 
@@ -12,8 +13,6 @@ namespace PET2D {
 namespace Strip {
 namespace GPU {
 namespace Reconstruction {
-
-template <typename F> __device__ void reduce(F& value);
 
 template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(Scanner<F, short> scanner,
@@ -117,7 +116,7 @@ __global__ void reconstruction(Scanner<F, short> scanner,
     }
 
     // reduce denominator so all threads now share same value
-    reduce(denominator);
+    Common::GPU::reduce(denominator);
 
     F inv_acc = 1 / denominator;
 
@@ -168,26 +167,6 @@ warp_space_pixel(int offset, Pixel tl, int width, F inv_width, int& index) {
   pixel.x += tl.x;
   pixel.y += tl.y;
   return pixel;
-}
-
-template <typename F> __device__ void reduce(F& value) {
-#if __CUDA_ARCH__ >= 300
-  // reduce acc from all threads using __shfl_xor
-  for (int i = 16; i >= 1; i /= 2) {
-    value += __shfl_xor(value, i, WARP_SIZE);
-  }
-#else
-  // fallback to older reduction algorithm
-  __shared__ F accumulator[MAX_THREADS_PER_BLOCK];
-  int tid = threadIdx.x;
-  int index = (tid & (WARP_SIZE - 1));
-  accumulator[tid] = value;
-  for (int i = 16; i >= 1; i /= 2) {
-    if (index < i)
-      accumulator[tid] += accumulator[tid + i];
-  }
-  value = accumulator[tid & ~(WARP_SIZE - 1)];
-#endif
 }
 
 }  // Reconstruction
