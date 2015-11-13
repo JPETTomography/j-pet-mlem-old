@@ -1,11 +1,16 @@
 #pragma once
 
+#define USE_FAST_TEXT_PARSER 1
+
 #if !__CUDACC__
 #include <vector>
 #include <algorithm>
 
 #include "common/mathematica_graphics.h"
 #include "2d/barrel/geometry.h"
+#if USE_FAST_TEXT_PARSER
+#include "util/text_parser.h"
+#endif
 #endif
 
 #include "2d/strip/response.h"
@@ -149,6 +154,30 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   S plane(F z) {
     return S(std::floor((z - grid.z_left) / grid.pixel_grid.pixel_size));
   }
+
+#if USE_FAST_TEXT_PARSER
+  void load_events(const char* fn) {
+    size_t n_lines = 0;
+    // first just count lines and reserve space
+    util::text_parser::read_lines(fn, [&](const char*) { ++n_lines; });
+    events_.reserve(n_lines);
+    // now read actual values
+    util::text_parser::read_lines(
+        fn,
+        [&](const char* line) {
+          util::text_parser parser(line);
+          Response response;
+          try {
+            parser >> response.lor.first >> response.lor.second >>
+                response.z_up >> response.z_dn >> response.dl;
+          } catch (const char* ex) {
+            std::cerr << "error line: " << line << std::endl;
+            throw(ex);
+          }
+          events_.push_back(translate_to_frame(response));
+        });
+  }
+#endif
 
   Reconstruction& operator<<(std::istream& in) {
     for (;;) {
