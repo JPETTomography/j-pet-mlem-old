@@ -61,7 +61,8 @@ template <typename F> F gauss(const Vector3D<F>& diag, const Vector3D<F>& vec) {
 template <typename F>
 F weight(const Vector3D<F>& diag,
          const FrameEvent<F>& meas,
-         const FrameEvent<F>& exact, F L) {
+         const FrameEvent<F>& exact,
+         F L) {
 
   if (sensitivity(exact, L) > 0) {
     auto diff = meas - exact;
