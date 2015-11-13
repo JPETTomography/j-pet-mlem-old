@@ -88,6 +88,22 @@ template <typename F> F sensitivity(F x, F y, F R, F L) {
 
   return (theta_max - theta_min) / M_PI;
 }
+
+F theta_integral(const Vector3D<F> diag,
+                 const FrameEvent<F>& evt,
+                 F x,
+                 F y,
+                 F R,
+                 F L,
+                 F d = 0.01) {
+  double sum = 0.0;
+
+  for (F theta = -M_PI / 4; theta < M_PI / 4; theta += d) {
+    FrameEvent<F> exact(Event<F>(x, y, theta), R);
+    sum += weight(diag, evt, exact, L);
+  }
+  return sum * d / M_PI;
+}
 }
 }
 }
