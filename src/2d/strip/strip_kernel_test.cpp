@@ -75,3 +75,50 @@ TEST("strip/sensitivity") {
   CHECK(sensitivity(FrameEvent<F>(-L / 2 - epsilon, L / 2, 0), L) ==
         Approx(0.0));
 }
+
+TEST("strip/integral") {
+  F sz = 0.01;
+  F sdl = 0.04;
+  F R = 0.4;
+  F L = 0.5;
+
+  Vector3D<F> diag(1 / (sz * sz), 1 / (sz * sz), 1 / (sdl * sdl));
+  FrameEvent<F> exact(Event<F>(0, 0, 0.2), R);
+  F d = 0.01;
+  F z_lim = 0.25;
+  F dl_lim = 0.8;
+  double sum = 0.0;
+  for (F zup = -z_lim; zup <= z_lim; zup += d) {
+    for (F zdn = -z_lim; zdn <= z_lim; zdn += d) {
+      for (F dl = -dl_lim; dl <= dl_lim; dl += d) {
+        sum += weight(diag, FrameEvent<F>(zup, zdn, dl), exact, L);
+      }
+    }
+  }
+  std::cout << "w integrated : " << sum * d * d * d << "\n";
+}
+
+TEST("strip/integral/theta") {
+  F sz = 0.01;
+  F sdl = 0.04;
+  F R = 0.4;
+  F L = 0.5;
+
+  Vector3D<F> diag(1 / (sz * sz), 1 / (sz * sz), 1 / (sdl * sdl));
+
+  F d = 0.01;
+  F z_lim = 0.25;
+  F dl_lim = 0.8;
+  double sum = 0.0;
+  for (F zup = -z_lim; zup <= z_lim; zup += d) {
+    for (F zdn = -z_lim; zdn <= z_lim; zdn += d) {
+      for (F dl = -dl_lim; dl <= dl_lim; dl += d) {
+        for (F theta = -M_PI / 4; theta < M_PI / 4; theta += d) {
+          FrameEvent<F> exact(Event<F>(0, 0, theta), R);
+          sum += weight(diag, FrameEvent<F>(zup, zdn, dl), exact, L);
+        }
+      }
+    }
+  }
+  std::cout << "w integrated theta : " << sum * d * d * d * d / M_PI << "\n";
+}

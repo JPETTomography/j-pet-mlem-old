@@ -10,6 +10,8 @@ namespace PET2D {
 namespace Strip {
 namespace Testing {
 
+const double PI_FACTOR = 1 / std::pow(2 * M_PI, 3.0 / 2.0);
+
 template <typename F> using Vector3D = PET3D::Vector<F>;
 
 template <typename F> class FrameEvent;
@@ -54,6 +56,21 @@ F diagonal_product(const Vector3D<F>& diag, const Vector3D<F>& vec) {
 
 template <typename F> F gauss(const Vector3D<F>& diag, const Vector3D<F>& vec) {
   return std::exp(-F(0.5) * diagonal_product(diag, vec));
+}
+
+template <typename F>
+F weight(const Vector3D<F>& diag,
+         const FrameEvent<F>& meas,
+         const FrameEvent<F>& exact, F L) {
+
+  if (sensitivity(exact, L) > 0) {
+    auto diff = meas - exact;
+    auto g = gauss(diag, diff);
+    auto det = diag.x * diag.y * diag.z;
+
+    return PI_FACTOR * std::sqrt(det) * g * sensitivity(exact, L);
+  }
+  return 0;
 }
 
 template <typename F> F sensitivity(const FrameEvent<F>& fe, F L) {
