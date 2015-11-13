@@ -98,8 +98,6 @@ TEST("strip/integral") {
   std::cout << "w integrated : " << sum * d * d * d << "\n";
 }
 
-
-
 TEST("strip/integral/theta") {
   F sz = 0.01;
   F sdl = 0.04;

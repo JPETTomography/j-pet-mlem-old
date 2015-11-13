@@ -81,12 +81,17 @@ template <typename F> F sensitivity(const FrameEvent<F>& fe, F L) {
                                                                           : 0.0;
 }
 
-template <typename F> F sensitivity(F x, F y, F R, F L) {
+template <typename F> std::pair<F, F> theta_min_max(F x, F y, F R, F L) {
   const F l2 = 0.5 * L;
-  F theta_min = std::atan(std::max(-(l2 + x) / (R - y), (-l2 + x) / (R + y)));
-  F theta_max = std::atan(std::min((l2 - x) / (R - y), (l2 + x) / (R + y)));
+  return std::make_pair(
+      std::atan(std::max(-(l2 + x) / (R - y), (-l2 + x) / (R + y))),
+      std::atan(std::min((l2 - x) / (R - y), (l2 + x) / (R + y))));
+}
 
-  return (theta_max - theta_min) / M_PI;
+template <typename F> F sensitivity(F x, F y, F R, F L) {
+  auto theta = theta_min_max(x, y, R, L);
+
+  return (theta.second - theta.first) / M_PI;
 }
 
 F theta_integral(const Vector3D<F> diag,
@@ -98,7 +103,9 @@ F theta_integral(const Vector3D<F> diag,
                  F d = 0.01) {
   double sum = 0.0;
 
-  for (F theta = -M_PI / 4; theta < M_PI / 4; theta += d) {
+  auto theta_lim = theta_min_max(x, y, R, L);
+
+  for (F theta = theta_lim.first; theta < theta_lim.second; theta += d) {
     FrameEvent<F> exact(Event<F>(x, y, theta), R);
     sum += weight(diag, evt, exact, L);
   }
