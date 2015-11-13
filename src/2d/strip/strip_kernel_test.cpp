@@ -98,10 +98,26 @@ TEST("strip/integral") {
   std::cout << "w integrated : " << sum * d * d * d << "\n";
 }
 
+F theta_integral(const Vector3D<F> diag,
+                 const FrameEvent<F>& evt,
+                 F x,
+                 F y,
+                 F R,
+                 F L,
+                 F d = 0.01) {
+  double sum = 0.0;
+
+  for (F theta = -M_PI / 4; theta < M_PI / 4; theta += d) {
+    FrameEvent<F> exact(Event<F>(x, y, theta), R);
+    sum += weight(diag, evt, exact, L);
+  }
+  return sum * d / M_PI;
+}
+
 TEST("strip/integral/theta") {
   F sz = 0.01;
   F sdl = 0.04;
-  F R = 0.4;
+  F R = 0.43;
   F L = 0.5;
 
   Vector3D<F> diag(1 / (sz * sz), 1 / (sz * sz), 1 / (sdl * sdl));
@@ -113,14 +129,11 @@ TEST("strip/integral/theta") {
   for (F zup = -z_lim; zup <= z_lim; zup += d) {
     for (F zdn = -z_lim; zdn <= z_lim; zdn += d) {
       for (F dl = -dl_lim; dl <= dl_lim; dl += d) {
-        for (F theta = -M_PI / 4; theta < M_PI / 4; theta += d) {
-          FrameEvent<F> exact(Event<F>(0, 0, theta), R);
-          sum += weight(diag, FrameEvent<F>(zup, zdn, dl), exact, L);
-        }
+        sum += theta_integral(diag, FrameEvent<F>(zup, zdn, dl), 0, 0, R, L);
       }
     }
   }
-  auto integral = sum * d * d * d * d / M_PI;
+  auto integral = sum * d * d * d;
   auto sens = sensitivity(F(0.0), F(0.0), R, L);
   std::cout << "w integrated theta : " << integral << " /  " << sens << " = "
             << integral / sens << "\n";
