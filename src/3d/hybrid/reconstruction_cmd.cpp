@@ -126,14 +126,22 @@ int main(int argc, char* argv[]) {
   reconstruction.normalize_geometry_weights();
 
   for (const auto& fn : cl.rest()) {
+    if (verbose) {
+      std::cerr << "      phantom = " << fn << std::endl;
+    }
+#if USE_FAST_TEXT_PARSER
+    reconstruction.load_events(fn.c_str());
+#else
     std::ifstream in_response(fn);
     reconstruction << in_response;
+#endif
   }
 
   // print input events statistics
   if (verbose) {
     Reconstruction::EventStatistics st;
     reconstruction.event_statistics(st);
+    std::cerr << "       events = " << reconstruction.n_events() << std::endl;
     std::cerr
         // event pixels ranges:
         << "  pixels: "
