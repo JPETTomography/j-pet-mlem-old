@@ -7,9 +7,9 @@
 #include "reconstruction.h"
 
 #if USE_WARP_GRANULARITY
-#include "reconstruction_warp_granularity.cuh"
+#include "reconstruction/warp_granularity.cuh"
 #elif USE_THREAD_GRANULARITY
-#include "reconstruction_thread_granularity.cuh"
+#include "reconstruction/thread_granularity.cuh"
 #endif
 
 #include "common/cuda/kernels.h"

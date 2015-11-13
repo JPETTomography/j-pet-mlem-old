@@ -13,11 +13,11 @@ texture<float, 2, cudaReadModeElementType> tex_sensitivity;
 texture<float, 2, cudaReadModeElementType> tex_rho;
 
 #if USE_WARP_GRANULARITY
-#include "reconstruction_warp_granularity.cuh"
+#include "reconstruction/warp_granularity.cuh"
 #elif USE_THREAD_GRANULARITY
-#include "reconstruction_thread_granularity.cuh"
+#include "reconstruction/thread_granularity.cuh"
 #else
-#include "reconstruction_simple.cuh"
+#include "reconstruction/simple.cuh"
 #endif
 
 namespace PET2D {

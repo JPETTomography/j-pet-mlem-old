@@ -3,8 +3,10 @@
 #include <cuda_runtime.h>
 
 #include "2d/geometry/point.h"
-#include "../response.h"
-#include "../scanner.h"
+
+#include "../../response.h"
+#include "../../scanner.h"
+
 #include "common/cuda/kernels.h"
 
 #define PIXEL_INDEX(p) (((p).y * scanner.n_z_pixels) + (p).x)

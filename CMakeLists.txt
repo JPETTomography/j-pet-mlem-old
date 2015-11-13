@@ -192,6 +192,7 @@ function(pet_target DIM TYPE CMD)
       src/${DIM}/${TYPE}/cuda/*.h
       src/util/cuda/*.h
       src/${DIM}/${TYPE}/cuda/*.cuh
+      src/${DIM}/${TYPE}/cuda/**/*.cuh
       src/${DIM}/${TYPE}/cuda/${CMD}*.cpp
       src/common/cuda/*.h
       src/common/cuda/*.cuh)

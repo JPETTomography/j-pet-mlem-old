@@ -4,7 +4,9 @@
 #include "util/cuda/memory.h"
 #include "util/delegate.h"
 
-#include "reconstruction.h"
+#include "../reconstruction.h"
+
+#include "common/cuda/kernels.h"
 
 namespace PET3D {
 namespace Hybrid {
@@ -25,16 +27,18 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
 
   const Kernel kernel(sigma_z, sigma_dl);
   const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
-  const auto n_threads = gridDim.x * blockDim.x;
-  const auto n_chunks = (n_events + n_threads - 1) / n_threads;
+  const auto n_warps_per_block = blockDim.x / WARP_SIZE;
+  const auto n_warps = gridDim.x * n_warps_per_block;
+  const auto n_chunks = (n_events + n_warps - 1) / n_warps;
+  const auto warp_index = tid / WARP_SIZE;
 
   // --- event loop ----------------------------------------------------------
-  for (int chunk = 0; chunk < n_chunks; ++chunk) {
-    int event_index = chunk * n_threads + tid;
+  for (int chunk_index = 0; chunk_index < n_chunks; ++chunk_index) {
+    int event_index =
+        chunk_index * n_warps + blockIdx.x * n_warps_per_block + warp_index;
     // check if we are still on the list
-    if (event_index >= n_events) {
+    if (event_index >= n_events)
       break;
-    }
 
     const auto event = events[event_index];
     const auto lor = event.lor;
@@ -42,12 +46,20 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
     const auto segment = lor_line_segments[lor_index];
     const auto R = segment.length / 2;
     F denominator = 0;
+    const auto n_pixels =
+        event.last_pixel_info_index - event.first_pixel_info_index;
+    const auto n_pixel_chunks = (n_pixels + WARP_SIZE + 1) / WARP_SIZE;
 
     // -- voxel loop - denominator -------------------------------------------
-    for (auto info_index = event.first_pixel_info_index;
-         info_index < event.last_pixel_info_index;
-         ++info_index) {
-      const auto& pixel_info = pixel_infos[info_index];
+    for (auto pixel_chunk = 0; pixel_chunk < n_pixel_chunks; ++pixel_chunk) {
+      const auto info_index =
+          WARP_SIZE * pixel_chunk + (threadIdx.x & (WARP_SIZE - 1));
+      // check if we are still on the list
+      if (info_index >= n_pixels)
+        break;
+      const auto& pixel_info =
+          pixel_infos[info_index + event.first_pixel_info_index];
+
       auto pixel = pixel_info.pixel;
       auto center = grid.pixel_grid.center_at(pixel);
       auto up = segment.projection_relative_middle(center);
@@ -67,16 +79,24 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
       }
     }  // voxel loop - denominator
 
+    // reduce denominator so all threads now share same value
+    Common::GPU::reduce(denominator);
+
     if (denominator == 0)
       continue;
 
     const auto inv_denominator = 1 / denominator;
 
     // -- voxel loop ---------------------------------------------------------
-    for (auto info_index = event.first_pixel_info_index;
-         info_index < event.last_pixel_info_index;
-         ++info_index) {
-      const auto& pixel_info = pixel_infos[info_index];
+    for (auto pixel_chunk = 0; pixel_chunk < n_pixel_chunks; ++pixel_chunk) {
+      const auto info_index =
+          WARP_SIZE * pixel_chunk + (threadIdx.x & (WARP_SIZE - 1));
+      // check if we are still on the list
+      if (info_index >= n_pixels)
+        break;
+      const auto& pixel_info =
+          pixel_infos[info_index + event.first_pixel_info_index];
+
       auto pixel = pixel_info.pixel;
       auto center = grid.pixel_grid.center_at(pixel);
       auto up = segment.projection_relative_middle(center);
