@@ -33,3 +33,25 @@ TEST("strip/event/conversion/Event-FrameEvent-Event") {
   CHECK(conv.theta == Approx(evt.theta));
   CHECK(conv.tan == Approx(evt.tan));
 }
+
+
+TEST("strip/event/diff") {
+
+    FrameEvent<F> lhs(.1,.2,0.3), rhs(-.1,.3,0.2);
+
+    auto diff = lhs-rhs;
+
+    CHECK(diff.x==Approx(lhs.zup-rhs.zup));
+    CHECK(diff.y==Approx(lhs.zdn-rhs.zdn));
+    CHECK(diff.z==Approx(lhs.dl-rhs.dl));
+}
+
+
+TEST("strip/vector/diagonalmul") {
+
+
+    Vector diag(0.3,0.0,0.2);
+    Vector vec(2., 2.5,.3);
+
+
+}
