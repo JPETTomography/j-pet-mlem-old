@@ -7,7 +7,12 @@
 #include "reconstruction.h"
 
 #if USE_WARP_GRANULARITY
+#if USE_VOXEL_GRANULARITY
+#include "reconstruction/warp_voxel_granularity.cuh"
+#else
+// pixel granularity (faster)
 #include "reconstruction/warp_granularity.cuh"
+#endif
 #elif USE_THREAD_GRANULARITY
 #include "reconstruction/thread_granularity.cuh"
 #endif
