@@ -6,12 +6,17 @@
 
 #include "reconstruction.h"
 
+#define USE_TEXTURE 1  // using textures is faster when using bigger rhos
+
 #if USE_WARP_GRANULARITY
-#if USE_VOXEL_GRANULARITY
+#if USE_VOXEL_GRANULARITY  // voxel (densier) granularity
 #include "reconstruction/warp_voxel_granularity.cuh"
-#else
-// pixel granularity (faster)
+#else            // pixel granularity (faster)
+#if USE_TEXTURE  // use texture and 3D arrays for rho and 2D sensitivity lookup
 #include "reconstruction/warp_granularity.cuh"
+#else  // use linear memory
+#include "reconstruction/warp_granularity_no_tex.cuh"
+#endif
 #endif
 #elif USE_THREAD_GRANULARITY
 #include "reconstruction/thread_granularity.cuh"
@@ -85,10 +90,14 @@ void run(const SimpleGeometry& geometry,
 
   add_offsets(device_events, n_events, device_lor_pixel_info_start);
 
+#if USE_TEXTURE
   util::cuda::texture3D<F> rho(tex_rho,
                                grid.pixel_grid.n_columns,
                                grid.pixel_grid.n_rows,
                                grid.n_planes);
+#else
+  util::cuda::on_device<F> rho((size_t)grid.n_voxels);
+#endif
   util::cuda::memory<F> output_rho((size_t)grid.n_voxels);
   Output rho_output(grid.pixel_grid.n_columns,
                     grid.pixel_grid.n_rows,
@@ -100,10 +109,14 @@ void run(const SimpleGeometry& geometry,
   }
   output_rho.copy_to_device();
 
+#if USE_TEXTURE
   util::cuda::texture2D<F> device_sensitivity(tex_sensitivity,
                                               (size_t)sensitivity.width,
                                               (size_t)sensitivity.height,
                                               sensitivity.data);
+#else
+  util::cuda::on_device<F> device_sensitivity((size_t)grid.pixel_grid.n_pixels);
+#endif
   (void)device_sensitivity;  // device sensitivity is used via tex_sensitivity
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
@@ -118,6 +131,10 @@ void run(const SimpleGeometry& geometry,
                      device_events,
                      n_events,
                      output_rho,
+#if !USE_TEXTURE
+                     rho,
+                     device_sensitivity,
+#endif
                      sigma_z,
                      sigma_dl,
                      grid);
