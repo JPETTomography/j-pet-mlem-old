@@ -63,3 +63,15 @@ TEST("strip/gauss") {
   CHECK(res == Approx(std::exp(-0.5 * (0.3 * 0.1 * 0.1 + 0.1 * 0.2 * 0.2 +
                                        0.2 * 0.3 * 0.3))));
 }
+
+TEST("strip/sensitivity") {
+  F L = 0.5;
+  CHECK(sensitivity(FrameEvent<F>(0, 0, 0), L) == Approx(1.0));
+  CHECK(sensitivity(FrameEvent<F>(0, L / 2, 0), L) == Approx(1.0));
+  CHECK(sensitivity(FrameEvent<F>(-L / 2, L / 2, 0), L) == Approx(1.0));
+
+  F epsilon = 1e-5;
+  CHECK(sensitivity(FrameEvent<F>(0, L / 2 + epsilon, 0), L) == Approx(0.0));
+  CHECK(sensitivity(FrameEvent<F>(-L / 2 - epsilon, L / 2, 0), L) ==
+        Approx(0.0));
+}

@@ -10,14 +10,13 @@ namespace PET2D {
 namespace Strip {
 namespace Testing {
 
-template<typename F>
-using Vector3D = PET3D::Vector<F>;
+template <typename F> using Vector3D = PET3D::Vector<F>;
 
 template <typename F> class FrameEvent;
 
 template <typename F> struct Event {
 
-  Event(F x, F y, F theta) : tan(std::tan(theta)), theta(theta), y(y), x(x) {};
+  Event(F x, F y, F theta) : tan(std::tan(theta)), theta(theta), y(y), x(x){};
   Event(const FrameEvent<F>& fe, F R)
       : tan((fe.zup - fe.zdn) / (F(2.0) * R)),
         theta(atan(tan)),
@@ -47,18 +46,22 @@ Vector3D<F> operator-(const FrameEvent<F>& fel, const FrameEvent<F>& fer) {
 }
 
 template <typename F>
-F diagonal_product(const Vector3D<F>& diag,const Vector3D<F>& vec) {
+F diagonal_product(const Vector3D<F>& diag, const Vector3D<F>& vec) {
   Vector3D<F> res(diag);
   res *= vec;
   return res.dot(vec);
 }
 
-template<typename F>
-F gauss(const Vector3D<F>& diag, const Vector3D<F>& vec) {
-    return std::exp(-F(0.5)*diagonal_product(diag,vec));
+template <typename F> F gauss(const Vector3D<F>& diag, const Vector3D<F>& vec) {
+  return std::exp(-F(0.5) * diagonal_product(diag, vec));
 }
 
+template <typename F> F sensitivity(const FrameEvent<F>& fe, F L) {
+  F l2 = L / 2;
 
+  return (fe.zup <= l2 && fe.zup >= -l2 && fe.zdn <= l2 && fe.zdn >= -l2) ? 1.0
+                                                                          : 0.0;
+}
 }
 }
 }
