@@ -80,6 +80,14 @@ template <typename F> F sensitivity(const FrameEvent<F>& fe, F L) {
   return (fe.zup <= l2 && fe.zup >= -l2 && fe.zdn <= l2 && fe.zdn >= -l2) ? 1.0
                                                                           : 0.0;
 }
+
+template <typename F> F sensitivity(F x, F y, F R, F L) {
+  const F l2 = 0.5 * L;
+  F theta_min = std::atan(std::max(-(l2 + x) / (R - y), (-l2 + x) / (R + y)));
+  F theta_max = std::atan(std::min((l2 - x) / (R - y), (l2 + x) / (R + y)));
+
+  return (theta_max - theta_min) / M_PI;
+}
 }
 }
 }

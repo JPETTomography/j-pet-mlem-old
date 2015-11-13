@@ -120,5 +120,8 @@ TEST("strip/integral/theta") {
       }
     }
   }
-  std::cout << "w integrated theta : " << sum * d * d * d * d / M_PI << "\n";
+  auto integral = sum * d * d * d * d / M_PI;
+  auto sens = sensitivity(F(0.0), F(0.0), R, L);
+  std::cout << "w integrated theta : " << integral << " /  " << sens << " = "
+            << integral / sens << "\n";
 }
