@@ -10,13 +10,14 @@ namespace PET2D {
 namespace Strip {
 namespace Testing {
 
-using Vector = PET3D::Vector<F>;
+template<typename F>
+using Vector3D = PET3D::Vector<F>;
 
 template <typename F> class FrameEvent;
 
 template <typename F> struct Event {
 
-  Event(F x, F y, F theta) : tan(std::tan(theta)), theta(theta), x(x), y(y){};
+  Event(F x, F y, F theta) : tan(std::tan(theta)), theta(theta), y(y), x(x) {};
   Event(const FrameEvent<F>& fe, F R)
       : tan((fe.zup - fe.zdn) / (F(2.0) * R)),
         theta(atan(tan)),
@@ -41,9 +42,17 @@ template <typename F> struct FrameEvent {
 };
 
 template <typename F>
-Vector operator-(const FrameEvent<F>& fel, const FrameEvent<F>& fer) {
-  return Vector(fel.zup - fer.zup, fel.zdn - fer.zdn, fel.dl - fer.dl);
+Vector3D<F> operator-(const FrameEvent<F>& fel, const FrameEvent<F>& fer) {
+  return Vector3D<F>(fel.zup - fer.zup, fel.zdn - fer.zdn, fel.dl - fer.dl);
 }
+
+template <typename F>
+F diagonal_product(const PET3D::Vector<F>& diag, PET3D::Vector<F>& vec) {
+  Vector3D<F> res(diag);
+  res *= vec;
+  return res.dot(vec);
+}
+
 }
 }
 }

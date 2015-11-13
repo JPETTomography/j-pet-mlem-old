@@ -56,6 +56,13 @@ template <typename FType> struct Vector {
     return *this;
   }
 
+  _ Vector& operator*=(const Vector& v) {
+    x *= v.x;
+    y *= v.y;
+    z *= v.z;
+    return *this;
+  }
+
   Vector& operator/=(FType s) {
     x /= s;
     y /= s;
