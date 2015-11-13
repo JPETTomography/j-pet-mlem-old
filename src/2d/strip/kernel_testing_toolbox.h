@@ -47,11 +47,17 @@ Vector3D<F> operator-(const FrameEvent<F>& fel, const FrameEvent<F>& fer) {
 }
 
 template <typename F>
-F diagonal_product(const PET3D::Vector<F>& diag, PET3D::Vector<F>& vec) {
+F diagonal_product(const Vector3D<F>& diag,const Vector3D<F>& vec) {
   Vector3D<F> res(diag);
   res *= vec;
   return res.dot(vec);
 }
+
+template<typename F>
+F gauss(const Vector3D<F>& diag, const Vector3D<F>& vec) {
+    return std::exp(-F(0.5)*diagonal_product(diag,vec));
+}
+
 
 }
 }

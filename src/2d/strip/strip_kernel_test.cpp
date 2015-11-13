@@ -54,3 +54,12 @@ TEST("strip/vector/diagonalmul") {
 
   CHECK(res == Approx(2 * 0.3 * 2 + 2.5 * 0.1 * 2.5 + 0.3 * .2 * 0.3));
 }
+
+TEST("strip/gauss") {
+  Vector3D<F> diag(0.3, 0.1, 0.2);
+  Vector3D<F> vec(0.1, 0.2, .3);
+
+  auto res = gauss(diag, vec);
+  CHECK(res == Approx(std::exp(-0.5 * (0.3 * 0.1 * 0.1 + 0.1 * 0.2 * 0.2 +
+                                       0.2 * 0.3 * 0.3))));
+}
