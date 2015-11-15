@@ -135,12 +135,15 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
     push_back_pixel_info(lor, pixel_info);
   }
 
-  void put_pixel(const LOR& lor, const Pixel& pixel, F weight) {
+  /// Add weight for given LOR and pixel.
+  ////
+  /// May be called several times for same LOR and pixel to accumulate weight.
+  void add_weight(const LOR& lor, const Pixel& pixel, F weight) {
     auto& lor_geometry = (*this)[lor];
-    lor_geometry.put_pixel(pixel, weight);
+    lor_geometry.add_weight_for_pixel(pixel, weight);
   }
 
-  /// Sort all LOR geometry descriptions.
+  /// Sort all LOR geometry descriptions by pixel position along LOR.
   ////
   /// This does not affect order of LOR gemetry descriptions here.
   void sort_all() {
@@ -149,6 +152,9 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
     }
   }
 
+  /// Sort all LOR geometry descriptions by pixel coordinates.
+  ////
+  /// This does not affect order of LOR gemetry descriptions here.
   void sort_all_by_pixel() {
     for (auto& lor_geometry : *this) {
       lor_geometry.sort_by_pixel();
@@ -175,8 +181,9 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
   const Grid grid;      ///< pixel grid description
 
 #if !__CUDACC__
+  /// Loads weights from given system matrix file
   template <typename HitType>
-  void load_system_matrix_from_file(std::string system_matrix_fn) {
+  void load_weights_from_matrix_file(std::string system_matrix_fn) {
     using Hit = HitType;
     util::ibstream in_matrix(system_matrix_fn);
     if (!in_matrix.is_open()) {
@@ -197,7 +204,7 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
     for (auto& element : matrix) {
       auto lor = element.lor;
       F weight = element.hits / n_emissions;
-      put_pixel(lor, element.pixel, weight);
+      add_weight(lor, element.pixel, weight);
     }
     sort_all();
   }
