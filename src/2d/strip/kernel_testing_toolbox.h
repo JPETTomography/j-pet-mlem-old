@@ -18,12 +18,12 @@ template <typename F> struct FrameEvent;
 
 template <typename F> struct Event {
 
-  Event(F x, F y, F theta) : tan(std::tan(theta)), theta(theta), y(y), x(x){};
+  Event(F x, F y, F theta) : tan(std::tan(theta)), theta(theta), y(y), x(x) {}
   Event(const FrameEvent<F>& fe, F R)
       : tan((fe.zup - fe.zdn) / (F(2.0) * R)),
         theta(atan(tan)),
         y(-F(0.5) * fe.dl * std::cos(theta)),
-        x(F(0.5) * (fe.zup + fe.zdn + 2 * y * tan)){};
+        x(F(0.5) * (fe.zup + fe.zdn + 2 * y * tan)) {}
 
   const F tan;
   const F theta;
@@ -37,7 +37,7 @@ template <typename F> struct FrameEvent {
   FrameEvent(const Event<F> evt, F R)
       : zup(evt.x + (R - evt.y) * evt.tan),
         zdn(evt.x - (R + evt.y) * evt.tan),
-        dl(-F(2) * evt.y * std::sqrt(F(1) + evt.tan * evt.tan)){};
+        dl(-F(2) * evt.y * std::sqrt(F(1) + evt.tan * evt.tan)) {}
 
   const F zup, zdn, dl;
 };
