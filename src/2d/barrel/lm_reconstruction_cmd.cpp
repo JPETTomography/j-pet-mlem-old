@@ -145,8 +145,7 @@ int main(int argc, char* argv[]) {
     graphics.add(event.p);
 #endif
     const auto& lor_geometry = geometry[event.lor];
-    for (auto i = event.first_pixel_info_index; i < event.last_pixel_info_index;
-         ++i) {
+    for (auto i = event.pixel_info_begin; i < event.pixel_info_end; ++i) {
       const auto& pixel_info = lor_geometry.pixel_infos[i];
       graphics.add_pixel(geometry.grid, pixel_info.pixel);
     }

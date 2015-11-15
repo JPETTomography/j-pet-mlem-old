@@ -31,7 +31,7 @@ namespace Reconstruction {
 
 __global__ static void add_offsets(Event* events,
                                    const int n_events,
-                                   const size_t* lor_pixel_info_start) {
+                                   const size_t* lor_pixel_info_begin) {
   const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
   const auto n_threads = gridDim.x * blockDim.x;
   const auto n_chunks = (n_events + n_threads - 1) / n_threads;
@@ -42,9 +42,9 @@ __global__ static void add_offsets(Event* events,
       break;
     }
     auto& event = events[event_index];
-    const auto pixel_info_start = lor_pixel_info_start[event.lor.index()];
-    event.first_pixel_info_index += pixel_info_start;
-    event.last_pixel_info_index += pixel_info_start;
+    const auto pixel_info_begin = lor_pixel_info_begin[event.lor.index()];
+    event.pixel_info_begin += pixel_info_begin;
+    event.pixel_info_end += pixel_info_begin;
   }
 }
 
@@ -84,11 +84,11 @@ void run(const SimpleGeometry& geometry,
       geometry.lor_line_segments, geometry.n_lors);
   util::cuda::on_device<PixelInfo> device_pixel_infos(geometry.pixel_infos,
                                                       geometry.n_pixel_infos);
-  util::cuda::on_device<size_t> device_lor_pixel_info_start(
-      geometry.lor_pixel_info_start, geometry.n_lors);
+  util::cuda::on_device<size_t> device_lor_pixel_info_begin(
+      geometry.lor_pixel_info_begin, geometry.n_lors);
   util::cuda::on_device<Event> device_events(events, n_events);
 
-  add_offsets(device_events, n_events, device_lor_pixel_info_start);
+  add_offsets(device_events, n_events, device_lor_pixel_info_begin);
 
 #if USE_TEXTURE
   util::cuda::texture3D<F> rho(tex_rho,

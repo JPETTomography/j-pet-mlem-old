@@ -42,8 +42,8 @@ class LMReconstruction {
     F gauss_norm;
     F inv_sigma2;
 #endif
-    size_t first_pixel_info_index;
-    size_t last_pixel_info_index;
+    size_t pixel_info_begin;
+    size_t pixel_info_end;
   };
 
 #if !__CUDACC__
@@ -100,16 +100,16 @@ class LMReconstruction {
     pix_info_up.t = t + 3 * sigma_;
     pix_info_dn.t = t - 3 * sigma_;
     const auto& lor_geometry = geometry[event.lor];
-    event.last_pixel_info_index =
+    event.pixel_info_end =
         std::upper_bound(lor_geometry.pixel_infos.begin(),
                          lor_geometry.pixel_infos.end(),
                          pix_info_up,
                          [](const PixelInfo& a, const PixelInfo& b) -> bool {
                            return a.t < b.t;
                          }) -
-        lor_geometry.pixel_infos.begin();
+        lor_geometry.pixel_infos.begin() + 1;
 
-    event.first_pixel_info_index =
+    event.pixel_info_begin =
         std::lower_bound(lor_geometry.pixel_infos.begin(),
                          lor_geometry.pixel_infos.end(),
                          pix_info_dn,
@@ -120,8 +120,8 @@ class LMReconstruction {
 
 #if SYSTEM_MATRIX
     if (system_matrix_) {
-      event.last_pixel = geometry[event.lor].pixels.end();
-      event.first_pixel = geometry[event.lor].pixels.begin();
+      event.pixel_info_end = geometry[event.lor].pixels.end();
+      event.pixel_info_begin = geometry[event.lor].pixels.begin();
     }
 #endif
     return event;
@@ -179,8 +179,8 @@ class LMReconstruction {
       // -- voxel loop - denominator -------------------------------------------
       F denominator = 0;
       const auto& lor_geometry = geometry[event.lor];
-      for (auto info_index = event.first_pixel_info_index;
-           info_index < event.last_pixel_info_index;
+      for (auto info_index = event.pixel_info_begin;
+           info_index < event.pixel_info_end;
            ++info_index) {
         pixel_count_++;
         const auto& pixel_info = lor_geometry.pixel_infos[info_index];
@@ -196,8 +196,8 @@ class LMReconstruction {
       const auto inv_denominator = 1 / denominator;
 
       // -- voxel loop ---------------------------------------------------------
-      for (auto info_index = event.first_pixel_info_index;
-           info_index < event.last_pixel_info_index;
+      for (auto info_index = event.pixel_info_begin;
+           info_index < event.pixel_info_end;
            ++info_index) {
         const auto& pixel_info = lor_geometry.pixel_infos[info_index];
         const auto pixel_index = grid.index(pixel_info.pixel);

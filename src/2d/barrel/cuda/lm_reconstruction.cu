@@ -71,8 +71,8 @@ __global__ static void reconstruction(const PixelInfo* pixel_infos,
     F denominator = 0;
 
     // -- voxel loop - denominator -------------------------------------------
-    for (auto info_index = event.first_pixel_info_index;
-         info_index < event.last_pixel_info_index;
+    for (auto info_index = event.pixel_info_begin;
+         info_index < event.pixel_info_end;
          ++info_index) {
       const auto& pixel_info = pixel_infos[info_index];
       denominator += kernel(event, pixel_info);
@@ -84,8 +84,8 @@ __global__ static void reconstruction(const PixelInfo* pixel_infos,
     const auto inv_denominator = 1 / denominator;
 
     // -- voxel loop ---------------------------------------------------------
-    for (auto info_index = event.first_pixel_info_index;
-         info_index < event.last_pixel_info_index;
+    for (auto info_index = event.pixel_info_begin;
+         info_index < event.pixel_info_end;
          ++info_index) {
       const auto& pixel_info = pixel_infos[info_index];
       const auto pixel_index = pixel_info.pixel.y * width + pixel_info.pixel.x;
@@ -97,7 +97,7 @@ __global__ static void reconstruction(const PixelInfo* pixel_infos,
 
 __global__ static void add_offsets(Event* events,
                                    const int n_events,
-                                   const size_t* lor_pixel_info_start) {
+                                   const size_t* lor_pixel_info_begin) {
   const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
   const auto n_threads = gridDim.x * blockDim.x;
   const auto n_chunks = (n_events + n_threads - 1) / n_threads;
@@ -108,9 +108,9 @@ __global__ static void add_offsets(Event* events,
       break;
     }
     auto& event = events[event_index];
-    const auto pixel_info_start = lor_pixel_info_start[event.lor.index()];
-    event.first_pixel_info_index += pixel_info_start;
-    event.last_pixel_info_index += pixel_info_start;
+    const auto pixel_info_begin = lor_pixel_info_begin[event.lor.index()];
+    event.pixel_info_begin += pixel_info_begin;
+    event.pixel_info_end += pixel_info_begin;
   }
 }
 
@@ -147,11 +147,11 @@ void run(const SimpleGeometry& geometry,
 
   util::cuda::on_device<PixelInfo> device_pixel_infos(geometry.pixel_infos,
                                                       geometry.n_pixel_infos);
-  util::cuda::on_device<size_t> device_lor_pixel_info_start(
-      geometry.lor_pixel_info_start, geometry.n_lors);
+  util::cuda::on_device<size_t> device_lor_pixel_info_begin(
+      geometry.lor_pixel_info_begin, geometry.n_lors);
   util::cuda::on_device<Event> device_events(events, n_events);
 
-  add_offsets(device_events, n_events, device_lor_pixel_info_start);
+  add_offsets(device_events, n_events, device_lor_pixel_info_begin);
 
   util::cuda::texture2D<F> rho(tex_rho, width, height);
   util::cuda::memory<F> output_rho((size_t)width * height);

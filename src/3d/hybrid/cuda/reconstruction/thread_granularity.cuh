@@ -44,15 +44,15 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
     F denominator = 0;
 
     // -- voxel loop - denominator -------------------------------------------
-    for (auto info_index = event.first_pixel_info_index;
-         info_index < event.last_pixel_info_index;
+    for (auto info_index = event.pixel_info_begin;
+         info_index < event.pixel_info_end;
          ++info_index) {
       const auto& pixel_info = pixel_infos[info_index];
       auto pixel = pixel_info.pixel;
       auto center = grid.pixel_grid.center_at(pixel);
       auto up = segment.projection_relative_middle(center);
 
-      for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
+      for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
         // kernel calculation:
         Voxel voxel(pixel.x, pixel.y, iz);
         auto z = grid.center_z_at(voxel);
@@ -73,15 +73,15 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
     const auto inv_denominator = 1 / denominator;
 
     // -- voxel loop ---------------------------------------------------------
-    for (auto info_index = event.first_pixel_info_index;
-         info_index < event.last_pixel_info_index;
+    for (auto info_index = event.pixel_info_begin;
+         info_index < event.pixel_info_end;
          ++info_index) {
       const auto& pixel_info = pixel_infos[info_index];
       auto pixel = pixel_info.pixel;
       auto center = grid.pixel_grid.center_at(pixel);
       auto up = segment.projection_relative_middle(center);
 
-      for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
+      for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
         // kernel calculation:
         Voxel voxel(pixel.x, pixel.y, iz);
         auto z = grid.center_z_at(voxel);

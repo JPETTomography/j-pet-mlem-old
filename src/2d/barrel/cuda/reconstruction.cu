@@ -17,7 +17,7 @@ texture<F, 2, cudaReadModeElementType> tex_rho;
 
 // foreach p: count y[p] and store it in output_rho[p]
 __global__ static void reconstruction_1(const PixelInfo* pixel_infos,
-                                        const size_t* lor_pixel_info_start,
+                                        const size_t* lor_pixel_info_begin,
                                         const size_t* lor_pixel_info_end,
                                         const Mean* means,
                                         const int n_means,
@@ -37,18 +37,18 @@ __global__ static void reconstruction_1(const PixelInfo* pixel_infos,
 
     auto mean = means[mean_index];
     auto lor_index = mean.lor.index();
-    auto pixel_info_start = lor_pixel_info_start[lor_index];
+    auto pixel_info_begin = lor_pixel_info_begin[lor_index];
     auto pixel_info_end = lor_pixel_info_end[lor_index];
 
     // count u for current lor
     F u = 0;
-    for (auto i = pixel_info_start; i < pixel_info_end; ++i) {
+    for (auto i = pixel_info_begin; i < pixel_info_end; ++i) {
       auto pixel_info = pixel_infos[i];
       auto pixel = pixel_info.pixel;
       u += tex2D(tex_rho, pixel.x, pixel.y) * pixel_info.weight;
     }
     F phi = mean.mean / u;
-    for (auto i = pixel_info_start; i < pixel_info_end; ++i) {
+    for (auto i = pixel_info_begin; i < pixel_info_end; ++i) {
       auto pixel_info = pixel_infos[i];
       auto pixel = pixel_info.pixel;
       atomicAdd(&output_rho[pixel.y * width + pixel.x],
@@ -113,8 +113,8 @@ void run(const SimpleGeometry& geometry,
 
   util::cuda::on_device<PixelInfo> device_pixel_infos(geometry.pixel_infos,
                                                       geometry.n_pixel_infos);
-  util::cuda::on_device<size_t> device_lor_pixel_info_start(
-      geometry.lor_pixel_info_start, geometry.n_lors);
+  util::cuda::on_device<size_t> device_lor_pixel_info_begin(
+      geometry.lor_pixel_info_begin, geometry.n_lors);
   util::cuda::on_device<size_t> device_lor_pixel_info_end(
       geometry.lor_pixel_info_end, geometry.n_lors);
   util::cuda::on_device<Mean> device_means(means, n_means);
@@ -146,7 +146,7 @@ void run(const SimpleGeometry& geometry,
       output_rho.zero_on_device();
 
       reconstruction_1(device_pixel_infos,
-                       device_lor_pixel_info_start,
+                       device_lor_pixel_info_begin,
                        device_lor_pixel_info_end,
                        device_means,
                        n_means,

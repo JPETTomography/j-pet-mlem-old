@@ -46,8 +46,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
     const auto segment = lor_line_segments[lor_index];
     const auto R = segment.length / 2;
     F denominator = 0;
-    const auto n_pixels =
-        event.last_pixel_info_index - event.first_pixel_info_index;
+    const auto n_pixels = event.pixel_info_end - event.pixel_info_begin;
     const auto n_pixel_chunks = (n_pixels + WARP_SIZE + 1) / WARP_SIZE;
 
     // -- voxel loop - denominator -------------------------------------------
@@ -57,14 +56,13 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
       // check if we are still on the list
       if (info_index >= n_pixels)
         break;
-      const auto& pixel_info =
-          pixel_infos[info_index + event.first_pixel_info_index];
+      const auto& pixel_info = pixel_infos[info_index + event.pixel_info_begin];
 
       auto pixel = pixel_info.pixel;
       auto center = grid.pixel_grid.center_at(pixel);
       auto up = segment.projection_relative_middle(center);
 
-      for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
+      for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
         // kernel calculation:
         Voxel voxel(pixel.x, pixel.y, iz);
         auto z = grid.center_z_at(voxel);
@@ -94,14 +92,13 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
       // check if we are still on the list
       if (info_index >= n_pixels)
         break;
-      const auto& pixel_info =
-          pixel_infos[info_index + event.first_pixel_info_index];
+      const auto& pixel_info = pixel_infos[info_index + event.pixel_info_begin];
 
       auto pixel = pixel_info.pixel;
       auto center = grid.pixel_grid.center_at(pixel);
       auto up = segment.projection_relative_middle(center);
 
-      for (int iz = event.first_plane; iz < event.last_plane; ++iz) {
+      for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
         // kernel calculation:
         Voxel voxel(pixel.x, pixel.y, iz);
         auto z = grid.center_z_at(voxel);
