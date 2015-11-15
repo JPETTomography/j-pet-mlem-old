@@ -14,7 +14,7 @@ const double PI_FACTOR = 1 / std::pow(2 * M_PI, 3.0 / 2.0);
 
 template <typename F> using Vector3D = PET3D::Vector<F>;
 
-template <typename F> class FrameEvent;
+template <typename F> struct FrameEvent;
 
 template <typename F> struct Event {
 
