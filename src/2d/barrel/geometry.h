@@ -149,9 +149,9 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
     }
   }
 
-  void sort_all_by_index() {
+  void sort_all_by_pixel() {
     for (auto& lor_geometry : *this) {
-      lor_geometry.sort_by_index();
+      lor_geometry.sort_by_pixel();
     }
   }
 
@@ -184,7 +184,7 @@ class Geometry : public std::vector<LORGeometry<FType, SType>> {
     }
     PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit> matrix(in_matrix);
     matrix.sort_by_lor_n_pixel();
-    sort_all_by_index();
+    sort_all_by_pixel();
 
     F n_emissions = F(matrix.n_emissions());
     if (grid.n_columns != matrix.n_pixels_in_row()) {

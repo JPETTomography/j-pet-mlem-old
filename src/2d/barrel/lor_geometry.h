@@ -89,11 +89,11 @@ template <typename FType, typename SType> struct LORGeometry {
               [](const PixelInfo& a, const PixelInfo& b) { return a.t < b.t; });
   }
 
-  void sort_by_index() {
+  void sort_by_pixel() {
     std::sort(pixel_infos.begin(),
               pixel_infos.end(),
               [](const PixelInfo& a, const PixelInfo& b) {
-                return a.pixel.index() < b.pixel.index();
+                return a.pixel < b.pixel;
               });
   }
 
@@ -105,22 +105,31 @@ template <typename FType, typename SType> struct LORGeometry {
                               pixel_infos.end(),
                               pi,
                               [](const PixelInfo& a, const PixelInfo& b) {
-                                return a.pixel.index() < b.pixel.index();
+                                return a.pixel < b.pixel;
                               });
 
-    if (p == pixel_infos.end() || (p->pixel).index() != pixel.index()) {
+    if (p == pixel_infos.end() || p->pixel != pixel) {
+#if THROW_ON_MISSING_PIXEL
       std::stringstream msg;
-      msg << "pixel not found in LOR ";
-      msg << lor.first << ":" << lor.second << " ";
-      msg << pixel.index() << ", (" << pixel.x << "," << pixel.y << ")\n";
-      for (auto i : pixel_infos) {
-        msg << i.pixel.index() << " (" << i.pixel.x << "," << i.pixel.y
-            << ")\n";
+      msg << "pixel (" << pixel.x << "," << pixel.y << ") not found in LOR ";
+      msg << lor.first << "-" << lor.second;
+      for (const auto& pixel_info : pixel_infos) {
+        msg << " (" << pixel_info.pixel.x << "," << pixel_info.pixel.y << ")";
       }
-      // throw msg.str();
+      throw msg.str();
+#else
       return;
+#endif
     }
 
+#if NO_DUPLICATES
+    if (pixel_info->weight > 0) {
+      std::cerr << "duplicate entry for: lor " << lor.first << "-" << lor.second
+                << " pixel " << pixel.x << "," << pixel.y <<  //
+          " (" << pixel_info->pixel.x << "," << pixel_info->pixel.y << ")"
+                << std::endl;
+    }
+#endif
     p->weight += weight;
   }
 
