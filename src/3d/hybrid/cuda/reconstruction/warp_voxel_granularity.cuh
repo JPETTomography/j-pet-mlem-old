@@ -46,9 +46,8 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
     const auto segment = lor_line_segments[lor_index];
     const auto R = segment.length / 2;
     F denominator = 0;
-    const auto n_pixels =
-        event.last_pixel_info_index - event.first_pixel_info_index;
-    const auto n_planes = event.last_plane - event.first_plane;
+    const auto n_pixels = event.pixel_info_end - event.pixel_info_begin;
+    const auto n_planes = event.plane_end - event.plane_begin;
     const auto n_voxels = n_pixels * n_planes;
     const auto n_voxel_chunks = (n_voxels + WARP_SIZE + 1) / WARP_SIZE;
 
@@ -62,12 +61,12 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
       const auto pixel_index = voxel_index / n_planes;
       const auto plane_index = voxel_index % n_planes;
       const auto& pixel_info =
-          pixel_infos[pixel_index + event.first_pixel_info_index];
+          pixel_infos[pixel_index + event.pixel_info_begin];
 
       auto pixel = pixel_info.pixel;
       auto center = grid.pixel_grid.center_at(pixel);
       auto up = segment.projection_relative_middle(center);
-      auto iz = event.first_plane + plane_index;
+      auto iz = event.plane_begin + plane_index;
 
       // kernel calculation:
       Voxel voxel(pixel.x, pixel.y, iz);
@@ -100,12 +99,12 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
       const auto pixel_index = voxel_index / n_planes;
       const auto plane_index = voxel_index % n_planes;
       const auto& pixel_info =
-          pixel_infos[pixel_index + event.first_pixel_info_index];
+          pixel_infos[pixel_index + event.pixel_info_begin];
 
       auto pixel = pixel_info.pixel;
       auto center = grid.pixel_grid.center_at(pixel);
       auto up = segment.projection_relative_middle(center);
-      auto iz = event.first_plane + plane_index;
+      auto iz = event.plane_begin + plane_index;
 
       // kernel calculation:
       Voxel voxel(pixel.x, pixel.y, iz);

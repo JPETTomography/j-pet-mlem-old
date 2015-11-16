@@ -63,6 +63,7 @@ template <typename FType, typename SType> struct LORGeometry {
     }
   }
 
+  /// Output LOR geometry to text stream.
   friend std::ostream& operator<<(std::ostream& out,
                                   const LORGeometry& lor_info) {
     out << lor_info.lor.first << ' ' << lor_info.lor.second << ' '
@@ -72,6 +73,7 @@ template <typename FType, typename SType> struct LORGeometry {
     return out;
   }
 
+  /// Output LOR geometry to binary stream.
   friend util::obstream& operator<<(util::obstream& out,
                                     const LORGeometry& lor_info) {
     out << lor_info.lor;
@@ -82,49 +84,66 @@ template <typename FType, typename SType> struct LORGeometry {
     return out;
   }
 
-  /// Sort Pixel infos using position along LOR.
+  /// Sort pixel infos using position along LOR.
   void sort() {
     std::sort(pixel_infos.begin(),
               pixel_infos.end(),
               [](const PixelInfo& a, const PixelInfo& b) { return a.t < b.t; });
   }
 
-  void sort_by_index() {
+  /// Sort pixel infos by pixel \c y then \c x.
+  void sort_by_pixel() {
     std::sort(pixel_infos.begin(),
               pixel_infos.end(),
               [](const PixelInfo& a, const PixelInfo& b) {
-                return a.pixel.index() < b.pixel.index();
+                return a.pixel < b.pixel;
               });
   }
 
-  // assumes that pixels in LOR are sorted by index !!
-  void put_pixel(const Pixel& pixel, F weight) {
-    PixelInfo pi;
-    pi.pixel = pixel;
-    auto p = std::lower_bound(pixel_infos.begin(),
-                              pixel_infos.end(),
-                              pi,
-                              [](const PixelInfo& a, const PixelInfo& b) {
-                                return a.pixel.index() < b.pixel.index();
-                              });
+  /// Add weight for given pixel.
+  ////
+  /// Assumes that pixels in LOR are sorted by \c y then \c x.
+  ///
+  /// This is used to load external weights for geometry, eg. from existing
+  /// Monte-Carlo matrix file.
+  void add_weight_for_pixel(const Pixel& pixel, F weight) {
+    PixelInfo reference_pixel_info;
+    reference_pixel_info.pixel = pixel;
+    auto pixel_info =
+        std::lower_bound(pixel_infos.begin(),
+                         pixel_infos.end(),
+                         reference_pixel_info,
+                         [](const PixelInfo& a, const PixelInfo& b) {
+                           return a.pixel < b.pixel;
+                         });
 
-    if (p == pixel_infos.end() || (p->pixel).index() != pixel.index()) {
+    // check if we found the right pixel
+    if (pixel_info == pixel_infos.end() || pixel_info->pixel != pixel) {
+#if THROW_ON_MISSING_PIXEL
       std::stringstream msg;
-      msg << "pixel not found in LOR ";
-      msg << lor.first << ":" << lor.second << " ";
-      msg << pixel.index() << ", (" << pixel.x << "," << pixel.y << ")\n";
-      for (auto i : pixel_infos) {
-        msg << i.pixel.index() << " (" << i.pixel.x << "," << i.pixel.y
-            << ")\n";
+      msg << "pixel (" << pixel.x << "," << pixel.y << ") not found in LOR ";
+      msg << lor.first << "-" << lor.second;
+      for (const auto& pixel_info : pixel_infos) {
+        msg << " (" << pixel_info.pixel.x << "," << pixel_info.pixel.y << ")";
       }
-      // throw msg.str();
+      throw msg.str();
+#else
       return;
+#endif
     }
 
-    p->weight += weight;
+#if NO_DUPLICATES
+    if (pixel_info->weight > 0) {
+      std::cerr << "duplicate entry for: lor " << lor.first << "-" << lor.second
+                << " pixel " << pixel.x << "," << pixel.y <<  //
+          " (" << pixel_info->pixel.x << "," << pixel_info->pixel.y << ")"
+                << std::endl;
+    }
+#endif
+    pixel_info->weight += weight;
   }
 
-  /// Append Pixel info to the list.
+  /// Append given PixelInfo to the pixel info list.
   void push_back(const PixelInfo& pixel_info) {
     pixel_infos.push_back(pixel_info);
   }

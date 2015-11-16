@@ -50,13 +50,13 @@ class SimpleGeometry {
         lor_line_segments(new LineSegment[n_lors]),
         n_pixel_infos(n_pixel_infos),
         pixel_infos(new PixelInfo[n_pixel_infos]),
-        lor_pixel_info_start(new size_t[n_lors]),
+        lor_pixel_info_begin(new size_t[n_lors]),
         lor_pixel_info_end(new size_t[n_lors]) {}
 
   ~SimpleGeometry() {
     delete[] lor_line_segments;
     delete[] pixel_infos;
-    delete[] lor_pixel_info_start;
+    delete[] lor_pixel_info_begin;
     delete[] lor_pixel_info_end;
   }
 
@@ -79,7 +79,7 @@ class SimpleGeometry {
         }
         lor = element.lor;
         lor_index = lor.index();
-        lor_pixel_info_start[lor_index] = index;
+        lor_pixel_info_begin[lor_index] = index;
       }
       // assign information for this pixel info
       pixel_infos[index].pixel = element.pixel;
@@ -100,7 +100,7 @@ class SimpleGeometry {
       const auto& lor = lor_geometry.lor;
       auto lor_index = lor.index();
       lor_line_segments[lor_index] = lor_geometry.segment;
-      lor_pixel_info_start[lor_index] = size;
+      lor_pixel_info_begin[lor_index] = size;
       for (const auto& geometry_pixel_info : lor_geometry.pixel_infos) {
         auto& pixel_info = pixel_infos[size++];
         pixel_info.pixel = geometry_pixel_info.pixel;
@@ -117,7 +117,7 @@ class SimpleGeometry {
   LineSegment* const lor_line_segments;  ///< LOR line segments array
   const size_t n_pixel_infos;            ///< total number of pixel infos
   PixelInfo* const pixel_infos;          ///< pointer to pixel infos array
-  size_t* const lor_pixel_info_start;    ///< pointer to array holding start of
+  size_t* const lor_pixel_info_begin;    ///< pointer to array holding start of
                                          ///  pixel infos for given LOR
   size_t* const lor_pixel_info_end;      ///< pointer to array holding end of
                                          ///  pixel infos for given LOR

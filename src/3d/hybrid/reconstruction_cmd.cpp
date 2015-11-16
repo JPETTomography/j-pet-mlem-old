@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
     if (verbose) {
       std::cerr << "system matrix = " << fn << std::endl;
     }
-    geometry.load_system_matrix_from_file<Hit>(fn);
+    geometry.load_weights_from_matrix_file<Hit>(fn);
   }
 
   Reconstruction reconstruction(
