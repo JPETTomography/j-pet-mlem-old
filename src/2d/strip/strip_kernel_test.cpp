@@ -106,29 +106,6 @@ TEST("strip/integral") {
   std::cout << "w integrated : " << sum * d * d * d << "\n";
 }
 
-TEST("strip/integral/event") {
-  F sz = 0.01;
-  F sdl = 0.04;
-  F R = 0.43;
-  F L = 0.5;
-
-  Vector3D<F> diag(1 / (sz * sz), 1 / (sz * sz), 1 / (sdl * sdl));
-  FrameEvent<F> exact(Event<F>(0, 0, 0.2), R);
-  F d = 0.01;
-  F xy_lim = 0.25;
-
-  double sum = 0.0;
-  for (F x = -xy_lim; x < xy_lim; x += d) {
-    for (F y = -xy_lim; y < xy_lim; y += d) {
-      for (F angle = -M_PI / 4; angle < M_PI / 4; angle += d) {
-        sum += weight(diag, FrameEvent<F>(Event<F>(x, y, angle), R), exact, L) *
-               4 * R / pow(std::cos(angle), 1.5);
-      }
-    }
-  }
-  std::cout << "w integrated (event): " << sum * d * d * d << "\n";
-}
-
 TEST("strip/integral/theta") {
   F sz = 0.01;
   F sdl = 0.04;
@@ -154,6 +131,58 @@ TEST("strip/integral/theta") {
             << integral / sens << "\n";
 }
 
+TEST("strip/integral/event") {
+  F sz = 0.01;
+  F sdl = 0.04;
+  F R = 0.43;
+  F L = 0.5;
+
+  Vector3D<F> diag(1 / (sz * sz), 1 / (sz * sz), 1 / (sdl * sdl));
+  FrameEvent<F> exact(Event<F>(0, 0, 0.2), R);
+  F d = 0.01;
+  F xy_lim = 0.25;
+
+  double sum = 0.0;
+  for (F x = -xy_lim; x < xy_lim; x += d) {
+    for (F y = -.4; y < 0.4; y += d) {
+      for (F angle = -M_PI / 4; angle < M_PI / 4; angle += d) {
+        sum += weight(diag, FrameEvent<F>(Event<F>(x, y, angle), R), exact, L) *
+               4 * R / pow(std::cos(angle), 3);
+      }
+    }
+  }
+  std::cout << "w integrated (event): " << sum * d * d * d << "\n";
+}
+
+TEST("strip/integral/theta/event") {
+
+  F sz = 0.01;
+  F sdl = 0.04;
+  F R = 0.43;
+  F L = 0.5;
+
+  Vector3D<F> diag(1 / (sz * sz), 1 / (sz * sz), 1 / (sdl * sdl));
+
+  F d = 0.01;
+  F xy_lim = 0.25;
+
+  double sum = 0.0;
+  for (F x = -xy_lim; x < xy_lim; x += d) {
+    for (F y = -0.4; y < 0.4; y += d) {
+      for (F angle = -M_PI / 4; angle < M_PI / 4; angle += d) {
+        sum += theta_integral(
+                   diag, FrameEvent<F>(Event<F>(x, y, angle), R), 0, 0, R, L) *
+               4 * R / pow(std::cos(angle), 3);
+      }
+    }
+  }
+
+  auto integral = sum * d * d * d;
+  auto sens = sensitivity(F(0.0), F(0.0), R, L);
+  std::cout << "w integrated theta (event): " << integral << " /  " << sens
+            << " = " << integral / sens << "\n";
+}
+
 TEST("strip/gauss_kernel") {
 
   F R = 0.43;
@@ -163,27 +192,31 @@ TEST("strip/gauss_kernel") {
 
   Kernel kernel(sz, sdl);
 
-  F x = 0.0;
+  F tx = 0.01;
+  F ty = 0.03;
+  F tangle = 0.0;
+
+  F x = 0.005;
   F y = 0.0;
-  F angle = 0.0;
 
   Vector3D<F> diag(1 / (sz * sz), 1 / (sz * sz), 1 / (sdl * sdl));
 
   std::cout << theta_integral(
-                   diag, FrameEvent<F>(Event<F>(x, y, angle), R), x, y, R, L)
+                   diag, FrameEvent<F>(Event<F>(tx, ty, tangle), R), x, y, R, L)
             << " ";
-  std::cout << kernel(y,
-                      std::tan(angle),
-                      1 / std::cos(angle),
+  std::cout << kernel(ty,
+                      std::tan(tangle),
+                      1 / std::cos(tangle),
                       R,
-                      Vector(F(0.0), F(0.0)))
+                      Vector(x - tx, y - ty))
             << "\n";
 }
 
 TEST("strip/gauss_kernel/integral") {
-
+  F L = 0.5;
   Kernel kernel(0.01, 0.04);
 
+  F x = 0.0;
   F y = 0.0;
   F R = 0.43;
 
@@ -191,14 +224,22 @@ TEST("strip/gauss_kernel/integral") {
   F dfi = 0.01;
 
   double sum = 0.0;
-  for (F angle = -M_PI / 4; angle < M_PI / 4; angle += dfi) {
-    F tan = std::tan(angle);
-    F sec = 1 / cos(angle);
-    for (F dx = -0.2; dx <= 0.2; dx += d) {
-      for (F dy = -0.2; dy <= 0.2; dy += d) {
-        sum += kernel(y + dy, tan, sec, R, Vector(dx, dy));
+
+  for (F tx = -0.25; tx <= 0.25; tx += d) {
+    for (F ty = -0.4; ty <= 0.4; ty += d) {
+      auto theta_lim = theta_min_max(tx, ty, R, L);
+      for (F tangle = theta_lim.first; tangle < theta_lim.second;
+           tangle += dfi) {
+        F tan = std::tan(tangle);
+        F sec = 1 / cos(tangle);
+        sum += kernel(ty, tan, sec, R, Vector(x - tx, y - ty)) * 4 * R /
+               pow(std::cos(tangle), 3.0);
       }
     }
   }
-  std::cout << "gauss_kernel integrated : " << sum * d * d * dfi << "\n";
+  auto sens = sensitivity(F(0.0), F(0.0), R, L);
+  auto integral = sum * d * d * dfi;
+
+  std::cout << "gauss_kernel integrated : " << integral << " / " << sens
+            << " = " << integral / sens << "\n";
 }
