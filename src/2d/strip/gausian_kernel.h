@@ -27,10 +27,11 @@ template <typename FType> class GaussianKernel {
   _ GaussianKernel(F sigma_z, F sigma_dl)
       : inv_pow_sigma_z(1 / (sigma_z * sigma_z)),
         inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
-        inv_pow_two_pi_sqrt_det_cor_mat(F(1 / (2 * M_PI * M_PI)) *  //
-                                        inv_pow_sigma_z *           //
-                                        inv_pow_sigma_z *           //
-                                        inv_pow_sigma_dl) {}
+        inv_pow_two_pi_sqrt_det_cor_mat(
+            1 / (2 * M_PI * M_PI) *      //
+            std::sqrt(inv_pow_sigma_z *  //
+                      inv_pow_sigma_z *  //
+                      inv_pow_sigma_dl)) {}
 
   _ F test(const F y,
            const F z,

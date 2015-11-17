@@ -25,13 +25,13 @@ TEST("2d/strip/gaussian_kernel") {
     F y = 0.1;
 
     CHECK(gaussian(y, tan, sec, R, Vector(0, 0)) ==
-          Approx(4.6076243632716500e07).epsilon(epsilon));
+          Approx(184.304974530866).epsilon(epsilon));
     CHECK(gaussian(y, tan, sec, R, Vector(0.05, 0.1)) ==
-          Approx(1.3180240903945950).epsilon(epsilon));
+          Approx(5.272096361578383e-6).epsilon(epsilon));
 #ifndef __clang__
     // FIXME: Clang provides invalid value of 8461.84668f here
     CHECK(gaussian(y, tan, sec, R, Vector(-0.05, -0.05)) ==
-          Approx(8461.8357488172500000).epsilon(epsilon));
+          Approx(0.0338473429952690).epsilon(epsilon));
 #endif
   }
 
@@ -42,10 +42,10 @@ TEST("2d/strip/gaussian_kernel") {
     F y = -0.3;
 
     CHECK(gaussian(y, tan, sec, R, Vector(0, 0)) ==
-          Approx(2.3969145992977610e07).epsilon(epsilon));
+          Approx(95.87658397191050).epsilon(epsilon));
     CHECK(gaussian(y, tan, sec, R, Vector(0.05, 0.1)) ==
           Approx(0.0).epsilon(epsilon));
     CHECK(gaussian(y, tan, sec, R, Vector(-0.05, -0.05)) ==
-          Approx(42993.19771499309000).epsilon(epsilon));
+          Approx(0.1719727908599724).epsilon(epsilon));
   }
 }

@@ -154,8 +154,31 @@ TEST("strip/integral/theta") {
             << integral / sens << "\n";
 }
 
+TEST("strip/gauss_kernel") {
 
-TEST("strip/gauss_kernel") { Kernel kernel(0.01, 0.04); }
+  F R = 0.43;
+  F L = 0.5;
+  F sz = 0.01;
+  F sdl = 0.04;
+
+  Kernel kernel(sz, sdl);
+
+  F x = 0.0;
+  F y = 0.0;
+  F angle = 0.0;
+
+  Vector3D<F> diag(1 / (sz * sz), 1 / (sz * sz), 1 / (sdl * sdl));
+
+  std::cout << theta_integral(
+                   diag, FrameEvent<F>(Event<F>(x, y, angle), R), x, y, R, L)
+            << " ";
+  std::cout << kernel(y,
+                      std::tan(angle),
+                      1 / std::cos(angle),
+                      R,
+                      Vector(F(0.0), F(0.0)))
+            << "\n";
+}
 
 TEST("strip/gauss_kernel/integral") {
 
