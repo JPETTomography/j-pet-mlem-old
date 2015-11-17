@@ -10,7 +10,7 @@ int main() {
   Kernel kernel(0.01, 0.04);
 
   F y = 0.0;
-  F R = 0.5;
+  F R = 0.43;
 
   F d = 0.01;
   F dfi = 0.01;

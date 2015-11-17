@@ -154,6 +154,7 @@ TEST("strip/integral/theta") {
             << integral / sens << "\n";
 }
 
+
 TEST("strip/gauss_kernel") { Kernel kernel(0.01, 0.04); }
 
 TEST("strip/gauss_kernel/integral") {
