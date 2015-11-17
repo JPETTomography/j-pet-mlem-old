@@ -2,6 +2,14 @@
 
 #include "common/types.h"
 
+#include "2d/strip/gausian_kernel.h"
+#include "2d/strip/kernel.h"
+#include "common/types.h"
+#include "2d/geometry/vector.h"
+
+using Kernel = PET2D::Strip::GaussianKernel<F>;
+using Vector = PET2D::Vector<F>;
+
 #include "2d/strip/kernel_testing_toolbox.h"
 
 using namespace PET2D::Strip::Testing;
@@ -98,6 +106,29 @@ TEST("strip/integral") {
   std::cout << "w integrated : " << sum * d * d * d << "\n";
 }
 
+TEST("strip/integral/event") {
+  F sz = 0.01;
+  F sdl = 0.04;
+  F R = 0.43;
+  F L = 0.5;
+
+  Vector3D<F> diag(1 / (sz * sz), 1 / (sz * sz), 1 / (sdl * sdl));
+  FrameEvent<F> exact(Event<F>(0, 0, 0.2), R);
+  F d = 0.01;
+  F xy_lim = 0.25;
+
+  double sum = 0.0;
+  for (F x = -xy_lim; x < xy_lim; x += d) {
+    for (F y = -xy_lim; y < xy_lim; y += d) {
+      for (F angle = -M_PI / 4; angle < M_PI / 4; angle += d) {
+        sum += weight(diag, FrameEvent<F>(Event<F>(x, y, angle), R), exact, L) *
+               4 * R / pow(std::cos(angle), 1.5);
+      }
+    }
+  }
+  std::cout << "w integrated (event): " << sum * d * d * d << "\n";
+}
+
 TEST("strip/integral/theta") {
   F sz = 0.01;
   F sdl = 0.04;
@@ -121,4 +152,29 @@ TEST("strip/integral/theta") {
   auto sens = sensitivity(F(0.0), F(0.0), R, L);
   std::cout << "w integrated theta : " << integral << " /  " << sens << " = "
             << integral / sens << "\n";
+}
+
+TEST("strip/gauss_kernel") { Kernel kernel(0.01, 0.04); }
+
+TEST("strip/gauss_kernel/integral") {
+
+  Kernel kernel(0.01, 0.04);
+
+  F y = 0.0;
+  F R = 0.43;
+
+  F d = 0.01;
+  F dfi = 0.01;
+
+  double sum = 0.0;
+  for (F angle = -M_PI / 4; angle < M_PI / 4; angle += dfi) {
+    F tan = std::tan(angle);
+    F sec = 1 / cos(angle);
+    for (F dx = -0.2; dx <= 0.2; dx += d) {
+      for (F dy = -0.2; dy <= 0.2; dy += d) {
+        sum += kernel(y + dy, tan, sec, R, Vector(dx, dy));
+      }
+    }
+  }
+  std::cout << "gauss_kernel integrated : " << sum * d * d * dfi << "\n";
 }

@@ -19,8 +19,8 @@ int main() {
   for (F angle = -M_PI / 4; angle < M_PI / 4; angle += dfi) {
     F tan = std::tan(angle);
     F sec = 1 / cos(angle);
-    for (F dx = -0.2; dx <= 0.2; dx += d) {
-      for (F dy = -0.2; dy <= 0.2; dy += d) {
+    for (F dx = -0.25; dx <= 0.25; dx += d) {
+      for (F dy = -0.25; dy <= 0.25; dy += d) {
         sum += kernel(y + dy, tan, sec, R, Vector(dx, dy));
       }
     }
