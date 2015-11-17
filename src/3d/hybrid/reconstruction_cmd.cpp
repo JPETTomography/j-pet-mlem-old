@@ -123,6 +123,7 @@ int main(int argc, char* argv[]) {
     reconstruction.set_sensitivity_to_one();
   else
     reconstruction.calculate_sensitivity();
+
   reconstruction.normalize_geometry_weights();
 
   for (const auto& fn : cl.rest()) {
