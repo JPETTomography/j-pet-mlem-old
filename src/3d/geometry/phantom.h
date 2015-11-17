@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 #if _OPENMP
 #include <omp.h>
 #else
@@ -115,6 +117,41 @@ template <class RNGClass, typename FType> class Phantom {
 
    private:
     PET3D::Distribution::EllipsoidPointDistribution<F> distribution;
+  };
+
+  template <typename AngularDistribution =
+                PET3D::Distribution::SphericalDistribution<FType>>
+  class RectangularRegion
+      : public AngularDistributionRegion<AngularDistribution> {
+   public:
+    RectangularRegion(F ax, F ay, F az, F intensity)
+        : AngularDistributionRegion<AngularDistribution>(intensity,
+                                                         AngularDistribution()),
+          ax(ax),
+          ay(ay),
+          az(az),
+          dx(-ax / 2, ax / 2),
+          dy(-ay / 2, ay / 2),
+          dz(-az / 2, az / 2) {}
+
+    bool in(const Point& point) const {
+      return (point.x <= ax / 2) && (point.x >= -ax / 2) &&
+             (point.y <= ay / 2) && point.y >= -ay / 2 && (point.z <= az / 2) &&
+             (point.z >= -az / 2);
+    }
+
+    Point random_point(RNG& rng) { return Point(dx(rng), dy(rng), dz(rng)); }
+
+    F volume() const { return ax * ay * az; }
+
+    const F ax;
+    const F ay;
+    const F az;
+
+   private:
+    std::uniform_real_distribution<F> dx;
+    std::uniform_real_distribution<F> dy;
+    std::uniform_real_distribution<F> dz;
   };
 
   /// Region rotated using given 3x3 transformation matrix

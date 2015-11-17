@@ -19,6 +19,8 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
       typename Phantom::template CylinderRegion<AngularDistribution>;
   using EllipsoidRegion =
       typename Phantom::template EllipsoidRegion<AngularDistribution>;
+  using RectangularRegion =
+      typename Phantom::template RectangularRegion<AngularDistribution>;
   using RotatedRegion = typename Phantom::RotatedRegion;
   using TranslatedRegion = typename Phantom::TranslatedRegion;
 
@@ -61,7 +63,11 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
 
   } else if (type == "point") {
     throw("not implemented yet");
-
+  } else if (type == "rectangular") {
+    F ax = j["ax"];
+    F ay = j["ay"];
+    F az = j["az"];
+    return new RectangularRegion(ax, ay, az,1);
   } else if (type == "rotated") {
     auto phantom = create_phantom_region_from_json<RNG, F>(j["phantom"]);
     const json& j_R = j["R"];
@@ -71,7 +77,6 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
       R(i++) = el;
     }
     return new RotatedRegion(phantom, R);
-
   } else if (type == "translated") {
     auto phantom = create_phantom_region_from_json<RNG, F>(j["phantom"]);
     const json& displacement_val = j["displacement"];
@@ -80,7 +85,6 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
     displacement.y = displacement_val[1];
     displacement.z = displacement_val[2];
     return new TranslatedRegion(phantom, displacement);
-
   } else {
     throw("unknown region type: " + type);
     return nullptr;
