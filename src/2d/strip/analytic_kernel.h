@@ -9,7 +9,7 @@ namespace PET2D {
 namespace Strip {
 
 /// Analytic approximation of emission probability
-template <typename FType> class Kernel {
+template <typename FType> class AnalyticKernel {
  public:
   using F = FType;
   using Point = PET2D::Point<F>;
@@ -24,7 +24,7 @@ template <typename FType> class Kernel {
   /// \endcond
 
  public:
-  _ Kernel(F sigma_z, F sigma_dl)
+  _ AnalyticKernel(F sigma_z, F sigma_dl)
       : inv_pow_sigma_z(1 / (sigma_z * sigma_z)),
         inv_pow_sigma_dl(1 / (sigma_dl * sigma_dl)),
         inv_pow_two_pi_sqrt_det_cor_mat(F(1 / (2 * M_PI * M_PI)) *   //

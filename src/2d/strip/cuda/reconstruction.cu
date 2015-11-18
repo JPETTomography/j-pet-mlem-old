@@ -5,7 +5,7 @@
 #include "util/cuda/debug.h"  // catches all CUDA errors
 #include "util/cuda/memory.h"
 #include "../event.h"
-#include "../kernel.h"
+#include "../analytic_kernel.h"
 #include "gpu_events_soa.h"
 #include "reconstruction.h"
 
@@ -44,10 +44,10 @@ void run(Scanner<F, S>& scanner,
 #if __CUDACC__
   dim3 blocks(n_blocks);
   dim3 threads(n_threads_per_block);
-#define reconstruction reconstruction<Kernel><<<blocks, threads>>>
+#define reconstruction reconstruction<AnalyticKernel><<<blocks, threads>>>
 #else
   (void)n_blocks, n_threads_per_block;  // mark used
-#define reconstruction reconstruction<Kernel>
+#define reconstruction reconstruction<AnalyticKernel>
 #endif
 
   cudaSetDevice(device);

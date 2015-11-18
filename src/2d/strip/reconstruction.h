@@ -6,8 +6,6 @@
 #include <iostream>
 
 #include "response.h"
-#include "kernel.h"
-#include "gaussian_kernel.h"
 #include "scanner.h"
 
 #if _OPENMP
@@ -25,8 +23,7 @@ namespace PET2D {
 namespace Strip {
 
 /// 2D strip PET reconstruction
-template <typename FType, typename KernelType = Kernel<FType>>
-class Reconstruction {
+template <typename FType, typename KernelType> class Reconstruction {
  public:
   using F = FType;
   using Kernel = KernelType;

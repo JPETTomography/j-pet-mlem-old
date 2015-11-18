@@ -38,6 +38,7 @@
 #include "options.h"
 #include "response.h"
 #include "reconstruction.h"
+#include "gaussian_kernel.h"
 
 #include "common/types.h"
 

@@ -15,7 +15,13 @@ using namespace PET2D::Strip;
 const double degree = M_PI / 180.0;
 
 template <typename F>
-void check(F ref, F y, F angle, F dy, F dz, F R, const Kernel<F>& kernel) {
+void check(F ref,
+           F y,
+           F angle,
+           F dy,
+           F dz,
+           F R,
+           const AnalyticKernel<F>& kernel) {
   F tangent = std::tan(angle);
   F secant = 1 / std::cos(angle);
   Point<F> delta(dy, dz);
@@ -60,7 +66,7 @@ TEST("2d/strip/kernel/ctor1") {
 TEST("2d/strip/kernel/ctor2") {
 
   Scanner<double, short> scanner(500, 1000, 200, 200, 5, 5, 10, 63);
-  Kernel<double> kernel(scanner.sigma_z, scanner.sigma_dl);
+  AnalyticKernel<double> kernel(scanner.sigma_z, scanner.sigma_dl);
   double R = scanner.radius;
 
 #if DONT_TEST
@@ -75,7 +81,7 @@ TEST("2d/strip/kernel/ctor2") {
 TEST("2d/strip/kernel/bbox") {
 
   Scanner<double, short> scanner(500, 1000, 200, 200, 5, 5, 10, 63);
-  Kernel<double> kernel(scanner.sigma_z, scanner.sigma_dl);
+  AnalyticKernel<double> kernel(scanner.sigma_z, scanner.sigma_dl);
   double R = scanner.radius;
 
   struct {
