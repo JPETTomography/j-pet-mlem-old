@@ -13,6 +13,8 @@ template <class RNG, typename FType>
 typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
     const json& j) {
   using F = FType;
+  using Vector = PET3D::Vector<F>;
+  using Matrix = PET3D::Matrix<F>;
   using AngularDistribution = Distribution::SphericalDistribution<F>;
   using Phantom = PET3D::Phantom<RNG, F>;
   using CylinderRegion =
@@ -73,17 +75,26 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
   } else if (type == "rotated") {
     auto phantom = create_phantom_region_from_json<RNG, F>(j["phantom"]);
     const json& j_R = j["R"];
-    PET3D::Matrix<F> R;
-    int i = 0;
-    for (const auto& el : j_R) {
-      R[i++] = el;
+    const json& j_axis = j["axis"];
+    const json& j_angle = j["angle"];
+    if (j_R.is_array()) {
+      Matrix R;
+      int i = 0;
+      for (const auto& el : j_R) {
+        R[i++] = el;
+      }
+      return new RotatedRegion(phantom, R);
+    } else if (j_axis.is_array() && j_angle.is_number()) {
+      auto R = Matrix::rotate(Vector(j_axis[0], j_axis[1], j_axis[2]), j_angle);
+      return new RotatedRegion(phantom, R);
+    } else {
+      throw("rotated phantom must contain axis & angle pair or R matrix");
     }
-    return new RotatedRegion(phantom, R);
 
   } else if (type == "translated") {
     auto phantom = create_phantom_region_from_json<RNG, F>(j["phantom"]);
     const json& displacement_val = j["displacement"];
-    PET3D::Vector<F> displacement;
+    Vector displacement;
     displacement.x = displacement_val[0];
     displacement.y = displacement_val[1];
     displacement.z = displacement_val[2];
