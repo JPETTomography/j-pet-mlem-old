@@ -8,7 +8,7 @@
 namespace PET2D {
 namespace Strip {
 
-/// Analytic approximation of emission probability
+/// Analytic emission probability approximation at given distance to observed
 template <typename FType> class GaussianKernel {
  public:
   using F = FType;
@@ -32,6 +32,7 @@ template <typename FType> class GaussianKernel {
                                                   inv_pow_sigma_z *  //
                                                   inv_pow_sigma_dl)) {}
 
+  /// Simplified probability (for testing purposes)
   _ F test(const F y,
            const F z,
            const Point pixel_center,
@@ -46,9 +47,9 @@ template <typename FType> class GaussianKernel {
                         compat::pow((pixel_center.x - z) / sigma, 2)));
   }
 
-  /// Probability of registering emission at given distance to emission point.
-  _ F operator()(const F y,             ///< y position of emission
-                 const F tan,           ///< tangent
+  /// Probability of emission at given distance to observed event point
+  _ F operator()(const F y,             ///< y position of observed event
+                 const F tan,           ///< tangent of event angle
                  const F sec,           ///< \f$ \sqrt(1 + tan * tan) \f$
                  const F R,             ///< radius of frame
                  const Vector distance  ///< distance to emission point
@@ -67,22 +68,57 @@ template <typename FType> class GaussianKernel {
     F a_ic_a = multiply_inv_cor_mat(vec_a, vec_a);
     F b_ic_b = multiply_inv_cor_mat(vec_b, vec_b);
 
+#if USE_PRECISE_KERNEL
+    FVec vec_o = { vec_a.p * tan,  //
+                   vec_a.q * tan,  //
+                   -y_position * sec * (1 + 2 * tan * tan) };
+    F b_ic_a = multiply_inv_cor_mat(vec_b, vec_a);
+    F o_ic_b = multiply_inv_cor_mat(vec_o, vec_b);
+    F norm = a_ic_a + 2 * o_ic_b;
+    F exp_arg = -F(0.5) * (b_ic_b - b_ic_a * b_ic_a / norm);
+#else
     F norm = a_ic_a;
+    F exp_arg = -F(0.5) * (b_ic_b);
+#endif
 
     F element_before_exp = inv_pow_two_pi_sqrt_det_cor_mat / compat::sqrt(norm);
-    F exp_arg = -F(0.5) * (b_ic_b);
     F exp = compat::exp(exp_arg);
 
     return element_before_exp * exp;
   }
 
-  _ void ellipse_bb(F tan,
-                    F& sec,   // out
-                    F& A,     // out
-                    F& B,     // out
-                    F& C,     // out
-                    F& bb_y,  // out
-                    F& bb_z   // out
+  /// Probability at given point relative to observed event point
+  _ F operator()(const Point event,  ///< observed event point
+                 const F tan,        ///< tangent of event angle
+                 const F sec,        ///< \f$ \sqrt(1 + tan * tan) \f$
+                 const F R,          ///< radius of frame
+                 const Point p       ///< point of calculation
+                 ) const {
+    auto distance = p - event;
+    return this->operator()(event.y, tan, sec, R, distance);
+  }
+
+  /// Normalized probability at given point relative to observed event point
+  _ F normalized(const Point event,  ///< observed event point
+                 const F tan,        ///< tangent of event angle
+                 const F sec,        ///< \f$ \sqrt(1 + tan * tan) \f$
+                 const F R,          ///< radius of frame
+                 const F L,          ///< length of frame
+                 const Point p       ///< point of calculation
+                 ) const {
+    auto distance = p - event;
+    return this->operator()(event.y, tan, sec, R, distance) /
+           sensitivity(p, R, L);
+  }
+
+  /// Returns \f$ 3 \sigma \f$ ellipse and its bounding box.
+  _ void ellipse_bb(F tan,    ///< tangent of event angle
+                    F& sec,   ///< [out] \f$ \sqrt(1 + tan * tan) \f$
+                    F& A,     ///< [out] \f$ A \$ of ellipse equation
+                    F& B,     ///< [out] \f$ B \$ of ellipse equation
+                    F& C,     ///< [out] \f$ C \$ of ellipse equation
+                    F& bb_y,  ///< [out] ellipse bounding box height
+                    F& bb_z   ///< [out] ellipse bounding box weight
                     ) const {
 
     F tan_sq = tan * tan;
@@ -97,6 +133,7 @@ template <typename FType> class GaussianKernel {
     bb_z = this->bb_z(A, C, B_2);
   }
 
+  /// Test if given point lies inside of given ellipse.
   _ bool in_ellipse(F A, F B, F C, Point ellipse_center, Point p) const {
 
     F dy = p.y - ellipse_center.y;
@@ -105,12 +142,13 @@ template <typename FType> class GaussianKernel {
     return (A * dy * dy) + (B * dy * dz) + (C * dz * dz) <= 9;
   }
 
-  _ static F sensitivity(F x, F y, F R, F L) {
+  /// Return frame sensitivity at given point.
+  _ static F sensitivity(Point p, F R, F L) {
     auto L2 = L / 2;
-    return (compat::atan(compat::min((L2 - x) / (R - y),  //
-                                     (L2 + x) / (R + y))) -
-            compat::atan(compat::max(-(L2 + x) / (R - y),  //
-                                     (-L2 + x) / (R + y)))) /
+    return (compat::atan(compat::min((L2 - p.x) / (R - p.y),  //
+                                     (L2 + p.x) / (R + p.y))) -
+            compat::atan(compat::max(-(L2 + p.x) / (R - p.y),  //
+                                     (-L2 + p.x) / (R + p.y)))) /
            (F)M_PI;
   }
 

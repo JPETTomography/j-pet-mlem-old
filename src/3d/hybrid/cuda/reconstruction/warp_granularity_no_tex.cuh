@@ -67,9 +67,12 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         Voxel voxel(pixel.x, pixel.y, iz);
         int voxel_index = grid.index(voxel);
         auto z = grid.center_z_at(voxel);
-        auto distance = Point2D(z, up) - Point2D(event.right, event.up);
-        auto kernel2d = kernel(event.up, event.tan, event.sec, R, distance) /
-                        Kernel::sensitivity(z, up, R, barrel_length);
+        auto kernel2d = kernel.normalized(Point2D(event.right, event.up),
+                                          event.tan,
+                                          event.sec,
+                                          R,
+                                          barrel_length,
+                                          Point2D(z, up));
         auto kernel_t = pixel_info.weight;
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                       rho[voxel_index];
@@ -106,9 +109,12 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         Voxel voxel(pixel.x, pixel.y, iz);
         int voxel_index = grid.index(voxel);
         auto z = grid.center_z_at(voxel);
-        auto distance = Point2D(z, up) - Point2D(event.right, event.up);
-        auto kernel2d = kernel(event.up, event.tan, event.sec, R, distance) /
-                        Kernel::sensitivity(z, up, R, barrel_length);
+        auto kernel2d = kernel.normalized(Point2D(event.right, event.up),
+                                          event.tan,
+                                          event.sec,
+                                          R,
+                                          barrel_length,
+                                          Point2D(z, up));
         auto kernel_t = pixel_info.weight;
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                       rho[voxel_index];
