@@ -104,6 +104,15 @@ template <typename FType> class GaussianKernel {
     return (A * dy * dy) + (B * dy * dz) + (C * dz * dz) <= 9;
   }
 
+  _ static F sensitivity(F x, F y, F R, F L) {
+    auto L2 = L / 2;
+    return (compat::atan(compat::min((L2 - x) / (R - y),  //
+                                     (L2 + x) / (R + y))) -
+            compat::atan(compat::max(-(L2 + x) / (R - y),  //
+                                     (-L2 + x) / (R + y)))) /
+           (F)M_PI;
+  }
+
  private:
   _ F multiply_inv_cor_mat(const FVec vec_a, const FVec vec_b) const {
     return vec_a.p * inv_pow_sigma_z * vec_b.p +

@@ -30,19 +30,6 @@
 namespace PET3D {
 namespace Hybrid {
 
-template <typename F> std::pair<F, F> theta_min_max(F x, F y, F R, F L) {
-  const F l2 = 0.5 * L;
-  return std::make_pair(
-      compat::atan(compat::max(-(l2 + x) / (R - y), (-l2 + x) / (R + y))),
-      compat::atan(compat::min((l2 - x) / (R - y), (l2 + x) / (R + y))));
-}
-
-template <typename F> F frame_sensitivity(F x, F y, F R, F L) {
-  auto theta = theta_min_max(x, y, R, L);
-
-  return (theta.second - theta.first) / M_PI;
-}
-
 /// 3D hybrid PET reconstruction
 template <class ScannerClass, class Kernel2DClass> class Reconstruction {
  public:
@@ -300,7 +287,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
           auto kernel2d =
               kernel_(
                   event.up, event.tan, event.sec, R, Vector2D(diff.x, diff.y)) /
-              frame_sensitivity(z, up, R, scanner.length);
+              Kernel2D::sensitivity(z, up, R, scanner.length);
           auto kernel_t = pixel_info.weight;
 
           auto weight = kernel2d * kernel_t * rho_[voxel_index];

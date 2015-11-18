@@ -13,13 +13,6 @@ namespace Hybrid {
 namespace GPU {
 namespace Reconstruction {
 
-template <typename F> __device__ F frame_sensitivity(F x, F y, F R, F L) {
-  auto l2 = L / 2;
-  return (compat::atan(compat::min((l2 - x) / (R - y), (l2 + x) / (R + y))) -
-          compat::atan(compat::max(-(l2 + x) / (R - y), (-l2 + x) / (R + y)))) /
-         M_PI;
-}
-
 texture<F, 3, cudaReadModeElementType> tex_rho;
 texture<F, 2, cudaReadModeElementType> tex_sensitivity;
 
@@ -78,8 +71,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         auto kernel2d =
             kernel(
                 event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x)) /
-            frame_sensitivity(z, up, R, barrel_length);
-        ;
+            Kernel::sensitivity(z, up, R, barrel_length);
         auto kernel_t = pixel_info.weight;
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                       tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
@@ -117,7 +109,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         auto kernel2d =
             kernel(
                 event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x)) /
-            frame_sensitivity(z, up, R, barrel_length);
+            Kernel::sensitivity(z, up, R, barrel_length);
         auto kernel_t = pixel_info.weight;
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                       tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
