@@ -21,7 +21,8 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                       F* output_rho,
                                       const F sigma_z,
                                       const F sigma_dl,
-                                      const Grid grid) {
+                                      const Grid grid,
+                                      const F barrel_length) {
 
   const Kernel kernel(sigma_z, sigma_dl);
   const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -58,7 +59,9 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         auto z = grid.center_z_at(voxel);
         auto diff = Point2D(up, z) - Point2D(event.up, event.right);
         auto kernel2d =
-            kernel(event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
+            kernel(
+                event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x)) /
+            Kernel::sensitivity(z, up, R, barrel_length);
         auto kernel_t = pixel_info.weight;
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                       tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
@@ -87,7 +90,9 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         auto z = grid.center_z_at(voxel);
         auto diff = Point2D(up, z) - Point2D(event.up, event.right);
         auto kernel2d =
-            kernel(event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x));
+            kernel(
+                event.up, event.tan, event.sec, R, Vector2D(diff.y, diff.x)) /
+            Kernel::sensitivity(z, up, R, barrel_length);
         auto kernel_t = pixel_info.weight;
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                       tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
