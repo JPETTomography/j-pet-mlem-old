@@ -47,11 +47,13 @@ class nrrd_writer : std::ofstream {
   bool textual;
 };
 
-template <> inline const char* nrrd_writer::out_type<float>() {
-  return "float";
-}
-template <> inline const char* nrrd_writer::out_type<double>() {
-  return "double";
-}
+#define DEFFINE_NRRD_TYPE(T) \
+  template <> inline const char* nrrd_writer::out_type<T>() { return #T; }
+
+DEFFINE_NRRD_TYPE(int)
+DEFFINE_NRRD_TYPE(float)
+DEFFINE_NRRD_TYPE(double)
+
+#undef DEFFINE_NRRD_TYPE
 
 }  // util
