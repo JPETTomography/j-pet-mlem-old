@@ -60,21 +60,21 @@ template <typename FType> class Matrix {
     }
   }
 
-  F& operator()(int i) { return rep_[i]; }
-  F operator()(int i) const { return rep_[i]; }
+  F& operator[](int i) { return rep_[i]; }
+  F operator[](int i) const { return rep_[i]; }
 
   F& operator()(int row, int col) { return rep_[row * 3 + col]; }
   F operator()(int row, int col) const { return rep_[row * 3 + col]; }
 
   Matrix& operator+=(const Matrix& rhs) {
     for (int i = 0; i < 9; i++)
-      rep_[i] += rhs(i);
+      rep_[i] += rhs[i];
     return *this;
   }
 
   Matrix& operator-=(const Matrix& rhs) {
     for (int i = 0; i < 9; i++)
-      rep_[i] -= rhs(i);
+      rep_[i] -= rhs[i];
     return *this;
   }
 

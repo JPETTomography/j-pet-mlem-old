@@ -74,7 +74,7 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
     PET3D::Matrix<F> R;
     int i = 0;
     for (const auto& el : j_R) {
-      R(i++) = el;
+      R[i++] = el;
     }
     return new RotatedRegion(phantom, R);
   } else if (type == "translated") {

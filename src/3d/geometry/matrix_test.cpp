@@ -27,7 +27,7 @@ TEST("3d/geometry/matrix/initialisation") {
 
   Matrix numbers{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
   for (int i = 0; i < 9; i++)
-    REQUIRE(numbers(i) == Approx(i + 1).epsilon(1e-7));
+    REQUIRE(numbers[i] == Approx(i + 1).epsilon(1e-7));
 }
 
 TEST("3d/geometry/matrix/vector_multiplication") {
@@ -50,14 +50,14 @@ TEST("3d/geometry/matrix/arithmetic_assignment_operators") {
     Matrix mat{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     mat += rhs;
     for (int i = 0; i < 9; i++) {
-      REQUIRE(mat(i) == Approx(2 * (i + 1)).epsilon(1e-7));
+      REQUIRE(mat[i] == Approx(2 * (i + 1)).epsilon(1e-7));
     }
   }
   {
     Matrix mat{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     mat -= rhs;
     for (int i = 0; i < 9; i++) {
-      REQUIRE(mat(i) == Approx(0).epsilon(1e-7));
+      REQUIRE(mat[i] == Approx(0).epsilon(1e-7));
     }
   }
 }
@@ -70,14 +70,14 @@ TEST("3d/geometry/matrix/arithmetic_operators") {
 
     mat = lhs + rhs;
     for (int i = 0; i < 9; i++) {
-      REQUIRE(mat(i) == Approx(2 * (i + 1)).epsilon(1e-7));
+      REQUIRE(mat[i] == Approx(2 * (i + 1)).epsilon(1e-7));
     }
   }
   {
     Matrix mat;
     mat = lhs - rhs;
     for (int i = 0; i < 9; i++) {
-      REQUIRE(mat(i) == Approx(0).epsilon(1e-7));
+      REQUIRE(mat[i] == Approx(0).epsilon(1e-7));
     }
   }
 }
@@ -89,14 +89,14 @@ TEST("3d/geometry/matrix/scalar_multiplication") {
 
     mat = rhs * F(3);
     for (int i = 0; i < 9; i++) {
-      REQUIRE(mat(i) == Approx(3 * (i + 1)).epsilon(1e-7));
+      REQUIRE(mat[i] == Approx(3 * (i + 1)).epsilon(1e-7));
     }
   }
   {
     Matrix mat;
     mat = F(3) * rhs;
     for (int i = 0; i < 9; i++) {
-      REQUIRE(mat(i) == Approx(3 * (i + 1)).epsilon(1e-7));
+      REQUIRE(mat[i] == Approx(3 * (i + 1)).epsilon(1e-7));
     }
   }
 }
