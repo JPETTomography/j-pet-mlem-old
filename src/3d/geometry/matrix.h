@@ -33,6 +33,17 @@ template <typename FType> class Matrix {
     return mat;
   }
 
+  static Matrix rotate(const Vector& u, F angle) {
+    auto s = compat::sin(angle);
+    auto c = compat::cos(angle);
+    auto t = 1 - c;
+    // clang-format off
+    return Matrix{ u.x*u.x*t + c,     u.x*u.y*t - u.z*s,  u.x*u.z*t + u.y*s,
+                   u.y*u.x*t + u.z*s, u.y*u.y*t + c,      u.y*u.z*t - u.x*s,
+                   u.z*u.x*t - u.y*s, u.z*u.y*t + u.x*s,  u.z*u.z*t + c      };
+    // clang-format on
+  }
+
   Matrix() : rep_() {}
 
   Matrix(std::initializer_list<F> elements) {

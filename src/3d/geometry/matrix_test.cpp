@@ -6,6 +6,7 @@
 #include "common/types.h"
 
 using Matrix = PET3D::Matrix<F>;
+using Vector = PET3D::Vector<Matrix::F>;
 
 TEST("3d/geometry/matrix/initialisation") {
   Matrix mat;
@@ -30,8 +31,6 @@ TEST("3d/geometry/matrix/initialisation") {
 }
 
 TEST("3d/geometry/matrix/vector_multiplication") {
-  using Vector = PET3D::Vector<Matrix::F>;
-
   Matrix mat{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
   Vector vec = { 1, 2, 3 };
   CHECK(vec.x == 1.0_e7);
@@ -99,5 +98,24 @@ TEST("3d/geometry/matrix/scalar_multiplication") {
     for (int i = 0; i < 9; i++) {
       REQUIRE(mat(i) == Approx(3 * (i + 1)).epsilon(1e-7));
     }
+  }
+}
+
+TEST("3d/geometry/matrix/rotation") {
+  {
+    auto rotated = Matrix::rotate(Vector(1, 0, 0), 90._deg) * Vector(0, 1, 0);
+    REQUIRE((rotated - Vector(0, 0, 1)).length() == 0._e7);
+  }
+  {
+    auto rotated = Matrix::rotate(Vector(1, 0, 0), 180._deg) * Vector(0, 1, 0);
+    REQUIRE((rotated - Vector(0, -1, 0)).length() == 0._e7);
+  }
+  {
+    auto rotated = Matrix::rotate(Vector(0, 0, 1), 90._deg) * Vector(0, 1, 0);
+    REQUIRE((rotated - Vector(-1, 0, 0)).length() == 0._e7);
+  }
+  {
+    auto rotated = Matrix::rotate(Vector(0, 0, 1), 180._deg) * Vector(0, 1, 0);
+    REQUIRE((rotated - Vector(0, -1, 0)).length() == 0._e7);
   }
 }
