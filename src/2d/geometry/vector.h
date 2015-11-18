@@ -136,3 +136,13 @@ template <typename FType> struct StringMaker<PET2D::Vector<FType>> {
 };
 }
 #endif
+
+/// Convert degress to radians.
+constexpr long double operator"" _deg(long double deg) {
+  return deg * M_PI / 180;
+}
+
+/// Convert radians to degrees.
+constexpr long double operator"" _rad(long double rad) {
+  return rad * 180 / M_PI;
+}
