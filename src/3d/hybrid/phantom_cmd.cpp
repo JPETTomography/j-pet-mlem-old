@@ -27,6 +27,7 @@
 #include "3d/geometry/phantom_builder.h"
 #include "3d/geometry/voxel.h"
 #include "3d/geometry/voxel_map.h"
+#include "3d/geometry/voxel_grid.h"
 
 #include "scanner.h"
 #include "options.h"
@@ -48,6 +49,8 @@ using Voxel = PET3D::Voxel<S>;
 using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner>;
 using Event = MonteCarlo::Event;
 using FullResponse = MonteCarlo::FullResponse;
+using Image = PET3D::VoxelMap<Voxel, Hit>;
+using Grid = PET3D::VoxelGrid<F, S>;
 
 // FIXME: I don't know what is the purpose of this, but these are unused, so
 // either should be removed or applied to the code.
@@ -148,7 +151,59 @@ int main(int argc, char* argv[]) {
 
   util::progress progress(verbose, n_emissions, 1000000);
   if (cl.exist("n-pixels")) {
-    // FIXME: implement me! (emit images too)
+    auto pixel_size = cl.get<double>("s-pixel");
+    auto fov_radius = cl.get<double>("fov-radius");
+    auto z_left = cl.get<double>("z-left");
+    auto n_planes = cl.get<int>("n-planes");
+    S n_columns, n_rows;
+    if (!cl.exist("n-pixels")) {
+      n_columns = 2 * S(std::ceil(fov_radius / pixel_size));
+    } else {
+      n_columns = cl.get<int>("n-pixels");
+    }
+    n_rows = n_columns;
+    Grid grid(Grid::PixelGrid(n_columns, n_rows, pixel_size), z_left, n_planes);
+    if (verbose) {
+      std::cerr << "Image output:" << std::endl;
+      std::cerr << "   voxel grid = "  // grid size:
+                << grid.pixel_grid.n_columns << " x " << grid.pixel_grid.n_rows
+                << " x " << grid.n_planes << " / " << grid.pixel_grid.pixel_size
+                << std::endl;
+    }
+    Image img_emitted(
+        grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, grid.n_planes, 0);
+    Image img_detected(
+        grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, grid.n_planes, 0);
+    monte_carlo(
+        rng,
+        scintillator,
+        n_emissions,
+        [&](const Event& event) { ++img_emitted[grid.voxel_at(event.origin)]; },
+        [&](const Event& event, const FullResponse& full_response) {
+          ++img_detected[grid.voxel_at(event.origin)];
+          out_exact_events << event << "\n";
+          out_full_response << full_response << "\n";
+          out_wo_error << scanner.response_wo_error(full_response) << "\n";
+          out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+        },
+        progress,
+        only_detected);
+
+    // save images
+    {
+      auto fn = output_base_name + "_emitted";
+      util::obstream bin(fn + ".raw");
+      util::nrrd_writer nrrd(fn + ".nrrd", fn + ".raw");
+      bin << img_emitted;
+      nrrd << img_emitted;
+    }
+    {
+      auto fn = output_base_name + "_detected";
+      util::obstream bin(fn + ".raw");
+      util::nrrd_writer nrrd(fn + ".nrrd", fn + ".raw");
+      bin << img_detected;
+      nrrd << img_detected;
+    }
   } else {
     monte_carlo(
         rng,
