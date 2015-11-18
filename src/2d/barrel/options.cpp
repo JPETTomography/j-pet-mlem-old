@@ -213,7 +213,7 @@ void add_lm_reconstruction_options(cmdline::parser& cl) {
   add_scanner_options(cl);
   add_model_options(cl);
 
-  cl.add<double>("length", 0, "length of the detector", false, 0.3);
+  cl.add<double>("length", 'L', "length of the detector", false, 2);
   cl.add<cmdline::path>("geometry", 0, "geometry information", true);
   cl.add<cmdline::path>("system", 0, "system matrix file", false);
   cl.add<cmdline::path>("output", 'o', "output reconstruction", false);
