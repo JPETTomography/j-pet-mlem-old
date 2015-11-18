@@ -64,8 +64,8 @@ template <typename FType, typename SType> class PixelGrid {
   }
 
   _ bool contains(Pixel pixel) const {
-    return pixel.x >= 0 && pixel.y >= 0 && pixel.x < n_columns &&
-           pixel.y < n_rows;
+    return pixel.x >= 0 && pixel.x < n_columns &&  //
+           pixel.y >= 0 && pixel.y < n_rows;       //
   }
 
 #if !__CUDACC__

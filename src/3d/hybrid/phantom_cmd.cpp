@@ -178,9 +178,17 @@ int main(int argc, char* argv[]) {
         rng,
         scintillator,
         n_emissions,
-        [&](const Event& event) { ++img_emitted[grid.voxel_at(event.origin)]; },
+        [&](const Event& event) {
+          auto voxel = grid.voxel_at(event.origin);
+          if (grid.contains(voxel)) {
+            ++img_emitted[voxel];
+          }
+        },
         [&](const Event& event, const FullResponse& full_response) {
-          ++img_detected[grid.voxel_at(event.origin)];
+          auto voxel = grid.voxel_at(event.origin);
+          if (grid.contains(voxel)) {
+            ++img_detected[voxel];
+          }
           out_exact_events << event << "\n";
           out_full_response << full_response << "\n";
           out_wo_error << scanner.response_wo_error(full_response) << "\n";

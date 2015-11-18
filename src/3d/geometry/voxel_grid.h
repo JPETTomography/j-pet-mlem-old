@@ -58,6 +58,12 @@ template <typename FType, typename SType> class VoxelGrid {
     // return pixel_grid.index(column, row) * n_planes + plane;
   }
 
+  _ bool contains(Voxel pixel) const {
+    return pixel.x >= 0 && pixel.x < pixel_grid.n_columns &&  //
+           pixel.y >= 0 && pixel.y < pixel_grid.n_rows &&     //
+           pixel.z >= 0 && pixel.z < n_planes;                //
+  }
+
   const PixelGrid pixel_grid;
   const F z_left;
   const S n_planes;
