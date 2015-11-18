@@ -201,15 +201,16 @@ TEST("strip/gauss_kernel") {
 
   Vector3D<F> diag(1 / (sz * sz), 1 / (sz * sz), 1 / (sdl * sdl));
 
-  std::cout << theta_integral(
+  std::cout << " theta = "
+            << theta_integral(
                    diag, FrameEvent<F>(Event<F>(tx, ty, tangle), R), x, y, R, L)
-            << " ";
-  std::cout << kernel(ty,
-                      std::tan(tangle),
-                      1 / std::cos(tangle),
-                      R,
-                      Vector(x - tx, y - ty))
-            << "\n";
+            << std::endl;
+  std::cout << "kernel = " << kernel(ty,
+                                     std::tan(tangle),
+                                     1 / std::cos(tangle),
+                                     R,
+                                     Vector(x - tx, y - ty))
+            << std::endl;
 }
 
 TEST("strip/gauss_kernel/integral") {
