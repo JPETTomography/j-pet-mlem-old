@@ -138,7 +138,8 @@ void run(const SimpleGeometry& geometry,
 #endif
                      sigma_z,
                      sigma_dl,
-                     grid, barrel_length);
+                     grid,
+                     barrel_length);
       cudaThreadSynchronize();
 
       progress(ib * n_iterations_in_block + it, true);

@@ -297,8 +297,10 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
           int voxel_index = grid.index(voxel);
 
           auto diff = Point2D(z, up) - Point2D(event.right, event.up);
-          auto kernel2d = kernel_(
-              event.up, event.tan, event.sec, R, Vector2D(diff.x, diff.y))/frame_sensitivity(z,up,R,scanner.length);
+          auto kernel2d =
+              kernel_(
+                  event.up, event.tan, event.sec, R, Vector2D(diff.x, diff.y)) /
+              frame_sensitivity(z, up, R, scanner.length);
           auto kernel_t = pixel_info.weight;
 
           auto weight = kernel2d * kernel_t * rho_[voxel_index];
@@ -430,8 +432,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   Map2D sensitivity_;
 #endif  // !__CUDACC__
 };
-
-
 
 }  // Hybrid
 }  // PET3D

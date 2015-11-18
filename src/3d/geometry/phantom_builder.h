@@ -67,7 +67,7 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
     F ax = j["ax"];
     F ay = j["ay"];
     F az = j["az"];
-    return new RectangularRegion(ax, ay, az,1);
+    return new RectangularRegion(ax, ay, az, 1);
   } else if (type == "rotated") {
     auto phantom = create_phantom_region_from_json<RNG, F>(j["phantom"]);
     const json& j_R = j["R"];
