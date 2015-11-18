@@ -3,7 +3,7 @@
 #include "util/test.h"
 
 #include "common/types.h"
-#include "2d/strip/gausian_kernel.h"
+#include "2d/strip/gaussian_kernel.h"
 
 using Kernel = PET2D::Strip::GaussianKernel<F>;
 using Vector = PET2D::Vector<F>;
