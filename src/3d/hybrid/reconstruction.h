@@ -33,8 +33,8 @@ namespace Hybrid {
 template <typename F> std::pair<F, F> theta_min_max(F x, F y, F R, F L) {
   const F l2 = 0.5 * L;
   return std::make_pair(
-      std::atan(std::max(-(l2 + x) / (R - y), (-l2 + x) / (R + y))),
-      std::atan(std::min((l2 - x) / (R - y), (l2 + x) / (R + y))));
+      compat::atan(compat::max(-(l2 + x) / (R - y), (-l2 + x) / (R + y))),
+      compat::atan(compat::min((l2 - x) / (R - y), (l2 + x) / (R + y))));
 }
 
 template <typename F> F frame_sensitivity(F x, F y, F R, F L) {

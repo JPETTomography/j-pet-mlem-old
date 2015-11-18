@@ -192,6 +192,7 @@ int main(int argc, char* argv[]) {
         reconstruction.scanner.sigma_z(),
         reconstruction.scanner.sigma_dl(),
         reconstruction.grid,
+        scanner.length,
         n_blocks,
         n_iterations_in_block,
         [&](int iteration,

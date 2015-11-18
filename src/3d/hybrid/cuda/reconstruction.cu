@@ -55,6 +55,7 @@ void run(const SimpleGeometry& geometry,
          F sigma_z,
          F sigma_dl,
          const Grid& grid,
+         const F barrel_length,
          int n_iteration_blocks,
          int n_iterations_in_block,
          util::delegate<void(int iteration, const Output& output)> output,
@@ -137,7 +138,7 @@ void run(const SimpleGeometry& geometry,
 #endif
                      sigma_z,
                      sigma_dl,
-                     grid);
+                     grid, barrel_length);
       cudaThreadSynchronize();
 
       progress(ib * n_iterations_in_block + it, true);
