@@ -29,8 +29,7 @@ using Scintillator = Common::ScintillatorAccept<F>;
 using Point = PET3D::Point<F>;
 using Vector = PET3D::Vector<F>;
 using Voxel = PET3D::Voxel<S>;
-using Image = PET3D::VoxelMap<Voxel, F>;
-using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner, Image>;
+using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner>;
 using Event = MonteCarlo::Event;
 using FullResponse = MonteCarlo::FullResponse;
 

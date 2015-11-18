@@ -62,8 +62,8 @@ using RNG = util::random::tausworthe;
 using Scanner = PET2D::Strip::Scanner<F, S>;
 using Phantom = PET2D::Phantom<RNG, F>;
 using Ellipse = PET2D::Ellipse<F>;
-using Image = PET2D::PixelMap<PET2D::Pixel<S>, int>;
-using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner, Image>;
+using Image = PET2D::PixelMap<PET2D::Pixel<S>, Hit>;
+using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner>;
 using Event = MonteCarlo::Event;
 using FullResponse = MonteCarlo::FullResponse;
 

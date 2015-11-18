@@ -10,12 +10,10 @@ namespace Common {
 /// This is wrapper class that executes Monte-Carlo on abstract \c Phantom that
 /// has to implement \c gen_event and \c Detector that has to implement \c
 /// exact_detect method.
-template <class PhantomType, class DetectorType, class ImageType>
-class PhantomMonteCarlo {
+template <class PhantomType, class DetectorType> class PhantomMonteCarlo {
  public:
   using Phantom = PhantomType;
   using Detector = DetectorType;
-  using Image = ImageType;
   using F = typename Phantom::F;
   using Event = typename Phantom::Event;
   using RNG = typename Phantom::RNG;

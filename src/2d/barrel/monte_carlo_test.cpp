@@ -19,9 +19,7 @@ using Scintillator = Common::ScintillatorAccept<F>;
 using Pixel = PET2D::Pixel<S>;
 using Point = PET2D::Point<F>;
 using Event = PET2D::Event<F>;
-using Image = PET2D::PixelMap<Pixel, Hit>;
-
-using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner, Image>;
+using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner>;
 
 namespace {
 F strip_width = 0.005;
