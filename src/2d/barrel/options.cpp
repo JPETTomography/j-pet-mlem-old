@@ -227,7 +227,9 @@ void add_lm_reconstruction_options(cmdline::parser& cl) {
   Common::add_openmp_options(cl);
 }
 
-void calculate_scanner_options(cmdline::parser& cl, int argc) {
+void calculate_scanner_options(cmdline::parser& cl,
+                               int argc,
+                               std::stringstream& assumed) {
   // check options
   if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
       !cl.exist("n-detectors")) {
@@ -259,8 +261,6 @@ void calculate_scanner_options(cmdline::parser& cl, int argc) {
   auto& d_detector = cl.get<double>("d-detector");
   auto& shape = cl.get<std::string>("shape");
   auto& fov_radius = cl.get<double>("fov-radius");
-
-  std::stringstream assumed;
 
   // 1. Automatic radius size
 
@@ -340,7 +340,11 @@ void calculate_scanner_options(cmdline::parser& cl, int argc) {
     }
     assumed << "--n-detectors=" << n_detectors << std::endl;
   }
+}
 
+void calculate_scanner_options(cmdline::parser& cl, int argc) {
+  std::stringstream assumed;
+  calculate_scanner_options(cl, argc, assumed);
   if (cl.exist("verbose") && assumed.str().size()) {
     std::cerr << "assumed:" << std::endl << assumed.str();
   }

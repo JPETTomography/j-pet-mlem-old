@@ -35,6 +35,9 @@ void add_sensitivity_options(cmdline::parser& parser);
 /// Calculates all empty values from existing other parameters.
 void calculate_scanner_options(cmdline::parser& parser, int argc = 1);
 
+/// Calculates all empty values from existing other parameters.
+void calculate_resonstruction_options(cmdline::parser& cl, int argc = 1);
+
 /// Provides initialization list for creating detector.
 #define __PET3D_LONGITUDINAL(...) __VA_ARGS__  // just pass-through
 #define PET3D_LONGITUDINAL_SCANNER_CL(cl, ftype)               \

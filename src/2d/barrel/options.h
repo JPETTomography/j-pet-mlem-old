@@ -74,6 +74,11 @@ void add_lm_reconstruction_options(cmdline::parser& parser);
 /// Calculates all empty values from existing other parameters.
 void calculate_scanner_options(cmdline::parser& parser, int argc = 0);
 
+/// Calculates all empty values from existing other parameters. (2nd version)
+void calculate_scanner_options(cmdline::parser& cl,
+                               int argc,
+                               std::stringstream& assumed);
+
 /// Provides initialization list for creating detector.
 #define __PET2D_BARREL(...) __VA_ARGS__  // just pass-through
 #define PET2D_BARREL_SCANNER_CL(cl, ftype)               \

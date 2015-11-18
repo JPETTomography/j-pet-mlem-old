@@ -62,12 +62,15 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser cl;
   PET3D::Hybrid::add_reconstruction_options(cl);
-  cl.add<float>("z-left", 0, "left extent in z direction");
-  cl.add<int>("n-planes", 0, "number of voxels in z direction");
-  cl.add<cmdline::path>("system", 0, "system matrix file", false);
-  cl.add("sens-to-one", 0, "sets sensitivity to one", false);
   cl.parse_check(argc, argv);
-  PET3D::Hybrid::calculate_scanner_options(cl, argc);
+
+  util::ibstream in_geometry(cl.get<std::string>("geometry"));
+  Geometry geometry(in_geometry);
+  if (!cl.exist("n-pixels")) {
+    cl.get<int>("n-pixels") =
+        std::max(geometry.grid.n_columns, geometry.grid.n_rows);
+  }
+  PET3D::Hybrid::calculate_resonstruction_options(cl, argc);
 
   auto verbose = cl.count("verbose");
 
@@ -82,9 +85,6 @@ int main(int argc, char* argv[]) {
     omp_set_num_threads(cl.get<int>("n-threads"));
   }
 #endif
-
-  util::ibstream in_geometry(cl.get<std::string>("geometry"));
-  Geometry geometry(in_geometry);
 
   if (geometry.n_detectors != (int)scanner.barrel.size()) {
     throw("n_detectors mismatch");
@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
   }
 
   Reconstruction reconstruction(
-      scanner, geometry, cl.get<float>("z-left"), cl.get<int>("n-planes"));
+      scanner, geometry, cl.get<double>("z-left"), cl.get<int>("n-planes"));
 
   if (verbose) {
     std::cerr << "   voxel grid = "  // grid size:
