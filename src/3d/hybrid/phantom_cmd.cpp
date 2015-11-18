@@ -192,15 +192,15 @@ int main(int argc, char* argv[]) {
     // save images
     if (output_base_name.length()) {
       auto fn = output_base_name + "_emitted";
-      util::obstream bin(fn + ".raw");
-      util::nrrd_writer nrrd(fn + ".nrrd", fn + ".raw");
+      util::obstream bin(fn);
+      util::nrrd_writer nrrd(fn + ".nrrd", fn);
       bin << img_emitted;
       nrrd << img_emitted;
     }
     if (output_base_name.length()) {
       auto fn = output_base_name + "_detected";
-      util::obstream bin(fn + ".raw");
-      util::nrrd_writer nrrd(fn + ".nrrd", fn + ".raw");
+      util::obstream bin(fn);
+      util::nrrd_writer nrrd(fn + ".nrrd", fn);
       bin << img_detected;
       nrrd << img_detected;
     }
