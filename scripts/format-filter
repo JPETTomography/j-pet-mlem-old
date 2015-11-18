@@ -1,3 +1,5 @@
 #!/bin/bash
 dir=$(>/dev/null 2>&1 cd $(dirname $0)/..; pwd)
+[ -z "$CLANG_FORMAT" -a -z "`which clang-format`" ] && \
+	CLANG_FORMAT=/usr/local/bin/clang-format
 exec ${CLANG_FORMAT-clang-format} -style=file -assume-filename="$dir"/format.cpp
