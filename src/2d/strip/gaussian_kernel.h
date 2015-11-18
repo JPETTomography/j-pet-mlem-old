@@ -15,7 +15,7 @@ template <typename FType> class GaussianKernel {
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
 
- private:
+ protected:
   const F inv_pow_sigma_z;
   const F inv_pow_sigma_dl;
   const F inv_pow_two_pi_sqrt_det_cor_mat;
@@ -60,7 +60,7 @@ template <typename FType> class GaussianKernel {
     F y_position = distance.y + y;
     FVec vec_a = { -(y_position - R) * sec_sq,
                    -(y_position + R) * sec_sq,
-                   -F(2.0) * y_position * sec * tan };
+                   -2 * y_position * sec * tan };
 
     F vec_b_pq = distance.x - distance.y * tan;
     FVec vec_b = { vec_b_pq, vec_b_pq, -2 * distance.y * sec };
@@ -68,20 +68,10 @@ template <typename FType> class GaussianKernel {
     F a_ic_a = multiply_inv_cor_mat(vec_a, vec_a);
     F b_ic_b = multiply_inv_cor_mat(vec_b, vec_b);
 
-#if USE_PRECISE_KERNEL
-    FVec vec_o = { vec_a.p * tan,  //
-                   vec_a.q * tan,  //
-                   -y_position * sec * (1 + 2 * tan * tan) };
-    F b_ic_a = multiply_inv_cor_mat(vec_b, vec_a);
-    F o_ic_b = multiply_inv_cor_mat(vec_o, vec_b);
-    F norm = a_ic_a + 2 * o_ic_b;
-    F exp_arg = -F(0.5) * (b_ic_b - b_ic_a * b_ic_a / norm);
-#else
     F norm = a_ic_a;
-    F exp_arg = -F(0.5) * (b_ic_b);
-#endif
 
     F element_before_exp = inv_pow_two_pi_sqrt_det_cor_mat / compat::sqrt(norm);
+    F exp_arg = -F(0.5) * (b_ic_b);
     F exp = compat::exp(exp_arg);
 
     return element_before_exp * exp;
@@ -152,7 +142,7 @@ template <typename FType> class GaussianKernel {
            (F)M_PI;
   }
 
- private:
+ protected:
   _ F multiply_inv_cor_mat(const FVec vec_a, const FVec vec_b) const {
     return vec_a.p * inv_pow_sigma_z * vec_b.p +
            vec_a.q * inv_pow_sigma_z * vec_b.q +
