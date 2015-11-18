@@ -46,24 +46,25 @@ template <typename FType> class GaussianKernel {
                         compat::pow((pixel_center.x - z) / sigma, 2)));
   }
 
-  _ F operator()(const F y,
-                 const F tan,
-                 const F sec,
-                 const F R,
-                 const Vector pixel_center) const {
+  /// Probability of registering emission at given distance to emission point.
+  _ F operator()(const F y,             ///< y position of emission
+                 const F tan,           ///< tangent
+                 const F sec,           ///< \f$ \sqrt(1 + tan * tan) \f$
+                 const F R,             ///< radius of frame
+                 const Vector distance  ///< distance to emission point
+                 ) const {
 
     F sec_sq = sec * sec;
 
-    F pixel_center_y_p_y = pixel_center.y + y;
-    FVec vec_a = { -(pixel_center_y_p_y - R) * sec_sq,
-                   -(pixel_center_y_p_y + R) * sec_sq,
-                   -F(2.0) * pixel_center_y_p_y * sec * tan };
+    F y_position = distance.y + y;
+    FVec vec_a = { -(y_position - R) * sec_sq,
+                   -(y_position + R) * sec_sq,
+                   -F(2.0) * y_position * sec * tan };
 
-    F vec_b_pq = pixel_center.x - pixel_center.y * tan;
-    FVec vec_b = { vec_b_pq, vec_b_pq, -2 * pixel_center.y * sec };
+    F vec_b_pq = distance.x - distance.y * tan;
+    FVec vec_b = { vec_b_pq, vec_b_pq, -2 * distance.y * sec };
 
     F a_ic_a = multiply_inv_cor_mat(vec_a, vec_a);
-
     F b_ic_b = multiply_inv_cor_mat(vec_b, vec_b);
 
     F norm = a_ic_a;
