@@ -3,7 +3,7 @@
 #include "common/types.h"
 
 #include "2d/strip/gaussian_kernel.h"
-#include "2d/strip/kernel.h"
+#include "2d/strip/analytic_kernel.h"
 #include "common/types.h"
 #include "2d/geometry/vector.h"
 

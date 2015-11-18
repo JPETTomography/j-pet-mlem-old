@@ -7,7 +7,7 @@
 #include "util/svg_ostream.h"
 
 #include "reconstruction.h"
-#include "kernel.h"
+#include "analytic_kernel.h"
 
 using namespace PET2D;
 using namespace PET2D::Strip;
