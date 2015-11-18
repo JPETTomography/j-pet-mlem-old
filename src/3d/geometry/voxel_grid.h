@@ -16,6 +16,7 @@ template <typename FType, typename SType> class VoxelGrid {
   using PixelGrid = PET2D::PixelGrid<F, S>;
   using Pixel = typename PixelGrid::Pixel;
   using Point = PET3D::Point<F>;
+  using Vector = PET3D::Vector<F>;
   using Voxel = PET3D::Voxel<S>;
 
   _ VoxelGrid(const PixelGrid& pixel_grid, F z_left, S n_planes)
@@ -38,6 +39,16 @@ template <typename FType, typename SType> class VoxelGrid {
 
   _ F center_z_at(Voxel voxel) const {
     return (voxel.z + F(0.5)) * pixel_grid.pixel_size + z_left;
+  }
+
+  _ Voxel voxel_at(Point p) const {
+    auto lower_left =
+        Point(pixel_grid.lower_left.x, pixel_grid.lower_left.y, z_left);
+    auto v = p - lower_left;
+    S column = static_cast<S>(compat::floor(v.x / pixel_grid.pixel_size));
+    S row = static_cast<S>(compat::floor(v.y / pixel_grid.pixel_size));
+    S plane = static_cast<S>(compat::floor(v.z / pixel_grid.pixel_size));
+    return Voxel(column, row, plane);
   }
 
   _ int index(Voxel voxel) const {
