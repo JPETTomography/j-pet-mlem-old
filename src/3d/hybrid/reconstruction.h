@@ -283,11 +283,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
           auto z = grid.center_z_at(voxel);
           int voxel_index = grid.index(voxel);
 
-          auto diff = Point2D(z, up) - Point2D(event.right, event.up);
-          auto kernel2d =
-              kernel_(
-                  event.up, event.tan, event.sec, R, Vector2D(diff.x, diff.y)) /
-              Kernel2D::sensitivity(z, up, R, scanner.length);
+          auto distance = Point2D(z, up) - Point2D(event.up, event.right);
+          auto kernel2d = kernel_(event.up, event.tan, event.sec, R, distance) /
+                          Kernel2D::sensitivity(z, up, R, scanner.length);
           auto kernel_t = pixel_info.weight;
 
           auto weight = kernel2d * kernel_t * rho_[voxel_index];
