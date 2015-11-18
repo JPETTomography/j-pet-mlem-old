@@ -110,11 +110,7 @@ int main(int argc, char* argv[]) {
               << "rows: " << n_rows << std::endl;
   }
 
-  PET2D::PixelGrid<F, S> grid(
-      n_columns,
-      n_rows,
-      pixel_size,
-      Point(-pixel_size * n_columns / 2, -pixel_size * n_rows / 2));
+  PET2D::PixelGrid<F, S> grid(n_columns, n_rows, pixel_size);
 
   for (int i = 0; i < (int)scanner.size(); i++) {
     auto detector = scanner[i];

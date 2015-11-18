@@ -30,6 +30,13 @@ template <typename FType, typename SType> class PixelGrid {
         lower_left_center(lower_left + Vector(pixel_size / 2, pixel_size / 2)),
         n_pixels(n_columns * n_rows) {}
 
+  _ PixelGrid(S n_columns, S n_rows, F pixel_size)
+      : PixelGrid(
+            n_columns,
+            n_rows,
+            pixel_size,
+            Point(-pixel_size * n_columns / 2, -pixel_size * n_rows / 2)) {}
+
   const S n_columns;  // n_x
   const S n_rows;     // n_y
   const F pixel_size;
