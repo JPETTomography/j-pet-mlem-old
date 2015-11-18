@@ -62,6 +62,11 @@ template <> inline std::string readable_typename<long>() { return "seed"; }
 template <> inline std::string readable_typename<double>() { return "float"; }
 template <> inline std::string readable_typename<path>() { return "file"; }
 
+template <> inline std::string default_value<int>(int def) {
+  if (def == 0)
+    return "auto";
+  return detail::lexical_cast<std::string>(def);
+}
 template <> inline std::string default_value<double>(double def) {
   if (def == 0)
     return "auto";
