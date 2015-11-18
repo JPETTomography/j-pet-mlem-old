@@ -229,7 +229,8 @@ void add_lm_reconstruction_options(cmdline::parser& cl) {
 
 void calculate_scanner_options(cmdline::parser& cl,
                                int argc,
-                               std::stringstream& assumed) {
+                               std::stringstream& assumed,
+                               bool calculate_pixel) {
   // check options
   if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
       !cl.exist("n-detectors")) {
@@ -284,7 +285,7 @@ void calculate_scanner_options(cmdline::parser& cl,
 
   // 3. Automatic pixel size
 
-  if (!cl.exist("s-pixel")) {
+  if (calculate_pixel && !cl.exist("s-pixel")) {
     s_pixel = 2 * fov_radius / n_pixels;
     assumed << "--s-pixel=" << s_pixel << std::endl;
   }

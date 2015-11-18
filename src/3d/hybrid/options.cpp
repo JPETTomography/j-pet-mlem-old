@@ -18,6 +18,10 @@ void add_matrix_options(cmdline::parser& cl) {
 }
 
 void add_phantom_options(cmdline::parser& cl) {
+  cl.add<int>("n-planes", 0, "number of voxels in z direction", false, 0);
+  cl.add<double>("z-left", 0, "left extent in z direction", false, 0);
+  cl.add<double>("length", 0, "length of the detector", false, 0.3);
+  cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
   PET2D::Barrel::add_phantom_options(cl);
 }
 
@@ -57,27 +61,40 @@ void calculate_scanner_options(cmdline::parser& cl, int argc) {
   PET2D::Barrel::calculate_scanner_options(cl, argc);
 }
 
-void calculate_resonstruction_options(cmdline::parser& cl, int argc) {
+static void calculate_resonstruction_or_phantom_options(cmdline::parser& cl,
+                                                        int argc,
+                                                        bool phantom) {
   std::stringstream assumed;
-  PET2D::Barrel::calculate_scanner_options(cl, argc, assumed);
+  auto calculate_pixel = !phantom || cl.exist("n-pixels");
+  PET2D::Barrel::calculate_scanner_options(cl, argc, assumed, calculate_pixel);
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& n_planes = cl.get<int>("n-planes");
   auto& s_pixel = cl.get<double>("s-pixel");
   auto& z_left = cl.get<double>("z-left");
 
-  if (!cl.exist("n-planes")) {
-    n_planes = n_pixels;
-    assumed << "--n-planes=" << n_planes << std::endl;
-  }
-  if (!cl.exist("z-left")) {
-    z_left = -n_planes * s_pixel / 2;
-    assumed << "--z-left=" << z_left << std::endl;
+  if (calculate_pixel) {
+    if (!cl.exist("n-planes")) {
+      n_planes = n_pixels;
+      assumed << "--n-planes=" << n_planes << std::endl;
+    }
+    if (!cl.exist("z-left")) {
+      z_left = -n_planes * s_pixel / 2;
+      assumed << "--z-left=" << z_left << std::endl;
+    }
   }
 
   if (cl.exist("verbose") && assumed.str().size()) {
     std::cerr << "assumed:" << std::endl << assumed.str();
   }
+}
+
+void calculate_phantom_options(cmdline::parser& cl, int argc) {
+  calculate_resonstruction_or_phantom_options(cl, argc, true);
+}
+
+void calculate_resonstruction_options(cmdline::parser& cl, int argc) {
+  calculate_resonstruction_or_phantom_options(cl, argc, false);
 }
 
 }  // Hybrid

@@ -66,14 +66,10 @@ int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
   cmdline::parser cl;
-  cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
-  cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
-  cl.add<double>("length", 0, "length of the detector", false, 0.3);
-
   PET3D::Hybrid::add_phantom_options(cl);
   cl.footer("phantom_description.json ...");
   cl.parse_check(argc, argv);
-  PET3D::Hybrid::calculate_scanner_options(cl, argc);
+  PET3D::Hybrid::calculate_phantom_options(cl, argc);
 
   if (!cl.rest().size()) {
     if (argc == 1) {
@@ -152,19 +148,23 @@ int main(int argc, char* argv[]) {
   }
 
   util::progress progress(verbose, n_emissions, 1000000);
-  monte_carlo(
-      rng,
-      scintillator,
-      n_emissions,
-      [](const Event&) {},
-      [&](const Event& event, const FullResponse& full_response) {
-        out_exact_events << event << "\n";
-        out_full_response << full_response << "\n";
-        out_wo_error << scanner.response_wo_error(full_response) << "\n";
-        out_w_error << scanner.response_w_error(rng, full_response) << "\n";
-      },
-      progress,
-      only_detected);
+  if (cl.exist("n-pixels")) {
+    // FIXME: implement me! (emit images too)
+  } else {
+    monte_carlo(
+        rng,
+        scintillator,
+        n_emissions,
+        [](const Event&) {},
+        [&](const Event& event, const FullResponse& full_response) {
+          out_exact_events << event << "\n";
+          out_full_response << full_response << "\n";
+          out_wo_error << scanner.response_wo_error(full_response) << "\n";
+          out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+        },
+        progress,
+        only_detected);
+  }
 
   CMDLINE_CATCH
 }

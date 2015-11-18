@@ -77,7 +77,8 @@ void calculate_scanner_options(cmdline::parser& parser, int argc = 0);
 /// Calculates all empty values from existing other parameters. (2nd version)
 void calculate_scanner_options(cmdline::parser& cl,
                                int argc,
-                               std::stringstream& assumed);
+                               std::stringstream& assumed,
+                               bool calculate_pixel = true);
 
 /// Provides initialization list for creating detector.
 #define __PET2D_BARREL(...) __VA_ARGS__  // just pass-through
