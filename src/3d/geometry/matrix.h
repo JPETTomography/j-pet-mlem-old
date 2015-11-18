@@ -7,7 +7,7 @@
 
 namespace PET3D {
 
-/// 3D (3x3) matrix
+/// 3D (3x3) matrix stored in row major manner
 template <typename FType> class Matrix {
  public:
   using F = FType;
@@ -63,8 +63,8 @@ template <typename FType> class Matrix {
   F& operator()(int i) { return rep_[i]; }
   F operator()(int i) const { return rep_[i]; }
 
-  F& operator()(int i, int j) { return rep_[i * 3 + j]; }
-  F operator()(int i, int j) const { return rep_[i * 3 + j]; }
+  F& operator()(int row, int col) { return rep_[row * 3 + col]; }
+  F operator()(int row, int col) const { return rep_[row * 3 + col]; }
 
   Matrix& operator+=(const Matrix& rhs) {
     for (int i = 0; i < 9; i++)
