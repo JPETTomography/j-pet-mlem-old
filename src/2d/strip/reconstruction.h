@@ -7,7 +7,7 @@
 
 #include "response.h"
 #include "kernel.h"
-#include "gausian_kernel.h"
+#include "gaussian_kernel.h"
 #include "scanner.h"
 
 #if _OPENMP

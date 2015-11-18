@@ -1,4 +1,4 @@
-#include "2d/strip/gausian_kernel.h"
+#include "2d/strip/gaussian_kernel.h"
 
 #include "common/types.h"
 #include "2d/geometry/vector.h"

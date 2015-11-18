@@ -28,7 +28,7 @@
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/lor_geometry.h"
 #include "2d/barrel/sparse_matrix.h"
-#include "2d/strip/gausian_kernel.h"
+#include "2d/strip/gaussian_kernel.h"
 
 #include "scanner.h"
 #include "reconstruction.h"

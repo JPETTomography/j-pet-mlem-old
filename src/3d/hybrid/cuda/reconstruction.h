@@ -4,7 +4,7 @@
 #include "util/delegate.h"
 
 #include "2d/barrel/simple_geometry.h"
-#include "2d/strip/gausian_kernel.h"
+#include "2d/strip/gaussian_kernel.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/voxel.h"
 #include "3d/geometry/voxel_map.h"
