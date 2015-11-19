@@ -110,6 +110,18 @@ template <typename FType> struct Vector {
     return vec;
   }
 
+  _ Vector operator*(const F& rhs) const {
+    Vector vec(*this);
+    vec *= rhs;
+    return vec;
+  }
+
+  _ Vector operator/(const F& rhs) const {
+    Vector vec(*this);
+    vec /= rhs;
+    return vec;
+  }
+
   _ F dot(const Vector& rhs) const { return x * rhs.x + y * rhs.y; }
 
 #if !__CUDACC__
