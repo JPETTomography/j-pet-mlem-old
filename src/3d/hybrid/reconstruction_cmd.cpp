@@ -170,12 +170,19 @@ int main(int argc, char* argv[]) {
   auto output_ext = output_name.ext();
   auto output_txt = output_ext == ".txt";
 
-  // graph Mathamatica drawing for reconstruction
+  // graph Mathamatica drawing for reconstruction & naive reconstruction
   if (output_base_name.length()) {
     std::ofstream out_graphics(output_base_name + ".m");
     MathematicaGraphics graphics(out_graphics);
     graphics.add(scanner.barrel);
     reconstruction.graph_frame_event(graphics, 0);
+
+    util::obstream out_naive(output_name);
+    util::nrrd_writer nrrd_naive(
+        output_base_name + ".nrrd", output_name, output_txt);
+    auto image = reconstruction.naive();
+    out_naive << image;
+    nrrd_naive << image;
   }
 
   util::progress progress(verbose, n_iterations, 1);

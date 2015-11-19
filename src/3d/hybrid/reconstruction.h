@@ -45,6 +45,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   using Point = PET3D::Point<F>;
   using Vector2D = PET2D::Vector<F>;
   using Output = PET3D::VoxelMap<Voxel, F>;
+  using NaiveOutput = PET3D::VoxelMap<Voxel, int>;
   using Grid = PET3D::VoxelGrid<F, S>;
   using PixelGrid = typename Grid::PixelGrid;
   using Pixel = typename PixelGrid::Pixel;
@@ -335,6 +336,22 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     statistics_.used_events = used_events;
 
     return used_events;
+  }
+
+  NaiveOutput naive() {
+    NaiveOutput image(
+        grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, grid.n_planes, 0);
+    for (const auto& event : events_) {
+      const auto& segment = geometry[event.lor].segment;
+      const auto axis = (segment.end - segment.mid_point).normalized();
+      const auto point2d = axis * event.up;
+      Point point(point2d.x, point2d.y, event.right);
+      const auto voxel = grid.voxel_at(point);
+      if (grid.contains(voxel)) {
+        ++image[voxel];
+      }
+    }
+    return image;
   }
 
   const Output& rho() const { return rho_; }
