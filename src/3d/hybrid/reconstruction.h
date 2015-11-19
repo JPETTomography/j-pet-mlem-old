@@ -343,8 +343,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, grid.n_planes, 0);
     for (const auto& event : events_) {
       const auto& segment = geometry[event.lor].segment;
-      const auto axis = (segment.end - segment.mid_point).normalized();
-      const auto point2d = axis * event.up;
+      const auto point2d = segment.mid_point + segment.direction * event.up;
       Point point(point2d.x, point2d.y, event.right);
       const auto voxel = grid.voxel_at(point);
       if (grid.contains(voxel)) {
