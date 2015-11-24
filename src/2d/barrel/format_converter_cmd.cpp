@@ -41,11 +41,19 @@ int main(int argc, char* argv[]) {
   cmdline::parser cl;
   cl.footer("means");
   PET2D::Barrel::add_matrix_options(cl);
-  // PET2D::Barrel::add_config_option(cl);
+  cl.add<double>("s-z", 0, "sigma z", cmdline::alwayssave, 0.01);
   cl.parse_check(argc, argv);
   cmdline::load_accompanying_config(cl, false);
 
   PET2D::Barrel::calculate_scanner_options(cl, argc);
+
+  F sigma_z = cl.get<double>("s-z");
+  F sigma_dl = cl.get<double>("s-dl");
+
+  std::normal_distribution<double> z_error(0, sigma_z);
+  std::normal_distribution<double> dl_error(0, sigma_dl);
+
+  std::mt19937_64 rng(cl.get<long>("seed"));
 
   auto scanner = ScannerBuilder<SquareScanner>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, F));
@@ -72,11 +80,13 @@ int main(int argc, char* argv[]) {
       in >> x1 >> y1 >> z1 >> t1;
       double x2, y2, z2, t2;
       in >> x2 >> y2 >> z2 >> t2;
-      int d1, d2;
+      int d1 = -1, d2 = -1;
       for (int i = 0; i < scanner.size(); i++) {
-        if ((Point(x1*cm, y1*cm) - circles[i].center).length2() < circles[i].radius2)
+        if ((Point(x1 * cm, y1 * cm) - circles[i].center).length2() <
+            circles[i].radius2)
           d1 = i;
-        if ((Point(x2*cm, y2*cm) - circles[i].center).length2() < circles[i].radius2)
+        if ((Point(x2 * cm, y2 * cm) - circles[i].center).length2() <
+            circles[i].radius2)
           d2 = i;
       }
       if (d1 < d2) {
@@ -84,8 +94,9 @@ int main(int argc, char* argv[]) {
         std::swap(z1, z2);
         std::swap(t1, t2);
       }
-      std::cout << d1 << " " << d2 << " " << z1 * cm << " " << z2 * cm << " "
-                << (t1 - t2) * speed_of_light_m_per_s << "\n";
+      double dl = (t1 - t2) * speed_of_light_m_per_s;
+      std::cout << d1 << " " << d2 << " " << z1 * cm + z_error(rng) << " "
+                << z2 * cm + z_error(rng) << " " << dl + dl_error(rng) << "\n";
     }
   }
 
