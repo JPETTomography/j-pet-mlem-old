@@ -243,6 +243,7 @@ pet_target(2d barrel lm_reconstruction)
 pet_target(2d strip phantom)
 pet_target(2d strip reconstruction)
 pet_target(2d strip kernel_monte_carlo)
+pet_target(2d barrel format_converter)
 
 set(CL_2D_OPTIONS 2d/barrel/options.cpp 2d/strip/options.cpp)
 
