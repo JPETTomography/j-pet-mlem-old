@@ -70,7 +70,8 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
     F ax = j["ax"];
     F ay = j["ay"];
     F az = j["az"];
-    return new RectangularRegion(ax, ay, az, 1);
+    F intensity = j.count("intensity") ? j["intensity"].get<F>() : F(1);
+    return new RectangularRegion(ax, ay, az, intensity);
 
   } else if (type == "rotated") {
     auto phantom = create_phantom_region_from_json<RNG, F>(j["phantom"]);
@@ -85,7 +86,8 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
       }
       return new RotatedRegion(phantom, R);
     } else if (j_axis.is_array() && j_angle.is_number()) {
-      auto R = Matrix::rotate(Vector(j_axis[0], j_axis[1], j_axis[2]), j_angle);
+      auto R = Matrix::rotate(Vector(j_axis[0], j_axis[1], j_axis[2]),
+                              (double)j_angle * M_PI / 180);
       return new RotatedRegion(phantom, R);
     } else {
       throw("rotated phantom must contain axis & angle pair or R matrix");
