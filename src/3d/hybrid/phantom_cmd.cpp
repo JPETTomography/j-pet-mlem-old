@@ -11,6 +11,7 @@
 /// \sa \ref cmd_3d_hybrid_matrix, \ref cmd_3d_hybrid_reconstruction
 
 #include <random>
+#include <mutex>
 
 #include "cmdline.h"
 
