@@ -73,6 +73,12 @@ int main(int argc, char* argv[]) {
   cl.parse_check(argc, argv);
   PET3D::Hybrid::calculate_phantom_options(cl, argc);
 
+#if _OPENMP
+  if (cl.exist("n-threads")) {
+    omp_set_num_threads(cl.get<int>("n-threads"));
+  }
+#endif
+
   if (!cl.rest().size()) {
     if (argc == 1) {
       std::cerr << cl.usage();
@@ -149,6 +155,11 @@ int main(int argc, char* argv[]) {
     out_full_response.open(output_base_name + "_full_response" + ext);
   }
 
+#if _OPENMP
+  std::mutex img_mutex;
+  std::mutex event_mutex;
+#endif
+
   util::progress progress(verbose, n_emissions, 1000000);
   if (cl.exist("n-pixels")) {
     auto pixel_size = cl.get<double>("s-pixel");
@@ -181,10 +192,35 @@ int main(int argc, char* argv[]) {
         [&](const Event& event) {
           auto voxel = grid.voxel_at(event.origin);
           if (grid.contains(voxel)) {
+#if _OPENMP
+            __atomic_add_fetch(
+                img_emitted.data + grid.index(voxel), 1, __ATOMIC_SEQ_CST);
+#else
             ++img_emitted[voxel];
+#endif
           }
         },
         [&](const Event& event, const FullResponse& full_response) {
+#if _OPENMP
+          auto voxel = grid.voxel_at(event.origin);
+          if (grid.contains(voxel)) {
+            __atomic_add_fetch(
+                img_detected.data + grid.index(voxel), 1, __ATOMIC_SEQ_CST);
+          }
+          std::ostringstream ss_wo_error, ss_w_error, ss_exact_events,
+              ss_full_response;
+          ss_exact_events << event << "\n";
+          ss_full_response << full_response << "\n";
+          ss_wo_error << scanner.response_wo_error(full_response) << "\n";
+          ss_w_error << scanner.response_w_error(rng, full_response) << "\n";
+          {
+            std::lock_guard<std::mutex> event_lock(event_mutex);
+            out_exact_events << ss_exact_events.str();
+            out_full_response << ss_full_response.str();
+            out_wo_error << ss_wo_error.str();
+            out_w_error << ss_w_error.str();
+          }
+#else
           auto voxel = grid.voxel_at(event.origin);
           if (grid.contains(voxel)) {
             ++img_detected[voxel];
@@ -193,6 +229,7 @@ int main(int argc, char* argv[]) {
           out_full_response << full_response << "\n";
           out_wo_error << scanner.response_wo_error(full_response) << "\n";
           out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+#endif
         },
         progress,
         only_detected);
@@ -219,10 +256,26 @@ int main(int argc, char* argv[]) {
         n_emissions,
         [](const Event&) {},
         [&](const Event& event, const FullResponse& full_response) {
+#if _OPENMP
+          std::ostringstream ss_wo_error, ss_w_error, ss_exact_events,
+              ss_full_response;
+          ss_exact_events << event << "\n";
+          ss_full_response << full_response << "\n";
+          ss_wo_error << scanner.response_wo_error(full_response) << "\n";
+          ss_w_error << scanner.response_w_error(rng, full_response) << "\n";
+          {
+            std::lock_guard<std::mutex> event_lock(event_mutex);
+            out_exact_events << ss_exact_events.str();
+            out_full_response << ss_full_response.str();
+            out_wo_error << ss_wo_error.str();
+            out_w_error << ss_w_error.str();
+          }
+#else
           out_exact_events << event << "\n";
           out_full_response << full_response << "\n";
           out_wo_error << scanner.response_wo_error(full_response) << "\n";
           out_w_error << scanner.response_w_error(rng, full_response) << "\n";
+#endif
         },
         progress,
         only_detected);
