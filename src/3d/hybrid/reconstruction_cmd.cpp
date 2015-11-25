@@ -109,6 +109,17 @@ int main(int argc, char* argv[]) {
   Reconstruction reconstruction(
       scanner, geometry, cl.get<double>("z-left"), cl.get<int>("n-planes"));
 
+  auto output_name = cl.get<cmdline::path>("output");
+  auto output_base_name = output_name.wo_ext();
+  auto output_ext = output_name.ext();
+  auto output_txt = output_ext == ".txt";
+
+  if (output_base_name.length()) {
+    std::ofstream out_graphics(output_base_name + ".m");
+    MathematicaGraphics graphics(out_graphics);
+    graphics.add(scanner.barrel);
+  }
+
   if (verbose) {
     std::cerr << "   voxel grid = "  // grid size:
               << reconstruction.grid.pixel_grid.n_columns << " x "
@@ -165,17 +176,10 @@ int main(int argc, char* argv[]) {
   auto n_iterations_in_block = cl.get<int>("iterations");
   auto n_iterations = n_blocks * n_iterations_in_block;
 
-  auto output_name = cl.get<cmdline::path>("output");
-  auto output_base_name = output_name.wo_ext();
-  auto output_ext = output_name.ext();
-  auto output_txt = output_ext == ".txt";
-
   // graph Mathamatica drawing for reconstruction & naive reconstruction
   if (output_base_name.length()) {
-    std::ofstream out_graphics(output_base_name + ".m");
-    MathematicaGraphics graphics(out_graphics);
-    graphics.add(scanner.barrel);
-    reconstruction.graph_frame_event(graphics, 0);
+
+    //    reconstruction.graph_frame_event(graphics, 0);
 
     util::obstream out_naive(output_name);
     util::nrrd_writer nrrd_naive(
