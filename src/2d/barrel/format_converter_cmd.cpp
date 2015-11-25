@@ -82,21 +82,27 @@ int main(int argc, char* argv[]) {
       in >> x2 >> y2 >> z2 >> t2;
       int d1 = -1, d2 = -1;
       for (int i = 0; i < scanner.size(); i++) {
-        if ((Point(x1 * cm, y1 * cm) - circles[i].center).length2() <
+        if ((Point(x1 * cm, y1 * cm) - circles[i].center).length2() <=
             circles[i].radius2)
           d1 = i;
-        if ((Point(x2 * cm, y2 * cm) - circles[i].center).length2() <
+        if ((Point(x2 * cm, y2 * cm) - circles[i].center).length2() <=
             circles[i].radius2)
           d2 = i;
       }
-      if (d1 < d2) {
-        std::swap(d1, d2);
-        std::swap(z1, z2);
-        std::swap(t1, t2);
+      if (d1 >= 0 && d2 >= 0) {
+
+        if (d1 < d2) {
+          std::swap(d1, d2);
+          std::swap(z1, z2);
+          std::swap(t1, t2);
+        }
+        double dl = (t1 - t2) * speed_of_light_m_per_s;
+        std::cout << d1 << " " << d2 << " " << z1 * cm + z_error(rng) << " "
+                  << z2 * cm + z_error(rng) << " " << dl + dl_error(rng)
+                  << "\n";
+      } else {
+        std::cerr << "Point outside detector - skiping\n";
       }
-      double dl = (t1 - t2) * speed_of_light_m_per_s;
-      std::cout << d1 << " " << d2 << " " << z1 * cm + z_error(rng) << " "
-                << z2 * cm + z_error(rng) << " " << dl + dl_error(rng) << "\n";
     }
   }
 
