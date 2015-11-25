@@ -151,9 +151,9 @@ TEST("2d/geometry/polygon/is_inside") {
   ps.emplace_back(1, 1);
   ps.emplace_back(1, 0);
 
-  CHECK(ps.is_inside(Point(0.5, 0.5)) == true);
-  CHECK(ps.is_inside(Point(0.7, 1.1)) == false);
-  CHECK(ps.is_inside(Point(1.0e-12, 0.5)) == true);
-  CHECK(ps.is_inside(Point(-1.0e-12, 0.5)) == false);
-  CHECK(ps.is_inside(Point(-.01, .6)) == false);
+  CHECK(ps.contains(Point(0.5, 0.5)) == true);
+  CHECK(ps.contains(Point(0.7, 1.1)) == false);
+  CHECK(ps.contains(Point(1.0e-12, 0.5)) == true);
+  CHECK(ps.contains(Point(-1.0e-12, 0.5)) == false);
+  CHECK(ps.contains(Point(-.01, .6)) == false);
 }

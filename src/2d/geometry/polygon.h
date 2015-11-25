@@ -52,7 +52,7 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
     return Point(c_x, c_y);
   }
 
-  bool is_inside(const Point& p) {
+  bool contains(const Point& p) {
     int n = this->size();
     Point start = (*this)[n - 1];
 

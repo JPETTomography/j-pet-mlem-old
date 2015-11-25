@@ -31,6 +31,7 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
   }
 
   std::string type = j["type"];
+  std::cerr << "type : " << type << "\n";
 
   if (type == "cylinder") {
     F radius = j["radius"];
@@ -48,9 +49,12 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
     }
 
   } else if (type == "ellipsoid") {
+    std::cerr << "ellipsoid ";
     F rx = j["rx"];
     F ry = j["ry"];
     F rz = j["rz"];
+    std::cerr << rx << " " << ry << " " << rz << "\n";
+
     F intensity = j.count("intensity") ? j["intensity"].get<F>() : F(1);
 
     const json& j_angular = j["angular"];

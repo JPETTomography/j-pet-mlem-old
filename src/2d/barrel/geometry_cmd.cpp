@@ -50,6 +50,7 @@
 #include "2d/geometry/line_segment.h"
 #include "2d/geometry/pixel_grid.h"
 #include "2d/barrel/geometry.h"
+#include "3d/hybrid/options.h"
 
 #include "common/types.h"
 
@@ -76,6 +77,9 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser cl;
   PET2D::Barrel::add_matrix_options(cl);
+  cl.add<double>("length", 0, " barrel length - not used !!", false, 0.0);
+  cl.add<double>(
+      "z-position", 'z', "z plane position - not used !!", false, 0.0);
   cl.parse_check(argc, argv);
   PET2D::Barrel::calculate_scanner_options(cl, argc);
 
