@@ -52,6 +52,21 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
     return Point(c_x, c_y);
   }
 
+  bool is_inside(const Point& p) {
+    int n = this->size();
+    Point start = (*this)[n - 1];
+
+    for (int i = 0; i < n; i++) {
+      Point end = (*this)[i];
+      Vector edge = end - start;
+      if (edge.cw_perpendicular().dot(p - start) < 0) {
+        return false;
+      }
+      start = end;
+    }
+    return true;
+  }
+
   // tests for intersection with generic form line equation
   bool intersects(Event& event) const {
     auto p1 = this->back();

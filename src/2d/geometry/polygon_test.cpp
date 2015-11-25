@@ -142,3 +142,18 @@ TEST("2d/geometry/polygon/intersection/math") {
     }
   }
 }
+
+TEST("2d/geometry/polygon/is_inside") {
+  Polygon ps;
+
+  ps.emplace_back(0, 0);
+  ps.emplace_back(0, 1);
+  ps.emplace_back(1, 1);
+  ps.emplace_back(1, 0);
+
+  CHECK(ps.is_inside(Point(0.5, 0.5)) == true);
+  CHECK(ps.is_inside(Point(0.7, 1.1)) == false);
+  CHECK(ps.is_inside(Point(1.0e-12, 0.5)) == true);
+  CHECK(ps.is_inside(Point(-1.0e-12, 0.5)) == false);
+  CHECK(ps.is_inside(Point(-.01, .6)) == false);
+}
