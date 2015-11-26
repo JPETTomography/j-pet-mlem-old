@@ -1,3 +1,8 @@
+#ifdef __SSE3__
+#include <xmmintrin.h>
+#include <pmmintrin.h>
+#endif
+
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
