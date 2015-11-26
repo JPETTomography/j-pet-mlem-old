@@ -82,7 +82,15 @@ bool load(cmdline::parser& parser, path& value, const std::string& arg) {
   } else {
     dir_stack.push_back(std::string());
   }
-  parser.try_parse(in, false, path.c_str());
+  std::vector<std::string> errors;
+  parser.parse(in, errors, false);
+  if (errors.size()) {
+    std::cerr << (errors.size() == 1 ? "warning" : "warnings") << " parsing "
+              << path << ":" << std::endl;
+    for (const auto& error : errors) {
+      std::cerr << "  " << error << std::endl;
+    }
+  }
   dir_stack.pop_back();
   return true;
 }
