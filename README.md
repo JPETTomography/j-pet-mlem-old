@@ -150,15 +150,13 @@ Prior committing code should be formatted using [clang-format][clang-format]
 using following methods:
 
 1. Automatically using *Git* clean filter executed on each change introduced to
-   index.
+   index. This is set up running following command in root of the project:
 
-   This is set up running following command in root of the project:
-
-       git config filter.format.clean $PWD/scripts/format-filter
+		git config filter.format.clean $PWD/scripts/format-filter
 
 2. Manually, calling following script in root of the project:
 
-       ./scripts/format
+		./scripts/format
 
 3. Using *Qt Creator* 3.1 or newer *ClangFormat* beautifier.
 
@@ -188,20 +186,20 @@ representation, depending on the need, therefore:
    `SType` (aka short integer type) when necessary. They should not use `float`,
    `double` or `short` directly, eg.:
 
-       template <typename FType> struct Point {
-         using F = FType;
-         F x, y
-       };
+		template <typename FType> struct Point {
+		using F = FType;
+		  F x, y
+		};
 
 2. All template instantiations shall use `F` and `S` types respectively
    including `common/types.h` prior instantiation, eg.:
 
-       #include "2d/geometry/point.h"
-       #include "2d/geometry/pixel.h"
-       #include "common/types.h"
-       
-       using Point = PET2D::Point<F>;
-       using Pixel = PET2D::Point<S>;
+		#include "2d/geometry/point.h"
+		#include "2d/geometry/pixel.h"
+		#include "common/types.h"
+		
+		using Point = PET2D::Point<F>;
+		using Pixel = PET2D::Point<S>;
 
 Serialization & Deserialization
 -------------------------------
@@ -219,20 +217,20 @@ binary serialization, it should define separate methods/constructors for both
 All classes that can be serialized into `ostream` or `obstream` should define
 "friend" `operator<<` inside their body, eg.:
 
-    std::ostream& operator<<(std::ostream& out, const Point& p) {
-      return out << x << ' ' << y;
-    }
-    util::obstream& operator<<(util::obstream& out, const Point& p) {
-      return out << x << y;  // NOTE: no ' ' separator since it is binary stream
-    }
+	std::ostream& operator<<(std::ostream& out, const Point& p) {
+	  return out << x << ' ' << y;
+	}
+	util::obstream& operator<<(util::obstream& out, const Point& p) {
+	  return out << x << y;  // NOTE: no ' ' separator since it is binary stream
+	}
 
 #### Deserialization
 
 All classes that can be deserialized from input stream should provide
 constructors taking input stream reference as an argument, eg.:
 
-    Point(std::istream& in) { in >> x >> y; }
-    Point(util::ibstream& in) { in >> x >> y; }
+	Point(std::istream& in) { in >> x >> y; }
+	Point(util::ibstream& in) { in >> x >> y; }
 
 GPU (CUDA) Compatible Code
 --------------------------
@@ -247,7 +245,7 @@ Most of the classes as reused between CPU & GPU code using following rules:
 2. All class methods available to CUDA should be started with single `_`, that
    will be turned into `__device__` when compiling via CUDA, eg.:
 
-       _ Vector operator+(const Vector& other) { ... }
+		_ Vector operator+(const Vector& other) { ... }
 
 3. All CUDA enabled classes should NOT use `<cmath>` functions like `std::sin`,
    but instead use `compat::sin` counterparts which will be mapped to proper
@@ -257,14 +255,14 @@ Most of the classes as reused between CPU & GPU code using following rules:
    is necessary class may provide CPU only methods using preprocessor
    conditional blocks, eg.:
 
-       #if !__CUDACC__
-       #include <ostream>
-       #endif
-       
-       ...
-       
-       #if !__CUDACC__
-       std::ostream& operator<<(std::ostream& out, const Point& p) {
-         return out << x << ' ' << y;
-       }
-       #endif
+		#if !__CUDACC__
+		#include <ostream>
+		#endif
+		
+		...
+		
+		#if !__CUDACC__
+		std::ostream& operator<<(std::ostream& out, const Point& p) {
+		  return out << x << ' ' << y;
+		}
+		#endif
