@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
     }
     start_iteration = rho_base_name.scan_index();
     if (start_iteration && verbose) {
-      std::cerr << "restarting at = " << start_iteration;
+      std::cerr << "restarting at = " << start_iteration << std::endl;
     }
   }
 
