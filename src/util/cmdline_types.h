@@ -45,6 +45,18 @@ class path : public std::string {
     return fn.str();
   }
 
+  int scan_index() const {
+    size_t start;
+    for (start = length(); start > 0; --start) {
+      if (!std::isdigit((*this)[start - 1]))
+        break;
+    }
+    std::istringstream ss(substr(start));
+    int index;
+    ss >> index;
+    return index;
+  }
+
  private:
   std::string::size_type sep_pos() const { return find_last_of("\\/"); }
 
