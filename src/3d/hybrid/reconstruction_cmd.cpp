@@ -209,7 +209,7 @@ int main(int argc, char* argv[]) {
     nrrd_naive << image;
   }
 
-  util::progress progress(verbose, n_iterations, 1);
+  util::progress progress(verbose, n_iterations, 1, start_iteration);
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
