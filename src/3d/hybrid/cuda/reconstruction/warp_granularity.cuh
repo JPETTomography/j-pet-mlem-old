@@ -66,6 +66,9 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
       for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
         // kernel calculation:
         Voxel voxel(pixel.x, pixel.y, iz);
+        auto rho = tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
+        if (rho == 0)
+          continue;
         auto z = grid.center_z_at(voxel);
         auto kernel2d = kernel.normalized(Point2D(event.right, event.up),
                                           event.tan,
@@ -75,7 +78,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                           Point2D(z, up));
         auto kernel_t = pixel_info.weight;
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
-                      tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
+                      rho;
         // end of kernel calculation
         denominator += weight * tex2D(tex_sensitivity, voxel.x, voxel.y);
       }
@@ -105,6 +108,9 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
       for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
         // kernel calculation:
         Voxel voxel(pixel.x, pixel.y, iz);
+        auto rho = tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
+        if (rho == 0)
+          continue;
         auto z = grid.center_z_at(voxel);
         auto kernel2d = kernel.normalized(Point2D(event.right, event.up),
                                           event.tan,
@@ -114,7 +120,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                           Point2D(z, up));
         auto kernel_t = pixel_info.weight;
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
-                      tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
+                      rho;
         // end of kernel calculation
 
         int voxel_index = grid.index(voxel);
