@@ -114,6 +114,13 @@ template <typename PixelType, typename ValueType> class PixelMap {
     return nrrd;
   }
 
+  friend std::istream& operator>>(std::istream& in, PixelMap& map) {
+    for (auto voxel : map) {
+      in >> voxel;
+    }
+    return in;
+  }
+
   friend std::ostream& operator<<(std::ostream& out, const PixelMap& map) {
     auto it = map.begin();
     auto end = map.end();
@@ -127,6 +134,11 @@ template <typename PixelType, typename ValueType> class PixelMap {
       }
     }
     return out;
+  }
+
+  friend util::ibstream& operator>>(util::ibstream& in, PixelMap& map) {
+    in.read(map.data, map.size);
+    return in;
   }
 
   friend util::obstream& operator<<(util::obstream& out, const PixelMap& map) {

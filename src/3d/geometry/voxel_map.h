@@ -124,6 +124,13 @@ template <typename VoxelType, typename ValueType> class VoxelMap {
     return nrrd;
   }
 
+  friend std::istream& operator>>(std::istream& in, VoxelMap& map) {
+    for (auto voxel : map) {
+      in >> voxel;
+    }
+    return in;
+  }
+
   friend std::ostream& operator<<(std::ostream& out, const VoxelMap& map) {
     auto it = map.begin();
     auto end = map.end();
@@ -137,6 +144,11 @@ template <typename VoxelType, typename ValueType> class VoxelMap {
       }
     }
     return out;
+  }
+
+  friend util::ibstream& operator>>(util::ibstream& in, VoxelMap& map) {
+    in.read(map.data, map.size);
+    return in;
   }
 
   friend util::obstream& operator<<(util::obstream& out, const VoxelMap& map) {
