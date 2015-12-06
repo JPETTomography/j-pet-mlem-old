@@ -53,23 +53,27 @@ template <typename T> class memory {
       : size(size),
         bytes(bytes),
         host_ptr(new T[size]),
+        host_owning(true),
         device_ptr(device_alloc<T>(bytes)) {}
 
- protected:
-  memory(size_t size, size_t bytes, T* device_ptr)
+  memory(size_t size, size_t bytes, T* host_ptr)
       : size(size),
         bytes(bytes),
-        host_ptr(new T[size]),
-        device_ptr(device_ptr) {}
+        host_ptr(host_ptr),
+        host_owning(false),
+        device_ptr(device_alloc<T>(bytes)) {}
 
  public:
   /// Allocate memory of given size on both host & device.
   memory(size_t size) : memory(size, size * sizeof(T)) {}
 
+  /// Use given memory of given size for host and allocate device.
+  memory(size_t size, T* host_ptr) : memory(size, size * sizeof(T), host_ptr) {}
+
   ~memory() {
     if (device_ptr)
       cudaFree(device_ptr);
-    if (host_ptr)
+    if (host_ptr && host_owning)
       delete[] host_ptr;
   }
 
@@ -105,6 +109,7 @@ template <typename T> class memory {
   operator T*() { return device_ptr; }
 
   T* const host_ptr;
+  const bool host_owning;
   T* const device_ptr;
   const size_t size;
   const size_t bytes;
