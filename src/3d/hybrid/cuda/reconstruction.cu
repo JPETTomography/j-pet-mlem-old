@@ -102,10 +102,6 @@ void run(const SimpleGeometry& geometry,
   util::cuda::on_device<F> rho((size_t)grid.n_voxels);
 #endif
   util::cuda::memory<F> output_rho((size_t)grid.n_voxels, rho_output.data);
-
-  for (auto& v : output_rho) {
-    v = 1;
-  }
   output_rho.copy_to_device();
 
 #if USE_TEXTURE
