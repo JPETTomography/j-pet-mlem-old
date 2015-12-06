@@ -194,10 +194,6 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
-    Output output(reconstruction.grid.pixel_grid.n_columns,
-                  reconstruction.grid.pixel_grid.n_rows,
-                  reconstruction.grid.n_planes);
-    output.assign(1);
     PET3D::Hybrid::GPU::Reconstruction::SimpleGeometry simple_geometry(
         geometry);
     PET3D::Hybrid::GPU::Reconstruction::run(
@@ -211,7 +207,7 @@ int main(int argc, char* argv[]) {
         scanner.length,
         n_blocks,
         n_iterations_in_block,
-        output,
+        reconstruction.rho,
         0,
         [&](int iteration, const Output& output) {
           if (!output_base_name.length())
@@ -252,13 +248,13 @@ int main(int argc, char* argv[]) {
       auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
                                            n_iterations);
       util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
-      nrrd << reconstruction.rho();
+      nrrd << reconstruction.rho;
       if (output_txt) {
         std::ofstream txt(fn + ".txt");
-        txt << reconstruction.rho();
+        txt << reconstruction.rho;
       } else {
         util::obstream bin(fn + output_ext);
-        bin << reconstruction.rho();
+        bin << reconstruction.rho;
       }
     }
 

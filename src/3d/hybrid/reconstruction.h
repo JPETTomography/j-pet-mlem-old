@@ -80,8 +80,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       : scanner(scanner),
         geometry(geometry),
         grid(geometry.grid, z_left, n_planes),
+        rho(geometry.grid.n_columns, geometry.grid.n_rows, n_planes, 1),
         kernel_(scanner.sigma_z(), scanner.sigma_dl()),
-        rho_(geometry.grid.n_columns, geometry.grid.n_rows, n_planes, 1),
         n_threads_(omp_get_max_threads()),
         n_events_per_thread_(n_threads_, 0),
         sensitivity_(geometry.grid.n_columns, geometry.grid.n_rows) {
@@ -292,7 +292,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
                                              Point2D(z, up));
           auto kernel_t = pixel_info.weight;
 
-          auto weight = kernel2d * kernel_t * rho_[voxel_index];
+          auto weight = kernel2d * kernel_t * rho[voxel_index];
           denominator += weight * sensitivity_[pixel_index];
 
           thread_kernel_caches_[thread][voxel_index] = weight;
@@ -322,10 +322,10 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       }  // voxel loop
     }    // event loop
 
-    rho_.assign(0);
+    rho.assign(0);
     for (int thread = 0; thread < n_threads_; ++thread) {
       for (int i = 0; i < grid.n_voxels; ++i) {
-        rho_[i] += thread_rhos_[thread][i];
+        rho[i] += thread_rhos_[thread][i];
       }
       used_events += n_events_per_thread_[thread];
     }
@@ -353,7 +353,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     return image;
   }
 
-  const Output& rho() const { return rho_; }
   const Map2D& sensitivity() const { return sensitivity_; }
 
   void graph_frame_event(Common::MathematicaGraphics<F>& graphics,
@@ -422,11 +421,11 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   const Scanner& scanner;
   Geometry& geometry;
   const Grid grid;
+  Output rho;
 
  private:
   std::vector<FrameEvent> events_;
   Kernel2D kernel_;
-  Output rho_;
   Statistics statistics_;
   int n_threads_;
   std::vector<Output> thread_rhos_;
