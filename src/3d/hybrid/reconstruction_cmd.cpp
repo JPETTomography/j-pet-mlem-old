@@ -56,6 +56,7 @@ using Geometry = PET2D::Barrel::Geometry<F, S>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
 using Kernel = PET2D::Strip::GaussianKernel<F>;
 using Reconstruction = PET3D::Hybrid::Reconstruction<Scanner, Kernel>;
+using Output = Reconstruction::Output;
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -193,6 +194,10 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
+    Output output(reconstruction.grid.pixel_grid.n_columns,
+                  reconstruction.grid.pixel_grid.n_rows,
+                  reconstruction.grid.n_planes);
+    output.assign(1);
     PET3D::Hybrid::GPU::Reconstruction::SimpleGeometry simple_geometry(
         geometry);
     PET3D::Hybrid::GPU::Reconstruction::run(
@@ -206,8 +211,9 @@ int main(int argc, char* argv[]) {
         scanner.length,
         n_blocks,
         n_iterations_in_block,
-        [&](int iteration,
-            const PET3D::Hybrid::GPU::Reconstruction::Output& output) {
+        output,
+        0,
+        [&](int iteration, const Output& output) {
           if (!output_base_name.length())
             return;
           auto fn = iteration >= 0

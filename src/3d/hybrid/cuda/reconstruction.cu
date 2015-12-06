@@ -58,6 +58,8 @@ void run(const SimpleGeometry& geometry,
          const F barrel_length,
          int n_iteration_blocks,
          int n_iterations_in_block,
+         const Output& rho_output,
+         const int start_iteration,
          util::delegate<void(int iteration, const Output& output)> output,
          util::delegate<void(int completed, bool finished)> progress,
          int device,
@@ -99,11 +101,7 @@ void run(const SimpleGeometry& geometry,
 #else
   util::cuda::on_device<F> rho((size_t)grid.n_voxels);
 #endif
-  util::cuda::memory<F> output_rho((size_t)grid.n_voxels);
-  Output rho_output(grid.pixel_grid.n_columns,
-                    grid.pixel_grid.n_rows,
-                    grid.n_planes,
-                    output_rho.host_ptr);
+  util::cuda::memory<F> output_rho((size_t)grid.n_voxels, rho_output.data);
 
   for (auto& v : output_rho) {
     v = 1;
@@ -122,7 +120,10 @@ void run(const SimpleGeometry& geometry,
 
   for (int ib = 0; ib < n_iteration_blocks; ++ib) {
     for (int it = 0; it < n_iterations_in_block; ++it) {
-      progress(ib * n_iterations_in_block + it, false);
+      int iteration = ib * n_iterations_in_block + it;
+      if (iteration < start_iteration)
+        continue;
+      progress(iteration, false);
 
       rho = output_rho;
       output_rho.zero_on_device();
