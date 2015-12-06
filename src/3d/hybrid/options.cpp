@@ -39,6 +39,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
   cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
   cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
   cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
+  cl.add<cmdline::path>("rho", 0, "start rho (eg. existing iteration)", false);
   cl.footer("response ...");
 }
 

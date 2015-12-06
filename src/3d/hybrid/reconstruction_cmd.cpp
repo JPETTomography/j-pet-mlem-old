@@ -110,6 +110,25 @@ int main(int argc, char* argv[]) {
   Reconstruction reconstruction(
       scanner, geometry, cl.get<double>("z-left"), cl.get<int>("n-planes"));
 
+  auto start_iteration = 0;
+  if (cl.exist("rho")) {
+    auto rho_name = cl.get<cmdline::path>("rho");
+    auto rho_base_name = rho_name.wo_ext();
+    auto rho_ext = rho_name.ext();
+    auto rho_txt = rho_ext == ".txt";
+    if (rho_txt) {
+      std::ifstream txt(rho_name);
+      txt >> reconstruction.rho;
+    } else {
+      util::ibstream bin(rho_name);
+      bin >> reconstruction.rho;
+    }
+    start_iteration = rho_base_name.scan_index();
+    if (start_iteration && verbose) {
+      std::cerr << "restarting at = " << start_iteration;
+    }
+  }
+
   auto output_name = cl.get<cmdline::path>("output");
   auto output_base_name = output_name.wo_ext();
   auto output_ext = output_name.ext();
@@ -208,7 +227,7 @@ int main(int argc, char* argv[]) {
         n_blocks,
         n_iterations_in_block,
         reconstruction.rho,
-        0,
+        start_iteration,
         [&](int iteration, const Output& output) {
           if (!output_base_name.length())
             return;
@@ -239,9 +258,12 @@ int main(int argc, char* argv[]) {
   {
     for (int block = 0; block < n_blocks; ++block) {
       for (int i = 0; i < n_iterations_in_block; i++) {
-        progress(block * n_iterations_in_block + i);
+        const auto iteration = block * n_iterations_in_block + i;
+        if (iteration < start_iteration)
+          continue;
+        progress(iteration);
         reconstruction();
-        progress(block * n_iterations_in_block + i, true);
+        progress(iteration, true);
       }
       if (!output_base_name.length())
         continue;
