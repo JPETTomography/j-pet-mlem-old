@@ -140,7 +140,7 @@ int main(int argc, char* argv[]) {
 
   for (const auto& fn : cl.rest()) {
     if (verbose) {
-      std::cerr << "      phantom = " << fn << std::endl;
+      std::cerr << "     response = " << fn << std::endl;
     }
 #if USE_FAST_TEXT_PARSER
     reconstruction.load_events(fn.c_str());
