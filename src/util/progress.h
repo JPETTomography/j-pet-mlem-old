@@ -30,14 +30,17 @@ class progress {
       int verbosity,                     ///< Verbosity level (0-2)
       unsigned long total,               ///< Total number of iterations
       unsigned long reasonable_update =  ///< Iterations that trigger update
-      std::numeric_limits<unsigned long>::max())
+      std::numeric_limits<unsigned long>::max(),
+      unsigned long skipped = 0  ///< Number of iterations skipped at start
+      )
       : verbosity(verbosity),
         total(total),
         total_m_1(total - 1),
         start_time(clock_t::now()),
         mask(1),
         last_completed(std::numeric_limits<unsigned long>::max()),
-        total_ellapsed_ms(0) {
+        total_ellapsed_ms(0),
+        skipped(skipped) {
     // computes mask that shows percentage only ~ once per thousand of total
     auto total_resonable_update = total / 1000;
     while (mask < total_resonable_update && mask < reasonable_update) {
@@ -104,12 +107,13 @@ class progress {
         return;
       last_completed = completed;
 
-      double persec = (double)completed / ellapsed();
-
       std::cerr << ' ' << std::round((double)completed / total * 100.0) << "% "
                 << completed << "/" << total;
 
-      if (!std::isnan(persec) && completed > 0) {
+      auto ellapsed_time = ellapsed();
+      if (completed > skipped && ellapsed_time > 0) {
+        auto persec = (double)(completed - skipped) / ellapsed_time;
+
         std::cerr << " "
                   << timetostr(std::round((double)(total - completed) / persec))
                   << " left, ";
@@ -148,5 +152,6 @@ class progress {
   unsigned long mask;
   unsigned long last_completed;
   double total_ellapsed_ms;
+  unsigned long skipped;
 };
 }  // util
