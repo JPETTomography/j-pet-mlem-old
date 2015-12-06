@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
       PET2D_BARREL_SCANNER_CL(cl, F));
 
   std::vector<PET2D::Barrel::CircleDetector<F>> circles;
-  for (int i = 0; i < scanner.size(); i++) {
+  for (size_t i = 0; i < scanner.size(); ++i) {
     auto circle = scanner[i].circumscribe_circle();
     circles.push_back(circle);
   }
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
       double x2, y2, z2, t2;
       in >> x2 >> y2 >> z2 >> t2;
       int d1 = -1, d2 = -1;
-      for (int i = 0; i < scanner.size(); i++) {
+      for (size_t i = 0; i < scanner.size(); ++i) {
         if (scanner[i].contains(Point(x1 * cm, y1 * cm)))
           d1 = i;
         if (scanner[i].contains(Point(x2 * cm, y2 * cm)))
