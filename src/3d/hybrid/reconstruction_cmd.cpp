@@ -265,10 +265,12 @@ int main(int argc, char* argv[]) {
         reconstruction();
         progress(iteration, true);
       }
+      const auto iteration = (block + 1) * n_iterations_in_block;
+      if (iteration < start_iteration)
+        continue;
       if (!output_base_name.length())
         continue;
-      auto fn = output_base_name.add_index((block + 1) * n_iterations_in_block,
-                                           n_iterations);
+      auto fn = output_base_name.add_index(iteration, n_iterations);
       util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
       nrrd << reconstruction.rho;
       if (output_txt) {

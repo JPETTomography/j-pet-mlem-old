@@ -114,9 +114,9 @@ void run(const SimpleGeometry& geometry,
 #endif
   (void)device_sensitivity;  // device sensitivity is used via tex_sensitivity
 
-  for (int ib = 0; ib < n_iteration_blocks; ++ib) {
-    for (int it = 0; it < n_iterations_in_block; ++it) {
-      int iteration = ib * n_iterations_in_block + it;
+  for (int block = 0; block < n_iteration_blocks; ++block) {
+    for (int i = 0; i < n_iterations_in_block; ++i) {
+      int iteration = block * n_iterations_in_block + i;
       if (iteration < start_iteration)
         continue;
       progress(iteration, false);
@@ -139,19 +139,22 @@ void run(const SimpleGeometry& geometry,
                      barrel_length);
       cudaThreadSynchronize();
 
-      progress(ib * n_iterations_in_block + it, true);
+      progress(iteration, true);
 
       // always output first 5 iterations, and at 10, 15, 20, 30, 50, 100
-      if (!ib && it < n_iterations_in_block - 1 &&
-          (it < 5 || it == 9 || it == 14 || it == 19 || it == 29 || it == 49 ||
-           it == 99)) {
+      if (!block && i < n_iterations_in_block - 1 &&
+          (i < 5 || i == 9 || i == 14 || i == 19 || i == 29 || i == 49 ||
+           i == 99)) {
         output_rho.copy_from_device();
-        output(it + 1, rho_output);
+        output(i + 1, rho_output);
       }
     }
 
+    int iteration = (block + 1) * n_iterations_in_block;
+    if (iteration < start_iteration)
+      continue;
     output_rho.copy_from_device();
-    output((ib + 1) * n_iterations_in_block, rho_output);
+    output(iteration, rho_output);
   }
 
   progress(n_iteration_blocks * n_iterations_in_block, false);

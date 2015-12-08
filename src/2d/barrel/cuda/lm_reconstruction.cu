@@ -171,9 +171,10 @@ void run(const SimpleGeometry& geometry,
   Common::GPU::invert(scale, width * height);
   cudaThreadSynchronize();
 
-  for (int ib = 0; ib < n_iteration_blocks; ++ib) {
-    for (int it = 0; it < n_iterations_in_block; ++it) {
-      progress(ib * n_iterations_in_block + it, false);
+  for (int block = 0; block < n_iteration_blocks; ++block) {
+    for (int i = 0; i < n_iterations_in_block; ++i) {
+      int iteration = block * n_iterations_in_block + i;
+      progress(iteration, false);
 
       rho = output_rho;
       output_rho.zero_on_device();
@@ -187,12 +188,13 @@ void run(const SimpleGeometry& geometry,
                      width);
       cudaThreadSynchronize();
 
-      progress(ib * n_iterations_in_block + it, true);
+      progress(iteration, true);
     }
 
     output_rho.copy_from_device();
     Output rho_output(width, height, output_rho.host_ptr);
-    output((ib + 1) * n_iterations_in_block, rho_output);
+    int iteration = (block + 1) * n_iterations_in_block;
+    output(iteration, rho_output);
   }
 
   progress(n_iteration_blocks * n_iterations_in_block, false);
