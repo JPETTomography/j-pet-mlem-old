@@ -89,6 +89,9 @@ int main(int argc, char* argv[]) {
   PET2D::Barrel::add_matrix_options(cl);
   cl.parse_check(argc, argv);
   cmdline::load_accompanying_config(cl, false);
+  if (!cl.exist("tof-step")) {
+    cl.dontsave("tof-step"), cl.dontsave("s-dl");
+  }
   PET2D::Barrel::calculate_scanner_options(cl, argc);
 
 #if _OPENMP
