@@ -12,7 +12,7 @@
 #endif
 
 namespace PET3D {
-namespace Hybrid {
+namespace Tool {
 
 struct PSF {
   using Voxel = PET3D::Voxel<S>;

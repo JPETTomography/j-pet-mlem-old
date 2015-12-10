@@ -63,21 +63,11 @@ void add_sensitivity_options(cmdline::parser& cl) {
   cl.footer("image ...");
 }
 
-void add_psf_options(cmdline::parser& cl) {
-
-  PET2D::Barrel::add_pixel_options(cl, true);
-  cl.add<int>("n-planes", 0, "number of voxels in z direction", false, 0);
-  cl.add<double>("z-left", 0, "left extent in z direction", false, 0);
-  Common::add_openmp_options(cl);
-}
-
 void calculate_scanner_options(cmdline::parser& cl, int argc) {
   PET2D::Barrel::calculate_scanner_options(cl, argc);
 }
 
-enum Cmd { CmdReconstruction = 0, CmdPhantom, CmdPSF };
-
-static void calculate_cmd_options(cmdline::parser& cl, int argc, Cmd cmd) {
+void calculate_cmd_options(cmdline::parser& cl, int argc, Cmd cmd) {
   std::stringstream assumed;
   auto calculate_pixel = cmd != CmdPhantom || cl.exist("n-pixels");
   if (cmd != CmdPSF) {
@@ -112,10 +102,6 @@ void calculate_phantom_options(cmdline::parser& cl, int argc) {
 
 void calculate_resonstruction_options(cmdline::parser& cl, int argc) {
   calculate_cmd_options(cl, argc, CmdReconstruction);
-}
-
-void calculate_psf_options(cmdline::parser& cl, int argc) {
-  calculate_cmd_options(cl, argc, CmdPSF);
 }
 
 }  // Hybrid

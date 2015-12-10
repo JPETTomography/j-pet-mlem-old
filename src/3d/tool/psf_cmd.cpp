@@ -1,12 +1,12 @@
-/// \page cmd_3d_hybrid_psf 3d_hybrid_psf
-/// \brief 3D Longitudinal PET Point-Spread-Function calculation tool
+/// \page cmd_3d_tool_psf 3d_tool_psf
+/// \brief 3D Point-Spread-Function calculation tool
 ///
 /// Creates Point-Spread-Function statistics for given reconstruction / image
 /// files.
 ///
 /// Usage
 /// -----
-/// \verboutput 3d_hybrid_psf
+/// \verboutput 3d_tool_psf
 ///
 /// \sa \ref cmd_3d_hybrid_phantom, \ref cmd_3d_hybrid_matrix
 
@@ -54,9 +54,9 @@ int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
   cmdline::parser cl;
-  PET3D::Hybrid::add_psf_options(cl);
+  PET3D::Tool::add_psf_options(cl);
   cl.parse_check(argc, argv);
-  PET3D::Hybrid::calculate_psf_options(cl, argc);
+  PET3D::Tool::calculate_psf_options(cl, argc);
 
 #if _OPENMP
   if (cl.exist("n-threads")) {
@@ -118,12 +118,12 @@ void print_psf(const cmdline::path& fn,
   (void)img;
   Voxel max_voxel;
   F max;
-  PET3D::Hybrid::PSF::find_max(img, max_voxel, max);
+  PET3D::Tool::PSF::find_max(img, max_voxel, max);
   Voxel left_above_half, right_above_half;
-  PET3D::Hybrid::PSF::find_left_right_above_half(
+  PET3D::Tool::PSF::find_left_right_above_half(
       img, max_voxel, max, left_above_half, right_above_half);
   Vector left, right, psf;
-  PET3D::Hybrid::PSF::calculate(
+  PET3D::Tool::PSF::calculate(
       img, max_voxel, max, left_above_half, right_above_half, left, right, psf);
   out << std::setw(35) << fn << ' '   //
       << std::setw(3) << std::fixed   //

@@ -246,13 +246,15 @@ pet_target(2d strip kernel_monte_carlo)
 pet_target(2d barrel format_converter)
 
 set(CL_2D_OPTIONS 2d/barrel/options.cpp 2d/strip/options.cpp)
+set(CL_3D_OPTIONS 3d/hybrid/options.cpp)
 
 pet_target(3d hybrid matrix ${CL_2D_OPTIONS})
 pet_target(3d hybrid 2strip_phantom ${CL_2D_OPTIONS})
 pet_target(3d hybrid phantom ${CL_2D_OPTIONS})
 pet_target(3d hybrid reconstruction ${CL_2D_OPTIONS})
 pet_target(3d hybrid sensitivity ${CL_2D_OPTIONS})
-pet_target(3d hybrid psf ${CL_2D_OPTIONS})
+
+pet_target(3d tool psf ${CL_2D_OPTIONS} ${CL_3D_OPTIONS})
 
 if(Boost_FOUND)
   pet_target(2d barrel geometry)
