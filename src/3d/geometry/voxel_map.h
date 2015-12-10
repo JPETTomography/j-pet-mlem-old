@@ -97,13 +97,17 @@ template <typename VoxelType, typename ValueType> class VoxelMap {
     }
   }
 
-  /// Extract from other voxel map at source origin
+  /// Extract from other voxel map at source origin relative to source center
   void copy(const VoxelMap& source, const Voxel origin) {
+    Voxel translation(source.width, source.height, source.depth);
+    translation -= Voxel(width, height, depth);
+    translation.x /= 2, translation.y /= 2, translation.z /= 2;
+    translation += origin;
     for (S z = 0; z < size; ++z) {
       for (S y = 0; y < size; ++y) {
         for (S x = 0; x < size; ++x) {
           Voxel voxel(x, y, z);
-          (*this)[voxel] = source[voxel + origin];
+          (*this)[voxel] = source[voxel + translation];
         }
       }
     }
