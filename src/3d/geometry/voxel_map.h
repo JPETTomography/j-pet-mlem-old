@@ -97,6 +97,18 @@ template <typename VoxelType, typename ValueType> class VoxelMap {
     }
   }
 
+  /// Extract from other voxel map at source origin
+  void copy(const VoxelMap& source, const Voxel origin) {
+    for (S z = 0; z < size; ++z) {
+      for (S y = 0; y < size; ++y) {
+        for (S x = 0; x < size; ++x) {
+          Voxel voxel(x, y, z);
+          (*this)[voxel] = source[voxel + origin];
+        }
+      }
+    }
+  }
+
   iterator begin() { return data; }
   const_iterator begin() const { return data; }
   iterator end() { return &data[size]; }
