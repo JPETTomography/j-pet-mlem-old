@@ -196,11 +196,14 @@ int main(int argc, char* argv[]) {
   auto n_iterations_in_block = cl.get<int>("iterations");
   auto n_iterations = n_blocks * n_iterations_in_block;
 
+  auto crop_pixels = cl.get<int>("crop-pixels");
+  auto crop_origin = PET3D::Voxel<S>(
+      cl.get<int>("crop-x"), cl.get<int>("crop-y"), cl.get<int>("crop-z"));
+  Output cropped_output(crop_pixels, crop_pixels, crop_pixels);
+
   // graph Mathamatica drawing for reconstruction & naive reconstruction
   if (output_base_name.length()) {
-
-    //    reconstruction.graph_frame_event(graphics, 0);
-
+    // reconstruction.graph_frame_event(graphics, 0);
     util::obstream out_naive(output_name);
     util::nrrd_writer nrrd_naive(
         output_base_name + ".nrrd", output_name, output_txt);
@@ -235,13 +238,17 @@ int main(int argc, char* argv[]) {
                         ? output_base_name.add_index(iteration, n_iterations)
                         : output_base_name + "_sensitivity";
           util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
-          nrrd << output;
+          bool crop = crop_pixels > 0;
+          if (crop) {
+            cropped_output.copy(output, crop_origin);
+          }
+          nrrd << (crop ? cropped_output : output);
           if (output_txt) {
             std::ofstream txt(fn + ".txt");
-            txt << output;
+            txt << (crop ? cropped_output : output);
           } else {
             util::obstream bin(fn + output_ext);
-            bin << output;
+            bin << (crop ? cropped_output : output);
           }
         },
         [&](int completed, bool finished) { progress(completed, finished); },
