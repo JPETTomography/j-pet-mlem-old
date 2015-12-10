@@ -33,7 +33,7 @@ template <typename SType> struct Voxel {
   _ bool operator==(const Voxel& v) const { return x == v.x && y == v.y; }
 
   _ bool operator<(const Voxel& v) const {
-    return z < z.y || (z == v.z && (y < v.y || (y == v.y && x < v.x)));
+    return z < v.z || (z == v.z && (y < v.y || (y == v.y && x < v.x)));
   }
 
   _ void clamp(const Voxel& tl, const Voxel& br) {
