@@ -140,8 +140,8 @@ void print_psf(const std::string& fn,
       << right_above_half.y << ' '   //
       << right_above_half.z << '\t'  //
 #endif
-      << std::setfill(' ') << std::setw(6)  //
-      << std::setprecision(2)               //
+      << std::setfill(' ') << std::setw(7)  //
+      << std::setprecision(3)               //
 #if PRINT_LEFT_RIGHT
       << left.x << ' '    //
       << left.y << ' '    //
