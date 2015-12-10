@@ -3,6 +3,7 @@
 ///
 /// Available utilities
 /// -------------------
+/// - \subpage cmd_3d_tool_crop
 /// - \subpage cmd_3d_tool_psf
 
 #pragma once
