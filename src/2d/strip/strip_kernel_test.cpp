@@ -84,7 +84,7 @@ TEST("strip/sensitivity") {
         Approx(0.0));
 }
 
-TEST("strip/integral") {
+TEST("strip/integral", "[!hide]") {
   F sz = 0.01;
   F sdl = 0.04;
   F R = 0.4;
@@ -106,7 +106,7 @@ TEST("strip/integral") {
   std::cout << "w integrated : " << sum * d * d * d << "\n";
 }
 
-TEST("strip/integral/theta") {
+TEST("strip/integral/theta", "[!hide]") {
   F sz = 0.01;
   F sdl = 0.04;
   F R = 0.43;
@@ -131,7 +131,7 @@ TEST("strip/integral/theta") {
             << integral / sens << "\n";
 }
 
-TEST("strip/integral/event") {
+TEST("strip/integral/event", "[!hide]") {
   F sz = 0.01;
   F sdl = 0.04;
   F R = 0.43;
@@ -154,7 +154,7 @@ TEST("strip/integral/event") {
   std::cout << "w integrated (event): " << sum * d * d * d << "\n";
 }
 
-TEST("strip/integral/theta/event") {
+TEST("strip/integral/theta/event", "[!hide]") {
 
   F sz = 0.01;
   F sdl = 0.04;
@@ -183,7 +183,7 @@ TEST("strip/integral/theta/event") {
             << " = " << integral / sens << "\n";
 }
 
-TEST("strip/gauss_kernel") {
+TEST("strip/gauss_kernel", "[!hide]") {
 
   F R = 0.43;
   F L = 0.5;
@@ -213,7 +213,7 @@ TEST("strip/gauss_kernel") {
             << std::endl;
 }
 
-TEST("strip/gauss_kernel/integral") {
+TEST("strip/gauss_kernel/integral", "[!hide]") {
   F L = 0.5;
   Kernel kernel(0.01, 0.04);
 
