@@ -31,7 +31,6 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
   }
 
   std::string type = j["type"];
-  std::cerr << "type : " << type << "\n";
 
   if (type == "cylinder") {
     F radius = j["radius"];
