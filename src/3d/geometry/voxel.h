@@ -45,6 +45,20 @@ template <typename SType> struct Voxel {
   _ Size distance_from_origin2() const {
     return static_cast<Size>(x) * x + static_cast<Size>(y) * y * z;
   }
+
+  _ Voxel& operator+=(const Voxel& rhs) {
+    x += rhs.x, y += rhs.y, z += rhs.z;
+    return *this;
+  }
+
+  _ Voxel& operator-=(const Voxel& rhs) {
+    x -= rhs.x, y -= rhs.y, z -= rhs.z;
+    return *this;
+  }
+
+  _ Voxel operator+(const Voxel& rhs) const { return Voxel(*this) += rhs; }
+
+  _ Voxel operator-(const Voxel& rhs) const { return Voxel(*this) -= rhs; }
 };
 
 }  // PET3D
