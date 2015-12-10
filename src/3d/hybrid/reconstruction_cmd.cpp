@@ -196,7 +196,7 @@ int main(int argc, char* argv[]) {
   auto n_iterations_in_block = cl.get<int>("iterations");
   auto n_iterations = n_blocks * n_iterations_in_block;
 
-  auto crop_pixels = cl.get<int>("crop-pixels");
+  auto crop_pixels = cl.get<int>("crop");
   auto crop_origin = PET3D::Voxel<S>(
       cl.get<int>("crop-x"), cl.get<int>("crop-y"), cl.get<int>("crop-z"));
   Output cropped_output(crop_pixels, crop_pixels, crop_pixels);
