@@ -254,6 +254,7 @@ pet_target(3d hybrid phantom ${CL_2D_OPTIONS})
 pet_target(3d hybrid reconstruction ${CL_2D_OPTIONS})
 pet_target(3d hybrid sensitivity ${CL_2D_OPTIONS})
 
+pet_target(3d tool crop ${CL_2D_OPTIONS} ${CL_3D_OPTIONS})
 pet_target(3d tool psf ${CL_2D_OPTIONS} ${CL_3D_OPTIONS})
 
 if(Boost_FOUND)
