@@ -45,7 +45,7 @@ using Vector = PET3D::Vector<F>;
 #include "util/bstream.h"
 #endif
 
-void print_psf(const std::string& fn,
+void print_psf(const cmdline::path& fn,
                const VoxelMap& img,
                const F s_pixel,
                std::ostream& out);
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
   CMDLINE_CATCH
 }
 
-void print_psf(const std::string& fn,
+void print_psf(const cmdline::path& fn,
                const VoxelMap& img,
                const F s_pixel,
                std::ostream& out) {
@@ -125,13 +125,15 @@ void print_psf(const std::string& fn,
   Vector left, right, psf;
   PET3D::Hybrid::PSF::calculate(
       img, max_voxel, max, left_above_half, right_above_half, left, right, psf);
-  out << std::setw(35) << fn << '\t'         //
-      << std::setw(3) << std::fixed          //
-      << max_voxel.x << ' '                  //
-      << max_voxel.y << ' '                  //
-      << max_voxel.z << ' '                  //
-      << std::setw(15) << std::fixed << max  //
-      << std::setw(3) << '\t'                //
+  out << std::setw(35) << fn << ' '   //
+      << std::setw(3) << std::fixed   //
+      << fn.scan_index() << '\t'      //
+      << max_voxel.x << ' '           //
+      << max_voxel.y << ' '           //
+      << max_voxel.z << ' '           //
+      << std::setw(15) << std::fixed  //
+      << max << '\t'                  //
+      << std::setw(3)                 //
 #if PRINT_ABOVE
       << left_above_half.x << ' '    //
       << left_above_half.y << ' '    //
