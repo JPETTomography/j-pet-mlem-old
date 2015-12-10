@@ -55,9 +55,10 @@ void add_config_option(cmdline::parser& cl) {
                         cmdline::load);
 }
 
-void add_pixel_options(cmdline::parser& cl) {
-  cl.add<int>("n-pixels", 'n', "number of pixels in one dimension", false, 256);
-  cl.add<double>("s-pixel", 'p', "pixel size", false);
+void add_pixel_options(cmdline::parser& cl, bool required) {
+  cl.add<int>(
+      "n-pixels", 'n', "number of pixels in one dimension", required, 256);
+  cl.add<double>("s-pixel", 'p', "pixel size", required);
 }
 
 void add_model_options(cmdline::parser& cl) {

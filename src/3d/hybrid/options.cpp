@@ -2,6 +2,7 @@
 
 #include "2d/barrel/options.h"
 #include "2d/strip/options.h"
+#include "common/options.h"
 #include "util/cmdline_types.h"
 
 namespace PET3D {
@@ -51,18 +52,32 @@ void add_sensitivity_options(cmdline::parser& cl) {
   cl.add<int>("y-plane", 0, "y plane cut", false);
   cl.add<int>("n-planes", 0, "number of z planes", false, 80);
   cl.add<double>("length", 'L', "length of the detector", false, 2);
+  cl.add("int", 'i', "values are integers");
+
+  cl.footer("image ...");
+}
+
+void add_psf_options(cmdline::parser& cl) {
+
+  PET2D::Barrel::add_pixel_options(cl, true);
+  cl.add<int>("n-planes", 0, "number of voxels in z direction", false, 0);
+  cl.add<double>("z-left", 0, "left extent in z direction", false, 0);
+  Common::add_openmp_options(cl);
 }
 
 void calculate_scanner_options(cmdline::parser& cl, int argc) {
   PET2D::Barrel::calculate_scanner_options(cl, argc);
 }
 
-static void calculate_resonstruction_or_phantom_options(cmdline::parser& cl,
-                                                        int argc,
-                                                        bool phantom) {
+enum Cmd { CmdReconstruction = 0, CmdPhantom, CmdPSF };
+
+static void calculate_cmd_options(cmdline::parser& cl, int argc, Cmd cmd) {
   std::stringstream assumed;
-  auto calculate_pixel = !phantom || cl.exist("n-pixels");
-  PET2D::Barrel::calculate_scanner_options(cl, argc, assumed, calculate_pixel);
+  auto calculate_pixel = cmd != CmdPhantom || cl.exist("n-pixels");
+  if (cmd != CmdPSF) {
+    PET2D::Barrel::calculate_scanner_options(
+        cl, argc, assumed, calculate_pixel);
+  }
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& n_planes = cl.get<int>("n-planes");
@@ -80,17 +95,21 @@ static void calculate_resonstruction_or_phantom_options(cmdline::parser& cl,
     }
   }
 
-  if (cl.exist("verbose") && assumed.str().size()) {
+  if ((cmd == CmdPSF || cl.exist("verbose")) && assumed.str().size()) {
     std::cerr << "assumed:" << std::endl << assumed.str();
   }
 }
 
 void calculate_phantom_options(cmdline::parser& cl, int argc) {
-  calculate_resonstruction_or_phantom_options(cl, argc, true);
+  calculate_cmd_options(cl, argc, CmdPhantom);
 }
 
 void calculate_resonstruction_options(cmdline::parser& cl, int argc) {
-  calculate_resonstruction_or_phantom_options(cl, argc, false);
+  calculate_cmd_options(cl, argc, CmdReconstruction);
+}
+
+void calculate_psf_options(cmdline::parser& cl, int argc) {
+  calculate_cmd_options(cl, argc, CmdPSF);
 }
 
 }  // Hybrid

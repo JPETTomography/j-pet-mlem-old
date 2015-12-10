@@ -54,7 +54,7 @@ void add_scanner_options(cmdline::parser& parser);
 void add_config_option(cmdline::parser& parser);
 
 /// Adds pixel specific command line options.
-void add_pixel_options(cmdline::parser& parser);
+void add_pixel_options(cmdline::parser& parser, bool required = false);
 
 /// Adds probability model specific command line options.
 void add_model_options(cmdline::parser& parser);
