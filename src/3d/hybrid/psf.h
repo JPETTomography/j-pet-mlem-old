@@ -44,7 +44,8 @@ struct PSF {
     }
     max = 0;
     for (int t = 0; t < omp_get_max_threads(); ++t) {
-      if (thread_maxes[t] > max) {
+      if (thread_maxes[t] > max ||
+          (thread_maxes[t] == max && thread_max_voxels[t] < max_voxel)) {
         max = thread_maxes[t];
         max_voxel = thread_max_voxels[t];
       }
@@ -133,7 +134,7 @@ struct PSF {
     const auto half_max = max / 2;
 
     if (left_above_half.x == 0 || right_above_half.x == img.width - 1) {
-      psf.x = 0;
+      psf.x = -1;
       left.x = left_above_half.x;
       right.x = right_above_half.x;
     } else {
@@ -147,7 +148,7 @@ struct PSF {
     }
 
     if (left_above_half.y == 0 || right_above_half.y == img.height - 1) {
-      psf.y = 0;
+      psf.y = -1;
       left.y = left_above_half.y;
       right.y = right_above_half.y;
     } else {
@@ -161,7 +162,7 @@ struct PSF {
     }
 
     if (left_above_half.z == 0 || right_above_half.z == img.depth - 1) {
-      psf.z = 0;
+      psf.z = -1;
       left.z = left_above_half.z;
       right.z = right_above_half.z;
     } else {
@@ -169,8 +170,8 @@ struct PSF {
       Voxel lb(max_voxel.x, max_voxel.y, left_above_half.z - 1);
       Voxel ra(max_voxel.x, max_voxel.y, right_above_half.z + 0);
       Voxel rb(max_voxel.x, max_voxel.y, right_above_half.z + 1);
-      left.z = left_above_half.z - (img[lb] - half_max) / (img[la] - img[lb]);
-      right.z = right_above_half.z + (img[rb] - half_max) / (img[ra] - img[rb]);
+      left.z = left_above_half.z - (img[la] - half_max) / (img[la] - img[lb]);
+      right.z = right_above_half.z + (img[ra] - half_max) / (img[ra] - img[rb]);
       psf.z = right.z - left.z;
     }
   }
