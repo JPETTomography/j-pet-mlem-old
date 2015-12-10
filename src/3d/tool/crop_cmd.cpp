@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
   cmdline::parser cl;
-  PET3D::Tool::add_psf_options(cl);
+  PET3D::Tool::add_crop_options(cl);
   cl.parse_check(argc, argv);
   PET3D::Tool::calculate_psf_options(cl, argc);
 
@@ -72,10 +72,14 @@ int main(int argc, char* argv[]) {
             << " x " << grid.n_planes << std::endl;
   std::cerr << "   voxel size = " << s_pixel << std::endl;
 
-  auto crop_pixels = cl.get<int>("crop");
-  auto crop_origin =
-      PET3D::Voxel<S>(cl.get<int>("x"), cl.get<int>("y"), cl.get<int>("z"));
-  VoxelMap cropped_img(crop_pixels, crop_pixels, crop_pixels);
+  auto crop_size = cl.get<int>("crop");
+  auto crop_origin = PET3D::Voxel<S>(
+      cl.get<int>("crop-x"), cl.get<int>("crop-y"), cl.get<int>("crop-z"));
+  VoxelMap cropped_img(crop_size, crop_size, crop_size);
+
+  std::cerr << "  crop origin = "
+            << "(" << crop_origin.x << ", " << crop_origin.y << ", "
+            << crop_origin.z << ")" << std::endl;
 
   for (const auto& in_fn : cl.rest()) {
     if (cmdline::path(in_fn).ext() == ".txt") {
@@ -105,6 +109,7 @@ int main(int argc, char* argv[]) {
     auto fn = index >= 0 ? output_base_name.add_index(index, index)
                          : output_base_name;
 
+    std::cerr << "       output = " << fn + output_ext << std::endl;
     cropped_img.copy(img, crop_origin);
     util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
     nrrd << cropped_img;

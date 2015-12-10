@@ -103,9 +103,9 @@ template <typename VoxelType, typename ValueType> class VoxelMap {
     translation -= Voxel(width, height, depth);
     translation.x /= 2, translation.y /= 2, translation.z /= 2;
     translation += origin;
-    for (S z = 0; z < size; ++z) {
-      for (S y = 0; y < size; ++y) {
-        for (S x = 0; x < size; ++x) {
+    for (S z = 0; z < depth; ++z) {
+      for (S y = 0; y < height; ++y) {
+        for (S x = 0; x < width; ++x) {
           Voxel voxel(x, y, z);
           (*this)[voxel] = source[voxel + translation];
         }
