@@ -151,7 +151,7 @@ void run(const SimpleGeometry& geometry,
     }
 
     int iteration = (block + 1) * n_iterations_in_block;
-    if (iteration < start_iteration)
+    if (iteration <= start_iteration)
       continue;
     output_rho.copy_from_device();
     output(iteration, rho_output);

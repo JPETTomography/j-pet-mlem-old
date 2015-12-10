@@ -266,7 +266,7 @@ int main(int argc, char* argv[]) {
         progress(iteration, true);
       }
       const auto iteration = (block + 1) * n_iterations_in_block;
-      if (iteration < start_iteration)
+      if (iteration <= start_iteration)
         continue;
       if (!output_base_name.length())
         continue;
