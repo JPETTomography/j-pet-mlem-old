@@ -77,9 +77,9 @@ int main(int argc, char* argv[]) {
   std::cerr << "   voxel size = " << s_pixel << std::endl;
 
   for (const auto& fn : cl.rest()) {
-#if DEBUG
-    std::cerr << "     response = " << fn << std::endl;
-#endif
+    if (cmdline::path(fn).ext() == ".txt") {
+      throw("text files are not supported by this tool: " + fn);
+    }
 #if USE_MMAP
     auto fd = open(fn.c_str(), O_RDONLY);
     if (fd == -1) {
@@ -97,9 +97,6 @@ int main(int argc, char* argv[]) {
       throw("cannot open: " + fn);
     }
     bin >> img;
-#endif
-#if DEBUG
-    std::cerr << "         data = " << img.data << std::endl;
 #endif
     print_psf(fn, img, s_pixel, std::cout);
 #if USE_MMAP
