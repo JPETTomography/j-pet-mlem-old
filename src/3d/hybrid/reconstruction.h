@@ -84,14 +84,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         kernel_(scanner.sigma_z(), scanner.sigma_dl()),
         n_threads_(omp_get_max_threads()),
         n_events_per_thread_(n_threads_, 0),
-        sensitivity_(geometry.grid.n_columns, geometry.grid.n_rows) {
-    for (int i = 0; i < n_threads_; ++i) {
-      thread_rhos_.emplace_back(
-          grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, n_planes);
-      thread_kernel_caches_.emplace_back(
-          grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, n_planes);
-    }
-  }
+        sensitivity_(geometry.grid.n_columns, geometry.grid.n_rows) {}
 
   F sigma_w(F width) const { return F(0.3) * width; }
 
@@ -240,6 +233,15 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   }
 
   int operator()() {
+    if (thread_rhos_.size() == 0) {
+      for (int i = 0; i < n_threads_; ++i) {
+        thread_rhos_.emplace_back(
+            grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, grid.n_planes);
+        thread_kernel_caches_.emplace_back(
+            grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, grid.n_planes);
+      }
+    }
+
     size_t used_pixels = 0, used_voxels = 0, used_events = 0;
 
     const auto& pixel_grid = grid.pixel_grid;
