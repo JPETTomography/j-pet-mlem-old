@@ -30,13 +30,21 @@ class path : public std::string {
     return substr(fn_ext != std::string::npos ? fn_ext : size(), size());
   }
 
-  path add_index(int index, int max) const {
+  /// Add index suffix to file name with given zero padding
+  path add_index(int index,             ///< index to append as suffix
+                 int max_or_digits = 0  ///< maximum value
+                                        ///  (or when negative number of digits)
+                 ) const {
     // NOTE: This assumes index is <= max (not index < max).
     int n_digits = 1;
-    int max_for_digits = 10;
-    while (max_for_digits <= max) {
-      ++n_digits;
-      max_for_digits *= 10;
+    if (max_or_digits > 0) {
+      int max_for_digits = 10;
+      while (max_for_digits <= max_or_digits) {
+        ++n_digits;
+        max_for_digits *= 10;
+      }
+    } else {
+      n_digits = max_or_digits;
     }
     std::stringstream fn;
     fn << *this << "_" << std::setw(n_digits)  //
