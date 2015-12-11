@@ -1,6 +1,8 @@
 /// \page cmd_3d_tool_crop 3d_tool_crop
 /// \brief Crops image into subimage
 ///
+/// \image html crop.pdf.png
+///
 /// Usage
 /// -----
 /// \verboutput 3d_tool_crop
