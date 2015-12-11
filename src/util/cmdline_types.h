@@ -53,16 +53,24 @@ class path : public std::string {
     return fn.str();
   }
 
-  int scan_index() const {
+  /// Return index suffix value and number of its digits (if present)
+  int scan_index(int& n_digits) const {
     size_t start;
     for (start = length(); start > 0; --start) {
       if (!std::isdigit((*this)[start - 1]))
         break;
     }
+    n_digits = length() - start;
     std::istringstream ss(substr(start));
     int index;
     ss >> index;
     return index;
+  }
+
+  /// Return index suffix value
+  int scan_index() const {
+    int n_digits;
+    return scan_index(n_digits);
   }
 
  private:
