@@ -1,8 +1,10 @@
 /// \page cmd_3d_tool_psf 3d_tool_psf
 /// \brief 3D Point-Spread-Function calculation tool
 ///
-/// Creates Point-Spread-Function statistics for given reconstruction / image
-/// files.
+/// Calculates full width at half maximum (FWHM) for point spread function (PSF)
+/// for given reconstruction / image files.
+///
+/// \image html FWHM.pdf.png
 ///
 /// Usage
 /// -----
