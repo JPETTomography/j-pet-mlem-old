@@ -10,7 +10,7 @@
 /// -----
 /// \verboutput 3d_tool_psf
 ///
-/// \sa \ref cmd_3d_hybrid_phantom, \ref cmd_3d_hybrid_matrix
+/// \sa \ref cmd_3d_hybrid_reconstruction
 
 #if _OPENMP
 #include <omp.h>

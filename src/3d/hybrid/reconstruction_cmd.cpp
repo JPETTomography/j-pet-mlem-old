@@ -9,7 +9,8 @@
 /// -----
 /// \verboutput 3d_hybrid_reconstruction
 ///
-/// \sa \ref cmd_3d_hybrid_matrix, \ref cmd_3d_hybrid_phantom
+/// \sa \ref cmd_3d_hybrid_matrix, \ref cmd_3d_hybrid_phantom,
+///     \ref cmd_3d_tool_psf
 
 #include <iostream>
 #include <fstream>
