@@ -63,6 +63,8 @@ int main(int argc, char* argv[]) {
   auto output_base_name = output_name.wo_ext();
   auto output_ext = output_name.ext();
   auto output_txt = output_ext == ".txt";
+  int output_n_digits;
+  auto output_index = output_base_name.scan_index(output_n_digits);
 
   int n_planes = cl.get<int>("n-planes");
   VoxelGrid grid(pixel_grid, -s_pixel * n_planes / 2, n_planes);
@@ -105,9 +107,19 @@ int main(int argc, char* argv[]) {
     bin >> img;
 #endif
 
-    auto index = cmdline::path(in_fn).scan_index();
-    auto fn = index >= 0 ? output_base_name.add_index(index, index)
-                         : output_base_name;
+    int n_digits;
+    auto index = cmdline::path(in_fn).scan_index(n_digits);
+    // check if output digit suffix is same as input
+    if (n_digits > 0 && output_n_digits > 0 && index != output_index) {
+      throw("output `" + output_base_name + "' index suffix mismatch `" +
+            in_fn + "'");
+    }
+    if (output_n_digits > 0) {
+      // do not add suffix if output has already one
+      n_digits = 0;
+    }
+    auto fn = n_digits > 0 ? output_base_name.add_index(index, -n_digits)
+                           : output_base_name;
 
     std::cerr << "       output = " << fn + output_ext << std::endl;
     cropped_img.copy(img, crop_origin);
