@@ -16,7 +16,8 @@ namespace Reconstruction {
 texture<F, 2, cudaReadModeElementType> tex_rho;
 
 // foreach p: count y[p] and store it in output_rho[p]
-__global__ static void reconstruction_1(const PixelInfo* pixel_infos,
+__global__ static void reconstruction_1(const Pixel* pixels,
+                                        const F* pixel_weights,
                                         const size_t* lor_pixel_info_begin,
                                         const size_t* lor_pixel_info_end,
                                         const Mean* means,
@@ -42,17 +43,18 @@ __global__ static void reconstruction_1(const PixelInfo* pixel_infos,
 
     // count u for current lor
     F u = 0;
-    for (auto i = pixel_info_begin; i < pixel_info_end; ++i) {
-      auto pixel_info = pixel_infos[i];
-      auto pixel = pixel_info.pixel;
-      u += tex2D(tex_rho, pixel.x, pixel.y) * pixel_info.weight;
+    for (auto info_index = pixel_info_begin; info_index < pixel_info_end;
+         ++info_index) {
+      const auto pixel = pixels[info_index];
+      const auto pixel_weight = pixel_weights[info_index];
+      u += tex2D(tex_rho, pixel.x, pixel.y) * pixel_weight;
     }
     F phi = mean.mean / u;
-    for (auto i = pixel_info_begin; i < pixel_info_end; ++i) {
-      auto pixel_info = pixel_infos[i];
-      auto pixel = pixel_info.pixel;
-      atomicAdd(&output_rho[pixel.y * width + pixel.x],
-                phi * pixel_info.weight);
+    for (auto info_index = pixel_info_begin; info_index < pixel_info_end;
+         ++info_index) {
+      const auto pixel = pixels[info_index];
+      const auto pixel_weight = pixel_weights[info_index];
+      atomicAdd(&output_rho[pixel.index(width)], phi * pixel_weight);
     }
   }
 }
@@ -111,8 +113,10 @@ void run(const SimpleGeometry& geometry,
   cudaGetDeviceProperties(&prop, device);
   info(prop.name);
 
-  util::cuda::on_device<PixelInfo> device_pixel_infos(geometry.pixel_infos,
-                                                      geometry.n_pixel_infos);
+  util::cuda::on_device<Pixel> device_pixels(geometry.pixels,
+                                             geometry.n_pixel_infos);
+  util::cuda::on_device<F> device_pixel_weights(geometry.pixel_weights,
+                                                geometry.n_pixel_infos);
   util::cuda::on_device<size_t> device_lor_pixel_info_begin(
       geometry.lor_pixel_info_begin, geometry.n_lors);
   util::cuda::on_device<size_t> device_lor_pixel_info_end(
@@ -131,8 +135,11 @@ void run(const SimpleGeometry& geometry,
   util::cuda::on_device<F> scale((size_t)width * height);
   scale.zero_on_device();
 
-  Common::GPU::reduce_to_sensitivity(
-      device_pixel_infos, geometry.n_pixel_infos, scale, width);
+  Common::GPU::reduce_to_sensitivity(device_pixels,
+                                     device_pixel_weights,
+                                     geometry.n_pixel_infos,
+                                     scale,
+                                     width);
   cudaThreadSynchronize();
 
   Common::GPU::invert(scale, width * height);
@@ -146,7 +153,8 @@ void run(const SimpleGeometry& geometry,
       rho = output_rho;
       output_rho.zero_on_device();
 
-      reconstruction_1(device_pixel_infos,
+      reconstruction_1(device_pixels,
+                       device_pixel_weights,
                        device_lor_pixel_info_begin,
                        device_lor_pixel_info_end,
                        device_means,

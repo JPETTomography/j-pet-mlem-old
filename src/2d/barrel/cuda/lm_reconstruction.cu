@@ -26,16 +26,19 @@ template <typename FType, typename SType> struct Kernel {
         inv_sigma2_dl(1 / (2 * sigma * sigma)),
         width(width) {}
 
-  __device__ F l(const Event& event, const PixelInfo& pixel_info) {
-    auto diff_t = pixel_info.t - event.t;
+  __device__ F l(const Event& event, const F pixel_position) {
+    auto diff_t = pixel_position - event.t;
     return gauss_norm_dl * compat::exp(-diff_t * diff_t * inv_sigma2_dl);
   }
 
-  __device__ F operator()(const Event& event, const PixelInfo& pixel_info) {
-    const auto pixel = pixel_info.pixel;
+  __device__ F operator()(const Event& event,
+                          const Pixel& pixel,
+                          const F pixel_position,
+                          const F pixel_weight) {
     const auto pixel_index = pixel.y * width + pixel.x;
-    const auto kernel_z = pixel_info.weight * scale[pixel_index];
-    return l(event, pixel_info) * kernel_z * tex2D(tex_rho, pixel.x, pixel.y);
+    const auto kernel_z = pixel_weight * scale[pixel_index];
+    return l(event, pixel_position) * kernel_z *
+           tex2D(tex_rho, pixel.x, pixel.y);
   }
 
   const F* scale;
@@ -45,7 +48,9 @@ template <typename FType, typename SType> struct Kernel {
   const S width;
 };
 
-__global__ static void reconstruction(const PixelInfo* pixel_infos,
+__global__ static void reconstruction(const Pixel* pixels,
+                                      const F* pixel_positions,
+                                      const F* pixel_weights,
                                       const Event* events,
                                       const int n_events,
                                       F* output_rho,
@@ -74,8 +79,10 @@ __global__ static void reconstruction(const PixelInfo* pixel_infos,
     for (auto info_index = event.pixel_info_begin;
          info_index < event.pixel_info_end;
          ++info_index) {
-      const auto& pixel_info = pixel_infos[info_index];
-      denominator += kernel(event, pixel_info);
+      const auto pixel = pixels[info_index];
+      const auto pixel_position = pixel_positions[info_index];
+      const auto pixel_weight = pixel_weights[info_index];
+      denominator += kernel(event, pixel, pixel_position, pixel_weight);
     }  // voxel loop - denominator
 
     if (denominator == 0)
@@ -87,10 +94,12 @@ __global__ static void reconstruction(const PixelInfo* pixel_infos,
     for (auto info_index = event.pixel_info_begin;
          info_index < event.pixel_info_end;
          ++info_index) {
-      const auto& pixel_info = pixel_infos[info_index];
-      const auto pixel_index = pixel_info.pixel.y * width + pixel_info.pixel.x;
-      atomicAdd(&output_rho[pixel_index],
-                kernel(event, pixel_info) * inv_denominator);
+      const auto pixel = pixels[info_index];
+      const auto pixel_position = pixel_positions[info_index];
+      const auto pixel_weight = pixel_weights[info_index];
+      atomicAdd(
+          &output_rho[pixel.index(width)],
+          kernel(event, pixel, pixel_position, pixel_weight) * inv_denominator);
     }  // voxel loop
   }    // event loop
 }
@@ -145,8 +154,12 @@ void run(const SimpleGeometry& geometry,
   cudaGetDeviceProperties(&prop, device);
   info(prop.name);
 
-  util::cuda::on_device<PixelInfo> device_pixel_infos(geometry.pixel_infos,
-                                                      geometry.n_pixel_infos);
+  util::cuda::on_device<Pixel> device_pixels(geometry.pixels,
+                                             geometry.n_pixel_infos);
+  util::cuda::on_device<F> device_pixel_positions(geometry.pixel_positions,
+                                                  geometry.n_pixel_infos);
+  util::cuda::on_device<F> device_pixel_weights(geometry.pixel_weights,
+                                                geometry.n_pixel_infos);
   util::cuda::on_device<size_t> device_lor_pixel_info_begin(
       geometry.lor_pixel_info_begin, geometry.n_lors);
   util::cuda::on_device<Event> device_events(events, n_events);
@@ -164,8 +177,11 @@ void run(const SimpleGeometry& geometry,
   util::cuda::on_device<F> scale((size_t)width * height);
   scale.zero_on_device();
 
-  Common::GPU::reduce_to_sensitivity(
-      device_pixel_infos, geometry.n_pixel_infos, scale, width);
+  Common::GPU::reduce_to_sensitivity(device_pixels,
+                                     device_pixel_weights,
+                                     geometry.n_pixel_infos,
+                                     scale,
+                                     width);
   cudaThreadSynchronize();
 
   Common::GPU::invert(scale, width * height);
@@ -179,7 +195,9 @@ void run(const SimpleGeometry& geometry,
       rho = output_rho;
       output_rho.zero_on_device();
 
-      reconstruction(device_pixel_infos,
+      reconstruction(device_pixels,
+                     device_pixel_positions,
+                     device_pixel_weights,
                      device_events,
                      n_events,
                      output_rho,

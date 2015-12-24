@@ -9,10 +9,11 @@ namespace Common {
 namespace GPU {
 
 using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
-using PixelInfo = SimpleGeometry::PixelInfo;
+using Pixel = PET2D::Pixel<S>;
 
 /// Calculates sensitivity out of given pixel_infos
-__global__ void reduce_to_sensitivity(const PixelInfo* pixel_infos,
+__global__ void reduce_to_sensitivity(const Pixel* pixels,
+                                      const F* pixel_weights,
                                       const size_t n_pixel_infos,
                                       float* output,
                                       const int width);

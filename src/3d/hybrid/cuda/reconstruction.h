@@ -33,7 +33,6 @@ using Kernel = PET2D::Strip::GaussianKernel<F>;
 using ReconstructionBase = PET3D::Hybrid::Reconstruction<Scanner, Kernel>;
 using Event = ReconstructionBase::FrameEvent;
 using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
-using PixelInfo = SimpleGeometry::PixelInfo;
 using Output = VoxelMap<Voxel, F>;
 using Sensitivity = PET2D::PixelMap<Pixel, F>;
 using Grid = PET3D::VoxelGrid<F, S>;

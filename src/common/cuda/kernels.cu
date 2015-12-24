@@ -3,7 +3,8 @@
 namespace Common {
 namespace GPU {
 
-__global__ void reduce_to_sensitivity(const PixelInfo* pixel_infos,
+__global__ void reduce_to_sensitivity(const Pixel* pixels,
+                                      const F* pixel_weights,
                                       const size_t n_pixel_infos,
                                       float* output,
                                       const int width) {
@@ -18,9 +19,8 @@ __global__ void reduce_to_sensitivity(const PixelInfo* pixel_infos,
     if (index >= n_pixel_infos) {
       break;
     }
-    PixelInfo pixel_info = pixel_infos[index];
-    auto pixel = pixel_info.pixel;
-    atomicAdd(&output[pixel.y * width + pixel.x], pixel_info.weight);
+    const auto pixel = pixels[index];
+    atomicAdd(&output[pixel.y * width + pixel.x], pixel_weights[index]);
   }
 }
 

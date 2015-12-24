@@ -17,7 +17,8 @@ texture<F, 3, cudaReadModeElementType> tex_rho;
 texture<F, 2, cudaReadModeElementType> tex_sensitivity;
 
 __global__ static void reconstruction(const LineSegment* lor_line_segments,
-                                      const PixelInfo* pixel_infos,
+                                      const Pixel* pixels,
+                                      const F* pixel_weights,
                                       const Event* events,
                                       const int n_events,
                                       F* output_rho,
@@ -61,10 +62,10 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         break;
       const auto pixel_index = voxel_index / n_planes;
       const auto plane_index = voxel_index % n_planes;
-      const auto& pixel_info =
-          pixel_infos[pixel_index + event.pixel_info_begin];
+      const auto info_index = pixel_index + event.pixel_info_begin;
+      const auto pixel = pixels[info_index];
+      const auto pixel_weight = pixel_weights[info_index];
 
-      auto pixel = pixel_info.pixel;
       auto center = grid.pixel_grid.center_at(pixel);
       auto up = segment.projection_relative_middle(center);
       auto iz = event.plane_begin + plane_index;
@@ -78,7 +79,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                         R,
                                         barrel_length,
                                         Point2D(z, up));
-      auto kernel_t = pixel_info.weight;
+      auto kernel_t = pixel_weight;
       auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                     tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
       // end of kernel calculation
@@ -102,10 +103,10 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         break;
       const auto pixel_index = voxel_index / n_planes;
       const auto plane_index = voxel_index % n_planes;
-      const auto& pixel_info =
-          pixel_infos[pixel_index + event.pixel_info_begin];
+      const auto info_index = pixel_index + event.pixel_info_begin;
+      const auto pixel = pixels[info_index];
+      const auto pixel_weight = pixel_weights[info_index];
 
-      auto pixel = pixel_info.pixel;
       auto center = grid.pixel_grid.center_at(pixel);
       auto up = segment.projection_relative_middle(center);
       auto iz = event.plane_begin + plane_index;
@@ -119,7 +120,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                         R,
                                         barrel_length,
                                         Point2D(z, up));
-      auto kernel_t = pixel_info.weight;
+      auto kernel_t = pixel_weight;
       auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                     tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
       // end of kernel calculation

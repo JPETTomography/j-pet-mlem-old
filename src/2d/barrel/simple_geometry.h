@@ -12,11 +12,11 @@
 namespace PET2D {
 namespace Barrel {
 
-/// Keeps flat information about barrel, including grid and all LOR info
+/// Keeps flat SOA information about barrel, including grid and all LOR info
 ////
 /// This class is simplification of PET2D::Barrel::Geometry, the difference
-/// is that it keeps geometry as flat array of \c PixelInfo structures, not
-/// using \c std::vector or any STL containers.
+/// is that it keeps geometry as flat structure of arrays equivalent of
+/// \c PixelInfo structures, not using \c std::vector or any STL containers.
 ///
 /// \see PET2D::Barrel::Geometry
 /// \see PET2D::Barrel::SparseMatrix
@@ -34,13 +34,6 @@ class SimpleGeometry {
   using Geometry = PET2D::Barrel::Geometry<F, S>;
 #endif
 
-  /// Information about single pixel in context of certain LOR
-  struct PixelInfo {
-    Pixel pixel;  ///< pixel itself
-    F t;          ///< position of projected Pixel along the LOR
-    F weight;     ///< custom weight of the Pixel eg. probability
-  };
-
   /// Construct empty geometry information for given number of detectors.
   SimpleGeometry(S n_detectors,        ///< number of detectors
                  size_t n_pixel_infos  ///< total number of pixel infos
@@ -49,13 +42,17 @@ class SimpleGeometry {
         n_lors(((size_t(n_detectors) + 1) * size_t(n_detectors)) / 2),
         lor_line_segments(new LineSegment[n_lors]),
         n_pixel_infos(n_pixel_infos),
-        pixel_infos(new PixelInfo[n_pixel_infos]),
+        pixels(new Pixel[n_pixel_infos]),
+        pixel_positions(new F[n_pixel_infos]),
+        pixel_weights(new F[n_pixel_infos]),
         lor_pixel_info_begin(new size_t[n_lors]),
         lor_pixel_info_end(new size_t[n_lors]) {}
 
   ~SimpleGeometry() {
     delete[] lor_line_segments;
-    delete[] pixel_infos;
+    delete[] pixels;
+    delete[] pixel_positions;
+    delete[] pixel_weights;
     delete[] lor_pixel_info_begin;
     delete[] lor_pixel_info_end;
   }
@@ -82,9 +79,8 @@ class SimpleGeometry {
         lor_pixel_info_begin[lor_index] = index;
       }
       // assign information for this pixel info
-      pixel_infos[index].pixel = element.pixel;
-      pixel_infos[index].weight =
-          (F)element.hits / (F)sparse_matrix.n_emissions();
+      pixels[index] = element.pixel;
+      pixel_weights[index] = (F)element.hits / (F)sparse_matrix.n_emissions();
       ++index;
     }
   }
@@ -102,10 +98,10 @@ class SimpleGeometry {
       lor_line_segments[lor_index] = lor_geometry.segment;
       lor_pixel_info_begin[lor_index] = size;
       for (const auto& geometry_pixel_info : lor_geometry.pixel_infos) {
-        auto& pixel_info = pixel_infos[size++];
-        pixel_info.pixel = geometry_pixel_info.pixel;
-        pixel_info.t = geometry_pixel_info.t;
-        pixel_info.weight = geometry_pixel_info.weight;
+        pixels[size] = geometry_pixel_info.pixel;
+        pixel_positions[size] = geometry_pixel_info.t;
+        pixel_weights[size] = geometry_pixel_info.weight;
+        ++size;
       }
       lor_pixel_info_end[lor_index] = size;
     }
@@ -116,7 +112,9 @@ class SimpleGeometry {
   const size_t n_lors;                   ///< total number of LORs
   LineSegment* const lor_line_segments;  ///< LOR line segments array
   const size_t n_pixel_infos;            ///< total number of pixel infos
-  PixelInfo* const pixel_infos;          ///< pointer to pixel infos array
+  Pixel* const pixels;                   ///< pointer to pixels array
+  F* const pixel_positions;              ///< projected pixels along the LOR
+  F* const pixel_weights;                ///< pixel weights eg. probability
   size_t* const lor_pixel_info_begin;    ///< pointer to array holding start of
                                          ///  pixel infos for given LOR
   size_t* const lor_pixel_info_end;      ///< pointer to array holding end of

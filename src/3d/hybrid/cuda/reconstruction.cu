@@ -85,8 +85,10 @@ void run(const SimpleGeometry& geometry,
 
   util::cuda::on_device<LineSegment> device_lor_line_segments(
       geometry.lor_line_segments, geometry.n_lors);
-  util::cuda::on_device<PixelInfo> device_pixel_infos(geometry.pixel_infos,
-                                                      geometry.n_pixel_infos);
+  util::cuda::on_device<Pixel> device_pixels(geometry.pixels,
+                                             geometry.n_pixel_infos);
+  util::cuda::on_device<F> device_pixel_weights(geometry.pixel_weights,
+                                                geometry.n_pixel_infos);
   util::cuda::on_device<size_t> device_lor_pixel_info_begin(
       geometry.lor_pixel_info_begin, geometry.n_lors);
   util::cuda::on_device<Event> device_events(events, n_events);
@@ -125,7 +127,8 @@ void run(const SimpleGeometry& geometry,
       output_rho.zero_on_device();
 
       reconstruction(device_lor_line_segments,
-                     device_pixel_infos,
+                     device_pixels,
+                     device_pixel_weights,
                      device_events,
                      n_events,
                      output_rho,

@@ -14,7 +14,8 @@ namespace GPU {
 namespace Reconstruction {
 
 __global__ static void reconstruction(const LineSegment* lor_line_segments,
-                                      const PixelInfo* pixel_infos,
+                                      const Pixel* pixels,
+                                      const F* pixel_weights,
                                       const Event* events,
                                       const int n_events,
                                       F* output_rho,
@@ -51,16 +52,16 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
 
     // -- voxel loop - denominator -------------------------------------------
     for (auto pixel_chunk = 0; pixel_chunk < n_pixel_chunks; ++pixel_chunk) {
-      const auto info_index =
+      const auto pixel_index =
           WARP_SIZE * pixel_chunk + (threadIdx.x & (WARP_SIZE - 1));
       // check if we are still on the list
-      if (info_index >= n_pixels)
+      if (pixel_index >= n_pixels)
         break;
-      const auto& pixel_info = pixel_infos[info_index + event.pixel_info_begin];
-
-      auto pixel = pixel_info.pixel;
-      auto center = grid.pixel_grid.center_at(pixel);
-      auto up = segment.projection_relative_middle(center);
+      const auto info_index = pixel_index + event.pixel_info_begin;
+      const auto pixel = pixels[info_index];
+      const auto pixel_weight = pixel_weights[info_index];
+      const auto center = grid.pixel_grid.center_at(pixel);
+      const auto up = segment.projection_relative_middle(center);
 
       for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
         // kernel calculation:
@@ -73,7 +74,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                           R,
                                           barrel_length,
                                           Point2D(z, up));
-        auto kernel_t = pixel_info.weight;
+        auto kernel_t = pixel_weight;
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                       rho[voxel_index];
         // end of kernel calculation
@@ -93,16 +94,16 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
 
     // -- voxel loop ---------------------------------------------------------
     for (auto pixel_chunk = 0; pixel_chunk < n_pixel_chunks; ++pixel_chunk) {
-      const auto info_index =
+      const auto pixel_index =
           WARP_SIZE * pixel_chunk + (threadIdx.x & (WARP_SIZE - 1));
       // check if we are still on the list
-      if (info_index >= n_pixels)
+      if (pixel_index >= n_pixels)
         break;
-      const auto& pixel_info = pixel_infos[info_index + event.pixel_info_begin];
-
-      auto pixel = pixel_info.pixel;
-      auto center = grid.pixel_grid.center_at(pixel);
-      auto up = segment.projection_relative_middle(center);
+      const auto info_index = pixel_index + event.pixel_info_begin;
+      const auto pixel = pixels[info_index];
+      const auto pixel_weight = pixel_weights[info_index];
+      const auto center = grid.pixel_grid.center_at(pixel);
+      const auto up = segment.projection_relative_middle(center);
 
       for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
         // kernel calculation:
@@ -115,7 +116,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                           R,
                                           barrel_length,
                                           Point2D(z, up));
-        auto kernel_t = pixel_info.weight;
+        auto kernel_t = pixel_weight;
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                       rho[voxel_index];
         // end of kernel calculation
