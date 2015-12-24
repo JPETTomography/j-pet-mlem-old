@@ -53,7 +53,7 @@
 
 using Reconstruction = PET2D::Barrel::Reconstruction<F, S, Hit>;
 #if HAVE_CUDA
-using GeometrySOA = PET2D::Barrel::GeometrySOA<F, S, Hit>;
+using GeometrySOA = PET2D::Barrel::GeometrySOA<F, S>;
 #endif
 
 int main(int argc, char* argv[]) {

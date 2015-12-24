@@ -22,7 +22,7 @@ using Point = PET2D::Point<F>;
 using Pixel = PET2D::Pixel<S>;
 using LOR = Barrel::LOR<S>;
 using Mean = Barrel::Reconstruction<F, S, Hit>::Mean;
-using Geometry = Barrel::GeometrySOA<F, S, Hit>;
+using Geometry = Barrel::GeometrySOA<F, S>;
 using Output = PixelMap<Pixel, F>;
 /// \endcond
 

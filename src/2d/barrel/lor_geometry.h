@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/bstream.h"
+#include "util/read.h"
 
 #include "2d/barrel/lor.h"
 #include "2d/geometry/pixel_grid.h"

@@ -59,7 +59,7 @@ using ScannerBuilder = PET2D::Barrel::ScannerBuilder<Scanner>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
 using Geometry = PET2D::Barrel::Geometry<F, S>;
 #if HAVE_CUDA
-using GeometrySOA = PET2D::Barrel::GeometrySOA<F, S, Hit>;
+using GeometrySOA = PET2D::Barrel::GeometrySOA<F, S>;
 #endif
 
 int main(int argc, char* argv[]) {

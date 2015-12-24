@@ -20,16 +20,14 @@ namespace Barrel {
 ///
 /// \see PET2D::Barrel::Geometry
 /// \see PET2D::Barrel::SparseMatrix
-template <typename FType, typename SType, typename HitType> class GeometrySOA {
+template <typename FType, typename SType> class GeometrySOA {
  public:
   using F = FType;
   using S = SType;
-  using Hit = HitType;
   using Pixel = PET2D::Pixel<S>;
   using LOR = PET2D::Barrel::LOR<S>;
   using LineSegment = PET2D::LineSegment<F>;
 #if !__CUDACC__
-  using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
   using Geometry = PET2D::Barrel::Geometry<F, S>;
 #endif
 
@@ -58,9 +56,13 @@ template <typename FType, typename SType, typename HitType> class GeometrySOA {
 
 #if !__CUDACC__
   /// Construct geometry information out of sparse matrix.
-  GeometrySOA(const SparseMatrix& sparse_matrix  ///< sparse matrix
+  template <typename HitType>
+  GeometrySOA(const PET2D::Barrel::SparseMatrix<Pixel, LOR, HitType>&
+                  sparse_matrix  ///< sparse matrix
               )
       : GeometrySOA(sparse_matrix.n_detectors(), sparse_matrix.size()) {
+    using Hit = HitType;
+    using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
     const auto end_lor = LOR::end_for_detectors(n_detectors);
     auto lor = end_lor;
     auto lor_index = lor.index();

@@ -8,7 +8,7 @@
 namespace Common {
 namespace GPU {
 
-using Geometry = PET2D::Barrel::GeometrySOA<F, S, Hit>;
+using Geometry = PET2D::Barrel::GeometrySOA<F, S>;
 using Pixel = PET2D::Pixel<S>;
 
 /// Calculates sensitivity out of given pixel_infos
