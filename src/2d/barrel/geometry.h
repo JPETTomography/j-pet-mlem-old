@@ -28,7 +28,7 @@ template <> constexpr uint32_t magic<double>() { return "PETG"_4cc; }
 /// distance to LOR line, its position along LOR line, etc.
 ///
 /// \see PET2D::Barrel::SparseMatrix
-/// \see PET2D::Barrel::SimpleGeometry
+/// \see PET2D::Barrel::GeometrySOA
 template <typename FType, typename SType>
 class Geometry : public std::vector<LORGeometry<FType, SType>> {
  public:

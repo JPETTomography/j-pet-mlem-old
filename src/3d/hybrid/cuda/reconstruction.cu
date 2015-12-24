@@ -48,7 +48,7 @@ __global__ static void add_offsets(Event* events,
   }
 }
 
-void run(const SimpleGeometry& geometry,
+void run(const Geometry& geometry,
          const Sensitivity& sensitivity,
          const Event* events,
          int n_events,

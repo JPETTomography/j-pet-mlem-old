@@ -20,8 +20,7 @@ namespace Barrel {
 ///
 /// \see PET2D::Barrel::Geometry
 /// \see PET2D::Barrel::SparseMatrix
-template <typename FType, typename SType, typename HitType>
-class SimpleGeometry {
+template <typename FType, typename SType, typename HitType> class GeometrySOA {
  public:
   using F = FType;
   using S = SType;
@@ -35,9 +34,9 @@ class SimpleGeometry {
 #endif
 
   /// Construct empty geometry information for given number of detectors.
-  SimpleGeometry(S n_detectors,        ///< number of detectors
-                 size_t n_pixel_infos  ///< total number of pixel infos
-                 )
+  GeometrySOA(S n_detectors,        ///< number of detectors
+              size_t n_pixel_infos  ///< total number of pixel infos
+              )
       : n_detectors(n_detectors),
         n_lors(((size_t(n_detectors) + 1) * size_t(n_detectors)) / 2),
         lor_line_segments(new LineSegment[n_lors]),
@@ -48,7 +47,7 @@ class SimpleGeometry {
         lor_pixel_info_begin(new size_t[n_lors]),
         lor_pixel_info_end(new size_t[n_lors]) {}
 
-  ~SimpleGeometry() {
+  ~GeometrySOA() {
     delete[] lor_line_segments;
     delete[] pixels;
     delete[] pixel_positions;
@@ -59,9 +58,9 @@ class SimpleGeometry {
 
 #if !__CUDACC__
   /// Construct geometry information out of sparse matrix.
-  SimpleGeometry(const SparseMatrix& sparse_matrix  ///< sparse matrix
-                 )
-      : SimpleGeometry(sparse_matrix.n_detectors(), sparse_matrix.size()) {
+  GeometrySOA(const SparseMatrix& sparse_matrix  ///< sparse matrix
+              )
+      : GeometrySOA(sparse_matrix.n_detectors(), sparse_matrix.size()) {
     const auto end_lor = LOR::end_for_detectors(n_detectors);
     auto lor = end_lor;
     auto lor_index = lor.index();
@@ -88,9 +87,9 @@ class SimpleGeometry {
   /// Construct geometry information out of more advanced geometry.
   ////
   /// Takes PET2D::Barrel::Geometry class instance and flattens it.
-  SimpleGeometry(const Geometry& geometry  ///< advanced geometry
-                 )
-      : SimpleGeometry(geometry.n_detectors, geometry.n_pixel_infos()) {
+  GeometrySOA(const Geometry& geometry  ///< advanced geometry
+              )
+      : GeometrySOA(geometry.n_detectors, geometry.n_pixel_infos()) {
     size_t size = 0;
     for (const auto& lor_geometry : geometry) {
       const auto& lor = lor_geometry.lor;

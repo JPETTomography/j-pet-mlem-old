@@ -5,7 +5,7 @@
 #include "../../geometry/pixel_map.h"
 
 #include "../lor.h"
-#include "../simple_geometry.h"
+#include "../geometry_soa.h"
 #include "../reconstruction.h"
 
 #include "common/types.h"
@@ -22,12 +22,12 @@ using Point = PET2D::Point<F>;
 using Pixel = PET2D::Pixel<S>;
 using LOR = Barrel::LOR<S>;
 using Mean = Barrel::Reconstruction<F, S, Hit>::Mean;
-using SimpleGeometry = Barrel::SimpleGeometry<F, S, Hit>;
+using Geometry = Barrel::GeometrySOA<F, S, Hit>;
 using Output = PixelMap<Pixel, F>;
 /// \endcond
 
 /// CUDA optimized reconstruction implementation
-void run(const SimpleGeometry& geometry,
+void run(const Geometry& geometry,
          const Mean* means,
          int n_means,
          int width,

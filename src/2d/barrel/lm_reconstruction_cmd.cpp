@@ -45,7 +45,7 @@
 
 #if HAVE_CUDA
 #include "cuda/lm_reconstruction.h"
-#include "simple_geometry.h"
+#include "geometry_soa.h"
 #endif
 
 using RNG = std::mt19937;
@@ -59,7 +59,7 @@ using ScannerBuilder = PET2D::Barrel::ScannerBuilder<Scanner>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
 using Geometry = PET2D::Barrel::Geometry<F, S>;
 #if HAVE_CUDA
-using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
+using GeometrySOA = PET2D::Barrel::GeometrySOA<F, S, Hit>;
 #endif
 
 int main(int argc, char* argv[]) {
@@ -170,9 +170,9 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
-    SimpleGeometry simple_geometry(geometry);
+    GeometrySOA geometry_soa(geometry);
     PET2D::Barrel::GPU::LMReconstruction::run(
-        simple_geometry,
+        geometry_soa,
         reconstruction.events().data(),
         reconstruction.n_events(),
         reconstruction.sigma(),

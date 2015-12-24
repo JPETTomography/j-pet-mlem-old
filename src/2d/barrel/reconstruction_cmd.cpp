@@ -48,12 +48,12 @@
 
 #if HAVE_CUDA
 #include "cuda/reconstruction.h"
-#include "simple_geometry.h"
+#include "geometry_soa.h"
 #endif
 
 using Reconstruction = PET2D::Barrel::Reconstruction<F, S, Hit>;
 #if HAVE_CUDA
-using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
+using GeometrySOA = PET2D::Barrel::GeometrySOA<F, S, Hit>;
 #endif
 
 int main(int argc, char* argv[]) {
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
-    SimpleGeometry geometry(matrix);
+    GeometrySOA geometry(matrix);
     PET2D::Barrel::GPU::Reconstruction::run(
         geometry,
         reconstruction.means().data(),

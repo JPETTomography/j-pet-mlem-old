@@ -3,7 +3,7 @@
 #include "common/types.h"
 #include "util/delegate.h"
 
-#include "2d/barrel/simple_geometry.h"
+#include "2d/barrel/geometry_soa.h"
 #include "2d/strip/gaussian_kernel.h"
 #include "3d/geometry/point.h"
 #include "3d/geometry/voxel.h"
@@ -32,14 +32,14 @@ using Scanner = PET3D::Hybrid::Scanner<Scanner2D>;
 using Kernel = PET2D::Strip::GaussianKernel<F>;
 using ReconstructionBase = PET3D::Hybrid::Reconstruction<Scanner, Kernel>;
 using Event = ReconstructionBase::FrameEvent;
-using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
+using Geometry = PET2D::Barrel::GeometrySOA<F, S, Hit>;
 using Output = VoxelMap<Voxel, F>;
 using Sensitivity = PET2D::PixelMap<Pixel, F>;
 using Grid = PET3D::VoxelGrid<F, S>;
 /// \endcond
 
 /// CUDA optimized reconstruction implementation
-void run(const SimpleGeometry& geometry,
+void run(const Geometry& geometry,
          const Sensitivity& sensitivity,
          const Event* events,
          int n_events,

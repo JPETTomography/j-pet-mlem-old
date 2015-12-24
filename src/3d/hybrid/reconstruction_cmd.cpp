@@ -217,10 +217,9 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
-    PET3D::Hybrid::GPU::Reconstruction::SimpleGeometry simple_geometry(
-        geometry);
+    PET3D::Hybrid::GPU::Reconstruction::Geometry gpu_geometry(geometry);
     PET3D::Hybrid::GPU::Reconstruction::run(
-        simple_geometry,
+        gpu_geometry,
         reconstruction.sensitivity(),
         reconstruction.events().data(),
         reconstruction.n_events(),

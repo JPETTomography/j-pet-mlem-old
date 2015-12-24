@@ -83,7 +83,7 @@ __global__ static void reconstruction_2(F* output_rho,
   }
 }
 
-void run(const SimpleGeometry& geometry,
+void run(const Geometry& geometry,
          const Mean* means,
          int n_means,
          int width,

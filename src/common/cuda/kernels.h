@@ -2,13 +2,13 @@
 
 #include <cuda_runtime.h>
 
-#include "2d/barrel/simple_geometry.h"
+#include "2d/barrel/geometry_soa.h"
 #include "common/types.h"
 
 namespace Common {
 namespace GPU {
 
-using SimpleGeometry = PET2D::Barrel::SimpleGeometry<F, S, Hit>;
+using Geometry = PET2D::Barrel::GeometrySOA<F, S, Hit>;
 using Pixel = PET2D::Pixel<S>;
 
 /// Calculates sensitivity out of given pixel_infos
