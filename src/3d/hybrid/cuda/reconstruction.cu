@@ -14,6 +14,8 @@
 #else            // pixel granularity (faster)
 #if USE_TEXTURE  // use texture and 3D arrays for rho and 2D sensitivity lookup
 #include "reconstruction/warp_granularity.cuh"
+#define USE_MULTI_PLANE_WEIGHTS 1
+#include "reconstruction/warp_granularity.cuh"
 #else  // use linear memory
 #include "reconstruction/warp_granularity_no_tex.cuh"
 #endif
@@ -87,8 +89,8 @@ void run(const Geometry& geometry,
       geometry.lor_line_segments, geometry.n_lors);
   util::cuda::on_device<Pixel> device_pixels(geometry.pixels,
                                              geometry.n_pixel_infos);
-  util::cuda::on_device<F> device_pixel_weights(geometry.pixel_weights,
-                                                geometry.n_pixel_infos);
+  util::cuda::on_device<F> device_pixel_weights(
+      geometry.pixel_weights, geometry.n_pixel_infos * geometry.n_planes);
   util::cuda::on_device<size_t> device_lor_pixel_info_begin(
       geometry.lor_pixel_info_begin, geometry.n_lors);
   util::cuda::on_device<Event> device_events(events, n_events);
@@ -126,20 +128,39 @@ void run(const Geometry& geometry,
       rho = output_rho;
       output_rho.zero_on_device();
 
-      reconstruction(device_lor_line_segments,
-                     device_pixels,
-                     device_pixel_weights,
-                     device_events,
-                     n_events,
-                     output_rho,
+#if USE_MULTI_PLANE_WEIGHTS
+      if (geometry.n_planes > 1)
+        Multiplane::reconstruction(device_lor_line_segments,
+                                   device_pixels,
+                                   device_pixel_weights,
+                                   geometry.n_pixel_infos,
+                                   device_events,
+                                   n_events,
+                                   output_rho,
 #if !USE_TEXTURE
-                     rho,
-                     device_sensitivity,
+                                   rho,
+                                   device_sensitivity,
 #endif
-                     sigma_z,
-                     sigma_dl,
-                     grid,
-                     barrel_length);
+                                   sigma_z,
+                                   sigma_dl,
+                                   grid,
+                                   barrel_length);
+      else
+#endif
+        reconstruction(device_lor_line_segments,
+                       device_pixels,
+                       device_pixel_weights,
+                       device_events,
+                       n_events,
+                       output_rho,
+#if !USE_TEXTURE
+                       rho,
+                       device_sensitivity,
+#endif
+                       sigma_z,
+                       sigma_dl,
+                       grid,
+                       barrel_length);
       cudaThreadSynchronize();
 
       progress(iteration, true);

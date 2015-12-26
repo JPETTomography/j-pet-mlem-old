@@ -12,13 +12,21 @@ namespace PET3D {
 namespace Hybrid {
 namespace GPU {
 namespace Reconstruction {
+#if USE_MULTI_PLANE_WEIGHTS
+namespace Multiplane {
+#endif
 
+#if !USE_MULTI_PLANE_WEIGHTS
 texture<F, 3, cudaReadModeElementType> tex_rho;
 texture<F, 2, cudaReadModeElementType> tex_sensitivity;
+#endif
 
 __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                       const Pixel* pixels,
                                       const F* pixel_weights,
+#if USE_MULTI_PLANE_WEIGHTS
+                                      const int n_pixel_infos,
+#endif
                                       const Event* events,
                                       const int n_events,
                                       F* output_rho,
@@ -60,11 +68,17 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         break;
       const auto info_index = pixel_index + event.pixel_info_begin;
       const auto pixel = pixels[info_index];
+#if !USE_MULTI_PLANE_WEIGHTS
       const auto pixel_weight = pixel_weights[info_index];
+#endif
       const auto center = grid.pixel_grid.center_at(pixel);
       const auto up = segment.projection_relative_middle(center);
 
       for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
+#if USE_MULTI_PLANE_WEIGHTS
+        const auto pixel_weight =
+            pixel_weights[iz * n_pixel_infos + info_index];
+#endif
         // kernel calculation:
         Voxel voxel(pixel.x, pixel.y, iz);
         auto rho = tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
@@ -102,11 +116,17 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         break;
       const auto info_index = pixel_index + event.pixel_info_begin;
       const auto pixel = pixels[info_index];
+#if !USE_MULTI_PLANE_WEIGHTS
       const auto pixel_weight = pixel_weights[info_index];
+#endif
       const auto center = grid.pixel_grid.center_at(pixel);
       const auto up = segment.projection_relative_middle(center);
 
       for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
+#if USE_MULTI_PLANE_WEIGHTS
+        const auto pixel_weight =
+            pixel_weights[iz * n_pixel_infos + info_index];
+#endif
         // kernel calculation:
         Voxel voxel(pixel.x, pixel.y, iz);
         auto rho = tex3D(tex_rho, voxel.x, voxel.y, voxel.z);
@@ -131,6 +151,9 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
   }    // event loop
 }
 
+#if USE_MULTI_PLANE_WEIGHTS
+}  // Multiplane
+#endif
 }  // Reconstruction
 }  // GPU
 }  // Hybrid

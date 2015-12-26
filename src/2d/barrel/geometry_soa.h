@@ -32,16 +32,18 @@ template <typename FType, typename SType> class GeometrySOA {
 #endif
 
   /// Construct empty geometry information for given number of detectors.
-  GeometrySOA(S n_detectors,        ///< number of detectors
-              size_t n_pixel_infos  ///< total number of pixel infos
+  GeometrySOA(const S n_detectors,         ///< number of detectors
+              const size_t n_pixel_infos,  ///< total number of pixel infos
+              const size_t n_planes = 1    ///< number of planes
               )
       : n_detectors(n_detectors),
         n_lors(((size_t(n_detectors) + 1) * size_t(n_detectors)) / 2),
         lor_line_segments(new LineSegment[n_lors]),
         n_pixel_infos(n_pixel_infos),
+        n_planes(n_planes),
         pixels(new Pixel[n_pixel_infos]),
         pixel_positions(new F[n_pixel_infos]),
-        pixel_weights(new F[n_pixel_infos]),
+        pixel_weights(new F[n_pixel_infos * n_planes]),
         lor_pixel_info_begin(new size_t[n_lors]),
         lor_pixel_info_end(new size_t[n_lors]) {}
 
@@ -58,9 +60,12 @@ template <typename FType, typename SType> class GeometrySOA {
   /// Construct geometry information out of sparse matrix.
   template <typename HitType>
   GeometrySOA(const PET2D::Barrel::SparseMatrix<Pixel, LOR, HitType>&
-                  sparse_matrix  ///< sparse matrix
+                  sparse_matrix,         ///< sparse matrix
+              const size_t n_planes = 1  ///< number of planes
               )
-      : GeometrySOA(sparse_matrix.n_detectors(), sparse_matrix.size()) {
+      : GeometrySOA(sparse_matrix.n_detectors(),
+                    sparse_matrix.size(),
+                    n_planes) {
     using Hit = HitType;
     using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
     const auto end_lor = LOR::end_for_detectors(n_detectors);
@@ -89,9 +94,10 @@ template <typename FType, typename SType> class GeometrySOA {
   /// Construct geometry information out of more advanced geometry.
   ////
   /// Takes PET2D::Barrel::Geometry class instance and flattens it.
-  GeometrySOA(const Geometry& geometry  ///< advanced geometry
+  GeometrySOA(const Geometry& geometry,  ///< advanced geometry
+              const size_t n_planes = 1  ///< number of planes
               )
-      : GeometrySOA(geometry.n_detectors, geometry.n_pixel_infos()) {
+      : GeometrySOA(geometry.n_detectors, geometry.n_pixel_infos(), n_planes) {
     size_t size = 0;
     for (const auto& lor_geometry : geometry) {
       const auto& lor = lor_geometry.lor;
@@ -113,6 +119,7 @@ template <typename FType, typename SType> class GeometrySOA {
   const size_t n_lors;                   ///< total number of LORs
   LineSegment* const lor_line_segments;  ///< LOR line segments array
   const size_t n_pixel_infos;            ///< total number of pixel infos
+  const size_t n_planes;                 ///< number of planes
   Pixel* const pixels;                   ///< pointer to pixels array
   F* const pixel_positions;              ///< projected pixels along the LOR
   F* const pixel_weights;                ///< pixel weights eg. probability
