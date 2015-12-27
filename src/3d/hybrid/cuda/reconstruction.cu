@@ -51,7 +51,7 @@ __global__ static void add_offsets(Event* events,
 }
 
 void run(const Geometry& geometry,
-         const Sensitivity& sensitivity,
+         const Output& sensitivity,
          const Event* events,
          int n_events,
          F sigma_z,

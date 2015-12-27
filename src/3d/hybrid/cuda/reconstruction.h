@@ -34,13 +34,12 @@ using ReconstructionBase = PET3D::Hybrid::Reconstruction<Scanner, Kernel>;
 using Event = ReconstructionBase::FrameEvent;
 using Geometry = PET2D::Barrel::GeometrySOA<F, S>;
 using Output = VoxelMap<Voxel, F>;
-using Sensitivity = PET2D::PixelMap<Pixel, F>;
 using Grid = PET3D::VoxelGrid<F, S>;
 /// \endcond
 
 /// CUDA optimized reconstruction implementation
 void run(const Geometry& geometry,
-         const Sensitivity& sensitivity,
+         const Output& sensitivity,
          const Event* events,
          int n_events,
          F sigma_z,

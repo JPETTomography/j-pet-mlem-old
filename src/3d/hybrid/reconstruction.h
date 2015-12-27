@@ -83,7 +83,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         kernel_(scanner.sigma_z(), scanner.sigma_dl()),
         n_threads_(omp_get_max_threads()),
         n_events_per_thread_(n_threads_, 0),
-        sensitivity_(grid.pixel_grid.n_columns, grid.pixel_grid.n_rows) {}
+        sensitivity_(grid.pixel_grid.n_columns,
+                     grid.pixel_grid.n_rows,
+                     geometry.n_planes) {}
 
   F sigma_w(F width) const { return F(0.3) * width; }
 
@@ -211,7 +213,11 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     for (int pixel_info = 0; pixel_info < geometry.n_pixel_infos;
          ++pixel_info) {
       const auto pixel = geometry.pixels[pixel_info];
-      sensitivity_[pixel] += geometry.pixel_weights[pixel_info];
+      for (int plane = 0; plane < geometry.n_planes; ++plane) {
+        Voxel voxel(pixel.x, pixel.y, plane);
+        const auto voxel_index = pixel_info + geometry.n_pixel_infos * plane;
+        sensitivity_[voxel] += geometry.pixel_weights[voxel_index];
+      }
     }
   }
 
@@ -222,13 +228,19 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     for (int pixel_info = 0; pixel_info < geometry.n_pixel_infos;
          ++pixel_info) {
       const auto pixel = geometry.pixels[pixel_info];
-      geometry.pixel_weights[pixel_info] /= sensitivity_[pixel];
+      for (int plane = 0; plane < geometry.n_planes; ++plane) {
+        Voxel voxel(pixel.x, pixel.y, plane);
+        const auto voxel_index = pixel_info + geometry.n_pixel_infos * plane;
+        geometry.pixel_weights[voxel_index] /= sensitivity_[voxel];
+      }
     }
   }
 
   void set_sensitivity_to_one() { sensitivity_.assign(1); }
 
   int operator()() {
+    bool multiplane = geometry.n_planes > 1;
+
     if (thread_rhos_.size() == 0) {
       for (int i = 0; i < n_threads_; ++i) {
         thread_rhos_.emplace_back(
@@ -271,7 +283,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
            ++info_index) {
         used_pixels++;  // statistics
         const auto pixel = geometry.pixels[info_index];
-        const auto pixel_weight = geometry.pixel_weights[info_index];
+        F pixel_weight;
+        if (!multiplane)
+          pixel_weight = geometry.pixel_weights[info_index];
         const auto pixel_index = pixel_grid.index(pixel);
         const auto center = pixel_grid.center_at(pixel);
         const auto up = segment.projection_relative_middle(center);
@@ -288,9 +302,14 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
                                  R,
                                  scanner.length,
                                  Point2D(z, up));
-          const auto kernel_t = pixel_weight;
+          const auto kernel_t =
+              multiplane
+                  ? geometry
+                        .pixel_weights[info_index + iz * geometry.n_pixel_infos]
+                  : pixel_weight;
           const auto weight = kernel2d * kernel_t * rho[voxel_index];
-          denominator += weight * sensitivity_[pixel_index];
+          denominator +=
+              weight * sensitivity_[multiplane ? voxel_index : pixel_index];
 
           thread_kernel_caches_[thread][voxel_index] = weight;
         }
@@ -349,7 +368,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     return image;
   }
 
-  const Map2D& sensitivity() const { return sensitivity_; }
+  const Output& sensitivity() const { return sensitivity_; }
 
   void graph_frame_event(Common::MathematicaGraphics<F>& graphics,
                          int event_index) {
@@ -428,7 +447,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   std::vector<Output> thread_kernel_caches_;
   std::vector<VoxelKernelInfo> voxel_cache_;
   std::vector<int> n_events_per_thread_;
-  Map2D sensitivity_;
+  Output sensitivity_;
 #endif  // !__CUDACC__
 };
 
