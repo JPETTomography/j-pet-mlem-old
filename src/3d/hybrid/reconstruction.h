@@ -283,9 +283,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
            ++info_index) {
         used_pixels++;  // statistics
         const auto pixel = geometry.pixels[info_index];
-        F pixel_weight;
-        if (!multiplane)
-          pixel_weight = geometry.pixel_weights[info_index];
+        const auto pixel_weight = geometry.pixel_weights[info_index];
         const auto pixel_index = pixel_grid.index(pixel);
         const auto center = pixel_grid.center_at(pixel);
         const auto up = segment.projection_relative_middle(center);

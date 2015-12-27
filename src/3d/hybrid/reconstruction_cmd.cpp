@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
     while (std::getline(ss, fn, ',')) {
       matrices_fns.push_back(fn);
     }
-    if (matrices_fns.size() != 1 && matrices_fns.size() != grid.n_planes / 2) {
+    if (matrices_fns.size() != 1 && matrices_fns.size() != (size_t)(grid.n_planes / 2)) {
       throw("you must specify either one or half no. planes matrices");
     }
   }
