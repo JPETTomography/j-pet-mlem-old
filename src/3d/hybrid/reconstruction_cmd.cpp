@@ -108,8 +108,10 @@ int main(int argc, char* argv[]) {
     geometry.load_weights_from_matrix_file<Hit>(fn);
   }
 
-  Reconstruction reconstruction(
-      scanner, geometry, cl.get<double>("z-left"), cl.get<int>("n-planes"));
+  Reconstruction::Grid grid(
+      geometry.grid, cl.get<double>("z-left"), cl.get<int>("n-planes"));
+  Reconstruction::Geometry geometry_soa(geometry);
+  Reconstruction reconstruction(scanner, grid, geometry_soa);
 
   auto start_iteration = 0;
   if (cl.exist("rho")) {
@@ -217,9 +219,8 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
-    PET3D::Hybrid::GPU::Reconstruction::Geometry gpu_geometry(geometry);
     PET3D::Hybrid::GPU::Reconstruction::run(
-        gpu_geometry,
+        geometry_soa,
         reconstruction.sensitivity(),
         reconstruction.events().data(),
         reconstruction.n_events(),
