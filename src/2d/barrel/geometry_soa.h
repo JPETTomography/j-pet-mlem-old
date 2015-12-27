@@ -143,21 +143,34 @@ template <typename FType, typename SType> class GeometrySOA {
 
     LOR current_lor = LOR::end_for_detectors(matrix.n_detectors());
     size_t pixel_index = 0, pixel_index_end = 0;
+    std::vector<size_t> indices;
     for (auto& element : matrix) {
       if (element.lor != current_lor) {
         current_lor = element.lor;
         const auto lor_index = current_lor.index();
-        pixel_index = lor_pixel_info_begin[lor_index];
-        pixel_index_end = lor_pixel_info_end[lor_index];
+        const auto pixel_info_begin = lor_pixel_info_begin[lor_index];
+        const auto pixel_info_end = lor_pixel_info_end[lor_index];
+        indices.resize(pixel_info_end - pixel_info_begin);
+        pixel_index = 0;
+        pixel_index_end = indices.size();
+        for (size_t i = 0; i < pixel_index_end; ++i) {
+          indices[i] = i + pixel_info_begin;
+        }
+        std::sort(indices.begin(),
+                  indices.end(),
+                  [this](const size_t a, const size_t b) {
+                    return this->pixels[a] < this->pixels[b];
+                  });
       }
-      while (pixels[pixel_index] < element.pixel &&
+      while (pixels[indices[pixel_index]] < element.pixel &&
              pixel_index < pixel_index_end) {
         ++pixel_index;
       }
-      if (element.pixel < pixels[pixel_index] || pixel_index == pixel_index_end)
+      if (element.pixel < pixels[indices[pixel_index]] ||
+          pixel_index == pixel_index_end)
         continue;
       F weight = element.hits / n_emissions;
-      pixel_weights[plane * n_pixel_infos + pixel_index] += weight;
+      pixel_weights[plane * n_pixel_infos + indices[pixel_index]] += weight;
     }
   }
 #endif
