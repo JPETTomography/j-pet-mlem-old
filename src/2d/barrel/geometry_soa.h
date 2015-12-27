@@ -113,6 +113,50 @@ template <typename FType, typename SType> class GeometrySOA {
       lor_pixel_info_end[lor_index] = size;
     }
   }
+
+  /// Loads weights from given system matrix file
+  ////
+  /// Assumes that geometry LOR pixels are sorted by y then x.
+  template <typename HitType>
+  void load_weights_from_matrix_file(std::string system_matrix_fn,
+                                     const size_t plane = 0) {
+    using Hit = HitType;
+    util::ibstream in_matrix(system_matrix_fn);
+    if (!in_matrix.is_open()) {
+      throw("cannot open system matrix file: " + system_matrix_fn);
+    }
+    PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit> matrix(in_matrix);
+    matrix.sort_by_lor_n_pixel();
+
+    F n_emissions = F(matrix.n_emissions());
+    if (matrix.triangular()) {
+      throw("matrix is not full");
+    }
+
+    // clear memory for given plane
+    std::memset(&pixel_weights[plane * n_pixel_infos],
+                0,
+                sizeof(*pixel_weights) * n_pixel_infos);
+
+    LOR current_lor = LOR::end_for_detectors(matrix.n_detectors());
+    size_t pixel_index, pixel_index_end;
+    for (auto& element : matrix) {
+      if (element.lor != current_lor) {
+        current_lor = element.lor;
+        const auto lor_index = current_lor.index();
+        pixel_index = lor_pixel_info_begin[lor_index];
+        pixel_index_end = lor_pixel_info_end[lor_index];
+      }
+      while (pixels[pixel_index] < element.pixel &&
+             pixel_index < pixel_index_end) {
+        ++pixel_index;
+      }
+      if (element.pixel < pixels[pixel_index] || pixel_index == pixel_index_end)
+        continue;
+      F weight = element.hits / n_emissions;
+      pixel_weights[plane * n_pixel_infos + pixel_index] += weight;
+    }
+  }
 #endif
 
   const S n_detectors;                   ///< number of detectors
