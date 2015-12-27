@@ -113,10 +113,20 @@ void run(const Geometry& geometry,
                                               (size_t)sensitivity.width,
                                               (size_t)sensitivity.height,
                                               sensitivity.data);
+  (void)device_sensitivity;  // device sensitivity is used via tex_sensitivity
+#if USE_MULTI_PLANE_WEIGHTS
+  util::cuda::texture3D<F> device_multiplane_sensitivity(
+      Multiplane::tex_multiplane_sensitivity,
+      (size_t)sensitivity.width,
+      (size_t)sensitivity.height,
+      (size_t)sensitivity.depth,
+      sensitivity.data);
+  (void)device_multiplane_sensitivity;  // device multi-plane sensitivity is
+                                        // used via tex_sensitivity
+#endif
 #else
   util::cuda::on_device<F> device_sensitivity((size_t)grid.pixel_grid.n_pixels);
 #endif
-  (void)device_sensitivity;  // device sensitivity is used via tex_sensitivity
 
   for (int block = 0; block < n_iteration_blocks; ++block) {
     for (int i = 0; i < n_iterations_in_block; ++i) {
