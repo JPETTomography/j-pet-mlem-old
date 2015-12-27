@@ -79,9 +79,9 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
 
       for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
 #if USE_MULTI_PLANE_WEIGHTS
-        const auto half_plane = compat::abs(iz - n_planes_half);
+        const auto abs_plane = compat::abs(iz - n_planes_half);
         const auto pixel_weight =
-            pixel_weights[half_plane * n_pixel_infos + info_index];
+            pixel_weights[abs_plane * n_pixel_infos + info_index];
 #endif
         // kernel calculation:
         Voxel voxel(pixel.x, pixel.y, iz);
@@ -102,7 +102,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         denominator +=
             weight *
 #if USE_MULTI_PLANE_WEIGHTS
-            tex3D(tex_multiplane_sensitivity, voxel.x, voxel.y, half_plane)
+            tex3D(tex_multiplane_sensitivity, voxel.x, voxel.y, abs_plane)
 #else
             tex2D(tex_sensitivity, voxel.x, voxel.y)
 #endif

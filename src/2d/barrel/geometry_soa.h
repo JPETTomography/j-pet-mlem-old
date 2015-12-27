@@ -34,17 +34,17 @@ template <typename FType, typename SType> class GeometrySOA {
   /// Construct empty geometry information for given number of detectors.
   GeometrySOA(const S n_detectors,         ///< number of detectors
               const size_t n_pixel_infos,  ///< total number of pixel infos
-              const size_t n_planes = 1    ///< number of planes
+              const size_t n_planes = 2    ///< number of planes
               )
       : n_detectors(n_detectors),
         n_lors(((size_t(n_detectors) + 1) * size_t(n_detectors)) / 2),
         lor_line_segments(new LineSegment[n_lors]),
         lor_widths(new F[n_lors]),
         n_pixel_infos(n_pixel_infos),
-        n_planes(n_planes),
+        n_planes_half(n_planes / 2),
         pixels(new Pixel[n_pixel_infos]),
         pixel_positions(new F[n_pixel_infos]),
-        pixel_weights(new F[n_pixel_infos * n_planes]),
+        pixel_weights(new F[n_pixel_infos * n_planes / 2]),
         lor_pixel_info_begin(new size_t[n_lors]),
         lor_pixel_info_end(new size_t[n_lors]) {}
 
@@ -63,7 +63,7 @@ template <typename FType, typename SType> class GeometrySOA {
   template <typename HitType>
   GeometrySOA(const PET2D::Barrel::SparseMatrix<Pixel, LOR, HitType>&
                   sparse_matrix,         ///< sparse matrix
-              const size_t n_planes = 1  ///< number of planes
+              const size_t n_planes = 2  ///< number of planes
               )
       : GeometrySOA(sparse_matrix.n_detectors(),
                     sparse_matrix.size(),
@@ -97,7 +97,7 @@ template <typename FType, typename SType> class GeometrySOA {
   ////
   /// Takes PET2D::Barrel::Geometry class instance and flattens it.
   GeometrySOA(const Geometry& geometry,  ///< advanced geometry
-              const size_t n_planes = 1  ///< number of planes
+              const size_t n_planes = 2  ///< number of planes
               )
       : GeometrySOA(geometry.n_detectors, geometry.n_pixel_infos(), n_planes) {
     size_t size = 0;
@@ -180,7 +180,8 @@ template <typename FType, typename SType> class GeometrySOA {
   LineSegment* const lor_line_segments;  ///< LOR line segments array
   F* const lor_widths;                   ///< LOR widths array
   const size_t n_pixel_infos;            ///< total number of pixel infos
-  const size_t n_planes;                 ///< number of planes
+  const size_t n_planes_half;            ///< half number of planes
+                                         ///  (since we have symmetry in z-axis)
   Pixel* const pixels;                   ///< pointer to pixels array
   F* const pixel_positions;              ///< projected pixels along the LOR
   F* const pixel_weights;                ///< pixel weights eg. probability
