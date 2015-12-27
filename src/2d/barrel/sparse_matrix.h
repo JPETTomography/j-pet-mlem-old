@@ -180,6 +180,8 @@ class SparseMatrix
     in >> in_n_pixels_in_row;
     if (in_is_triangular)
       in_n_pixels_in_row *= 2;
+    else
+      sorted_ = UNSORTED;
 
     FileInt in_n_emissions = 0;
     in >> in_n_emissions;
