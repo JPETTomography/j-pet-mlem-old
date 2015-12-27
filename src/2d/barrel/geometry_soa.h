@@ -162,12 +162,12 @@ template <typename FType, typename SType> class GeometrySOA {
                     return this->pixels[a] < this->pixels[b];
                   });
       }
-      while (pixels[indices[pixel_index]] < element.pixel &&
-             pixel_index < pixel_index_end) {
+      while (pixel_index < pixel_index_end &&
+             pixels[indices[pixel_index]] < element.pixel) {
         ++pixel_index;
       }
-      if (element.pixel < pixels[indices[pixel_index]] ||
-          pixel_index == pixel_index_end)
+      if (pixel_index == pixel_index_end ||
+          element.pixel < pixels[indices[pixel_index]])
         continue;
       F weight = element.hits / n_emissions;
       pixel_weights[plane * n_pixel_infos + indices[pixel_index]] += weight;
