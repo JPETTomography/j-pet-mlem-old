@@ -58,9 +58,7 @@ using Scanner = PET2D::Barrel::GenericScanner<SquareDetector, S>;
 using ScannerBuilder = PET2D::Barrel::ScannerBuilder<Scanner>;
 using MathematicaGraphics = Common::MathematicaGraphics<F>;
 using Geometry = PET2D::Barrel::Geometry<F, S>;
-#if HAVE_CUDA
-using GeometrySOA = PET2D::Barrel::GeometrySOA<F, S>;
-#endif
+using Reconstruction = PET2D::Barrel::LMReconstruction<F, S>;
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -101,8 +99,9 @@ int main(int argc, char* argv[]) {
     geometry.load_weights_from_matrix_file<Hit>(fn);
   }
 
-  PET2D::Barrel::LMReconstruction<F, S> reconstruction(
-      geometry, cl.get<double>("s-dl") / 2);
+  Reconstruction::Geometry geometry_soa(geometry);
+  Reconstruction reconstruction(
+      geometry.grid, geometry_soa, cl.get<double>("s-dl") / 2);
 
   if (cl.exist("system")) {
     reconstruction.use_system_matrix();
@@ -170,7 +169,6 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
-    GeometrySOA geometry_soa(geometry);
     PET2D::Barrel::GPU::LMReconstruction::run(
         geometry_soa,
         reconstruction.events().data(),

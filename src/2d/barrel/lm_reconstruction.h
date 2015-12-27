@@ -4,9 +4,7 @@
 #include "2d/geometry/point.h"
 #include "2d/barrel/lor.h"
 #include "2d/geometry/pixel_map.h"
-#if !__CUDACC__
-#include "2d/barrel/geometry.h"
-#endif
+#include "2d/barrel/geometry_soa.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -33,6 +31,8 @@ class LMReconstruction {
   using Response = typename Scanner2D::Response;
   using Point = PET2D::Point<F>;
   using LOR = PET2D::Barrel::LOR<S>;
+  using Grid = PET2D::PixelGrid<F, S>;
+  using Geometry = PET2D::Barrel::GeometrySOA<F, S>;
 
   struct Event {
     LOR lor;
@@ -47,10 +47,7 @@ class LMReconstruction {
   };
 
 #if !__CUDACC__
-  using Geometry = PET2D::Barrel::Geometry<F, S>;
-  using LORGeometry = typename Geometry::LORGeometry;
   using Pixel = typename Geometry::Pixel;
-  using PixelInfo = typename Geometry::PixelInfo;
   using RawOutput = std::vector<F>;
   using Output = PET2D::PixelMap<Pixel, F>;
 
@@ -59,15 +56,16 @@ class LMReconstruction {
     F weight;
   };
 
-  LMReconstruction(Geometry& geometry, F sigma)
-      : geometry(geometry),
-        n_pixels(geometry.grid.n_pixels),
+  LMReconstruction(const Grid& grid, const Geometry& geometry, F sigma)
+      : grid(grid),
+        geometry(geometry),
+        n_pixels(grid.n_pixels),
         system_matrix_(false),
         sigma_(sigma),
         gauss_norm_dl_(1 / (sigma * std::sqrt(2 * M_PI))),
         inv_sigma2_dl_(1 / (2 * sigma * sigma)),
-        rho_(geometry.grid.n_rows, geometry.grid.n_columns, 1),
-        sensitivity_(geometry.grid.n_rows, geometry.grid.n_columns),
+        rho_(grid.n_rows, grid.n_columns, 1),
+        sensitivity_(grid.n_rows, grid.n_columns),
         n_threads_(omp_get_max_threads()),
         thread_rhos_(n_threads_),
         thread_kernel_caches_(n_threads_),
@@ -82,11 +80,11 @@ class LMReconstruction {
   Event to_event(const Response& response) {
     Event event;
     event.lor = response.lor;
-
-    auto& segment = geometry[response.lor].segment;
+    const auto lor_index = event.lor.index();
+    const auto& segment = geometry.lor_line_segments[lor_index];
 
 #if FULL_EVENT_INFO
-    auto width = geometry[event.lor].width;
+    const auto width = geometry.lor_widths[lor_index];
     event.gauss_norm = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
     event.inv_sigma2 = 1 / (2 * sigma_w(width) * sigma_w(width));
 #endif
@@ -96,27 +94,28 @@ class LMReconstruction {
     event.p = segment.start.interpolate(segment.end, t);
 #endif
 
-    PixelInfo pix_info_up, pix_info_dn;
-    pix_info_up.t = t + 3 * sigma_;
-    pix_info_dn.t = t - 3 * sigma_;
-    const auto& lor_geometry = geometry[event.lor];
+    const auto t_up = t + 3 * sigma_;
+    const auto t_dn = t - 3 * sigma_;
+
+    const auto lor_info_begin = geometry.lor_pixel_info_begin[lor_index];
+    const auto lor_info_end = geometry.lor_pixel_info_end[lor_index];
+    const auto pixel_positions_begin =
+        &geometry.pixel_positions[lor_info_begin];
+    const auto pixel_positions_end = &geometry.pixel_positions[lor_info_end];
+
     event.pixel_info_end =
-        std::upper_bound(lor_geometry.pixel_infos.begin(),
-                         lor_geometry.pixel_infos.end(),
-                         pix_info_up,
-                         [](const PixelInfo& a, const PixelInfo& b) -> bool {
-                           return a.t < b.t;
-                         }) -
-        lor_geometry.pixel_infos.begin() + 1;
+        std::upper_bound(pixel_positions_begin,
+                         pixel_positions_end,
+                         t_up,
+                         [](const F a, const F b) -> bool { return a < b; }) -
+        pixel_positions_end + 1;
 
     event.pixel_info_begin =
-        std::lower_bound(lor_geometry.pixel_infos.begin(),
-                         lor_geometry.pixel_infos.end(),
-                         pix_info_dn,
-                         [](const PixelInfo& a, const PixelInfo& b) -> bool {
-                           return a.t < b.t;
-                         }) -
-        lor_geometry.pixel_infos.begin();
+        std::lower_bound(pixel_positions_begin,
+                         pixel_positions_end,
+                         t_dn,
+                         [](const F a, const F b) -> bool { return a < b; }) -
+        pixel_positions_end;
 
 #if SYSTEM_MATRIX
     if (system_matrix_) {
@@ -127,10 +126,7 @@ class LMReconstruction {
     return event;
   }
 
-  void add(const Response& response) {
-    auto event = to_event(response);
-    events_.push_back(event);
-  }
+  void add(const Response& response) { events_.push_back(to_event(response)); }
 
   /// Load response from input stream
   LMReconstruction& operator<<(std::istream& in) {
@@ -143,26 +139,25 @@ class LMReconstruction {
     return *this;
   }
 
-  F kernel_l(const Event& event, const PixelInfo& pixel_info) const {
-
-    auto lor = event.lor;
-    auto segment = geometry[lor].segment;
-    auto diff_t = (pixel_info.t - event.t) * segment.length;
+  F kernel_l(const Event& event, const F pixel_position) const {
+    auto segment = geometry.lor_line_segments[event.lor.index()];
+    auto diff_t = (pixel_position - event.t) * segment.length;
     return gauss_norm_dl_ * compat::exp(-diff_t * diff_t * inv_sigma2_dl_);
   }
 
-  F kernel(const Event& event, const PixelInfo& pixel_info) const {
-    const auto pixel = pixel_info.pixel;
-    const auto pixel_index = geometry.grid.index(pixel);
-    const auto kernel_z = pixel_info.weight / sensitivity_[pixel_index];
-    return kernel_l(event, pixel_info) * kernel_z * rho_[pixel_index];
+  F kernel(const Event& event,
+           const Pixel pixel,
+           const F pixel_position,
+           const F pixel_weight) const {
+    const auto pixel_index = grid.index(pixel);
+    const auto kernel_z = pixel_weight / sensitivity_[pixel_index];
+    return kernel_l(event, pixel_position) * kernel_z * rho_[pixel_index];
   }
 
   int operator()() {
     event_count_ = 0;
     voxel_count_ = 0;
     pixel_count_ = 0;
-    auto grid = geometry.grid;
 
     reset_thread_data();
 
@@ -178,16 +173,17 @@ class LMReconstruction {
 
       // -- voxel loop - denominator -------------------------------------------
       F denominator = 0;
-      const auto& lor_geometry = geometry[event.lor];
+      // -- voxel loop - denominator -------------------------------------------
       for (auto info_index = event.pixel_info_begin;
            info_index < event.pixel_info_end;
            ++info_index) {
-        pixel_count_++;
-        const auto& pixel_info = lor_geometry.pixel_infos[info_index];
-        const auto weight = kernel(event, pixel_info);
-        thread_kernel_caches_[thread][grid.index(pixel_info.pixel)] = weight;
-        denominator += weight * sensitivity_[grid.index(pixel_info.pixel)];
-
+        const auto pixel = geometry.pixels[info_index];
+        const auto pixel_position = geometry.pixel_positions[info_index];
+        const auto pixel_weight = geometry.pixel_weights[info_index];
+        const auto pixel_index = grid.index(pixel);
+        const auto weight = kernel(event, pixel, pixel_position, pixel_weight);
+        thread_kernel_caches_[thread][pixel_index] = weight;
+        denominator += weight * sensitivity_[pixel_index];
       }  // voxel loop - denominator
 
       if (denominator == 0)
@@ -199,11 +195,10 @@ class LMReconstruction {
       for (auto info_index = event.pixel_info_begin;
            info_index < event.pixel_info_end;
            ++info_index) {
-        const auto& pixel_info = lor_geometry.pixel_infos[info_index];
-        const auto pixel_index = grid.index(pixel_info.pixel);
+        const auto pixel = geometry.pixels[info_index];
+        const auto pixel_index = grid.index(pixel);
         thread_rhos_[thread][pixel_index] +=
             thread_kernel_caches_[thread][pixel_index] * inv_denominator;
-
       }  // voxel loop
     }    // event loop
     event_count_ = 0;
@@ -220,37 +215,32 @@ class LMReconstruction {
   }
 
   void calculate_weight() {
-    auto& grid = geometry.grid;
+    sensitivity_.assign(0);
+    for (size_t lor_index = 0; lor_index < geometry.n_lors; ++lor_index) {
+      const auto& segment = geometry.lor_line_segments[lor_index];
+      const auto width = geometry.lor_widths[lor_index];
+      const auto gauss_norm_w = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
+      const auto inv_sigma2_w = 1 / (2 * sigma_w(width) * sigma_w(width));
 
-    for (auto& lor_geometry : geometry) {
-
-      auto& segment = lor_geometry.segment;
-
-      auto width = lor_geometry.width;
-      auto gauss_norm_w = 1 / (sigma_w(width) * std::sqrt(2 * M_PI));
-      auto inv_sigma2_w = 1 / (2 * sigma_w(width) * sigma_w(width));
-
-      for (auto& pixel_info : lor_geometry.pixel_infos) {
-        auto pixel = pixel_info.pixel;
+      for (size_t pixel_info = geometry.lor_pixel_info_begin[lor_index];
+           pixel_info < geometry.lor_pixel_info_end[lor_index];
+           ++pixel_info) {
+        auto pixel = geometry.pixels[pixel_info];
         auto center = grid.center_at(pixel);
         auto distance = segment.distance_from(center);
         auto kernel_z =
             gauss_norm_w * std::exp(-distance * distance * inv_sigma2_w);
-        pixel_info.weight = kernel_z;
+        geometry.pixel_weights[pixel_info] = kernel_z;
       }
     }
   }
 
   void calculate_sensitivity() {
-    auto& grid = geometry.grid;
-
     sensitivity_.assign(0);
-    for (auto& lor_geometry : geometry) {
-      for (auto& pixel_info : lor_geometry.pixel_infos) {
-        auto pixel = pixel_info.pixel;
-        auto pixel_index = grid.index(pixel);
-        sensitivity_[pixel_index] += pixel_info.weight;
-      }
+    for (int pixel_info = 0; pixel_info < geometry.n_pixel_infos;
+         ++pixel_info) {
+      const auto pixel = geometry.pixels[pixel_info];
+      sensitivity_[pixel] += geometry.pixel_weights[pixel_info];
     }
   }
 
@@ -262,12 +252,13 @@ class LMReconstruction {
 
   F sigma() const { return sigma_; }
 
-  Geometry& geometry;
+  const Grid grid;
+  const Geometry& geometry;
   const int n_pixels;
 
  private:
   void reset_thread_data() {
-    const auto n_pixels = geometry.grid.n_pixels;
+    const auto n_pixels = grid.n_pixels;
     for (auto& thread_rho : thread_rhos_) {
       thread_rho.assign(n_pixels, 0);
     }
