@@ -102,13 +102,27 @@ int main(int argc, char* argv[]) {
 
   Reconstruction::Grid grid(
       geometry.grid, cl.get<double>("z-left"), cl.get<int>("n-planes"));
-  Reconstruction::Geometry geometry_soa(geometry);
+  std::vector<std::string> matrices_fns;
+
   if (cl.exist("system")) {
-    auto fn = cl.get<cmdline::path>("system");
+    std::istringstream ss(cl.get<cmdline::path>("system"));
+    std::string fn;
+    while (std::getline(ss, fn, ',')) {
+      matrices_fns.push_back(fn);
+    }
+    if (matrices_fns.size() != 1 && matrices_fns.size() != grid.n_planes / 2) {
+      throw("you must specify either one or half no. planes matrices");
+    }
+  }
+
+  Reconstruction::Geometry geometry_soa(geometry, matrices_fns.size() ?: 1);
+
+  for (size_t plane = 0; plane < geometry_soa.n_planes; ++plane) {
+    const auto fn = matrices_fns[plane];
     if (verbose) {
       std::cerr << "system matrix = " << fn << std::endl;
     }
-    geometry_soa.load_weights_from_matrix_file<Hit>(fn);
+    geometry_soa.load_weights_from_matrix_file<Hit>(fn, plane);
   }
 
   Reconstruction reconstruction(scanner, grid, geometry_soa);
