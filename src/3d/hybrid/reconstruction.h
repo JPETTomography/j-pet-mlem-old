@@ -302,16 +302,21 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
                                  R,
                                  scanner.length,
                                  Point2D(z, up));
-          const auto kernel_t =
-              multiplane
-                  ? geometry
-                        .pixel_weights[info_index + iz * geometry.n_pixel_infos]
-                  : pixel_weight;
-          const auto weight = kernel2d * kernel_t * rho[voxel_index];
-          denominator +=
-              weight * sensitivity_[multiplane ? voxel_index : pixel_index];
-
-          thread_kernel_caches_[thread][voxel_index] = weight;
+          if (multiplane) {
+            const auto half_plane = compat::abs(iz - (int)geometry.n_planes);
+            const auto kernel_t =
+                geometry.pixel_weights[half_plane * geometry.n_pixel_infos +
+                                       info_index];
+            const auto weight = kernel2d * kernel_t * rho[voxel_index];
+            denominator +=
+                weight * sensitivity_[Voxel(pixel.x, pixel.y, half_plane)];
+            thread_kernel_caches_[thread][voxel_index] = weight;
+          } else {
+            const auto kernel_t = pixel_weight;
+            const auto weight = kernel2d * kernel_t * rho[voxel_index];
+            denominator += weight * sensitivity_[pixel_index];
+            thread_kernel_caches_[thread][voxel_index] = weight;
+          }
         }
       }  // voxel loop - denominator
 

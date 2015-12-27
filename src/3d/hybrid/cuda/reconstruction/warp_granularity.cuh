@@ -19,6 +19,8 @@ namespace Multiplane {
 #if !USE_MULTI_PLANE_WEIGHTS
 texture<F, 3, cudaReadModeElementType> tex_rho;
 texture<F, 2, cudaReadModeElementType> tex_sensitivity;
+#else
+texture<F, 3, cudaReadModeElementType> tex_multiplane_sensitivity;
 #endif
 
 __global__ static void reconstruction(const LineSegment* lor_line_segments,
@@ -26,6 +28,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                       const F* pixel_weights,
 #if USE_MULTI_PLANE_WEIGHTS
                                       const int n_pixel_infos,
+                                      const int n_planes_half,
 #endif
                                       const Event* events,
                                       const int n_events,
@@ -76,8 +79,9 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
 
       for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
 #if USE_MULTI_PLANE_WEIGHTS
+        const auto half_plane = compat::abs(iz - n_planes_half);
         const auto pixel_weight =
-            pixel_weights[iz * n_pixel_infos + info_index];
+            pixel_weights[half_plane * n_pixel_infos + info_index];
 #endif
         // kernel calculation:
         Voxel voxel(pixel.x, pixel.y, iz);
@@ -95,7 +99,14 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                       rho;
         // end of kernel calculation
-        denominator += weight * tex2D(tex_sensitivity, voxel.x, voxel.y);
+        denominator +=
+            weight *
+#if USE_MULTI_PLANE_WEIGHTS
+            tex3D(tex_multiplane_sensitivity, voxel.x, voxel.y, half_plane)
+#else
+            tex2D(tex_sensitivity, voxel.x, voxel.y)
+#endif
+            ;
       }
     }  // voxel loop - denominator
 
@@ -125,7 +136,8 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
       for (int iz = event.plane_begin; iz < event.plane_end; ++iz) {
 #if USE_MULTI_PLANE_WEIGHTS
         const auto pixel_weight =
-            pixel_weights[iz * n_pixel_infos + info_index];
+            pixel_weights[compat::abs(iz - n_planes_half) * n_pixel_infos +
+                          info_index];
 #endif
         // kernel calculation:
         Voxel voxel(pixel.x, pixel.y, iz);
