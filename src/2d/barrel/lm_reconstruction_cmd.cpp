@@ -91,15 +91,15 @@ int main(int argc, char* argv[]) {
               << " / " << geometry.grid.pixel_size << std::endl;
   }
 
+  Reconstruction::Geometry geometry_soa(geometry);
   if (cl.exist("system")) {
     auto fn = cl.get<cmdline::path>("system");
     if (verbose) {
       std::cerr << "system matrix = " << fn << std::endl;
     }
-    geometry.load_weights_from_matrix_file<Hit>(fn);
+    geometry_soa.load_weights_from_matrix_file<Hit>(fn);
   }
 
-  Reconstruction::Geometry geometry_soa(geometry);
   Reconstruction reconstruction(
       geometry.grid, geometry_soa, cl.get<double>("s-dl") / 2);
 
