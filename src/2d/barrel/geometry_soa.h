@@ -39,6 +39,7 @@ template <typename FType, typename SType> class GeometrySOA {
       : n_detectors(n_detectors),
         n_lors(((size_t(n_detectors) + 1) * size_t(n_detectors)) / 2),
         lor_line_segments(new LineSegment[n_lors]),
+        lor_widths(new F[n_lors]),
         n_pixel_infos(n_pixel_infos),
         n_planes(n_planes),
         pixels(new Pixel[n_pixel_infos]),
@@ -49,6 +50,7 @@ template <typename FType, typename SType> class GeometrySOA {
 
   ~GeometrySOA() {
     delete[] lor_line_segments;
+    delete[] lor_widths;
     delete[] pixels;
     delete[] pixel_positions;
     delete[] pixel_weights;
@@ -103,6 +105,7 @@ template <typename FType, typename SType> class GeometrySOA {
       const auto& lor = lor_geometry.lor;
       auto lor_index = lor.index();
       lor_line_segments[lor_index] = lor_geometry.segment;
+      lor_widths[lor_index] = lor_geometry.width;
       lor_pixel_info_begin[lor_index] = size;
       for (const auto& geometry_pixel_info : lor_geometry.pixel_infos) {
         pixels[size] = geometry_pixel_info.pixel;
@@ -162,6 +165,7 @@ template <typename FType, typename SType> class GeometrySOA {
   const S n_detectors;                   ///< number of detectors
   const size_t n_lors;                   ///< total number of LORs
   LineSegment* const lor_line_segments;  ///< LOR line segments array
+  F* const lor_widths;                   ///< LOR widths array
   const size_t n_pixel_infos;            ///< total number of pixel infos
   const size_t n_planes;                 ///< number of planes
   Pixel* const pixels;                   ///< pointer to pixels array
