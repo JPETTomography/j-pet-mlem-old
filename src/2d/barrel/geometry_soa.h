@@ -142,7 +142,7 @@ template <typename FType, typename SType> class GeometrySOA {
                 sizeof(*pixel_weights) * n_pixel_infos);
 
     LOR current_lor = LOR::end_for_detectors(matrix.n_detectors());
-    size_t pixel_index, pixel_index_end;
+    size_t pixel_index = 0, pixel_index_end = 0;
     for (auto& element : matrix) {
       if (element.lor != current_lor) {
         current_lor = element.lor;
