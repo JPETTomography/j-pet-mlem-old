@@ -33,6 +33,7 @@ namespace compat {
 
 #define _ __device__ __host__
 
+_ static inline int abs(const int a) { return ::abs(a); }
 _ static inline int min(const int a, const int b) { return ::min(a, b); }
 _ static inline int max(const int a, const int b) { return ::max(a, b); }
 _ static inline float min(const float a, const float b) { return fminf(a, b); }
@@ -67,9 +68,11 @@ template <> _ constexpr unsigned long numeric_max<unsigned long>() {
 #define _
 
 #if _MSC_VER
+template <typename F> F abs(const F a) { return (a >= 0) ? a : -a; }
 template <typename F> F min(const F a, const F b) { return (a < b) ? a : b; }
 template <typename F> F max(const F a, const F b) { return (a > b) ? a : b; }
 #else
+template <typename F> F abs(const F a) { return std::abs(a); }
 template <typename F> F min(const F a, const F b) { return std::min(a, b); }
 template <typename F> F max(const F a, const F b) { return std::max(a, b); }
 #endif
