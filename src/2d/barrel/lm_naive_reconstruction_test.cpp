@@ -40,7 +40,8 @@ TEST("2d/barrel/lm_reconstruction/naive") {
   CHECK(geometry.grid.n_rows == 64);
   CHECK(geometry.grid.pixel_size == Approx(0.01));
 
-  PET2D::Barrel::LMReconstruction<F, S, 32> reconstruction(geometry, 0.04);
+  PET2D::Barrel::LMReconstruction<F, S, 32> reconstruction(
+      geometry.grid, geometry, 0.04);
 
   Common::AlwaysAccept<F> model;
 

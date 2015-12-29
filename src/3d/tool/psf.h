@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstring>
+
 #include "../geometry/voxel.h"
 #include "../geometry/voxel_map.h"
 #include "../geometry/vector.h"

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstring>
+
 #include "lor.h"
 #include "../geometry/pixel.h"
 #include "../geometry/line_segment.h"
