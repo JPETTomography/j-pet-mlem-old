@@ -48,11 +48,9 @@ typename Phantom<RNG, FType>::Region* create_phantom_region_from_json(
     }
 
   } else if (type == "ellipsoid") {
-    std::cerr << "ellipsoid ";
     F rx = j["rx"];
     F ry = j["ry"];
     F rz = j["rz"];
-    std::cerr << rx << " " << ry << " " << rz << "\n";
 
     F intensity = j.count("intensity") ? j["intensity"].get<F>() : F(1);
 
