@@ -20,7 +20,7 @@ template <class ScannerClass> class ScannerBuilder;
 /// Set of detectors and a base class for specific scanners
 template <class DetectorClass,
           typename SType,
-          std::size_t MaxDetetectorsSize = 400>
+          std::size_t MaxDetetectorsSize = MAX_DETECTORS>
 class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
  public:
   using Detector = DetectorClass;

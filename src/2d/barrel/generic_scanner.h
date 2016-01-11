@@ -36,7 +36,7 @@ namespace Barrel {
 /// - PolygonalDetector
 template <class DetectorClass,
           typename SType,
-          std::size_t MaxDetectorsSize = 400>
+          std::size_t MaxDetectorsSize = MAX_DETECTORS>
 class GenericScanner
     : public DetectorSet<DetectorClass, SType, MaxDetectorsSize> {
  public:
