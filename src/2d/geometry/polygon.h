@@ -52,14 +52,14 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
     return Point(c_x, c_y);
   }
 
-  bool contains(const Point& p) {
+  bool contains(const Point& p, F tol = 0) {
     int n = this->size();
     Point start = (*this)[n - 1];
 
     for (int i = 0; i < n; i++) {
       Point end = (*this)[i];
       Vector edge = end - start;
-      if (edge.cw_perpendicular().dot(p - start) < 0) {
+      if (edge.cw_perpendicular().dot(p - start) < -tol) {
         return false;
       }
       start = end;

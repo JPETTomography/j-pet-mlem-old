@@ -87,9 +87,9 @@ int main(int argc, char* argv[]) {
       in >> x2 >> y2 >> z2 >> t2;
       int d1 = -1, d2 = -1;
       for (size_t i = 0; i < scanner.size(); ++i) {
-        if (scanner[i].contains(Point(x1 * cm, y1 * cm)))
+        if (scanner[i].contains(Point(x1 * cm, y1 * cm)), 0.0001)
           d1 = i;
-        if (scanner[i].contains(Point(x2 * cm, y2 * cm)))
+        if (scanner[i].contains(Point(x2 * cm, y2 * cm)), 0.0001)
           d2 = i;
       }
       if (d1 >= 0 && d2 >= 0) {
@@ -104,7 +104,9 @@ int main(int argc, char* argv[]) {
                   << z2 * cm + z_error(rng) << " " << dl + dl_error(rng)
                   << "\n";
       } else {
-        std::cerr << "Point outside detector - skiping\n";
+        std::cerr << "Point " << Point(x1 * cm, y1 * cm) << " or "
+                  << Point(x2 * cm, y2 * cm)
+                  << "  outside detector - skiping\n";
       }
     }
   }
