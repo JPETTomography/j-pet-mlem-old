@@ -4,6 +4,3 @@
 [submodule "lib/cmdline"]
 	path = lib/cmdline
 	url = ../../ujhpc/cmdline.git
-[submodule "pubs/beamer"]
-	path = pubs/beamer
-	url = ../../ujhpc/beamer-torino-theme.git
