@@ -121,6 +121,7 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
+    matrix.sort_by_lor_n_pixel();
     GeometrySOA geometry(matrix);
     PET2D::Barrel::GPU::Reconstruction::run(
         geometry,
