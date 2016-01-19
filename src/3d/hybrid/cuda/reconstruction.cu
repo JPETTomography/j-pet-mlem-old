@@ -31,25 +31,6 @@ namespace Hybrid {
 namespace GPU {
 namespace Reconstruction {
 
-__global__ static void add_offsets(Event* events,
-                                   const int n_events,
-                                   const size_t* lor_pixel_info_begin) {
-  const auto tid = (blockIdx.x * blockDim.x) + threadIdx.x;
-  const auto n_threads = gridDim.x * blockDim.x;
-  const auto n_chunks = (n_events + n_threads - 1) / n_threads;
-  for (int chunk = 0; chunk < n_chunks; ++chunk) {
-    int event_index = chunk * n_threads + tid;
-    // check if we are still on the list
-    if (event_index >= n_events) {
-      break;
-    }
-    auto& event = events[event_index];
-    const auto pixel_info_begin = lor_pixel_info_begin[event.lor.index()];
-    event.pixel_info_begin += pixel_info_begin;
-    event.pixel_info_end += pixel_info_begin;
-  }
-}
-
 void run(const Geometry& geometry,
          const Output& sensitivity,
          const Event* events,
@@ -75,7 +56,6 @@ void run(const Geometry& geometry,
 #define reduce_to_sensitivity reduce_to_sensitivity<<<blocks, threads>>>
 #define invert invert<<<blocks, threads>>>
 #define reconstruction reconstruction<<<blocks, threads>>>
-#define add_offsets add_offsets<<<blocks, threads>>>
 #else
   (void)n_blocks, n_threads_per_block;  // mark used
 #endif
@@ -94,8 +74,6 @@ void run(const Geometry& geometry,
   util::cuda::on_device<size_t> device_lor_pixel_info_begin(
       geometry.lor_pixel_info_begin, geometry.n_lors);
   util::cuda::on_device<Event> device_events(events, n_events);
-
-  add_offsets(device_events, n_events, device_lor_pixel_info_begin);
 
 #if USE_TEXTURE
   util::cuda::texture3D<F> rho(tex_rho,

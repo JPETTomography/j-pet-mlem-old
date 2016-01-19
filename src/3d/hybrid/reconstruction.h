@@ -134,14 +134,14 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
                          pixel_positions_end,
                          t_up,
                          [](const F a, const F b) -> bool { return a < b; }) -
-        pixel_positions_begin + 1;
+        geometry.pixel_positions + 1;
 
     event.pixel_info_begin =
         std::lower_bound(pixel_positions_begin,
                          pixel_positions_end,
                          t_dn,
                          [](const F a, const F b) -> bool { return a < b; }) -
-        pixel_positions_begin;
+        geometry.pixel_positions;
 
     return event;
   }
