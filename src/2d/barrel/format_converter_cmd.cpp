@@ -47,6 +47,11 @@ int main(int argc, char* argv[]) {
   cl.footer("means");
   PET2D::Barrel::add_matrix_options(cl);
   cl.add<double>("s-z", 0, "sigma z", cmdline::alwayssave, 0.01);
+  cl.add<int>("only",
+              '\0',
+              "specifies which class (scattering) of events to include",
+              false,
+              1);
   cl.parse_check(argc, argv);
   cmdline::load_accompanying_config(cl, false);
 
@@ -63,11 +68,10 @@ int main(int argc, char* argv[]) {
   auto scanner = ScannerBuilder<SquareScanner>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, F));
 
-  //  std::vector<PET2D::Barrel::CircleDetector<F>> circles;
-  //  for (size_t i = 0; i < scanner.size(); ++i) {
-  //    auto circle = scanner[i].circumscribe_circle();
-  //    circles.push_back(circle);
-  //  }
+  int only = 0;
+  if (cl.exist("only")) {
+    only = cl.get<int>("only");
+  }
 
   for (const auto& fn : cl.rest()) {
     std::ifstream in_means(fn);
@@ -87,29 +91,32 @@ int main(int argc, char* argv[]) {
       double x2, y2, z2, t2;
       in >> x2 >> y2 >> z2 >> t2;
       in >> scatter;
-      int d1 = -1, d2 = -1;
-      for (size_t i = 0; i < scanner.size(); ++i) {
+      if (only == 0 || only == scatter) {
 
-        if (scanner[i].contains(Point(x1 * cm, y1 * cm), 0.0001))
-          d1 = i;
-        if (scanner[i].contains(Point(x2 * cm, y2 * cm), 0.0001))
-          d2 = i;
-      }
-      if (d1 >= 0 && d2 >= 0) {
-
-        if (d1 < d2) {
-          std::swap(d1, d2);
-          std::swap(z1, z2);
-          std::swap(t1, t2);
+        int d1 = -1, d2 = -1;
+        for (size_t i = 0; i < scanner.size(); ++i) {
+          if (scanner[i].contains(Point(x1 * cm, y1 * cm), 0.0001))
+            d1 = i;
+          if (scanner[i].contains(Point(x2 * cm, y2 * cm), 0.0001))
+            d2 = i;
         }
-        double dl = (t1 - t2) * speed_of_light_m_per_ps;
-        std::cout << d1 << " " << d2 << " " << z1 * cm + z_error(rng) << " "
-                  << z2 * cm + z_error(rng) << " " << dl + dl_error(rng)
-                  << "\n";
-      } else {
-        std::cerr << "Point " << Point(x1 * cm, y1 * cm) << " or "
-                  << Point(x2 * cm, y2 * cm)
-                  << "  outside detector - skiping\n";
+
+        if (d1 >= 0 && d2 >= 0) {
+
+          if (d1 < d2) {
+            std::swap(d1, d2);
+            std::swap(z1, z2);
+            std::swap(t1, t2);
+          }
+          double dl = (t1 - t2) * speed_of_light_m_per_ps;
+          std::cout << d1 << " " << d2 << " " << z1 * cm + z_error(rng) << " "
+                    << z2 * cm + z_error(rng) << " " << dl + dl_error(rng)
+                    << "\n";
+        } else {
+          std::cerr << "Point " << Point(x1 * cm, y1 * cm) << " or "
+                    << Point(x2 * cm, y2 * cm)
+                    << "  outside detector - skiping\n";
+        }
       }
     }
   }
