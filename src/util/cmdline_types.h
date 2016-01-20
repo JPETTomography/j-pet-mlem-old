@@ -144,6 +144,42 @@ template <> class lexical_cast_t<long, std::string, false> {
   static int cast(const std::string& arg) { return cast_to_long(arg); }
 };
 
+// teach cmdline handle std::vector
+template <typename TargetElement>
+class lexical_cast_t<std::vector<TargetElement>, std::string, false> {
+ public:
+  static std::vector<TargetElement> cast(const std::string& arg) {
+    std::vector<TargetElement> ret;
+    std::istringstream ss(arg);
+    std::string el;
+    while (std::getline(ss, el, ',')) {
+      ret.push_back(detail::lexical_cast<TargetElement>(el));
+    }
+    return ret;
+  }
+};
+
+template <typename SourceElement>
+class lexical_cast_t<std::string, std::vector<SourceElement>, false> {
+ public:
+  static std::string cast(const std::vector<SourceElement>& arg) {
+    std::ostringstream ss;
+    bool first = true;
+    for (const SourceElement& el : arg) {
+      if (!first)
+        ss << ',';
+      ss << detail::lexical_cast<std::string>(el);
+      first = false;
+    }
+    return ss.str();
+  }
+};
+
+template <typename Element>
+inline std::string readable_typename<std::vector<Element>>() {
+  return readable_typename<Element> + ",...";
+}
+
 }  // detail
 }  // cmdline
 // \endcond
