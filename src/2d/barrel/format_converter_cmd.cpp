@@ -82,9 +82,11 @@ int main(int argc, char* argv[]) {
 
       std::stringstream in(line);
       double x1, y1, z1, t1;
+      int scatter;
       in >> x1 >> y1 >> z1 >> t1;
       double x2, y2, z2, t2;
       in >> x2 >> y2 >> z2 >> t2;
+      in >> scatter;
       int d1 = -1, d2 = -1;
       for (size_t i = 0; i < scanner.size(); ++i) {
         if (scanner[i].contains(Point(x1 * cm, y1 * cm)), 0.0001)
