@@ -33,7 +33,7 @@ using Point = PET2D::Point<F>;
 using Vector = PET2D::Vector<F>;
 
 const double cm = 0.01;
-const double speed_of_light_m_per_s = 299792458.0;
+const double speed_of_light_m_per_ps = 299792458.0e-12;
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
           std::swap(z1, z2);
           std::swap(t1, t2);
         }
-        double dl = (t1 - t2) * speed_of_light_m_per_s;
+        double dl = (t1 - t2) * speed_of_light_m_per_ps;
         std::cout << d1 << " " << d2 << " " << z1 * cm + z_error(rng) << " "
                   << z2 * cm + z_error(rng) << " " << dl + dl_error(rng)
                   << "\n";
