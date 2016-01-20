@@ -87,6 +87,7 @@ class path : public std::string {
 namespace detail {
 template <> inline std::string readable_typename<int>() { return "int"; }
 template <> inline std::string readable_typename<long>() { return "seed"; }
+template <> inline std::string readable_typename<float>() { return "float"; }
 template <> inline std::string readable_typename<double>() { return "float"; }
 template <> inline std::string readable_typename<path>() { return "file"; }
 
@@ -175,9 +176,14 @@ class lexical_cast_t<std::string, std::vector<SourceElement>, false> {
   }
 };
 
-template <typename Element>
-inline std::string readable_typename<std::vector<Element>>() {
-  return readable_typename<Element> + ",...";
+template <> inline std::string readable_typename<std::vector<int>>() {
+  return "int,...";
+}
+template <> inline std::string readable_typename<std::vector<float>>() {
+  return "float,...";
+}
+template <> inline std::string readable_typename<std::vector<double>>() {
+  return "float,...";
 }
 
 }  // detail

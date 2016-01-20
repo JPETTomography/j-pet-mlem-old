@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "cmdline.h"
+#include "common/options.h"
 
 namespace PET3D {
 namespace Hybrid {
@@ -43,23 +43,16 @@ void calculate_resonstruction_options(cmdline::parser& cl, int argc = 1);
 
 /// Provides initialization list for creating detector.
 #define __PET3D_LONGITUDINAL(...) __VA_ARGS__  // just pass-through
-#define PET3D_LONGITUDINAL_SCANNER_CL(cl, ftype)               \
-  __PET3D_LONGITUDINAL({ (ftype)cl.get<double>("radius"),      \
-                         (ftype)cl.get<double>("radius2"),     \
-                         (ftype)cl.get<double>("radius3"),     \
-                         (ftype)cl.get<double>("radius4") },   \
-                       { (ftype)cl.get<double>("rotation"),    \
-                         (ftype)cl.get<double>("rotation2"),   \
-                         (ftype)cl.get<double>("rotation3"),   \
-                         (ftype)cl.get<double>("rotation4") }, \
-                       { cl.get<int>("n-detectors"),           \
-                         cl.get<int>("n-detectors2"),          \
-                         cl.get<int>("n-detectors3"),          \
-                         cl.get<int>("n-detectors4") },        \
-                       cl.get<double>("w-detector"),           \
-                       cl.get<double>("h-detector"),           \
-                       cl.get<double>("d-detector"),           \
-                       cl.get<double>("fov-radius"))
+#define PET3D_LONGITUDINAL_SCANNER_CL(cl, ftype)                               \
+  __PET3D_LONGITUDINAL(                                                        \
+      Common::Convert<F, double>::cast(cl.get<std::vector<double>>("radius")), \
+      Common::Convert<F, double>::cast(                                        \
+          cl.get<std::vector<double>>("rotation")),                            \
+      cl.get<std::vector<int>>("n-detectors"),                                 \
+      cl.get<double>("w-detector"),                                            \
+      cl.get<double>("h-detector"),                                            \
+      cl.get<double>("d-detector"),                                            \
+      cl.get<double>("fov-radius"))
 
 enum Cmd { CmdReconstruction = 0, CmdPhantom, CmdPSF };
 void calculate_cmd_options(cmdline::parser& cl, int argc, Cmd cmd);

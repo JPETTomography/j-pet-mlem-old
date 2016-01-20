@@ -73,38 +73,48 @@ template <class ScannerClass> class ScannerBuilder {
   }
 
   static Scanner build_multiple_rings(
-      const std::vector<F> radius,    ///< radiuses of ring
-      const std::vector<F> rotation,  ///< rotation of each ring (0-1)
-      std::vector<int> n_detectors,   ///< numbers of detectors on ring
-      F w_detector,                   ///< width of single detector (along ring)
-      F h_detector,                   ///< height/depth of single detector
-                                      ///< (perpendicular to ring)
-      F d_detector = 0,               ///< diameter of circle single detector is
-                                      ///< inscribed in
-      F fov_radius = 0                ///< field of view radius (0-automatic)
+      const std::vector<F> radius,   ///< radiuses of ring
+      std::vector<F> rotation,       ///< rotation of each ring (0-1)
+      std::vector<int> n_detectors,  ///< numbers of detectors on ring
+      F w_detector,                  ///< width of single detector (along ring)
+      F h_detector,                  ///< height/depth of single detector
+                                     ///< (perpendicular to ring)
+      F d_detector = 0,              ///< diameter of circle single detector is
+                                     ///< inscribed in
+      F fov_radius = 0               ///< field of view radius (0-automatic)
       ) {
 
     if (!radius.size())
       throw("must specify at least one radius");
-    if (n_detectors.size() > radius.size())
-      throw("number of numbers of detectors must be less or equal radiuses");
+    if (!n_detectors.size())
+      throw("must specify at least one number of detectors");
+    if (n_detectors.size() < rotation.size())
+      throw("too many rotation values");
+    if (radius.size() < n_detectors.size() || radius.size() < rotation.size())
+      throw("must specify all radiuses");
+
+    int total_n_detectors = 0;
+
+    for (size_t i = 0; i < radius.size(); ++i) {
+      if (i && radius[i] < radius[i - 1]) {
+        throw("radiuses must be specified in incrementing order");
+      }
+      // continue detector sizes
+      if (i && n_detectors.size() == i) {
+        n_detectors.push_back(n_detectors[i - 1]);
+      }
+      // default to no (0) rotation if not specified
+      if (rotation.size() == i) {
+        rotation.push_back(0);
+      }
+      total_n_detectors += n_detectors[i];
+    }
 
     for (unsigned int i = 0; i < radius.size(); ++i) {
       if (std::abs(rotation[i]) >= std::numeric_limits<F>::epsilon() &&
           std::abs(rotation[i] - F(0.5)) > std::numeric_limits<F>::epsilon()) {
         throw("broken symmetry");
       }
-    }
-
-    int total_n_detectors = 0;
-
-    for (size_t i = 0; i < radius.size(); ++i) {
-      if (!radius[i])
-        break;
-      if (!n_detectors[i])
-        n_detectors[i] = n_detectors[i - 1];
-
-      total_n_detectors += n_detectors[i];
     }
 
     auto symmetry_descriptor = new SymmetryDescriptor<S>(total_n_detectors, 8);

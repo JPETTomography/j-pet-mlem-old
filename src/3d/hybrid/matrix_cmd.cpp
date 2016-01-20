@@ -115,7 +115,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
   Scanner scanner(scanner2D, F(cl.get<double>("length")));
   ModelClass model(args...);
 
-  auto& n_detectors = cl.get<int>("n-detectors");
+  auto& n_detectors = cl.get<std::vector<int>>("n-detectors");
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
   auto& s_pixel = cl.get<double>("s-pixel");
@@ -280,7 +280,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
     if (cl.exist("to")) {
       lor.second = cl.get<int>("to");
     } else {
-      lor.second = (lor.first + n_detectors / 2) % n_detectors;
+      lor.second = (lor.first + n_detectors[0] / 2) % n_detectors[0];
     }
     if (lor.first < lor.second)
       std::swap(lor.first, lor.second);

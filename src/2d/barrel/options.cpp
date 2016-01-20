@@ -30,18 +30,11 @@ void add_scanner_options(cmdline::parser& cl) {
                  false);
 
   // custom barrel dimensions
-  cl.add<double>("radius", 'r', "inner detector ring radius", false);
-  cl.add<double>("radius2", 0, " ... 2nd ring", false);
-  cl.add<double>("radius3", 0, " ... 3rd ring", false);
-  cl.add<double>("radius4", 0, " ... 4th ring", false);
-  cl.add<double>("rotation", 0, "ring rotation (0-1)", false);
-  cl.add<double>("rotation2", 0, " ... 2nd ring", false);
-  cl.add<double>("rotation3", 0, " ... 3rd ring", false);
-  cl.add<double>("rotation4", 0, " ... 4th ring", false);
-  cl.add<int>("n-detectors", 'd', "number of detectors in ring", false);
-  cl.add<int>("n-detectors2", 0, " ... 2nd ring", false);
-  cl.add<int>("n-detectors3", 0, " ... 3rd ring", false);
-  cl.add<int>("n-detectors4", 0, " ... 4th ring", false);
+  cl.add<std::vector<double>>(
+      "radius", 'r', "inner detector ring radius(es)", false);
+  cl.add<std::vector<double>>("rotation", 0, "ring rotation(s) (0-1)", false);
+  cl.add<std::vector<int>>(
+      "n-detectors", 'd', "number of detectors in ring(s)", false);
   cl.add<double>("fov-radius", 0, "field of view radius", false);
 }
 
@@ -256,8 +249,8 @@ void calculate_scanner_options(cmdline::parser& cl,
   }
 
   auto& n_pixels = cl.get<int>("n-pixels");
-  auto& radius = cl.get<double>("radius");
-  auto& n_detectors = cl.get<int>("n-detectors");
+  auto& radius = cl.get<std::vector<double>>("radius");
+  auto& n_detectors = cl.get<std::vector<int>>("n-detectors");
   auto& s_pixel = cl.get<double>("s-pixel");
   auto& w_detector = cl.get<double>("w-detector");
   auto& d_detector = cl.get<double>("d-detector");
@@ -268,19 +261,19 @@ void calculate_scanner_options(cmdline::parser& cl,
 
   // This sets default radius size to sqrt(2), so the image space is (-1, 1).
 
-  if (!cl.exist("radius")) {
+  if (!radius.size()) {
     if (!cl.exist("s-pixel")) {
-      radius = M_SQRT2;  // exact result
+      radius.push_back(M_SQRT2);  // exact result
     } else {
-      radius = s_pixel * n_pixels / M_SQRT2;
+      radius.push_back(s_pixel * n_pixels / M_SQRT2);
     }
-    assumed << "--radius=" << radius << std::endl;
+    assumed << "--radius=" << radius[0] << std::endl;
   }
 
   // 2. Set fov-radius matching radius
 
   if (!cl.exist("fov-radius")) {
-    fov_radius = radius / M_SQRT2;
+    fov_radius = radius[0] / M_SQRT2;
     assumed << "--fov-radius=" << fov_radius << std::endl;
   }
 
@@ -297,8 +290,8 @@ void calculate_scanner_options(cmdline::parser& cl,
   // and radius.
 
   if (!cl.exist("w-detector")) {
-    if (cl.exist("n-detectors")) {
-      w_detector = 2 * M_PI * .9 * radius / n_detectors;
+    if (n_detectors.size()) {
+      w_detector = 2 * M_PI * .9 * radius[0] / n_detectors[0];
     } else if (cl.exist("d-detector")) {
       if (shape == "circle") {
         w_detector = d_detector;
@@ -326,21 +319,24 @@ void calculate_scanner_options(cmdline::parser& cl,
   // Detector count will be determined per shape, so we put as many as possible
   // into given radius, keeping the symmetry.
 
-  if (!cl.exist("n-detectors")) {
+  if (!n_detectors.size()) {
     if (cl.exist("d-detector")) {
-      n_detectors =
+      n_detectors.push_back(
           ((int)std::floor(
-               M_PI / std::atan2(d_detector, 2 * radius + d_detector / 2)) /
+               M_PI / std::atan2(d_detector, 2 * radius[0] + d_detector / 2)) /
            4) *
-          4;
+          4);
     } else {
-      n_detectors =
-          ((int)std::floor(M_PI / std::atan2(w_detector, 2 * radius)) / 4) * 4;
+      n_detectors.push_back(
+          ((int)std::floor(M_PI / std::atan2(w_detector, 2 * radius[0])) / 4) *
+          4);
     }
+#if 0
     if (!n_detectors) {
       throw("detector width is too big for given detector ring radius");
     }
-    assumed << "--n-detectors=" << n_detectors << std::endl;
+#endif
+    assumed << "--n-detectors=" << n_detectors[0] << std::endl;
   }
 }
 
