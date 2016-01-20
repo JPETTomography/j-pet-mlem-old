@@ -63,11 +63,11 @@ int main(int argc, char* argv[]) {
   auto scanner = ScannerBuilder<SquareScanner>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, F));
 
-  std::vector<PET2D::Barrel::CircleDetector<F>> circles;
-  for (size_t i = 0; i < scanner.size(); ++i) {
-    auto circle = scanner[i].circumscribe_circle();
-    circles.push_back(circle);
-  }
+  //  std::vector<PET2D::Barrel::CircleDetector<F>> circles;
+  //  for (size_t i = 0; i < scanner.size(); ++i) {
+  //    auto circle = scanner[i].circumscribe_circle();
+  //    circles.push_back(circle);
+  //  }
 
   for (const auto& fn : cl.rest()) {
     std::ifstream in_means(fn);
@@ -89,9 +89,10 @@ int main(int argc, char* argv[]) {
       in >> scatter;
       int d1 = -1, d2 = -1;
       for (size_t i = 0; i < scanner.size(); ++i) {
-        if (scanner[i].contains(Point(x1 * cm, y1 * cm)), 0.0001)
+
+        if (scanner[i].contains(Point(x1 * cm, y1 * cm), 0.0001))
           d1 = i;
-        if (scanner[i].contains(Point(x2 * cm, y2 * cm)), 0.0001)
+        if (scanner[i].contains(Point(x2 * cm, y2 * cm), 0.0001))
           d2 = i;
       }
       if (d1 >= 0 && d2 >= 0) {

@@ -8,7 +8,7 @@
 #include "2d/barrel/geometry.h"
 #include "2d/barrel/lm_reconstruction.h"
 
-TEST("2d/barrel/lm_reconstruction/naive") {
+/*TEST("2d/barrel/lm_reconstruction/naive") {
 
   using SquareDetector = PET2D::Barrel::SquareDetector<F>;
   using Detector = PET2D::Barrel::GenericScanner<SquareDetector, S, 32>;
@@ -40,8 +40,8 @@ TEST("2d/barrel/lm_reconstruction/naive") {
   CHECK(geometry.grid.n_rows == 64);
   CHECK(geometry.grid.pixel_size == Approx(0.01));
 
-  PET2D::Barrel::LMReconstruction<F, S, 32> reconstruction(
-      geometry.grid, geometry, 0.04);
+  PET2D::Barrel::LMReconstruction<F, S, 32> reconstruction(geometry.grid,
+geometry, 0.04);
 
   Common::AlwaysAccept<F> model;
 
@@ -114,4 +114,4 @@ TEST("2d/barrel/lm_reconstruction/naive") {
     CHECK(p.x == Approx(0.2));
     CHECK(p.y == Approx(0));
   }
-}
+}*/
