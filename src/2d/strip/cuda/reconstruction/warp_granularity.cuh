@@ -156,7 +156,7 @@ __global__ void reconstruction(Scanner<F, short> scanner,
 
 template <typename F>
 __device__ inline int n_pixels_in_line(F length, F pixel_size) {
-  return (length + F(0.5)) / pixel_size;
+  return length / pixel_size + F(0.5);
 }
 
 template <typename F>
