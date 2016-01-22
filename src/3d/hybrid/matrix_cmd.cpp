@@ -41,6 +41,7 @@
 #include "options.h"
 
 #include "common/types.h"
+#include "common/mathematica_graphics.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -61,6 +62,8 @@ using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, Hit>;
 
 template <class ScannerClass, class ModelClass, typename... ModelArgs>
 static void run(cmdline::parser& cl, ModelArgs... args);
+
+using MathematicaGraphics = Common::MathematicaGraphics<F>;
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -114,6 +117,15 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
           PET3D_LONGITUDINAL_SCANNER_CL(cl, Scanner::F));
   Scanner scanner(scanner2D, F(cl.get<double>("length")));
   ModelClass model(args...);
+
+  auto output_name = cl.get<cmdline::path>("output");
+  auto output_base_name = output_name.wo_ext();
+
+  if (output_base_name.length()) {
+    std::ofstream out_graphics(output_base_name + ".m");
+    MathematicaGraphics graphics(out_graphics);
+    graphics.add(scanner.barrel);
+  }
 
   auto& n_detectors = cl.get<std::vector<int>>("n-detectors");
   auto& n_pixels = cl.get<int>("n-pixels");
