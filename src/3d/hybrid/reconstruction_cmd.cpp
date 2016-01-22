@@ -304,7 +304,6 @@ int main(int argc, char* argv[]) {
         bin << reconstruction.rho;
       }
     }
-
     // final reconstruction statistics
     const auto st = reconstruction.statistics();
     std::cerr << "  event count = " << st.used_events << std::endl;
