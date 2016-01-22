@@ -97,8 +97,10 @@ template <typename FType> class GaussianKernel {
                  const Point p       ///< point of calculation
                  ) const {
     auto distance = p - event;
-    return this->operator()(event.y, tan, sec, R, distance) /
-           sensitivity(p, R, L);
+    auto unnormalized = this->operator()(event.y, tan, sec, R, distance);
+    auto sens = sensitivity(p, R, L);
+
+    return unnormalized / sens;
   }
 
   /// Returns \f$ 3 \sigma \f$ ellipse and its bounding box.
@@ -135,11 +137,13 @@ template <typename FType> class GaussianKernel {
   /// Return frame sensitivity at given point.
   _ static F sensitivity(Point p, F R, F L) {
     auto L2 = L / 2;
-    return (compat::atan(compat::min((L2 - p.x) / (R - p.y),  //
-                                     (L2 + p.x) / (R + p.y))) -
-            compat::atan(compat::max(-(L2 + p.x) / (R - p.y),  //
-                                     (-L2 + p.x) / (R + p.y)))) /
-           (F)M_PI;
+    auto theta_max = compat::atan(compat::min((L2 - p.x) / (R - p.y),  //
+                                              (L2 + p.x) / (R + p.y)));
+    auto theta_min = compat::atan(compat::max(-(L2 + p.x) / (R - p.y),  //
+                                              (-L2 + p.x) / (R + p.y)));
+    auto sens = theta_max - theta_min;
+
+    return sens / (F)M_PI;
   }
 
  protected:

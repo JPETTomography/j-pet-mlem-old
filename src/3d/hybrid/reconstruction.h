@@ -300,6 +300,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
         used_pixels++;  // statistics
         const auto pixel = geometry.pixels[info_index];
         const auto pixel_weight = geometry.pixel_weights[info_index];
+
         const auto pixel_index = pixel_grid.index(pixel);
         const auto center = pixel_grid.center_at(pixel);
         const auto up = segment.projection_relative_middle(center);
@@ -339,7 +340,33 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       if (denominator > 0) {
         inv_denominator = 1 / denominator;
       } else {
-        std::cerr << "denominator == 0 !\n";
+        std::cerr << "denominator == < 0 !\n";
+        std::cerr << "event " << i << "\n";
+        std::cerr << "denominator " << denominator << "\n";
+        std::cerr << "planes " << event.plane_begin << ":" << event.plane_end
+                  << "\n";
+        std::cerr << "(" << geometry.pixels[event.pixel_info_begin].x << ","
+                  << geometry.pixels[event.pixel_info_begin].y << ") to ("
+                  << geometry.pixels[event.pixel_info_end].x << ","
+                  << geometry.pixels[event.pixel_info_end].y << ")\n";
+        std::cerr << "emission " << point(event) << "\n";
+        std::cerr << "lor " << event.lor.first << " " << event.lor.second
+                  << "\n";
+
+        for (auto info_index = event.pixel_info_begin;
+             info_index < event.pixel_info_end;
+             ++info_index) {
+
+          const auto pixel = geometry.pixels[info_index];
+          const auto pixel_weight = geometry.pixel_weights[info_index];
+
+          const auto pixel_index = pixel_grid.index(pixel);
+          const auto center = pixel_grid.center_at(pixel);
+
+          std::cerr << "(" << pixel.x << "," << pixel.y << ") " << pixel_weight
+                    << " " << center << "\n";
+        }
+
         throw("denominator == 0 !");
       }
 
