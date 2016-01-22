@@ -117,7 +117,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     auto ev_z_right = event.right + half_box_right;
     event.plane_begin = std::max((S)0, plane(ev_z_left));
     event.plane_end = std::min((S)(plane(ev_z_right) + 1), grid.n_planes);
-
     auto y_up = event.up + half_box_up;
     auto y_dn = event.up - half_box_up;
     auto t_up = (y_up + R) / (2 * R);
@@ -323,7 +322,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       if (denominator > 0) {
         inv_denominator = 1 / denominator;
       } else {
-        throw("denminator == 0 !");
+        std::cerr << "denominator == 0 !\n";
+        throw("denominator == 0 !");
       }
 
       // -- voxel loop ---------------------------------------------------------
@@ -357,14 +357,18 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     return used_events;
   }
 
+  Point point(const FrameEvent& event) {
+    const auto& segment = geometry.lor_line_segments[event.lor.index()];
+    const auto point2d = segment.mid_point + segment.direction * event.up;
+    return Point(point2d.x, point2d.y, event.right);
+  }
+
   NaiveOutput naive() {
     NaiveOutput image(
         grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, grid.n_planes, 0);
     for (const auto& event : events_) {
-      const auto& segment = geometry.lor_line_segments[event.lor.index()];
-      const auto point2d = segment.mid_point + segment.direction * event.up;
-      Point point(point2d.x, point2d.y, event.right);
-      const auto voxel = grid.voxel_at(point);
+      auto p = point(event);
+      const auto voxel = grid.voxel_at(p);
       if (grid.contains(voxel)) {
         ++image[voxel];
       }
