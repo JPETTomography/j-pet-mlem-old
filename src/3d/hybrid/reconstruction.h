@@ -147,6 +147,19 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
   S plane(F z) { return S((z - grid.z_left) / grid.pixel_grid.pixel_size); }
 
+  bool bb_intersects_grid(const FrameEvent& event) {
+    if (event.plane_end < 0 || event.plane_begin >= grid.n_planes)
+      return false;
+
+    for (int i = event.pixel_info_begin; i < event.pixel_info_end; i++) {
+      auto pixel = geometry.pixels[i];
+      if (grid.pixel_grid.contains(pixel))
+        return true;
+    }
+
+    return false;
+  }
+
 #if USE_FAST_TEXT_PARSER
   void load_events(const char* fn) {
     size_t n_lines = 0;
@@ -166,7 +179,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
             std::cerr << "error line: " << line << std::endl;
             throw(ex);
           }
-          events_.push_back(translate_to_frame(response));
+          auto event = translate_to_frame(response);
+          if (bb_intersects_grid(event))
+            events_.push_back(event);
         });
   }
 #endif
@@ -176,7 +191,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       Response response(in);
       if (!in)
         break;
-      events_.push_back(translate_to_frame(response));
+      auto event = translate_to_frame(response);
+      if (bb_intersects_grid(event))
+        events_.push_back(event);
     }
     return *this;
   }
