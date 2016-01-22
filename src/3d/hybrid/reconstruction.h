@@ -147,13 +147,13 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
   S plane(F z) { return S((z - grid.z_left) / grid.pixel_grid.pixel_size); }
 
-  bool bb_intersects_grid(const FrameEvent& event) {
+  bool bb_intersects_grid_with_positive_weight(const FrameEvent& event) {
     if (event.plane_end < 0 || event.plane_begin >= grid.n_planes)
       return false;
 
     for (int i = event.pixel_info_begin; i < event.pixel_info_end; i++) {
       auto pixel = geometry.pixels[i];
-      if (grid.pixel_grid.contains(pixel))
+      if (grid.pixel_grid.contains(pixel) && geometry.pixel_weights[i] > 0)
         return true;
     }
 
@@ -180,7 +180,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
             throw(ex);
           }
           auto event = translate_to_frame(response);
-          if (bb_intersects_grid(event))
+          if (bb_intersects_grid_with_positive_weight(event))
             events_.push_back(event);
         });
   }
@@ -192,7 +192,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       if (!in)
         break;
       auto event = translate_to_frame(response);
-      if (bb_intersects_grid(event))
+      if (bb_intersects_grid_with_positive_weight(event))
         events_.push_back(event);
     }
     return *this;
