@@ -359,8 +359,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
           const auto pixel = geometry.pixels[info_index];
           const auto pixel_weight = geometry.pixel_weights[info_index];
-
-          const auto pixel_index = pixel_grid.index(pixel);
           const auto center = pixel_grid.center_at(pixel);
 
           std::cerr << "(" << pixel.x << "," << pixel.y << ") " << pixel_weight
