@@ -20,7 +20,7 @@ static const char* point_source_json = R"JSON([
     },
     "intensity": 1.0,
     "origin": [0, 0, 0],
-    "type": "point-source"
+    "type": "point"
   }
 ])JSON";
 
