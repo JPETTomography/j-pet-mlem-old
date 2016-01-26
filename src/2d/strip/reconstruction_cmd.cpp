@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
             return;
           auto fn = iteration >= 0
                         ? output_base_name.add_index(iteration, n_iterations)
-                        : "_sensitivity";
+                        : output_base_name + "_sensitivity";
           util::png_writer png(fn + ".png");
           png << output;
           if (output_txt) {
