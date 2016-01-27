@@ -10,6 +10,10 @@
 
 #include "2d/geometry/pixel_map.h"
 
+#if USE_FAST_TEXT_PARSER
+#include "util/text_parser.h"
+#endif
+
 #if _OPENMP
 #include <omp.h>
 #else
@@ -160,6 +164,35 @@ template <typename FType, typename KernelType> class Reconstruction {
     }
     return *this;
   }
+
+#if USE_FAST_TEXT_PARSER
+  void fast_load_txt_events(const char* fn, bool is_3d = false) {
+    size_t n_lines = 0;
+    // first just count lines and reserve space
+    util::text_parser::read_lines(fn, [&](const char*) { ++n_lines; });
+    responses.reserve(n_lines);
+    // now read actual values
+    util::text_parser::read_lines(
+        fn,
+        [&](const char* line) {
+          util::text_parser parser(line);
+          F z_u, z_d, dl;
+          try {
+            if (is_3d) {
+              int i, j;
+              parser >> i >> j  // just read LOR values even they are useless
+                  >> z_u >> z_d >> dl;
+            } else {
+              parser >> z_u >> z_d >> dl;
+            }
+          } catch (const char* ex) {
+            std::cerr << "error line: " << line << std::endl;
+            throw(ex);
+          }
+          responses.emplace_back(z_u, z_d, dl);
+        });
+  }
+#endif
 
   template <typename StreamType> StreamType& operator>>(StreamType& out) {
     return out << rho;

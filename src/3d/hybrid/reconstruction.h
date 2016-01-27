@@ -1,7 +1,5 @@
 #pragma once
 
-#define USE_FAST_TEXT_PARSER 1
-
 #if !__CUDACC__
 #include <vector>
 #include <algorithm>
@@ -161,7 +159,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   }
 
 #if USE_FAST_TEXT_PARSER
-  void load_events(const char* fn) {
+  void fast_load_txt_events(const char* fn) {
     size_t n_lines = 0;
     // first just count lines and reserve space
     util::text_parser::read_lines(fn, [&](const char*) { ++n_lines; });

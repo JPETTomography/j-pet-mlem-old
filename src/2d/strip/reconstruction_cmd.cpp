@@ -94,14 +94,26 @@ int main(int argc, char* argv[]) {
               << std::endl;
   }
 
+  auto is_3d = cl.exist("3d-reponse");
+
   for (auto& fn : cl.rest()) {
     if (cmdline::path(fn).ext() == ".txt") {
+#if USE_FAST_TEXT_PARSER
+      reconstruction.fast_load_txt_events(fn.c_str(), is_3d);
+#else
+      if (is_3d) {
+        throw("3D input not supported in this build");
+      }
       std::ifstream in_responses(fn);
       if (!in_responses.is_open()) {
         throw("cannot open phantom responses file: " + fn);
       }
       reconstruction << in_responses;
+#endif
     } else {
+      if (is_3d) {
+        throw("3D input must have .txt extension");
+      }
       util::ibstream in_responses(fn);
       if (!in_responses.is_open()) {
         throw("cannot open phantom responses file: " + fn);

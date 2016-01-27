@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
       std::cerr << "     response = " << fn << std::endl;
     }
 #if USE_FAST_TEXT_PARSER
-    reconstruction.load_events(fn.c_str());
+    reconstruction.fast_load_txt_events(fn.c_str());
 #else
     std::ifstream in_response(fn);
     reconstruction << in_response;

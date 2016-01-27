@@ -53,6 +53,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
   msg << "note: All length options below should be expressed in milimeters.";
   cl.footer(msg.str());
 
+  cl.add("3d-reponse", 0, "input response contains additional LOR information");
   cl.add("dl-is-time", 0, "delta is time, convert using speed of light");
   cl.add<double>("speed-of-light", 0, "speed of light", false, 299792458.);
   cl.add<double>("scale-length", 0, "scale input length values", false, 1.);

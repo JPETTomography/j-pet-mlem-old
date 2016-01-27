@@ -45,6 +45,9 @@ set(PET_WARP_SIZE 32
 set(PET_MAX_THREADS_PER_BLOCK 512
     CACHE INTEGER
     "not used in current implementation")
+set(PET_USE_FAST_TEXT_PARSER ON
+    CACHE BOOL
+    "use fast text parser for loading events (around ~5x faster than C++)")
 
 # extra verbosity
 option(CUDA_PTXAS_VERBOSE "show verbose information about CUDA registers" OFF)
