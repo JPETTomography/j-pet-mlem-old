@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
         txt << std::fixed;
         reconstruction.output_tuples(txt);
       } else if (output_ext != ".png") {
-        util::obstream bin(fn + ".bin");
+        util::obstream bin(fn + output_ext);
         reconstruction >> bin;
       }
     }
