@@ -34,14 +34,14 @@ void calculate_scanner_options(cmdline::parser& parser, int argc = 1);
 
 /// provides initialization list for creating scanner
 #define __PET2D_STRIP(...) __VA_ARGS__  // just pass-through
-#define PET2D_STRIP_SCANNER_CL(cl)            \
-  __PET2D_STRIP(cl.get<double>("r-distance"), \
-                cl.get<double>("s-length"),   \
-                cl.get<int>("n-y-pixels"),    \
-                cl.get<int>("n-z-pixels"),    \
-                cl.get<double>("s-pixel"),    \
-                cl.get<double>("s-pixel"),    \
-                cl.get<double>("s-z"),        \
+#define PET2D_STRIP_SCANNER_CL(cl)         \
+  __PET2D_STRIP(cl.get<double>("radius"),  \
+                cl.get<double>("length"),  \
+                cl.get<int>("n-y-pixels"), \
+                cl.get<int>("n-z-pixels"), \
+                cl.get<double>("s-pixel"), \
+                cl.get<double>("s-pixel"), \
+                cl.get<double>("s-z"),     \
                 cl.get<double>("s-dl"))
 
 }  // Strip
