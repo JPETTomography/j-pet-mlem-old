@@ -192,11 +192,29 @@ int main(int argc, char* argv[]) {
     std::ofstream cfg(output_base_name + ".cfg");
     cfg << cl;
 
+    // RAW + NRRD
+    util::obstream bin_wo_error(output_base_name + "_wo_error");
+    util::nrrd_writer nrrd_wo_error(output_base_name + "_wo_error.nrrd",
+                                    output_base_name + "_wo_error");
+    bin_wo_error << image_detected_exact;
+    nrrd_wo_error << image_detected_exact;
+    util::obstream bin_emitted(output_base_name + "_emitted");
+    util::nrrd_writer nrrd_emitted(output_base_name + "_emitted.nrrd",
+                                   output_base_name + "_emitted");
+    bin_emitted << image_emitted;
+    nrrd_emitted << image_emitted;
+    util::obstream bin_w_error(output_base_name + "_w_error");
+    util::nrrd_writer nrrd_w_error(output_base_name + "_w_error.nrrd",
+                                   output_base_name + "_w_error");
+    bin_w_error << image_detected_w_error;
+    nrrd_w_error << image_detected_w_error;
+
+    // PNG
     util::png_writer png_wo_error(output_base_name + "_wo_error.png");
     png_wo_error << image_detected_exact;
     util::png_writer png_emitted(output_base_name + "_emitted.png");
     png_emitted << image_emitted;
-    util::png_writer png_w_error(output_base_name + ".png");
+    util::png_writer png_w_error(output_base_name + "_w_error.png");
     png_w_error << image_detected_w_error;
   }
 

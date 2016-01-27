@@ -166,6 +166,8 @@ int main(int argc, char* argv[]) {
             util::obstream bin(fn + output_ext);
             bin << output;
           }
+          util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
+          nrrd << output;
         },
         [&](int completed, bool finished) { progress(completed, finished); },
         cl.get<int>("cuda-device"),
@@ -181,7 +183,7 @@ int main(int argc, char* argv[]) {
   {
     if (output_base_name.length()) {
       util::png_writer png(output_base_name + "_sensitivity.png");
-      reconstruction.output_bitmap(png, true);
+      png << reconstruction.sensitivity;
     }
 
     for (int block = 0; block < n_blocks; block++) {
@@ -194,7 +196,7 @@ int main(int argc, char* argv[]) {
                                            n_iterations);
 
       util::png_writer png(fn + ".png", cl.get<double>("png-max"));
-      reconstruction.output_bitmap(png);
+      png << reconstruction.rho;
       if (output_txt) {
         std::ofstream txt(fn + ".txt");
         txt.precision(12);
@@ -202,7 +204,9 @@ int main(int argc, char* argv[]) {
         reconstruction.output_tuples(txt);
       } else if (output_ext != ".png") {
         util::obstream bin(fn + output_ext);
-        reconstruction >> bin;
+        util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext);
+        bin << reconstruction.rho;
+        nrrd << reconstruction.rho;
       }
     }
 #if USE_STATISTICS

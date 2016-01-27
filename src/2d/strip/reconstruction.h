@@ -8,6 +8,8 @@
 #include "response.h"
 #include "scanner.h"
 
+#include "2d/geometry/pixel_map.h"
+
 #if _OPENMP
 #include <omp.h>
 #else
@@ -31,15 +33,16 @@ template <typename FType, typename KernelType> class Reconstruction {
   using Pixel = typename Scanner::Pixel;
   using Point = typename Scanner::Point;
   using Vector = typename Scanner::Vector;
+  using Output = PET2D::PixelMap<Pixel, F>;
 
   Scanner scanner;
+  Output rho;
+  Output sensitivity;
 
  private:
   const int n_threads;
-  std::vector<F> rho;
   std::vector<F> acc_log;
   std::vector<std::vector<F>> thread_rhos;
-  std::vector<F> sensitivity;
   Kernel kernel;
   ReconstructionStats<size_t> stats_;
 
@@ -49,17 +52,16 @@ template <typename FType, typename KernelType> class Reconstruction {
 
   Reconstruction(const Scanner& scanner)
       : scanner(scanner),
+        rho(scanner.n_z_pixels, scanner.n_y_pixels, 1),
+        sensitivity(scanner.n_z_pixels, scanner.n_y_pixels),
         n_threads(omp_get_max_threads()),
-        rho(scanner.total_n_pixels, 1),
         thread_rhos(n_threads),
-        sensitivity(scanner.total_n_pixels),
         kernel(scanner.sigma_z, scanner.sigma_dl),
         stats_(n_threads),
         stats(stats_) {
 
     for (int y = 0; y < scanner.n_y_pixels; ++y) {
       for (int z = 0; z < scanner.n_z_pixels; ++z) {
-
         sensitivity[y * scanner.n_z_pixels + z] =
             scanner.pixel_sensitivity(Pixel(z, y));
       }
@@ -133,7 +135,7 @@ template <typename FType, typename KernelType> class Reconstruction {
 #endif
       }
 
-      rho.assign(scanner.total_n_pixels, 0);
+      rho.assign(0);
 
       for (int thread = 0; thread < n_threads; ++thread) {
         for (int i = 0; i < scanner.total_n_pixels; ++i) {
@@ -174,18 +176,6 @@ template <typename FType, typename KernelType> class Reconstruction {
         }
       }
     }
-  }
-
-  template <class FileWriter>
-  void output_bitmap(FileWriter& fw, bool output_sensitivity = false) {
-#if !_MSC_VER
-    fw.template
-#else
-    fw.
-#endif
-        write(scanner.n_z_pixels,
-              scanner.n_y_pixels,
-              (output_sensitivity ? sensitivity : rho).data());
   }
 
  private:
