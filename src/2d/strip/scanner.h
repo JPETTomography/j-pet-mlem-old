@@ -198,20 +198,12 @@ template <typename FType, typename SType> class Scanner {
       const Event& event,     ///< event to be detected
       FullResponse& response  ///< scanner response (LOR+length)
       ) const {
-
+    (void)rng;  // mark as unused
     FullResponse ps_event = to_projection_space_angle(event);
 
-    F z_u, z_d, dl;
-    z_u = ps_event.z_u;
-    z_d = ps_event.z_d;
-    dl = ps_event.dl;
-
-    std::normal_distribution<F> normal_dist_dz(0, sigma_z);
-    std::normal_distribution<F> normal_dist_dl(0, sigma_dl);
-
-    z_u += normal_dist_dz(rng);
-    z_d += normal_dist_dz(rng);
-    dl += normal_dist_dl(rng);
+    F z_u = ps_event.z_u;
+    F z_d = ps_event.z_d;
+    F dl = ps_event.dl;
 
     if (std::abs(z_u) < scintillator_length / 2 &&
         std::abs(z_d) < scintillator_length / 2) {
@@ -238,6 +230,13 @@ template <typename FType, typename SType> class Scanner {
                  const Event& event,  ///< event to be detected
                  Response& response   ///< scanner response (LOR+length)
                  ) const {
+    std::normal_distribution<F> dist_z(0, sigma_z);
+    std::normal_distribution<F> dist_dl(0, sigma_dl);
+
+    response.z_u += dist_z(rng);
+    response.z_d += dist_z(rng);
+    response.dl += dist_dl(rng);
+
     return exact_detect(rng, event, response);
   }
 
