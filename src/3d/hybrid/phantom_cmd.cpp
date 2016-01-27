@@ -94,6 +94,10 @@ int main(int argc, char* argv[]) {
   auto output_base_name = output.wo_ext();
   auto ext = output.ext();
 
+  if (output_base_name.length() && ext != ".txt") {
+    throw("output extension must be .txt, binary filed not supported (yet)");
+  }
+
   Scanner scanner(
       PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
           PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),

@@ -168,6 +168,10 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
     auto output_base_name = output.wo_ext();
     auto ext = output.ext();
 
+    if (output_base_name.length() && ext != ".txt") {
+      throw("output extension must be .txt, binary filed not supported (yet)");
+    }
+
     auto only_detected = cl.exist("detected");
     auto n_pixels = cl.get<int>("n-pixels");
     auto s_pixel = cl.get<double>("s-pixel");
