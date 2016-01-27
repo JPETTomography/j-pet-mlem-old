@@ -148,10 +148,11 @@ template <typename FType, typename KernelType> class Reconstruction {
 
   template <typename StreamType> Reconstruction& operator<<(StreamType& in) {
     int i = 0;
-    while (!in.eof()) {
-
+    for (;;) {
       F z_u, z_d, dl;
       in >> z_u >> z_d >> dl;
+      if (in.eof())
+        break;
       responses.emplace_back(z_u, z_d, dl);
       i++;
     }
