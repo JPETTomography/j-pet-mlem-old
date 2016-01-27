@@ -15,13 +15,13 @@ void add_scanner_options(cmdline::parser& cl) {
 void add_matrix_options(cmdline::parser& cl) {
   PET2D::Barrel::add_matrix_options(cl);
   cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
-  cl.add<double>("length", 'L', "length of the detector", false, 2);
+  cl.add<double>("length", 'l', "length of the detector", false, 2);
 }
 
 void add_phantom_options(cmdline::parser& cl) {
   cl.add<int>("n-planes", 0, "number of voxels in z direction", false, 0);
   cl.add<double>("z-left", 0, "left extent in z direction", false, 0);
-  cl.add<double>("length", 'L', "length of the detector", false, 2);
+  cl.add<double>("length", 'l', "length of the detector", false, 2);
   cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
   cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
   PET2D::Barrel::add_phantom_options(cl);
@@ -32,7 +32,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
   cl.add<cmdline::path>("system", 0, "system matrix file", false);
   cl.add<int>("n-planes", 0, "number of voxels in z direction", false, 0);
   cl.add<double>("z-left", 0, "left extent in z direction", false, 0);
-  cl.add<double>("length", 'L', "length of the detector", false, 2);
+  cl.add<double>("length", 'l', "length of the detector", false, 2);
   cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
   cl.add("sens-to-one", 0, "sets sensitivity to one", false);
 
@@ -56,7 +56,7 @@ void add_sensitivity_options(cmdline::parser& cl) {
   cl.add<int>("z-plane", 0, "z plane trianguler cut", false);
   cl.add<int>("y-plane", 0, "y plane cut", false);
   cl.add<int>("n-planes", 0, "number of z planes", false, 80);
-  cl.add<double>("length", 'L', "length of the detector", false, 2);
+  cl.add<double>("length", 'l', "length of the detector", false, 2);
   cl.add("int", 'i', "values are integers");
 
   cl.footer("image ...");

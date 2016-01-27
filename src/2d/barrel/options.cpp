@@ -74,7 +74,7 @@ void add_model_options(cmdline::parser& cl) {
                  cmdline::dontsave | cmdline::hidden,
                  10.);
   cl.add<double>("base-length",
-                 'l',
+                 0,
                  "scintillator emission base length P(l)=1-e^(-1)",
                  false,
                  0.1);
@@ -160,7 +160,7 @@ void add_phantom_options(cmdline::parser& cl) {
                  cmdline::dontsave | cmdline::hidden,
                  10.);
   cl.add<double>("base-length",
-                 'l',
+                 0,
                  "scintillator emission base length P(l)=1-e^(-1)",
                  false,
                  0.1);
@@ -207,7 +207,7 @@ void add_lm_reconstruction_options(cmdline::parser& cl) {
   add_scanner_options(cl);
   add_model_options(cl);
 
-  cl.add<double>("length", 'L', "length of the detector", false, 2);
+  cl.add<double>("length", 'l', "length of the detector", false, 2);
   cl.add<cmdline::path>("geometry", 0, "geometry information", true);
   cl.add<cmdline::path>("system", 0, "system matrix file", false);
   cl.add<cmdline::path>("output", 'o', "output reconstruction", false);

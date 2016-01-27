@@ -20,7 +20,7 @@ void add_scanner_options(cmdline::parser& cl) {
                         cmdline::load);
 
   cl.add<double>("radius", 'r', "R distance between scintillator", false, 0.5);
-  cl.add<double>("length", 'L', "scintillator length", false, 1);
+  cl.add<double>("length", 'l', "scintillator length", false, 1);
   cl.add<double>("s-pixel", 'p', "pixel size", false, 0.01);
   cl.add<int>("n-pixels", 'n', "number of pixels", cmdline::dontsave, 0);
   cl.add<int>("n-z-pixels", 0, "number of z pixels", false);
