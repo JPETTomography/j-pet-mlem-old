@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
               << std::endl;
   }
 
-  auto is_3d = cl.exist("3d-reponse");
+  auto is_3d = cl.exist("3d-response");
 
   for (auto& fn : cl.rest()) {
     if (cmdline::path(fn).ext() == ".txt") {

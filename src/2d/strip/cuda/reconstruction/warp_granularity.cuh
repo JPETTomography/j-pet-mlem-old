@@ -19,8 +19,8 @@ namespace Reconstruction {
 template <template <typename Float> class Kernel, typename F>
 __global__ void reconstruction(Scanner<F, short> scanner,
                                F* responses_z_u,
-                               F* reponses_z_d,
-                               F* reponses_dl,
+                               F* responses_z_d,
+                               F* responses_dl,
                                const int n_responses,
                                F* output_rho) {
   using Vector = PET2D::Vector<F>;
@@ -46,14 +46,14 @@ __global__ void reconstruction(Scanner<F, short> scanner,
     if (response_index >= n_responses)
       break;
 
-    Response reponse(responses_z_u[response_index],
-                     reponses_z_d[response_index],
-                     reponses_dl[response_index]);
+    Response response(responses_z_u[response_index],
+                      responses_z_d[response_index],
+                      responses_dl[response_index]);
 
     F denominator = 0;
 
     F tan, y, z;
-    reponse.calculate_tan_y_z(scanner.radius, tan, y, z);
+    response.calculate_tan_y_z(scanner.radius, tan, y, z);
 
     F sec, A, B, C, bb_y, bb_z;
     kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);
@@ -61,7 +61,7 @@ __global__ void reconstruction(Scanner<F, short> scanner,
     Point ellipse_center(z, y);
     Pixel center_pixel = scanner.pixel_at(ellipse_center);
 
-    // bounding box limits for reponse
+    // bounding box limits for response
     const int bb_half_width = n_pixels_in_line(bb_z, scanner.pixel_width);
     const int bb_half_height = n_pixels_in_line(bb_y, scanner.pixel_height);
     Pixel bb_tl(center_pixel.x - bb_half_width,
