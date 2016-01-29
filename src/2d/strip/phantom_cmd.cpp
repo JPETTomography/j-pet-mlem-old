@@ -156,8 +156,11 @@ int main(int argc, char* argv[]) {
   // but we won't write to it
   auto tan_bins = cl.get<int>("tan-bins");
   auto max_tan = scanner.scintillator_length / (2 * scanner.radius);
-  PET3D::VoxelGrid<F, S> tan_bins_grid(
-      pixel_grid, -max_tan, tan_bins > 0 ? tan_bins : 1);
+  PET3D::VariableVoxelSizeVoxelGrid<F, S> tan_bins_grid(
+      pixel_grid,
+      -max_tan,
+      tan_bins > 0 ? tan_bins : 1,
+      max_tan / tan_bins * 2);
   PET3D::VoxelMap<PET3D::Voxel<S>, Hit> tan_bins_map(
       n_z_pixels, n_y_pixels, tan_bins > 0 ? tan_bins : 1);
 

@@ -70,4 +70,50 @@ template <typename FType, typename SType> class VoxelGrid {
   const int n_voxels;
 };
 
+template <typename FType, typename SType>
+class VariableVoxelSizeVoxelGrid : public VoxelGrid<FType, SType> {
+ public:
+  using F = FType;
+  using S = SType;
+  using Base = VoxelGrid<F, S>;
+  using PixelGrid = typename Base::PixelGrid;
+  using Pixel = typename Base::Pixel;
+  using Voxel = typename Base::Voxel;
+  using Point = typename Base::Point;
+  _ VariableVoxelSizeVoxelGrid(const PixelGrid& pixel_grid,
+                               F z_left,
+                               S n_planes,
+                               F voxel_size)
+      : Base(pixel_grid, z_left, n_planes), voxel_size(voxel_size) {}
+
+  _ Point lower_left_at(Voxel voxel) const {
+    auto point2d = this->pixel_grid.lower_left_at(Pixel(voxel.x, voxel.y));
+    F z = voxel.z * voxel_size + this->z_left;
+    return Point(point2d.x, point2d.y, z);
+  }
+
+  _ Point center_at(Voxel voxel) const {
+    auto p2d = this->pixel_grid.center_at(Pixel(voxel.x, voxel.y));
+    F z = this->center_z_at(voxel);
+    return Point(p2d.x, p2d.y, z);
+  }
+
+  _ F center_z_at(Voxel voxel) const {
+    return (voxel.z + F(0.5)) * voxel_size + this->z_left;
+  }
+
+  _ Voxel voxel_at(Point p) const {
+    auto lower_left = Point(this->pixel_grid.lower_left.x,
+                            this->pixel_grid.lower_left.y,
+                            this->z_left);
+    auto v = p - lower_left;
+    S column = static_cast<S>(compat::floor(v.x / this->pixel_grid.pixel_size));
+    S row = static_cast<S>(compat::floor(v.y / this->pixel_grid.pixel_size));
+    S plane = static_cast<S>(compat::floor(v.z / voxel_size));
+    return Voxel(column, row, plane);
+  }
+
+  const F voxel_size;
+};
+
 }  // PET3D
