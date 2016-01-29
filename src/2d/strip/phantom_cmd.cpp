@@ -158,7 +158,7 @@ int main(int argc, char* argv[]) {
   // tangent 3D map, if tan-bins not given then we make just an 1 bin deep map,
   // but we won't write to it
   auto tan_bins = cl.get<int>("tan-bins");
-  auto max_tan = scanner.scintillator_length / (2 * scanner.radius);
+  auto max_tan = (F)1.1 * scanner.scintillator_length / (2 * scanner.radius);
   PET2D::Point<F> kernel_point(0, 0);
   PET3D::VariableVoxelSizeVoxelGrid<F, S> tan_bins_grid(
       pixel_grid,
