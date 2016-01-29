@@ -80,7 +80,8 @@ void add_phantom_options(cmdline::parser& cl) {
               0,
               "Bin reconstructed events using given number of tangent bins",
               cmdline::dontsave);
-
+  cl.add<std::vector<double>>(
+      "kernel-point", 0, "Point to evaluate kernel in", cmdline::dontsave);
   cl.footer("phantom_description");
   cl.add<cmdline::path>("output",
                         'o',

@@ -156,6 +156,7 @@ int main(int argc, char* argv[]) {
   // but we won't write to it
   auto tan_bins = cl.get<int>("tan-bins");
   auto max_tan = scanner.scintillator_length / (2 * scanner.radius);
+  PET2D::Point<F> kernel_point(0, 0);
   PET3D::VariableVoxelSizeVoxelGrid<F, S> tan_bins_grid(
       pixel_grid,
       -max_tan,
@@ -163,6 +164,14 @@ int main(int argc, char* argv[]) {
       max_tan / tan_bins * 2);
   PET3D::VoxelMap<PET3D::Voxel<S>, Hit> tan_bins_map(
       n_z_pixels, n_y_pixels, tan_bins > 0 ? tan_bins : 1);
+  if (cl.exist("kernel-point")) {
+    auto& kernel_point_cl = cl.get<std::vector<double>>("kernel-point");
+    if (kernel_point_cl.size() != 2) {
+      throw("--kernel-point must supply exactly 2 values for x, y");
+    }
+    kernel_point.x = kernel_point_cl[0];
+    kernel_point.y = kernel_point_cl[1];
+  }
 
   util::progress progress(verbose, n_emissions, 10000);
   monte_carlo(
@@ -258,7 +267,7 @@ int main(int argc, char* argv[]) {
                                        tan,
                                        sec,
                                        scanner.radius,
-                                       PET2D::Point<F>(0, 0));
+                                       kernel_point);
             tan_kernel_map[voxel] = kernel_value;
           }
         }
