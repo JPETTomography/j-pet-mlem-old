@@ -2,6 +2,7 @@
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <cstring>
 
 #include "delegate.h"
 
