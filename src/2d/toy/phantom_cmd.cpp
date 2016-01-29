@@ -14,7 +14,7 @@ using Scanner = PET2D::Toy::GaussScanner<F>;
 using Phantom = PET2D::Phantom<RNG, F>;
 using MonteCarlo = Common::PhantomMonteCarlo<Phantom, Scanner>;
 
-main(int argc, const char* argv[]) {
+main(int argc, char* argv[]) {
 
   CMDLINE_TRY
   cmdline::parser cl;
@@ -31,6 +31,17 @@ main(int argc, const char* argv[]) {
   cl.add<double>("s-dl", 0, "TOF sigma delta-l", cmdline::alwayssave, 0.06);
   cl.add<int>("emissions", 'e', "number of emissions", false, 0);
   cl.add<double>("scale", '\0', "scale factor", false, 1);
+
+  cl.parse_check(argc, argv);
+
+  if (!cl.rest().size()) {
+    if (argc == 1) {
+      std::cerr << cl.usage();
+      exit(0);
+    } else {
+      throw("at least one input phantom description expected, consult --help");
+    }
+  }
 
   Phantom phantom(cl.get<double>("scale"));
   for (auto& fn : cl.rest()) {
