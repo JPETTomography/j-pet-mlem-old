@@ -50,9 +50,14 @@
 #include "2d/geometry/pixel_map.h"
 #include "2d/strip/scanner.h"
 
+#include "3d/geometry/voxel_grid.h"
+#include "3d/geometry/voxel_map.h"
+
 #include "common/model.h"
 #include "common/phantom_monte_carlo.h"
 #include "common/types.h"
+
+#include "analytic_kernel.h"
 
 #if _OPENMP
 #include <omp.h>
@@ -147,6 +152,15 @@ int main(int argc, char* argv[]) {
   Image image_detected_exact(n_z_pixels, n_y_pixels);
   Image image_detected_w_error(n_z_pixels, n_y_pixels);
 
+  // tangent 3D map, if tan-bins not given then we make just an 1 bin deep map,
+  // but we won't write to it
+  auto tan_bins = cl.get<int>("tan-bins");
+  auto max_tan = scanner.scintillator_length / (2 * scanner.radius);
+  PET3D::VoxelGrid<F, S> tan_bins_grid(
+      pixel_grid, -max_tan, tan_bins > 0 ? tan_bins : 1);
+  PET3D::VoxelMap<PET3D::Voxel<S>, Hit> tan_bins_map(
+      n_z_pixels, n_y_pixels, tan_bins > 0 ? tan_bins : 1);
+
   util::progress progress(verbose, n_emissions, 10000);
   monte_carlo(
       rng,
@@ -178,6 +192,13 @@ int main(int argc, char* argv[]) {
           if (pixel_grid.contains(pixel)) {
             image_detected_w_error[pixel]++;
           }
+          if (tan_bins > 0) {
+            auto tan_voxel = tan_bins_grid.voxel_at(PET3D::Point<F>(
+                event_w_error.z, event_w_error.y, event_w_error.tan));
+            if (tan_bins_grid.contains(tan_voxel)) {
+              tan_bins_map[tan_voxel]++;
+            }
+          }
         }
       },
       progress);
@@ -208,6 +229,44 @@ int main(int argc, char* argv[]) {
                                    output_base_name + "_w_error");
     bin_w_error << image_detected_w_error;
     nrrd_w_error << image_detected_w_error;
+
+    if (tan_bins > 0) {
+      util::obstream bin_tan_bins(output_base_name + "_tan_bins");
+      util::nrrd_writer nrrd_tan_bins(output_base_name + "_tan_bins.nrrd",
+                                      output_base_name + "_tan_bins");
+      bin_tan_bins << tan_bins_map;
+      nrrd_tan_bins << tan_bins_map;
+
+      if (verbose) {
+        std::cerr << "generating kernel map..." << std::endl;
+      }
+      PET3D::VoxelMap<PET3D::Voxel<S>, F> tan_kernel_map(
+          n_z_pixels, n_y_pixels, tan_bins);
+      for (S z = 0; z < tan_kernel_map.depth; ++z) {
+        auto tan = tan_bins_grid.center_at(PET3D::Voxel<S>(0, 0, z)).z;
+        auto sec = compat::sqrt(1 + tan * tan);
+        for (S y = 0; y < tan_kernel_map.height; ++y) {
+          for (S x = 0; x < tan_kernel_map.width; ++x) {
+            PET3D::Voxel<S> voxel(x, y, z);
+            auto point = tan_bins_grid.center_at(voxel);
+            PET2D::Strip::AnalyticKernel<F> kernel(scanner.sigma_z,
+                                                   scanner.sigma_dl);
+            auto kernel_value = kernel(PET2D::Point<F>(point.x, point.y),
+                                       tan,
+                                       sec,
+                                       scanner.radius,
+                                       PET2D::Point<F>(0, 0));
+            tan_kernel_map[voxel] = kernel_value;
+          }
+        }
+      }
+
+      util::obstream bin_tan_kernel(output_base_name + "_tan_kernel");
+      util::nrrd_writer nrrd_tan_kernel(output_base_name + "_tan_kernel.nrrd",
+                                        output_base_name + "_tan_kernel");
+      bin_tan_kernel << tan_kernel_map;
+      nrrd_tan_kernel << tan_kernel_map;
+    }
 
     // PNG
     util::png_writer png_wo_error(output_base_name + "_wo_error.png");

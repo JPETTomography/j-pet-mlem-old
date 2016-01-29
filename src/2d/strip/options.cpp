@@ -76,6 +76,10 @@ void add_phantom_options(cmdline::parser& cl) {
   add_common_options(cl);
   cl.add<double>(
       "scale", 0, "Scale phantom with given constant", cmdline::alwayssave, 1);
+  cl.add<int>("tan-bins",
+              0,
+              "Bin reconstructed events using given number of tangent bins",
+              cmdline::dontsave);
 
   cl.footer("phantom_description");
   cl.add<cmdline::path>("output",
