@@ -15,7 +15,7 @@ template <class PhantomType, class DetectorType> class PhantomMonteCarlo {
   using Phantom = PhantomType;
   using Detector = DetectorType;
   using F = typename Phantom::F;
-  using Event = typename Phantom::Event;
+  using Event = typename Detector::Event;
   using RNG = typename Phantom::RNG;
   using Response = typename Detector::Response;
   using FullResponse = typename Detector::FullResponse;
