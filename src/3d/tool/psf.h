@@ -100,6 +100,15 @@ struct PSF {
       }
     }
 
+    if (img.depth < 2) {
+      left_above_half.z = 0;
+      right_above_half.z = 0;
+#if _OPENMP
+#pragma omp taskwait
+#endif
+      return;
+    }
+
 #if _OPENMP
 #pragma omp task shared(img, left_above_half, right_above_half)
 #endif
@@ -161,6 +170,13 @@ struct PSF {
       left.y = left_above_half.y - (img[la] - half_max) / (img[la] - img[lb]);
       right.y = right_above_half.y + (img[ra] - half_max) / (img[ra] - img[rb]);
       psf.y = right.y - left.y;
+    }
+
+    if (img.depth < 2) {
+      psf.z = -1;
+      left.z = 0;
+      right.z = 0;
+      return;
     }
 
     if (left_above_half.z == 0 || right_above_half.z == img.depth - 1) {
