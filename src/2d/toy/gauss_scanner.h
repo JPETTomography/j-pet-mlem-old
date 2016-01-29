@@ -22,6 +22,7 @@ template <typename F> class GaussScanner {
   short exact_detect(RNG& rng,
                      const Event& event,
                      FullResponse& response) const {
+    (void)rng;  // mark unused
     response.x = event.origin.x;
     response.y = event.origin.y;
     return 2;
