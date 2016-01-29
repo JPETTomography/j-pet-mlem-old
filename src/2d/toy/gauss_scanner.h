@@ -17,7 +17,7 @@ template <typename F> class GaussScanner {
   using FullResponse = Response;
   using Event = PET2D::Event<F>;
 
-  GaussScanner(F s_x, F s_y) : dist_x(0, s_x), dist_y(s_y){};
+  GaussScanner(F s_x, F s_y) : dist_x(0, s_x), dist_y(0,s_y){};
   template <class RNG>
   short exact_detect(RNG& rng,
                      const Event& event,
