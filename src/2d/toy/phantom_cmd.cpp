@@ -5,7 +5,6 @@
 #include "util/backtrace.h"
 #include "util/progress.h"
 
-
 #include "2d/geometry/pixel_grid.h"
 #include "2d/geometry/pixel_map.h"
 #include "2d/geometry/phantom.h"
@@ -40,6 +39,19 @@ main(int argc, char* argv[]) {
   cl.add<double>("s-dl", 0, "TOF sigma delta-l", cmdline::alwayssave, 0.06);
   cl.add<int>("n-emissions", 'e', "number of emissions", false, 0);
   cl.add<double>("scale", '\0', "scale factor", false, 1);
+  cl.add("verbose", 'v', "print progress information (-v)");
+  cl.add<cmdline::path>("output",
+                        'o',
+                        "output files prefix (png)",
+                        false,
+                        cmdline::path(),
+                        cmdline::not_from_file);
+  cl.add("no-responses", 0, "Do not emit responses", cmdline::dontsave);
+#if _OPENMP
+    cl.add<int>("n-threads", 'T', "number of OpenMP threads", cmdline::dontsave);
+  #else
+    (void)cl;  // mark cl as unsued when not using OpenMP
+  #endif
 
   cl.parse_check(argc, argv);
 
@@ -51,6 +63,12 @@ main(int argc, char* argv[]) {
       throw("at least one input phantom description expected, consult --help");
     }
   }
+
+#if _OPENMP
+  if (cl.exist("n-threads")) {
+    omp_set_num_threads(cl.get<int>("n-threads"));
+  }
+#endif
 
   Phantom phantom(cl.get<double>("scale"));
   for (auto& fn : cl.rest()) {
@@ -130,7 +148,6 @@ main(int argc, char* argv[]) {
           if (pixel_grid.contains(pixel)) {
             image_detected_w_error[pixel]++;
           }
-
         }
       },
       progress);
@@ -140,7 +157,6 @@ main(int argc, char* argv[]) {
               << "detected: " << monte_carlo.n_events_detected() << " events"
               << std::endl;
   }
-
 
   CMDLINE_CATCH
 }
