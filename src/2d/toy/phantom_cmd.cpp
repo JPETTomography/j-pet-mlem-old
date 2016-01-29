@@ -22,7 +22,7 @@ using Event = MonteCarlo::Event;
 using Image = PET2D::PixelMap<PET2D::Pixel<S>, Hit>;
 using FullResponse = MonteCarlo::FullResponse;
 
-main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
 
   CMDLINE_TRY
   cmdline::parser cl;
