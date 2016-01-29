@@ -90,6 +90,7 @@ void add_phantom_options(cmdline::parser& cl) {
                         false,
                         "phantom.bin",
                         cmdline::not_from_file);
+  cl.add("detected", 0, "collects detected emissions");
 }
 
 void calculate_scanner_options(cmdline::parser& parser, int) {

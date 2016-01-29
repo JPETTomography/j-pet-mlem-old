@@ -142,6 +142,7 @@ int main(int argc, char* argv[]) {
     no_responses = true;
   }
 
+  auto only_detected = cl.exist("detected");
   auto n_z_pixels = cl.get<int>("n-z-pixels");
   auto n_y_pixels = cl.get<int>("n-y-pixels");
   auto s_pixel = cl.get<double>("s-pixel");
@@ -218,7 +219,8 @@ int main(int argc, char* argv[]) {
           }
         }
       },
-      progress);
+      progress,
+      only_detected);
   if (verbose) {
     std::cerr << " emitted: " << monte_carlo.n_events_emitted() << " events"
               << std::endl
