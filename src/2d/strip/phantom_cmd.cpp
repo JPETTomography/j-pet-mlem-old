@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
   cl.parse_check(argc, argv);
   PET2D::Strip::calculate_scanner_options(cl, argc);
 
-  if (!cl.rest().size()) {
+  if (!cl.rest().size() && !cl.exist("point")) {
     if (argc == 1) {
       std::cerr << cl.usage();
       exit(0);
@@ -113,6 +113,17 @@ int main(int argc, char* argv[]) {
   for (auto& fn : cl.rest()) {
     std::ifstream in_phantom(fn);
     phantom << in_phantom;
+  }
+
+  // direct point phantom specification
+  if (cl.exist("point")) {
+    auto& point_phantom_cl = cl.get<std::vector<double>>("point");
+    if (point_phantom_cl.size() < 2 || point_phantom_cl.size() > 3) {
+      throw("--point must specifcy 2 or 3 values x,y[,intensity]");
+    }
+    phantom.push_back_region(new Phantom::PointRegion(
+        PET2D::Point<F>(point_phantom_cl[0], point_phantom_cl[1]),
+        point_phantom_cl.size() == 3 ? point_phantom_cl[2] : 1));
   }
 
   phantom.calculate_cdf();
