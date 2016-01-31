@@ -18,7 +18,7 @@ genTicks[xMin_, xMax_] := Table[{x, x},
 ]
 toSpan[{i_, j_}] = i ;; j;
 toSpan[{i_}] = i;
-thruPointCut[volume_, position_, extent_, plane_, opts:OptionsPattern[]] := Module[{
+thruPointCut[volume_, position_, extent_, plane_, opts:OptionsPattern[ArrayPlot]] := Module[{
 		range, span, first, last, datar, ticks1, ticks2,
 		labels = {
 			{None, Style["z   ", Bold, Opacity[1]]},
@@ -30,11 +30,12 @@ thruPointCut[volume_, position_, extent_, plane_, opts:OptionsPattern[]] := Modu
 	first = First /@ range;
 	last = (#1[[-1]] & ) /@ range;
     datar = Transpose[pixelSize/2 + {voxelLoverLeftCorner[first], voxelLoverLeftCorner[last]}];
-	datar = Drop[datar, {plane}]; span = toSpan /@ range;
+	datar = Drop[datar, {plane}];
+	span = toSpan /@ range;
 	vol = Times @@ (#1[[-1]] - #1[[1]] + 1 & ) /@ range;
     ticks1 = Table[{x, Round[x*1000]}, {x, Floor[datar[[1,1]]], Ceiling[datar[[1,2]]], (datar[[1,2]] - datar[[1,1]]) / 2}];
 	ticks2 = Table[{x, Round[x*1000]}, {x, Floor[datar[[2,1]]], Ceiling[datar[[2,2]]], (datar[[2,2]] - datar[[2,1]]) / 2}];
-    ArrayPlot[Reverse[volume[[Sequence @@ span]]],
+	ArrayPlot[Reverse[volume[[Sequence @@ span]]],
 		DataRange -> Reverse[datar],
 		Mesh -> If[vol < 64^2, All, None],
 		FrameTicks -> {{ticks1, None}, {ticks2, None}},
@@ -52,9 +53,14 @@ threeAxesCut[volume_, position_, extent_,
 	minmax = MinMax[(volume[[Sequence @@ spans[[#1]]]] & ) /@ {1, 2, 3}];
 	Row[((thruPointCut[volume, position, extent, #1,
 		PlotLegends -> None,
+		PlotRange -> {Full, Full, minmax},
+		PlotRangeClipping -> False,
+		PlotRangePadding -> Scaled[.04],
 		ColorFunction -> OptionValue[ColorFunction],
-		ImageSize -> Scaled[.3], opts] & ) /@ {1, 2, 3})
-		~Join~{BarLegend[{OptionValue[ColorFunction], minmax}, FilterRules[{opts}, Options[BarLegend]]]}]
+		ImageSize -> Scaled[.3],
+		FilterRules[{opts}, Options[ArrayPlot]]] & ) /@ {1, 2, 3})
+		~Join~{BarLegend[{OptionValue[ColorFunction], minmax},
+			FilterRules[{opts}, Options[BarLegend]]]}]
 ]
 
 
