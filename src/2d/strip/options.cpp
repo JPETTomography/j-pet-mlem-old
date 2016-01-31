@@ -93,6 +93,8 @@ void add_phantom_options(cmdline::parser& cl) {
                         "phantom.bin",
                         cmdline::not_from_file);
   cl.add("detected", 0, "collects detected emissions");
+  cl.add<std::vector<double>>(
+      "image-origin", 0, "Image origin x,y (default 0,0)", cmdline::dontsave);
 }
 
 void calculate_scanner_options(cmdline::parser& parser, int) {

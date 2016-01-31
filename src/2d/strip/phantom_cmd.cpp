@@ -157,11 +157,23 @@ int main(int argc, char* argv[]) {
   auto n_z_pixels = cl.get<int>("n-z-pixels");
   auto n_y_pixels = cl.get<int>("n-y-pixels");
   auto s_pixel = cl.get<double>("s-pixel");
+
+  PET2D::Point<F> image_origin(0, 0);
+  if (cl.exist("image-origin")) {
+    auto& image_origin_cl = cl.get<std::vector<double>>("image-origin");
+    if (image_origin_cl.size() != 2) {
+      throw("--image-origin must specify two values for x,y");
+    }
+    image_origin.x = image_origin_cl[0];
+    image_origin.y = image_origin_cl[1];
+  }
+
   PET2D::PixelGrid<F, S> pixel_grid(
       n_z_pixels,
       n_y_pixels,
       s_pixel,
-      PET2D::Point<F>(-s_pixel * n_z_pixels / 2, -s_pixel * n_y_pixels / 2));
+      PET2D::Point<F>(-s_pixel * n_z_pixels / 2, -s_pixel * n_y_pixels / 2) +
+          image_origin.as_vector());
 
   Image image_emitted(n_z_pixels, n_y_pixels);
   Image image_detected_exact(n_z_pixels, n_y_pixels);
