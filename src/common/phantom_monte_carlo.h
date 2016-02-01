@@ -100,6 +100,9 @@ template <class PhantomType, class DetectorType> class PhantomMonteCarlo {
         FullResponse full_response;
         if (detector_.exact_detect(l_rng, model, event, full_response) == 2) {
           detected(event, full_response);
+#if _OPENMP
+#pragma omp atomic
+#endif
           ++n_events_detected;
         }
         progress(n_events_emitted, true);
@@ -107,7 +110,7 @@ template <class PhantomType, class DetectorType> class PhantomMonteCarlo {
       n_events_emitted_ += n_emissions_or_detections;
     }
     n_events_detected_ += n_events_detected;
-    return n_events_detected;
+    return n_events_detected_;
   }
 
   int n_events_emitted() const { return n_events_emitted_; }
