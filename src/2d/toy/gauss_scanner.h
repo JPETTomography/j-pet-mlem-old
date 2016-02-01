@@ -8,9 +8,13 @@
 namespace PET2D {
 namespace Toy {
 
-template <typename F> class GaussScanner {
+template <typename FType> class GaussScanner {
  public:
+  using F = FType;
+
   struct Response {
+    Response() : x(), y(){};
+    Response(F x, F y) : x(x), y(y){};
     F x, y;
   };
 
