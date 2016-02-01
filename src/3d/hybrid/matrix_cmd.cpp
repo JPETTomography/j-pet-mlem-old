@@ -131,7 +131,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
   auto& s_pixel = cl.get<double>("s-pixel");
-  auto& n_emissions = cl.get<int>("n-emissions");
+  auto& n_emissions = cl.get<size_t>("n-emissions");
   auto verbose = cl.count("verbose");
   auto& z_position = cl.get<double>("z-position");
 

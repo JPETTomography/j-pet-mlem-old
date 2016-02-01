@@ -93,12 +93,12 @@ void add_matrix_options(cmdline::parser& cl) {
   add_model_options(cl);
 
   cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
-  cl.add<int>("n-emissions",
-              'e',
-              "emissions per pixel",
-              false,
-              0,
-              cmdline::not_from_file);
+  cl.add<size_t>("n-emissions",
+                 'e',
+                 "emissions per pixel",
+                 false,
+                 0,
+                 cmdline::not_from_file);
   cl.add<cmdline::path>("output",
                         'o',
                         "output binary triangular/full sparse system matrix",
@@ -129,13 +129,13 @@ void add_phantom_options(cmdline::parser& cl) {
   cl.add<int>("n-pixels", 'n', "number of pixels in one dimension", false, 256);
   cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
   add_scanner_options(cl);
-  cl.add<int>("n-emissions",
-              'e',
-              "number of emissions",
-              cmdline::optional,
-              0,
-              cmdline::default_reader<int>(),
-              cmdline::not_from_file);
+  cl.add<size_t>("n-emissions",
+                 'e',
+                 "number of emissions",
+                 cmdline::optional,
+                 0,
+                 cmdline::default_reader<int>(),
+                 cmdline::not_from_file);
   cl.add<double>("s-pixel", 'p', "pixel size", false);
   cl.add<double>(
       "tof-step", 't', "TOF quantisation step for distance delta", false);

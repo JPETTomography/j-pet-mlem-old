@@ -31,12 +31,12 @@ void add_scanner_options(cmdline::parser& cl) {
 }
 
 static void add_common_options(cmdline::parser& cl) {
-  cl.add<int>("n-emissions",
-              'e',
-              "number of emissions",
-              false,
-              0,
-              cmdline::not_from_file);
+  cl.add<size_t>("n-emissions",
+                 'e',
+                 "number of emissions",
+                 false,
+                 0,
+                 cmdline::not_from_file);
   cl.add("verbose", 'v', "print progress information (-v) or benchmark (-vv)");
 
   Common::add_openmp_options(cl);

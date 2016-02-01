@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
   Common::ScintillatorAccept<F> scintillator(F(0.100));
 
   util::random::tausworthe gen(12212);
-  mapper.map(gen, scintillator, cl.get<int>("n-emissions"));
+  mapper.map(gen, scintillator, cl.get<size_t>("n-emissions"));
 
   if (cl.exist("output")) {
     auto fn = cl.get<cmdline::path>("output");

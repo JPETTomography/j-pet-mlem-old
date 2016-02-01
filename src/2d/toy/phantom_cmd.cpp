@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
   cl.add<double>(
       "s-x", 0, "TOF sigma along x axis", cmdline::alwayssave, 0.012);
   cl.add<double>("s-y", 0, "TOF sigma along y axis", cmdline::alwayssave, 0.04);
-  cl.add<int>("n-emissions", 'e', "number of emissions", false, 0);
+  cl.add<size_t>("n-emissions", 'e', "number of emissions", false, 0);
   cl.add<double>("scale", '\0', "scale factor", false, 1);
   cl.add("verbose", 'v', "print progress information (-v)");
   cl.add("detected", '\0', "count only detected events");
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
 
   phantom.calculate_cdf();
 
-  auto n_emissions = cl.get<int>("n-emissions");
+  auto n_emissions = cl.get<size_t>("n-emissions");
   auto verbose = cl.count("verbose");
 
   Scanner scanner(cl.get<double>("s-x"), cl.get<double>("s-y"));

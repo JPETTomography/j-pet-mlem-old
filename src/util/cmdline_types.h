@@ -87,6 +87,7 @@ class path : public std::string {
 namespace detail {
 template <> inline std::string readable_typename<int>() { return "int"; }
 template <> inline std::string readable_typename<long>() { return "seed"; }
+template <> inline std::string readable_typename<size_t>() { return "count"; }
 template <> inline std::string readable_typename<float>() { return "float"; }
 template <> inline std::string readable_typename<double>() { return "float"; }
 template <> inline std::string readable_typename<path>() { return "file"; }
@@ -143,6 +144,11 @@ template <> class lexical_cast_t<int, std::string, false> {
 template <> class lexical_cast_t<long, std::string, false> {
  public:
   static int cast(const std::string& arg) { return cast_to_long(arg); }
+};
+
+template <> class lexical_cast_t<size_t, std::string, false> {
+ public:
+  static size_t cast(const std::string& arg) { return cast_to_long(arg); }
 };
 
 // teach cmdline handle std::vector

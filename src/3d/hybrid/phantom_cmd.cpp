@@ -144,7 +144,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  auto n_emissions = cl.get<int>("n-emissions");
+  auto n_emissions = cl.get<size_t>("n-emissions");
   auto only_detected = cl.exist("detected");
 
   Phantom phantom(regions);

@@ -145,7 +145,7 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
   using MonteCarlo = Common::PhantomMonteCarlo<PhantomClass, DetectorClass>;
   using RNG = typename PhantomClass::RNG;
 
-  auto& n_emissions = cl.get<int>("n-emissions");
+  auto& n_emissions = cl.get<size_t>("n-emissions");
 
   auto verbose = cl.count("verbose");
 

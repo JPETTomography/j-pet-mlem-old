@@ -102,6 +102,7 @@ bool not_from_file(cmdline::parser& parser, T& value, const std::string& arg) {
 }
 
 template bool not_from_file(cmdline::parser&, int&, std::string const&);
+template bool not_from_file(cmdline::parser&, size_t&, std::string const&);
 template bool not_from_file(cmdline::parser&,
                             cmdline::path&,
                             std::string const&);
