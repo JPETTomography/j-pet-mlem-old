@@ -26,19 +26,18 @@ class progress {
   };
 
   /// Constructs new progress handler.
-  progress(
-      int verbosity,                     ///< Verbosity level (0-2)
-      unsigned long total,               ///< Total number of iterations
-      unsigned long reasonable_update =  ///< Iterations that trigger update
-      std::numeric_limits<unsigned long>::max(),
-      unsigned long skipped = 0  ///< Number of iterations skipped at start
-      )
+  progress(int verbosity,              ///< Verbosity level (0-2)
+           size_t total,               ///< Total number of iterations
+           size_t reasonable_update =  ///< Iterations that trigger update
+           std::numeric_limits<size_t>::max(),
+           size_t skipped = 0  ///< Number of iterations skipped at start
+           )
       : verbosity(verbosity),
         total(total),
         total_m_1(total - 1),
         start_time(clock_t::now()),
         mask(1),
-        last_completed(std::numeric_limits<unsigned long>::max()),
+        last_completed(std::numeric_limits<size_t>::max()),
         total_ellapsed_ms(0),
         skipped(skipped) {
     // computes mask that shows percentage only ~ once per thousand of total
@@ -54,16 +53,15 @@ class progress {
   }
 
   /// Constructs new progress handler.
-  progress(
-      bool enabled,                      ///< If progress is enabled at all
-      unsigned long total,               ///< Total number of iterations
-      unsigned long reasonable_update =  ///< Iterations that trigger update
-      std::numeric_limits<unsigned long>::max())
+  progress(bool enabled,               ///< If progress is enabled at all
+           size_t total,               ///< Total number of iterations
+           size_t reasonable_update =  ///< Iterations that trigger update
+           std::numeric_limits<size_t>::max())
       : progress(enabled ? Estimate : Disabled, total, reasonable_update) {}
 
   /// Call when begining or finishing iteration
-  void operator()(unsigned long completed,  ///< Number of completed so far
-                  bool finished = false     ///< Whether we finish iteration
+  void operator()(size_t completed,      ///< Number of completed so far
+                  bool finished = false  ///< Whether we finish iteration
                   ) {
 
     // limit updates so they are not too often
@@ -146,12 +144,12 @@ class progress {
   }
 
   int verbosity;
-  unsigned long total;
-  unsigned long total_m_1;
+  size_t total;
+  size_t total_m_1;
   time_t start_time;
-  unsigned long mask;
-  unsigned long last_completed;
+  size_t mask;
+  size_t last_completed;
   double total_ellapsed_ms;
-  unsigned long skipped;
+  size_t skipped;
 };
 }  // util
