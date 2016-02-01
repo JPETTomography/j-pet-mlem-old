@@ -40,6 +40,7 @@ int main(int argc, char* argv[]) {
   cl.add<int>("n-emissions", 'e', "number of emissions", false, 0);
   cl.add<double>("scale", '\0', "scale factor", false, 1);
   cl.add("verbose", 'v', "print progress information (-v)");
+  cl.add("detected", '\0', "count only detected events");
   cl.add<cmdline::path>("output",
                         'o',
                         "output files prefix (png)",
@@ -120,6 +121,8 @@ int main(int argc, char* argv[]) {
   Image image_detected_exact(n_z_pixels, n_y_pixels);
   Image image_detected_w_error(n_z_pixels, n_y_pixels);
 
+  bool only_detected = cl.exist("detected");
+
   util::progress progress(verbose, n_emissions, 10000);
   monte_carlo(
       rng,
@@ -154,7 +157,8 @@ int main(int argc, char* argv[]) {
           }
         }
       },
-      progress);
+      progress,
+      only_detected);
   if (verbose) {
     std::cerr << " emitted: " << monte_carlo.n_events_emitted() << " events"
               << std::endl
