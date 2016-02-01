@@ -4,9 +4,11 @@
 namespace PET2D {
 namespace Toy {
 
-template <typename F> class GaussKernel {
+template <typename FType> class GaussKernel {
 
  public:
+  using F = FType;
+
   GaussKernel(F sigma_x, F sigma_y) : sigma_x(sigma_x), sigma_y(sigma_y) {
     norm_ = 1.0 / (2 * M_PI * sigma_x * sigma_y);
     inv_2_sigma2_x_ = 1.0 / (2 * sigma_x * sigma_x);

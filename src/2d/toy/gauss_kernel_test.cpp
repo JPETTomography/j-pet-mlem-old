@@ -2,9 +2,12 @@
 
 #include "2d/toy/gauss_kernel.h"
 
+using Kernel = PET2D::Toy::GaussKernel<float>;
+using F = Kernel::F;
+
 TEST("2d/toy/gauss_kernel/value") {
 
-  PET2D::Toy::GaussKernel<float> kernel(1.2, 2.7);
+  Kernel kernel(1.2, 2.7);
 
   REQUIRE(1.2 == Approx(kernel.sigma_x));
   REQUIRE(2.7 == Approx(kernel.sigma_y));
@@ -16,7 +19,7 @@ TEST("2d/toy/gauss_kernel/value") {
 
 TEST("2d/toy/gauss_kernel/bb") {
 
-  PET2D::Toy::GaussKernel<float> kernel(1.2, 2.7);
+  Kernel kernel(1.2, 2.7);
 
   REQUIRE(1.2 == Approx(kernel.sigma_x));
   REQUIRE(2.7 == Approx(kernel.sigma_y));
