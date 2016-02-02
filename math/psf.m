@@ -75,33 +75,57 @@ extractLineWithDimension[volume_, pos_, extent_, plane_] := Module[{range = pos,
     xs = Table[r[[plane]] = i; voxelLoverLeftCorner[r][[plane]] + pixelSize/2, {i, pos[[plane]] - extent, pos[[plane]] + extent}];
 	Transpose[{xs, t}]
 ]
-halfWidth[t_] := Module[{max = Max[t], above, left, right},
-	left = FirstPosition[t, _?(#1 > max/2 & )][[1]] - 1;
-	right = 1 + Length[t] - FirstPosition[Reverse[t], _?(#1 > max/2 & )][[1]];
-    {left + (max/2 - t[[left]])/(t[[left + 1]] - t[[left]]), right + (max/2 - t[[right]])/(t[[right + 1]] - t[[right]])}
+width[t_, h_ : 0.5] := Module[{max = Max[t], above, left, right, height},
+	height = max h;
+	left = FirstPosition[t, _?(#1 > height & )][[1]] - 1;
+	right = 1 + Length[t] - FirstPosition[Reverse[t], _?(#1 > height & )][[1]];
+    {left + (height - t[[left]])/(t[[left + 1]] - t[[left]]), right + (height - t[[right]])/(t[[right + 1]] - t[[right]])}
 ]
-halfWidth[volume_, pos_, extent_, plane_] := Module[{range = pos, t},
+width[volume_, pos_, extent_, plane_,h_ : 0.5] := Module[{range = pos, t},
 	t = extractLine[volume, pos, extent, plane];
-	halfWidth[t]
+	width[t,h]
 ]
-dimensionedHalfWidth[t_] := Module[{max = Max[t[[All,2]]], limits},
-	limits = (halfWidth[t[[All,2]]] - 1)*pixelSize + t[[1,1]]
+dimensionedWidth[t_, h_:0.5] := Module[{max = Max[t[[All,2]]], limits},
+	limits = (width[t[[All,2]],h] - 1)*pixelSize + t[[1,1]]
 ]
-halfW[file_] := Module[{data, volume, max, maxPos},
+widthFromFile[file_,h_:0.5] := Module[{data, volume, max, maxPos},
 	data = BinaryReadList[file, "Real32"];
 	Print[file]; volume = Partition[Partition[data, nPixels], nPixels] /. Indeterminate -> 0;
 	max = Max[volume];
 	maxPos = First[Position[volume, max]];
 	Print[maxPos];
-    Table[sub[halfWidth[volume, maxPos, 25, i]], {i, 1, 3}]
+    Table[sub[width[volume, maxPos, 25, i,h]], {i, 1, 3}]
 ]
-plotHalfWidth[t_] := Module[{max = Max[t[[All,2]]], limits},
-	limits = dimensionedHalfWidth[t];
-	Show[
-		ListPlot[t, Axes -> False, Frame -> True],
-		Graphics[{Red, Line[{{limits[[1]], max/2}, {limits[[2]], max/2}}]}]
-	]
+
+plotWidths[t_,hs_List] := Module[{max = Max[t[[All,2]]], limits, heights,ws,label},
+	limits = dimensionedWidth[t,#]&/@hs;
+	ws=sub/@limits;
+	heights=max hs;
+    labels=Column[
+		Inner[StringJoin,IntegerString[Round[#*100],10,2]<>"% "&/@hs,ToString@NumberForm[#,{4,2}]&/@ (100*ws), List]
+	];
+
+	Legended[Show[
+		ListPlot[t, Axes -> False,PlotRange->All, Frame -> True, Joined->True],
+		Graphics[
+Table[{Red, Line[{{limits[[i,1]], heights[[i]]}, {limits[[i,2]], heights[[i]]}}]},{i,1,Length[hs]}]
 ]
+	],Placed[labels, {0.8, 0.85}]]
+]
+plotWidth[t_,h_:0.5] := plotWidths[t,{h}]
+
+
+
+halfWidth[t_] := width[t,0.5]
+
+halfWidth[volume_, pos_, extent_, plane_] := width[volume, pos, extent, plane, 0.5] 
+
+dimensionedHalfWidth[t_] := Module[{max = Max[t[[All,2]]], limits},
+	limits = (halfWidth[t[[All,2]]] - 1)*pixelSize + t[[1,1]]
+]
+halfW[file_] := widthFromFile[file]
+
+plotHalfWidth[t_] := plotWidth[t,0.5]
 
 
 calculateHW[prefix_, its_, digits_] := ParallelMap[halfW[StringJoin[prefix, "_", IntegerString[#1, 10, digits]]] & , its]
