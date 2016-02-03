@@ -50,7 +50,8 @@ using Vector = PET3D::Vector<F>;
 void print_psf(const cmdline::path& fn,
                const VoxelMap& img,
                const F s_pixel,
-               std::ostream& out);
+               std::ostream& out,
+               const S padding = 0);
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -68,6 +69,7 @@ int main(int argc, char* argv[]) {
 
   auto n_pixels = cl.get<int>("n-pixels");
   auto s_pixel = cl.get<double>("s-pixel");
+  auto padding = cl.get<int>("padding");
   PixelGrid pixel_grid(n_pixels, n_pixels, s_pixel);
 
   int n_planes = cl.get<int>("n-planes");
@@ -100,7 +102,7 @@ int main(int argc, char* argv[]) {
     }
     bin >> img;
 #endif
-    print_psf(fn, img, s_pixel, std::cout);
+    print_psf(fn, img, s_pixel, std::cout, padding);
 #if USE_MMAP
     munmap(data, data_size);
     close(fd);
@@ -113,11 +115,12 @@ int main(int argc, char* argv[]) {
 void print_psf(const cmdline::path& fn,
                const VoxelMap& img,
                const F s_pixel,
-               std::ostream& out) {
+               std::ostream& out,
+               const S padding) {
   (void)img;
   Voxel max_voxel;
   F max;
-  PET3D::Tool::PSF::find_max(img, max_voxel, max);
+  PET3D::Tool::PSF::find_max(img, max_voxel, max, padding);
   Voxel left_above_half, right_above_half;
   PET3D::Tool::PSF::find_left_right_above_half(
       img, max_voxel, max, left_above_half, right_above_half);

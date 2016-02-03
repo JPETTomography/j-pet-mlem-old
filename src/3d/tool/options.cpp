@@ -13,6 +13,7 @@ void add_psf_options(cmdline::parser& cl) {
   PET2D::Barrel::add_pixel_options(cl, true);
   cl.add<int>("n-planes", 0, "number of voxels in z direction", false, 0);
   cl.add<double>("z-left", 0, "left extent in z direction", false, 0);
+  cl.add<int>("padding", 0, "pad given pixels seeking maximum", false, 0);
   Common::add_openmp_options(cl);
   cl.footer("image ...");
 }

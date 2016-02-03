@@ -21,18 +21,24 @@ struct PSF {
   using VoxelMap = PET3D::VoxelMap<Voxel, F>;
   using Vector = PET3D::Vector<F>;
 
-  static void find_max(const VoxelMap& img, Voxel& max_voxel, F& max) {
+  static void find_max(const VoxelMap& img,
+                       Voxel& max_voxel,
+                       F& max,
+                       S padding = 0) {
     Voxel thread_max_voxels[omp_get_max_threads()];
     F thread_maxes[omp_get_max_threads()];
     std::memset(thread_maxes, 0, sizeof(F) * omp_get_max_threads());
+    auto x_padding = std::min(padding, S(img.depth - 1));
+    auto y_padding = std::min(padding, S(img.height - 1));
+    auto z_padding = std::min(padding, S(img.width - 1));
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (S z = 0; z < img.depth; ++z) {
+    for (S z = z_padding; z < img.depth - z_padding; ++z) {
       Voxel l_max_voxel = thread_max_voxels[omp_get_thread_num()];
       auto l_max = thread_maxes[omp_get_thread_num()];
-      for (S y = 0; y < img.height; ++y) {
-        for (S x = 0; x < img.width; ++x) {
+      for (S y = y_padding; y < img.height - y_padding; ++y) {
+        for (S x = x_padding; x < img.width - x_padding; ++x) {
           const Voxel voxel(x, y, z);
           const auto value = img[voxel];
           if (value > l_max) {
