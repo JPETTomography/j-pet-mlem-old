@@ -97,14 +97,14 @@ widthFromFile[file_,h_:0.5] := Module[{data, volume, max, maxPos},
     Table[sub[width[volume, maxPos, 25, i,h]], {i, 1, 3}]
 ]
 
-Options[plotWidths]={FrameLabel->""}
+Options[plotWidths]={FrameLabel->""};
 
 plotWidths[t_,hs_List,OptionsPattern[]] := Module[{max = Max[t[[All,2]]], limits, heights,ws,label},
 	limits = dimensionedWidth[t,#]&/@hs;
 	ws=sub/@limits;
 	heights=max hs;
     label=Column[
-		Inner[StringJoin,IntegerString[Round[#*100],10,2]<>"% "&/@hs,ToString@NumberForm[#,{4,2}]&/@ (100*ws), List],
+		Style[#,16]&/@Inner[StringJoin,IntegerString[Round[#*100],10,2]<>"% "&/@hs,ToString@NumberForm[#,{4,2}]&/@ (100*ws), List],
 Background->White
 	];
 
@@ -135,14 +135,14 @@ plotHalfWidth[t_] := plotWidth[t,0.5]
 calculateHW[prefix_, its_, digits_] := ParallelMap[halfW[StringJoin[prefix, "_", IntegerString[#1, 10, digits]]] & , its]
 
 
-analyze[file_, extent_]:=Module[{res,volume,max,maxPos, cut2d, cut1d},
-	volume=Partition[Partition[BinaryReadList[file, "Real32"],nPixels], nPixels];
+analyze[file_, extent_,type_: "Real32"]:=Module[{res,volume,max,maxPos, cut2d, cut1d},
+	volume=Partition[Partition[BinaryReadList[file, type],nPixels], nPixels];
 	max=Max[volume];
 	maxPos=Position[volume, max];
 	cut2d=threeAxesCut[volume,maxPos[[1]],extent];
 	cut1d=GraphicsRow[
 		plotWidths[extractLineWithDimension[volume,maxPos[[1]],extent,#],{0.1, 0.5}, 
-		FrameLabel->{labels[[#]], None}]& /@{1,2,3}, ImageSize->Full];
+		FrameLabel->{labels[[#]], None}]& /@{1,2,3}, ImageSize->{1024}];
 	res["Volume"]=volume;
 	res["Total"]:= Total@Flatten@volume;
 	res["Max"]=max;
@@ -154,12 +154,12 @@ analyze[file_, extent_]:=Module[{res,volume,max,maxPos, cut2d, cut1d},
 
 
 
-processFile[file_,extent_]:=Module[{res, basename},
+processFile[file_,extent_, type_: "Real32"]:=Module[{res, basename},
 	basename=FileBaseName[file];
-	res=analyze[file,extent];
+	res=analyze[file,extent, type];
 	CellPrint[ExpressionCell[res["Cut2D"] ]];
 	Export[basename<>"_cut2d.png",res["Cut2D"], ImageSize->{2048}]; 
 	CellPrint[ExpressionCell[res["Cut1D"] ]];
-	Export[basename<>"_cut1d.png",res["Cut1D"], ImageSize->{2048}]; 
+	Export[basename<>"_cut1d.pdf",res["Cut1D"], ImageSize-> 1024]; 
 	res
 ]
