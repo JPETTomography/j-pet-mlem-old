@@ -147,7 +147,7 @@ void strip_gauss_kernel_integral() {
   F y = 0.0;
   F R = 0.43;
 
-  F d = 0.01;
+  F d = 0.002;
   F dfi = 0.01;
 
   double sum = 0.0;
