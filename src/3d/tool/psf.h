@@ -28,9 +28,9 @@ struct PSF {
     Voxel thread_max_voxels[omp_get_max_threads()];
     F thread_maxes[omp_get_max_threads()];
     std::memset(thread_maxes, 0, sizeof(F) * omp_get_max_threads());
-    auto x_padding = std::min(padding, S(img.depth - 1));
+    auto x_padding = std::min(padding, S(img.width - 1));
     auto y_padding = std::min(padding, S(img.height - 1));
-    auto z_padding = std::min(padding, S(img.width - 1));
+    auto z_padding = std::min(padding, S(img.depth - 1));
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
