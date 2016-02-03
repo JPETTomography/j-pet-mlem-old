@@ -64,6 +64,9 @@ threeAxesCut[volume_, position_, extent_,
 ]
 
 
+upscale[a_, s_:10] := Module[{h = Length[a], w = Length[a[[1]]]},
+   Table[a[[Quotient[x-1, s] + 1, Quotient[y-1, s] + 1]], {x, w*s}, {y, h*s}]
+]
 sub[x_] := x[[2]] - x[[1]]
 extractLine[volume_, pos_, extent_, plane_] := Module[{range = pos, t},
 	range[[plane]] = pos[[plane]] - extent ;; pos[[plane]] + extent;
