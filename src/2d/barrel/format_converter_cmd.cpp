@@ -52,13 +52,15 @@ int main(int argc, char* argv[]) {
               "specifies which class (scattering) of events to include",
               false,
               1);
+  cl.add<double>("length", 'l', "scintillator length", false, 1.0);
   cl.parse_check(argc, argv);
   cmdline::load_accompanying_config(cl, false);
 
   PET2D::Barrel::calculate_scanner_options(cl, argc);
 
-  F sigma_z = cl.get<double>("s-z");
-  F sigma_dl = cl.get<double>("s-dl");
+  const F sigma_z = cl.get<double>("s-z");
+  const F sigma_dl = cl.get<double>("s-dl");
+  const F length = cl.get<double>("length");
 
   std::normal_distribution<double> z_error(0, sigma_z);
   std::normal_distribution<double> dl_error(0, sigma_dl);
@@ -91,6 +93,10 @@ int main(int argc, char* argv[]) {
       double x2, y2, z2, t2;
       in >> x2 >> y2 >> z2 >> t2;
       in >> scatter;
+
+      if (std::abs(z1 * cm) > length / 2 || std::abs(z2 * cm) > length / 2)
+        continue;
+
       if (only == 0 || only == scatter) {
 
         int d1 = -1, d2 = -1;
