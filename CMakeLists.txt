@@ -248,10 +248,10 @@ pet_target(2d barrel matrix)
 pet_target(2d barrel phantom)
 pet_target(2d barrel reconstruction)
 pet_target(2d barrel lm_reconstruction)
+
 pet_target(2d strip phantom)
 pet_target(2d strip reconstruction)
 pet_target(2d strip kernel_monte_carlo)
-pet_target(2d barrel format_converter)
 
 pet_target(2d toy phantom)
 
@@ -265,6 +265,7 @@ pet_target(3d hybrid sensitivity ${CL_2D_OPTIONS})
 
 pet_target(3d tool crop ${CL_2D_OPTIONS} ${CL_3D_OPTIONS})
 pet_target(3d tool psf ${CL_2D_OPTIONS} ${CL_3D_OPTIONS})
+pet_target(3d tool convert ${CL_2D_OPTIONS} ${CL_3D_OPTIONS})
 
 if(Boost_FOUND)
   pet_target(2d barrel geometry)
