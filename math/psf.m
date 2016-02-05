@@ -67,6 +67,27 @@ threeAxesCut[volume_, position_, extent_,
 upscale[a_, s_:10] := Module[{h = Length[a], w = Length[a[[1]]]},
    Table[a[[Quotient[x-1, s] + 1, Quotient[y-1, s] + 1]], {x, w*s}, {y, h*s}]
 ]
+cropImage[img_, dataRange_, cropRange_] :=
+  Module[{
+	wPixels = Length[img[[1]]], hPixels = Length[img],
+	w = dataRange[[1,2]] - dataRange[[1,1]],
+	h = dataRange[[2,2]] - dataRange[[2,1]],
+	wPixel, hPixel, pixelRange, effectiveRange},
+	wPixel = w/wPixels; hPixel = h/hPixels;
+	pixelRange = {
+		{Floor[(cropRange[[1,1]] - dataRange[[1,1]])/wPixel],
+		 Ceiling[(cropRange[[1,2]] - dataRange[[1,1]])/wPixel - 0.001]},
+		{Floor[(cropRange[[2,1]] - dataRange[[2,1]])/wPixel],
+		 Ceiling[(cropRange[[2,2]] - dataRange[[2,1]])/wPixel - 0.001]}};
+    effectiveRange = {
+		{pixelRange[[1,1]]*wPixel + dataRange[[1,1]],
+		 pixelRange[[1,2]]*wPixel + dataRange[[1,1]]},
+		{pixelRange[[2,1]]*wPixel + dataRange[[2,1]],
+		 pixelRange[[2,2]]*wPixel + dataRange[[2,1]]}};
+	{effectiveRange, img[[
+		pixelRange[[1,1]] + 1 ;; pixelRange[[1,2]],
+		pixelRange[[2,1]] + 1 ;; pixelRange[[2,2]]]]}
+]
 sub[x_] := x[[2]] - x[[1]]
 extractLine[volume_, pos_, extent_, plane_] := Module[{range = pos, t},
 	range[[plane]] = pos[[plane]] - extent ;; pos[[plane]] + extent;
