@@ -9,16 +9,16 @@
 #include "util/bstream.h"
 #include "util/svg_ostream.h"
 #include "util/cmdline_types.h"
-#include "reconstruction.h"
 #include "util/png_writer.h"
 #include "util/backtrace.h"
 #include "util/progress.h"
 #include "options.h"
-#include "2d/barrel/scanner_builder.h"
 
-#include "generic_scanner.h"
-#include "circle_detector.h"
-#include "square_detector.h"
+#include "2d/barrel/options.h"
+#include "2d/barrel/scanner_builder.h"
+#include "2d/barrel/generic_scanner.h"
+#include "2d/barrel/circle_detector.h"
+#include "2d/barrel/square_detector.h"
 
 #include "common/types.h"
 
@@ -31,6 +31,8 @@ using SquareScanner = Scanner<PET2D::Barrel::SquareDetector<F>>;
 
 using Point = PET2D::Point<F>;
 using Vector = PET2D::Vector<F>;
+
+void convert_warsaw(cmdline::parser& cl);
 
 const double cm = 0.01;
 const double speed_of_light_m_per_ps = 299792458.0e-12;
@@ -58,6 +60,12 @@ int main(int argc, char* argv[]) {
 
   PET2D::Barrel::calculate_scanner_options(cl, argc);
 
+  convert_warsaw(cl);
+
+  CMDLINE_CATCH
+}
+
+void convert_warsaw(cmdline::parser& cl) {
   const F sigma_z = cl.get<double>("s-z");
   const F sigma_dl = cl.get<double>("s-dl");
   const F length = cl.get<double>("length");
@@ -126,6 +134,4 @@ int main(int argc, char* argv[]) {
       }
     }
   }
-
-  CMDLINE_CATCH
 }
