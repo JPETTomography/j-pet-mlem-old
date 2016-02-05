@@ -33,9 +33,11 @@ using Point = PET2D::Point<F>;
 using Vector = PET2D::Vector<F>;
 
 void convert_warsaw(cmdline::parser& cl);
+void convert_tbednarski(cmdline::parser& cl);
 
 const double cm = 0.01;
-const double speed_of_light_m_per_ps = 299792458.0e-12;
+const double speed_of_light_m_per_ps /***/ = 299792458.0e-12;
+const double speed_of_light_m_per_ps_scint = 126000000.0e-12;
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -47,20 +49,36 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser cl;
   cl.footer("means");
+
   PET2D::Barrel::add_matrix_options(cl);
-  cl.add<double>("s-z", 0, "sigma z", cmdline::alwayssave, 0.01);
-  cl.add<int>("only",
-              '\0',
-              "specifies which class (scattering) of events to include",
-              false,
-              1);
   cl.add<double>("length", 'l', "scintillator length", false, 1.0);
+
+  cl.add("warsaw", 0, "Warsaw data format", cmdline::dontsave);
+  cl.add("tbednarski", 0, "T.Bednarski data format", cmdline::dontsave);
+
+  // Warsaw data specific
+  cl.add<int>("only", 0, "class (scattering) of events to include", false, 1);
+
+  // T.Bednarski data specific: for debugging precision
+  cl.add("relative-time",
+         0,
+         "output relative time instead z_u, z_d, dl",
+         cmdline::dontsave);
+
   cl.parse_check(argc, argv);
+
   cmdline::load_accompanying_config(cl, false);
 
   PET2D::Barrel::calculate_scanner_options(cl, argc);
 
-  convert_warsaw(cl);
+  if (cl.exist("warsaw")) {
+    convert_warsaw(cl);
+  } else if (cl.exist("tbednarski")) {
+    convert_tbednarski(cl);
+  } else {
+    // always fall-back to Warsaw format
+    convert_warsaw(cl);
+  }
 
   CMDLINE_CATCH
 }
@@ -86,14 +104,9 @@ void convert_warsaw(cmdline::parser& cl) {
   for (const auto& fn : cl.rest()) {
     std::ifstream in_means(fn);
     if (!in_means.is_open())
-      throw("cannot open input file: " + cl.get<cmdline::path>("mean"));
-    for (;;) {
-      const int LINE_LENGTH = 256;
-      char line[LINE_LENGTH];
-      in_means.getline(line, LINE_LENGTH);
-      if (in_means.eof())
-        break;
-
+      throw("cannot open input file: " + fn);
+    std::string line;
+    while (std::getline(in_means, line)) {
       std::stringstream in(line);
       double x1, y1, z1, t1;
       int scatter;
@@ -132,6 +145,40 @@ void convert_warsaw(cmdline::parser& cl) {
                     << "  outside detector - skiping\n";
         }
       }
+    }
+  }
+}
+
+void convert_tbednarski(cmdline::parser& cl) {
+  bool output_relative = cl.exist("relative-time");
+  for (const auto& fn : cl.rest()) {
+    std::ifstream in_means(fn);
+    if (!in_means.is_open())
+      throw("cannot open input file: " + fn);
+
+    std::string line;
+    while (std::getline(in_means, line)) {
+      std::stringstream in(line);
+      int du, dd;
+      double tul, tur, tdl, tdr;
+      in >> du >> dd >> tul >> tur >> tdl >> tdr;
+
+      if (output_relative) {
+        double tmin = std::min(std::min(tur, tul), std::min(tdr, tdl));
+        tul -= tmin;
+        tur -= tmin;
+        tdl -= tmin;
+        tdr -= tmin;
+        std::cout << du << ' ' << dd << ' '  //
+                  << tul << ' ' << tur << ' ' << tdl << ' ' << tdr << '\n';
+        continue;
+      }
+
+      double zu = 0.5 * speed_of_light_m_per_ps_scint * (tul - tur);
+      double zd = 0.5 * speed_of_light_m_per_ps_scint * (tdl - tdr);
+      double dl = 0.5 * speed_of_light_m_per_ps * ((tul + tur) - (tdl + tdr));
+      std::cout << du << ' ' << dd << ' '  //
+                << zu << ' ' << zd << ' ' << dl << '\n';
     }
   }
 }
