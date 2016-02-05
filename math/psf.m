@@ -59,6 +59,7 @@ threeAxesCut[volume_, position_, extent_,
 		ImageSize -> Scaled[.3],
 		FilterRules[{opts}, Options[ArrayPlot]]] & ) /@ {1, 2, 3})
 		~Join~{BarLegend[{OptionValue[ColorFunction], minmax},
+			ColorFunctionScaling -> True,
 			FilterRules[{opts}, Options[BarLegend]]]}]
 ]
 
