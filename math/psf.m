@@ -36,14 +36,13 @@ thruPointCut[volume_, position_, extent_, plane_, opts:OptionsPattern[ArrayPlot]
     ticks1 = Table[{x, Round[x*1000]}, {x, Floor[datar[[1,1]]], Ceiling[datar[[1,2]]], (datar[[1,2]] - datar[[1,1]]) / 2}];
 	ticks2 = Table[{x, Round[x*1000]}, {x, Floor[datar[[2,1]]], Ceiling[datar[[2,2]]], (datar[[2,2]] - datar[[2,1]]) / 2}];
 	ArrayPlot[Reverse[volume[[Sequence @@ span]]],
+		FilterRules[{opts}, Options[ArrayPlot]],
 		DataRange -> Reverse[datar],
 		Mesh -> If[vol < 64^2, All, None],
 		FrameTicks -> {{ticks1, None}, {ticks2, None}},
 		FrameLabel -> Reverse[Drop[labels, {plane}]],
 		RotateLabel -> False,
-		Frame -> True,
-		Epilog -> {},
-		FilterRules[{opts}, Options[ArrayPlot]]]
+		Frame -> True]
 ]
 threeAxesCut[volume_, position_, extent_,
 	opts:OptionsPattern[Join[{ColorFunction -> "DarkRainbow"},
