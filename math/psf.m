@@ -1,10 +1,10 @@
 (* ::Package:: *)
 
-dataLoverLeftCorner = (1/2)*(-{nPixels, nPixels, nPixels})*pixelSize
-dataExtent = {nPixels, nPixels, nPixels}*pixelSize
-dataRange = Transpose[{dataLoverLeftCorner, dataLoverLeftCorner + dataExtent}]
-voxelLoverLeftCorner[pos_] := (pos - 1) * pixelSize + dataLoverLeftCorner
-labels = {"z", "y", "x"}
+dataLowerLeftCorner = (1/2)*(-{nPixels, nPixels, nPixels}) * pixelSize;
+dataExtent = {nPixels, nPixels, nPixels} * pixelSize;
+dataRange = Transpose[{dataLoverLeftCorner, dataLoverLeftCorner + dataExtent}];
+voxelLowerLeftCorner[pos_] := pos * pixelSize + dataLowerLeftCorner
+labels = {"z", "y", "x"};
 
 
 thruPointCutRange[position_, extent_, plane_] := Module[{
@@ -16,7 +16,7 @@ thruPointCutRange[position_, extent_, plane_] := Module[{
 genTicks[xMin_, xMax_] := Table[{x, x},
 	{x, xMin, xMax, (xMax - xMin)/2}
 ]
-toSpan[{i_, j_}] = i ;; j;
+toSpan[{i_, j_}] = i+1 ;; j;
 toSpan[{i_}] = i;
 thruPointCut[volume_, position_, extent_, plane_, opts:OptionsPattern[ArrayPlot]] := Module[{
 		range, span, first, last, datar, ticks1, ticks2,
@@ -29,7 +29,7 @@ thruPointCut[volume_, position_, extent_, plane_, opts:OptionsPattern[ArrayPlot]
 	range = thruPointCutRange[position, extent, plane];
 	first = First /@ range;
 	last = (#1[[-1]] & ) /@ range;
-    datar = Transpose[pixelSize/2 + {voxelLoverLeftCorner[first], voxelLoverLeftCorner[last]}];
+	datar = Transpose[{voxelLoverLeftCorner[first], voxelLoverLeftCorner[last]}];
 	datar = Drop[datar, {plane}];
 	span = toSpan /@ range;
 	vol = Times @@ (#1[[-1]] - #1[[1]] + 1 & ) /@ range;
