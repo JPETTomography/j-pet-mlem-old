@@ -65,7 +65,7 @@ threeAxesCut[volume_, position_, extent_,
 
 
 upscale[a_, s_:10] := Module[{h = Length[a], w = Length[a[[1]]]},
-   Table[a[[Quotient[x-1, s] + 1, Quotient[y-1, s] + 1]], {x, w*s}, {y, h*s}]
+   Array[a[[Quotient[#1-1, s] + 1, Quotient[#2-1, s] + 1]]&, {h*s, w*s}]
 ]
 cropImage[img_, dataRange_, cropRange_] :=
   Module[{
