@@ -58,7 +58,7 @@ threeAxesCut[volume_, position_, extent_,
 		FilterRules[{opts}, Options[ArrayPlot]~Join~{Upscale -> False}],
 		PlotLegends -> None,
 		PlotRange -> {Full, Full, minmax},
-		PlotRangePadding -> Scaled[.04],
+		PlotRangePadding -> Scaled[.03],
 		ColorFunction -> OptionValue[ColorFunction],
 		ImageSize -> Scaled[.3]] & ) /@ {1, 2, 3})
 		~Join~{BarLegend[{OptionValue[ColorFunction], minmax},
