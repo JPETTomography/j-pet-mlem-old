@@ -18,13 +18,14 @@ genTicks[xMin_, xMax_] := Table[{x, x},
 ]
 toSpan[{i_, j_}] = i+1 ;; j;
 toSpan[{i_}] = i;
-thruPointCut[volume_, position_, extent_, plane_, opts:OptionsPattern[ArrayPlot]] := Module[{
+thruPointCut[volume_, position_, extent_, plane_,
+	opts:OptionsPattern[Join[{Upscale -> False}, Options[ArrayPlot]]]] := Module[{
 		range, span, first, last, datar, ticks1, ticks2,
 		labels = {
 			{None, Style["z   ", Bold, Opacity[1]]},
 			{None, Style["y   ", Bold, Opacity[1]]},
 			{None, Style["x   ", Bold, Opacity[1]]}},
-		vol
+		vol, img, height
 	},
 	range = thruPointCutRange[position, extent, plane];
 	first = First /@ range;
@@ -35,29 +36,31 @@ thruPointCut[volume_, position_, extent_, plane_, opts:OptionsPattern[ArrayPlot]
 	vol = Times @@ (#1[[-1]] - #1[[1]] + 1 & ) /@ range;
 	ticks1 = Table[Round[x*1000], {x, Floor[datar[[1,1]]], Ceiling[datar[[1,2]]], (datar[[1,2]] - datar[[1,1]]) / 2}];
 	ticks2 = Table[Round[x*1000], {x, Floor[datar[[2,1]]], Ceiling[datar[[2,2]]], (datar[[2,2]] - datar[[2,1]]) / 2}];
-	ArrayPlot[Reverse[volume[[Sequence @@ span]]],
+	img = Reverse[volume[[Sequence @@ span]]];
+	height = Length[img];
+	If[OptionValue[Upscale], img = upscale[img /. 0 -> 0.00001]]; (*0 -> 0.00001 is a workaround for Mathematica bug*)
+	ArrayPlot[img,
 		FilterRules[{opts}, Options[ArrayPlot]],
 		DataRange -> Reverse[datar]*1000,
-		Mesh -> If[vol < 64^2, All, None],
+		Mesh -> If[vol < 64^2, height-1, None],
 		FrameTicks -> {{ticks1, None}, {ticks2, None}},
 		FrameLabel -> Reverse[Drop[labels, {plane}]],
 		RotateLabel -> False,
 		Frame -> True]
 ]
 threeAxesCut[volume_, position_, extent_,
-	opts:OptionsPattern[Join[{ColorFunction -> "DarkRainbow"},
+	opts:OptionsPattern[Join[{ColorFunction -> "DarkRainbow", Upscale -> False},
 		Options[ArrayPlot], Options[Row], Options[BarLegend]]]] := Module[{ranges, spans, minmax},
 	ranges = (thruPointCutRange[position, extent, #1] & ) /@ {1, 2, 3};
 	spans = (toSpan /@ #1 & ) /@ ranges;
 	minmax = MinMax[(volume[[Sequence @@ spans[[#1]]]] & ) /@ {1, 2, 3}];
 	Row[((thruPointCut[volume, position, extent, #1,
+		FilterRules[{opts}, Options[ArrayPlot]~Join~{Upscale -> False}],
 		PlotLegends -> None,
 		PlotRange -> {Full, Full, minmax},
-		PlotRangeClipping -> False,
 		PlotRangePadding -> Scaled[.04],
 		ColorFunction -> OptionValue[ColorFunction],
-		ImageSize -> Scaled[.3],
-		FilterRules[{opts}, Options[ArrayPlot]]] & ) /@ {1, 2, 3})
+		ImageSize -> Scaled[.3]] & ) /@ {1, 2, 3})
 		~Join~{BarLegend[{OptionValue[ColorFunction], minmax},
 			ColorFunctionScaling -> True,
 			FilterRules[{opts}, Options[BarLegend]]]}]
