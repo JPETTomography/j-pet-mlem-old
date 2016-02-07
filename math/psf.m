@@ -33,11 +33,11 @@ thruPointCut[volume_, position_, extent_, plane_, opts:OptionsPattern[ArrayPlot]
 	datar = Drop[datar, {plane}];
 	span = toSpan /@ range;
 	vol = Times @@ (#1[[-1]] - #1[[1]] + 1 & ) /@ range;
-    ticks1 = Table[{x, Round[x*1000]}, {x, Floor[datar[[1,1]]], Ceiling[datar[[1,2]]], (datar[[1,2]] - datar[[1,1]]) / 2}];
-	ticks2 = Table[{x, Round[x*1000]}, {x, Floor[datar[[2,1]]], Ceiling[datar[[2,2]]], (datar[[2,2]] - datar[[2,1]]) / 2}];
+	ticks1 = Table[Round[x*1000], {x, Floor[datar[[1,1]]], Ceiling[datar[[1,2]]], (datar[[1,2]] - datar[[1,1]]) / 2}];
+	ticks2 = Table[Round[x*1000], {x, Floor[datar[[2,1]]], Ceiling[datar[[2,2]]], (datar[[2,2]] - datar[[2,1]]) / 2}];
 	ArrayPlot[Reverse[volume[[Sequence @@ span]]],
 		FilterRules[{opts}, Options[ArrayPlot]],
-		DataRange -> Reverse[datar],
+		DataRange -> Reverse[datar]*1000,
 		Mesh -> If[vol < 64^2, All, None],
 		FrameTicks -> {{ticks1, None}, {ticks2, None}},
 		FrameLabel -> Reverse[Drop[labels, {plane}]],
