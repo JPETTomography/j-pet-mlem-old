@@ -96,10 +96,25 @@ width[volume_, pos_, extent_, plane_,h_ : 0.5] := Module[{range = pos, t},
 dimensionedWidth[t_, h_:0.5] := Module[{max = Max[t[[All,2]]], limits},
 	limits = (width[t[[All,2]],h] - 1)*pixelSize + t[[1,1]]
 ]
+
+widthFromFile[dir_,file_,h_:0.5] := Module[{data, volume, max, maxPos},
+	SetDirectory[dir];
+	data = BinaryReadList[file, "Real32"];
+	Print[file]; 
+	volume = Partition[Partition[data, nPixels], nPixels];
+	max = Max[volume];
+	Print[max];
+	maxPos = First[Position[volume, max]];
+	Print[maxPos];
+    Table[sub[width[volume, maxPos, 25, i,h]], {i, 1, 3}]
+]
+
 widthFromFile[file_,h_:0.5] := Module[{data, volume, max, maxPos},
 	data = BinaryReadList[file, "Real32"];
-	Print[file]; volume = Partition[Partition[data, nPixels], nPixels] /. Indeterminate -> 0;
+	Print[file]; 
+	volume = Partition[Partition[data, nPixels], nPixels];
 	max = Max[volume];
+	Print[max];
 	maxPos = First[Position[volume, max]];
 	Print[maxPos];
     Table[sub[width[volume, maxPos, 25, i,h]], {i, 1, 3}]
