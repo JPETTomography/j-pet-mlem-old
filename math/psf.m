@@ -2,7 +2,7 @@
 
 dataLowerLeftCorner = (1/2)*(-{nPixels, nPixels, nPixels}) * pixelSize;
 dataExtent = {nPixels, nPixels, nPixels} * pixelSize;
-dataRange = Transpose[{dataLoverLeftCorner, dataLoverLeftCorner + dataExtent}];
+dataRange = Transpose[{dataLowerLeftCorner, dataLowerLeftCorner + dataExtent}];
 voxelLowerLeftCorner[pos_] := pos * pixelSize + dataLowerLeftCorner
 labels = {"z", "y", "x"};
 
@@ -30,7 +30,7 @@ thruPointCut[volume_, position_, extent_, plane_,
 	range = thruPointCutRange[position, extent, plane];
 	first = First /@ range;
 	last = (#1[[-1]] & ) /@ range;
-	datar = Transpose[{voxelLoverLeftCorner[first], voxelLoverLeftCorner[last]}];
+	datar = Transpose[{voxelLowerLeftCorner[first], voxelLowerLeftCorner[last]}];
 	datar = Drop[datar, {plane}];
 	span = toSpan /@ range;
 	vol = Times @@ (#1[[-1]] - #1[[1]] + 1 & ) /@ range;
@@ -78,7 +78,7 @@ extractLine[volume_, pos_, extent_, plane_] := Module[{range = pos, t},
 extractLineWithDimension[volume_, pos_, extent_, plane_] := Module[{range = pos, r = pos, t, xs, xmin, xmax},
 	range[[plane]] = pos[[plane]] - extent ;; pos[[plane]] + extent;
 	t = volume[[Sequence @@ range]];
-    xs = Table[r[[plane]] = i; voxelLoverLeftCorner[r][[plane]] + pixelSize/2, {i, pos[[plane]] - extent, pos[[plane]] + extent}];
+    xs = Table[r[[plane]] = i; voxelLowerLeftCorner[r][[plane]] + pixelSize/2, {i, pos[[plane]] - extent, pos[[plane]] + extent}];
 	Transpose[{xs, t}]
 ]
 width[t_, h_ : 0.5] := Module[{max = Max[t], above, left, right, height},
