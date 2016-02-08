@@ -102,28 +102,31 @@ widthFromFile[file_,h_:0.5] := Module[{data, volume, max, maxPos},
 	Print[maxPos];
     Table[sub[width[volume, maxPos, 25, i,h]], {i, 1, 3}]
 ]
-
-Options[plotWidths]={FrameLabel->""};
-
-plotWidths[t_,hs_List,OptionsPattern[]] := Module[{max = Max[t[[All,2]]], limits, heights,ws,label},
-	limits = dimensionedWidth[t,#]&/@hs;
-	ws=sub/@limits;
-	heights=max hs;
-    label=Column[
-		Style[#,16]&/@Inner[StringJoin,IntegerString[Round[#*100],10,2]<>"% "&/@hs,ToString@NumberForm[#,{4,2}]&/@ (100*ws), List],
-Background->White
-	];
-
-	Legended[Show[
-		ListPlot[t, Axes -> False,PlotRange->All, Frame -> True, AspectRatio->3/4,GridLines->Automatic, 
-FrameLabel->OptionValue[FrameLabel]],
-		Graphics[
-Table[{Red, Line[{{limits[[i,1]], heights[[i]]}, {limits[[i,2]], heights[[i]]}}]},{i,1,Length[hs]}]
+plotWidths[t_, hs_List, opts:OptionsPattern[ListPlot]] := Module[
+	{max = Max[t[[All,2]]], limits, heights, ws, label},
+	limits = (dimensionedWidth[t, #1] & ) /@ hs;
+	ws = sub /@ limits;
+	heights = max * hs;
+	label = Inner[StringJoin,
+		(StringJoin[IntegerString[Round[#1*100], 10, 2], "% "] & ) /@ hs,
+		(ToString[NumberForm[#1, {4, 2}]] & ) /@ (100 * ws), List];
+	ListPlot[t,
+		FilterRules[{opts}, Options[ListPlot]],
+		Axes -> False, PlotRange -> All, Frame -> True, AspectRatio -> 3/4,
+		ImageSize -> Scaled[0.3],
+		GridLines -> Automatic,
+		PlotLegends -> Placed[LineLegend[{Red, Red}, label,
+			Background -> White,
+			LabelStyle -> Join[{Bold}, OptionValue[LabelStyle]],
+			LegendMargins -> {{0, 10}, {5, 5}},
+			LegendMarkerSize -> {0, 10}], {0.85, 0.85}],
+		Epilog -> Table[{
+			Red, AbsoluteThickness[1],
+			Line[{{limits[[i,1]], heights[[i]]}, {limits[[i,2]], heights[[i]]}}]},
+			{i, 1, Length[hs]}]
+	]
 ]
-	],Placed[label, {0.8, 0.85}]]
-]
-plotWidth[t_,h_:0.5] := plotWidths[t,{h}]
-
+plotWidth[t_, h_:0.5] := plotWidths[t, {h}]
 
 
 halfWidth[t_] := width[t,0.5]
@@ -141,31 +144,32 @@ plotHalfWidth[t_] := plotWidth[t,0.5]
 calculateHW[prefix_, its_, digits_] := ParallelMap[halfW[StringJoin[prefix, "_", IntegerString[#1, 10, digits]]] & , its]
 
 
-analyze[file_, extent_,type_: "Real32"]:=Module[{res,volume,max,maxPos, cut2d, cut1d},
-	volume=Partition[Partition[BinaryReadList[file, type],nPixels], nPixels];
-	max=Max[volume];
-	maxPos=Position[volume, max];
-	cut2d=threeAxesCut[volume,maxPos[[1]],extent];
-	cut1d=GraphicsRow[
-		plotWidths[extractLineWithDimension[volume,maxPos[[1]],extent,#],{0.1, 0.5}, 
-		FrameLabel->{labels[[#]], None}]& /@{1,2,3}, ImageSize->{1024}];
-	res["Volume"]=volume;
-	res["Total"]:= Total@Flatten@volume;
-	res["Max"]=max;
-	res["MaxPosition"]=maxPos;
-	res["Cut2D"]=cut2d;
-	res["Cut1D"]=cut1d;
+analyze[file_, extent_, type_:"Real32", opts:OptionsPattern[]] := Module[
+	{res, volume, max, maxPos, cut2d, cut1d},
+	volume = Partition[Partition[BinaryReadList[file, type], nPixels], nPixels];
+	max = Max[volume];
+    maxPos = Position[volume, max];
+	cut2d = threeAxesCut[volume, maxPos[[1]], extent, opts];
+	cut1d = Row[(plotWidths[extractLineWithDimension[volume, maxPos[[1]], extent, #1],
+         {0.1, 0.5},
+		FilterRules[{opts}, Options[ListPlot]],
+		FrameLabel -> {labels[[#1]], None}] & ) /@ {1, 2, 3}, Spacer[10]];
+	res["Volume"] = volume;
+	res["Total"] := Total[Flatten[volume]];
+	res["Max"] = max;
+	res["MaxPosition"] = maxPos;
+	res["Cut2D"] = cut2d;
+	res["Cut1D"] = cut1d;
 	res
 ]
 
 
-
-processFile[file_,extent_, type_: "Real32"]:=Module[{res, basename},
-	basename=FileBaseName[file];
-	res=analyze[file,extent, type];
+processFile[file_, extent_, type_:"Real32", opts:OptionsPattern[]] := Module[{res, basename},
+	basename = FileBaseName[file];
+	res = analyze[file, extent, type, opts];
 	CellPrint[ExpressionCell[res["Cut2D"] ]];
-	Export[basename<>"_cut2d.png",res["Cut2D"], ImageSize->{2048}]; 
+	Export[basename<>"_cut2d.pdf", res["Cut2D"]];
 	CellPrint[ExpressionCell[res["Cut1D"] ]];
-	Export[basename<>"_cut1d.pdf",res["Cut1D"], ImageSize-> 1024]; 
+	Export[basename<>"_cut1d.pdf", res["Cut1D"]];
 	res
 ]
