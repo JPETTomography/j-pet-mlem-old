@@ -38,7 +38,9 @@ thruPointCut[volume_, position_, extent_, plane_,
 	ticks2 = Table[Round[x*1000], {x, Floor[datar[[2,1]]], Ceiling[datar[[2,2]]], (datar[[2,2]] - datar[[2,1]]) / 2}];
 	img = Reverse[volume[[Sequence @@ span]]];
 	height = Length[img];
-	If[OptionValue[Upscale], img = upscale[img /. 0 -> 0.00001]]; (*0 -> 0.00001 is a workaround for Mathematica bug*)
+	If[OptionValue[Upscale],
+		img = upscale[img /. 0 -> 0.00001, (*0 -> 0.00001 is a workaround for Mathematica bug*)
+			If[height < 50, 10, 4]]];
 	ArrayPlot[img,
 		FilterRules[{opts}, Options[ArrayPlot]],
 		DataRange -> Reverse[datar]*1000,
