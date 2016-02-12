@@ -208,7 +208,13 @@ int main(int argc, char* argv[]) {
       [&](const Event& event) {
         auto pixel = pixel_grid.pixel_at(event.origin);
         if (pixel_grid.contains(pixel)) {
+#if _OPENMP
+          __atomic_add_fetch(image_emitted.data + pixel_grid.index(pixel),
+                             1,
+                             __ATOMIC_SEQ_CST);
+#else
           image_emitted[pixel]++;
+#endif
         }
       },
       [&](const Event& event, const FullResponse& full_response) {
