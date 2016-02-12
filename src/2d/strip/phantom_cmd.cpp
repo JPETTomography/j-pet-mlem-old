@@ -31,6 +31,7 @@
 #include <sstream>
 #include <string>
 #include <random>
+#include <mutex>
 
 #if SSE_FLUSH
 #include <xmmintrin.h>
@@ -153,6 +154,10 @@ int main(int argc, char* argv[]) {
     no_responses = true;
   }
 
+#if _OPENMP
+  std::mutex event_mutex;
+#endif
+
   auto only_detected = cl.exist("detected");
   auto n_z_pixels = cl.get<int>("n-z-pixels");
   auto n_y_pixels = cl.get<int>("n-y-pixels");
@@ -205,7 +210,7 @@ int main(int argc, char* argv[]) {
       rng,
       model,
       n_emissions,
-      [&](const Event& event) {
+      [&](const Event& event) {  // emitted
         auto pixel = pixel_grid.pixel_at(event.origin);
         if (pixel_grid.contains(pixel)) {
 #if _OPENMP
@@ -217,7 +222,58 @@ int main(int argc, char* argv[]) {
 #endif
         }
       },
-      [&](const Event& event, const FullResponse& full_response) {
+#if _OPENMP
+      [&](const Event& event, const FullResponse& full_response) {  // detected
+        auto response_w_error = scanner.response_w_error(rng, full_response);
+        if (!no_responses) {
+          std::ostringstream ss_wo_error, ss_w_error, ss_exact_events,
+              ss_full_response;
+          ss_exact_events << event << "\n";
+          ss_full_response << full_response << "\n";
+          ss_wo_error << scanner.response_wo_error(full_response) << "\n";
+          ss_w_error << scanner.response_w_error(rng, full_response) << "\n";
+          {
+            std::lock_guard<std::mutex> event_lock(event_mutex);
+            out_exact_events << ss_exact_events.str();
+            out_full_response << ss_full_response.str();
+            out_wo_error << ss_wo_error.str();
+            out_w_error << ss_w_error.str();
+          }
+        }
+        {
+          auto pixel = pixel_grid.pixel_at(event.origin);
+          if (pixel_grid.contains(pixel)) {
+            __atomic_add_fetch(
+                image_detected_exact.data + pixel_grid.index(pixel),
+                1,
+                __ATOMIC_SEQ_CST);
+          }
+        }
+        {
+          auto event_w_error =
+              scanner.from_projection_space_tan(response_w_error);
+          auto pixel = pixel_grid.pixel_at(
+              PET2D::Point<F>(event_w_error.z, event_w_error.y));
+          if (pixel_grid.contains(pixel)) {
+            __atomic_add_fetch(
+                image_detected_w_error.data + pixel_grid.index(pixel),
+                1,
+                __ATOMIC_SEQ_CST);
+          }
+          if (tan_bins > 0) {
+            auto tan_voxel = tan_bins_grid.voxel_at(PET3D::Point<F>(
+                event_w_error.z, event_w_error.y, event_w_error.tan));
+            if (tan_bins_grid.contains(tan_voxel)) {
+              __atomic_add_fetch(
+                  tan_bins_map.data + tan_bins_grid.index(tan_voxel),
+                  1,
+                  __ATOMIC_SEQ_CST);
+            }
+          }
+        }
+      }
+#else
+      [&](const Event& event, const FullResponse& full_response) {  // detected
         auto response_w_error = scanner.response_w_error(rng, full_response);
         if (!no_responses) {
           out_exact_events << event << "\n";
@@ -247,7 +303,9 @@ int main(int argc, char* argv[]) {
             }
           }
         }
-      },
+      }
+#endif
+      ,
       progress,
       only_detected);
   if (verbose) {
