@@ -107,12 +107,15 @@ template <class RNGClass, typename FType> class Phantom {
   std::uniform_real_distribution<F> uniform_angle;
 
  public:
-  Phantom(const F scale = 1) : scale(scale), uniform_angle(-1, 1) {}
+  Phantom(const F scale = 1, bool additive = false)
+      : scale(scale), uniform_angle(-1, 1), additive(additive) {}
 
-  Phantom(const RegionPtrList& el, const F scale = 1)
-      : scale(scale), uniform_angle(-1, 1), regions(el) {
+  Phantom(const RegionPtrList& el, const F scale = 1, bool additive = false)
+      : scale(scale), uniform_angle(-1, 1), regions(el), additive(additive) {
     calculate_cdf();
   }
+
+  bool additive;
 
   void calculate_cdf() {
     if (regions.size() == 0) {
@@ -187,9 +190,22 @@ template <class RNGClass, typename FType> class Phantom {
     return i;
   }
 
+  Point gen_point(RNG& rng, size_t& region_index) {
+  again:
+    region_index = choose_region(rng);
+    Point p = regions[region_index]->random_point(rng);
+    if (additive)
+      return p;
+    for (size_t i = 0; i < region_index; i++) {
+      if (regions[i]->contains(p))
+        goto again;
+    }
+    return p;
+  }
+
   Point gen_point(RNG& rng) {
-    size_t region_index = choose_region(rng);
-    return regions[region_index]->random_point(rng);
+    size_t region_index;
+    return gen_point(rng, region_index);
   }
 
   Event gen_event(RNG& rng) {

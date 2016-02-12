@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
               << std::endl;
   }
 
-  Phantom phantom(cl.get<double>("scale"));
+  Phantom phantom(cl.get<double>("scale"), cl.exist("additive"));
   for (auto& fn : cl.rest()) {
     std::ifstream in_phantom(fn);
     phantom << in_phantom;

@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
   const auto& model_name = cl.get<std::string>("model");
   const auto& length_scale = cl.get<double>("base-length");
 
-  Phantom phantom(cl.get<double>("scale"));
+  Phantom phantom(cl.get<double>("scale"), cl.exist("additive"));
   // Read phantom
   for (auto& fn : cl.rest()) {
     std::ifstream in_phantom(fn);

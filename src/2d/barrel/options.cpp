@@ -143,6 +143,7 @@ void add_phantom_options(cmdline::parser& cl) {
   cl.add("bin", 0, "ouput number of hits in each lor position");
   cl.add<double>(
       "scale", 0, "Scale phantom with given constant", cmdline::alwayssave, 1);
+  cl.add("additive", 0, "phantom regions are additive, not disjunctive");
 
   cl.add<std::string>(
       "model",

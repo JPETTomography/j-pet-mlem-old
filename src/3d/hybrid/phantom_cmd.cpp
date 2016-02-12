@@ -146,8 +146,9 @@ int main(int argc, char* argv[]) {
 
   auto n_emissions = cl.get<size_t>("n-emissions");
   auto only_detected = cl.exist("detected");
+  auto additive = cl.exist("additive");
 
-  Phantom phantom(regions);
+  Phantom phantom(regions, additive);
 
   Scintillator scintillator(F(cl.get<double>("base-length")));
   MonteCarlo monte_carlo(phantom, scanner);

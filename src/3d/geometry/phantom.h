@@ -31,7 +31,7 @@ template <class RNGClass, typename FType> class Phantom {
   /// Must provide at least intensity for the region.
   struct Region {
     Region(F intensity) : intensity(intensity) {}
-    virtual bool in(const Point&) const = 0;
+    virtual bool contains(const Point&) const = 0;
     virtual Point random_point(RNG&) = 0;
     virtual Vector random_direction(RNG& rng) = 0;
 
@@ -72,7 +72,7 @@ template <class RNGClass, typename FType> class Phantom {
           height(height),
           distribution(radius, height) {}
 
-    bool in(const Point& p) const {
+    bool contains(const Point& p) const {
       return ((p.x * p.x + p.y * p.y < radius * radius) &&
               (p.z <= height / 2) && (p.z >= -height / 2));
     }
@@ -103,7 +103,7 @@ template <class RNGClass, typename FType> class Phantom {
           rz(rz),
           distribution(rx, ry, rz) {}
 
-    bool in(const Point& p) const {
+    bool contains(const Point& p) const {
       F x = p.x / rx;
       F y = p.y / ry;
       F z = p.z / rz;
@@ -134,7 +134,7 @@ template <class RNGClass, typename FType> class Phantom {
           dy(-ay / 2, ay / 2),
           dz(-az / 2, az / 2) {}
 
-    bool in(const Point& point) const {
+    bool contains(const Point& point) const {
       return (point.x <= ax / 2) && (point.x >= -ax / 2) &&
              (point.y <= ay / 2) && point.y >= -ay / 2 && (point.z <= az / 2) &&
              (point.z >= -az / 2);
@@ -181,8 +181,8 @@ template <class RNGClass, typename FType> class Phantom {
       return R * v;
     }
 
-    bool in(const Point& p) const {
-      return region.in(Point::from_vector(transposed_R * p.as_vector()));
+    bool contains(const Point& p) const {
+      return region.contains(Point::from_vector(transposed_R * p.as_vector()));
     }
 
    private:
@@ -210,7 +210,9 @@ template <class RNGClass, typename FType> class Phantom {
 
     Vector random_direction(RNG& rng) { return region.random_direction(rng); }
 
-    bool in(const Point& p) const { return region.in(p - displacement); }
+    bool contains(const Point& p) const {
+      return region.contains(p - displacement);
+    }
 
    private:
     Region& region;
@@ -235,7 +237,7 @@ template <class RNGClass, typename FType> class Phantom {
       return origin;
     }
 
-    bool in(const Point& p) const { return p == origin; }
+    bool contains(const Point& p) const { return p == origin; }
 
     F volume() const { return F(1); }
 
@@ -256,8 +258,11 @@ template <class RNGClass, typename FType> class Phantom {
   util::random::uniform_real_distribution<F> uniform_angle;
 
  public:
-  Phantom(const RegionPtrList& el)
-      : region_list(el), CDF(el.size(), 0), uniform_angle(-1, 1) {
+  Phantom(const RegionPtrList& el, bool additive = false)
+      : region_list(el),
+        CDF(el.size(), 0),
+        uniform_angle(-1, 1),
+        additive(additive) {
     CDF[0] = region_list[0]->weight();
 
     for (size_t i = 1; i < el.size(); i++) {
@@ -272,6 +277,8 @@ template <class RNGClass, typename FType> class Phantom {
     }
   }
 
+  bool additive;
+
   size_t n_events() { return events.size(); }
 
   template <class RNG> size_t choose_region(RNG& rng) {
@@ -284,26 +291,28 @@ template <class RNGClass, typename FType> class Phantom {
     return i;
   }
 
-  Point gen_point(RNG& rng) {
+  Point gen_point(RNG& rng, size_t& region_index) {
   again:
-    size_t i_region = choose_region(rng);
-    Point p = region_list[i_region]->random_point();
-    for (size_t j = 0; j < i_region; j++) {
-      if (region_list[j].shape.contains(p))
+    region_index = choose_region(rng);
+    Point p = region_list[region_index]->random_point(rng);
+    if (additive)
+      return p;
+    for (size_t i = 0; i < region_index; i++) {
+      if (region_list[i]->contains(p))
         goto again;
     }
     return p;
   }
 
+  Point gen_point(RNG& rng) {
+    size_t region_index;
+    return gen_point(rng, region_index);
+  }
+
   Event gen_event(RNG& rng) {
-  again:
-    size_t i_region = choose_region(rng);
-    Point p = region_list[i_region]->random_point(rng);
-    for (size_t j = 0; j < i_region; j++) {
-      if (region_list[j]->in(p))
-        goto again;
-    }
-    return Event(p, region_list[i_region]->random_direction(rng));
+    size_t region_index;
+    Point p = gen_point(rng, region_index);
+    return Event(p, region_list[region_index]->random_direction(rng));
   }
 };
 }
