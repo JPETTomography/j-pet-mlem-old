@@ -24,18 +24,12 @@ set(PET_USE_STATISTICS OFF
 set(PET_CACHE_ELLIPSE_PIXELS OFF
     CACHE BOOL
     "shared memory pixel buffer in error ellipse")
-set(PET_NORMAL_PHANTOM OFF
-    CACHE BOOL
-    "normalize phantom")
 set(PET_USE_SENSITIVITY OFF
     CACHE BOOL
     "use sensitivity when calculating reconstruction")
 set(PET_USE_KERNEL ON
     CACHE BOOL
     "use kernel (when off it uses constant 1 for kernel value)")
-set(PET_USE_RHO_PER_WARP OFF
-    CACHE BOOL
-    "write separate output rho per each warp")
 set(PET_MAX_PIXELS_PER_THREAD 12
     CACHE INTEGER
     "chosen arbitrarily, no more than 11 pixels per thread in current config")
