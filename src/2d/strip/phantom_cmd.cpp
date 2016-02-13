@@ -110,11 +110,6 @@ int main(int argc, char* argv[]) {
 
   Scanner scanner(PET2D_STRIP_SCANNER_CL(cl));
 
-  if (verbose) {
-    std::cerr << "size: " << scanner.n_z_pixels << "x" << scanner.n_y_pixels
-              << std::endl;
-  }
-
   Phantom phantom(cl.get<double>("scale"), cl.exist("additive"));
   for (auto& fn : cl.rest()) {
     std::ifstream in_phantom(fn);
@@ -135,7 +130,15 @@ int main(int argc, char* argv[]) {
   phantom.calculate_cdf();
 
   if (verbose) {
-    std::cerr << "scanner: " << scanner.size_y << ' ' << scanner.tl_y_half_h
+    std::cerr << "    image size: "  //
+              << scanner.n_z_pixels << " x " << scanner.n_y_pixels << std::endl
+              << "    pixel size: "  //
+              << scanner.pixel_width << " x " << scanner.pixel_height
+              << std::endl
+              << "    space size: "  //
+              << scanner.size_z << " x " << scanner.size_y << std::endl
+              << "space top left: "  //
+              << scanner.tl_z_half_w << " x " << scanner.tl_y_half_h
               << std::endl;
   }
 
