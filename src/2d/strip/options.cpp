@@ -19,7 +19,11 @@ void add_scanner_options(cmdline::parser& cl) {
                         cmdline::default_reader<cmdline::path>(),
                         cmdline::load);
 
-  cl.add<double>("radius", 'r', "R distance between scintillator", false, 0.5);
+  cl.add<std::vector<double>>("radius",
+                              'r',
+                              "R distance between scintillator",
+                              false,
+                              std::vector<double>(1, 0.5));
   cl.add<double>("length", 'l', "scintillator length", false, 1);
   cl.add<double>("s-pixel", 'p', "pixel size", false, 0.01);
   cl.add<int>("n-pixels", 'n', "number of pixels", cmdline::dontsave, 0);
@@ -103,13 +107,18 @@ void calculate_scanner_options(cmdline::parser& parser, int) {
     parser.get<int>("n-z-pixels") = parser.get<int>("n-pixels");
     parser.get<int>("n-y-pixels") = parser.get<int>("n-pixels");
   } else {
-    auto radius = parser.get<double>("radius");
+    auto& radius = parser.get<std::vector<double>>("radius");
+    if (radius.size() == 0)
+      throw("at least one --radius has to be specified");
+    else if (radius.size() > 1)
+      std::cerr << "warning: more than one radius specified with --radius"
+                << std::endl;
     auto scintillator_length = parser.get<double>("length");
     auto s_pixel = parser.get<double>("s-pixel");
     if (!parser.exist("n-z-pixels"))
       parser.get<int>("n-z-pixels") = std::ceil(scintillator_length / s_pixel);
     if (!parser.exist("n-y-pixels"))
-      parser.get<int>("n-y-pixels") = std::ceil(2 * radius / s_pixel);
+      parser.get<int>("n-y-pixels") = std::ceil(2 * radius[0] / s_pixel);
   }
 }
 
