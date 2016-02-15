@@ -139,14 +139,14 @@ TEST("3d/geometry/phantom_builder/phantom") {
     const json& j_phantom = j_phantoms[1];
     auto phantom = PET3D::create_phantom_region_from_json<RNG, F>(j_phantom);
 
-    REQUIRE(phantom->in(Point(-0.05, 0.007, 0.03)));
-    REQUIRE(!phantom->in(Point(-0.05, 0.011, 0.03)));
+    REQUIRE(phantom->contains(Point(-0.05, 0.007, 0.03)));
+    REQUIRE(!phantom->contains(Point(-0.05, 0.011, 0.03)));
   }
   {
     const json& j_phantom = j_phantoms[2];
     auto phantom = PET3D::create_phantom_region_from_json<RNG, F>(j_phantom);
 
-    REQUIRE(phantom->in(Point(0.05, 0.0, -0.10)));
-    REQUIRE(!phantom->in(Point(0.0, .16, 0.0)));
+    REQUIRE(phantom->contains(Point(0.05, 0.0, -0.10)));
+    REQUIRE(!phantom->contains(Point(0.0, .16, 0.0)));
   }
 }

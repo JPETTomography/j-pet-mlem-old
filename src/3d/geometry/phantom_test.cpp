@@ -23,11 +23,11 @@ TEST("3d/geometry/phantom/cylinder_region") {
   REQUIRE(region.intensity == 1.0_e7);
 
   Point p1(1.2, 0.1, 1.4);
-  REQUIRE(region.in(p1));
+  REQUIRE(region.contains(p1));
   Point p2(1.2, 0.0, 1.7);
-  REQUIRE(!region.in(p2));
+  REQUIRE(!region.contains(p2));
   Point p3(-2.1, 0.05, -1.0);
-  REQUIRE(!region.in(p3));
+  REQUIRE(!region.contains(p3));
 
   std::mt19937 rng;
 
