@@ -210,6 +210,7 @@ int main(int argc, char* argv[]) {
       max_tan / tan_bins * 2);
   PET3D::VoxelMap<PET3D::Voxel<S>, Hit> tan_bins_map(
       n_z_pixels, n_y_pixels, tan_bins > 0 ? tan_bins : 1);
+
   if (cl.exist("kernel-point")) {
     auto& kernel_point_cl = cl.get<std::vector<double>>("kernel-point");
     if (kernel_point_cl.size() != 2) {
@@ -365,6 +366,8 @@ int main(int argc, char* argv[]) {
       }
       PET3D::VoxelMap<PET3D::Voxel<S>, F> tan_kernel_map(
           n_z_pixels, n_y_pixels, tan_bins);
+      auto pixel_size = tan_bins_grid.pixel_grid.pixel_size;
+      auto bin_volume = pixel_size * pixel_size * tan_bins_grid.voxel_size;
       for (S z = 0; z < tan_kernel_map.depth; ++z) {
         auto tan = tan_bins_grid.center_at(PET3D::Voxel<S>(0, 0, z)).z;
         auto sec = compat::sqrt(1 + tan * tan);
@@ -379,7 +382,11 @@ int main(int argc, char* argv[]) {
                                        sec,
                                        scanner.radius,
                                        kernel_point);
-            tan_kernel_map[voxel] = kernel_value;
+
+            auto volume_elem =
+                4 * scanner.radius * bin_volume * std::sqrt(1 + tan * tan);
+            tan_kernel_map[voxel] =
+                kernel_value * volume_elem / scanner.sensitivity(kernel_point);
           }
         }
       }
