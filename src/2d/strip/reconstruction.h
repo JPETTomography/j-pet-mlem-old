@@ -67,7 +67,8 @@ template <typename FType, typename KernelType> class Reconstruction {
     for (int y = 0; y < scanner.n_y_pixels; ++y) {
       for (int z = 0; z < scanner.n_z_pixels; ++z) {
         sensitivity[y * scanner.n_z_pixels + z] =
-            scanner.pixel_sensitivity(Pixel(z, y));
+            // scanner.pixel_sensitivity(Pixel(z, y));
+            scanner.sensitivity(scanner.pixel_center(Pixel(z, y)));
       }
     }
   }
@@ -217,7 +218,7 @@ template <typename FType, typename KernelType> class Reconstruction {
   }
 
   void bb_update(Point ellipse_center, F y, F tan, std::vector<F>& output_rho) {
-    bool use_sensitivity = false;
+    bool use_sensitivity = true;
     F sec, A, B, C, bb_y, bb_z;
     kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);
 
@@ -274,9 +275,10 @@ template <typename FType, typename KernelType> class Reconstruction {
           std::cout << kernel_value;
 #endif
           F kernel_mul_rho = kernel_value * rho[pixel_index];
-          denominator += kernel_mul_rho * pixel_sensitivity;
+          denominator += kernel_mul_rho;  //* pixel_sensitivity;
           ellipse_pixels[n_ellipse_pixels] = pixel;
-          ellipse_kernel_mul_rho[n_ellipse_pixels] = kernel_mul_rho;
+          ellipse_kernel_mul_rho[n_ellipse_pixels] =
+              kernel_mul_rho / pixel_sensitivity;
           ++n_ellipse_pixels;
         }
 #if DEBUG
@@ -285,7 +287,7 @@ template <typename FType, typename KernelType> class Reconstruction {
       }
     }
 
-    F inv_denominator = 1 / denominator;
+    F inv_denominator = (denominator > 0) ? 1 / denominator : 0;
 
     for (int p = 0; p < n_ellipse_pixels; ++p) {
       auto pixel = ellipse_pixels[p];
