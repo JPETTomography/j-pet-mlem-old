@@ -35,6 +35,7 @@ int main(int argc, char* argv[]) {
     strip_gauss_kernel();
     strip_gauss_kernel_integral();
   } else {
+
     Scanner scanner(PET2D_STRIP_SCANNER_CL(cl));
     Reconstruction reconstruction(scanner);
 
@@ -42,6 +43,39 @@ int main(int argc, char* argv[]) {
     if (verbose) {
       std::cout << "# image: " << scanner.n_y_pixels << "x"
                 << scanner.n_z_pixels << std::endl;
+    }
+
+    auto is_3d = cl.exist("3d-response");
+
+    for (auto& fn : cl.rest()) {
+      if (cmdline::path(fn).ext() == ".txt") {
+#if USE_FAST_TEXT_PARSER
+        reconstruction.fast_load_txt_events(fn.c_str(), is_3d);
+#else
+        if (is_3d) {
+          throw("3D input not supported in this build");
+        }
+        std::ifstream in_responses(fn);
+        if (!in_responses.is_open()) {
+          throw("cannot open phantom responses file: " + fn);
+        }
+        reconstruction << in_responses;
+#endif
+      } else {
+        if (is_3d) {
+          throw("3D input must have .txt extension");
+        }
+        util::ibstream in_responses(fn);
+        if (!in_responses.is_open()) {
+          throw("cannot open phantom responses file: " + fn);
+        }
+        reconstruction << in_responses;
+      }
+
+      if (verbose) {
+        std::cerr << "# read " << reconstruction.responses.size()
+                  << " responsess from " << fn << std::endl;
+      }
     }
 
     if (cl.exist("rho")) {
@@ -57,5 +91,14 @@ int main(int argc, char* argv[]) {
         bin >> reconstruction.rho;
       }
     }
+
+    auto output_name = cl.get<cmdline::path>("output");
+    auto output_base_name = output_name.wo_ext();
+    auto output_ext = output_name.ext();
+    auto output_txt = output_ext == ".txt";
+
+    /*
+     * here comes the fun part ....
+     */
   }
 }
