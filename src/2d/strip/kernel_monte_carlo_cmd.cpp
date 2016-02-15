@@ -1,3 +1,7 @@
+#include "cmdline.h"
+#include "util/cmdline_types.h"
+#include "util/cmdline_hooks.h"
+
 #include "2d/strip/gaussian_kernel.h"
 
 #include "common/types.h"
@@ -171,7 +175,11 @@ void strip_gauss_kernel_integral() {
             << " = " << integral / sens << "\n";
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+
+  cmdline::parser cl;
+  cl.parse_check(argc, argv);
+
   strip_integral();
   strip_integral_theta();
   strip_integral_event();
