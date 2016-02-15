@@ -95,6 +95,7 @@ int main(int argc, char* argv[]) {
       throw("at least one input phantom description expected, consult --help");
     }
   }
+
   int n_threads;
 #if _OPENMP
   if (cl.exist("n-threads")) {
@@ -163,7 +164,6 @@ int main(int argc, char* argv[]) {
   }
 
 #if _OPENMP
-  // std::mutex event_mutex;
   BufferedGuardedStream<std::ofstream> w_error_buffer(out_w_error, n_threads);
   BufferedGuardedStream<std::ofstream> wo_error_buffer(out_wo_error, n_threads);
   BufferedGuardedStream<std::ofstream> exact_events_buffer(out_exact_events,
@@ -242,28 +242,12 @@ int main(int argc, char* argv[]) {
         if (!no_responses) {
           int thread = omp_get_thread_num();
 
-          //          std::ostringstream ss_wo_error, ss_w_error,
-          //          ss_exact_events,
-          //              ss_full_response;
-          // ss_exact_events << event << "\n";
-          // ss_full_response << full_response << "\n";
-          // ss_wo_error << scanner.response_wo_error(full_response) << "\n";
-          // ss_w_error << scanner.response_w_error(rng, full_response) << "\n";
-
           full_response_buffer.writeln(thread, full_response);
           exact_events_buffer.writeln(thread, event);
           w_error_buffer.writeln(thread,
                                  scanner.response_w_error(rng, full_response));
           wo_error_buffer.writeln(thread,
                                   scanner.response_wo_error(full_response));
-
-          {
-            // std::lock_guard<std::mutex> event_lock(event_mutex);
-            // out_exact_events << ss_exact_events.str();
-            // out_full_response << ss_full_response.str();
-            // out_wo_error << ss_wo_error.str();
-            // out_w_error << ss_w_error.str();
-          }
         }
         {
           auto pixel = pixel_grid.pixel_at(event.origin);
