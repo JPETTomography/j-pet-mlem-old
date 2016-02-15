@@ -65,6 +65,7 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser cl;
   PET2D::Strip::add_reconstruction_options(cl);
+  cl.add<cmdline::path>("rho", 0, "start rho (eg. existing iteration)", false);
   cl.parse_check(argc, argv);
   PET2D::Strip::calculate_scanner_options(cl, argc);
 
@@ -92,6 +93,20 @@ int main(int argc, char* argv[]) {
   if (verbose) {
     std::cout << "# image: " << scanner.n_y_pixels << "x" << scanner.n_z_pixels
               << std::endl;
+  }
+
+  if (cl.exist("rho")) {
+    auto rho_name = cl.get<cmdline::path>("rho");
+    auto rho_base_name = rho_name.wo_ext();
+    auto rho_ext = rho_name.ext();
+    auto rho_txt = rho_ext == ".txt";
+    if (rho_txt) {
+      std::ifstream txt(rho_name);
+      txt >> reconstruction.rho;
+    } else {
+      util::ibstream bin(rho_name);
+      bin >> reconstruction.rho;
+    }
   }
 
   auto is_3d = cl.exist("3d-response");
