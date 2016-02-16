@@ -238,6 +238,9 @@ endfunction()
 
 # list all built PET commands using pet_target(subproj cmdname), where main
 # source file is in src/subproj/cmdname_cmd.cpp
+
+pet_target(1d toy gauss)
+
 pet_target(2d barrel matrix)
 pet_target(2d barrel phantom)
 pet_target(2d barrel reconstruction)
