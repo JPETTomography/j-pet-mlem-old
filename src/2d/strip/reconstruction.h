@@ -218,7 +218,7 @@ template <typename FType, typename KernelType> class Reconstruction {
   }
 
   void bb_update(Point ellipse_center, F y, F tan, std::vector<F>& output_rho) {
-    bool use_sensitivity = true;
+    bool use_sensitivity = false;
     F sec, A, B, C, bb_y, bb_z;
     kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);
 
