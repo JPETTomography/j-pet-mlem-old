@@ -31,6 +31,7 @@ int main(int argc, char* argv[]) {
 
   size_t n = cl.get<int>("emissions");
   F dx = cl.get<F>("dx");
+  int n_x = 4 / dx;
 
   F sigma = 0.25;
   Kernel kernel(sigma);
@@ -54,7 +55,9 @@ int main(int argc, char* argv[]) {
   std::cout << "# " << n_samples << "\n";
 
   std::vector<F> prob_ys(n_samples);
+#if _OPENMP
 #pragma omp parallel for
+#endif
   for (size_t i = 0; i < n_samples; ++i) {
     F p = 0;
     for (F x = -2; x <= 2.0; x += dx) {
@@ -63,13 +66,22 @@ int main(int argc, char* argv[]) {
     prob_ys[i] = p * dx;
   }
 
+  std::vector<F> xv(n_x);
   if (n > 0) {
-    for (F x = -2.0; x < 2.0; x += dx) {
+#if _OPENMP
+#pragma omp parallel for schedule(dynamic, 4)
+#endif
+    for (int j = 0; j < n_x; ++j) {
+      F x = -2 + j * dx;
       F sum = 0.0;
       for (size_t i = 0; i < n_samples; ++i) {
         sum += kernel(ys[i], x) / prob_ys[i];
       }
-      std::cout << x << " " << sum * dx << "\n";
+      xv[j] = sum;
+    }
+    for (int j = 0; j < n_x; ++j) {
+      F x = -2 + j * dx;
+      std::cout << x << " " << xv[j] * dx << "\n";
     }
   }
 }
