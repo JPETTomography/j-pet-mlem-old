@@ -115,7 +115,8 @@ template <typename FType> class GaussianKernel {
 
     F tan_sq = tan * tan;
     // NOTE: sqrt(1 + tan*tan) =:= 1 / cos(arctan(tan))
-    sec = 1 / compat::cos(compat::atan(tan));
+    // sec = 1 / compat::cos(compat::atan(tan));
+    sec = compat::sqrt(1 + tan * tan);
     A = 4 * sec * sec * inv_pow_sigma_dl + 2 * tan_sq * inv_pow_sigma_z;
     B = -4 * tan * inv_pow_sigma_z;
     C = 2 * inv_pow_sigma_z;
