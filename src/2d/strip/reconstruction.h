@@ -217,12 +217,12 @@ template <typename FType, typename KernelType> class Reconstruction {
     return static_cast<int>(length / pixel_size + F(0.5));
   }
 
-  void bb_update(Point ellipse_center, F y, F tan, std::vector<F>& output_rho) {
+  void bb_update(Point center, F y, F tan, std::vector<F>& output_rho) {
     bool use_sensitivity = false;
     F sec, A, B, C, bb_y, bb_z;
     kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);
 
-    Pixel center_pixel = scanner.pixel_at(ellipse_center);
+    Pixel center_pixel = scanner.pixel_at(center);
 
     const int bb_half_width = n_pixels_in_line(bb_z, scanner.pixel_width);
     const int bb_half_height = n_pixels_in_line(bb_y, scanner.pixel_height);
@@ -261,8 +261,8 @@ template <typename FType, typename KernelType> class Reconstruction {
         Pixel pixel(iz, iy);
         Point point = scanner.pixel_center(pixel);
 
-        if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
-          Vector r = point - ellipse_center;
+        if (kernel.in_ellipse(A, B, C, center, point)) {
+          Vector distance = point - center;
 #if DEBUG
           std::cout << r.x << ' ' << r.y << " ";
 #endif
@@ -270,7 +270,7 @@ template <typename FType, typename KernelType> class Reconstruction {
 
           F pixel_sensitivity = use_sensitivity ? sensitivity[pixel_index] : 1;
           stats_.n_kernel_calls_by();
-          F kernel_value = kernel(y, tan, sec, scanner.radius, r);
+          F kernel_value = kernel(y, tan, sec, scanner.radius, distance);
 #if DEBUG
           std::cout << kernel_value;
 #endif

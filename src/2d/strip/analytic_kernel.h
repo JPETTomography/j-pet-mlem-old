@@ -38,11 +38,13 @@ template <typename FType> class AnalyticKernel : public GaussianKernel<FType> {
     FVec vec_a = { -(y_position - R) * sec_sq,
                    -(y_position + R) * sec_sq,
                    -2 * y_position * sec * tan };
-    FVec vec_o = {
-      vec_a.p * tan, vec_a.q * tan, -y_position * sec * (1 + 2 * tan * tan)
-    };
+    FVec vec_o = { vec_a.p * tan,  //
+                   vec_a.q * tan,  //
+                   -y_position * sec * (1 + 2 * tan * tan) };
     F vec_b_pq = distance.x - distance.y * tan;
-    FVec vec_b = { vec_b_pq, vec_b_pq, -2 * distance.y * sec };
+    FVec vec_b = { vec_b_pq,  //
+                   vec_b_pq,  //
+                   -2 * distance.y * sec };
 
     F a_ic_a = this->multiply_inv_cor_mat(vec_a, vec_a);
     F b_ic_a = this->multiply_inv_cor_mat(vec_b, vec_a);

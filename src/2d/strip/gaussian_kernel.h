@@ -61,9 +61,10 @@ template <typename FType> class GaussianKernel {
     FVec vec_a = { -(y_position - R) * sec_sq,
                    -(y_position + R) * sec_sq,
                    -2 * y_position * sec * tan };
-
     F vec_b_pq = distance.x - distance.y * tan;
-    FVec vec_b = { vec_b_pq, vec_b_pq, -2 * distance.y * sec };
+    FVec vec_b = { vec_b_pq,  //
+                   vec_b_pq,  //
+                   -2 * distance.y * sec };
 
     F a_ic_a = multiply_inv_cor_mat(vec_a, vec_a);
     F b_ic_b = multiply_inv_cor_mat(vec_b, vec_b);

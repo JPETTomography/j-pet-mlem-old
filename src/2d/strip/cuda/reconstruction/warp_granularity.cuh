@@ -58,8 +58,8 @@ __global__ void reconstruction(Scanner<F, short> scanner,
     F sec, A, B, C, bb_y, bb_z;
     kernel.ellipse_bb(tan, sec, A, B, C, bb_y, bb_z);
 
-    Point ellipse_center(z, y);
-    Pixel center_pixel = scanner.pixel_at(ellipse_center);
+    Point center(z, y);
+    Pixel center_pixel = scanner.pixel_at(center);
 
     // bounding box limits for response
     const int bb_half_width = n_pixels_in_line(bb_z, scanner.pixel_width);
@@ -95,14 +95,14 @@ __global__ void reconstruction(Scanner<F, short> scanner,
 
       Point point = scanner.pixel_center(pixel);
 
-      if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
-        Vector r = point - ellipse_center;
+      if (kernel.in_ellipse(A, B, C, center, point)) {
+        Vector distance = point - center;
 
         F pixel_sensitivity =
             USE_SENSITIVITY ? tex2D(tex_sensitivity, pixel.x, pixel.y) : 1;
 
         F kernel_value =
-            USE_KERNEL ? kernel(y, tan, sec, scanner.radius, r) : 1;
+            USE_KERNEL ? kernel(y, tan, sec, scanner.radius, distance) : 1;
 
         F kernel_mul_rho = kernel_value * tex2D(tex_rho, pixel.x, pixel.y);
         denominator += kernel_mul_rho * pixel_sensitivity;
@@ -139,8 +139,8 @@ __global__ void reconstruction(Scanner<F, short> scanner,
 
       Point point = scanner.pixel_center(pixel);
 
-      if (kernel.in_ellipse(A, B, C, ellipse_center, point)) {
-        Vector r = point - ellipse_center;
+      if (kernel.in_ellipse(A, B, C, center, point)) {
+        Vector r = point - center;
 
         F kernel_value =
             USE_KERNEL ? kernel(y, tan, sec, scanner.radius, r) : 1;
