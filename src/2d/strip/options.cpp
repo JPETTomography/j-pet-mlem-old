@@ -87,6 +87,7 @@ void add_phantom_options(cmdline::parser& cl) {
               cmdline::dontsave);
   cl.add<std::vector<double>>(
       "kernel-point", 0, "Point to evaluate kernel in", cmdline::dontsave);
+  cl.add("full", 0, "Emit additional full information", cmdline::dontsave);
   cl.add("no-responses", 0, "Do not emit responses", cmdline::dontsave);
   cl.add<std::vector<double>>(
       "point", 0, "Add point phantom x,y[,intensity]", cmdline::optional);

@@ -151,14 +151,17 @@ int main(int argc, char* argv[]) {
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();
   auto ext = output.ext();
-  bool no_responses = cl.exist("no-responses");
+  auto no_responses = cl.exist("no-responses");
+  auto full = cl.exist("full");
 
   std::ofstream out_wo_error, out_w_error, out_exact_events, out_full_response;
   if (output_base_name.length() && !no_responses) {
-    out_wo_error.open(output_base_name + "_wo_error" + ext);
     out_w_error.open(output);
-    out_exact_events.open(output_base_name + "_events" + ext);
-    out_full_response.open(output_base_name + "_full_response" + ext);
+    if (full) {
+      out_wo_error.open(output_base_name + "_wo_error" + ext);
+      out_exact_events.open(output_base_name + "_events" + ext);
+      out_full_response.open(output_base_name + "_full_response" + ext);
+    }
   } else {
     no_responses = true;
   }
@@ -286,9 +289,11 @@ int main(int argc, char* argv[]) {
       [&](const Event& event, const FullResponse& full_response) {  // detected
         auto response_w_error = scanner.response_w_error(rng, full_response);
         if (!no_responses) {
-          out_exact_events << event << "\n";
-          out_full_response << full_response << "\n";
-          out_wo_error << scanner.response_wo_error(full_response) << "\n";
+          if (full) {
+            out_exact_events << event << "\n";
+            out_full_response << full_response << "\n";
+            out_wo_error << scanner.response_wo_error(full_response) << "\n";
+          }
           out_w_error << response_w_error << "\n";
         }
         {
