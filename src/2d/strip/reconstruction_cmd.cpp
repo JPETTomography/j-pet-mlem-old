@@ -184,6 +184,7 @@ int main(int argc, char* argv[]) {
         scanner,
         reconstruction.responses.data(),
         reconstruction.responses.size(),
+        reconstruction.rho,
         n_blocks,
         n_iterations_in_block,
         [&](int iteration,

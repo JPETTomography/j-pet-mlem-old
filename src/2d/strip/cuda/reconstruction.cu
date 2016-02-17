@@ -32,6 +32,7 @@ template <typename F>
 void run(Scanner<F, S>& scanner,
          Response<F>* responses,
          int n_responses,
+         Output& rho_output,
          int n_iteration_blocks,
          int n_iterations_in_block,
          util::delegate<void(int iteration, const Output& output)> output,
@@ -70,11 +71,7 @@ void run(Scanner<F, S>& scanner,
   }
 
   util::cuda::texture2D<F> rho(tex_rho, width, height);
-  util::cuda::memory<F> output_rho(image_size);
-  Output rho_output(width, height, output_rho.host_ptr);
-  for (int i = 0; i < scanner.total_n_pixels; ++i) {
-    output_rho[i] = 100;
-  }
+  util::cuda::memory<F> output_rho(image_size, rho_output.data);
   output_rho.copy_to_device();
 
   // this class allocated CUDA pointers and deallocated them in destructor
@@ -133,6 +130,7 @@ template void run(
     Scanner<float, S>& scanner,
     Response<float>* responses,
     int n_responses,
+    Output& rho_output,
     int n_iteration_blocks,
     int n_iterations_in_block,
     util::delegate<void(int iteration, const Output& output)> output,

@@ -33,6 +33,7 @@ template <typename F>
 void run(Scanner<F, S>& scanner,
          Response<F>* responses,
          int n_responses,
+         Output& input_output,
          int n_iteration_blocks,
          int n_iterations_in_block,
          util::delegate<void(int iteration, const Output& output)> output,
