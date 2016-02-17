@@ -24,6 +24,7 @@ void add_phantom_options(cmdline::parser& cl) {
   cl.add<double>("length", 'l', "length of the detector", false, 2);
   cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
   cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
+  cl.add("full", 0, "Emit additional full information", cmdline::dontsave);
   PET2D::Barrel::add_phantom_options(cl);
 }
 

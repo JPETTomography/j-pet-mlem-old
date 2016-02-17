@@ -37,8 +37,6 @@
 #include <xmmintrin.h>
 #endif
 
-#include "util/buffered_guarded_ostream.h"
-
 #include "cmdline.h"
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
@@ -96,14 +94,10 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  int n_threads;
 #if _OPENMP
   if (cl.exist("n-threads")) {
     omp_set_num_threads(cl.get<int>("n-threads"));
   }
-  n_threads = omp_get_max_threads();
-#else
-  n_threads = 1;
 #endif
 
   auto n_emissions = cl.get<size_t>("n-emissions");
@@ -151,28 +145,34 @@ int main(int argc, char* argv[]) {
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();
   auto ext = output.ext();
+  auto output_txt = ext == ".txt";
   auto no_responses = cl.exist("no-responses");
   auto full = cl.exist("full");
 
   std::ofstream out_wo_error, out_w_error, out_exact_events, out_full_response;
+  util::obstream bin_wo_error, bin_w_error, bin_exact_events, bin_full_response;
   if (output_base_name.length() && !no_responses) {
-    out_w_error.open(output);
-    if (full) {
-      out_wo_error.open(output_base_name + "_wo_error" + ext);
-      out_exact_events.open(output_base_name + "_events" + ext);
-      out_full_response.open(output_base_name + "_full_response" + ext);
+    if (output_txt) {
+      out_w_error.open(output);
+      if (full) {
+        out_wo_error.open(output_base_name + "_wo_error" + ext);
+        out_exact_events.open(output_base_name + "_events" + ext);
+        out_full_response.open(output_base_name + "_full_response" + ext);
+      }
+    } else {
+      bin_w_error.open(output);
+      if (full) {
+        bin_wo_error.open(output_base_name + "_wo_error" + ext);
+        bin_exact_events.open(output_base_name + "_events" + ext);
+        bin_full_response.open(output_base_name + "_full_response" + ext);
+      }
     }
   } else {
     no_responses = true;
   }
 
 #if _OPENMP
-  BufferedGuardedStream<std::ofstream> w_error_buffer(out_w_error, n_threads);
-  BufferedGuardedStream<std::ofstream> wo_error_buffer(out_wo_error, n_threads);
-  BufferedGuardedStream<std::ofstream> exact_events_buffer(out_exact_events,
-                                                           n_threads);
-  BufferedGuardedStream<std::ofstream> full_response_buffer(out_full_response,
-                                                            n_threads);
+  std::mutex event_mutex;
 #endif
 
   auto only_detected = cl.exist("detected");
@@ -240,26 +240,60 @@ int main(int argc, char* argv[]) {
 #endif
         }
       },
-#if _OPENMP
       [&](const Event& event, const FullResponse& full_response) {  // detected
         auto response_w_error = scanner.response_w_error(rng, full_response);
         if (!no_responses) {
-          int thread = omp_get_thread_num();
-
-          full_response_buffer.writeln(thread, full_response);
-          exact_events_buffer.writeln(thread, event);
-          w_error_buffer.writeln(thread,
-                                 scanner.response_w_error(rng, full_response));
-          wo_error_buffer.writeln(thread,
-                                  scanner.response_wo_error(full_response));
+          if (output_txt) {
+            if (full) {
+              std::ostringstream ss_wo_error, ss_w_error, ss_exact_events,
+                  ss_full_response;
+              ss_exact_events << event << "\n";
+              ss_full_response << full_response << "\n";
+              ss_wo_error << scanner.response_wo_error(full_response) << "\n";
+              ss_w_error << scanner.response_w_error(rng, full_response)
+                         << "\n";
+              {
+#if _OPENMP
+                std::lock_guard<std::mutex> event_lock(event_mutex);
+#endif
+                out_exact_events << ss_exact_events.str();
+                out_full_response << ss_full_response.str();
+                out_wo_error << ss_wo_error.str();
+                out_w_error << ss_w_error.str();
+              }
+            } else {
+              std::ostringstream ss_w_error;
+              ss_w_error << event << "\n";
+              {
+#if _OPENMP
+                std::lock_guard<std::mutex> event_lock(event_mutex);
+#endif
+                out_w_error << ss_w_error.str();
+              }
+            }
+          } else {
+#if _OPENMP
+            std::lock_guard<std::mutex> event_lock(event_mutex);
+#endif
+            if (full) {
+              bin_exact_events << event;
+              bin_full_response << full_response;
+              bin_wo_error << scanner.response_wo_error(full_response);
+            }
+            bin_w_error << scanner.response_w_error(rng, full_response);
+          }
         }
         {
           auto pixel = pixel_grid.pixel_at(event.origin);
           if (pixel_grid.contains(pixel)) {
+#if _OPENMP
             __atomic_add_fetch(
                 image_detected_exact.data + pixel_grid.index(pixel),
                 1,
                 __ATOMIC_SEQ_CST);
+#else
+            image_detected_exact[pixel]++;
+#endif
           }
         }
         {
@@ -268,69 +302,33 @@ int main(int argc, char* argv[]) {
           auto pixel = pixel_grid.pixel_at(
               PET2D::Point<F>(event_w_error.z, event_w_error.y));
           if (pixel_grid.contains(pixel)) {
+#if _OPENMP
             __atomic_add_fetch(
                 image_detected_w_error.data + pixel_grid.index(pixel),
                 1,
                 __ATOMIC_SEQ_CST);
+#else
+            image_detected_w_error[pixel]++;
+#endif
           }
           if (tan_bins > 0) {
             auto tan_voxel = tan_bins_grid.voxel_at(PET3D::Point<F>(
                 event_w_error.z, event_w_error.y, event_w_error.tan));
             if (tan_bins_grid.contains(tan_voxel)) {
+#if _OPENMP
               __atomic_add_fetch(
                   tan_bins_map.data + tan_bins_grid.index(tan_voxel),
                   1,
                   __ATOMIC_SEQ_CST);
-            }
-          }
-        }
-      }
 #else
-      [&](const Event& event, const FullResponse& full_response) {  // detected
-        auto response_w_error = scanner.response_w_error(rng, full_response);
-        if (!no_responses) {
-          if (full) {
-            out_exact_events << event << "\n";
-            out_full_response << full_response << "\n";
-            out_wo_error << scanner.response_wo_error(full_response) << "\n";
-          }
-          out_w_error << response_w_error << "\n";
-        }
-        {
-          auto pixel = pixel_grid.pixel_at(event.origin);
-          if (pixel_grid.contains(pixel)) {
-            image_detected_exact[pixel]++;
-          }
-        }
-        {
-          auto event_w_error =
-              scanner.from_projection_space_tan(response_w_error);
-          auto pixel = pixel_grid.pixel_at(
-              PET2D::Point<F>(event_w_error.z, event_w_error.y));
-          if (pixel_grid.contains(pixel)) {
-            image_detected_w_error[pixel]++;
-          }
-          if (tan_bins > 0) {
-            auto tan_voxel = tan_bins_grid.voxel_at(PET3D::Point<F>(
-                event_w_error.z, event_w_error.y, event_w_error.tan));
-            if (tan_bins_grid.contains(tan_voxel)) {
               tan_bins_map[tan_voxel]++;
+#endif
             }
           }
         }
-      }
-#endif
-      ,
+      },
       progress,
       only_detected);
-
-#if _OPENMP
-  w_error_buffer.flush();
-  exact_events_buffer.flush();
-  full_response_buffer.flush();
-  wo_error_buffer.flush();
-#endif
-
   if (verbose) {
     std::cerr << " emitted: " << monte_carlo.n_events_emitted() << " events"
               << std::endl

@@ -93,10 +93,8 @@ int main(int argc, char* argv[]) {
   auto output = cl.get<cmdline::path>("output");
   auto output_base_name = output.wo_ext();
   auto ext = output.ext();
-
-  if (output_base_name.length() && ext != ".txt") {
-    throw("output extension must be .txt, binary filed not supported (yet)");
-  }
+  auto output_txt = ext == ".txt";
+  auto full = cl.exist("full");
 
   Scanner scanner(
       PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
@@ -154,11 +152,23 @@ int main(int argc, char* argv[]) {
   MonteCarlo monte_carlo(phantom, scanner);
 
   std::ofstream out_wo_error, out_w_error, out_exact_events, out_full_response;
+  util::obstream bin_wo_error, bin_w_error, bin_exact_events, bin_full_response;
   if (output_base_name.length()) {
-    out_wo_error.open(output_base_name + "_wo_error" + ext);
-    out_w_error.open(output);
-    out_exact_events.open(output_base_name + "_events" + ext);
-    out_full_response.open(output_base_name + "_full_response" + ext);
+    if (output_txt) {
+      out_w_error.open(output);
+      if (full) {
+        out_wo_error.open(output_base_name + "_wo_error" + ext);
+        out_exact_events.open(output_base_name + "_events" + ext);
+        out_full_response.open(output_base_name + "_full_response" + ext);
+      }
+    } else {
+      bin_w_error.open(output);
+      if (full) {
+        bin_wo_error.open(output_base_name + "_wo_error" + ext);
+        bin_exact_events.open(output_base_name + "_events" + ext);
+        bin_full_response.open(output_base_name + "_full_response" + ext);
+      }
+    }
   }
 
 #if _OPENMP
@@ -207,35 +217,55 @@ int main(int argc, char* argv[]) {
           }
         },
         [&](const Event& event, const FullResponse& full_response) {
-#if _OPENMP
           auto voxel = grid.voxel_at(event.origin);
           if (grid.contains(voxel)) {
+#if _OPENMP
             __atomic_add_fetch(
                 img_detected.data + grid.index(voxel), 1, __ATOMIC_SEQ_CST);
-          }
-          std::ostringstream ss_wo_error, ss_w_error, ss_exact_events,
-              ss_full_response;
-          ss_exact_events << event << "\n";
-          ss_full_response << full_response << "\n";
-          ss_wo_error << scanner.response_wo_error(full_response) << "\n";
-          ss_w_error << scanner.response_w_error(rng, full_response) << "\n";
-          {
-            std::lock_guard<std::mutex> event_lock(event_mutex);
-            out_exact_events << ss_exact_events.str();
-            out_full_response << ss_full_response.str();
-            out_wo_error << ss_wo_error.str();
-            out_w_error << ss_w_error.str();
-          }
 #else
-          auto voxel = grid.voxel_at(event.origin);
-          if (grid.contains(voxel)) {
             ++img_detected[voxel];
-          }
-          out_exact_events << event << "\n";
-          out_full_response << full_response << "\n";
-          out_wo_error << scanner.response_wo_error(full_response) << "\n";
-          out_w_error << scanner.response_w_error(rng, full_response) << "\n";
 #endif
+          }
+          if (output_txt) {
+            if (full) {
+              std::ostringstream ss_wo_error, ss_w_error, ss_exact_events,
+                  ss_full_response;
+              ss_exact_events << event << "\n";
+              ss_full_response << full_response << "\n";
+              ss_wo_error << scanner.response_wo_error(full_response) << "\n";
+              ss_w_error << scanner.response_w_error(rng, full_response)
+                         << "\n";
+              {
+#if _OPENMP
+                std::lock_guard<std::mutex> event_lock(event_mutex);
+#endif
+                out_exact_events << ss_exact_events.str();
+                out_full_response << ss_full_response.str();
+                out_wo_error << ss_wo_error.str();
+                out_w_error << ss_w_error.str();
+              }
+            } else {
+              std::ostringstream ss_w_error;
+              ss_w_error << scanner.response_w_error(rng, full_response)
+                         << "\n";
+              {
+#if _OPENMP
+                std::lock_guard<std::mutex> event_lock(event_mutex);
+#endif
+                out_w_error << ss_w_error.str();
+              }
+            }
+          } else {
+#if _OPENMP
+            std::lock_guard<std::mutex> event_lock(event_mutex);
+#endif
+            if (full) {
+              bin_exact_events << event;
+              bin_full_response << full_response;
+              bin_wo_error << scanner.response_wo_error(full_response);
+            }
+            bin_w_error << scanner.response_w_error(rng, full_response);
+          }
         },
         progress,
         only_detected);

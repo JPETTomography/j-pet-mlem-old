@@ -47,6 +47,12 @@ class obstream : public std::ofstream {
   obstream(std::string fn, std::ios_base::openmode mode = std::ios_base::out)
       : std::ofstream(fn, mode | std::ios_base::out | std::ios_base::binary) {}
 
+  obstream() : std::ofstream() {}
+
+  void open(std::string fn, std::ios_base::openmode mode = std::ios_base::out) {
+    return std::ofstream::open(fn, mode);
+  }
+
   template <typename T> obstream& operator<<(const T v) {
     std::ofstream::write(reinterpret_cast<const char*>(&v), sizeof(v));
     return *this;
