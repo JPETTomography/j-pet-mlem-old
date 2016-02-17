@@ -379,6 +379,8 @@ int main(int argc, char* argv[]) {
           n_z_pixels, n_y_pixels, tan_bins);
       auto pixel_size = tan_bins_grid.pixel_grid.pixel_size;
       auto bin_volume = pixel_size * pixel_size * tan_bins_grid.voxel_size;
+      auto inv_kernel_point_sensitivity =
+          only_detected ? (1 / scanner.sensitivity(kernel_point)) : (F)1;
       for (S z = 0; z < tan_kernel_map.depth; ++z) {
         auto tan = tan_bins_grid.center_at(PET3D::Voxel<S>(0, 0, z)).z;
         auto sec = compat::sqrt(1 + tan * tan);
@@ -397,7 +399,7 @@ int main(int argc, char* argv[]) {
             auto volume_elem =
                 4 * scanner.radius * bin_volume * std::sqrt(1 + tan * tan);
             tan_kernel_map[voxel] =
-                kernel_value * volume_elem / scanner.sensitivity(kernel_point);
+                kernel_value * volume_elem * inv_kernel_point_sensitivity;
           }
         }
       }
