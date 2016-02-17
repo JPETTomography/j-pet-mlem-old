@@ -172,9 +172,49 @@ int main(int argc, char* argv[]) {
   }
 
 #if _OPENMP
-  std::mutex img_mutex;
   std::mutex event_mutex;
 #endif
+  auto detected_block = [&](const Event& event,
+                            const FullResponse& full_response) {
+    if (output_txt) {
+      if (full) {
+        std::ostringstream ss_wo_error, ss_w_error, ss_exact_events,
+            ss_full_response;
+        ss_exact_events << event << "\n";
+        ss_full_response << full_response << "\n";
+        ss_wo_error << scanner.response_wo_error(full_response) << "\n";
+        ss_w_error << scanner.response_w_error(rng, full_response) << "\n";
+        {
+#if _OPENMP
+          std::lock_guard<std::mutex> event_lock(event_mutex);
+#endif
+          out_exact_events << ss_exact_events.str();
+          out_full_response << ss_full_response.str();
+          out_wo_error << ss_wo_error.str();
+          out_w_error << ss_w_error.str();
+        }
+      } else {
+        std::ostringstream ss_w_error;
+        ss_w_error << scanner.response_w_error(rng, full_response) << "\n";
+        {
+#if _OPENMP
+          std::lock_guard<std::mutex> event_lock(event_mutex);
+#endif
+          out_w_error << ss_w_error.str();
+        }
+      }
+    } else {
+#if _OPENMP
+      std::lock_guard<std::mutex> event_lock(event_mutex);
+#endif
+      if (full) {
+        bin_exact_events << event;
+        bin_full_response << full_response;
+        bin_wo_error << scanner.response_wo_error(full_response);
+      }
+      bin_w_error << scanner.response_w_error(rng, full_response);
+    }
+  };
 
   util::progress progress(verbose, n_emissions, 1000000);
   if (cl.exist("n-pixels")) {
@@ -226,46 +266,7 @@ int main(int argc, char* argv[]) {
             ++img_detected[voxel];
 #endif
           }
-          if (output_txt) {
-            if (full) {
-              std::ostringstream ss_wo_error, ss_w_error, ss_exact_events,
-                  ss_full_response;
-              ss_exact_events << event << "\n";
-              ss_full_response << full_response << "\n";
-              ss_wo_error << scanner.response_wo_error(full_response) << "\n";
-              ss_w_error << scanner.response_w_error(rng, full_response)
-                         << "\n";
-              {
-#if _OPENMP
-                std::lock_guard<std::mutex> event_lock(event_mutex);
-#endif
-                out_exact_events << ss_exact_events.str();
-                out_full_response << ss_full_response.str();
-                out_wo_error << ss_wo_error.str();
-                out_w_error << ss_w_error.str();
-              }
-            } else {
-              std::ostringstream ss_w_error;
-              ss_w_error << scanner.response_w_error(rng, full_response)
-                         << "\n";
-              {
-#if _OPENMP
-                std::lock_guard<std::mutex> event_lock(event_mutex);
-#endif
-                out_w_error << ss_w_error.str();
-              }
-            }
-          } else {
-#if _OPENMP
-            std::lock_guard<std::mutex> event_lock(event_mutex);
-#endif
-            if (full) {
-              bin_exact_events << event;
-              bin_full_response << full_response;
-              bin_wo_error << scanner.response_wo_error(full_response);
-            }
-            bin_w_error << scanner.response_w_error(rng, full_response);
-          }
+          detected_block(event, full_response);
         },
         progress,
         only_detected);
@@ -286,35 +287,13 @@ int main(int argc, char* argv[]) {
       nrrd << img_detected;
     }
   } else {
-    monte_carlo(
-        rng,
-        scintillator,
-        n_emissions,
-        [](const Event&) {},
-        [&](const Event& event, const FullResponse& full_response) {
-#if _OPENMP
-          std::ostringstream ss_wo_error, ss_w_error, ss_exact_events,
-              ss_full_response;
-          ss_exact_events << event << "\n";
-          ss_full_response << full_response << "\n";
-          ss_wo_error << scanner.response_wo_error(full_response) << "\n";
-          ss_w_error << scanner.response_w_error(rng, full_response) << "\n";
-          {
-            std::lock_guard<std::mutex> event_lock(event_mutex);
-            out_exact_events << ss_exact_events.str();
-            out_full_response << ss_full_response.str();
-            out_wo_error << ss_wo_error.str();
-            out_w_error << ss_w_error.str();
-          }
-#else
-          out_exact_events << event << "\n";
-          out_full_response << full_response << "\n";
-          out_wo_error << scanner.response_wo_error(full_response) << "\n";
-          out_w_error << scanner.response_w_error(rng, full_response) << "\n";
-#endif
-        },
-        progress,
-        only_detected);
+    monte_carlo(rng,
+                scintillator,
+                n_emissions,
+                [](const Event&) {},
+                detected_block,
+                progress,
+                only_detected);
   }
 
   CMDLINE_CATCH
