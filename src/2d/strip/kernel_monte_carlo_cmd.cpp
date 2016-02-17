@@ -97,8 +97,7 @@ int main(int argc, char* argv[]) {
     auto output_ext = output_name.ext();
     auto output_txt = output_ext == ".txt";
 
-    /*
-     * here comes the fun part ....
-     */
+    // FIXME: implement me!
+    (void)output_txt;  // stop unused warning
   }
 }
