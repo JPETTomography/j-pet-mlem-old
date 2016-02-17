@@ -207,12 +207,9 @@ int main(int argc, char* argv[]) {
   auto max_tan = (F)1.1 * scanner.scintillator_length / (2 * scanner.radius);
   PET2D::Point<F> kernel_point(0, 0);
   PET3D::VariableVoxelSizeVoxelGrid<F, S> tan_bins_grid(
-      pixel_grid,
-      -max_tan,
-      tan_bins > 0 ? tan_bins : 1,
-      max_tan / tan_bins * 2);
+      pixel_grid, -max_tan, std::max(tan_bins, 1), max_tan / tan_bins * 2);
   PET3D::VoxelMap<PET3D::Voxel<S>, Hit> tan_bins_map(
-      n_z_pixels, n_y_pixels, tan_bins > 0 ? tan_bins : 1);
+      n_z_pixels, n_y_pixels, std::max(tan_bins, 1));
 
   if (cl.exist("kernel-point")) {
     auto& kernel_point_cl = cl.get<std::vector<double>>("kernel-point");

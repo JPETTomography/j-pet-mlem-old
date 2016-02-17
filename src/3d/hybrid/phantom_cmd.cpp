@@ -24,6 +24,7 @@
 #include "2d/barrel/square_detector.h"
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
+#include "2d/strip/response.h"
 #include "3d/geometry/phantom.h"
 #include "3d/geometry/phantom_builder.h"
 #include "3d/geometry/voxel.h"
@@ -145,6 +146,7 @@ int main(int argc, char* argv[]) {
   auto n_emissions = cl.get<size_t>("n-emissions");
   auto only_detected = cl.exist("detected");
   auto additive = cl.exist("additive");
+  auto no_responses = cl.exist("no-responses");
 
   Phantom phantom(regions, additive);
 
@@ -153,7 +155,7 @@ int main(int argc, char* argv[]) {
 
   std::ofstream out_wo_error, out_w_error, out_exact_events, out_full_response;
   util::obstream bin_wo_error, bin_w_error, bin_exact_events, bin_full_response;
-  if (output_base_name.length()) {
+  if (output_base_name.length() && !no_responses) {
     if (output_txt) {
       out_w_error.open(output);
       if (full) {
@@ -176,6 +178,8 @@ int main(int argc, char* argv[]) {
 #endif
   auto detected_block = [&](const Event& event,
                             const FullResponse& full_response) {
+    if (no_responses)
+      return;
     if (output_txt) {
       if (full) {
         std::ostringstream ss_wo_error, ss_w_error, ss_exact_events,
@@ -241,6 +245,21 @@ int main(int argc, char* argv[]) {
         grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, grid.n_planes, 0);
     Image img_detected(
         grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, grid.n_planes, 0);
+
+    // tangent 3D map, if tan-bins not given then we make just an 1 bin deep
+    // map, but we won't write to it
+    auto first_radius = cl.get<std::vector<double>>("radius")[0];
+    auto tan_bins = cl.get<int>("tan-bins");
+    auto max_tan = (F)1.1 * cl.get<double>("length") / (2 * first_radius);
+    Grid::PixelGrid tan_pixel_grid(n_planes, n_columns, pixel_size);
+    PET3D::VariableVoxelSizeVoxelGrid<F, S> tan_bins_grid(
+        tan_pixel_grid,
+        -max_tan,
+        std::max(tan_bins, 1),
+        max_tan / tan_bins * 2);
+    PET3D::VoxelMap<PET3D::Voxel<S>, Hit> tan_bins_map(
+        n_planes, n_columns, std::max(tan_bins, 1));
+
     monte_carlo(
         rng,
         scintillator,
@@ -267,6 +286,24 @@ int main(int argc, char* argv[]) {
 #endif
           }
           detected_block(event, full_response);
+          if (tan_bins > 1) {
+            auto response = scanner.response_w_error(rng, full_response);
+            PET2D::Strip::Response<F> strip_response(
+                response.z_up, response.z_dn, response.dl);
+            F tan, y, z;
+            strip_response.calculate_tan_y_z(first_radius, tan, y, z);
+            auto tan_voxel = tan_bins_grid.voxel_at(PET3D::Point<F>(z, y, tan));
+            if (tan_bins_grid.contains(tan_voxel)) {
+#if _OPENMP
+              __atomic_add_fetch(
+                  tan_bins_map.data + tan_bins_grid.index(tan_voxel),
+                  1,
+                  __ATOMIC_SEQ_CST);
+#else
+              tan_bins_map[tan_voxel]++;
+#endif
+            }
+          }
         },
         progress,
         only_detected);
@@ -285,6 +322,13 @@ int main(int argc, char* argv[]) {
       util::nrrd_writer nrrd(fn + ".nrrd", fn);
       bin << img_detected;
       nrrd << img_detected;
+    }
+    if (output_base_name.length() && tan_bins > 0) {
+      util::obstream bin_tan_bins(output_base_name + "_tan_bins");
+      util::nrrd_writer nrrd_tan_bins(output_base_name + "_tan_bins.nrrd",
+                                      output_base_name + "_tan_bins");
+      bin_tan_bins << tan_bins_map;
+      nrrd_tan_bins << tan_bins_map;
     }
   } else {
     monte_carlo(rng,
