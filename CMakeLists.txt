@@ -24,7 +24,7 @@ set(PET_USE_STATISTICS OFF
 set(PET_CACHE_ELLIPSE_PIXELS OFF
     CACHE BOOL
     "shared memory pixel buffer in error ellipse")
-set(PET_USE_SENSITIVITY OFF
+set(PET_USE_SENSITIVITY ON
     CACHE BOOL
     "use sensitivity when calculating reconstruction")
 set(PET_USE_KERNEL ON
