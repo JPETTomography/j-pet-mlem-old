@@ -66,6 +66,7 @@ int main(int argc, char* argv[]) {
   cmdline::parser cl;
   PET2D::Strip::add_reconstruction_options(cl);
   cl.add<cmdline::path>("rho", 0, "start rho (eg. existing iteration)", false);
+  cl.add("rho-is-int", 0, "start rho uses integer representation (not float)");
   cl.parse_check(argc, argv);
   PET2D::Strip::calculate_scanner_options(cl, argc);
 
@@ -97,7 +98,6 @@ int main(int argc, char* argv[]) {
 
   if (cl.exist("rho")) {
     auto rho_name = cl.get<cmdline::path>("rho");
-    auto rho_base_name = rho_name.wo_ext();
     auto rho_ext = rho_name.ext();
     auto rho_txt = rho_ext == ".txt";
     if (rho_txt) {
@@ -105,7 +105,16 @@ int main(int argc, char* argv[]) {
       txt >> reconstruction.rho;
     } else {
       util::ibstream bin(rho_name);
-      bin >> reconstruction.rho;
+      if (cl.exist("rho-is-int")) {
+        PET2D::PixelMap<PET2D::Pixel<S>, Hit> int_rho(
+            reconstruction.rho.width, reconstruction.rho.height);
+        bin >> int_rho;
+        for (int i = 0; i < int_rho.size; ++i) {
+          reconstruction.rho[i] = int_rho[i];
+        }
+      } else {
+        bin >> reconstruction.rho;
+      }
     }
   }
 
