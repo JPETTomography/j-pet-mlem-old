@@ -179,12 +179,17 @@ int main(int argc, char* argv[]) {
     if (verbose) {
       std::cerr << "     response = " << fn << std::endl;
     }
+    if (cmdline::path(fn).ext() == ".txt") {
 #if USE_FAST_TEXT_PARSER
-    reconstruction.fast_load_txt_events(fn.c_str());
+      reconstruction.fast_load_txt_events(fn.c_str());
 #else
-    std::ifstream in_response(fn);
-    reconstruction << in_response;
+      std::ifstream in_response(fn);
+      reconstruction << in_response;
 #endif
+    } else {
+      util::ibstream in_response(fn);
+      reconstruction << in_response;
+    }
   }
 
   // print input events statistics

@@ -196,6 +196,18 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     return *this;
   }
 
+  Reconstruction& operator<<(util::ibstream& in) {
+    for (;;) {
+      Response response(in);
+      if (!in)
+        break;
+      auto event = translate_to_frame(response);
+      if (bb_intersects_grid_with_positive_weight(event))
+        events_.push_back(event);
+    }
+    return *this;
+  }
+
   int n_events() const { return events_.size(); }
   const std::vector<FrameEvent>& events() const { return events_; }
   FrameEvent frame_event(int i) const { return events_[i]; }

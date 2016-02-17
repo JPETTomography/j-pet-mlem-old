@@ -83,6 +83,9 @@ template <class Scanner2DClass> class Scanner {
           z_dn(util::read<F>(in)),
           dl(util::read<F>(in)) {}
 
+    Response(util::ibstream& in)
+        : lor(in), z_up(in.read<F>()), z_dn(in.read<F>()), dl(in.read<F>()) {}
+
     friend std::ostream& operator<<(std::ostream& out,
                                     const Response& response) {
       out << (int)response.lor.first << ' ' << (int)response.lor.second << " ";
