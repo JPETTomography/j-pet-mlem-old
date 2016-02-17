@@ -56,8 +56,7 @@ void run(Scanner<F, S>& scanner,
   cudaGetDeviceProperties(&prop, device);
   device_name(prop.name);
 
-  size_t image_size = scanner.total_n_pixels * sizeof(F);
-
+  const size_t image_size = scanner.total_n_pixels;
   const int width = scanner.n_z_pixels;
   const int height = scanner.n_y_pixels;
 
