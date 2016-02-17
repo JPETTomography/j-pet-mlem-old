@@ -174,6 +174,15 @@ void convert_tbednarski(cmdline::parser& cl) {
         continue;
       }
 
+      if (du < dd) {
+        std::swap(du, dd);
+        std::swap(tul, tdl);
+        std::swap(tur, tdr);
+      }
+
+      du -= 1;
+      dd -= 1;
+
       double zu = 0.5 * speed_of_light_m_per_ps_scint * (tul - tur);
       double zd = 0.5 * speed_of_light_m_per_ps_scint * (tdl - tdr);
       double dl = 0.5 * speed_of_light_m_per_ps * ((tul + tur) - (tdl + tdr));
