@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
             reconstruction.rho.width, reconstruction.rho.height);
         bin >> int_rho;
         for (int i = 0; i < int_rho.size; ++i) {
-          reconstruction.rho[i] = int_rho[i];
+          reconstruction.rho[i] = int_rho[i] + 1000;
         }
       } else {
         bin >> reconstruction.rho;
