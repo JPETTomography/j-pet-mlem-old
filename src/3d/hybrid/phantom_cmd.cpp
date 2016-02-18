@@ -165,6 +165,7 @@ int main(int argc, char* argv[]) {
 #define CRITICAL
 #endif
 
+  // this block is going to be executed per each detected event
   auto detected_block = [&](const Event& event,
                             const FullResponse& full_response) {
     if (no_responses)
@@ -204,6 +205,7 @@ int main(int argc, char* argv[]) {
   };
 
   util::progress progress(verbose, n_emissions, 1000000);
+  // image generating mode
   if (cl.exist("n-pixels")) {
     auto pixel_size = cl.get<double>("s-pixel");
     auto fov_radius = cl.get<double>("fov-radius");
@@ -243,6 +245,7 @@ int main(int argc, char* argv[]) {
     PET3D::VoxelMap<PET3D::Voxel<S>, Hit> tan_bins_map(
         n_planes, n_columns, std::max(tan_bins, 1));
 
+    // start actual simulation
     monte_carlo(
         rng,
         scintillator,
@@ -276,27 +279,30 @@ int main(int argc, char* argv[]) {
 
     // save images
     if (output_base_name.length()) {
-      auto fn = output_base_name + "_emitted";
-      util::obstream bin(fn);
-      util::nrrd_writer nrrd(fn + ".nrrd", fn);
-      bin << img_emitted;
-      nrrd << img_emitted;
-    }
-    if (output_base_name.length()) {
-      auto fn = output_base_name + "_detected";
-      util::obstream bin(fn);
-      util::nrrd_writer nrrd(fn + ".nrrd", fn);
-      bin << img_detected;
-      nrrd << img_detected;
-    }
-    if (output_base_name.length() && tan_bins > 0) {
-      util::obstream bin_tan_bins(output_base_name + "_tan_bins");
-      util::nrrd_writer nrrd_tan_bins(output_base_name + "_tan_bins.nrrd",
-                                      output_base_name + "_tan_bins");
-      bin_tan_bins << tan_bins_map;
-      nrrd_tan_bins << tan_bins_map;
+      {
+        auto fn = output_base_name + "_emitted";
+        util::obstream bin(fn);
+        util::nrrd_writer nrrd(fn + ".nrrd", fn);
+        bin << img_emitted;
+        nrrd << img_emitted;
+      }
+      {
+        auto fn = output_base_name + "_detected";
+        util::obstream bin(fn);
+        util::nrrd_writer nrrd(fn + ".nrrd", fn);
+        bin << img_detected;
+        nrrd << img_detected;
+      }
+      if (tan_bins > 0) {
+        util::obstream bin_tan_bins(output_base_name + "_tan_bins");
+        util::nrrd_writer nrrd_tan_bins(output_base_name + "_tan_bins.nrrd",
+                                        output_base_name + "_tan_bins");
+        bin_tan_bins << tan_bins_map;
+        nrrd_tan_bins << tan_bins_map;
+      }
     }
   } else {
+    // no image mode
     monte_carlo(rng,
                 scintillator,
                 n_emissions,
