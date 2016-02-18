@@ -2,6 +2,7 @@
 
 #include "cmdline.h"
 
+/// \cond PRIVATE
 namespace Common {
 
 void add_cuda_options(cmdline::parser& cl);
@@ -22,3 +23,4 @@ template <typename T> struct Convert<T, T> {
 };
 
 }  // Common
+/// \endcond
