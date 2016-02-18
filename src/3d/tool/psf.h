@@ -14,8 +14,10 @@
 #endif
 
 namespace PET3D {
+/// Generic tools
 namespace Tool {
 
+/// Generates PSF FWHM out of VoxelMap
 struct PSF {
   using Voxel = PET3D::Voxel<S>;
   using VoxelMap = PET3D::VoxelMap<Voxel, F>;

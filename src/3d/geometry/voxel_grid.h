@@ -70,6 +70,10 @@ template <typename FType, typename SType> class VoxelGrid {
   const int n_voxels;
 };
 
+/// 3D voxel grid description with specific z-size
+////
+/// 3D voxel grid description, without actual voxels storage, with specific
+/// voxel size along z-axis, in contract to regular VoxelGrid
 template <typename FType, typename SType>
 class VariableVoxelSizeVoxelGrid : public VoxelGrid<FType, SType> {
  public:
