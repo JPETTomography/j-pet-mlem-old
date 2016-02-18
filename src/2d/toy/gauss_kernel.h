@@ -1,7 +1,9 @@
 #ifndef GAUSS_KERNEL
 #define GAUSS_KERNEL
 
+/// Two-dimensional toy (experiment) space
 namespace PET2D {
+/// Simple PET working in two-dimensional space
 namespace Toy {
 
 template <typename FType> class GaussKernel {

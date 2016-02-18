@@ -3,7 +3,9 @@
 
 #include <cmath>
 
+/// One-dimensional toy (experiment) space
 namespace PET1D {
+/// Simple PET working in one-dimensional space
 namespace Toy {
 
 template <typename FType> class GaussKernel {
