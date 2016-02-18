@@ -175,7 +175,11 @@ int main(int argc, char* argv[]) {
 
 #if _OPENMP
   std::mutex event_mutex;
+#define CRITICAL std::lock_guard<std::mutex> event_lock(event_mutex);
+#else
+#define CRITICAL
 #endif
+
   auto detected_block = [&](const Event& event,
                             const FullResponse& full_response) {
     if (no_responses)
@@ -189,9 +193,7 @@ int main(int argc, char* argv[]) {
         ss_wo_error << scanner.response_wo_error(full_response) << "\n";
         ss_w_error << scanner.response_w_error(rng, full_response) << "\n";
         {
-#if _OPENMP
-          std::lock_guard<std::mutex> event_lock(event_mutex);
-#endif
+          CRITICAL
           out_exact_events << ss_exact_events.str();
           out_full_response << ss_full_response.str();
           out_wo_error << ss_wo_error.str();
@@ -201,16 +203,12 @@ int main(int argc, char* argv[]) {
         std::ostringstream ss_w_error;
         ss_w_error << scanner.response_w_error(rng, full_response) << "\n";
         {
-#if _OPENMP
-          std::lock_guard<std::mutex> event_lock(event_mutex);
-#endif
+          CRITICAL
           out_w_error << ss_w_error.str();
         }
       }
     } else {
-#if _OPENMP
-      std::lock_guard<std::mutex> event_lock(event_mutex);
-#endif
+      CRITICAL
       if (full) {
         bin_exact_events << event;
         bin_full_response << full_response;

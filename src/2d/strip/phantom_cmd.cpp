@@ -171,10 +171,6 @@ int main(int argc, char* argv[]) {
     no_responses = true;
   }
 
-#if _OPENMP
-  std::mutex event_mutex;
-#endif
-
   auto only_detected = cl.exist("detected");
   auto n_z_pixels = cl.get<int>("n-z-pixels");
   auto n_y_pixels = cl.get<int>("n-y-pixels");
@@ -220,6 +216,13 @@ int main(int argc, char* argv[]) {
     kernel_point.y = kernel_point_cl[1];
   }
 
+#if _OPENMP
+  std::mutex event_mutex;
+#define CRITICAL std::lock_guard<std::mutex> event_lock(event_mutex);
+#else
+#define CRITICAL
+#endif
+
   util::progress progress(verbose, n_emissions, 10000);
   monte_carlo(
       rng,
@@ -244,9 +247,7 @@ int main(int argc, char* argv[]) {
               ss_w_error << scanner.response_w_error(rng, full_response)
                          << "\n";
               {
-#if _OPENMP
-                std::lock_guard<std::mutex> event_lock(event_mutex);
-#endif
+                CRITICAL
                 out_exact_events << ss_exact_events.str();
                 out_full_response << ss_full_response.str();
                 out_wo_error << ss_wo_error.str();
@@ -256,16 +257,12 @@ int main(int argc, char* argv[]) {
               std::ostringstream ss_w_error;
               ss_w_error << event << "\n";
               {
-#if _OPENMP
-                std::lock_guard<std::mutex> event_lock(event_mutex);
-#endif
+                CRITICAL
                 out_w_error << ss_w_error.str();
               }
             }
           } else {
-#if _OPENMP
-            std::lock_guard<std::mutex> event_lock(event_mutex);
-#endif
+            CRITICAL
             if (full) {
               bin_exact_events << event;
               bin_full_response << full_response;

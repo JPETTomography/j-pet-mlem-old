@@ -125,8 +125,10 @@ int main(int argc, char* argv[]) {
   bool only_detected = cl.exist("detected");
 
 #if _OPENMP
-  std::mutex img_mutex;
   std::mutex event_mutex;
+#define CRITICAL std::lock_guard<std::mutex> event_lock(event_mutex);
+#else
+#define CRITICAL
 #endif
 
   util::progress progress(verbose, n_emissions, 10000);
@@ -143,7 +145,6 @@ int main(int argc, char* argv[]) {
       [&](const Event& event, const FullResponse& full_response) {
         auto response_w_error = scanner.response_w_error(rng, full_response);
         if (!no_responses) {
-#if _OPENMP
           std::ostringstream ss_wo_error, ss_w_error, ss_exact_events,
               ss_full_response;
           ss_exact_events << event << "\n";
@@ -151,18 +152,12 @@ int main(int argc, char* argv[]) {
           ss_wo_error << scanner.response_wo_error(full_response) << "\n";
           ss_w_error << scanner.response_w_error(rng, full_response) << "\n";
           {
-            std::lock_guard<std::mutex> event_lock(event_mutex);
+            CRITICAL
             out_exact_events << ss_exact_events.str();
             out_full_response << ss_full_response.str();
             out_wo_error << ss_wo_error.str();
             out_w_error << ss_w_error.str();
           }
-#else
-          out_exact_events << event << "\n";
-          out_full_response << full_response << "\n";
-          out_wo_error << scanner.response_wo_error(full_response) << "\n";
-          out_w_error << response_w_error << "\n";
-#endif
         }
         {
           auto pixel = pixel_grid.pixel_at(event.origin);
