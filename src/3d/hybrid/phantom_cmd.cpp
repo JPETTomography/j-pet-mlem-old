@@ -54,18 +54,6 @@ using FullResponse = MonteCarlo::FullResponse;
 using Image = PET3D::VoxelMap<Voxel, Hit>;
 using Grid = PET3D::VoxelGrid<F, S>;
 
-// FIXME: I don't know what is the purpose of this, but these are unused, so
-// either should be removed or applied to the code.
-#if HARDCODED_VALUES
-namespace {
-F strip_width = F(0.005);
-F strip_height = F(0.019);
-F strip_distance = F(0.410);
-F inner_radius = (strip_distance - strip_height) / 2;
-F strip_length = F(0.300);
-}
-#endif
-
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
