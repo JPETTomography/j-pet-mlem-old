@@ -37,16 +37,6 @@ template <class PhantomType, class DetectorType> class PhantomMonteCarlo {
                  DetectCallback detected,
                  Progress progress,
                  bool only_detected = false) {
-#if _OPENMP
-    // OpenMP uses passed random generator as seed source for
-    // thread local random generators
-    RNG* mp_rngs = new (alloca(sizeof(RNG) * omp_get_max_threads()))
-        RNG[omp_get_max_threads()];
-    for (auto t = 0; t < omp_get_max_threads(); ++t) {
-      mp_rngs[t].seed(rng());
-    }
-#endif
-
     size_t n_events_detected = 0;
     // (1) we run until we detected n_emissions_or_detections
     if (only_detected) {
@@ -55,9 +45,11 @@ template <class PhantomType, class DetectorType> class PhantomMonteCarlo {
 #endif
       {
 #if _OPENMP
-        auto& l_rng = mp_rngs[omp_get_thread_num()];
+        RNG l_rng;
+#pragma omp critical
+        l_rng.seed(rng());
 #else
-        auto& l_rng = rng;
+#define l_rng rng
 #endif
         while (n_events_detected < n_emissions_or_detections) {
           progress(n_events_detected, false);
@@ -85,9 +77,11 @@ template <class PhantomType, class DetectorType> class PhantomMonteCarlo {
            n_events_emitted < n_emissions_or_detections;
            ++n_events_emitted) {
 #if _OPENMP
-        auto& l_rng = mp_rngs[omp_get_thread_num()];
+        RNG l_rng;
+#pragma omp critical
+        l_rng.seed(rng());
 #else
-        auto& l_rng = rng;
+#define l_rng rng
 #endif
         progress(n_events_emitted, false);
         auto event = phantom_.gen_event(l_rng);
