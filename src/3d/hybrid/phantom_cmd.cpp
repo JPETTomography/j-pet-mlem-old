@@ -116,29 +116,26 @@ int main(int argc, char* argv[]) {
 
   Phantom::RegionPtrList regions;
 
+  // read phantoms
   for (const auto& fn : cl.rest()) {
     std::ifstream in(fn);
     if (!in.is_open()) {
-      throw("could not open file: " + cl.get<std::string>("phantoms"));
+      throw("could not open file: " + fn);
     }
     json j;
     j << in;
 
     if (!j.is_object()) {
-      throw("no JSON object in file:" + cl.get<std::string>("phantoms"));
+      throw("no JSON object in file:" + fn);
     }
 
     const json& j_phantoms = j["phantoms"];
     if (!j_phantoms.is_array()) {
-      throw("phantoms array missing in JSON file: " +
-            cl.get<std::string>("phantoms"));
+      throw("phantoms array missing in JSON file: " + fn);
     }
 
     for (const auto& j_phantom : j_phantoms) {
       auto region = PET3D::create_phantom_region_from_json<RNG, F>(j_phantom);
-#if DEBUG
-      std::cerr << "Adding region\n";
-#endif
       regions.push_back(region);
     }
   }
