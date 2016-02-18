@@ -1,5 +1,4 @@
-#ifndef GAUSS_KERNEL
-#define GAUSS_KERNEL
+#pragma once
 
 /// Two-dimensional toy (experiment) space
 namespace PET2D {
@@ -35,5 +34,3 @@ template <typename FType> class GaussKernel {
 };
 }
 }
-
-#endif  // GAUSS_KERNEL

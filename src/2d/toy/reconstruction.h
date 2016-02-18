@@ -1,7 +1,7 @@
-#ifndef RECONSTRUCTION
-#define RECONSTRUCTION
+#pragma once
 
 #include <vector>
+
 namespace PET2D {
 namespace Toy {
 
@@ -34,4 +34,3 @@ template <typename K, typename R> class Reconstruction {
 };
 }
 }
-#endif  // RECONSTRUCTION

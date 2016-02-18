@@ -1,5 +1,4 @@
-#ifndef GAUSS_SCANNER
-#define GAUSS_SCANNER
+#pragma once
 
 #include <random>
 
@@ -67,5 +66,3 @@ template <typename FType> class GaussScanner {
 };
 }
 }
-
-#endif  // GAUSS_SCANNER

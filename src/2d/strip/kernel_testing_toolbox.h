@@ -1,5 +1,4 @@
-#ifndef KERNEL_TESTING_TOOLBOX
-#define KERNEL_TESTING_TOOLBOX
+#pragma once
 
 #include <cmath>
 
@@ -114,5 +113,3 @@ F theta_integral(const Vector3D<F> diag,
 }
 }
 }
-
-#endif  // KERNEL_TESTING_TOOLBOX

@@ -1,5 +1,4 @@
-#ifndef GAUSS_KERNEL
-#define GAUSS_KERNEL
+#pragma once
 
 #include <cmath>
 
@@ -30,4 +29,3 @@ template <typename FType> class GaussKernel {
 };
 }
 }
-#endif  // GAUSS_KERNEL
