@@ -84,6 +84,15 @@ template <typename PixelType, typename ValueType> class PixelMap {
   Value& operator[](Size index) { return data[index]; }
   const Value& operator[](Size index) const { return data[index]; }
 
+  /// Increments atomically value
+  void increment(const Pixel& pixel) {
+#if _OPENMP
+    __atomic_add_fetch(&data[pixel.index(width)], 1, __ATOMIC_SEQ_CST);
+#else
+    data[pixel.index(width)]++;
+#endif
+  }
+
   void assign(const Value& value) {
     for (auto& element : *this) {
       element = value;

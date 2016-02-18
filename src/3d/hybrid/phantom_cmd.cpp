@@ -267,23 +267,13 @@ int main(int argc, char* argv[]) {
         [&](const Event& event) {
           auto voxel = grid.voxel_at(event.origin);
           if (grid.contains(voxel)) {
-#if _OPENMP
-            __atomic_add_fetch(
-                img_emitted.data + grid.index(voxel), 1, __ATOMIC_SEQ_CST);
-#else
-            ++img_emitted[voxel];
-#endif
+            img_emitted.increment(voxel);
           }
         },
         [&](const Event& event, const FullResponse& full_response) {
           auto voxel = grid.voxel_at(event.origin);
           if (grid.contains(voxel)) {
-#if _OPENMP
-            __atomic_add_fetch(
-                img_detected.data + grid.index(voxel), 1, __ATOMIC_SEQ_CST);
-#else
-            ++img_detected[voxel];
-#endif
+            img_detected.increment(voxel);
           }
           detected_block(event, full_response);
           if (tan_bins > 1) {
@@ -294,14 +284,7 @@ int main(int argc, char* argv[]) {
             strip_response.calculate_tan_y_z(first_radius, tan, y, z);
             auto tan_voxel = tan_bins_grid.voxel_at(PET3D::Point<F>(z, y, tan));
             if (tan_bins_grid.contains(tan_voxel)) {
-#if _OPENMP
-              __atomic_add_fetch(
-                  tan_bins_map.data + tan_bins_grid.index(tan_voxel),
-                  1,
-                  __ATOMIC_SEQ_CST);
-#else
-              tan_bins_map[tan_voxel]++;
-#endif
+              tan_bins_map.increment(tan_voxel);
             }
           }
         },

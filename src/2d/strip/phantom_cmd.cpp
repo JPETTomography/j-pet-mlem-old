@@ -228,13 +228,7 @@ int main(int argc, char* argv[]) {
       [&](const Event& event) {  // emitted
         auto pixel = pixel_grid.pixel_at(event.origin);
         if (pixel_grid.contains(pixel)) {
-#if _OPENMP
-          __atomic_add_fetch(image_emitted.data + pixel_grid.index(pixel),
-                             1,
-                             __ATOMIC_SEQ_CST);
-#else
-          image_emitted[pixel]++;
-#endif
+          image_emitted.increment(pixel);
         }
       },
       [&](const Event& event, const FullResponse& full_response) {  // detected
@@ -283,14 +277,7 @@ int main(int argc, char* argv[]) {
         {
           auto pixel = pixel_grid.pixel_at(event.origin);
           if (pixel_grid.contains(pixel)) {
-#if _OPENMP
-            __atomic_add_fetch(
-                image_detected_exact.data + pixel_grid.index(pixel),
-                1,
-                __ATOMIC_SEQ_CST);
-#else
-            image_detected_exact[pixel]++;
-#endif
+            image_detected_exact.increment(pixel);
           }
         }
         {
@@ -299,27 +286,13 @@ int main(int argc, char* argv[]) {
           auto pixel = pixel_grid.pixel_at(
               PET2D::Point<F>(event_w_error.z, event_w_error.y));
           if (pixel_grid.contains(pixel)) {
-#if _OPENMP
-            __atomic_add_fetch(
-                image_detected_w_error.data + pixel_grid.index(pixel),
-                1,
-                __ATOMIC_SEQ_CST);
-#else
-            image_detected_w_error[pixel]++;
-#endif
+            image_detected_w_error.increment(pixel);
           }
           if (tan_bins > 0) {
             auto tan_voxel = tan_bins_grid.voxel_at(PET3D::Point<F>(
                 event_w_error.z, event_w_error.y, event_w_error.tan));
             if (tan_bins_grid.contains(tan_voxel)) {
-#if _OPENMP
-              __atomic_add_fetch(
-                  tan_bins_map.data + tan_bins_grid.index(tan_voxel),
-                  1,
-                  __ATOMIC_SEQ_CST);
-#else
-              tan_bins_map[tan_voxel]++;
-#endif
+              tan_bins_map.increment(tan_voxel);
             }
           }
         }

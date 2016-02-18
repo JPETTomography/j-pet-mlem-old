@@ -91,6 +91,15 @@ template <typename VoxelType, typename ValueType> class VoxelMap {
   Value& operator[](Size index) { return data[index]; }
   const Value& operator[](Size index) const { return data[index]; }
 
+  /// Increments atomically value
+  void increment(const Voxel& voxel) {
+#if _OPENMP
+    __atomic_add_fetch(&data[voxel.index(width, height)], 1, __ATOMIC_SEQ_CST);
+#else
+    data[voxel.index(width, height)]++;
+#endif
+  }
+
   void assign(const Value& value) {
     for (auto& element : *this) {
       element = value;
