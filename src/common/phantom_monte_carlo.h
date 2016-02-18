@@ -50,9 +50,8 @@ template <class PhantomType, class DetectorType> class PhantomMonteCarlo {
     size_t n_events_detected = 0;
     // (1) we run until we detected n_emissions_or_detections
     if (only_detected) {
-      size_t n_events_emitted = 0;
 #if _OPENMP
-#pragma omp parallel shared(n_events_emitted, n_events_detected)
+#pragma omp parallel shared(n_events_detected)
 #endif
       {
 #if _OPENMP
@@ -72,14 +71,10 @@ template <class PhantomType, class DetectorType> class PhantomMonteCarlo {
 #endif
             ++n_events_detected;
           }
-#if _OPENMP
-#pragma omp atomic
-#endif
-          ++n_events_emitted;
           progress(n_events_detected, true);
         }
       }
-      n_events_emitted_ += n_events_emitted;
+      n_events_emitted_ += n_emissions_or_detections;
     }
     // (2) we run until we emit n_emissions_or_detections
     else {
