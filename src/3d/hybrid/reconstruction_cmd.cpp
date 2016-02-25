@@ -227,12 +227,17 @@ int main(int argc, char* argv[]) {
   // graph Mathamatica drawing for reconstruction & naive reconstruction
   if (output_base_name.length()) {
     // reconstruction.graph_frame_event(graphics, 0);
-    util::obstream out_naive(output_name);
+    auto image = reconstruction.naive();
     util::nrrd_writer nrrd_naive(
         output_base_name + ".nrrd", output_name, output_txt);
-    auto image = reconstruction.naive();
-    out_naive << image;
     nrrd_naive << image;
+    if (output_txt) {
+      std::ofstream out_naive(output_name);
+      out_naive << image;
+    } else {
+      util::obstream out_naive(output_name);
+      out_naive << image;
+    }
   }
 
   util::progress progress(verbose, n_iterations, 1, start_iteration);
