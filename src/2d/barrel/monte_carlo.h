@@ -146,8 +146,10 @@ template <class ScannerClass, class MatrixClass> class MonteCarlo {
         }  // if (hits>=2)
       }    // loop over emmisions from pixel
       matrix.compact_pixel_index(i_pixel);
+      progress(i_pixel, true);
       CATCH;
     }
+    progress(matrix.total_n_pixels_in_triangle - 1, true);
   }
 
  private:

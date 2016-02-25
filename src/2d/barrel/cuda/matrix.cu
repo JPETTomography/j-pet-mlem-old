@@ -153,6 +153,7 @@ void run<Scanner>(
 
     progress(pixel.index(), true);
   }
+  progress(end_pixel.index() - 1, true);
 }
 
 }  // Matrix
