@@ -68,10 +68,21 @@ int main(int argc, char* argv[]) {
 
   util::ibstream in_geometry(cl.get<std::string>("geometry"));
   Geometry geometry(in_geometry);
+  // FIXME: this is very very stupid way to set argument manually, so cmdline
+  // thinks it was provided via command line, but in fact we load it from
+  // geometry file
   if (!cl.exist("n-pixels")) {
-    cl.get<int>("n-pixels") =
-        std::max(geometry.grid.n_columns, geometry.grid.n_rows);
+    std::stringstream ss;
+    ss << "--n-pixels="
+       << std::max(geometry.grid.n_columns, geometry.grid.n_rows);
+    cl.parse(ss, false);
   }
+  if (!cl.exist("s-pixel")) {
+    std::stringstream ss;
+    ss << "--s-pixel=" << geometry.grid.pixel_size;
+    cl.parse(ss, false);
+  }
+
   PET3D::Hybrid::calculate_resonstruction_options(cl, argc);
 
   auto verbose = cl.count("verbose");
