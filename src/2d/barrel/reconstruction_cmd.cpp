@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
   for (const auto& fn : cl.rest()) {
     std::ifstream in_means(fn);
     if (!in_means.is_open())
-      throw("cannot open input file: " + cl.get<cmdline::path>("mean"));
+      throw("cannot open input file: " + fn);
     reconstruction << in_means;
   }
 
