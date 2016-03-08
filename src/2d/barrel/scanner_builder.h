@@ -25,8 +25,11 @@ template <class ScannerClass> class ScannerBuilder {
                                    F d_detector = 0,
                                    F fov_radius = 0) {
 
-    if (n_detectors > static_cast<S>(Scanner::MaxDetectors))
-      throw("buld single ring: too many detectors");
+    if (n_detectors > static_cast<S>(Scanner::MaxDetectors)) {
+      std::stringstream ss;
+      ss << "buld single ring: too many detectors: " << n_detectors;
+      throw(ss.str());
+    }
     if (radius <= 0)
       throw("invalid radius");
     if (w_detector > 0 && h_detector == 0)
