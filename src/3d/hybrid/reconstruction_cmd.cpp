@@ -137,7 +137,8 @@ int main(int argc, char* argv[]) {
     geometry_soa.load_weights_from_matrix_file<Hit>(fn, plane);
   }
 
-  Reconstruction reconstruction(scanner, grid, geometry_soa);
+  Reconstruction reconstruction(
+      scanner, grid, geometry_soa, cl.exist("sensitivity"));
 
   auto start_iteration = 0;
   if (cl.exist("rho")) {
@@ -179,10 +180,22 @@ int main(int argc, char* argv[]) {
   if (!cl.exist("system")) {
     reconstruction.calculate_weight();
   }
-  if (cl.exist("sens-to-one"))
+
+  if (cl.exist("sensitivity")) {
+    auto sensitivity_name = cl.get<cmdline::path>("sensitivity");
+    auto sensitivity_txt = sensitivity_name.ext() == ".txt";
+    if (sensitivity_txt) {
+      std::ifstream txt(sensitivity_name);
+      txt >> reconstruction.sensitivity;
+    } else {
+      util::ibstream bin(sensitivity_name);
+      bin >> reconstruction.sensitivity;
+    }
+  } else if (cl.exist("sens-to-one")) {
     reconstruction.set_sensitivity_to_one();
-  else
+  } else {
     reconstruction.calculate_sensitivity();
+  }
 
   reconstruction.normalize_geometry_weights();
 
