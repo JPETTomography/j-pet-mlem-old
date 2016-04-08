@@ -14,6 +14,8 @@
 #else            // pixel granularity (faster)
 #if USE_TEXTURE  // use texture and 3D arrays for rho and 2D sensitivity lookup
 #include "reconstruction/warp_granularity.cuh"
+#define USE_3D_SENSITIVITY 1
+#include "reconstruction/warp_granularity.cuh"
 #define USE_MULTI_PLANE_WEIGHTS 1
 #include "reconstruction/warp_granularity.cuh"
 #else  // use linear memory
@@ -92,15 +94,14 @@ void run(const Geometry& geometry,
                                               (size_t)sensitivity.height,
                                               sensitivity.data);
   (void)device_sensitivity;  // device sensitivity is used via tex_sensitivity
-#if USE_MULTI_PLANE_WEIGHTS
-  util::cuda::texture3D<F> device_multiplane_sensitivity(
-      Multiplane::tex_multiplane_sensitivity,
-      (size_t)sensitivity.width,
-      (size_t)sensitivity.height,
-      (size_t)sensitivity.depth,
-      sensitivity.data);
-  (void)device_multiplane_sensitivity;  // device multi-plane sensitivity is
-                                        // used via tex_sensitivity
+#if USE_3D_SENSITIVITY || USE_MULTI_PLANE_WEIGHTS
+  util::cuda::texture3D<F> device_3d_sensitivity(tex_3d_sensitivity,
+                                                 (size_t)sensitivity.width,
+                                                 (size_t)sensitivity.height,
+                                                 (size_t)sensitivity.depth,
+                                                 sensitivity.data);
+  (void)device_3d_sensitivity;  // device 3D sensitivity is
+                                // used via tex_3d_sensitivity
 #endif
 #else
   util::cuda::on_device<F> device_sensitivity((size_t)grid.pixel_grid.n_pixels);
@@ -126,14 +127,25 @@ void run(const Geometry& geometry,
                                    device_events,
                                    n_events,
                                    output_rho,
-#if !USE_TEXTURE
-                                   rho,
-                                   device_sensitivity,
-#endif
                                    sigma_z,
                                    sigma_dl,
                                    grid,
                                    barrel_length);
+      else
+#endif
+#if USE_3D_SENSITIVITY
+          if (sensitivity.depth > 1)
+        Sensitivity3D::reconstruction(device_lor_line_segments,
+                                      device_pixels,
+                                      device_pixel_weights,
+                                      sensitivity.depth,
+                                      device_events,
+                                      n_events,
+                                      output_rho,
+                                      sigma_z,
+                                      sigma_dl,
+                                      grid,
+                                      barrel_length);
       else
 #endif
         reconstruction(device_lor_line_segments,

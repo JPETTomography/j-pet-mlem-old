@@ -12,15 +12,17 @@ namespace PET3D {
 namespace Hybrid {
 namespace GPU {
 namespace Reconstruction {
-#if USE_MULTI_PLANE_WEIGHTS
-namespace Multiplane {
-#endif
 
-#if !USE_MULTI_PLANE_WEIGHTS
+#if !USE_MULTI_PLANE_WEIGHTS && !USE_3D_SENSITIVITY
 texture<F, 3, cudaReadModeElementType> tex_rho;
 texture<F, 2, cudaReadModeElementType> tex_sensitivity;
-#else
-texture<F, 3, cudaReadModeElementType> tex_multiplane_sensitivity;
+texture<F, 3, cudaReadModeElementType> tex_3d_sensitivity;
+#endif
+
+#if USE_MULTI_PLANE_WEIGHTS
+namespace Multiplane {
+#elif USE_3D_SENSITIVITY
+namespace Sensitivity3D {
 #endif
 
 __global__ static void reconstruction(const LineSegment* lor_line_segments,
@@ -29,6 +31,8 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
 #if USE_MULTI_PLANE_WEIGHTS
                                       const int n_pixel_infos,
                                       const int n_planes_half,
+#elif USE_3D_SENSITIVITY
+                                      const int sensitivity_depth,
 #endif
                                       const Event* events,
                                       const int n_events,
@@ -82,6 +86,8 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         const auto abs_plane = compat::abs(iz - n_planes_half);
         const auto pixel_weight =
             pixel_weights[abs_plane * n_pixel_infos + info_index];
+#elif USE_3D_SENSITIVITY
+        const auto abs_plane = compat::abs(iz - sensitivity_depth);
 #endif
         // kernel calculation:
         Voxel voxel(pixel.x, pixel.y, iz);
@@ -99,12 +105,11 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                       rho;
         // end of kernel calculation
-        denominator +=
-            weight *
-#if USE_MULTI_PLANE_WEIGHTS
-            tex3D(tex_multiplane_sensitivity, voxel.x, voxel.y, abs_plane)
+        denominator += weight *
+#if USE_MULTI_PLANE_WEIGHTS || USE_3D_SENSITIVITY
+                       tex3D(tex_3d_sensitivity, voxel.x, voxel.y, abs_plane)
 #else
-            tex2D(tex_sensitivity, voxel.x, voxel.y)
+                       tex2D(tex_sensitivity, voxel.x, voxel.y)
 #endif
             ;
       }
@@ -163,8 +168,8 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
   }    // event loop
 }
 
-#if USE_MULTI_PLANE_WEIGHTS
-}  // Multiplane
+#if USE_MULTI_PLANE_WEIGHTS || USE_3D_SENSITIVITY
+}  // Multiplane || Sensitivity3D
 #endif
 }  // Reconstruction
 }  // GPU
