@@ -58,9 +58,9 @@ TEST("2d/barrel/scanner/math") {
       CHECK(inters.size() == 2);
 
       CHECK(std::min(p1.x, p2.x) ==
-            Approx(std::min(inters[0].x, inters[1].x)).epsilon(1e-5));
+            Approx(std::min(inters[0].x, inters[1].x)).epsilon(1e-4));
       CHECK(std::max(p1.x, p2.x) ==
-            Approx(std::max(inters[0].x, inters[1].x)).epsilon(1e-5));
+            Approx(std::max(inters[0].x, inters[1].x)).epsilon(1e-4));
     }
 
     // this is not yet a complete tests....
