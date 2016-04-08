@@ -78,12 +78,12 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
             grid.pixel_grid.n_rows,
             grid.n_planes,
             1),
+        sensitivity(grid.pixel_grid.n_columns,
+                    grid.pixel_grid.n_rows,
+                    geometry.n_planes_half),
         kernel_(scanner.sigma_z(), scanner.sigma_dl()),
         n_threads_(omp_get_max_threads()),
-        n_events_per_thread_(n_threads_, 0),
-        sensitivity_(grid.pixel_grid.n_columns,
-                     grid.pixel_grid.n_rows,
-                     geometry.n_planes_half) {}
+        n_events_per_thread_(n_threads_, 0) {}
 
   F sigma_w(F width) const { return F(0.3) * width; }
 
@@ -214,7 +214,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
   void calculate_weight() {
     const auto& pixel_grid = grid.pixel_grid;
-    sensitivity_.assign(0);
+    sensitivity.assign(0);
     for (size_t lor_index = 0; lor_index < geometry.n_lors; ++lor_index) {
       const auto& segment = geometry.lor_line_segments[lor_index];
       const auto width = geometry.lor_widths[lor_index];
@@ -235,14 +235,14 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   }
 
   void calculate_sensitivity() {
-    sensitivity_.assign(0);
+    sensitivity.assign(0);
     for (int pixel_info = 0; pixel_info < geometry.n_pixel_infos;
          ++pixel_info) {
       const auto pixel = geometry.pixels[pixel_info];
       for (int plane = 0; plane < geometry.n_planes_half; ++plane) {
         Voxel voxel(pixel.x, pixel.y, plane);
         const auto voxel_index = pixel_info + geometry.n_pixel_infos * plane;
-        sensitivity_[voxel] += geometry.pixel_weights[voxel_index];
+        sensitivity[voxel] += geometry.pixel_weights[voxel_index];
       }
     }
   }
@@ -257,12 +257,12 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       for (int plane = 0; plane < geometry.n_planes_half; ++plane) {
         Voxel voxel(pixel.x, pixel.y, plane);
         const auto voxel_index = pixel_info + geometry.n_pixel_infos * plane;
-        geometry.pixel_weights[voxel_index] /= sensitivity_[voxel];
+        geometry.pixel_weights[voxel_index] /= sensitivity[voxel];
       }
     }
   }
 
-  void set_sensitivity_to_one() { sensitivity_.assign(1); }
+  void set_sensitivity_to_one() { sensitivity.assign(1); }
 
   int operator()() {
     bool multiplane = geometry.n_planes_half > 1;
@@ -335,12 +335,12 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
                                        info_index];
             const auto weight = kernel2d * kernel_t * rho[voxel_index];
             denominator +=
-                weight * sensitivity_[Voxel(pixel.x, pixel.y, abs_plane)];
+                weight * sensitivity[Voxel(pixel.x, pixel.y, abs_plane)];
             thread_kernel_caches_[thread][voxel_index] = weight;
           } else {
             const auto kernel_t = pixel_weight;
             const auto weight = kernel2d * kernel_t * rho[voxel_index];
-            denominator += weight * sensitivity_[pixel_index];
+            denominator += weight * sensitivity[pixel_index];
             thread_kernel_caches_[thread][voxel_index] = weight;
           }
         }
@@ -428,8 +428,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     return image;
   }
 
-  const Output& sensitivity() const { return sensitivity_; }
-
   void graph_frame_event(Common::MathematicaGraphics<F>& graphics,
                          int event_index) {
     auto event = events_[event_index];
@@ -497,6 +495,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   const Grid grid;
   const Geometry& geometry;
   Output rho;
+  Output sensitivity;
 
  private:
   std::vector<FrameEvent> events_;
@@ -507,7 +506,6 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   std::vector<Output> thread_kernel_caches_;
   std::vector<VoxelKernelInfo> voxel_cache_;
   std::vector<int> n_events_per_thread_;
-  Output sensitivity_;
 #endif  // !__CUDACC__
 };
 

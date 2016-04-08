@@ -257,7 +257,7 @@ int main(int argc, char* argv[]) {
   if (cl.exist("gpu")) {
     PET3D::Hybrid::GPU::Reconstruction::run(
         geometry_soa,
-        reconstruction.sensitivity(),
+        reconstruction.sensitivity,
         reconstruction.events().data(),
         reconstruction.n_events(),
         reconstruction.scanner.sigma_z(),
