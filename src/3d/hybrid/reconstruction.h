@@ -70,7 +70,8 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 #if !__CUDACC__
   Reconstruction(const Scanner& scanner,
                  const Grid& grid,
-                 const Geometry& geometry)
+                 const Geometry& geometry,
+                 bool use_3d_sensitivity = true)
       : scanner(scanner),
         grid(grid),
         geometry(geometry),
@@ -80,7 +81,9 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
             1),
         sensitivity(grid.pixel_grid.n_columns,
                     grid.pixel_grid.n_rows,
-                    geometry.n_planes_half),
+                    geometry.n_planes_half > 1
+                        ? geometry.n_planes_half
+                        : use_3d_sensitivity ? (grid.n_planes / 2) : 1),
         kernel_(scanner.sigma_z(), scanner.sigma_dl()),
         n_threads_(omp_get_max_threads()),
         n_events_per_thread_(n_threads_, 0) {}
@@ -266,6 +269,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
   int operator()() {
     bool multiplane = geometry.n_planes_half > 1;
+    bool use_3d_sensitivity = sensitivity.depth > 1;
 
     if (thread_rhos_.size() == 0) {
       for (int i = 0; i < n_threads_; ++i) {
@@ -334,8 +338,15 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
                 geometry.pixel_weights[abs_plane * geometry.n_pixel_infos +
                                        info_index];
             const auto weight = kernel2d * kernel_t * rho[voxel_index];
-            denominator +=
-                weight * sensitivity[Voxel(pixel.x, pixel.y, abs_plane)];
+            const auto abs_voxel = Voxel(pixel.x, pixel.y, abs_plane);
+            denominator += weight * sensitivity[abs_voxel];
+            thread_kernel_caches_[thread][voxel_index] = weight;
+          } else if (use_3d_sensitivity) {
+            const auto abs_plane = compat::abs(iz - (int)sensitivity.depth);
+            const auto kernel_t = pixel_weight;
+            const auto weight = kernel2d * kernel_t * rho[voxel_index];
+            const auto abs_voxel = Voxel(pixel.x, pixel.y, abs_plane);
+            denominator += weight * sensitivity[abs_voxel];
             thread_kernel_caches_[thread][voxel_index] = weight;
           } else {
             const auto kernel_t = pixel_weight;
