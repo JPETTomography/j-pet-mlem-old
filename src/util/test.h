@@ -15,6 +15,10 @@ inline Approx operator"" _e7(long double value) {
 inline std::string operator"" _temp(const char* base_name, unsigned long len) {
   const char* tmpdir =
       std::getenv("TMPDIR") ?: std::getenv("TEMP") ?: std::getenv("TEMP");
+#if __linux
+  if (tmpdir == nullptr)
+    tmpdir = "/tmp";
+#endif
   REQUIRE(tmpdir != nullptr);
   return std::string(tmpdir) + "/" + std::string(base_name, len);
 }
