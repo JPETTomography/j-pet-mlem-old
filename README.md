@@ -16,8 +16,8 @@ Prerequisites
 ### UNIX build requirements
 
 * UNIX compatible build environment such as *Linux* or *Mac OS X*
-* *C++11* compatible compiler i.e. *GCC* 4.6, *Clang* 3.2 or *ICC* 13
-* [CMake][cmake] 2.8 for build script generation
+* *C++11* compatible compiler i.e. *GCC* 4.8.1, *Clang* 3.3 or *ICC* 15
+* [CMake][cmake] 2.8.10 for build script generation
 * *GNU Make* 3.8 for building using `Makefile`
 
 [cmake]: http://www.cmake.org

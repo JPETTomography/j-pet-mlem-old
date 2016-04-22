@@ -5,7 +5,7 @@
 # Description:
 #   Builds all PET project commands using CMake build generator.
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.10)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -52,6 +52,18 @@ if(NOT CMAKE_BUILD_TYPE)
     "Choose the type Debug or Release" FORCE)
 endif()
 
+# check supported compiler versions
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU"   AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8.1) OR
+   (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.3) OR
+   (CMAKE_CXX_COMPILER_ID STREQUAL "Intel" AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 15.0) OR
+   (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC"  AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.0))
+   # we got supported compiler
+else()
+  message(FATAL_ERROR
+    "Selected compiler ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} is not supported.\n"
+    "GNU/GCC >= 4.8.1, Clang >= 3.3, Intel/ICC >= 15.0 or MSVC >= 2015 is required for this project.")
+endif()
+
 # enable C++11 and warnings
 if(NOT MSVC)
   add_definitions(-std=c++11 -Wall -Wunused-parameter)
@@ -92,8 +104,8 @@ if(CMAKE_VERSION VERSION_GREATER 3.3)
   set(CUDA_USE_STATIC_CUDA_RUNTIME OFF CACHE BOOL "use the static CUDA runtime")
 endif()
 find_package(CUDA)
-if(CUDA_FOUND AND CUDA_VERSION VERSION_LESS "7.0")
-  message(STATUS "Error: CUDA 7.0 or greater required for this project")
+if(CUDA_FOUND AND CUDA_VERSION VERSION_LESS 7.5)
+  message(STATUS "Error: CUDA 7.5 or greater required for this project")
   unset(CUDA_FOUND)
 endif()
 if(CUDA_FOUND)
