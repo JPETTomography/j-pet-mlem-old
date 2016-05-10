@@ -58,6 +58,18 @@ using MathematicaGraphics = Common::MathematicaGraphics<F>;
 using Kernel = PET2D::Strip::GaussianKernel<F>;
 using Reconstruction = PET3D::Hybrid::Reconstruction<Scanner, Kernel>;
 using Output = Reconstruction::Output;
+using Pixel = PET2D::Pixel<S>;
+using LOR = PET2D::Barrel::LOR<S>;
+using Matrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
+
+static void run_with_geometry(cmdline::parser& cl,
+                              int argc,
+                              Geometry& geometry);
+static void run_with_matrix(cmdline::parser& cl, int argc, Matrix& matrix);
+static void run_reconstruction(cmdline::parser& cl,
+                               Reconstruction::Scanner& scanner,
+                               Reconstruction::Grid& grid,
+                               Reconstruction::Geometry& geometry_soa);
 
 int main(int argc, char* argv[]) {
   CMDLINE_TRY
@@ -66,8 +78,32 @@ int main(int argc, char* argv[]) {
   PET3D::Hybrid::add_reconstruction_options(cl);
   cl.parse_check(argc, argv);
 
-  util::ibstream in_geometry(cl.get<std::string>("geometry"));
-  Geometry geometry(in_geometry);
+  if (cl.exist("geometry")) {
+    util::ibstream in_geometry(cl.get<std::string>("geometry"));
+    Geometry geometry(in_geometry);
+    run_with_geometry(cl, argc, geometry);
+  } else if (cl.exist("system")) {
+    util::ibstream in_matrix(cl.get<std::string>("system"));
+    Matrix matrix(in_matrix);
+    run_with_matrix(cl, argc, matrix);
+  } else {
+    if (argc == 1) {
+      std::cerr
+          << cl.usage()
+          << "note: either --geometry or --system matrix must be specified"
+          << std::endl;
+      exit(0);
+    } else {
+      throw("either --geometry or --system matrix must be specified");
+    }
+  }
+
+  CMDLINE_CATCH
+}
+
+static void run_with_geometry(cmdline::parser& cl,
+                              int argc,
+                              Geometry& geometry) {
   // FIXME: this is very very stupid way to set argument manually, so cmdline
   // thinks it was provided via command line, but in fact we load it from
   // geometry file
@@ -128,7 +164,6 @@ int main(int argc, char* argv[]) {
   }
 
   Reconstruction::Geometry geometry_soa(geometry, matrices_fns.size() ?: 1);
-
   for (size_t plane = 0; plane < geometry_soa.n_planes_half; ++plane) {
     const auto fn = matrices_fns[plane];
     if (verbose) {
@@ -137,6 +172,63 @@ int main(int argc, char* argv[]) {
     geometry_soa.load_weights_from_matrix_file<Hit>(fn, plane);
   }
 
+  run_reconstruction(cl, scanner, grid, geometry_soa);
+}
+
+static void run_with_matrix(cmdline::parser& cl, int argc, Matrix& matrix) {
+  // FIXME: this is very very stupid way to set argument manually, so cmdline
+  // thinks it was provided via command line, but in fact we load it from
+  // geometry file
+  if (!cl.exist("n-pixels")) {
+    std::stringstream ss;
+    ss << "--n-pixels=" << matrix.n_pixels_in_row();
+    cl.parse(ss, false);
+  }
+
+  PET3D::Hybrid::calculate_resonstruction_options(cl, argc);
+
+  auto verbose = cl.count("verbose");
+
+  Scanner scanner(
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
+          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
+      F(cl.get<double>("length")));
+  scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
+
+#if _OPENMP
+  if (cl.exist("n-threads")) {
+    omp_set_num_threads(cl.get<int>("n-threads"));
+  }
+#endif
+
+  if (matrix.n_detectors() != (int)scanner.barrel.size()) {
+    throw("n_detectors mismatch");
+  }
+
+  Geometry::Grid grid2d(matrix.n_pixels_in_row(),
+                        matrix.n_pixels_in_row(),
+                        cl.get<double>("s-pixel"));
+
+  if (verbose) {
+    std::cout << "3D hybrid reconstruction:" << std::endl
+              << "    detectors = " << matrix.n_detectors() << std::endl;
+    std::cerr << "   pixel grid = "  // grid size:
+              << grid2d.n_columns << " x " << grid2d.n_rows << " / "
+              << grid2d.pixel_size << std::endl;
+  }
+
+  Reconstruction::Grid grid(
+      grid2d, cl.get<double>("z-left"), cl.get<int>("n-planes"));
+  Reconstruction::Geometry geometry_soa(matrix);
+
+  run_reconstruction(cl, scanner, grid, geometry_soa);
+}
+
+static void run_reconstruction(cmdline::parser& cl,
+                               Reconstruction::Scanner& scanner,
+                               Reconstruction::Grid& grid,
+                               Reconstruction::Geometry& geometry_soa) {
+  auto verbose = cl.count("verbose");
   Reconstruction reconstruction(
       scanner, grid, geometry_soa, cl.exist("sensitivity"));
 
@@ -348,6 +440,4 @@ int main(int argc, char* argv[]) {
               << (double)st.used_pixels / st.used_events << " / event)"
               << std::endl;
   }
-
-  CMDLINE_CATCH
 }

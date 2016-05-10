@@ -34,7 +34,7 @@ void add_phantom_options(cmdline::parser& cl) {
 }
 
 void add_reconstruction_options(cmdline::parser& cl) {
-  cl.add<std::string>("geometry", 0, "geometry information", true);
+  cl.add<std::string>("geometry", 0, "geometry information", false);
   cl.add<cmdline::path>("system", 0, "system matrix file", false);
   cl.add<int>("n-planes", 0, "number of voxels in z direction", false, 0);
   cl.add<double>("z-left", 0, "left extent in z direction", false, 0);
@@ -53,7 +53,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
   cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
   cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
   cl.add<cmdline::path>("rho", 0, "start rho (eg. existing iteration)", false);
-  cl.footer("response ...");
+  cl.footer("[--geometry|--matrix fn] response ...");
 }
 
 void add_sensitivity_options(cmdline::parser& cl) {
