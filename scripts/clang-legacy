@@ -8,11 +8,11 @@
 # so CUDA can use it without complaining.
 
 if [[ $# -eq 2 && "$1" == '-E' ]]; then
-	clang "$@" | sed -E \
+	/usr/bin/clang "$@" | sed -E \
 		-e 's/__NV_CLANG_MAJOR__ .*/__NV_CLANG_MAJOR__ 6/' \
 		-e 's/__NV_CLANG_MINOR__ .*/__NV_CLANG_MINOR__ 0/' \
 		-e 's/__NV_CLANG_PATCH__ .*/__NV_CLANG_PATCH__ 0/'
 	exit 0
 fi
 
-exec clang "$@"
+exec /usr/bin/clang "$@"
