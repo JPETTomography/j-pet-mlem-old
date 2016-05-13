@@ -83,8 +83,16 @@ int main(int argc, char* argv[]) {
     Geometry geometry(in_geometry);
     run_with_geometry(cl, argc, geometry);
   } else if (cl.exist("system")) {
-    util::ibstream in_matrix(cl.get<std::string>("system"));
+    auto matrix_name = cl.get<cmdline::path>("system");
+    util::ibstream in_matrix(matrix_name);
     Matrix matrix(in_matrix);
+    // try to load accompanying matrix .cfg file
+    auto matrix_base_name = matrix_name.wo_ext();
+    std::ifstream matrix_cfg(matrix_base_name + ".cfg");
+    if (matrix_cfg.is_open()) {
+      matrix_cfg.close();
+      cmdline::load(cl, matrix_name, matrix_base_name + ".cfg");
+    }
     run_with_matrix(cl, argc, matrix);
   } else {
     if (argc == 1) {
