@@ -78,6 +78,12 @@ int main(int argc, char* argv[]) {
   PET3D::Hybrid::add_reconstruction_options(cl);
   cl.parse_check(argc, argv);
 
+#if _OPENMP
+  if (cl.exist("n-threads")) {
+    omp_set_num_threads(cl.get<int>("n-threads"));
+  }
+#endif
+
   if (cl.exist("geometry")) {
     util::ibstream in_geometry(cl.get<std::string>("geometry"));
     Geometry geometry(in_geometry);
@@ -136,12 +142,6 @@ static void run_with_geometry(cmdline::parser& cl,
           PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
       F(cl.get<double>("length")));
   scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
-
-#if _OPENMP
-  if (cl.exist("n-threads")) {
-    omp_set_num_threads(cl.get<int>("n-threads"));
-  }
-#endif
 
   if (geometry.n_detectors != (int)scanner.barrel.size()) {
     throw("n_detectors mismatch");
@@ -202,12 +202,6 @@ static void run_with_matrix(cmdline::parser& cl, int argc, Matrix& matrix) {
           PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
       F(cl.get<double>("length")));
   scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
-
-#if _OPENMP
-  if (cl.exist("n-threads")) {
-    omp_set_num_threads(cl.get<int>("n-threads"));
-  }
-#endif
 
   if (matrix.n_detectors() != (int)scanner.barrel.size()) {
     throw("n_detectors mismatch");
