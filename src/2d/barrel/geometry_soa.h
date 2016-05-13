@@ -9,6 +9,7 @@
 #include "lor_geometry.h"
 #include "sparse_matrix.h"
 #include "geometry.h"
+#include "circle_detector.h"
 #endif
 
 namespace PET2D {
@@ -31,6 +32,7 @@ template <typename FType, typename SType> class GeometrySOA {
   using LineSegment = PET2D::LineSegment<F>;
 #if !__CUDACC__
   using Geometry = PET2D::Barrel::Geometry<F, S>;
+  using CircleDetector = PET2D::Barrel::CircleDetector<F>;
 #endif
 
   /// Construct empty geometry information for given number of detectors.
@@ -63,10 +65,12 @@ template <typename FType, typename SType> class GeometrySOA {
 #if !__CUDACC__
   /// Construct geometry information out of sparse matrix.
   template <typename HitType>
-  GeometrySOA(const PET2D::Barrel::SparseMatrix<Pixel, LOR, HitType>&
-                  sparse_matrix,              ///< sparse matrix
-              const size_t n_planes_half = 1  ///< half of number of planes
-              )
+  GeometrySOA(
+      const PET2D::Barrel::SparseMatrix<Pixel, LOR, HitType>&
+          sparse_matrix,                             ///< sparse matrix
+      const CircleDetector c_detectors[] = nullptr,  ///< centers of detectors
+      const size_t n_planes_half = 1  ///< half of number of planes
+      )
       : GeometrySOA(sparse_matrix.n_detectors(),
                     sparse_matrix.size(),
                     n_planes_half) {
@@ -87,6 +91,14 @@ template <typename FType, typename SType> class GeometrySOA {
         lor = element.lor;
         lor_index = lor.index();
         lor_pixel_info_begin[lor_index] = index;
+        if (c_detectors) {
+          // NOTE: similar to geometry_cmd.cpp:189
+          LineSegment segment(c_detectors[lor.second].center,
+                              c_detectors[lor.first].center);
+          lor_line_segments[lor_index] = segment;
+        }
+        lor_widths[lor_index] = 0;  // FIXME: this is unused in
+                                    // current reconstruction anyway
       }
       // assign information for this pixel info
       pixels[index] = element.pixel;
