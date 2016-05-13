@@ -199,6 +199,8 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
   _ void set_tof_step(F tof_step_size) { tof_step_size_ = tof_step_size; }
   _ F tof_step_size() const { return tof_step_size_; }
 
+  const CircleDetector* detector_centers() const { return c_detectors.begin(); }
+
  protected:
   F fov_radius_;
   util::array<MaxDetetectorsSize, CircleDetector> c_detectors;
