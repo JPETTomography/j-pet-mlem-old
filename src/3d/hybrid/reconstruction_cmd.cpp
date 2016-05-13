@@ -221,7 +221,8 @@ static void run_with_matrix(cmdline::parser& cl, int argc, Matrix& matrix) {
 
   Reconstruction::Grid grid(
       grid2d, cl.get<double>("z-left"), cl.get<int>("n-planes"));
-  Reconstruction::Geometry geometry_soa(matrix);
+  Reconstruction::Geometry geometry_soa(matrix,
+                                        scanner.barrel.detector_centers());
 
   run_reconstruction(cl, scanner, grid, geometry_soa);
 }
