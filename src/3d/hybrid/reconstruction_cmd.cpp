@@ -148,7 +148,7 @@ static void run_with_geometry(cmdline::parser& cl,
   }
 
   if (verbose) {
-    std::cout << "3D hybrid reconstruction:" << std::endl
+    std::cout << "3D hybrid reconstruction w/geometry:" << std::endl
               << "    detectors = " << geometry.n_detectors << std::endl;
     std::cerr << "   pixel grid = "  // grid size:
               << geometry.grid.n_columns << " x " << geometry.grid.n_rows
@@ -212,7 +212,7 @@ static void run_with_matrix(cmdline::parser& cl, int argc, Matrix& matrix) {
                         cl.get<double>("s-pixel"));
 
   if (verbose) {
-    std::cout << "3D hybrid reconstruction:" << std::endl
+    std::cout << "3D hybrid reconstruction w/system matrix:" << std::endl
               << "    detectors = " << matrix.n_detectors() << std::endl;
     std::cerr << "   pixel grid = "  // grid size:
               << grid2d.n_columns << " x " << grid2d.n_rows << " / "
