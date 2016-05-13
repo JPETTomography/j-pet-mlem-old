@@ -1071,7 +1071,7 @@ class basic_json
                  not (std::is_same<T, int>::value)
                  and std::is_same<T, number_integer_t>::value
                  , int>::type = 0>
-    basic_json(const number_integer_t value)
+    basic_json(const T value)
         : m_type(value_t::number_integer), m_value(value)
     {}
 
