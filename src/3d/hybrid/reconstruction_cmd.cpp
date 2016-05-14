@@ -178,7 +178,8 @@ static void run_with_geometry(cmdline::parser& cl,
     }
   }
 
-  Reconstruction::Geometry geometry_soa(geometry, matrices_fns.size() ?: 1);
+  Reconstruction::Geometry geometry_soa(
+      geometry, std::max(matrices_fns.size(), (size_t)1));
   for (size_t plane = 0; plane < geometry_soa.n_planes_half; ++plane) {
     const auto fn = matrices_fns[plane];
     if (verbose) {
