@@ -252,8 +252,14 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (size_t pixel_info = 0; pixel_info < geometry.n_pixel_infos;
-         ++pixel_info) {
+    for (
+#if !_MSC_VER
+        size_t pixel_info = 0; pixel_info < geometry.n_pixel_infos;
+#else
+        ptrdiff_t pixel_info = 0;
+        pixel_info < (ptrdiff_t)geometry.n_pixel_infos;
+#endif
+        ++pixel_info) {
       const auto pixel = geometry.pixels[pixel_info];
       for (size_t plane = 0; plane < geometry.n_planes_half; ++plane) {
         Voxel voxel(pixel.x, pixel.y, plane);

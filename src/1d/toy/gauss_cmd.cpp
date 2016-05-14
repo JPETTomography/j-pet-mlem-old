@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 #if _OPENMP
 #pragma omp parallel for
 #endif
-  for (size_t i = 0; i < n_samples; ++i) {
+  for (int i = 0; i < (int)n_samples; ++i) {
     F p = 0;
     for (F x = -2; x <= 2.0; x += dx) {
       p += kernel(ys[i], x) * s(x);

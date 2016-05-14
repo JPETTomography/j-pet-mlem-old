@@ -73,9 +73,15 @@ template <class PhantomType, class DetectorType> class PhantomMonteCarlo {
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-      for (size_t n_events_emitted = 0;
-           n_events_emitted < n_emissions_or_detections;
-           ++n_events_emitted) {
+      for (
+#if !_MSC_VER
+          size_t n_events_emitted = 0;
+          n_events_emitted < n_emissions_or_detections;
+#else
+          intptr_t n_events_emitted = 0;
+          n_events_emitted < (intptr_t)n_emissions_or_detections;
+#endif
+          ++n_events_emitted) {
 #if _OPENMP
         RNG l_rng;
 #pragma omp critical
