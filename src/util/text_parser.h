@@ -1,7 +1,11 @@
 #pragma once
 
+#if !_WIN32
 #include <fcntl.h>
 #include <unistd.h>
+#else
+#include <cstdio>
+#endif
 #include <cstring>
 
 #include "delegate.h"
@@ -25,14 +29,24 @@ struct text_parser {
   static void read_lines(char const* fn,
                          delegate<void(const char* line)> got_line) {
     static const auto BUFFER_SIZE = 16 * 1024;
+#if !_WIN32
     int fd = ::open(fn, O_RDONLY);
     if (fd == -1)
+#else
+    FILE* fd = fopen(fn, "rb");
+    if (fd == nullptr)
+#endif
       throw(std::string("cannot open input file: ") + fn);
 
     char buf[BUFFER_SIZE];
     size_t prev_size = 0;
     while (size_t bytes_read =
-               ::read(fd, buf + prev_size, sizeof(buf) - prev_size)) {
+#if !_WIN32
+               ::read(fd, buf + prev_size, sizeof(buf) - prev_size)
+#else
+               fread(buf + prev_size, 1, sizeof(buf) - prev_size, fd)
+#endif
+               ) {
       if (bytes_read == (size_t)-1)
         throw("read failed");
       if (!bytes_read)
@@ -49,6 +63,11 @@ struct text_parser {
         std::memmove(buf, line, prev_size);
       }
     }
+#if !_WIN32
+    ::close(fd);
+#else
+    fclose(fd);
+#endif
   }
 
  private:
