@@ -8,8 +8,9 @@
 # ignore data
 /data/
 
-# ignore articles
+# ignore articles & pubs
 /articles/
+/pubs/
 
 # generated test input
 /test_input/
