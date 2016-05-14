@@ -10,6 +10,7 @@
 #include "sparse_matrix.h"
 #include "geometry.h"
 #include "circle_detector.h"
+#include "../geometry/pixel_grid.h"
 #endif
 
 namespace PET2D {
@@ -31,6 +32,7 @@ template <typename FType, typename SType> class GeometrySOA {
   using LOR = PET2D::Barrel::LOR<S>;
   using LineSegment = PET2D::LineSegment<F>;
 #if !__CUDACC__
+  using PixelGrid = PET2D::PixelGrid<F, S>;
   using Geometry = PET2D::Barrel::Geometry<F, S>;
   using CircleDetector = PET2D::Barrel::CircleDetector<F>;
 #endif
@@ -65,45 +67,93 @@ template <typename FType, typename SType> class GeometrySOA {
 #if !__CUDACC__
   /// Construct geometry information out of sparse matrix.
   template <typename HitType>
-  GeometrySOA(
-      const PET2D::Barrel::SparseMatrix<Pixel, LOR, HitType>&
-          sparse_matrix,                             ///< sparse matrix
-      const CircleDetector c_detectors[] = nullptr,  ///< centers of detectors
-      const size_t n_planes_half = 1  ///< half of number of planes
-      )
+  GeometrySOA(PET2D::Barrel::SparseMatrix<Pixel, LOR, HitType>&
+                  sparse_matrix,              ///< sparse matrix
+              const size_t n_planes_half = 1  ///< half of number of planes
+              )
       : GeometrySOA(sparse_matrix.n_detectors(),
                     sparse_matrix.size(),
                     n_planes_half) {
-    using Hit = HitType;
-    using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
     const auto end_lor = LOR::end_for_detectors(n_detectors);
     auto lor = end_lor;
     auto lor_index = lor.index();
-    if (sparse_matrix.sorted() != SparseMatrix::BY_LOR_N_PIXEL)
-      throw("input sparse matrix must be sorted by lor and pixel");
+    sparse_matrix.sort_by_lor_n_pixel();
     size_t index = 0;
     for (const auto& element : sparse_matrix) {
       // check if we have new LOR
       if (element.lor != lor) {
         if (lor != end_lor) {
           lor_pixel_info_end[lor_index] = index;
+          lor_widths[lor_index] = 0;  // FIXME: this is unused in
+                                      // current reconstruction anyway
         }
         lor = element.lor;
         lor_index = lor.index();
         lor_pixel_info_begin[lor_index] = index;
-        if (c_detectors) {
-          // NOTE: similar to geometry_cmd.cpp:189
-          LineSegment segment(c_detectors[lor.second].center,
-                              c_detectors[lor.first].center);
-          lor_line_segments[lor_index] = segment;
-        }
-        lor_widths[lor_index] = 0;  // FIXME: this is unused in
-                                    // current reconstruction anyway
       }
       // assign information for this pixel info
       pixels[index] = element.pixel;
       pixel_weights[index] = (F)element.hits / (F)sparse_matrix.n_emissions();
       ++index;
+    }
+    lor_pixel_info_end[lor_index] = index;
+    lor_widths[lor_index] = 0;  // FIXME: this is unused in
+                                // current reconstruction anyway
+  }
+
+  /// Construct geometry information out of matrix and detector positions.
+  template <typename HitType>
+  GeometrySOA(PET2D::Barrel::SparseMatrix<Pixel, LOR, HitType>&
+                  sparse_matrix,                   ///< sparse matrix
+              const CircleDetector c_detectors[],  ///< centers of detectors
+              const PixelGrid& grid,               ///< pixel grid
+              const size_t n_planes_half = 1       ///< half of number of planes
+              )
+      : GeometrySOA(sparse_matrix, n_planes_half) {
+    std::vector<size_t> indices;
+    std::vector<Pixel> sorted_pixels;
+    std::vector<F> sorted_weights;
+    std::vector<F> sorted_positions;
+    for (LOR lor(0, 0); lor < LOR::end_for_detectors(n_detectors); ++lor) {
+      const auto lor_index = lor.index();
+      LineSegment segment(c_detectors[lor.second].center,
+                          c_detectors[lor.first].center);
+      lor_line_segments[lor_index] = segment;
+      const auto pixel_info_end = lor_pixel_info_end[lor_index];
+      const auto pixel_info_begin = lor_pixel_info_begin[lor_index];
+      const auto pixel_info_size = pixel_info_end - pixel_info_begin;
+      if (!pixel_info_size)
+        continue;
+      indices.resize(pixel_info_size);
+      // calculate indices and pixel positions
+      for (size_t i = 0; i < pixel_info_size; ++i) {
+        const auto pixel_info_index = i + pixel_info_begin;
+        const auto& pixel = pixels[pixel_info_index];
+        const auto point = grid.center_at(pixel);
+        pixel_positions[pixel_info_index] = segment.projection_scaled(point);
+        indices[i] = pixel_info_index;
+      }
+      // actually we sort just indices now
+      std::sort(indices.begin(),
+                indices.end(),
+                [this, segment](const size_t a, const size_t b) {
+                  return pixel_positions[a] < pixel_positions[b];
+                });
+      // here we put them back sorted
+      sorted_pixels.resize(pixel_info_size);
+      sorted_weights.resize(pixel_info_size);
+      sorted_positions.resize(pixel_info_size);
+      for (size_t i = 0; i < pixel_info_size; ++i) {
+        sorted_pixels[i] = pixels[indices[i]];
+        sorted_weights[i] = pixel_weights[indices[i]];
+        sorted_positions[i] = pixel_positions[indices[i]];
+      }
+      for (size_t i = 0; i < pixel_info_size; ++i) {
+        const auto pixel_info_index = i + pixel_info_begin;
+        pixels[pixel_info_index] = sorted_pixels[i];
+        pixel_weights[pixel_info_index] = sorted_weights[i];
+        pixel_positions[pixel_info_index] = sorted_positions[i];
+      }
     }
   }
 
@@ -166,9 +216,9 @@ template <typename FType, typename SType> class GeometrySOA {
         const auto lor_index = current_lor.index();
         const auto pixel_info_begin = lor_pixel_info_begin[lor_index];
         const auto pixel_info_end = lor_pixel_info_end[lor_index];
-        indices.resize(pixel_info_end - pixel_info_begin);
         pixel_index = 0;
-        pixel_index_end = indices.size();
+        pixel_index_end = pixel_info_end - pixel_info_begin;
+        indices.resize(pixel_index_end);
         for (size_t i = 0; i < pixel_index_end; ++i) {
           indices[i] = i + pixel_info_begin;
         }
