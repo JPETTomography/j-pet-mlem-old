@@ -86,7 +86,8 @@ template <typename PixelType, typename ValueType> class PixelMap {
 
   /// Increments atomically value
   void increment(const Pixel& pixel) {
-#if _OPENMP
+#if _OPENMP && !_MSC_VER
+    // FIXME: on MSVC it does not work
     __atomic_add_fetch(&data[pixel.index(width)], 1, __ATOMIC_SEQ_CST);
 #else
     data[pixel.index(width)]++;

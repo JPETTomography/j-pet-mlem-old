@@ -93,7 +93,8 @@ template <typename VoxelType, typename ValueType> class VoxelMap {
 
   /// Increments atomically value
   void increment(const Voxel& voxel) {
-#if _OPENMP
+#if _OPENMP && !_MSC_VER
+    // FIXME: on MSVC it does not work
     __atomic_add_fetch(&data[voxel.index(width, height)], 1, __ATOMIC_SEQ_CST);
 #else
     data[voxel.index(width, height)]++;
