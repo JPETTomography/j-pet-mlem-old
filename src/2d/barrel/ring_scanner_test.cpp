@@ -66,7 +66,11 @@ TEST("2d/barrel/scanner/math") {
     // this is not yet a complete tests....
     Model model;
     double position;
+#if !_MSC_VER
     typename Scanner::Response response;
+#else
+    Scanner::Response response;
+#endif
     auto hits = ring.detect(model, model, event, response);
 
     if (hits >= 2) {

@@ -12,15 +12,24 @@ inline Approx operator"" _e7(long double value) {
   return Approx(value).epsilon(1e-7);
 }
 
-inline std::string operator"" _temp(const char* base_name, unsigned long len) {
-  const char* tmpdir =
-      std::getenv("TMPDIR") ?: std::getenv("TEMP") ?: std::getenv("TEMP");
+#if !defined(DIR_SEP) && (defined(_WIN32) || defined(WIN32))
+#define DIR_SEP '\\'
+#else
+#define DIR_SEP '/'
+#endif
+
+inline std::string operator"" _temp(const char* base_name, size_t len) {
+  const char* tmpdir = std::getenv("TMPDIR");
+  if (!tmpdir)
+    tmpdir = std::getenv("TEMP");
+  if (!tmpdir)
+    tmpdir = std::getenv("TMP");
 #if __linux
   if (tmpdir == nullptr)
     tmpdir = "/tmp";
 #endif
   REQUIRE(tmpdir != nullptr);
-  return std::string(tmpdir) + "/" + std::string(base_name, len);
+  return std::string(tmpdir) + DIR_SEP + std::string(base_name, len);
 }
 
 /// \cond PRIVATE

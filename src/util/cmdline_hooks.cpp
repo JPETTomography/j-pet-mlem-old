@@ -18,7 +18,7 @@ static std::vector<std::string> dir_stack;
 static cmdline::path exe_dir;
 }
 
-#if defined(_WIN32) || defined(WIN32)
+#if !defined(DIR_SEP) && (defined(_WIN32) || defined(WIN32))
 #define DIR_SEP '\\'
 #else
 #define DIR_SEP '/'

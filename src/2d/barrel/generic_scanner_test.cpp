@@ -96,8 +96,11 @@ TEST("2d/barrel/detector_set/detect") {
     using SquareDetector = PET2D::Barrel::SquareDetector<F>;
     using Detector = PET2D::Barrel::GenericScanner<SquareDetector, S, 128>;
     using Event = Detector::Event;
-
+#if !_MSC_VER
     using Response = typename Detector::Response;
+#else
+    using Response = Detector::Response;
+#endif
 
     Detector inner_ring =
         PET2D::Barrel::ScannerBuilder<Detector>::build_single_ring(

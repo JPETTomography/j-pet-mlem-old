@@ -13,8 +13,11 @@ TEST("2d/barrel/generic_scanner/detection/") {
   using Detector = PET2D::Barrel::GenericScanner<SquareDetector, S, 32>;
   using Event = Detector::Event;
   using RNG = std::mt19937_64;
-
+#if !_MSC_VER
   using FullResponse = typename Detector::FullResponse;
+#else
+  using FullResponse = Detector::FullResponse;
+#endif
 
   Detector scanner = PET2D::Barrel::ScannerBuilder<Detector>::build_single_ring(
       0.43, 32, F(.005), F(.019));
