@@ -173,25 +173,23 @@ template <typename FType, typename KernelType> class Reconstruction {
     util::text_parser::read_lines(fn, [&](const char*) { ++n_lines; });
     responses.reserve(n_lines);
     // now read actual values
-    util::text_parser::read_lines(
-        fn,
-        [&](const char* line) {
-          util::text_parser parser(line);
-          F z_u, z_d, dl;
-          try {
-            if (is_3d) {
-              int i, j;
-              parser >> i >> j  // just read LOR values even they are useless
-                  >> z_u >> z_d >> dl;
-            } else {
-              parser >> z_u >> z_d >> dl;
-            }
-          } catch (const char* ex) {
-            std::cerr << "error line: " << line << std::endl;
-            throw(ex);
-          }
-          responses.emplace_back(z_u, z_d, dl);
-        });
+    util::text_parser::read_lines(fn, [&](const char* line) {
+      util::text_parser parser(line);
+      F z_u, z_d, dl;
+      try {
+        if (is_3d) {
+          int i, j;
+          parser >> i >> j  // just read LOR values even they are useless
+              >> z_u >> z_d >> dl;
+        } else {
+          parser >> z_u >> z_d >> dl;
+        }
+      } catch (const char* ex) {
+        std::cerr << "error line: " << line << std::endl;
+        throw(ex);
+      }
+      responses.emplace_back(z_u, z_d, dl);
+    });
   }
 #endif
 

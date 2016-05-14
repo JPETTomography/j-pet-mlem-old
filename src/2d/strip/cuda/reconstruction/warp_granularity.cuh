@@ -33,8 +33,8 @@ __global__ void reconstruction(Scanner<F, short> scanner,
 
 #if CACHE_ELLIPSE_PIXELS
   // gathers all pixel coordinates inside 3 sigma ellipse
-  __shared__ short2
-      ellipse_pixels[MAX_PIXELS_PER_THREAD][MAX_THREADS_PER_BLOCK];
+  __shared__ short2 ellipse_pixels[MAX_PIXELS_PER_THREAD]
+                                  [MAX_THREADS_PER_BLOCK];
 #endif
 
   Kernel<F> kernel(scanner.sigma_z, scanner.sigma_dl);
