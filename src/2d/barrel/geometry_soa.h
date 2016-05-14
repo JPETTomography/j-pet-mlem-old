@@ -49,8 +49,8 @@ template <typename FType, typename SType> class GeometrySOA {
         pixels(new Pixel[n_pixel_infos]),
         pixel_positions(new F[n_pixel_infos]),
         pixel_weights(new F[n_pixel_infos * n_planes_half]),
-        lor_pixel_info_begin(new size_t[n_lors]),
-        lor_pixel_info_end(new size_t[n_lors]) {}
+        lor_pixel_info_begin(new size_t[n_lors]()),
+        lor_pixel_info_end(new size_t[n_lors]()) {}
 
   ~GeometrySOA() {
     delete[] lor_line_segments;
