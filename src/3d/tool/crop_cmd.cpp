@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
     VoxelMap img(
         grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, grid.n_planes);
     util::ibstream bin(in_fn);
-    ENSURE_IS_OPEN(bin, "input image", fn);
+    ENSURE_IS_OPEN(bin, "input image", in_fn);
     bin >> img;
 #endif
 
