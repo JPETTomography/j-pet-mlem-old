@@ -42,6 +42,7 @@ void add_reconstruction_options(cmdline::parser& cl) {
   cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
   cl.add("sens-to-one", 0, "sets sensitivity to one", false);
   cl.add<cmdline::path>("sensitivity", 0, "external 3D sensitivity", false);
+  cl.add<std::vector<int>>("inactive", 0, "list of inactive detectors", false);
 
   cl.add<int>("crop", 0, "numer of pixel to crop the output image", false);
   cl.add<int>("crop-x", 0, "crop origin pixel x", false);

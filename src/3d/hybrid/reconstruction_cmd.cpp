@@ -226,10 +226,27 @@ static void run_with_matrix(cmdline::parser& cl, int argc, Matrix& matrix) {
               << grid2d.pixel_size << std::endl;
   }
 
+  // convert inactive list int,... to S,... (short) if it was specified
+  const S* inactive_indices = nullptr;
+  size_t n_inactive_indices = 0;
+  std::vector<S> inactive_list;
+  const auto& inactive_list_arg = cl.get<std::vector<int>>("inactive");
+  if (inactive_list_arg.size()) {
+    inactive_list.resize(inactive_list_arg.size());
+    std::copy(inactive_list_arg.begin(),
+              inactive_list_arg.end(),
+              inactive_list.begin());
+    inactive_indices = inactive_list.data();
+    n_inactive_indices = inactive_list.size();
+  }
+
   Reconstruction::Grid grid(
       grid2d, cl.get<double>("z-left"), cl.get<int>("n-planes"));
-  Reconstruction::Geometry geometry_soa(
-      matrix, scanner.barrel.detector_centers(), grid2d);
+  Reconstruction::Geometry geometry_soa(matrix,
+                                        scanner.barrel.detector_centers(),
+                                        grid2d,
+                                        inactive_indices,
+                                        n_inactive_indices);
 
   if (verbose) {
     std::cerr << "system matrix = " << cl.get<cmdline::path>("system")
