@@ -9,6 +9,8 @@ void add_cuda_options(cmdline::parser& cl) {
   cl.add<int>("cuda-blocks", 'B', "CUDA blocks", cmdline::dontsave, 64);
   cl.add<int>(
       "cuda-threads", 'W', "CUDA threads per block", cmdline::dontsave, 512);
+#else
+  (void)cl;  // mark cl as unsued when not using CUDA
 #endif
 }
 
