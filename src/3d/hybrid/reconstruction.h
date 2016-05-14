@@ -152,7 +152,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     if (event.plane_end < 0 || event.plane_begin >= grid.n_planes)
       return false;
 
-    for (int i = event.pixel_info_begin; i < event.pixel_info_end; i++) {
+    for (size_t i = event.pixel_info_begin; i < event.pixel_info_end; i++) {
       auto pixel = geometry.pixels[i];
       if (grid.pixel_grid.contains(pixel) && geometry.pixel_weights[i] > 0)
         return true;
@@ -239,10 +239,10 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 
   void calculate_sensitivity() {
     sensitivity.assign(0);
-    for (int pixel_info = 0; pixel_info < geometry.n_pixel_infos;
+    for (size_t pixel_info = 0; pixel_info < geometry.n_pixel_infos;
          ++pixel_info) {
       const auto pixel = geometry.pixels[pixel_info];
-      for (int plane = 0; plane < geometry.n_planes_half; ++plane) {
+      for (size_t plane = 0; plane < geometry.n_planes_half; ++plane) {
         Voxel voxel(pixel.x, pixel.y, plane);
         const auto voxel_index = pixel_info + geometry.n_pixel_infos * plane;
         sensitivity[voxel] += geometry.pixel_weights[voxel_index];
@@ -254,10 +254,10 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
 #if _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (int pixel_info = 0; pixel_info < geometry.n_pixel_infos;
+    for (size_t pixel_info = 0; pixel_info < geometry.n_pixel_infos;
          ++pixel_info) {
       const auto pixel = geometry.pixels[pixel_info];
-      for (int plane = 0; plane < geometry.n_planes_half; ++plane) {
+      for (size_t plane = 0; plane < geometry.n_planes_half; ++plane) {
         Voxel voxel(pixel.x, pixel.y, plane);
         const auto voxel_index = pixel_info + geometry.n_pixel_infos * plane;
         geometry.pixel_weights[voxel_index] /= sensitivity[voxel];
@@ -468,7 +468,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     size_t total_pixels = 0, total_planes = 0, total_voxels = 0;
     for (const auto& event : events_) {
       auto pixels = event.pixel_info_end - event.pixel_info_begin;
-      auto planes = event.plane_end - event.plane_begin;
+      size_t planes = event.plane_end - event.plane_begin;
       auto voxels = pixels * planes;
       total_pixels += pixels;
       total_planes += planes;

@@ -43,7 +43,7 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
     F dl;
 
 #if !__CUDACC__
-    Response() : tof_position(0) {}
+    Response() : tof_position(0), dl(0) {}
 
     Response(std::istream& in)
         : lor(in), tof_position(util::read<S>(in)), dl(util::read<F>(in)) {}

@@ -237,7 +237,7 @@ class LMReconstruction {
 
   void calculate_sensitivity() {
     sensitivity_.assign(0);
-    for (int pixel_info = 0; pixel_info < geometry.n_pixel_infos;
+    for (size_t pixel_info = 0; pixel_info < geometry.n_pixel_infos;
          ++pixel_info) {
       const auto pixel = geometry.pixels[pixel_info];
       sensitivity_[pixel] += geometry.pixel_weights[pixel_info];
