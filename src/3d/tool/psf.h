@@ -69,7 +69,7 @@ struct PSF {
                                          Voxel& left_above_half,
                                          Voxel& right_above_half) {
     const auto half_max = max / 2;
-#if _OPENMP
+#if _OPENMP && !_MSC_VER
 #pragma omp task shared(img, left_above_half, right_above_half)
 #endif
     {
@@ -89,7 +89,7 @@ struct PSF {
       }
     }
 
-#if _OPENMP
+#if _OPENMP && !_MSC_VER
 #pragma omp task shared(img, left_above_half, right_above_half)
 #endif
     {
@@ -112,13 +112,13 @@ struct PSF {
     if (img.depth < 2) {
       left_above_half.z = 0;
       right_above_half.z = 0;
-#if _OPENMP
+#if _OPENMP && !_MSC_VER
 #pragma omp taskwait
 #endif
       return;
     }
 
-#if _OPENMP
+#if _OPENMP && !_MSC_VER
 #pragma omp task shared(img, left_above_half, right_above_half)
 #endif
     {
@@ -138,7 +138,7 @@ struct PSF {
       }
     }
 
-#if _OPENMP
+#if _OPENMP && !_MSC_VER
 #pragma omp taskwait
 #endif
   }
