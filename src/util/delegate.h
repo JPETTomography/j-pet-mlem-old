@@ -203,7 +203,9 @@ template <class R, class... A> class delegate<R(A...)> {
   }
 
  private:
+#if !__CUDACC__
   friend struct std::hash<delegate>;
+#endif
 
   using deleter_type = void (*)(void*);
 
