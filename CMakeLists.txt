@@ -6,6 +6,7 @@
 #   Builds all PET project commands using CMake build generator.
 
 cmake_minimum_required(VERSION 2.8.10)
+cmake_policy(SET CMP0054 NEW) # do not dereference quoted variables
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
