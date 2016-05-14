@@ -27,7 +27,7 @@ struct text_parser {
     static const auto BUFFER_SIZE = 16 * 1024;
     int fd = ::open(fn, O_RDONLY);
     if (fd == -1)
-      throw("open");
+      throw(std::string("cannot open input file: ") + fn);
 
     char buf[BUFFER_SIZE];
     size_t prev_size = 0;
@@ -156,12 +156,11 @@ struct text_parser {
   }
 };
 
-#define TEXT_PARSER_TYPE(_type, _convert, ...)                      \
-  template <>                                                       \
-  inline text_parser& text_parser::operator>><_type>(_type & val) { \
-    skip_space();                                                   \
-    val = _convert(str, ##__VA_ARGS__);                             \
-    return *this;                                                   \
+#define TEXT_PARSER_TYPE(_type, _convert, ...)                                 \
+  template <> inline text_parser& text_parser::operator>><_type>(_type& val) { \
+    skip_space();                                                              \
+    val = _convert(str, ##__VA_ARGS__);                                        \
+    return *this;                                                              \
   }
 
 TEXT_PARSER_TYPE(float, parse_fp<float>)

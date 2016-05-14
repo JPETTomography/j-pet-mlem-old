@@ -3,6 +3,11 @@
 #include "cmdline.h"
 
 /// \cond PRIVATE
+
+#define ENSURE_IS_OPEN(in, file_type, fn) \
+  if (!in.is_open())                      \
+  throw("cannot open " file_type " file: " + fn)
+
 namespace Common {
 
 void add_cuda_options(cmdline::parser& cl);

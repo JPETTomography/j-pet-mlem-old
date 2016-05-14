@@ -187,8 +187,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
 
   for (auto& fn : cl.rest()) {
     util::ibstream in(fn, std::ios::binary);
-    if (!in.is_open())
-      throw("cannot open input file: " + fn);
+    ENSURE_IS_OPEN(in, "input matrix", fn);
     try {
       ComputeMatrix::SparseMatrix in_sparse_matrix(in);
       if (verbose) {

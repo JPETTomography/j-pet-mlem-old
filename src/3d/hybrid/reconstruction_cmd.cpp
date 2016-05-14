@@ -84,13 +84,18 @@ int main(int argc, char* argv[]) {
   }
 #endif
 
+  // 3D reconstruction using geometry (and optional matrix)
   if (cl.exist("geometry")) {
     util::ibstream in_geometry(cl.get<std::string>("geometry"));
+    ENSURE_IS_OPEN(in_geometry, "geometry", cl.get<std::string>("geometry"));
     Geometry geometry(in_geometry);
     run_with_geometry(cl, argc, geometry);
-  } else if (cl.exist("system")) {
+  }
+  // 3D reconstruction using system matrix only
+  else if (cl.exist("system")) {
     auto matrix_name = cl.get<cmdline::path>("system");
     util::ibstream in_matrix(matrix_name);
+    ENSURE_IS_OPEN(in_matrix, "matrix", matrix_name);
     Matrix matrix(in_matrix);
     // try to load accompanying matrix .cfg file
     auto matrix_base_name = matrix_name.wo_ext();
@@ -100,7 +105,9 @@ int main(int argc, char* argv[]) {
       cmdline::load(cl, matrix_name, matrix_base_name + ".cfg");
     }
     run_with_matrix(cl, argc, matrix);
-  } else {
+  }
+  // bail out if no geometry or system matrix is given
+  else {
     if (argc == 1) {
       std::cerr
           << cl.usage()
@@ -308,10 +315,12 @@ static void run_reconstruction(cmdline::parser& cl,
       reconstruction.fast_load_txt_events(fn.c_str());
 #else
       std::ifstream in_response(fn);
+      ENSURE_IS_OPEN(in_response, "input response", fn);
       reconstruction << in_response;
 #endif
     } else {
       util::ibstream in_response(fn);
+      ENSURE_IS_OPEN(in_response, "input response", fn);
       reconstruction << in_response;
     }
   }

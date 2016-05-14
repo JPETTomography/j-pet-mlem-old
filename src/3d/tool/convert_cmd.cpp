@@ -103,8 +103,7 @@ void convert_warsaw(cmdline::parser& cl) {
 
   for (const auto& fn : cl.rest()) {
     std::ifstream in_means(fn);
-    if (!in_means.is_open())
-      throw("cannot open input file: " + fn);
+    ENSURE_IS_OPEN(in_means, "input means", fn);
     std::string line;
     while (std::getline(in_means, line)) {
       std::stringstream in(line);
@@ -153,8 +152,7 @@ void convert_tbednarski(cmdline::parser& cl) {
   bool output_relative = cl.exist("relative-time");
   for (const auto& fn : cl.rest()) {
     std::ifstream in_means(fn);
-    if (!in_means.is_open())
-      throw("cannot open input file: " + fn);
+    ENSURE_IS_OPEN(in_means, "input means", fn);
 
     std::string line;
     while (std::getline(in_means, line)) {

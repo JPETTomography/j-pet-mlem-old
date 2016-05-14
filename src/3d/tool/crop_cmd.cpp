@@ -103,9 +103,7 @@ int main(int argc, char* argv[]) {
     VoxelMap img(
         grid.pixel_grid.n_columns, grid.pixel_grid.n_rows, grid.n_planes);
     util::ibstream bin(in_fn);
-    if (!bin.is_open()) {
-      throw("cannot open: " + fn);
-    }
+    ENSURE_IS_OPEN(bin, "input image", fn);
     bin >> img;
 #endif
 

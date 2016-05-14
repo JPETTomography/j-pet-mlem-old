@@ -79,8 +79,7 @@ int main(int argc, char* argv[]) {
   auto use_sensitivity = !cl.exist("no-sensitivity");
 
   util::ibstream in_matrix(cl.get<cmdline::path>("system"));
-  if (!in_matrix.is_open())
-    throw("cannot open input file: " + cl.get<cmdline::path>("system"));
+  ENSURE_IS_OPEN(in_matrix, "input matrix", cl.get<cmdline::path>("system"));
   Reconstruction::Matrix matrix(in_matrix);
 
   if (matrix.triangular()) {
@@ -107,8 +106,7 @@ int main(int argc, char* argv[]) {
 
   for (const auto& fn : cl.rest()) {
     std::ifstream in_means(fn);
-    if (!in_means.is_open())
-      throw("cannot open input file: " + fn);
+    ENSURE_IS_OPEN(in_means, "means", fn);
     reconstruction << in_means;
   }
 
@@ -121,7 +119,6 @@ int main(int argc, char* argv[]) {
 
 #if HAVE_CUDA
   if (cl.exist("gpu")) {
-    matrix.sort_by_lor_n_pixel();
     GeometrySOA geometry(matrix);
     PET2D::Barrel::GPU::Reconstruction::run(
         geometry,

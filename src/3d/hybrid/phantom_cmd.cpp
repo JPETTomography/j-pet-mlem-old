@@ -107,9 +107,7 @@ int main(int argc, char* argv[]) {
   // read phantoms
   for (const auto& fn : cl.rest()) {
     std::ifstream in(fn);
-    if (!in.is_open()) {
-      throw("could not open file: " + fn);
-    }
+    ENSURE_IS_OPEN(in, "phantom description", fn);
     json j;
     j << in;
 

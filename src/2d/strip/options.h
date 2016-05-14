@@ -16,6 +16,7 @@
 #pragma once
 
 #include "cmdline.h"
+#include "common/options.h"
 
 namespace PET2D {
 namespace Strip {

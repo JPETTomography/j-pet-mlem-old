@@ -78,9 +78,7 @@ int main(int argc, char* argv[]) {
 #endif
 
   util::ibstream in_geometry(cl.get<cmdline::path>("geometry"));
-  if (!in_geometry.is_open()) {
-    throw("cannot open geometry file: " + cl.get<cmdline::path>("geometry"));
-  }
+  ENSURE_IS_OPEN(in_geometry, "geometry", cl.get<cmdline::path>("geometry"));
   Geometry geometry(in_geometry);
 
   if (verbose) {
@@ -112,9 +110,7 @@ int main(int argc, char* argv[]) {
 
   for (const auto& fn : cl.rest()) {
     std::ifstream in_response(fn);
-    if (!in_response.is_open()) {
-      throw("cannot open response file: " + fn);
-    }
+    ENSURE_IS_OPEN(in_response, "response", fn);
     reconstruction << in_response;
   }
   if (verbose) {

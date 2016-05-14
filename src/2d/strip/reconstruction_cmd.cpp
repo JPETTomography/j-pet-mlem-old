@@ -129,9 +129,7 @@ int main(int argc, char* argv[]) {
         throw("3D input not supported in this build");
       }
       std::ifstream in_responses(fn);
-      if (!in_responses.is_open()) {
-        throw("cannot open phantom responses file: " + fn);
-      }
+      ENSURE_IS_OPEN(in_responses, "phantom responses", fn);
       reconstruction << in_responses;
 #endif
     } else {
@@ -139,9 +137,7 @@ int main(int argc, char* argv[]) {
         throw("3D input must have .txt extension");
       }
       util::ibstream in_responses(fn);
-      if (!in_responses.is_open()) {
-        throw("cannot open phantom responses file: " + fn);
-      }
+      ENSURE_IS_OPEN(in_responses, "phantom responses", fn);
       reconstruction << in_responses;
     }
     if (verbose) {
