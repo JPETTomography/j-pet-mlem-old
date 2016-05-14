@@ -1,6 +1,9 @@
 #pragma once
 
 #include <cstring>
+#if !__CUDACC__
+#include <bitset>
+#endif
 
 #include "lor.h"
 #include "../geometry/pixel.h"
@@ -66,9 +69,13 @@ template <typename FType, typename SType> class GeometrySOA {
 
 #if !__CUDACC__
   /// Construct geometry information out of sparse matrix.
+  ////
+  /// This version does not fill line segment information for 3D.
   template <typename HitType>
   GeometrySOA(PET2D::Barrel::SparseMatrix<Pixel, LOR, HitType>&
-                  sparse_matrix,              ///< sparse matrix
+                  sparse_matrix,                    ///< sparse matrix
+              const S* inactive_indices = nullptr,  ///< inactive detectors
+              const size_t n_inactive_indices = 0,  ///< number of inactive
               const size_t n_planes_half = 1  ///< half of number of planes
               )
       : GeometrySOA(sparse_matrix.n_detectors(),
@@ -79,6 +86,12 @@ template <typename FType, typename SType> class GeometrySOA {
     auto lor_index = lor.index();
     sparse_matrix.sort_by_lor_n_pixel();
     size_t index = 0;
+    std::bitset<MAX_DETECTORS> inactive_bitset;
+    if (inactive_indices && n_inactive_indices) {
+      for (size_t i = 0; i < n_inactive_indices; ++i) {
+        inactive_bitset.set(inactive_indices[i]);
+      }
+    }
     for (const auto& element : sparse_matrix) {
       // check if we have new LOR
       if (element.lor != lor) {
@@ -91,6 +104,10 @@ template <typename FType, typename SType> class GeometrySOA {
         lor_index = lor.index();
         lor_pixel_info_begin[lor_index] = index;
       }
+      // skip inactive detectors
+      if (inactive_indices && n_inactive_indices &&
+          (inactive_bitset[lor.first] || inactive_bitset[lor.second]))
+        continue;
       // assign information for this pixel info
       pixels[index] = element.pixel;
       pixel_weights[index] = (F)element.hits / (F)sparse_matrix.n_emissions();
@@ -102,14 +119,21 @@ template <typename FType, typename SType> class GeometrySOA {
   }
 
   /// Construct geometry information out of matrix and detector positions.
+  ////
+  /// This is the version required for 3D reconstruction.
   template <typename HitType>
   GeometrySOA(PET2D::Barrel::SparseMatrix<Pixel, LOR, HitType>&
-                  sparse_matrix,                   ///< sparse matrix
-              const CircleDetector c_detectors[],  ///< centers of detectors
-              const PixelGrid& grid,               ///< pixel grid
-              const size_t n_planes_half = 1       ///< half of number of planes
+                  sparse_matrix,                    ///< sparse matrix
+              const CircleDetector c_detectors[],   ///< centers of detectors
+              const PixelGrid& grid,                ///< pixel grid
+              const S* inactive_indices = nullptr,  ///< inactive detectors
+              const size_t n_inactive_indices = 0,  ///< number of inactive
+              const size_t n_planes_half = 1  ///< half of number of planes
               )
-      : GeometrySOA(sparse_matrix, n_planes_half) {
+      : GeometrySOA(sparse_matrix,
+                    inactive_indices,
+                    n_inactive_indices,
+                    n_planes_half) {
     std::vector<size_t> indices;
     std::vector<Pixel> sorted_pixels;
     std::vector<F> sorted_weights;
