@@ -1,13 +1,16 @@
-PET playground project
-======================
+J-PET image reconstruction & simulation
+=======================================
 
-This projects contains tools & test scripts for supporting PET project.
+[jpet]: http://koza.if.uj.edu.pl/pet/
+
+This projects contains tools for [J-PET][jpet] (strip PET) image
+reconstruction, simulation and various other utilities.
 
 Authors
 -------
 
-* Piotr Bialas <pbialas@th.if.uj.edu.pl> (professor, project lead)
-* Adam Strzelecki <adam.strzelecki@uj.edu.pl> (PhD student, code maintainer)
+* Piotr Bialas <pbialas@th.if.uj.edu.pl> (professor, supervisor)
+* Adam Strzelecki <adam.strzelecki@uj.edu.pl> (PhD candidate, code maintainer)
 * Jakub Kowal <jakub.kowal@uj.edu.pl> (former PhD student and project member)
 
 Prerequisites
