@@ -72,6 +72,10 @@ Prerequisites
 
 3. *Ninja* currently does not work on *Windows* with our project.
 
+4. This project uses *Git* submodules, make sure you pull them before the build:
+
+		git submodule update --init
+
 Building
 --------
 
