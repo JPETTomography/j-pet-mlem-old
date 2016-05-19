@@ -4,7 +4,7 @@
 
 using Kernel = PET1D::Toy::GaussKernel<float>;
 
-TEST("1D/toy/gauss_kernel") {
+TEST("1d/toy/gauss_kernel") {
 
   Kernel kernel(0.75);
 
