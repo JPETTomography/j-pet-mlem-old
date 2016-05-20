@@ -149,7 +149,9 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
   if (verbose) {
     std::cerr << "Monte-Carlo:" << std::endl;
 #if _OPENMP
+#if HAVE_CUDA
     if (!cl.exist("gpu"))
+#endif
       std::cerr << " OpenMP threads = " << omp_get_max_threads() << std::endl;
 #endif
     std::cerr << "  pixels in row = " << n_pixels << std::endl;
