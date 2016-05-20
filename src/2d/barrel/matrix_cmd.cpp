@@ -11,7 +11,7 @@
 ///   from each pixel:
 ///
 ///        2d_barrel_matrix -s square -w 0.007 -h 0.017
-///                         -r 0.360 -d 48 --radius2 0.400
+///                         -r 0.360,0.400 -d 48
 ///                         -e 1000000 -o data/201412_rings/gpu_2rings
 ///
 /// Authors
