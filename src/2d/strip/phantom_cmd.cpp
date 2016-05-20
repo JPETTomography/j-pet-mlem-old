@@ -255,7 +255,8 @@ int main(int argc, char* argv[]) {
               }
             } else {
               std::ostringstream ss_w_error;
-              ss_w_error << event << "\n";
+              ss_w_error << scanner.response_w_error(rng, full_response)
+                         << "\n";
               {
                 CRITICAL
                 out_w_error << ss_w_error.str();
