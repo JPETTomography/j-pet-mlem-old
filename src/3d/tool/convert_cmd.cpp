@@ -1,3 +1,19 @@
+/// \page cmd_3d_tool_convert 3d_tool_convert
+/// \brief Input reponse format convertsion tool
+///
+/// Converts various formats into list-mode input response expected by \ref
+/// cmd_3d_hybrid_reconstruction and \ref cmd_2d_strip_reconstruction.
+///
+/// Authors
+/// -------
+/// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+///
+/// Usage
+/// -----
+/// \verboutput 3d_tool_convert
+///
+/// \sa \ref cmd_3d_hybrid_reconstruction, \ref cmd_2d_strip_reconstruction
+
 #ifdef __SSE3__
 #include <xmmintrin.h>
 #include <pmmintrin.h>

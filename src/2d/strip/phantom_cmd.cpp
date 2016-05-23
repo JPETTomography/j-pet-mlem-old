@@ -14,6 +14,14 @@
 ///
 ///   \verbinclude phantoms/s_shepp_scaled
 ///
+/// Output format
+/// -------------
+/// Phantom reponse simulation outputs triples representing \f$ \tilde{z_u},
+/// \tilde{z_d}, \Delta l \f$ of a single response. Depending on given extension
+/// of the output file, the output can be textual (\c txt extension) or binary
+/// (any other extension). Produced output file is compatible with \ref
+/// cmd_2d_strip_reconstruction.
+///
 /// Authors
 /// -------
 /// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>

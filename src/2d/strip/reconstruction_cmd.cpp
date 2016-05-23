@@ -5,18 +5,41 @@
 /// physical scanner response or simulated response output from \ref
 /// cmd_2d_strip_phantom.
 ///
-/// \image html cs000_ev.pdf.png
+/// \image html detector-frame-space-ellipse.pdf.png
 ///
 /// Authors
 /// -------
 /// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
 /// - Jakub Kowal     <jakub.kowal@uj.edu.pl>
 ///
+/// Input format
+/// ------------
+/// 2D strip reconstruction works in list-mode and expects an input being a list
+/// of responses - triples representing \f$ \tilde{z_u}, \tilde{z_d}, \Delta l
+/// \f$. Depending on the extension of the input file, it can be textual (\c txt
+/// extension) or binary (any other extension). In case of textual file, each
+/// line contains single response of 3 float numbers space separated, eg.:
+///
+///     0.0740503 0.121193 0.221124
+///     0.0447861 -0.0682753 -0.0344387
+///     -0.0885979 0.230476 0.186496
+///     -0.07959 0.208617 0.111321
+///     0.0272275 -0.0228252 -0.392962
+///     0.0561384 -0.104786 -0.358995
+///     0.146026 -0.0567436 -0.128083
+///     -0.197322 0.0686767 0.298622
+///
+/// All other extensions (or no extension) is treated as a binary files, a
+/// triples of 32-bit SP floating point numbers.
+///
+/// In order to convert various other list-mode reponse formats into this format
+/// \ref cmd_3d_tool_convert can be used.
+///
 /// Usage
 /// -----
 /// \verboutput 2d_strip_reconstruction
 ///
-/// \sa \ref cmd_2d_strip_phantom
+/// \sa \ref cmd_2d_strip_phantom, \ref cmd_3d_tool_convert
 
 #include <iostream>
 #include <ostream>
