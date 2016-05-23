@@ -17,8 +17,8 @@ void add_scanner_options(cmdline::parser& cl) {
   // detector shape and dimensions
   cl.add<std::string>(
       "shape",
-      's',
-      "detector (scintillator) shape (square, circle, triangle, hexagon)",
+      0,
+      "detector shape (square, circle, triangle, hexagon)",
       false,
       "square",
       cmdline::oneof<std::string>("square", "circle", "triangle", "hexagon"));
