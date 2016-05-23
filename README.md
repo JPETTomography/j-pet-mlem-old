@@ -145,6 +145,15 @@ and [Markdown][markdown] files. To generate documentation run:
 
 Next open `doc/html/index.html` file to view documentation.
 
+#### Notes
+
+1. Doxygen documentation uses figures from `pet/pubs` sibling project, and
+   assumes its working copy in `pubs` directory. If you see warning messages
+   about missing figure files, please clone `pet/pubs` in this project root.
+
+2. Doxygen documentation build process uses Perl based filter to generate
+   command line reference output and it will unlikely work well on Windows.
+
 Coding Style
 ------------
 
