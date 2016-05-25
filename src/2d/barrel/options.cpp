@@ -225,7 +225,8 @@ void add_lm_reconstruction_options(cmdline::parser& cl) {
 void calculate_scanner_options(cmdline::parser& cl,
                                int argc,
                                std::stringstream& assumed,
-                               bool calculate_pixel) {
+                               bool calculate_pixel,
+                               bool calculate_model) {
   // check options
   if (!cl.exist("w-detector") && !cl.exist("d-detector") &&
       !cl.exist("n-detectors")) {
@@ -238,21 +239,22 @@ void calculate_scanner_options(cmdline::parser& cl,
       throw("need to specify either --w-detector, --d-detector, --n-detectors");
     }
   }
-  // convert obsolete acceptance option to length scale
-  auto& length_scale = cl.get<double>("base-length");
-  if (cl.exist("acceptance") && !cl.exist("base-length")) {
-    length_scale = 1.0 / cl.get<double>("acceptance");
-  }
-  // FIXME: fixup for spelling mistake, present in previous versions
-  auto& model_name = cl.get<std::string>("model");
-  if (model_name == "scintilator") {
-    model_name = "scintillator";
+
+  if (calculate_model) {
+    // convert obsolete acceptance option to length scale
+    auto& length_scale = cl.get<double>("base-length");
+    if (cl.exist("acceptance") && !cl.exist("base-length")) {
+      length_scale = 1.0 / cl.get<double>("acceptance");
+    }
+    // FIXME: fixup for spelling mistake, present in previous versions
+    auto& model_name = cl.get<std::string>("model");
+    if (model_name == "scintilator") {
+      model_name = "scintillator";
+    }
   }
 
-  auto& n_pixels = cl.get<int>("n-pixels");
   auto& radius = cl.get<std::vector<double>>("radius");
   auto& n_detectors = cl.get<std::vector<int>>("n-detectors");
-  auto& s_pixel = cl.get<double>("s-pixel");
   auto& w_detector = cl.get<double>("w-detector");
   auto& d_detector = cl.get<double>("d-detector");
   auto& shape = cl.get<std::string>("shape");
@@ -263,9 +265,11 @@ void calculate_scanner_options(cmdline::parser& cl,
   // This sets default radius size to sqrt(2), so the image space is (-1, 1).
 
   if (!radius.size()) {
-    if (!cl.exist("s-pixel")) {
+    if (!calculate_pixel || !cl.exist("s-pixel")) {
       radius.push_back(M_SQRT2);  // exact result
     } else {
+      auto& n_pixels = cl.get<int>("n-pixels");
+      auto& s_pixel = cl.get<double>("s-pixel");
       radius.push_back(s_pixel * n_pixels / M_SQRT2);
     }
     assumed << "--radius=" << radius[0] << std::endl;
@@ -281,6 +285,8 @@ void calculate_scanner_options(cmdline::parser& cl,
   // 3. Automatic pixel size
 
   if (calculate_pixel && !cl.exist("s-pixel")) {
+    auto& n_pixels = cl.get<int>("n-pixels");
+    auto& s_pixel = cl.get<double>("s-pixel");
     s_pixel = 2 * fov_radius / n_pixels;
     assumed << "--s-pixel=" << s_pixel << std::endl;
   }
@@ -341,9 +347,13 @@ void calculate_scanner_options(cmdline::parser& cl,
   }
 }
 
-void calculate_scanner_options(cmdline::parser& cl, int argc) {
+void calculate_scanner_options(cmdline::parser& cl,
+                               int argc,
+                               bool calculate_pixel,
+                               bool calculate_model) {
   std::stringstream assumed;
-  calculate_scanner_options(cl, argc, assumed);
+  calculate_scanner_options(
+      cl, argc, assumed, calculate_pixel, calculate_model);
   if (cl.exist("verbose") && assumed.str().size()) {
     std::cerr << "assumed:" << std::endl << assumed.str();
   }

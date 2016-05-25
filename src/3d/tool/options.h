@@ -18,6 +18,9 @@ namespace Tool {
 /// Adds \ref cmd_3d_tool_crop specific command line options.
 void add_crop_options(cmdline::parser& parser);
 
+/// Adds \ref cmd_3d_tool_convert specific command line options.
+void add_convert_options(cmdline::parser& parser);
+
 /// Adds \ref cmd_3d_tool_psf specific command line options.
 void add_psf_options(cmdline::parser& parser);
 

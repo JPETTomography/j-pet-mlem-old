@@ -35,8 +35,6 @@
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/square_detector.h"
 
-#include "2d/strip/options.h"
-
 #include "common/types.h"
 
 template <class DetectorClass>
@@ -65,35 +63,12 @@ int main(int argc, char* argv[]) {
 #endif
 
   cmdline::parser cl;
-  cl.footer("means");
-
-  PET2D::Barrel::add_config_option(cl);
-  PET2D::Barrel::add_scanner_options(cl);
-
-  cl.add<double>("s-dl", 0, "TOF sigma delta-l", cmdline::alwayssave, 0.06);
-  cl.add<double>(
-      "s-z", 0, "TOF sigma along z axis", cmdline::alwayssave, 0.015);
-
-  cl.add<double>("length", 'l', "scintillator length", false, 1.0);
-
-  // conversion types
-  cl.add("warsaw", 0, "Warsaw data format", cmdline::dontsave);
-  cl.add("tbednarski", 0, "T.Bednarski data format", cmdline::dontsave);
-
-  // Warsaw data specific
-  cl.add<int>("only", 0, "class (scattering) of events to include", false, 1);
-
-  // T.Bednarski data specific: for debugging precision
-  cl.add("relative-time",
-         0,
-         "output relative time instead z_u, z_d, dl",
-         cmdline::dontsave);
-
+  PET3D::Tool::add_convert_options(cl);
   cl.parse_check(argc, argv);
 
   cmdline::load_accompanying_config(cl, false);
 
-  PET2D::Barrel::calculate_scanner_options(cl, argc);
+  PET2D::Barrel::calculate_scanner_options(cl, argc, false, false);
 
   if (cl.exist("warsaw")) {
     convert_warsaw(cl);
@@ -111,6 +86,7 @@ void convert_warsaw(cmdline::parser& cl) {
   const F sigma_z = cl.get<double>("s-z");
   const F sigma_dl = cl.get<double>("s-dl");
   const F length = cl.get<double>("length");
+  const auto verbose = cl.count("verbose");
 
   std::normal_distribution<double> z_error(0, sigma_z);
   std::normal_distribution<double> dl_error(0, sigma_dl);
@@ -162,10 +138,10 @@ void convert_warsaw(cmdline::parser& cl) {
           std::cout << d1 << " " << d2 << " " << z1 * cm + z_error(rng) << " "
                     << z2 * cm + z_error(rng) << " " << dl + dl_error(rng)
                     << "\n";
-        } else {
-          std::cerr << "Point " << Point(x1 * cm, y1 * cm) << " or "
+        } else if (verbose) {
+          std::cerr << "point (" << Point(x1 * cm, y1 * cm) << ") or ("
                     << Point(x2 * cm, y2 * cm)
-                    << "  outside detector - skiping\n";
+                    << ") outside detector - skiping\n";
         }
       }
     }
