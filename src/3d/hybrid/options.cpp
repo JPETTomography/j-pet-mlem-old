@@ -22,7 +22,8 @@ void add_phantom_options(cmdline::parser& cl) {
   cl.add<int>("n-planes", 0, "number of voxels in z direction", false, 0);
   cl.add<double>("z-left", 0, "left extent in z direction", false, 0);
   cl.add<double>("length", 'l', "length of the detector", false, 2);
-  cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
+  cl.add<double>(
+      "s-z", 0, "TOF sigma along z axis", cmdline::alwayssave, 0.015);
   cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
   cl.add<int>("tan-bins",
               0,
@@ -40,7 +41,8 @@ void add_reconstruction_options(cmdline::parser& cl) {
   cl.add<int>("n-planes", 0, "number of voxels in z direction", false, 0);
   cl.add<double>("z-left", 0, "left extent in z direction", false, 0);
   cl.add<double>("length", 'l', "length of the detector", false, 2);
-  cl.add<double>("s-z", 0, "TOF sigma along z axis", false, 0.015);
+  cl.add<double>(
+      "s-z", 0, "TOF sigma along z axis", cmdline::alwayssave, 0.015);
   cl.add("sens-to-one", 0, "sets sensitivity to one", false);
   cl.add<cmdline::path>("sensitivity", 0, "external 3D sensitivity", false);
   cl.add<std::vector<int>>("inactive", 0, "list of inactive detectors", false);
