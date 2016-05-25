@@ -33,8 +33,9 @@
 #include "2d/barrel/options.h"
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/generic_scanner.h"
-#include "2d/barrel/circle_detector.h"
 #include "2d/barrel/square_detector.h"
+
+#include "2d/strip/options.h"
 
 #include "common/types.h"
 
@@ -66,9 +67,16 @@ int main(int argc, char* argv[]) {
   cmdline::parser cl;
   cl.footer("means");
 
-  PET2D::Barrel::add_matrix_options(cl);
+  PET2D::Barrel::add_config_option(cl);
+  PET2D::Barrel::add_scanner_options(cl);
+
+  cl.add<double>("s-dl", 0, "TOF sigma delta-l", cmdline::alwayssave, 0.06);
+  cl.add<double>(
+      "s-z", 0, "TOF sigma along z axis", cmdline::alwayssave, 0.015);
+
   cl.add<double>("length", 'l', "scintillator length", false, 1.0);
 
+  // conversion types
   cl.add("warsaw", 0, "Warsaw data format", cmdline::dontsave);
   cl.add("tbednarski", 0, "T.Bednarski data format", cmdline::dontsave);
 
