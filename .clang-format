@@ -8,4 +8,5 @@ KeepEmptyLinesAtTheStartOfBlocks: true
 # AllowShortIfStatementsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: true
 NamespaceIndentation: None
+SortIncludes: false
 ...
