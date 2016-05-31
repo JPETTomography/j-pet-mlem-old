@@ -223,7 +223,9 @@ template <typename FType, typename SType> class GeometrySOA {
 
     F n_emissions = F(matrix.n_emissions());
     if (matrix.triangular()) {
-      throw("matrix is not full");
+      throw(
+          "matrix must be in full form, "
+          "use 2d_barrel_matrix will --full option");
     }
 
     // clear memory for given plane

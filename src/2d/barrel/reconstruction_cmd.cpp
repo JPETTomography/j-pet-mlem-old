@@ -83,7 +83,9 @@ int main(int argc, char* argv[]) {
   Reconstruction::Matrix matrix(in_matrix);
 
   if (matrix.triangular()) {
-    throw("matrix must be in full form");
+    throw(
+        "matrix must be in full form, "
+        "use 2d_barrel_matrix will --full option");
   }
 
   if (verbose) {
