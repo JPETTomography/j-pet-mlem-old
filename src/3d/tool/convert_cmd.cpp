@@ -82,6 +82,7 @@ int main(int argc, char* argv[]) {
   CMDLINE_CATCH
 }
 
+// http://koza.if.uj.edu.pl/petwiki/index.php/Simulations_of_the_1-layer_24-strip_geometry_(small_barrel)
 void convert_warsaw(cmdline::parser& cl) {
   const F sigma_z = cl.get<double>("s-z");
   const F sigma_dl = cl.get<double>("s-dl");
@@ -105,13 +106,35 @@ void convert_warsaw(cmdline::parser& cl) {
     std::ifstream in_means(fn);
     ENSURE_IS_OPEN(in_means, "input means", fn);
     std::string line;
+    size_t no_columns = 0;
     while (std::getline(in_means, line)) {
+      // determine number of columns, because files produced by Pawel Kowalski
+      // have different count of columns, but we always need first 8 column and
+      // last one
+      if (!no_columns) {
+        std::stringstream in(line);
+        std::string el;
+        while (in >> el) {
+          ++no_columns;
+        }
+        if (cl.count("verbose")) {
+          std::cerr << "reading " << no_columns << " column: " << fn
+                    << std::endl;
+        }
+        if (!no_columns)
+          break;
+      }
       std::stringstream in(line);
       double x1, y1, z1, t1;
       int scatter;
       in >> x1 >> y1 >> z1 >> t1;
       double x2, y2, z2, t2;
       in >> x2 >> y2 >> z2 >> t2;
+      // skip till last column
+      for (size_t i = 0; i < no_columns - 9; ++i) {
+        std::string el;
+        in >> el;
+      }
       in >> scatter;
 
       if (std::abs(z1 * cm) > length / 2 || std::abs(z2 * cm) > length / 2)
