@@ -225,7 +225,7 @@ template <typename FType, typename SType> class GeometrySOA {
     if (matrix.triangular()) {
       throw(
           "matrix must be in full form, "
-          "use 2d_barrel_matrix will --full option");
+          "convert using 2d_barrel_matrix --full option");
     }
 
     // clear memory for given plane

@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
   if (matrix.triangular()) {
     throw(
         "matrix must be in full form, "
-        "use 2d_barrel_matrix will --full option");
+        "convert using 2d_barrel_matrix --full option");
   }
 
   if (verbose) {

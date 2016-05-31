@@ -195,7 +195,7 @@ static void run_with_matrix(cmdline::parser& cl, int argc, Matrix& matrix) {
   if (matrix.triangular()) {
     throw(
         "matrix must be in full form, "
-        "use 2d_barrel_matrix will --full option");
+        "convert using 2d_barrel_matrix --full option");
   }
   // FIXME: this is very very stupid way to set argument manually, so cmdline
   // thinks it was provided via command line, but in fact we load it from
