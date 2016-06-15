@@ -97,10 +97,7 @@ void convert_warsaw(cmdline::parser& cl) {
   auto scanner = ScannerBuilder<SquareScanner>::build_multiple_rings(
       PET2D_BARREL_SCANNER_CL(cl, F));
 
-  int only = 0;
-  if (cl.exist("only")) {
-    only = cl.get<int>("only");
-  }
+  auto only = cl.get<int>("only");
 
   for (const auto& fn : cl.rest()) {
     std::ifstream in_means(fn);

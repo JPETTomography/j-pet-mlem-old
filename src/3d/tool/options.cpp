@@ -51,7 +51,11 @@ void add_convert_options(cmdline::parser& cl) {
   cl.add("tbednarski", 0, "T.Bednarski data format", cmdline::dontsave);
 
   // Warsaw data specific
-  cl.add<int>("only", 0, "class (scattering) of events to include", false, 1);
+  cl.add<int>("only",
+              0,
+              "limit event (scattering) type, eg. 1 for non-scattered",
+              false,
+              0);
 
   // T.Bednarski data specific: for debugging precision
   cl.add("relative-time",
