@@ -183,7 +183,9 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
     Image image_detected_exact(n_pixels, n_pixels);
 
     util::progress progress(verbose, n_emissions, 10000);
-    if (cl.exist("bin")) {
+
+    // bin-mode
+    if (!cl.exist("lm")) {
       int n_tof_positions = scanner.n_tof_positions(scanner.tof_step_size(),
                                                     scanner.max_dl_error());
       if (n_tof_positions == 0)
@@ -258,7 +260,9 @@ void run(cmdline::parser& cl, PhantomClass& phantom, ModelClass& model) {
               out_bins_w_error << d1 << ' ' << d2 << ' ' << tof << " "
                                << bins_w_error[bin_index] << "\n";
           }
-    } else {
+    }
+    // list-mode
+    else {
       std::ofstream out_wo_error, out_w_error, out_exact_events,
           out_full_response;
       if (output_base_name.length()) {
