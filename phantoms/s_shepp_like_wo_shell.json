@@ -1,0 +1,104 @@
+{
+    "phantoms": [
+        {
+            "displacement": [
+                0,
+                0.06,
+                -0.1
+            ],
+            "phantom": {
+                "angular": {
+                    "type": "spherical"
+                },
+                "intensity": 7,
+                "rx": 0.01,
+                "ry": 0.015,
+                "rz": 0.01,
+                "type": "ellipsoid"
+            },
+            "type": "translated"
+        },
+        {
+            "displacement": [
+                0.06,
+                0,
+                0
+            ],
+            "phantom": {
+                "angular": {
+                    "type": "spherical"
+                },
+                "intensity": 3,
+                "rx": 0.03,
+                "ry": 0.03,
+                "rz": 0.06,
+                "type": "ellipsoid"
+            },
+            "type": "translated"
+        },
+        {
+            "displacement": [
+                -0.06,
+                0,
+                0.1
+            ],
+            "phantom": {
+                "angular": {
+                    "type": "spherical"
+                },
+                "intensity": 0.1,
+                "rx": 0.03,
+                "ry": 0.06,
+                "rz": 0.03,
+                "type": "ellipsoid"
+            },
+            "type": "translated"
+        },
+        {
+            "displacement": [
+                0,
+                -0.08,
+                0
+            ],
+            "phantom": {
+                "angular": {
+                    "type": "spherical"
+                },
+                "intensity": 0.2,
+                "rx": 0.01,
+                "ry": 0.015,
+                "rz": 0.05,
+                "type": "ellipsoid"
+            },
+            "type": "translated"
+        },
+        {
+            "displacement": [
+                -0.06,
+                0.02,
+                0
+            ],
+            "phantom": {
+                "angular": {
+                    "type": "spherical"
+                },
+                "intensity": 2,
+                "rx": 0.07,
+                "ry": 0.04,
+                "rz": 0.04,
+                "type": "ellipsoid"
+            },
+            "type": "translated"
+        },
+        {
+            "angular": {
+                "type": "spherical"
+            },
+            "intensity": 1,
+            "rx": 0.15,
+            "ry": 0.15,
+            "rz": 0.2,
+            "type": "ellipsoid"
+        }
+    ]
+}
