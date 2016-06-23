@@ -4,8 +4,60 @@
 /// Simulates scanner response for given virtual phantom and produces mean file
 /// for \ref cmd_2d_strip_reconstruction.
 ///
-/// Example phantom descriptions
-/// ----------------------------
+/// Example
+/// -------
+///
+/// 1. Make a \c playground directory and step into it
+///
+///        mkdir playground
+///        cd playground
+///
+/// 2. Generate \c p_shepp_2d_strip.txt list-mode response file
+///    for \c s_shepp phantom description file scaled to 30% (\c --scale)
+///    and "big" barrel configuration (\c -c)
+///    using additive method, 4mm pixel size (\c -p),
+///    100 thousand detected emissions (\c -e together with \c --detected)
+///    and be verbose (\c -v)
+///
+///        ../2d_strip_phantom ../phantoms/s_shepp \
+///          --scale 0.3 --additive \
+///          -p 0.004 \
+///          -c ../config/big.cfg \
+///          -e 100k --detected \
+///          -o p_shepp_2d_strip.txt \
+///          -v
+///
+/// \note Accompanying \c png files will be generated for emitted, detected and
+/// naive reconstruction.
+/// \note Default 1.5 cm \f$ \sigma_z \f$ and 3 cm \f$ \sigma_l \f$
+/// (6 cm \f$ \sigma_{\Delta l} \f$) will be used. Different values can be
+/// specified with \c --s-z and \c --s-dl respectively.
+///
+/// Phantom description format
+/// --------------------------
+///
+/// 2D phantom description is a textual file, where each shape (primitive or
+/// source) is specified in a separate line. There are 3 types of primivites:
+/// \c ellipse, \c rectangle and \c point.
+///
+/// - \c ellipse (all fields after "ellipse" are float values)
+///
+///       ellipse x_pos y_pos a_radius b_radius rotation_deg intensity
+///
+/// - \c rectangle line format (all fields after "rectangle" are float values)
+///
+///       ellipse x_pos y_pos width height intensity
+///
+/// - \c point line format (all fields after "point" are float values)
+///
+///       point x_pos y_pos intensity
+///
+/// All primitives' intensities are exclusive, where the top primitive lies in
+/// the 1st line, unless \c --additive option is given, which makes the
+/// intensities to add (accumulate) when they overlap.
+///
+/// Sample phantom descriptions
+/// ---------------------------
 /// - Shepp like phantom
 ///
 ///   \verbinclude phantoms/s_shepp

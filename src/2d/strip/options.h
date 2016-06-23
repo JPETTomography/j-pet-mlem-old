@@ -9,9 +9,13 @@
 /// Workflow
 /// --------
 /// \f[
-///   \mathit{phantom~desc.} \rightarrow \mathtt{2d\_barrel\_phantom}
-///                          \rightarrow \mathit{reconstruction~image}
+///  \\ \mathit{phantom~desc.} \rightarrow \mathtt{2d\_strip\_phantom}
+///                            \rightarrow \mathit{response}
+///                            \rightarrow \mathtt{2d\_strip\_reconstruction}
 /// \f]
+///
+/// \note See \ref cmd_2d_strip_phantom and \ref cmd_2d_strip_reconstruction for
+/// usage examples.
 
 #pragma once
 

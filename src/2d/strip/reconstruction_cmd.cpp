@@ -5,12 +5,30 @@
 /// physical scanner response or simulated response output from \ref
 /// cmd_2d_strip_phantom.
 ///
-/// \image html detector-frame-space-ellipse.pdf.png
-///
-/// Authors
+/// Example
 /// -------
-/// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
-/// - Jakub Kowal     <jakub.kowal@uj.edu.pl>
+///
+/// 1. Make a \c playground directory and step into it
+///
+///        mkdir playground
+///        cd playground
+///
+/// 2. Reconstruct \c p_shepp_2d_strip.txt list-mode response file generated
+///    with \ref cmd_2d_strip_phantom into \c r_shepp_2d_strip.txt
+///    using 20 iterations and be verbose (\c -v)
+///
+///        ../2d_strip_reconstruction p_shepp_2d_strip.txt \
+///          -i 20 \
+///          -o r_shepp_2d_strip.txt \
+///          -v
+///
+/// \note \c p_shepp_2d_strip.cfg file will be automatically read if it exists.
+/// \note Accompanying \c png files will be generated for each iteration.
+/// \note Default 1.5 cm \f$ \sigma_z \f$ and 3 cm \f$ \sigma_l \f$
+/// (6 cm \f$ \sigma_{\Delta l} \f$) will be used. Different values can be
+/// specified with \c --s-z and \c --s-dl respectively.
+///
+/// \image html detector-frame-space-ellipse.pdf.png
 ///
 /// Input format
 /// ------------
@@ -34,6 +52,11 @@
 ///
 /// In order to convert various other list-mode reponse formats into this format
 /// \ref cmd_3d_tool_convert can be used.
+///
+/// Authors
+/// -------
+/// - Adam Strzelecki <adam.strzelecki@uj.edu.pl>
+/// - Jakub Kowal     <jakub.kowal@uj.edu.pl>
 ///
 /// Usage
 /// -----
