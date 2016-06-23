@@ -1,5 +1,5 @@
 /// \page cmd_3d_hybrid_matrix 3d_hybrid_matrix
-/// \brief 3D Longitudinal PET system matrix construction tool
+/// \brief 3D Hybrid PET system matrix construction tool
 ///
 /// Creates system matrix file and accomanying SVG & PNG files for single slice
 /// along z-axis.

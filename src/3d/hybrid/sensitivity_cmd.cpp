@@ -1,5 +1,5 @@
 /// \page cmd_3d_hybrid_sensitivity 3d_hybrid_sensitivity
-/// \brief 3D Longitudinal PET sensitivity map construction tool
+/// \brief 3D Hybrid PET sensitivity map construction tool
 ///
 /// Creates sensitivity map for given scanner geometry.
 ///

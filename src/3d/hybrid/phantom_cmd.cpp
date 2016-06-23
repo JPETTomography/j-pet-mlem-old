@@ -1,8 +1,56 @@
 /// \page cmd_3d_hybrid_phantom 3d_hybrid_phantom
-/// \brief 3D Longitudinal PET phantom generation tool
+/// \brief 3D Hybrid PET phantom generation tool
 ///
 /// Simulates detector response for given virtual phantom and produces mean file
 /// for \ref cmd_3d_hybrid_reconstruction.
+///
+/// Example
+/// -------
+///
+/// 1. Make a \c playground directory and step into it
+///
+///        mkdir playground
+///        cd playground
+///
+/// 2. Generate \c p_shepp_3d.txt list-mode response file
+///    for \c s_shepp_like_w_shell.json 3D phantom description file
+///    and "big" barrel configuration (\c -c)
+///    using additive method, 4mm pixel size (\c -p),
+///    \f$ 256^3 \f$ image space (\c -n),
+///    100 thousand detected emissions (\c -e together with \c --detected)
+///    and be verbose (\c -v)
+///
+///        ../3d_hybrid_phantom ../phantoms/s_shepp_like_w_shell.json \
+///          -p 0.004 -n 256 \
+///          -c ../config/big.cfg \
+///          -e 100k --detected \
+///          -o p_shepp_3d.txt \
+///          -v
+///
+/// \note Accompanying image binary and \c nrrd header files will be generated
+/// for emitted and detected 3D volumetric image densities. This requires
+/// specyfying pixel size with \c -p. For viewing this data see \ref
+/// cmd_3d_hybrid_reconstruction 3D volumetric image viewing section.
+/// \note Default 1.5 cm \f$ \sigma_z \f$ and 3 cm \f$ \sigma_l \f$
+/// (6 cm \f$ \sigma_{\Delta l} \f$) will be used. Different values can be
+/// specified with \c --s-z and \c --s-dl respectively.
+///
+/// 3D phantom description format
+/// -----------------------------
+///
+/// 3D phantom description is a \c json file, containing an array of
+/// dictionaries for each primitive (source). There are 3 types of primivites:
+/// \c ellipse, \c rectangle and \c point.
+///
+/// All primitives' intensities are exclusive, where the top primitive lies in
+/// the 1st line, unless \c --additive option is given, which makes the
+/// intensities to add (accumulate) when they overlap.
+///
+/// Sample phantom descriptions
+/// ---------------------------
+/// - Shepp like 3D phantom
+///
+///   \verbinclude phantoms/s_shepp_like_w_shell.json
 ///
 /// Usage
 /// -----

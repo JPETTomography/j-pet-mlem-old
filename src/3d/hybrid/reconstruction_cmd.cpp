@@ -1,9 +1,59 @@
 /// \page cmd_3d_hybrid_reconstruction 3d_hybrid_reconstruction
-/// \brief 3D Longitudinal PET reconstruction tool
+/// \brief 3D Hybrid PET reconstruction tool
 ///
 /// Reconstructs image using given system matrix produced by \ref
-/// cmd_3d_hybrid_matrix and mean file representing physical detector response
+/// cmd_2d_barrel_matrix and mean file representing physical detector response
 /// or simulated response output from \ref cmd_3d_hybrid_phantom.
+///
+/// This reconstruction is a hybrid of \ref cmd_2d_barrel system matrix based
+/// reconstruction and \ref cmd_2d_strip analytic approximation kernel.
+///
+/// Example
+/// -------
+///
+/// 1. Make a \c playground directory and step into it
+///
+///        mkdir playground
+///        cd playground
+///
+/// 2. Reconstruct \c p_shepp_3d.txt list-mode response file generated
+///    with \ref cmd_3d_hybrid_phantom,
+///    using \c f_big 2D system matrix generated with \ref cmd_2d_barrel matrix
+///    into \c r_shepp_2d_strip.txt
+///    using 20 iterations and be verbose (\c -v)
+///
+///        ../3d_hybrid_reconstruction p_shepp_3d.txt \
+///          --system f_big \
+///          -i 20 \
+///          -o r_shepp_3d \
+///          -v
+///
+/// \note \c f_big.cfg file will be automatically read if it exists.
+/// \note \c p_shepp_2d_strip.cfg file will be automatically read if it exists.
+/// \note Accompanying binary image and \c nrrd header files representing 3D
+/// volumetric image data will be generated for each iteration.
+/// \note Additionaly a naive reconstruction binary image and \c nrrd header
+/// file will be generated (the file without iteration number suffix).
+/// \note Default 1.5 cm \f$ \sigma_z \f$ and 3 cm \f$ \sigma_l \f$
+/// (6 cm \f$ \sigma_{\Delta l} \f$) will be used. Different values can be
+/// specified with \c --s-z and \c --s-dl respectively.
+///
+/// Viewing 3D image volumetric data
+/// --------------------------------
+///
+/// \ref cmd_3d_hybrid_reconstruction generated raw binary 3D volumetric data
+/// with accompanying \c nrrd header file. This makes possible to view 3D image
+/// using several programs supporting [NRRD](http://teem.sourceforge.net/nrrd/)
+/// format, such as [ParaView](http://www.paraview.org/) visualization program,
+/// [MRIcro](http://www.mccauslandcenter.sc.edu/crnl/mricro) lightweight OS X
+/// viewer or
+/// [MRIcroGL](http://www.mccauslandcenter.sc.edu/mricrogl/home) multiplatform
+/// viewer.
+///
+/// \warning MRIcroGL version is currently unable to view \c int32 data, so it
+/// is not possible to view naive or detected/emitted density data using this
+/// program. However it can be used to view \c float32 reconstruction iteration
+/// data.
 ///
 /// Usage
 /// -----
