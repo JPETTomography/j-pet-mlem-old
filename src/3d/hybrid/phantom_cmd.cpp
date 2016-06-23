@@ -39,8 +39,32 @@
 /// -----------------------------
 ///
 /// 3D phantom description is a \c json file, containing an array of
-/// dictionaries for each primitive (source). There are 3 types of primivites:
-/// \c ellipse, \c rectangle and \c point.
+/// dictionaries for each primitive (source). There are 3 basic primivites
+/// specified using \c type JSON dictionary key:
+///
+/// - \c cylinder with specific \c radius, \c height,
+///   \c angular (dictionary) distribution description
+///   with \c type equal to \c spherical,
+///   and common \c intensity (float)
+/// - \c ellipsoid with specific \c rx, \c ry, \c rz (float) radiuses,
+///   \c angular (dictionary) distribution description
+///   with \c type equal to \c spherical,
+///   and common \c intensity (float)
+/// - \c rectangular with specific \c rx, \c ry, \c rz (float) sizes
+///   and common \c intensity (float)
+/// - \c point with specific \c origin (3 float array),
+///   \c angular (dictionary) distribution description,
+///   with \c type equal to either \c spherical or \c single-direction,
+///   and common \c intensity (float)
+///
+/// Both \c ellipsoid and \c rectangular have zero origin and are aligned to
+/// the axes. For non-zero origin and/or roatation two special wrappers must be
+/// used:
+/// - \c translated with specific \c displacement (3 float array)
+///   and common \c phantom containing translated primitive or other wrapper
+/// - \c rotated with either specific \c R (9 float array) rotation matrix
+///   or \c axis (3 float array) together with \c angle (float)
+///   and common \c phantom containing translated primitive or other wrapper
 ///
 /// All primitives' intensities are exclusive, where the top primitive lies in
 /// the 1st line, unless \c --additive option is given, which makes the
