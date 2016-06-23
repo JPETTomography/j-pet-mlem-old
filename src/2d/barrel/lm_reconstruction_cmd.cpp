@@ -6,6 +6,9 @@
 /// detector response or simulated response output from
 /// \ref cmd_2d_barrel_phantom.
 ///
+/// \warning This command is experimental and should be **NOT** used for regular
+/// 2D bin-mode reconstruction.
+///
 /// Authors
 /// -------
 /// - Piotr Bialas <piotr.bialas@uj.edu.pl>

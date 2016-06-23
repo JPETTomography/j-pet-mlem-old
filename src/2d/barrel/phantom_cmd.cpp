@@ -4,8 +4,36 @@
 /// Simulates detector response for given virtual phantom and produces mean file
 /// for \ref cmd_2d_barrel_reconstruction.
 ///
-/// Example phantom descriptions
-/// ----------------------------
+/// Example
+/// -------
+///
+/// 1. Make a \c playground directory and step into it
+///
+///        mkdir playground
+///        cd playground
+///
+/// 2. Generate \c p_shepp_2d_barrel.txt 2D barrel bin-mode response file
+///    for \c s_shepp phantom description file scaled to 40% (\c --scale)
+///    and "big" barrel configuration (\c -c)
+///    using additive method, 4mm pixel size (\c -p),
+///    1 million detected emissions (\c -e together with \c --detected)
+///    and be verbose (\c -v)
+///
+///        ../2d_barrel_phantom ../phantoms/s_shepp \
+///          --scale 0.4 --additive \
+///          -p 0.004 \
+///          -c ../config/big.cfg \
+///          -e 1m --detected \
+///          -o p_shepp_2d_barrel.txt \
+///          -v
+///
+/// Phantom description format
+/// --------------------------
+///
+/// See \ref cmd_2d_strip_phantom.
+///
+/// Sample phantom descriptions
+/// ---------------------------
 /// - Shepp like phantom
 ///
 ///   \verbinclude phantoms/s_shepp
@@ -13,6 +41,11 @@
 /// - Small Shepp like phantom
 ///
 ///   \verbinclude phantoms/s_shepp_scaled
+///
+/// Sample phantoms are shipped with source-code in \c phantom/ subdirectory.
+///
+/// \note Phantoms with \c json extension are for 3D phantom simulation \ref
+/// cmd_3d_hybrid_phantom.
 ///
 /// Authors
 /// -------

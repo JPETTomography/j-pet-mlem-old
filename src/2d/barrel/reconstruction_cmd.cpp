@@ -5,6 +5,28 @@
 /// cmd_2d_barrel_matrix and mean file representing physical detector response
 /// or simulated response output from \ref cmd_2d_barrel_phantom.
 ///
+/// Example
+/// -------
+///
+/// 1. Make a \c playground directory and step into it
+///
+///        mkdir playground
+///        cd playground
+///
+/// 2. Reconstruct \c p_shepp_2d_barrel.txt bin-mode response file generated
+///    with \ref cmd_2d_barrel_phantom into \c r_shepp_2d_barrel.txt using
+///    system matrix file \c f_big generated with \ref cmd_2d_barrel_matrix,
+///    using 20 iterations and be verbose (\c -v)
+///
+///        ../2d_barrel_reconstruction p_shepp_2d_barrel.txt \
+///          --system f_big \
+///          -i 20 \
+///          -o r_shepp_2d_barrel.txt \
+///          -v
+///
+/// \note \c f_big.cfg file will be automatically read if it exists.
+/// \note Accompanying \c png files will be generated for each iteration.
+///
 /// Authors
 /// -------
 /// - Piotr Bialas    <piotr.bialas@uj.edu.pl>

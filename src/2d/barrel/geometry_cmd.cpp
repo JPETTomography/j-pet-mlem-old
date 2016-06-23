@@ -4,6 +4,9 @@
 /// Creates geometry description binary file for LM reconstruction
 /// \ref cmd_2d_barrel_lm_reconstruction.
 ///
+/// \warning This command is experimental and should be **NOT** used for regular
+/// 2D bin-mode reconstruction.
+///
 /// This is alternative for \ref cmd_2d_barrel_matrix. It does not use
 /// Monte-Carlo, but calculates every LOR geometry and pixels that lie inside
 /// this LOR.
@@ -11,12 +14,19 @@
 /// Example
 /// -------
 ///
-/// - Create geometry description for 2 rings of 48 detectors using 1 million
-///   emissions from each pixel:
+/// 1. Make a \c playground directory and step into it
 ///
-///        2d_barrel_geometry -s square -w 0.007 -h 0.017
-///                           -r 0.360,0.400 -d 48
-///                           -e 1000000 -o data/201412_rings/gpu_2rings
+///        mkdir playground
+///        cd playground
+///
+/// 2. Create geometry description for 2 rings of 48 detectors using 1 million
+///    emissions from each pixel:
+///
+///        ../2d_barrel_geometry \
+///          -s square -w 0.007 -h 0.017 \
+///          -r 0.360,0.400 -d 48 \
+///          -e 1m \
+///          -o g_2rings
 ///
 /// Authors
 /// -------

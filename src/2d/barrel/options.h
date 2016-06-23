@@ -26,7 +26,10 @@
 ///            \rightarrow \mathit{reconstruction~image}
 /// \f]
 ///
-/// 2. Using LM and geometry description:
+///    \note See \ref cmd_2d_barrel_matrix, \ref cmd_2d_barrel_phantom and
+///    \ref cmd_2d_barrel_reconstruction for usage examples.
+///
+/// 2. Using LM and geometry description (**EXPERIMENTAL!**):
 ///
 /// \f[
 ///   \left.

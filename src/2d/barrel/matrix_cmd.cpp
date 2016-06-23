@@ -7,12 +7,41 @@
 /// Example
 /// -------
 ///
-/// - Create system matrix for 2 rings of 48 detectors using 1 million emissions
-///   from each pixel:
+/// 1. Make a \c playground directory and step into it
 ///
-///        2d_barrel_matrix -s square -w 0.007 -h 0.017
-///                         -r 0.360,0.400 -d 48
-///                         -e 1000000 -o data/201412_rings/gpu_2rings
+///        mkdir playground
+///        cd playground
+///
+/// 2. Create system matrix for 2 rings of 36cm and 40cm radius (\c -r)
+///    and 48 detectors (\c -d) using 1 million emissions
+///    from each pixel (\c -e) of size 4mm (\c -p) and be verbose (\c -v)
+///
+///        ../2d_barrel_matrix \
+///          -s square -w 0.007 -h 0.017 \
+///          -r 0.360,0.400 -d 48 \
+///          -e 1m \
+///          -p 0.004 \
+///          -o m_2rings \
+///          -v
+///
+/// 3. Create full system matrix for "big" barrel configuration
+///    1 million emissions from each pixel (\c -e) of size 4mm (\c -p)
+///    and be verbose (\c -v)
+///
+///        ../2d_barrel_matrix \
+///          -c ../config/big.cfg \
+///          -e 1m \
+///          -p 0.004 \
+///          --full \
+///          -o f_big \
+///          -v
+///
+/// \note Unless \c --full is given, the command produces triangular (1/8)
+/// matrix which is unsuitable for reconstruction.
+///
+/// \note Generating 1 million emissions system matrix may take a while on CPU,
+/// it is recommended to use a CUDA compatible (NVIDIA) GPU card enabled by
+/// passing \c -G or \c --gpu option.
 ///
 /// Authors
 /// -------
