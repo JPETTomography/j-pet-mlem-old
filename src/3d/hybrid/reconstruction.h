@@ -335,6 +335,13 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
                                  R,
                                  scanner.length,
                                  Point2D(z, up));
+          // FIXME: In some cases we may be at the detector boundary, eg. up
+          // equal or more than radius (distance between scintillators), this
+          // gives negative value for 2d analytic kernel.
+          if (kernel2d <= 0) {
+            thread_kernel_caches_[thread][voxel_index] = 0;
+            continue;
+          }
           if (multiplane) {
             const auto abs_plane =
                 compat::abs(iz - (int)geometry.n_planes_half);

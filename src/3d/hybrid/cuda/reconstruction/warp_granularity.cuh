@@ -101,6 +101,8 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                           R,
                                           barrel_length,
                                           Point2D(z, up));
+        if (kernel2d <= 0)  // can happen when pixel is at radius boundary
+          continue;
         auto kernel_t = pixel_weight;
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                       rho;
@@ -156,6 +158,8 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
                                           R,
                                           barrel_length,
                                           Point2D(z, up));
+        if (kernel2d <= 0)  // can happen when pixel is at radius boundary
+          continue;
         auto kernel_t = pixel_weight;
         auto weight = kernel2d * kernel_t *  // hybrid of 2D x-y & y-z
                       rho;
