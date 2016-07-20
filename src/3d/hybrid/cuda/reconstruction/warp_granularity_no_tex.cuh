@@ -89,7 +89,7 @@ __global__ static void reconstruction(const LineSegment* lor_line_segments,
     // reduce denominator so all threads now share same value
     Common::GPU::reduce(denominator);
 
-    if (denominator == 0)
+    if (denominator <= 0)  // boundary condition: event at the edge of FOV
       continue;
 
     const auto inv_denominator = 1 / denominator;
