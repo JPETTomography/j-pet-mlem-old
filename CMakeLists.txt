@@ -34,6 +34,9 @@ set(PET_USE_SENSITIVITY ON
 set(PET_USE_KERNEL ON
     CACHE BOOL
     "use kernel (when off it uses constant 1 for kernel value)")
+set(PET_THROW_ON_ZERO_DENOMINATOR OFF
+    CACHE BOOL
+    "throw on zero denominator (event outside FOV)")
 set(PET_MAX_PIXELS_PER_THREAD 12
     CACHE INTEGER
     "chosen arbitrarily, no more than 11 pixels per thread in current config")

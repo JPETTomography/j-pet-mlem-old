@@ -365,18 +365,27 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
       if (denominator > 0) {
         inv_denominator = 1 / denominator;
       } else {
-        std::cerr << "denominator == < 0 !\n";
-        std::cerr << "event " << i << "\n";
-        std::cerr << "denominator " << denominator << "\n";
-        std::cerr << "planes " << event.plane_begin << ":" << event.plane_end
-                  << "\n";
-        std::cerr << "(" << geometry.pixels[event.pixel_info_begin].x << ","
+#if THROW_ON_ZERO_DENOMINATOR
+        // NOTE: Even we filter events on read whose BB are out of FOV, it can
+        // happen that some pixels are in FOV partially, but on the radius, so
+        // 2D analytic kernel gives zero or negative value.
+        // Therefore this is only expected case it can happen, any other case
+        // means a bug in the code.
+        std::cerr << std::endl;  // keeps the progress
+        std::cerr << "non-positive denominator == < 0" << std::endl;
+        std::cerr << "        event = " << i << std::endl;
+        std::cerr << "  denominator = " << denominator << std::endl;
+        std::cerr << "       planes = " << event.plane_begin << ":"
+                  << event.plane_end << std::endl;
+        std::cerr << "     emission = " << point(event) << std::endl;
+        std::cerr << "          lor = " << event.lor.first << " "
+                  << event.lor.second << std::endl;
+        std::cerr << "pixels:" << std::endl;
+        std::cerr << "  (" << geometry.pixels[event.pixel_info_begin].x << ","
                   << geometry.pixels[event.pixel_info_begin].y << ") to ("
                   << geometry.pixels[event.pixel_info_end].x << ","
-                  << geometry.pixels[event.pixel_info_end].y << ")\n";
-        std::cerr << "emission " << point(event) << "\n";
-        std::cerr << "lor " << event.lor.first << " " << event.lor.second
-                  << "\n";
+                  << geometry.pixels[event.pixel_info_end].y
+                  << "):" << std::endl;
 
         for (auto info_index = event.pixel_info_begin;
              info_index < event.pixel_info_end;
@@ -386,11 +395,14 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
           const auto pixel_weight = geometry.pixel_weights[info_index];
           const auto center = pixel_grid.center_at(pixel);
 
-          std::cerr << "(" << pixel.x << "," << pixel.y << ") " << pixel_weight
-                    << " " << center << "\n";
+          std::cerr << "    (" << pixel.x << "," << pixel.y << ") "
+                    << pixel_weight << " " << center << "\n";
         }
 
         throw("denominator == 0 !");
+#else
+        continue;
+#endif
       }
 
       // -- voxel loop ---------------------------------------------------------
