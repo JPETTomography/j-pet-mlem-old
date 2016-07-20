@@ -437,7 +437,7 @@ static void run_reconstruction(cmdline::parser& cl,
     // reconstruction.graph_frame_event(graphics, 0);
     auto image = reconstruction.naive();
     util::nrrd_writer nrrd_naive(
-        output_base_name + ".nrrd", output_name, output_txt);
+        output_base_name + ".nrrd", output_name.wo_path(), output_txt);
     nrrd_naive << image;
     if (output_txt) {
       std::ofstream out_naive(output_name);
@@ -468,10 +468,12 @@ static void run_reconstruction(cmdline::parser& cl,
         [&](int iteration, const Output& output) {
           if (!output_base_name.length())
             return;
-          auto fn = iteration >= 0
-                        ? output_base_name.add_index(iteration, n_iterations)
-                        : output_base_name + "_sensitivity";
-          util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
+          cmdline::path fn =
+              iteration >= 0
+                  ? output_base_name.add_index(iteration, n_iterations)
+                  : output_base_name + "_sensitivity";
+          util::nrrd_writer nrrd(
+              fn + ".nrrd", fn.wo_path() + output_ext, output_txt);
           bool crop = crop_pixels > 0;
           if (crop) {
             cropped_output.copy(output, crop_origin);
@@ -511,8 +513,9 @@ static void run_reconstruction(cmdline::parser& cl,
         continue;
       if (!output_base_name.length())
         continue;
-      auto fn = output_base_name.add_index(iteration, n_iterations);
-      util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
+      cmdline::path fn = output_base_name.add_index(iteration, n_iterations);
+      util::nrrd_writer nrrd(
+          fn + ".nrrd", fn.wo_path() + output_ext, output_txt);
       nrrd << reconstruction.rho;
       if (output_txt) {
         std::ofstream txt(fn + ".txt");

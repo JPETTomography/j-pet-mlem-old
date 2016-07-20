@@ -233,9 +233,10 @@ int main(int argc, char* argv[]) {
             const PET2D::Strip::GPU::Reconstruction::Output& output) {
           if (!output_base_name.length())
             return;
-          auto fn = iteration >= 0
-                        ? output_base_name.add_index(iteration, n_iterations)
-                        : output_base_name + "_sensitivity";
+          cmdline::path fn =
+              iteration >= 0
+                  ? output_base_name.add_index(iteration, n_iterations)
+                  : output_base_name + "_sensitivity";
           util::png_writer png(fn + ".png");
           png << output;
           if (output_txt) {
@@ -245,7 +246,8 @@ int main(int argc, char* argv[]) {
             util::obstream bin(fn + output_ext);
             bin << output;
           }
-          util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
+          util::nrrd_writer nrrd(
+              fn + ".nrrd", fn.wo_path() + output_ext, output_txt);
           nrrd << output;
         },
         [&](int completed, bool finished) { progress(completed, finished); },
@@ -283,7 +285,7 @@ int main(int argc, char* argv[]) {
         reconstruction.output_tuples(txt);
       } else if (output_ext != ".png") {
         util::obstream bin(fn + output_ext);
-        util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext);
+        util::nrrd_writer nrrd(fn + ".nrrd", fn.wo_path() + output_ext);
         bin << reconstruction.rho;
         nrrd << reconstruction.rho;
       }

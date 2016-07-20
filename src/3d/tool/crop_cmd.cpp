@@ -118,12 +118,13 @@ int main(int argc, char* argv[]) {
       // do not add suffix if output has already one
       n_digits = 0;
     }
-    auto fn = n_digits > 0 ? output_base_name.add_index(index, -n_digits)
+    cmdline::path fn = n_digits > 0
+                           ? output_base_name.add_index(index, -n_digits)
                            : output_base_name;
 
     std::cerr << "       output = " << fn + output_ext << std::endl;
     cropped_img.copy(img, crop_origin);
-    util::nrrd_writer nrrd(fn + ".nrrd", fn + output_ext, output_txt);
+    util::nrrd_writer nrrd(fn + ".nrrd", fn.wo_path() + output_ext, output_txt);
     nrrd << cropped_img;
     if (output_txt) {
       std::ofstream txt(fn + ".txt");
