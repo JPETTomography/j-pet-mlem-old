@@ -149,7 +149,7 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
   S plane(F z) { return S((z - grid.z_left) / grid.pixel_grid.pixel_size); }
 
   bool bb_intersects_grid_with_positive_weight(const FrameEvent& event) {
-    if (event.plane_end < 0 || event.plane_begin >= grid.n_planes)
+    if (event.plane_end <= 0 || event.plane_begin >= grid.n_planes)
       return false;
 
     for (size_t i = event.pixel_info_begin; i < event.pixel_info_end; i++) {
