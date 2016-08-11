@@ -73,7 +73,7 @@ endif()
 
 # enable C++11 and warnings
 if(NOT MSVC)
-  add_definitions(-std=c++11 -Wall -Wunused-parameter)
+  add_definitions(-std=c++11 -Wall -Wunused-parameter -Wno-comment)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g")
   if(WIN32)
     add_definitions(-D_USE_MATH_DEFINES)
