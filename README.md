@@ -123,6 +123,41 @@ To disable some option enabled by default, e.g. `PET_WARP_GRANULARITY`:
 
 	cmake -DPET_WARP_GRANULARITY:BOOL=OFF
 
+Running
+-------
+
+Please consult [Related Pages](pages.html) of *Doxygen* generated documentation
+for detailed description of available commands and run examples.
+
+#### GPU support
+
+Some commands offer `--gpu`/`-G` option to enable GPU (CUDA) backend. The most
+powerful GPU card is selected automatically by default. This choice may be
+overridden by `-D`/`--device` expecting integer device index.
+
+There are two common errors that can appear when using GPU (CUDA) backend:
+
+1. `cudaSetDevice() 35: CUDA driver version is insufficient for CUDA runtime
+   version`
+
+   This means that there is no CUDA compatible device available in the system,
+   regardless of successful compilation using CUDA SDK. Please make sure you
+   have CUDA compatible GPU device installed in your system.
+
+2. `cudaPeekAtLastError() 8: invalid device function`
+
+   This means that available/selected GPU card computing capability is not
+   sufficient. Only devices with compute capability 3.0 or higher are
+   officially supported.
+   Please consult [compute capability device list][cudagpus] and see if your
+   device is supported.
+
+   You can alternatively tweak `CMakeLists.txt` adding extra `-gencode` entry
+   with lower device compute capability to `CUDA_NVCC_FLAGS`, however we do not
+   guarantee it will work fine.
+
+[cudagpus]: https://developer.nvidia.com/cuda-gpus
+
 Testing
 -------
 
