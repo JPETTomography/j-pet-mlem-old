@@ -137,6 +137,7 @@ void run<Scanner>(
            length_scale,
            rng_state,
            pixel_hits);
+    cudaPeekAtLastError();  // ensure kernel was run successfully
     cudaThreadSynchronize();
 
     pixel_hits.copy_from_device();
