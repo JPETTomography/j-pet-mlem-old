@@ -138,14 +138,15 @@ if(CUDA_FOUND)
   endif()
   # don't add host flags to CUDA
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-  # workaround FindCUDA bug
-  if(NOT CMAKE_C_COMPILER)
+  # workaround FindCUDA bug when no C compiler is specified
+  if(NOT CMAKE_C_COMPILER AND NOT CUDA_HOST_COMPILER)
     if(NOT MSVC)
       include(CMakeDetermineCCompiler)
       get_filename_component(CUDA_HOST_COMPILER "${CMAKE_C_COMPILER}" REALPATH)
     else()
       set(CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}")
     endif()
+    set(CUDA_HOST_COMPILER "${CUDA_HOST_COMPILER}" CACHE PATH "CUDA host compiler path" FORCE)
   endif()
 endif()
 
