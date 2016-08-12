@@ -90,6 +90,7 @@ void run(Scanner<F, S>& scanner,
                      responses_soa.dl,
                      n_responses,
                      output_rho.device_ptr);
+      cudaPeekAtLastError();  // ensure kernel was run successfully
       cudaThreadSynchronize();
 
       progress(iteration, true);

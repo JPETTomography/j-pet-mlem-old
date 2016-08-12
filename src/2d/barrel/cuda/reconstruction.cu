@@ -140,9 +140,11 @@ void run(const Geometry& geometry,
                                      geometry.n_pixel_infos,
                                      scale,
                                      width);
+  cudaPeekAtLastError();  // ensure kernel was run successfully
   cudaThreadSynchronize();
 
   Common::GPU::invert(scale, width * height);
+  cudaPeekAtLastError();  // ensure kernel was run successfully
   cudaThreadSynchronize();
 
   for (int block = 0; block < n_iteration_blocks; ++block) {
@@ -161,9 +163,11 @@ void run(const Geometry& geometry,
                        n_means,
                        output_rho,
                        width);
+      cudaPeekAtLastError();  // ensure kernel was run successfully
       cudaThreadSynchronize();
 
       reconstruction_2(output_rho, scale, width, height);
+      cudaPeekAtLastError();  // ensure kernel was run successfully
       cudaThreadSynchronize();
 
       progress(iteration, true);

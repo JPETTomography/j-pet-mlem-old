@@ -99,6 +99,7 @@ void run_gpu_phantom(int n_threads_per_block,
                              w_detector,
                              pixel_size);
 #endif
+      cudaPeekAtLastError();  // ensure kernel was run successfully
       cudaThreadSynchronize();
     }
     cudaMemcpy(cpu_matrix,

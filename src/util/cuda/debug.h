@@ -51,6 +51,7 @@ static cudaError cudbgLastError;
 #define cudaSetDevice(...)            CUDBG(SetDevice, __VA_ARGS__)
 #define cudaThreadSynchronize(...)    CUDBG(ThreadSynchronize, __VA_ARGS__)
 #define cudaUnbindTexture(...)        CUDBG(UnbindTexture, __VA_ARGS__)
+#define cudaPeekAtLastError(...)      CUDBG(PeekAtLastError, __VA_ARGS__)
 // clang-format on
 
 #endif

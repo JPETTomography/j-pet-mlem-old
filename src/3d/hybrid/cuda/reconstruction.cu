@@ -162,6 +162,7 @@ void run(const Geometry& geometry,
                        sigma_dl,
                        grid,
                        barrel_length);
+      cudaPeekAtLastError();  // ensure kernel was run successfully
       cudaThreadSynchronize();
 
       progress(iteration, true);
