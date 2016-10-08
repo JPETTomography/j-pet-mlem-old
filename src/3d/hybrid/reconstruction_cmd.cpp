@@ -19,7 +19,7 @@
 /// 2. Reconstruct \c p_shepp_3d.txt list-mode response file generated
 ///    with \ref cmd_3d_hybrid_phantom,
 ///    using \c f_big 2D system matrix generated with \ref cmd_2d_barrel matrix
-///    into \c r_shepp_2d_strip.txt
+///    into \c r_shepp_3d
 ///    using 20 iterations and be verbose (\c -v)
 ///
 ///        ../3d_hybrid_reconstruction p_shepp_3d.txt \
