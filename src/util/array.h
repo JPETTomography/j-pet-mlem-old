@@ -36,7 +36,8 @@ class array {
   }
   /// Make n-element array with given values.
   template <typename... Args>
-  explicit _ array(T&& arg, Args&&... args) : s(sizeof...(args) + 1) {
+  explicit _ array(T&& arg, Args&&... args)
+      : s(sizeof...(args) + 1) {
     __init<0>(std::forward<T>(arg), std::forward<Args>(args)...);
   }
 

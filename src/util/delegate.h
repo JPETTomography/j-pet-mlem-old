@@ -84,11 +84,11 @@ template <class R, class... A> class delegate<R(A...)> {
   delegate& operator=(delegate&&) = default;
 
   template <class C> delegate& operator=(R (C::*const rhs)(A...)) {
-    return *this = from(static_cast<C*>(object_ptr_), rhs);
+    return * this = from(static_cast<C*>(object_ptr_), rhs);
   }
 
   template <class C> delegate& operator=(R (C::*const rhs)(A...) const) {
-    return *this = from(static_cast<C const*>(object_ptr_), rhs);
+    return * this = from(static_cast<C const*>(object_ptr_), rhs);
   }
 
   template <

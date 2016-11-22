@@ -171,13 +171,13 @@ class GenericScanner
     }
     // sort them so the closest go first
     // (1) negative distances (one side)
-    util::heap_sort(negative.begin(), negative.end(), [&](S a, S b) {
-      return distances[a] > distances[b];
-    });
+    util::heap_sort(negative.begin(),
+                    negative.end(),
+                    [&](S a, S b) { return distances[a] > distances[b]; });
     // (2) positive distances (other side)
-    util::heap_sort(positive.begin(), positive.end(), [&](S a, S b) {
-      return distances[a] < distances[b];
-    });
+    util::heap_sort(positive.begin(),
+                    positive.end(),
+                    [&](S a, S b) { return distances[a] < distances[b]; });
   }
 
   _ bool did_intersect(Event event, S detector, Point& p1, Point& p2) const {

@@ -175,11 +175,12 @@ struct text_parser {
   }
 };
 
-#define TEXT_PARSER_TYPE(_type, _convert, ...)                                 \
-  template <> inline text_parser& text_parser::operator>><_type>(_type& val) { \
-    skip_space();                                                              \
-    val = _convert(str, ##__VA_ARGS__);                                        \
-    return *this;                                                              \
+#define TEXT_PARSER_TYPE(_type, _convert, ...)                      \
+  template <>                                                       \
+  inline text_parser& text_parser::operator>><_type>(_type & val) { \
+    skip_space();                                                   \
+    val = _convert(str, ##__VA_ARGS__);                             \
+    return *this;                                                   \
   }
 
 TEXT_PARSER_TYPE(float, parse_fp<float>)

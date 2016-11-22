@@ -26,14 +26,13 @@ void __cxa_throw(void* ex,
                  void (*dest)(void*)) {
   last_size =
       backtrace(last_frames, sizeof(last_frames) / sizeof(*last_frames));
-  static void (*const rethrow)(void*, void*, void (*)(void*))
-      __attribute__((noreturn)) =
+  static void (*const rethrow)(
+      void*, void*, void (*)(void*)) __attribute__((noreturn)) =
 #if __clang__
-          (__attribute__((noreturn)) void (*)(
-              void*, void*, void (*)(void*)))dlsym(RTLD_NEXT, "__cxa_throw");
+      (__attribute__((noreturn)) void (*)(void*, void*, void (*)(void*)))dlsym(
+          RTLD_NEXT, "__cxa_throw");
 #else
-          (void (*)(void*, void*, void (*)(void*)))dlsym(RTLD_NEXT,
-                                                         "__cxa_throw");
+      (void (*)(void*, void*, void (*)(void*)))dlsym(RTLD_NEXT, "__cxa_throw");
 #endif
   rethrow(ex, info, dest);
 }

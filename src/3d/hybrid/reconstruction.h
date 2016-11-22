@@ -168,20 +168,22 @@ template <class ScannerClass, class Kernel2DClass> class Reconstruction {
     util::text_parser::read_lines(fn, [&](const char*) { ++n_lines; });
     events_.reserve(n_lines);
     // now read actual values
-    util::text_parser::read_lines(fn, [&](const char* line) {
-      util::text_parser parser(line);
-      Response response;
-      try {
-        parser >> response.lor.first >> response.lor.second >> response.z_up >>
-            response.z_dn >> response.dl;
-      } catch (const char* ex) {
-        std::cerr << "error line: " << line << std::endl;
-        throw(ex);
-      }
-      auto event = translate_to_frame(response);
-      if (bb_intersects_grid_with_positive_weight(event))
-        events_.push_back(event);
-    });
+    util::text_parser::read_lines(
+        fn,
+        [&](const char* line) {
+          util::text_parser parser(line);
+          Response response;
+          try {
+            parser >> response.lor.first >> response.lor.second >>
+                response.z_up >> response.z_dn >> response.dl;
+          } catch (const char* ex) {
+            std::cerr << "error line: " << line << std::endl;
+            throw(ex);
+          }
+          auto event = translate_to_frame(response);
+          if (bb_intersects_grid_with_positive_weight(event))
+            events_.push_back(event);
+        });
   }
 #endif
 
