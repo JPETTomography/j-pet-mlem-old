@@ -30,9 +30,6 @@ template <typename FType> struct Vector {
 #if !__CUDACC__
   /// construct Vector from json
   Vector(const json& j) : x(j[0]), y(j[1]), z(j[2]) {}
-
-  /// construct Vector from stream
-  Vector(std::istream& in) : x(util::read<F>(in)), y(util::read<F>(in)) {}
 #endif
 
   _ Vector& operator+=(const Vector& v) {
@@ -133,6 +130,10 @@ template <typename FType> struct Vector {
     return out;
   }
 #endif
+
+  static Vector e_x() { return Vector(1, 0, 0); }
+  static Vector e_y() { return Vector(0, 1, 0); }
+  static Vector e_z() { return Vector(0, 0, 1); }
 };
 }
 
