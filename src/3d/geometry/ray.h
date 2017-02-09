@@ -56,7 +56,45 @@ template <typename F> using intersection_result = std::pair<bool, F>;
 
 template <typename F>
 intersection_result<F> intersect(const Ray<F>& ray, const Box<F>& box) {
-  return std::make_pair(true, 0.5);
+  using Vector = PET3D::Vector<F>;
+  using Point = PET3D::Point<F>;
+
+  F t_min = std::numeric_limits<F>::lowest();
+  F t_max = std::numeric_limits<F>::max();
+
+  Vector p = box.center - ray.p;
+
+  Vector normals[3] = { box.a_u, box.a_v, box.a_w };
+  F sides[3] = { box.h_u, box.h_v, box.h_w };
+
+  for (int i = 0; i < 3; i++) {
+    Vector a = normals[i];
+    F e = a.dot(p);
+    F f = a.dot(ray.d);
+    if (std::fabs(f) > std::numeric_limits<F>::epsilon()) {
+      F t1 = (e + sides[i]) / f;
+      F t2 = (e - sides[i]) / f;
+      if (t1 > t2)
+        std::swap(t1, t2);
+      if (t1 > t_min)
+        t_min = t1;
+      if (t2 < t_max)
+        t_max = t2;
+      if (t_min > t_max)
+        return std::make_pair(false, 0);
+      if (t_max < 0)
+        return std::make_pair(false, 0);
+    } else {
+
+      if ((-e - sides[i]) > 0 || (-e + sides[i]) < 0)
+        return std::make_pair(false, 0);
+    }
+  }
+
+  if (t_min > 0)
+    return std::make_pair(true, t_min);
+  else
+    return std::make_pair(true, t_max);
 }
 }
 
