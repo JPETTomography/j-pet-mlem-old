@@ -3,6 +3,7 @@
 
 #include "3d/geometry/vector.h"
 #include "3d/geometry/point.h"
+#include "3d/geometry/transform.h"
 
 namespace ray_tracing {
 template <typename F> class Ray {
@@ -51,6 +52,16 @@ template <typename F> class Box {
                half_diag.x,
                half_diag.y,
                half_diag.z);
+  }
+
+  static Box rotate(const Box& box, F theta, const Vector d, const Point& c) {
+    return Box(::rotate(box.center, theta, d, c),
+               ::rotate(box.a_u, theta, d),
+               ::rotate(box.a_v, theta, d),
+               ::rotate(box.a_w, theta, d),
+               box.h_u,
+               box.h_v,
+               box.h_w);
   }
 };
 
