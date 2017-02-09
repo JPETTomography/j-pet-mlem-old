@@ -14,5 +14,5 @@ TEST_CASE("3d/transform") {
   Vector src(0.1f, 0.2f, 0.3f);
   auto dest = rotate(src, F(M_PI / 3.0), Vector(0, 0, 1.0));
 
-  CHECK(dest == VApprox(Vector(0.326794919243, 0.966025403784, 0.3)));
+  CHECK(dest == VApprox(Vector(-0.123205080757, 0.186602540378, 0.3)));
 }
