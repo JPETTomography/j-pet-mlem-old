@@ -32,8 +32,9 @@ template <typename F>
 PET3D::Point<F> rotate(const PET3D::Point<F>& p,
                        F theta,
                        const PET3D::Vector<F>& d,
-                       const PET3D::Point<F>& c) {
-  return p;
+                       const PET3D::Point<F>& c = PET3D::Point<F>(0, 0, 0)) {
+  PET3D::Vector<F> v = p - c;
+  return c + rotate(v, theta, d);
 }
 
 #endif  // TRANSFORM_H
