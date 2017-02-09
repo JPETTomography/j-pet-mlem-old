@@ -54,14 +54,27 @@ template <typename F> class Box {
                half_diag.z);
   }
 
-  static Box rotate(const Box& box, F theta, const Vector d, const Point& c) {
-    return Box(::rotate(box.center, theta, d, c),
-               ::rotate(box.a_u, theta, d),
-               ::rotate(box.a_v, theta, d),
-               ::rotate(box.a_w, theta, d),
-               box.h_u,
-               box.h_v,
-               box.h_w);
+  static Box rotate(const Box& box,
+                    F theta,
+                    const Vector d,
+                    const Point& c,
+                    bool rot = true) {
+    if (rot)
+      return Box(::rotate(box.center, theta, d, c),
+                 ::rotate(box.a_u, theta, d),
+                 ::rotate(box.a_v, theta, d),
+                 ::rotate(box.a_w, theta, d),
+                 box.h_u,
+                 box.h_v,
+                 box.h_w);
+    else
+      return Box(::rotate(box.center, theta, d, c),
+                 box.a_u,
+                 box.a_v,
+                 box.a_w,
+                 box.h_u,
+                 box.h_v,
+                 box.h_w);
   }
 };
 
