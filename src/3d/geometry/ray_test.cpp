@@ -48,10 +48,16 @@ TEST_CASE("3d/geometry/ray_box") {
 
     auto intersection = intersect(ray, box);
 
-    CHECK(intersection.first);
-    CHECK(intersection.second == Approx(0.5));
+    std::cerr << intersection.t_min << " " << intersection.t_max << "\n";
+    CHECK(intersection.intersected);
+    F t;
+    if (intersection.t_min > 0)
+      t = intersection.t_min;
+    else
+      t = intersection.t_max;
+    CHECK(t == Approx(0.5));
 
-    CHECK(ray(intersection.second) == VApprox(Point(0.5, 1.0, 0.5)));
+    CHECK(ray(t) == VApprox(Point(0.5, 1.0, 0.5)));
   }
 
   SECTION("intersect 2") {
@@ -60,9 +66,14 @@ TEST_CASE("3d/geometry/ray_box") {
 
     auto intersection = intersect(ray, box);
 
-    CHECK(intersection.first);
-    CHECK(intersection.second == Approx(0.50249378));
+    CHECK(intersection.intersected);
+    F t;
+    if (intersection.t_min > 0)
+      t = intersection.t_min;
+    else
+      t = intersection.t_max;
+    CHECK(t == Approx(0.50249378));
 
-    CHECK(ray(intersection.second) == VApprox(Point(0.5, 1.0, 0.55)));
+    CHECK(ray(t) == VApprox(Point(0.5, 1.0, 0.55)));
   }
 }

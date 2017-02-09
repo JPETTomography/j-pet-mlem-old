@@ -54,7 +54,13 @@ template <typename F> class Box {
   }
 };
 
-template <typename F> using intersection_result = std::pair<bool, F>;
+template <typename F> struct intersection_result {
+  intersection_result(bool res, F t_min, F t_max)
+      : intersected(res), t_min(t_min), t_max(t_max) {}
+  const bool intersected;
+  const F t_min;
+  const F t_max;
+};
 
 template <typename F>
 intersection_result<F> intersect(const Ray<F>& ray, const Box<F>& box) {
@@ -83,20 +89,17 @@ intersection_result<F> intersect(const Ray<F>& ray, const Box<F>& box) {
       if (t2 < t_max)
         t_max = t2;
       if (t_min > t_max)
-        return std::make_pair(false, 0);
+        return intersection_result<F>(false, 0, 0);
       if (t_max < 0)
-        return std::make_pair(false, 0);
+        return intersection_result<F>(false, 0, 0);
     } else {
 
       if ((-e - sides[i]) > 0 || (-e + sides[i]) < 0)
-        return std::make_pair(false, 0);
+        return intersection_result<F>(false, 0, 0);
     }
   }
 
-  if (t_min > 0)
-    return std::make_pair(true, t_min);
-  else
-    return std::make_pair(true, t_max);
+  return intersection_result<F>(true, t_min, t_max);
 }
 }
 
