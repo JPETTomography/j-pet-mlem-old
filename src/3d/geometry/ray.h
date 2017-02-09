@@ -41,7 +41,7 @@ template <typename F> class Box {
   const F h_u, h_v, h_w;
 
   static Box AAB(const Point& p1, const Point& p2) {
-    Vector half_diag = F(0.5)*(p2 - p1);
+    Vector half_diag = F(0.5) * (p2 - p1);
     return Box(p1 + half_diag,
                Vector::e_x(),
                Vector::e_y(),

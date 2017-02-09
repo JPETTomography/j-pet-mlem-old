@@ -36,6 +36,5 @@ TEST_CASE("3d/geometry/box") {
     CHECK(box.h_u == Approx(0.5));
     CHECK(box.h_v == Approx(0.5));
     CHECK(box.h_w == Approx(0.5));
-
   }
 }
