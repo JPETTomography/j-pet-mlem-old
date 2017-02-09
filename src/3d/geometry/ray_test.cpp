@@ -50,6 +50,8 @@ TEST_CASE("3d/geometry/ray_box") {
 
     CHECK(intersection.first);
     CHECK(intersection.second == Approx(0.5));
+
+    CHECK(ray(intersection.second) == VApprox(Point(0.5, 1.0, 0.5)));
   }
 
   SECTION("intersect 2") {
@@ -60,5 +62,7 @@ TEST_CASE("3d/geometry/ray_box") {
 
     CHECK(intersection.first);
     CHECK(intersection.second == Approx(0.50249378));
+
+    CHECK(ray(intersection.second) == VApprox(Point(0.5, 1.0, 0.55)));
   }
 }
