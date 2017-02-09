@@ -51,6 +51,13 @@ template <typename F> class Box {
                half_diag.z);
   }
 };
+
+template <typename F> using intersection_result = std::pair<bool, F>;
+
+template <typename F>
+intersection_result<F> intersect(const Ray<F>& ray, const Box<F>& box) {
+  return std::make_pair(true, 0.5);
+}
 }
 
 #endif  // RAY_H

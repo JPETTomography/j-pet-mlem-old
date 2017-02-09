@@ -38,3 +38,27 @@ TEST_CASE("3d/geometry/box") {
     CHECK(box.h_w == Approx(0.5));
   }
 }
+
+TEST_CASE("3d/geometry/ray_box") {
+  using namespace ray_tracing;
+
+  SECTION("intersect 1") {
+    Box<F> box = Box<F>::AAB(Point(0, 0, 0), Point(1, 1, 1));
+    Ray<F> ray(Point(0.5, 0.5, 0.5), Vector(0, 1, 0));
+
+    auto intersection = intersect(ray, box);
+
+    CHECK(intersection.first);
+    CHECK(intersection.second == Approx(0.5));
+  }
+
+  SECTION("intersect 2") {
+    Box<F> box = Box<F>::AAB(Point(0, 0, 0), Point(1, 1, 1));
+    Ray<F> ray(Point(0.5, 0.5, 0.5), Vector(0, 1, 0.1));
+
+    auto intersection = intersect(ray, box);
+
+    CHECK(intersection.first);
+    CHECK(intersection.second == Approx(0.50249378));
+  }
+}
