@@ -48,7 +48,6 @@ TEST_CASE("3d/geometry/ray_box") {
 
     auto intersection = intersect(ray, box);
 
-    std::cerr << intersection.t_min << " " << intersection.t_max << "\n";
     CHECK(intersection.intersected);
     F t;
     if (intersection.t_min > 0)
