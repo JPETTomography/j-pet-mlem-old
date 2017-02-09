@@ -8,7 +8,10 @@ class Ring : public Repeater {};
 
 class Linear : public Repeater {};
 
-class Volume {};
+class Volume {
+ public:
+  virtual void build() = 0;
+};
 
 class Box : public Volume {};
 
