@@ -99,6 +99,8 @@ template <typename FType> struct Vector {
     return vec;
   }
 
+  _ Vector operator-() const { return Vector(-x, -y, -z); }
+
   _ Vector operator*(FType rhs) {
     Vector vec(*this);
     vec *= rhs;
