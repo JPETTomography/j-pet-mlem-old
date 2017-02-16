@@ -94,7 +94,7 @@ template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
     util::heap_sort(intersected_volumes_.begin(),
                     intersected_volumes_.end(),
                     [&](const intersection_t& a, const intersection_t& b) {
-                      return a.second.t_min < a.second.t_min;
+                      return a.second.t_min < b.second.t_min;
                     });
     for (auto res : intersected_volumes_) {
       F l = res.second.t_max - res.second.t_min;
