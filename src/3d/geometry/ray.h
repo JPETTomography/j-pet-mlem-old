@@ -15,7 +15,7 @@ template <typename F> class Ray {
   const Point p;
   const Vector d;
 
-  Point operator()(F t) { return p + t * d; }
+  Point operator()(F t) const { return p + t * d; }
 };
 
 template <typename F> class Box {
