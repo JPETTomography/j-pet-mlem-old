@@ -47,4 +47,6 @@ TEST_CASE("3d/full/scanner") {
   CHECK(response.d2_entry == VApprox(Point(-R + height / 2, 0.0, 0.0)));
   CHECK(response.d2_deposition == VApprox(Point(-R + height / 2, 0.0, 0.0)));
   CHECK(response.d2_exit == VApprox(Point(-R - height / 2, 0.0, 0.0)));
+
+  CHECK(response.origin == VApprox(Point(0.0, 0.0, 0.0)));
 }
