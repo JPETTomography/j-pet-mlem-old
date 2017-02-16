@@ -25,8 +25,8 @@ TEST_CASE("3d/full/scanner") {
       Point(R + height / 2, width / 2, length / 2)));
 
   scanner.add_volume(PET3D::Full::BoxVolume<F>::AAB(
-      Point(-R - height / 2, -width / 2, -length / 2),
-      Point(-R + height / 2, width / 2, length / 2)));
+      Point(-R + height / 2, -width / 2, -length / 2),
+      Point(-R - height / 2, width / 2, length / 2)));
 
   Common::AlwaysAccept<F> model;
 
