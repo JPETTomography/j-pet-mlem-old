@@ -17,8 +17,6 @@ template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
   using Point = PET3D::Point<F>;
   using Ray = ray_tracing::Ray<F>;
 
-  using intersection_t = std::pair<int, ray_tracing::intersection_result<F>>;
-
   struct HalfResponse {
     S detector;
     Point entry, exit, deposition;
@@ -47,71 +45,28 @@ template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
 
     Ray up(event.origin, event.direction);
     Ray dn(event.origin, -event.direction);
-    S intersected_up = 0;
 
-    util::array<MAX_VOLUMES, intersection_t> intersected_volumes_up_;
-    int hits = 0;
-    int vol_up;
-    for (int i = 0; i < volumes_.size(); i++) {
-      auto v = volumes_[i];
-      auto hit_up = v->intersects_with(up);
-      if (hit_up.intersected) {
-
-        intersected_volumes_up_.emplace_back(i, hit_up);
-      }
-    }
-
-    util::heap_sort(intersected_volumes_up_.begin(),
-                    intersected_volumes_up_.end(),
-                    [&](const intersection_t& a, const intersection_t& b) {
-                      return a.second.t_min < a.second.t_min;
-                    });
-    for (auto res : intersected_volumes_up_) {
-      F l_up = res.second.t_max - res.second.t_min;
-      F l_depth = model.deposition_depth(rng);
-      if (l_depth < l_up) {
-        hits++;
-        response.detector1 = res.first;
-        response.d1_entry = up(res.second.t_min);
-        response.d1_deposition = up(res.second.t_min + l_depth);
-        response.d1_exit = up(res.second.t_max);
-        break;
-      }
-    }
+    HalfResponse response_up;
+    int hits = find_first_interaction(rng, model, up, response_up);
 
     if (hits < 1)
       return hits;
 
-    util::array<MAX_VOLUMES, intersection_t> intersected_volumes_dn_;
+    response.detector1 = response_up.detector;
+    response.d1_entry = response_up.entry;
+    response.d1_deposition = response_up.deposition;
+    response.d1_exit = response_up.exit;
 
-    int vol_dn;
-    for (int i = 0; i < volumes_.size(); i++) {
-      auto v = volumes_[i];
-      auto hit_dn = v->intersects_with(dn);
-      if (hit_dn.intersected) {
-        intersected_volumes_dn_.emplace_back(i, hit_dn);
-      }
-    }
+    HalfResponse response_dn;
+    hits += find_first_interaction(rng, model, dn, response_dn);
 
-    util::heap_sort(intersected_volumes_dn_.begin(),
-                    intersected_volumes_dn_.end(),
-                    [&](const intersection_t& a, const intersection_t& b) {
-                      return a.second.t_min < a.second.t_min;
-                    });
-    for (auto res : intersected_volumes_dn_) {
-      F l_dn = res.second.t_max - res.second.t_min;
-      F l_depth = model.deposition_depth(rng);
-      if (l_depth <= l_dn) {
-        hits++;
+    if (hits < 2)
+      return hits;
 
-        response.detector2 = res.first;
-        response.d2_entry = dn(res.second.t_min);
-        response.d2_deposition = dn(res.second.t_min + l_depth);
-        response.d2_exit = dn(res.second.t_max);
-
-        break;
-      }
-    }
+    response.detector2 = response_dn.detector;
+    response.d2_entry = response_dn.entry;
+    response.d2_deposition = response_dn.deposition;
+    response.d2_exit = response_dn.exit;
 
     return hits;
   }
@@ -124,9 +79,10 @@ template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
                              AcceptanceModel& model,
                              const Ray& ray,
                              HalfResponse& response) {
+    using intersection_t = std::pair<int, ray_tracing::intersection_result<F>>;
     util::array<MAX_VOLUMES, intersection_t> intersected_volumes_;
     int hits = 0;
-    int vol_up;
+
     for (int i = 0; i < volumes_.size(); i++) {
       auto v = volumes_[i];
       auto hit = v->intersects_with(ray);
@@ -146,9 +102,9 @@ template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
       if (l_depth < l) {
         hits++;
         response.detector = res.first;
-        response.entry = up(res.second.t_min);
-        response.deposition = up(res.second.t_min + l_depth);
-        response.exit = up(res.second.t_max);
+        response.entry = ray(res.second.t_min);
+        response.deposition = ray(res.second.t_min + l_depth);
+        response.exit = ray(res.second.t_max);
         break;
       }
     }
