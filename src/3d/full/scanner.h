@@ -15,6 +15,12 @@ namespace Full {
 template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
   using Event = PET3D::Event<F>;
   using Point = PET3D::Point<F>;
+  using Ray = ray_tracing::Ray<F>;
+
+  struct HalfResponse {
+    S detector;
+    Point entry, exit, deposition;
+  };
 
  public:
   struct FullResponse {
@@ -35,8 +41,10 @@ template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
                  FullResponse& response   ///< response (LOR+zu+zd+dl)
                  ) {
 
-    ray_tracing::Ray<F> up(event.origin, event.direction);
-    ray_tracing::Ray<F> dn(event.origin, -event.direction);
+    response.origin = event.origin;
+
+    Ray up(event.origin, event.direction);
+    Ray dn(event.origin, -event.direction);
     S intersected_up = 0;
     using intersection_t = std::pair<int, ray_tracing::intersection_result<F>>;
 
@@ -109,6 +117,9 @@ template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
 
  private:
   std::vector<PET3D::Full::Volume<F>*> volumes_;
+
+  template <class RNG, class AcceptanceModel>
+  bool find_first_interaction(const Ray& ray, HalfResponse response) {}
 };
 }
 }
