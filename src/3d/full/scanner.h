@@ -17,6 +17,8 @@ template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
   using Point = PET3D::Point<F>;
   using Ray = ray_tracing::Ray<F>;
 
+  using intersection_t = std::pair<int, ray_tracing::intersection_result<F>>;
+
   struct HalfResponse {
     S detector;
     Point entry, exit, deposition;
@@ -46,7 +48,6 @@ template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
     Ray up(event.origin, event.direction);
     Ray dn(event.origin, -event.direction);
     S intersected_up = 0;
-    using intersection_t = std::pair<int, ray_tracing::intersection_result<F>>;
 
     util::array<MAX_VOLUMES, intersection_t> intersected_volumes_up_;
     int hits = 0;
@@ -119,7 +120,40 @@ template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
   std::vector<PET3D::Full::Volume<F>*> volumes_;
 
   template <class RNG, class AcceptanceModel>
-  bool find_first_interaction(const Ray& ray, HalfResponse response) {}
+  int find_first_interaction(RNG& rng,
+                             AcceptanceModel& model,
+                             const Ray& ray,
+                             HalfResponse& response) {
+    util::array<MAX_VOLUMES, intersection_t> intersected_volumes_;
+    int hits = 0;
+    int vol_up;
+    for (int i = 0; i < volumes_.size(); i++) {
+      auto v = volumes_[i];
+      auto hit = v->intersects_with(ray);
+      if (hit.intersected) {
+        intersected_volumes_.emplace_back(i, hit);
+      }
+    }
+
+    util::heap_sort(intersected_volumes_.begin(),
+                    intersected_volumes_.end(),
+                    [&](const intersection_t& a, const intersection_t& b) {
+                      return a.second.t_min < a.second.t_min;
+                    });
+    for (auto res : intersected_volumes_) {
+      F l = res.second.t_max - res.second.t_min;
+      F l_depth = model.deposition_depth(rng);
+      if (l_depth < l) {
+        hits++;
+        response.detector = res.first;
+        response.entry = up(res.second.t_min);
+        response.deposition = up(res.second.t_min + l_depth);
+        response.exit = up(res.second.t_max);
+        break;
+      }
+    }
+    return hits;
+  }
 };
 }
 }
