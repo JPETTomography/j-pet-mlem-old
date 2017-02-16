@@ -83,9 +83,9 @@ template <typename F> struct intersection_result {
       : intersected(res), t_min(t_min), t_max(t_max) {}
   intersection_result() : intersected(false), t_min(0), t_max(0) {}
 
-  const bool intersected;
-  const F t_min;
-  const F t_max;
+  bool intersected;
+  F t_min;
+  F t_max;
 };
 
 template <typename F>
