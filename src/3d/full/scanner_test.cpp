@@ -36,4 +36,15 @@ TEST_CASE("3d/full/scanner") {
   typename PET3D::Full::Scanner<F, S>::FullResponse response;
   S hits = scanner.exact_detect(rng, model, event, response);
   CHECK(hits == 2);
+
+  CHECK(response.detector1 == 0);
+  CHECK(response.detector2 == 1);
+
+  CHECK(response.d1_entry == VApprox(Point(R - height, 0.0, 0.0)));
+  CHECK(response.d1_deposition == VApprox(Point(R - height, 0.0, 0.0)));
+  CHECK(response.d1_exit == VApprox(Point(R + height, 0.0, 0.0)));
+
+  CHECK(response.d2_entry == VApprox(Point(-R + height, 0.0, 0.0)));
+  CHECK(response.d2_deposition == VApprox(Point(-R + height, 0.0, 0.0)));
+  CHECK(response.d2_exit == VApprox(Point(-R - height, 0.0, 0.0)));
 }
