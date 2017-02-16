@@ -59,10 +59,13 @@ template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
                     });
     for (auto res : intersected_volumes_up_) {
       F l_up = res.second.t_max - res.second.t_min;
-      F l_depth_up = model.deposition_depth(rng);
-      if (l_depth_up < l_up) {
+      F l_depth = model.deposition_depth(rng);
+      if (l_depth < l_up) {
         hits++;
-        vol_up = res.first;
+        response.detector1 = res.first;
+        response.d1_entry = up(res.second.t_min);
+        response.d1_deposition = up(res.second.t_min + l_depth);
+        response.d1_exit = up(res.second.t_max);
         break;
       }
     }
@@ -88,10 +91,15 @@ template <typename F, typename S, int MAX_VOLUMES = 2 << 9> class Scanner {
                     });
     for (auto res : intersected_volumes_dn_) {
       F l_dn = res.second.t_max - res.second.t_min;
-      F l_depth_dn = model.deposition_depth(rng);
-      if (l_depth_dn <= l_dn) {
+      F l_depth = model.deposition_depth(rng);
+      if (l_depth <= l_dn) {
         hits++;
-        vol_dn = res.first;
+
+        response.detector2 = res.first;
+        response.d2_entry = dn(res.second.t_min);
+        response.d2_deposition = dn(res.second.t_min + l_depth);
+        response.d2_exit = dn(res.second.t_max);
+
         break;
       }
     }
