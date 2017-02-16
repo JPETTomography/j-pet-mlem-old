@@ -40,11 +40,11 @@ TEST_CASE("3d/full/scanner") {
   CHECK(response.detector1 == 0);
   CHECK(response.detector2 == 1);
 
-  CHECK(response.d1_entry == VApprox(Point(R - height, 0.0, 0.0)));
-  CHECK(response.d1_deposition == VApprox(Point(R - height, 0.0, 0.0)));
-  CHECK(response.d1_exit == VApprox(Point(R + height, 0.0, 0.0)));
+  CHECK(response.d1_entry == VApprox(Point(R - height / 2, 0.0, 0.0)));
+  CHECK(response.d1_deposition == VApprox(Point(R - height / 2, 0.0, 0.0)));
+  CHECK(response.d1_exit == VApprox(Point(R + height / 2, 0.0, 0.0)));
 
-  CHECK(response.d2_entry == VApprox(Point(-R + height, 0.0, 0.0)));
-  CHECK(response.d2_deposition == VApprox(Point(-R + height, 0.0, 0.0)));
-  CHECK(response.d2_exit == VApprox(Point(-R - height, 0.0, 0.0)));
+  CHECK(response.d2_entry == VApprox(Point(-R + height / 2, 0.0, 0.0)));
+  CHECK(response.d2_deposition == VApprox(Point(-R + height / 2, 0.0, 0.0)));
+  CHECK(response.d2_exit == VApprox(Point(-R - height / 2, 0.0, 0.0)));
 }
