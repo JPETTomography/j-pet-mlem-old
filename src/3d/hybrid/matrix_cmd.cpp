@@ -21,7 +21,7 @@
 #include "util/cmdline_types.h"
 #include "util/cmdline_hooks.h"
 
-#include "scanner.h"
+#include "3d/hybrid/scanner.h"
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/square_detector.h"
