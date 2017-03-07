@@ -1,0 +1,14 @@
+{
+    "phantoms": [
+        {
+            "angular": {
+                "type": "spherical"
+            },
+            "intensity": 1,
+            "rx": 0.15,
+            "ry": 0.15,
+            "rz": 0.15,
+            "type": "ellipsoid"
+        }
+    ]
+}
