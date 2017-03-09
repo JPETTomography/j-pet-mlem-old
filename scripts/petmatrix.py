@@ -14,8 +14,8 @@ class SparseMatrixHeader(object):
         (self.n_pixels,self.n_emissions,self.n_detectors) = struct.unpack("<III",data)
         
     def show(self):
-        print self.magick
-        print self.n_pixels, self.n_detectors, self.n_emissions    
+        print (self.magick)
+        print (self.n_pixels, self.n_detectors, self.n_emissions)
 
 
 class SparseMatrixBody(object):
@@ -53,7 +53,7 @@ class SparseMatrixBody(object):
      
         
     def show(self):
-        print self.n_tof_positions
+        print (self.n_tof_positions)
 
 class SparseMatrixTOFpBody(SparseMatrixBody):
     def __init__(self, header, file):
