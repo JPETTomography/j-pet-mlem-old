@@ -20,18 +20,23 @@ recalculate = args.recalculate
 
 # Prepare system matrix
 n_emissions = 1000000
-if not os.path.isfile("m_bin"):
+if not os.path.isfile("m_big"):
+    print("m_big file does not exists: recalculating")
     recalculate=True
 else:
-    matrix = SparseMatrixHeader("m_bin")
+    matrix_file = open("m_big","rb")
+    matrix = SparseMatrixHeader(matrix_file)
     print(matrix.n_emissions)
+    if matrix.n_emissions != n_emissions:
+        recalculate=True
 
-if recalculate:
+if recalculate :
     run(["../2d_barrel_matrix", "-c", "m_big.cfg", "-e", "%d" % (n_emissions,), "-o", "m_big",
          "-v"])
 
 # Convert to full matrix
-run(["../2d_barrel_matrix", "-c", "m_big.cfg", "-o", "f_big", "-f", "m_big"])
+if recalculate or not os.path.isfile("f_big"):
+    run(["../2d_barrel_matrix", "-c", "m_big.cfg", "-o", "f_big", "-f", "m_big"])
 
 # Prepare phantom
 n_phantom_emissions = 100000000
