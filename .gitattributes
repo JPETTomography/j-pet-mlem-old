@@ -2,3 +2,4 @@
 *.h    filter=format
 *.cu   filter=format
 *.cuh  filter=format
+waf    binary
