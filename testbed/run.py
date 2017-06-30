@@ -14,9 +14,10 @@ recalculate = False
 
 parser = argparse.ArgumentParser(description="Full reconstruction workflow")
 parser.add_argument('--recalculate', '-r', action='store_true', dest='recalculate')
-args = parser.parse_args()
+args, rest = parser.parse_known_args()
 recalculate = args.recalculate
-
+print(recalculate)
+print(rest)
 
 # Prepare system matrix
 n_emissions = 1000000
@@ -32,7 +33,7 @@ else:
 
 if recalculate :
     run(["../2d_barrel_matrix", "-c", "m_big.cfg", "-e", "%d" % (n_emissions,), "-o", "m_big",
-         "-v"])
+         "-v"]+rest)
 
 # Convert to full matrix
 if recalculate or not os.path.isfile("f_big"):
