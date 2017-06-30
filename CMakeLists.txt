@@ -119,6 +119,7 @@ if(CUDA_FOUND)
   add_definitions(-DHAVE_CUDA=1)
   include_directories(${CUDA_INCLUDE_DIRS})
   list(APPEND CUDA_NVCC_FLAGS
+    -gencode arch=compute_62,code=compute_62 # GTX 1080
     -gencode arch=compute_52,code=compute_52 # GTX 980Ti
     -gencode arch=compute_30,code=compute_30 # GTX 770
     -std=c++11)
