@@ -109,6 +109,8 @@ int main(int argc, char* argv[]) {
   CMDLINE_CATCH
 }
 
+/// \function run
+
 template <class ScannerClass, class ModelClass, typename... ModelArgs>
 static void run(cmdline::parser& cl, ModelArgs... args) {
 
@@ -198,7 +200,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
   ComputeMatrix matrix(n_pixels, scanner.barrel.size());
   util::progress progress(verbose, matrix.total_n_pixels_in_triangle, 1);
 
-  if (!n_emissions) {
+  if (n_emissions == 0) {
     // don't run any simulation computation
   }
 #if HAVE_CUDA
