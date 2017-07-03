@@ -12,5 +12,9 @@ TEST("util/gate_parser") {
     CHECK("world" == *command);
     command++;
     CHECK("name" == *command);
+
+    auto argument = command_chain.arguments();
+
+    CHECK("box" == *argument);
   }
 }
