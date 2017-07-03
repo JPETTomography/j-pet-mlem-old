@@ -26,13 +26,13 @@ class Parser {
     std::list<std::string> arguments_;
   };
 
-  void parse_command(std::string input, CommandChain& chain) {
+  std::string::size_type parse_command(std::string input, CommandChain& chain) {
     auto start = input.find_first_of("/", 0);
 
     if (start == std::string::npos) {
       fprintf(stderr, "`%s' is not a gate command ", input.c_str());
       chain.is_valid_ = false;
-      return;
+      return std::string::npos;
     }
 
     start++;
@@ -43,7 +43,7 @@ class Parser {
         fprintf(stderr, "`%s' is not a gate command ", input.c_str());
         chain.is_valid_ = false;
         another_command = false;
-        return;
+        return std::string::npos;
       }
       auto command = input.substr(start, next_backslash - start);
       chain.commands_.push_back(command);
@@ -52,6 +52,12 @@ class Parser {
       else
         break;
     }
+    return start;
+  }
+
+  std::string::size_type parse_arguments(std::string input,
+                                         CommandChain& chain) {
+    return std::string::npos;
   }
 
  public:
@@ -60,9 +66,22 @@ class Parser {
   CommandChain parse(std::string line) {
     CommandChain chain;
 
-    parse_command(line, chain);
+    auto arguments_start = parse_command(line, chain);
 
-    return chain;
+    if (arguments_start == std::string::npos) {
+      fprintf(stderr, "`%s' is not a gate command ", line.c_str());
+      return chain;
+    }
+
+    while (!std::isalpha(line[arguments_start]) &&
+           arguments_start < line.size())
+      arguments_start++;
+
+    if (arguments_start == line.size())
+      return chain;
+
+    parse_arguments(line.substr(arguments_start, line.size() - arguments_start),
+                    chain);
   }
 };
 }
