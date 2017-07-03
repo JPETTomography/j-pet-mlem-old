@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
+#include <iostream>
 #include <string>
 #include <list>
 
@@ -57,7 +58,32 @@ class Parser {
 
   std::string::size_type parse_arguments(std::string input,
                                          CommandChain& chain) {
-    return std::string::npos;
+
+    std::string::size_type start = 0;
+    while (1) {
+      std::cerr << start << " " << input.size() << std::endl;
+      auto end = input.find_first_of(" \t\n");
+      if (end == std::string::npos) {
+        fprintf(stderr, "something wrong\n");
+        break;
+      }
+      auto argument = input.substr(start, end - start);
+      chain.arguments_.push_back(argument);
+      start = find_first_alpha(input, end);
+      if (start == input.size())
+        break;
+    }
+
+    return start;
+  }
+
+  std::string::size_type find_first_alpha(std::string input,
+                                          std::string::size_type start) {
+    std::string::size_type pos = start;
+    while (!std::isalpha(input[pos]) && pos < input.size())
+      pos++;
+
+    return pos;
   }
 
  public:
@@ -73,15 +99,16 @@ class Parser {
       return chain;
     }
 
-    while (!std::isalpha(line[arguments_start]) &&
-           arguments_start < line.size())
-      arguments_start++;
+    arguments_start = find_first_alpha(line, arguments_start);
 
-    if (arguments_start == line.size())
+    if (arguments_start == line.size()) {
+      std::cerr << "There are no arguments\n";
       return chain;
+    }
 
-    parse_arguments(line.substr(arguments_start, line.size() - arguments_start),
-                    chain);
+    //  parse_arguments(line.substr(arguments_start, line.size() -
+    //  arguments_start),
+    //                chain);
   }
 };
 }
