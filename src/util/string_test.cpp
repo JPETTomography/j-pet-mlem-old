@@ -66,4 +66,38 @@ TEST("split_string") {
     it++;
     CHECK("identifier_2" == *it);
   }
+
+  SECTION("two parts leading del trailing del pos 1") {
+    std::string input = " identifier_1 identifier_2\t\n";
+    string_list parts;
+    split_string_on(input, " \t\n", 1, parts);
+
+    CHECK(parts.size() == 2);
+    auto it = parts.begin();
+    CHECK("identifier_1" == *it);
+    it++;
+    CHECK("identifier_2" == *it);
+  }
+
+  SECTION("two parts leading del trailing del pos 3") {
+    std::string input = " identifier_1 identifier_2\t\n";
+    string_list parts;
+    split_string_on(input, " \t\n", 3, parts);
+
+    CHECK(parts.size() == 2);
+    auto it = parts.begin();
+    CHECK("entifier_1" == *it);
+    it++;
+    CHECK("identifier_2" == *it);
+  }
+
+  SECTION("two parts leading del trailing del pos") {
+    std::string input = " identifier_1 identifier_2\t\n";
+    string_list parts;
+    split_string_on(input, " \t\n", 13, parts);
+
+    CHECK(parts.size() == 1);
+    auto it = parts.begin();
+    CHECK("identifier_2" == *it);
+  }
 }
