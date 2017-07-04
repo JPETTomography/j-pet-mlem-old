@@ -5,8 +5,9 @@
 
 void split_string_on(std::string in,
                      std::string dels,
+                     std::string::size_type pos,
                      std::list<std::string>& parts) {
-  std::string::size_type start = 0;
+  std::string::size_type start = pos;
   while (true) {
     start = in.find_first_not_of(dels, start);
     if (start == std::string::npos)
@@ -21,4 +22,10 @@ void split_string_on(std::string in,
       start = end;
     }
   }
+}
+
+void split_string_on(std::string in,
+                     std::string dels,
+                     std::list<std::string>& parts) {
+  split_string_on(in, dels, 0, parts);
 }
