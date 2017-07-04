@@ -21,6 +21,13 @@ class Parser {
     string_list::const_iterator arguments() const { return arguments_.begin(); }
     bool is_valid() const { return is_valid_; }
 
+    std::list<std::string>::size_type command_length() const {
+      return commands_.size();
+    }
+    std::list<std::string>::size_type n_arguments() const {
+      return arguments_.size();
+    }
+
     friend class Parser;
 
    private:
@@ -64,15 +71,6 @@ class Parser {
     return std::string::npos;
   }
 
-  std::string::size_type find_first_alpha(std::string input,
-                                          std::string::size_type start) {
-    std::string::size_type pos = start;
-    while (!std::isalpha(input[pos]) && pos < input.size())
-      pos++;
-
-    return pos;
-  }
-
  public:
   using CommandChain = Parser::CommandChain;
 
@@ -86,9 +84,7 @@ class Parser {
       return chain;
     }
 
-    arguments_start = find_first_alpha(line, arguments_start);
-
-    if (arguments_start == line.size()) {
+    if (arguments_start == std::string::npos) {
       std::cerr << "There are no arguments\n";
       return chain;
     }
