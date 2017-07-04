@@ -4,7 +4,7 @@
 TEST("util/gate_parser") {
   SECTION("zero arg parse") {
     Gate::Parser parser;
-    auto command_chain = parser.parse("/gate/world/name ");
+    auto command_chain = parser.parse(" /gate/world/name ");
 
     CHECK(command_chain.command_length() == 3);
     CHECK(command_chain.n_arguments() == 0);
