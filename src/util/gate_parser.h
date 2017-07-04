@@ -7,6 +7,8 @@
 #include <string>
 #include <list>
 
+#include "util/string.h"
+
 namespace Gate {
 
 class Parser {
@@ -48,9 +50,8 @@ class Parser {
       }
       auto command = input.substr(start, next_backslash - start);
       chain.commands_.push_back(command);
-      if (input[next_backslash] == '/')
-        start = next_backslash + 1;
-      else
+      start = next_backslash + 1;
+      if (input[next_backslash] != '/')
         break;
     }
     return start;
@@ -59,22 +60,8 @@ class Parser {
   std::string::size_type parse_arguments(std::string input,
                                          CommandChain& chain) {
 
-    std::string::size_type start = 0;
-    while (1) {
-      std::cerr << start << " " << input.size() << std::endl;
-      auto end = input.find_first_of(" \t\n");
-      if (end == std::string::npos) {
-        fprintf(stderr, "something wrong\n");
-        break;
-      }
-      auto argument = input.substr(start, end - start);
-      chain.arguments_.push_back(argument);
-      start = find_first_alpha(input, end);
-      if (start == input.size())
-        break;
-    }
-
-    return start;
+    split_string_on(input, " \t\n", chain.arguments_);
+    return std::string::npos;
   }
 
   std::string::size_type find_first_alpha(std::string input,
@@ -106,9 +93,10 @@ class Parser {
       return chain;
     }
 
-    //  parse_arguments(line.substr(arguments_start, line.size() -
-    //  arguments_start),
-    //                chain);
+    parse_arguments(line.substr(arguments_start, line.size() - arguments_start),
+                    chain);
+
+    return chain;
   }
 };
 }
