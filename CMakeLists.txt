@@ -96,6 +96,7 @@ file(GLOB COMMON
   src/util/png_writer.cpp
   src/util/cmdline_hooks.cpp
   src/util/backtrace.cpp
+  src/util/string.cpp
   src/common/*.h
   src/common/options.cpp)
 
@@ -303,7 +304,7 @@ if(Boost_FOUND)
 endif()
 
 # custom documentation and config files to be shown in project tree
-file(GLOB EXTRA scripts/* cmake/* config/* phantoms/* src/3d/gate_input/* src/3d/full/*)
+file(GLOB EXTRA scripts/* cmake/* config/* phantoms/* src/3d/gate_input/* src/3d/full/* src/2d/gate/*)
 add_custom_target(extra SOURCES
   README.md
   Doxyfile
@@ -319,7 +320,7 @@ include_directories(lib/catch/include)
 if(POLICY CMP0037)
   cmake_policy(SET CMP0037 OLD) # allow "test" target
 endif()
-add_executable(test src/util/test.cpp ${TESTS})
+add_executable(test src/util/test.cpp ${TESTS} ${COMMON})
 set_target_properties(test PROPERTIES EXCLUDE_FROM_ALL 1)
 
 # clang doesn't print colored diagnostics when invoked from Ninja
