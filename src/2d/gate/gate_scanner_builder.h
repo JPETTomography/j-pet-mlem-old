@@ -9,12 +9,23 @@ namespace Gate {
 namespace D2 {
 
 template <typename FType, typename SType> class GenericScannerBuilder {
+ public:
   using F = FType;
   using S = SType;
   using Volume = Gate::D2::Volume<F>;
-  using Scanner =
-      PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S>;
-  void build(Volume* vol, Scanner& scanner){};
+  using Detector = PET2D::Barrel::SquareDetector<F>;
+  using Scanner = PET2D::Barrel::GenericScanner<Detector, S>;
+  void build(Volume* vol, Scanner* scanner) {
+
+    if (vol->is_sd()) {
+      scanner->push_back(Detector(1, 1, 1));
+    }
+    for (auto daughter = vol->daughters(); daughter != vol->daughters_end();
+         daughter++) {
+
+      build(*daughter, scanner);
+    }
+  }
 };
 }
 }
