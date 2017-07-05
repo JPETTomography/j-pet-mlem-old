@@ -12,6 +12,14 @@ TEST("2d transformation") {
   using Point = PET2D::Point<F>;
   using Transformation = PET2D::Transformation<F>;
 
+  SECTION("Identity translation") {
+    Point p(1, 0.5);
+    Transformation id;
+    Point pt = id(p);
+    CHECK(pt.x == Approx(1.0));
+    CHECK(pt.y == Approx(0.5));
+  }
+
   SECTION("Single translation") {
     Point p(1, 0.5);
     Transformation translate(Vector(0.3, 0.5));
