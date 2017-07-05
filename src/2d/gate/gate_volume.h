@@ -19,7 +19,7 @@ template <typename FType> class Volume {
   using Vector = PET2D::Vector<F>;
   using VolumeList = std::list<Volume*>;
 
-  Volume() : is_sd_(false) {}
+  Volume() : is_sd_(false), translation_(0, 0), angle_(0) {}
 
   bool is_sd() const { return is_sd_; }
 
