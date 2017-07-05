@@ -22,9 +22,19 @@ TEST("2d transformation") {
 
   SECTION("Single rotation and translation") {
     Point p(1, 0.5);
-    Transformation tranaform(M_PI / 6, Vector(0.3, 0.5));
-    Point pt = tranaform(p);
+    Transformation tranform(M_PI / 6, Vector(0.3, 0.5));
+    Point pt = tranform(p);
     CHECK(pt.x == Approx(0.916025));
     CHECK(pt.y == Approx(1.43301));
+  }
+
+  SECTION("two transform composition") {
+    Point p(1, 0.5);
+    Transformation transform1(M_PI / 6, Vector(0.3, 0.5));
+    Transformation transform2(M_PI / 4, Vector(-0.5, 1.0));
+    auto transform = transform2 * transform1;
+    Point pt = transform(p);
+    CHECK(pt.x == Approx(-0.865565));
+    CHECK(pt.y == Approx(2.66102));
   }
 }

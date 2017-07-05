@@ -19,5 +19,13 @@ template <typename FType> class Transformation {
   const F rotation;
   const Vector translation;
 };
+
+template <typename F>
+Transformation<F> operator*(const Transformation<F>& t2,
+                            const Transformation<F>& t1) {
+  return Transformation<F>(
+      t2.rotation + t1.rotation,
+      t1.translation.rotated(t2.rotation) + t2.translation);
+}
 }
 #endif  // TRANSFORMATION_H
