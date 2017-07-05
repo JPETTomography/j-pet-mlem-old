@@ -14,7 +14,8 @@ template <typename FType> class Transformation {
   Transformation(F r) : Transformation(r, Vector(0, 0)){};
   Transformation(Vector t) : Transformation(0, t){};
 
-  Point operator()(Point p) { return p.rotate(rotation) + translation; }
+  Point operator()(Point p) { return p.rotated(rotation) + translation; }
+  Vector operator()(Vector v) { return v.rotated(rotation); }
 
   const F rotation;
   const Vector translation;

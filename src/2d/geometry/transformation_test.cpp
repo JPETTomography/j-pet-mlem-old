@@ -18,14 +18,24 @@ TEST("2d transformation") {
     Point pt = translate(p);
     CHECK(pt.x == Approx(1.3));
     CHECK(pt.y == Approx(1.0));
+
+    Vector v(1.0, 0.5);
+    auto vt = translate(v);
+    CHECK(vt.x == Approx(1));
+    CHECK(vt.y == Approx(0.5));
   }
 
   SECTION("Single rotation and translation") {
     Point p(1, 0.5);
-    Transformation tranform(M_PI / 6, Vector(0.3, 0.5));
-    Point pt = tranform(p);
+    Transformation transform(M_PI / 6, Vector(0.3, 0.5));
+    Point pt = transform(p);
     CHECK(pt.x == Approx(0.916025));
     CHECK(pt.y == Approx(1.43301));
+
+    Vector v(1.0, 0.5);
+    auto vt = transform(v);
+    CHECK(vt.x == Approx(0.616025));
+    CHECK(vt.y == Approx(0.933013));
   }
 
   SECTION("two transform composition") {
@@ -36,5 +46,10 @@ TEST("2d transformation") {
     Point pt = transform(p);
     CHECK(pt.x == Approx(-0.865565));
     CHECK(pt.y == Approx(2.66102));
+
+    Vector v(1.0, 0.5);
+    auto vt = transform(v);
+    CHECK(vt.x == Approx(-0.224144));
+    CHECK(vt.y == Approx(1.09534));
   }
 }
