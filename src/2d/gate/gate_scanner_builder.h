@@ -18,11 +18,17 @@ template <typename FType, typename SType> class GenericScannerBuilder {
   void build(Volume* vol, Scanner* scanner) {
 
     if (vol->is_sd()) {
-      scanner->push_back(Detector(1, 1, 1));
+      auto box = dynamic_cast<Gate::D2::Box<F>*>(vol);
+      if (box) {
+        Detector d(box->lengthX, box->lengthY, 1);
+        d += box->translation();
+        scanner->push_back(d);
+      } else {
+        fprintf(stderr, "unsupported volume");
+      }
     }
     for (auto daughter = vol->daughters(); daughter != vol->daughters_end();
          daughter++) {
-
       build(*daughter, scanner);
     }
   }
