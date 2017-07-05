@@ -21,6 +21,7 @@ template <typename FType, typename SType> class GenericScannerBuilder {
       auto box = dynamic_cast<Gate::D2::Box<F>*>(vol);
       if (box) {
         Detector d(box->lengthX, box->lengthY, 1);
+        d.rotate(box->rotation());
         d += box->translation();
         scanner->push_back(d);
       } else {

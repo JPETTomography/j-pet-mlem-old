@@ -30,11 +30,13 @@ template <typename FType> class Volume {
     return daughters_.end();
   }
   Vector translation() const { return translation_; }
+  F rotation() const { return angle_; }
 
   void attach_daughter(Volume* daughter) { daughters_.push_back(daughter); }
   void attach_crystal_sd() { is_sd_ = true; }
 
   void set_translation(Vector tr) { translation_ = tr; }
+  void set_rotation(F a) { angle_ = a; }
 
   virtual ~Volume() {}
 

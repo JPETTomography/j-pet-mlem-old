@@ -51,4 +51,23 @@ TEST("2d Gate volume") {
     CHECK(c.x == Approx(0.34));
     CHECK(c.y == Approx(0.0));
   }
+
+  SECTION("One translated && rotated detector") {
+    auto world = new Box(1, 1);
+    auto detector = new Box(0.006, 0.024);
+    detector->attach_crystal_sd();
+    detector->set_rotation(M_PI / 4);
+    detector->set_translation(Vector(0.34, 0));
+    world->attach_daughter(detector);
+
+    Gate::D2::GenericScannerBuilder<F, S> builder;
+    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S> scanner;
+    builder.build(world, &scanner);
+
+    CHECK(scanner.size() == 1);
+    auto d = scanner[0];
+    auto c = d.center();
+    CHECK(c.x == Approx(0.34));
+    CHECK(c.y == Approx(0.0));
+  }
 }
