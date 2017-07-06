@@ -5,6 +5,8 @@
 #include "2d/geometry/vector.h"
 #include "common/types.h"
 
+#include "util/svg_ostream.h"
+
 TEST("2d Gate volume") {
   using Box = Gate::D2::Box<F>;
   using Vector = Box::Vector;
@@ -97,5 +99,9 @@ TEST("2d Gate volume") {
     builder.build(world, &scanner);
 
     CHECK(scanner.size() == 2);
+
+    util::svg_ostream<F> out(
+        "gate_volume_scanner_test.svg", 1., 1., 1024., 1024l);
+    out << scanner;
   }
 }
