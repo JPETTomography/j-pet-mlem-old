@@ -50,10 +50,7 @@ template <typename FType> class Volume {
   using VolumeList = std::list<Volume*>;
   using Transformation = PET2D::Transformation<F>;
 
-  Volume()
-      : is_sd_(false),
-        repeater_(nullptr),
-        transformation_(new Transformation()) {}
+  Volume() : is_sd_(false), transformation_(new Transformation()) {}
 
   bool is_sd() const { return is_sd_; }
 
@@ -65,12 +62,14 @@ template <typename FType> class Volume {
   }
 
   Transformation transformation() const { return *transformation_; }
-  Repeater<F>* repeater() const { return repeater_; }
+  Repeater<F>* repeater() const { return repeater_.get(); }
 
   void attach_daughter(Volume* daughter) { daughters_.push_back(daughter); }
   void attach_crystal_sd() { is_sd_ = true; }
-  void attach_repeater(Repeater<F>* repeater) { repeater_ = repeater; };
-  void detach_repeater() { repeater_ = nullptr; }
+  void attach_repeater(Repeater<F>* repeater) {
+    repeater_ = std::unique_ptr<Repeater<F>>(repeater);
+  };
+  void detach_repeater() { repeater_.release(); }
   void set_translation(Vector tr) {
     transformation_ = std::unique_ptr<Transformation>(
         new Transformation(transformation_->rotation, tr));
@@ -92,7 +91,7 @@ template <typename FType> class Volume {
 
  private:
   VolumeList daughters_;
-  Repeater<F>* repeater_;
+  std::unique_ptr<Repeater<F>> repeater_;
   // Material
   std::unique_ptr<Transformation> transformation_;
 
