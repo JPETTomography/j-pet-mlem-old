@@ -28,7 +28,7 @@ template <typename FType, typename SType> class GenericScannerBuilder {
       vol->detach_repeater();
       for (int i = 0; i < repeater->n; i++) {
         vol->set_transformation(
-            new Transformation(local_transform * repeater->operator[](i)));
+            new Transformation(repeater->operator[](i)*local_transform));
         build(vol, scanner, transformation);
       }
     } else {

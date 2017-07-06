@@ -166,4 +166,82 @@ TEST("2d Gate volume") {
           "`src/2d/geometry/gate_volume_s_repeater_test.txt'");
     }
   }
+
+  SECTION("Simple ring repeater") {
+    auto world = new Box(1, 1);
+    auto da = new Box(0.05, 0.1);
+
+    da->attach_repeater(new Gate::D2::Ring<F>(5, 2 * M_PI, Vector(0.0, 0.0)));
+    da->attach_crystal_sd();
+    da->set_translation(Vector(0, 0.2));
+
+    world->attach_daughter(da);
+
+    Gate::D2::GenericScannerBuilder<F, S> builder;
+    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S> scanner;
+    builder.build(world, &scanner);
+
+    util::svg_ostream<F> out(
+        "gate_volume_s_repeater_ring_test.svg", 1., 1., 1024., 1024l);
+    out << scanner;
+    REQUIRE(scanner.size() == 5);
+
+    std::ifstream test_in(
+        "src/2d/geometry/gate_volume_s_repeater_ring_test.txt");
+    if (test_in) {
+      for (int j = 0; j < 5; j++) {
+        auto d = scanner[j];
+        for (int i = 0; i < 4; i++) {
+          F x, y;
+          test_in >> x >> y;
+          REQUIRE(d[i].x == Approx(x));
+          REQUIRE(d[i].y == Approx(y));
+        }
+      }
+
+    } else {
+      WARN(
+          "could not open file "
+          "`src/2d/geometry/gate_volume_s_repeater_ring_test.txt'");
+    }
+  }
+
+  SECTION("Simple ring repeater off center") {
+    auto world = new Box(1, 1);
+    auto da = new Box(0.05, 0.1);
+
+    da->attach_repeater(new Gate::D2::Ring<F>(5, 2 * M_PI, Vector(0.2, 0.10)));
+    da->attach_crystal_sd();
+    da->set_translation(Vector(0, 0.2));
+
+    world->attach_daughter(da);
+
+    Gate::D2::GenericScannerBuilder<F, S> builder;
+    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S> scanner;
+    builder.build(world, &scanner);
+
+    util::svg_ostream<F> out(
+        "gate_volume_s_repeater_ring_off_test.svg", 1., 1., 1024., 1024l);
+    out << scanner;
+    REQUIRE(scanner.size() == 5);
+
+    std::ifstream test_in(
+        "src/2d/geometry/gate_volume_s_repeater_ring_off_test.txt");
+    if (test_in) {
+      for (int j = 0; j < 5; j++) {
+        auto d = scanner[j];
+        for (int i = 0; i < 4; i++) {
+          F x, y;
+          test_in >> x >> y;
+          REQUIRE(d[i].x == Approx(x));
+          REQUIRE(d[i].y == Approx(y));
+        }
+      }
+
+    } else {
+      WARN(
+          "could not open file "
+          "`src/2d/geometry/gate_volume_s_repeater_ring_off_test.txt'");
+    }
+  }
 }

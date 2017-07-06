@@ -41,7 +41,28 @@ template <typename FType> class Linear : public Repeater<FType> {
   std::vector<Transformation> transformations_;
 };
 
-template <typename FType> class Circular : public Repeater<FType> {};
+template <typename FType> class Ring : public Repeater<FType> {
+ public:
+  using F = FType;
+  using Vector = typename Repeater<F>::Vector;
+  using Transformation = PET2D::Transformation<F>;
+
+  Ring(int n, F angle, Vector center) : Repeater<FType>(n), center(center) {
+    for (int i = 0; i < n; i++) {
+      F d_angle = 2 * M_PI / n;
+      transformations_.push_back(Transformation(center) *
+                                 Transformation(i * d_angle) *
+                                 Transformation(-center));
+    }
+  }
+
+  Transformation operator[](int i) { return transformations_[i]; }
+
+  const Vector center;
+
+ public:
+  std::vector<Transformation> transformations_;
+};
 
 template <typename FType> class Volume {
  public:
