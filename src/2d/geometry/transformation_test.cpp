@@ -60,4 +60,11 @@ TEST("2d transformation") {
     CHECK(vt.x == Approx(-0.224144));
     CHECK(vt.y == Approx(1.09534));
   }
+
+  SECTION("copy constructor") {
+    Transformation transform1(M_PI / 6, Vector(0.3, 0.5));
+    Transformation transform2 = transform1;
+    CHECK(transform1.rotation == transform2.rotation);
+    CHECK(transform1.translation == transform2.translation);
+  }
 }
