@@ -1,3 +1,6 @@
+#include <iostream>
+#include <sstream>
+
 #include "util/test.h"
 
 #include "2d/gate/gate_volume.h"
@@ -103,5 +106,27 @@ TEST("2d Gate volume") {
     util::svg_ostream<F> out(
         "gate_volume_scanner_test.svg", 1., 1., 1024., 1024l);
     out << scanner;
+
+    std::ifstream test_in("src/2d/geometry/gate_volume_test.txt");
+    if (test_in) {
+      auto d_a = scanner[0];
+      for (int i = 0; i < 4; i++) {
+        F x, y;
+        test_in >> x >> y;
+        CHECK(d_a[i].x == Approx(x));
+        CHECK(d_a[i].y == Approx(y));
+      }
+
+      auto d_b = scanner[1];
+      for (int i = 0; i < 4; i++) {
+        F x, y;
+        test_in >> x >> y;
+        CHECK(d_b[i].x == Approx(x));
+        CHECK(d_b[i].y == Approx(y));
+      }
+
+    } else {
+      WARN("could not open file `src/2d/geometry/gate_volume_test.txt'");
+    }
   }
 }

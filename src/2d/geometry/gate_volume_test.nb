@@ -1,0 +1,222 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 11.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      6163,        214]
+NotebookOptionsPosition[      5286,        177]
+NotebookOutlinePosition[      5644,        193]
+CellTagsIndexPosition[      5601,        190]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{"da", "=", " ", 
+  RowBox[{
+   RowBox[{"1", "/", "2"}], " ", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"0.05", ",", " ", "0.1"}], "}"}], ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"0.05", ",", 
+       RowBox[{"-", "0.1"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", "0.05"}], ",", " ", 
+       RowBox[{"-", "0.1"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", "0.05"}], ",", "0.1"}], "}"}]}], "}"}]}]}]], "Input",
+ CellChangeTimes->{{3.708318616458009*^9, 3.708318697032123*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"0.025`", ",", "0.05`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.025`", ",", 
+     RowBox[{"-", "0.05`"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"-", "0.025`"}], ",", 
+     RowBox[{"-", "0.05`"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"-", "0.025`"}], ",", "0.05`"}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.708318697464223*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Polygon", "[", "%", "]"}], "//", "Graphics"}]], "Input",
+ CellChangeTimes->{{3.708318701077518*^9, 3.70831870834199*^9}}],
+
+Cell[BoxData[
+ GraphicsBox[
+  PolygonBox[{{0.025, 0.05}, {0.025, -0.05}, {-0.025, -0.05}, {-0.025, 
+   0.05}}]]], "Output",
+ CellChangeTimes->{3.7083187089337254`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"dat", "=", 
+  RowBox[{
+   RowBox[{"Composition", "[", 
+    RowBox[{
+     RowBox[{"TranslationTransform", "[", 
+      RowBox[{"{", 
+       RowBox[{"0.15", ",", "0"}], "}"}], "]"}], ",", 
+     RowBox[{"RotationTransform", "[", " ", 
+      RowBox[{"Pi", "/", "4"}], "]"}], ",", 
+     RowBox[{"TranslationTransform", "[", 
+      RowBox[{"{", 
+       RowBox[{"0.05", ",", "0"}], "}"}], "]"}]}], "]"}], "[", "da", 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.7083187824319468`*^9, 3.70831889896742*^9}, {
+  3.708318951992258*^9, 3.70831896776409*^9}, {3.708319014848455*^9, 
+  3.708319016063107*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"0.1676776695296637`", ",", "0.08838834764831843`"}], "}"}], ",", 
+   
+   RowBox[{"{", 
+    RowBox[{"0.23838834764831845`", ",", "0.017677669529663688`"}], "}"}], 
+   ",", 
+   RowBox[{"{", 
+    RowBox[{"0.20303300858899107`", ",", 
+     RowBox[{"-", "0.017677669529663688`"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.1323223304703363`", ",", "0.053033008588991064`"}], "}"}]}], 
+  "}"}]], "Output",
+ CellChangeTimes->{{3.708318811100963*^9, 3.708318899562104*^9}, 
+   3.708318968495945*^9, 3.708319016875305*^9, 3.708319868072974*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"dbt", "=", 
+  RowBox[{
+   RowBox[{"Composition", "[", 
+    RowBox[{
+     RowBox[{"TranslationTransform", "[", 
+      RowBox[{"{", 
+       RowBox[{"0.15", ",", "0"}], "}"}], "]"}], ",", 
+     RowBox[{"RotationTransform", "[", " ", 
+      RowBox[{"Pi", "/", "4"}], "]"}], ",", 
+     RowBox[{"TranslationTransform", "[", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"-", "0.05"}], ",", "0"}], "}"}], "]"}]}], "]"}], "[", "da", 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.7083190242231827`*^9, 3.7083190280899553`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"0.09696699141100892`", ",", "0.017677669529663688`"}], "}"}], 
+   ",", 
+   RowBox[{"{", 
+    RowBox[{"0.16767766952966368`", ",", 
+     RowBox[{"-", "0.053033008588991064`"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.1323223304703363`", ",", 
+     RowBox[{"-", "0.08838834764831843`"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.061611652351681555`", ",", 
+     RowBox[{"-", "0.017677669529663688`"}]}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.708319028486032*^9, 3.7083198724749403`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"SetDirectory", "[", 
+  RowBox[{"NotebookDirectory", "[", "]"}], "]"}]], "Input",
+ CellChangeTimes->{{3.708319059520462*^9, 3.708319083700898*^9}}],
+
+Cell[BoxData["\<\"/Users/pbialas/PET/tools/src/2d/geometry\"\>"], "Output",
+ CellChangeTimes->{3.708319084130138*^9, 3.708319873914597*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\<gate_volume_test.txt\>\"", ",", " ", 
+   RowBox[{"Join", "[", 
+    RowBox[{"dat", ",", " ", "dbt"}], "]"}], ",", " ", "\"\<Table\>\""}], 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.7083190318797398`*^9, 3.7083190537636766`*^9}, {
+  3.708319088211666*^9, 3.708319122503271*^9}}],
+
+Cell[BoxData["\<\"gate_volume_test.txt\"\>"], "Output",
+ CellChangeTimes->{3.7083190492384567`*^9, 3.708319124193165*^9, 
+  3.708319875107716*^9}]
+}, Open  ]]
+},
+WindowSize->{808, 911},
+WindowMargins->{{Automatic, -1152}, {150, Automatic}},
+FrontEndVersion->"11.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (July 28, \
+2016)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 576, 18, 32, "Input"],
+Cell[1159, 42, 451, 15, 32, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[1647, 62, 156, 3, 32, "Input"],
+Cell[1806, 67, 167, 4, 447, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[2010, 76, 618, 16, 54, "Input"],
+Cell[2631, 94, 610, 16, 54, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[3278, 115, 548, 15, 54, "Input"],
+Cell[3829, 132, 577, 15, 54, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[4443, 152, 170, 3, 32, "Input"],
+Cell[4616, 157, 139, 1, 32, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[4792, 163, 329, 7, 32, "Input"],
+Cell[5124, 172, 146, 2, 90, "Output"]
+}, Open  ]]
+}
+]
+*)
+
