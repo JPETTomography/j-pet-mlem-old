@@ -4,22 +4,43 @@
 #include <list>
 
 #include "2d/geometry/vector.h"
+#include "2d/geometry/transformation.h"
 
 namespace Gate {
 namespace D2 {
+
+template <typename FType> class Volume;
 
 template <typename FType> class Repeater {
  public:
   using F = FType;
   using Vector = PET2D::Vector<F>;
+  using Transformation = PET2D::Transformation<F>;
+  Repeater(int n) : n(n) {}
+  const int n;
+  virtual Transformation operator[](int i) = 0;
 };
 
 template <typename FType> class Linear : public Repeater<FType> {
  public:
   using F = FType;
   using Vector = typename Repeater<F>::Vector;
-  Linear(int n, const Vector& v){};
+  using Transformation = PET2D::Transformation<F>;
+
+  Linear(int n, const Vector& v)
+      : Repeater<FType>(n), v(v), transformations_() {
+    Vector center = v * (n - 1) * 0.5;
+    for (int i = 0; i < n; i++) {
+      transformations_.push_back(Transformation(0, v * i - center));
+    }
+  };
+  Transformation operator[](int i) { return transformations_[i]; }
+  const Vector v;
+
+ public:
+  std::vector<Transformation> transformations_;
 };
+
 template <typename FType> class Circular : public Repeater<FType> {};
 
 template <typename FType> class Volume {
@@ -27,8 +48,14 @@ template <typename FType> class Volume {
   using F = FType;
   using Vector = PET2D::Vector<F>;
   using VolumeList = std::list<Volume*>;
+  using Transformation = PET2D::Transformation<F>;
 
-  Volume() : is_sd_(false), translation_(0, 0), angle_(0) {}
+  Volume()
+      : is_sd_(false),
+        translation_(0, 0),
+        angle_(0),
+        repeater_(nullptr),
+        transformation_(new Transformation()) {}
 
   bool is_sd() const { return is_sd_; }
 
@@ -40,12 +67,27 @@ template <typename FType> class Volume {
   }
   Vector translation() const { return translation_; }
   F rotation() const { return angle_; }
+  Transformation transformation() const { return *transformation_; }
+  Repeater<F>* repeater() const { return repeater_; }
 
   void attach_daughter(Volume* daughter) { daughters_.push_back(daughter); }
   void attach_crystal_sd() { is_sd_ = true; }
-  void attach_repeater(Repeater<F>* repeater){};
-  void set_translation(Vector tr) { translation_ = tr; }
-  void set_rotation(F a) { angle_ = a; }
+  void attach_repeater(Repeater<F>* repeater) { repeater_ = repeater; };
+  void detach_repeater() { repeater_ = nullptr; }
+  void set_translation(Vector tr) {
+    translation_ = tr;
+    transformation_ = std::unique_ptr<Transformation>(
+        new Transformation(transformation_->rotation, tr));
+  }
+  void set_rotation(F a) {
+    angle_ = a;
+    transformation_ = std::unique_ptr<Transformation>(
+        new Transformation(a, transformation_->translation));
+  }
+
+  void set_transformation(Transformation* t) {
+    transformation_ = std::unique_ptr<Transformation>(t);
+  }
 
   virtual ~Volume() {}
 
@@ -53,12 +95,13 @@ template <typename FType> class Volume {
   // Daughters
   VolumeList daughters_;
   // Repeaters
-
+  Repeater<F>* repeater_;
   // Material
   // Translation
   Vector translation_;
   // Rotation
   F angle_;
+  std::unique_ptr<Transformation> transformation_;
 
   bool is_sd_;
 };

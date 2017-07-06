@@ -18,18 +18,31 @@ template <typename FType, typename SType> class GenericScannerBuilder {
   using Scanner = PET2D::Barrel::GenericScanner<Detector, S>;
   using Vector = typename Detector::Vector;
   using Transformation = PET2D::Transformation<F>;
+  using Repeater = Gate::D2::Repeater<F>;
 
   void build(Volume* vol, Scanner* scanner, Transformation transformation) {
-    Transformation local_transform(vol->rotation(), vol->translation());
-    if (vol->is_sd()) {
-      auto box = dynamic_cast<Gate::D2::Box<F>*>(vol);
-      if (box) {
-        Detector d(box->lengthX, box->lengthY, 1);
-        d.transform(local_transform);
-        d.transform(transformation);
-        scanner->push_back(d);
-      } else {
-        fprintf(stderr, "unsupported volume");
+    // Transformation local_transform(vol->rotation(), vol->translation());
+    Transformation local_transform = vol->transformation();
+    Repeater* repeater;
+    if ((repeater = vol->repeater()) != nullptr) {
+      vol->detach_repeater();
+      for (int i = 0; i < repeater->n; i++) {
+        vol->set_transformation(
+            new Transformation(local_transform * repeater->operator[](i)));
+        build(vol, scanner, transformation);
+      }
+    } else {
+
+      if (vol->is_sd()) {
+        auto box = dynamic_cast<Gate::D2::Box<F>*>(vol);
+        if (box) {
+          Detector d(box->lengthX, box->lengthY, 1);
+          d.transform(local_transform);
+          d.transform(transformation);
+          scanner->push_back(d);
+        } else {
+          fprintf(stderr, "unsupported volume");
+        }
       }
     }
     for (auto daughter = vol->daughters(); daughter != vol->daughters_end();

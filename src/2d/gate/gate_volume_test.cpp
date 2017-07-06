@@ -155,8 +155,8 @@ TEST("2d Gate volume") {
         for (int i = 0; i < 4; i++) {
           F x, y;
           test_in >> x >> y;
-          CHECK(d[i].x == Approx(x));
-          CHECK(d[i].y == Approx(y));
+          REQUIRE(d[i].x == Approx(x));
+          REQUIRE(d[i].y == Approx(y));
         }
       }
 
