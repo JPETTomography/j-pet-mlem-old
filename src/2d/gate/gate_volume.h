@@ -34,7 +34,7 @@ template <typename FType> class Volume {
 
   void attach_daughter(Volume* daughter) { daughters_.push_back(daughter); }
   void attach_crystal_sd() { is_sd_ = true; }
-
+  void attach_repeater(Repeater<F>* repeater){};
   void set_translation(Vector tr) { translation_ = tr; }
   void set_rotation(F a) { angle_ = a; }
 

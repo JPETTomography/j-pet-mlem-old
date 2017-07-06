@@ -129,4 +129,40 @@ TEST("2d Gate volume") {
       WARN("could not open file `src/2d/geometry/gate_volume_test.txt'");
     }
   }
+
+  SECTION("Simple linear repeater") {
+    auto world = new Box(1, 1);
+    auto da = new Box(0.05, 0.1);
+
+    da->attach_repeater(Gate::D2::Linear<F>(4, Vector(0.1, 0.0)));
+    world->attach_daughter(da);
+
+    Gate::D2::GenericScannerBuilder<F, S> builder;
+    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S> scanner;
+    builder.build(world, &scanner);
+
+    util::svg_ostream<F> out(
+        "gate_volume_s_repeater_test.svg", 1., 1., 1024., 1024l);
+    out << scanner;
+    CHECK(scanner.size() == 4);
+
+    std::ifstream test_in("src/2d/geometry/gate_volume_s_repeater_test.txt");
+    if (test_in) {
+      for (int j = 0; j < 4; j++) {
+        auto d = scanner[j];
+        for (int i = 0; i < 4; i++) {
+          F x, y;
+          test_in >> x >> y;
+          CHECK(d[i].x == Approx(x));
+          CHECK(d[i].y == Approx(y));
+        }
+      }
+
+    } else {
+      WARN(
+          "could not open file "
+          "`src/2d/geometry/gate_volume_s_repeater_test.txt'");
+    }
+  }
+}
 }

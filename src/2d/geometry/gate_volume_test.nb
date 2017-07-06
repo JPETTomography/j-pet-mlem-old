@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[      6163,        214]
-NotebookOptionsPosition[      5286,        177]
-NotebookOutlinePosition[      5644,        193]
-CellTagsIndexPosition[      5601,        190]
+NotebookDataLength[     12184,        392]
+NotebookOptionsPosition[     10893,        341]
+NotebookOutlinePosition[     11251,        357]
+CellTagsIndexPosition[     11208,        354]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -173,6 +173,170 @@ Cell[BoxData[
 Cell[BoxData["\<\"gate_volume_test.txt\"\>"], "Output",
  CellChangeTimes->{3.7083190492384567`*^9, 3.708319124193165*^9, 
   3.708319875107716*^9}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"LinearRepeat", "[", 
+   RowBox[{"poly_", ",", " ", "tr_", ",", " ", "n_", ",", " ", "v_"}], "]"}], 
+  ":=", " ", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"last", " ", "=", " ", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"n", "-", "1"}], ")"}], " ", "v"}]}], ",", " ", "t"}], "}"}],
+     ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"t", " ", "=", " ", 
+      RowBox[{"Composition", "[", 
+       RowBox[{"tr", ",", 
+        RowBox[{"TranslationTransform", "[", 
+         RowBox[{
+          RowBox[{"-", "last"}], "/", "2"}], "]"}]}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"t", "/@", 
+        RowBox[{
+         RowBox[{"TranslationTransform", "[", "#", "]"}], "[", "poly", 
+         "]"}]}], "&"}], "/@", 
+      RowBox[{"Table", "[", 
+       RowBox[{
+        RowBox[{"v", "*", "i"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"i", ",", "0", ",", 
+          RowBox[{"n", "-", "1"}]}], "}"}]}], "]"}]}]}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input",
+ CellChangeTimes->{{3.708321747644915*^9, 3.7083217976110697`*^9}, {
+  3.708321850263529*^9, 3.708322109868647*^9}, {3.708322187565549*^9, 
+  3.708322187789625*^9}, {3.708322220978774*^9, 3.708322297077015*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"pr", "=", 
+  RowBox[{"LinearRepeat", "[", 
+   RowBox[{"da", ",", 
+    RowBox[{"TranslationTransform", "[", 
+     RowBox[{"{", 
+      RowBox[{"0", ",", "0"}], "}"}], "]"}], ",", "4", " ", ",", " ", 
+    RowBox[{"{", 
+     RowBox[{"0.1", ",", " ", "0.0"}], "}"}]}], "]"}], " "}]], "Input",
+ CellChangeTimes->{{3.708322113554571*^9, 3.7083221766513033`*^9}, {
+  3.708322309351143*^9, 3.708322339446484*^9}, {3.708322375336426*^9, 
+  3.708322423734576*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", "0.12500000000000003`"}], ",", "0.05`"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", "0.12500000000000003`"}], ",", 
+       RowBox[{"-", "0.05`"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", "0.17500000000000002`"}], ",", 
+       RowBox[{"-", "0.05`"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", "0.17500000000000002`"}], ",", "0.05`"}], "}"}]}], "}"}], 
+   ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", "0.025000000000000022`"}], ",", "0.05`"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", "0.025000000000000022`"}], ",", 
+       RowBox[{"-", "0.05`"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", "0.07500000000000001`"}], ",", 
+       RowBox[{"-", "0.05`"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", "0.07500000000000001`"}], ",", "0.05`"}], "}"}]}], "}"}], 
+   ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"0.07499999999999998`", ",", "0.05`"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"0.07499999999999998`", ",", 
+       RowBox[{"-", "0.05`"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"0.024999999999999994`", ",", 
+       RowBox[{"-", "0.05`"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"0.024999999999999994`", ",", "0.05`"}], "}"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"0.17500000000000004`", ",", "0.05`"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"0.17500000000000004`", ",", 
+       RowBox[{"-", "0.05`"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"0.125`", ",", 
+       RowBox[{"-", "0.05`"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"0.125`", ",", "0.05`"}], "}"}]}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{{3.708322165604187*^9, 3.708322189510737*^9}, 
+   3.7083222272398367`*^9, {3.708322260002327*^9, 3.708322340311317*^9}, {
+   3.70832237709464*^9, 3.708322399238227*^9}, 3.7083224312277327`*^9}]
+}, Open  ]],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.708322097161268*^9, 3.708322111387178*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Graphics", "[", 
+  RowBox[{
+   RowBox[{"Polygon", "/@", "pr"}], ",", " ", 
+   RowBox[{"Frame", "\[Rule]", "True"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.7083223423676367`*^9, 3.7083223823782177`*^9}, {
+  3.708322427897513*^9, 3.7083224281338263`*^9}}],
+
+Cell[BoxData[
+ GraphicsBox[{
+   PolygonBox[{{-0.12500000000000003`, 
+    0.05}, {-0.12500000000000003`, -0.05}, {-0.17500000000000002`, -0.05}, \
+{-0.17500000000000002`, 0.05}}], 
+   PolygonBox[{{-0.025000000000000022`, 
+    0.05}, {-0.025000000000000022`, -0.05}, {-0.07500000000000001, -0.05}, \
+{-0.07500000000000001, 0.05}}], 
+   PolygonBox[{{0.07499999999999998, 0.05}, {0.07499999999999998, -0.05}, {
+    0.024999999999999994`, -0.05}, {0.024999999999999994`, 0.05}}], 
+   PolygonBox[{{0.17500000000000004`, 0.05}, {0.17500000000000004`, -0.05}, {
+    0.125, -0.05}, {0.125, 0.05}}]},
+  Frame->True]], "Output",
+ CellChangeTimes->{{3.7083223582069693`*^9, 3.7083224329196997`*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\<gata_volume_s_repeater_test.txt\>\"", ",", 
+   RowBox[{"Flatten", "[", 
+    RowBox[{"pr", ",", "1"}], "]"}], ",", "\"\<Table\>\""}], "]"}]], "Input",
+ CellChangeTimes->{{3.708322436583705*^9, 3.708322484701893*^9}, {
+  3.708322753444085*^9, 3.7083227562560577`*^9}}],
+
+Cell[BoxData["\<\"gata_volume_test_s_repeater.txt\"\>"], "Output",
+ CellChangeTimes->{{3.708322444255596*^9, 3.7083224473341227`*^9}, 
+   3.708322485211852*^9}]
 }, Open  ]]
 },
 WindowSize->{808, 911},
@@ -214,7 +378,21 @@ Cell[4616, 157, 139, 1, 32, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
 Cell[4792, 163, 329, 7, 32, "Input"],
-Cell[5124, 172, 146, 2, 90, "Output"]
+Cell[5124, 172, 146, 2, 32, "Output"]
+}, Open  ]],
+Cell[5285, 177, 1316, 37, 96, "Input"],
+Cell[CellGroupData[{
+Cell[6626, 218, 477, 11, 32, "Input"],
+Cell[7106, 231, 2150, 63, 96, "Output"]
+}, Open  ]],
+Cell[9271, 297, 92, 1, 32, "Input"],
+Cell[CellGroupData[{
+Cell[9388, 302, 279, 6, 32, "Input"],
+Cell[9670, 310, 687, 13, 136, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[10394, 328, 320, 6, 32, "Input"],
+Cell[10717, 336, 160, 2, 32, "Output"]
 }, Open  ]]
 }
 ]
