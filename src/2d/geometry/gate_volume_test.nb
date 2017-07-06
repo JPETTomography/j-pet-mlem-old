@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     12184,        392]
-NotebookOptionsPosition[     10893,        341]
-NotebookOutlinePosition[     11251,        357]
-CellTagsIndexPosition[     11208,        354]
+NotebookDataLength[     12281,        393]
+NotebookOptionsPosition[     10990,        342]
+NotebookOutlinePosition[     11348,        358]
+CellTagsIndexPosition[     11305,        355]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -328,15 +328,16 @@ Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{"Export", "[", 
-  RowBox[{"\"\<gata_volume_s_repeater_test.txt\>\"", ",", 
+  RowBox[{"\"\<gate_volume_s_repeater_test.txt\>\"", ",", 
    RowBox[{"Flatten", "[", 
     RowBox[{"pr", ",", "1"}], "]"}], ",", "\"\<Table\>\""}], "]"}]], "Input",
  CellChangeTimes->{{3.708322436583705*^9, 3.708322484701893*^9}, {
-  3.708322753444085*^9, 3.7083227562560577`*^9}}],
+  3.708322753444085*^9, 3.7083227562560577`*^9}, {3.7083231935171423`*^9, 
+  3.7083231947084417`*^9}}],
 
-Cell[BoxData["\<\"gata_volume_test_s_repeater.txt\"\>"], "Output",
+Cell[BoxData["\<\"gata_volume_s_repeater_test.txt\"\>"], "Output",
  CellChangeTimes->{{3.708322444255596*^9, 3.7083224473341227`*^9}, 
-   3.708322485211852*^9}]
+   3.708322485211852*^9, 3.708322758444512*^9, 3.708323175337762*^9}]
 }, Open  ]]
 },
 WindowSize->{808, 911},
@@ -391,8 +392,8 @@ Cell[9388, 302, 279, 6, 32, "Input"],
 Cell[9670, 310, 687, 13, 136, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[10394, 328, 320, 6, 32, "Input"],
-Cell[10717, 336, 160, 2, 32, "Output"]
+Cell[10394, 328, 373, 7, 32, "Input"],
+Cell[10770, 337, 204, 2, 32, "Output"]
 }, Open  ]]
 }
 ]

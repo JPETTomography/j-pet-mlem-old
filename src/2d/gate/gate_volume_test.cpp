@@ -134,7 +134,9 @@ TEST("2d Gate volume") {
     auto world = new Box(1, 1);
     auto da = new Box(0.05, 0.1);
 
-    da->attach_repeater(Gate::D2::Linear<F>(4, Vector(0.1, 0.0)));
+    da->attach_repeater(new Gate::D2::Linear<F>(4, Vector(0.1, 0.0)));
+    da->attach_crystal_sd();
+
     world->attach_daughter(da);
 
     Gate::D2::GenericScannerBuilder<F, S> builder;
@@ -144,7 +146,7 @@ TEST("2d Gate volume") {
     util::svg_ostream<F> out(
         "gate_volume_s_repeater_test.svg", 1., 1., 1024., 1024l);
     out << scanner;
-    CHECK(scanner.size() == 4);
+    REQUIRE(scanner.size() == 4);
 
     std::ifstream test_in("src/2d/geometry/gate_volume_s_repeater_test.txt");
     if (test_in) {
@@ -164,5 +166,4 @@ TEST("2d Gate volume") {
           "`src/2d/geometry/gate_volume_s_repeater_test.txt'");
     }
   }
-}
 }

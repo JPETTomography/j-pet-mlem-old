@@ -8,10 +8,19 @@
 namespace Gate {
 namespace D2 {
 
-template <typename F> class Repeater {};
+template <typename FType> class Repeater {
+ public:
+  using F = FType;
+  using Vector = PET2D::Vector<F>;
+};
 
-template <typename F> class Linear : public Repeater<F> {};
-template <typename F> class Circular : public Repeater<F> {};
+template <typename FType> class Linear : public Repeater<FType> {
+ public:
+  using F = FType;
+  using Vector = typename Repeater<F>::Vector;
+  Linear(int n, const Vector& v){};
+};
+template <typename FType> class Circular : public Repeater<FType> {};
 
 template <typename FType> class Volume {
  public:
