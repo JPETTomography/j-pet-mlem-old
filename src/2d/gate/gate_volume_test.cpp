@@ -70,4 +70,32 @@ TEST("2d Gate volume") {
     CHECK(c.x == Approx(0.34));
     CHECK(c.y == Approx(0.0));
   }
+
+  SECTION("nested example") {
+    auto world = new Box(1, 1);
+
+    auto box1 = new Box(0.25, 0.25);
+    box1->set_translation(Vector(0.15, 0));
+    world->attach_daughter(box1);
+
+    auto box2 = new Box(0.2, 0.1);
+    box2->set_rotation(M_PI / 4);
+    box1->attach_daughter(box2);
+
+    auto da = new Box(0.05, 0.1);
+    da->set_translation(Vector(0.05, 0));
+    da->attach_crystal_sd();
+    auto db = new Box(0.05, 0.1);
+    db->set_translation(Vector(-0.05, 0));
+    db->attach_crystal_sd();
+
+    box2->attach_daughter(da);
+    box2->attach_daughter(db);
+
+    Gate::D2::GenericScannerBuilder<F, S> builder;
+    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S> scanner;
+    builder.build(world, &scanner);
+
+    CHECK(scanner.size() == 2);
+  }
 }
