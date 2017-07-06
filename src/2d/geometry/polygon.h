@@ -4,6 +4,8 @@
 #include "2d/barrel/event.h"
 #include "util/array.h"
 #include "util/cuda/compat.h"
+#include "transformation.h"
+
 #if !__CUDACC__
 #include "util/json.h"
 #include "util/svg_ostream.h"
@@ -20,7 +22,20 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
   using Event = Barrel::Event<F>;
+  using Transformation = PET2D::Transformation<F>;
   using Intersections = util::array<2, Point>;
+
+  Polygon& transform(Transformation tr) {
+    for (auto& p : *this) {
+      p = tr(p);
+    }
+    return *this;
+  }
+
+  Polygon& transformed(Transformation tr) {
+    Polygon tmp(*this);
+    return tmp.transform(tr);
+  }
 
   Polygon& rotate(Angle phi) {
     for (auto& p : *this) {
