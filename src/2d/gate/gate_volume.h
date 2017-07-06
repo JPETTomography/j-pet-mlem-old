@@ -80,6 +80,10 @@ template <typename FType> class Volume {
         new Transformation(a, transformation_->translation));
   }
 
+  void set_placement(F a, Vector t) {
+    transformation_ = std::unique_ptr<Transformation>(new Transformation(a, t));
+  }
+
   void set_transformation(Transformation* t) {
     transformation_ = std::unique_ptr<Transformation>(t);
   }
