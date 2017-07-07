@@ -20,7 +20,7 @@
 /gate/detector/vis/forceWireframe
 /gate/detector/repeaters/insert linear
 /gate/detector/linear/setRepeatNumber 13
-/gate/detector/linear/setRepeatVector 0. 7.5 0. mm
+/gate/detector/linear/setRepeatVector 0. 7.0 0. mm
 
 
 /gate/module/repeaters/insert ring
