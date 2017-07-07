@@ -90,7 +90,7 @@ template <typename FType> class Volume {
   void attach_repeater(Repeater<F>* repeater) {
     repeater_ = std::unique_ptr<Repeater<F>>(repeater);
   };
-  void detach_repeater() { repeater_.release(); }
+  Repeater<F>* detach_repeater() { return repeater_.release(); }
   void set_translation(Vector tr) {
     transformation_ = std::unique_ptr<Transformation>(
         new Transformation(transformation_->rotation, tr));

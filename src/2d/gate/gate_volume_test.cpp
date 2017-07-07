@@ -244,4 +244,30 @@ TEST("2d Gate volume") {
           "`src/2d/geometry/gate_volume_s_repeater_ring_off_test.txt'");
     }
   }
+
+  SECTION("new modules") {
+    auto world = new Box(2, 2);
+    auto module = new Box(0.026, 0.0085);
+    module->set_translation(Vector(0.37236, 0));
+    module->attach_repeater(
+        new Gate::D2::Ring<F>(24, 2 * M_PI, Vector(0.0, 0.0)));
+
+    world->attach_daughter(module);
+
+    auto scintillator = new Box(0.024, 0.006);
+    scintillator->attach_repeater(
+        new Gate::D2::Linear<F>(13, Vector(0, 0.007)));
+    scintillator->attach_crystal_sd();
+
+    module->attach_daughter(scintillator);
+
+    Gate::D2::GenericScannerBuilder<F, S> builder;
+    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S> scanner(
+        0.4, 0.8);
+    builder.build(world, &scanner);
+
+    util::svg_ostream<F> out(
+        "gate_volume_new_modules.svg", .9, .9, 1024., 1024l);
+    out << scanner;
+  }
 }

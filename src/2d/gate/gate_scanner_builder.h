@@ -25,12 +25,14 @@ template <typename FType, typename SType> class GenericScannerBuilder {
     Transformation local_transform = vol->transformation();
     Repeater* repeater;
     if ((repeater = vol->repeater()) != nullptr) {
-      vol->detach_repeater();
+      auto repeater = vol->detach_repeater();
       for (int i = 0; i < repeater->n; i++) {
         vol->set_transformation(
             new Transformation(repeater->operator[](i)*local_transform));
         build(vol, scanner, transformation);
       }
+      vol->attach_repeater(repeater);
+      vol->set_transformation(new Transformation(local_transform));
     } else {
 
       if (vol->is_sd()) {
