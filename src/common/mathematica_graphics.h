@@ -16,9 +16,9 @@ template <typename FType> class MathematicaGraphics {
   using F = FType;
 
   MathematicaGraphics(std::ostream& out) : next_(false), out_(out) {
-    out_ << "Graphics[{\n";
+    out_ << "{\n";
   }
-  ~MathematicaGraphics() { out_ << "}]\n"; }
+  ~MathematicaGraphics() { out_ << "}\n"; }
 
   template <std::size_t NumPoints>
   void add(const PET2D::Polygon<NumPoints, F>& polygon) {
