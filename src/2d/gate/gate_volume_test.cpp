@@ -311,7 +311,8 @@ TEST("2d Gate volume") {
     world->attach_daughter(layer_2);
     auto scintillator_2 = new Box(0.021, 0.009);
     scintillator_2->set_translation(Vector(0.4675, 0));
-    scintillator_2->attach_repeater(new Gate::D2::Ring<F>(48, Vector(0, 0)));
+    scintillator_2->attach_repeater(
+        new Gate::D2::Ring<F>(48, Vector(0, 0), M_PI / 48));
     scintillator_2->attach_crystal_sd();
     layer_2->attach_daughter(scintillator_2);
 

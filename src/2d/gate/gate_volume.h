@@ -47,11 +47,44 @@ template <typename FType> class Ring : public Repeater<FType> {
   using Vector = typename Repeater<F>::Vector;
   using Transformation = PET2D::Transformation<F>;
 
-  Ring(int n, Vector center) : Repeater<FType>(n), center(center) {
+  Ring(int n, Vector center)
+      : Repeater<FType>(n),
+        center(center),
+        firstAngle(0),
+        angularSpan(2 * M_PI) {
     for (int i = 0; i < n; i++) {
-      F d_angle = 2 * M_PI / n;
+      F d_angle = angularSpan / (n);
       transformations_.push_back(Transformation(center) *
                                  Transformation(i * d_angle) *
+                                 Transformation(-center));
+    }
+  }
+
+  //  Ring(int n, Vector center, F firstAngle)
+  //      : Repeater<FType>(n),
+  //        center(center),
+  //        firstAngle(firstAngle),
+  //        angularSpan(2*M_PI) {
+  //    for (int i = 0; i < n; i++) {
+  //      F d_angle = (angularSpan) / (n);
+  //      transformations_.push_back(Transformation(center) *
+  //                                 Transformation(i * d_angle+firstAngle) *
+  //                                 Transformation(-center));
+  //    }
+  //  }
+
+  Ring(int n, Vector center, F firstAngle)
+      : Ring(n, center, firstAngle, 2 * (n - 1) * M_PI / n) {}
+
+  Ring(int n, Vector center, F firstAngle, F angularSpan)
+      : Repeater<FType>(n),
+        center(center),
+        firstAngle(firstAngle),
+        angularSpan(angularSpan) {
+    for (int i = 0; i < n; i++) {
+      F d_angle = (angularSpan) / (n - 1);
+      transformations_.push_back(Transformation(center) *
+                                 Transformation(i * d_angle + firstAngle) *
                                  Transformation(-center));
     }
   }
@@ -59,6 +92,8 @@ template <typename FType> class Ring : public Repeater<FType> {
   Transformation operator[](int i) { return transformations_[i]; }
 
   const Vector center;
+  const F firstAngle;
+  const F angularSpan;
 
  public:
   std::vector<Transformation> transformations_;
