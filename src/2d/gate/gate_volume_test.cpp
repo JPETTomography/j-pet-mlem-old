@@ -299,6 +299,14 @@ TEST("2d Gate volume") {
 
     module->attach_daughter(scintillator);
 
+    auto layer_1 = new Cylinder(0.425 - 0.005, 0.425 + 0.005);
+    world->attach_daughter(layer_1);
+    auto scintillator_1 = new Box(0.021, 0.009);
+    scintillator_1->set_translation(Vector(0.425, 0));
+    scintillator_1->attach_repeater(new Gate::D2::Ring<F>(48, Vector(0, 0)));
+    scintillator_1->attach_crystal_sd();
+    layer_1->attach_daughter(scintillator_1);
+
     Gate::D2::GenericScannerBuilder<F, S> builder;
     PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S> scanner(
         0.4, 0.8);
