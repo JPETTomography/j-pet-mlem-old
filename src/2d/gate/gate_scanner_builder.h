@@ -22,18 +22,21 @@ class GenericScannerBuilder {
   using Repeater = Gate::D2::Repeater<F>;
 
   void build(Volume* vol, Scanner* scanner, Transformation transformation) {
+    // std::cerr << "building " << vol << "\n";
     // Transformation local_transform(vol->rotation(), vol->translation());
     Transformation local_transform = vol->transformation();
     Repeater* repeater;
     if ((repeater = vol->repeater()) != nullptr) {
       auto repeater = vol->detach_repeater();
       for (int i = 0; i < repeater->n; i++) {
+        //  std::cerr << "Repeating " << vol << "\n";
         vol->set_transformation(
             new Transformation(repeater->operator[](i)*local_transform));
         build(vol, scanner, transformation);
       }
       vol->attach_repeater(repeater);
       vol->set_transformation(new Transformation(local_transform));
+      return;
     } else {
 
       if (vol->is_sd()) {
@@ -50,6 +53,7 @@ class GenericScannerBuilder {
     }
     for (auto daughter = vol->daughters(); daughter != vol->daughters_end();
          daughter++) {
+      // std::cerr << "building " << vol << " daughter " << *daughter << "\n";
       build(*daughter, scanner, transformation * local_transform);
     }
   }
