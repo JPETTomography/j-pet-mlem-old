@@ -7,6 +7,7 @@
 #include "2d/gate/gate_scanner_builder.h"
 #include "2d/geometry/vector.h"
 #include "common/types.h"
+#include "common/mathematica_graphics.h"
 
 #include "util/svg_ostream.h"
 
@@ -269,5 +270,9 @@ TEST("2d Gate volume") {
     util::svg_ostream<F> out(
         "gate_volume_new_modules.svg", .9, .9, 1024., 1024l);
     out << scanner;
+
+    std::ofstream mout("gate_volume_new_modules.m");
+    Common::MathematicaGraphics<F> mgraphics(mout);
+    mgraphics.add(scanner);
   }
 }
