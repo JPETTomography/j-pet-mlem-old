@@ -126,6 +126,14 @@ template <typename FType> class Box : public Volume<FType> {
   const F lengthX;
   const F lengthY;
 };
+
+template <typename FType> class Cylinder : public Volume<FType> {
+ public:
+  using F = FType;
+  Cylinder(F rMin, F rMax) : rMin(rMin), rMax(rMax) {}
+  const F rMin;
+  const F rMax;
+};
 }
 }
 
