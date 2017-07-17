@@ -14,6 +14,7 @@
 TEST("2d Gate volume") {
   using Box = Gate::D2::Box<F>;
   using Vector = Box::Vector;
+  using Cylinder = Gate::D2::Cylinder<F>;
 
   SECTION("Constructing") {
     Gate::D2::Box<float> world(1, 1);
@@ -248,12 +249,16 @@ TEST("2d Gate volume") {
 
   SECTION("new modules") {
     auto world = new Box(2, 2);
+
+    auto layer_new = new Cylinder(0.35, 0.4);
+    world->attach_daughter(layer_new);
+
     auto module = new Box(0.026, 0.0085);
     module->set_translation(Vector(0.37236, 0));
     module->attach_repeater(
         new Gate::D2::Ring<F>(24, 2 * M_PI, Vector(0.0, 0.0)));
 
-    world->attach_daughter(module);
+    layer_new->attach_daughter(module);
 
     auto scintillator = new Box(0.024, 0.006);
     scintillator->attach_repeater(
@@ -272,6 +277,39 @@ TEST("2d Gate volume") {
     out << scanner;
 
     std::ofstream mout("gate_volume_new_modules.m");
+    Common::MathematicaGraphics<F> mgraphics(mout);
+    mgraphics.add(scanner);
+  }
+
+  SECTION("new full") {
+    auto world = new Box(2, 2);
+
+    auto layer_new = new Cylinder(0.35, 0.4);
+    world->attach_daughter(layer_new);
+
+    auto module = new Box(0.026, 0.0085);
+    module->set_translation(Vector(0.37236, 0));
+    module->attach_repeater(
+        new Gate::D2::Ring<F>(24, 2 * M_PI, Vector(0.0, 0.0)));
+
+    layer_new->attach_daughter(module);
+
+    auto scintillator = new Box(0.024, 0.006);
+    scintillator->attach_repeater(
+        new Gate::D2::Linear<F>(13, Vector(0, 0.007)));
+    scintillator->attach_crystal_sd();
+
+    module->attach_daughter(scintillator);
+
+    Gate::D2::GenericScannerBuilder<F, S> builder;
+    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S> scanner(
+        0.4, 0.8);
+    builder.build(world, &scanner);
+
+    util::svg_ostream<F> out("new_full.svg", .9, .9, 1024., 1024l);
+    out << scanner;
+
+    std::ofstream mout("new_full.m");
     Common::MathematicaGraphics<F> mgraphics(mout);
     mgraphics.add(scanner);
   }
