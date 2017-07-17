@@ -113,7 +113,7 @@ TEST("3d/geometry/phantom_builder/angular_distribution/spherical") {
 
   PET3D::Distribution::SphericalDistribution<F> distribution(j_angular);
 
-  REQUIRE(distribution.theta_min == -0.01_e7);
+  REQUIRE(-distribution.theta_min == 0.01_e7);
   REQUIRE(distribution.theta_max == 0.01_e7);
 }
 
