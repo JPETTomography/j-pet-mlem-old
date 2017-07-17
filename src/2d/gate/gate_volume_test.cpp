@@ -173,7 +173,7 @@ TEST("2d Gate volume") {
     auto world = new Box(1, 1);
     auto da = new Box(0.05, 0.1);
 
-    da->attach_repeater(new Gate::D2::Ring<F>(5, 2 * M_PI, Vector(0.0, 0.0)));
+    da->attach_repeater(new Gate::D2::Ring<F>(5, Vector(0.0, 0.0)));
     da->attach_crystal_sd();
     da->set_translation(Vector(0, 0.2));
 
@@ -212,7 +212,7 @@ TEST("2d Gate volume") {
     auto world = new Box(1, 1);
     auto da = new Box(0.05, 0.1);
 
-    da->attach_repeater(new Gate::D2::Ring<F>(5, 2 * M_PI, Vector(0.2, 0.10)));
+    da->attach_repeater(new Gate::D2::Ring<F>(5, Vector(0.2, 0.10)));
     da->attach_crystal_sd();
     da->set_translation(Vector(0, 0.2));
 
@@ -255,8 +255,7 @@ TEST("2d Gate volume") {
 
     auto module = new Box(0.026, 0.0085);
     module->set_translation(Vector(0.37236, 0));
-    module->attach_repeater(
-        new Gate::D2::Ring<F>(24, 2 * M_PI, Vector(0.0, 0.0)));
+    module->attach_repeater(new Gate::D2::Ring<F>(24, Vector(0.0, 0.0)));
 
     layer_new->attach_daughter(module);
 
@@ -289,8 +288,7 @@ TEST("2d Gate volume") {
 
     auto module = new Box(0.026, 0.0085);
     module->set_translation(Vector(0.37236, 0));
-    module->attach_repeater(
-        new Gate::D2::Ring<F>(24, 2 * M_PI, Vector(0.0, 0.0)));
+    module->attach_repeater(new Gate::D2::Ring<F>(24, Vector(0.0, 0.0)));
 
     layer_new->attach_daughter(module);
 

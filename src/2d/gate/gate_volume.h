@@ -47,7 +47,7 @@ template <typename FType> class Ring : public Repeater<FType> {
   using Vector = typename Repeater<F>::Vector;
   using Transformation = PET2D::Transformation<F>;
 
-  Ring(int n, F angle, Vector center) : Repeater<FType>(n), center(center) {
+  Ring(int n, Vector center) : Repeater<FType>(n), center(center) {
     for (int i = 0; i < n; i++) {
       F d_angle = 2 * M_PI / n;
       transformations_.push_back(Transformation(center) *
