@@ -1,6 +1,6 @@
 [submodule "lib/catch"]
 	path = lib/catch
-	url = ../../ujhpc/Catch.git
+	url =  git@github.com:philsquared/Catch.git
 [submodule "lib/cmdline"]
 	path = lib/cmdline
 	url = ../../ujhpc/cmdline.git
