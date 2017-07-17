@@ -307,9 +307,17 @@ TEST("2d Gate volume") {
     scintillator_1->attach_crystal_sd();
     layer_1->attach_daughter(scintillator_1);
 
-    Gate::D2::GenericScannerBuilder<F, S> builder;
-    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S> scanner(
-        0.4, 0.8);
+    auto layer_2 = new Cylinder(0.4675 - 0.005, 0.4675 + 0.005);
+    world->attach_daughter(layer_2);
+    auto scintillator_2 = new Box(0.021, 0.009);
+    scintillator_2->set_translation(Vector(0.4675, 0));
+    scintillator_2->attach_repeater(new Gate::D2::Ring<F>(48, Vector(0, 0)));
+    scintillator_2->attach_crystal_sd();
+    layer_2->attach_daughter(scintillator_2);
+
+    Gate::D2::GenericScannerBuilder<F, S, 512> builder;
+    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S, 512>
+        scanner(0.4, 0.8);
     builder.build(world, &scanner);
 
     util::svg_ostream<F> out("new_full.svg", .9, .9, 1024., 1024l);

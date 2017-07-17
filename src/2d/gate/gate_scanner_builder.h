@@ -9,13 +9,14 @@
 namespace Gate {
 namespace D2 {
 
-template <typename FType, typename SType> class GenericScannerBuilder {
+template <typename FType, typename SType, int MaxDetectors = MAX_DETECTORS>
+class GenericScannerBuilder {
  public:
   using F = FType;
   using S = SType;
   using Volume = Gate::D2::Volume<F>;
   using Detector = PET2D::Barrel::SquareDetector<F>;
-  using Scanner = PET2D::Barrel::GenericScanner<Detector, S>;
+  using Scanner = PET2D::Barrel::GenericScanner<Detector, S, MaxDetectors>;
   using Vector = typename Detector::Vector;
   using Transformation = PET2D::Transformation<F>;
   using Repeater = Gate::D2::Repeater<F>;
