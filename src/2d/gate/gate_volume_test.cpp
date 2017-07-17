@@ -252,19 +252,18 @@ TEST("2d Gate volume") {
 
   SECTION("new modules") {
     auto world = new Box(2, 2);
-    std::cerr << "world " << world << "\n";
+
     auto layer_new = new Cylinder(0.35, 0.4);
     world->attach_daughter(layer_new);
-    std::cerr << "layer " << layer_new << "\n";
+
     auto module = new Box(0.026, 0.0085);
     module->set_translation(Vector(0.37236, 0));
     module->attach_repeater(new Gate::D2::Ring<F>(24, Vector(0.0, 0.0)));
 
     layer_new->attach_daughter(module);
-    std::cerr << "module " << module << "\n";
 
     auto scintillator = new Box(0.024, 0.006);
-    std::cerr << "scintillator " << scintillator << "\n";
+
     scintillator->attach_repeater(
         new Gate::D2::Linear<F>(13, Vector(0, 0.007)));
     scintillator->attach_crystal_sd();
@@ -327,7 +326,7 @@ TEST("2d Gate volume") {
     auto scintillator_3 = new Box(0.021, 0.009);
     scintillator_3->set_translation(Vector(0.575, 0));
     scintillator_3->attach_repeater(
-        new Gate::D2::Ring<F>(48, Vector(0, 0), M_PI / 96));
+        new Gate::D2::Ring<F>(96, Vector(0, 0), M_PI / 96));
     scintillator_3->attach_crystal_sd();
     layer_3->attach_daughter(scintillator_3);
 
@@ -336,7 +335,6 @@ TEST("2d Gate volume") {
         scanner(0.4, 0.8);
     builder.build(world, &scanner);
     REQUIRE(13 * 24 + 48 + 48 + 96 == scanner.size());
-    std::cerr << scanner.size() << "\n";
 
     util::svg_ostream<F> out("new_full.svg", .9, .9, 1024., 1024l);
     out << scanner;
