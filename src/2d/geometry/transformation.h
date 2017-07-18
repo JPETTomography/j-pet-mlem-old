@@ -10,16 +10,25 @@ template <typename FType> class Transformation {
   using Vector = PET2D::Vector<F>;
   using Point = PET2D::Point<F>;
 
-  Transformation(F r, Vector t) : rotation(r), translation(t){};
+  Transformation(F r, Vector t, bool mirror_x = false)
+      : rotation(r), translation(t), mirror_x(mirror_x){};
   Transformation(F r) : Transformation(r, Vector(0, 0)){};
   Transformation(Vector t) : Transformation(0, t){};
   Transformation() : Transformation(0, Vector(0, 0)){};
 
-  Point operator()(Point p) { return p.rotated(rotation) + translation; }
+  Point operator()(Point p) {
+    if (mirror_x) {
+      auto q = Point(-p.x, p.y);
+      return q.rotated(rotation) + translation;
+    } else {
+      p.rotated(rotation) + translation;
+    }
+  }
   Vector operator()(Vector v) { return v.rotated(rotation); }
 
   const F rotation;
   const Vector translation;
+  const bool mirror_x;
 };
 
 template <typename F>
