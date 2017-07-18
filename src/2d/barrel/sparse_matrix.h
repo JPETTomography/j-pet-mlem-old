@@ -238,6 +238,7 @@ class SparseMatrix
   }
 
   /// Merge duplicate hit entries pointing to same LOR-pixel-position.
+  /// Matrix has to be sorted first.
   void merge_duplicates() {
     for (auto it_elem = this->begin(); it_elem != this->end(); ++it_elem) {
       auto next = it_elem + 1;
