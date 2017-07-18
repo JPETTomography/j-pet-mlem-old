@@ -135,6 +135,17 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   }
 
 #if !__CUDACC__
+
+  bool approx_equal(const Polygon& rhs, F epsilon = 1e-5) {
+    auto rit = rhs.begin();
+    for (auto& p : *this) {
+      if (!p.approx_equal(*rit))
+        return false;
+      rit++;
+    }
+    return true;
+  }
+
   using svg_ostream = util::svg_ostream<F>;
 
   friend svg_ostream& operator<<(svg_ostream& svg, Polygon& pg) {
