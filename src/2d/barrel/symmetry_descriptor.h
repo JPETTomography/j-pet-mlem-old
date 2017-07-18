@@ -19,7 +19,7 @@ template <typename SType> class SymmetryDescriptor {
   using S = SType;
   template <typename F> using Transformation = PET2D::Transformation<F>;
 
-  static const S EIGHT = 8;
+  constexpr static const S EIGHT = 8;
 
   SymmetryDescriptor(int n_detectors, int n_symmetries)
       : n_detectors(n_detectors), n_symmetries(n_symmetries) {
@@ -95,7 +95,8 @@ template <typename SType> class SymmetryDescriptor {
     return detector;
   }
 
-  template <typename F> Transformation<F> symetry_transformation(S symmetry) {
+  template <typename F>
+  static Transformation<F> symmetry_transformation(S symmetry) {
     using Vector = typename Transformation<F>::Vector;
     switch (symmetry) {
       case 0:
