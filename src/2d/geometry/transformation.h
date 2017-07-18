@@ -21,7 +21,7 @@ template <typename FType> class Transformation {
       auto q = Point(-p.x, p.y);
       return q.rotated(rotation) + translation;
     } else {
-      p.rotated(rotation) + translation;
+      return p.rotated(rotation) + translation;
     }
   }
   Vector operator()(Vector v) { return v.rotated(rotation); }
