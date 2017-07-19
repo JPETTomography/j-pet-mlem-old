@@ -1,9 +1,10 @@
 #ifndef FIND_SYMMETRY_H
 #define FIND_SYMMETRY_H
 #include "2d/geometry/transformation.h"
+#include "2d/barrel/symmetry_descriptor.h"
 
 template <typename F, typename S>
-static PET2D::Transformation<F> symmetry_transformation(S symmetry) {
+PET2D::Transformation<F> symmetry_transformation(S symmetry) {
   using Transformation = PET2D::Transformation<F>;
 
   using Vector = typename Transformation::Vector;
@@ -28,10 +29,10 @@ static PET2D::Transformation<F> symmetry_transformation(S symmetry) {
 }
 
 template <typename Scanner>
-static typename Scanner::S find_symmetric(Scanner scanner,
-                                          typename Scanner::S symmetry,
-                                          typename Scanner::S detector,
-                                          typename Scanner::F epsilon) {
+typename Scanner::S find_symmetric(Scanner scanner,
+                                   typename Scanner::S symmetry,
+                                   typename Scanner::S detector,
+                                   typename Scanner::F epsilon) {
   using F = typename Scanner::F;
   using S = typename Scanner::S;
 
