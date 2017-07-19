@@ -24,14 +24,11 @@ class GenericScannerBuilder {
   void build(const Volume* vol,
              Scanner* scanner,
              Transformation transformation) {
-    // std::cerr << "building " << vol << "\n";
-    // Transformation local_transform(vol->rotation(), vol->translation());
     Transformation local_transform = vol->transformation();
     Repeater* repeater;
     if ((repeater = vol->repeater()) != nullptr) {
       auto repeater = const_cast<Volume*>(vol)->detach_repeater();
       for (int i = 0; i < repeater->n; i++) {
-        //  std::cerr << "Repeating " << vol << "\n";
         const_cast<Volume*>(vol)->set_transformation(
             new Transformation(repeater->operator[](i)*local_transform));
         build(vol, scanner, transformation);
@@ -39,7 +36,6 @@ class GenericScannerBuilder {
       const_cast<Volume*>(vol)->attach_repeater(repeater);
       const_cast<Volume*>(vol)
           ->set_transformation(new Transformation(local_transform));
-      return;
     } else {
 
       if (vol->is_sd()) {
@@ -53,11 +49,11 @@ class GenericScannerBuilder {
           fprintf(stderr, "unsupported volume");
         }
       }
-    }
-    for (auto daughter = vol->daughters(); daughter != vol->daughters_end();
-         daughter++) {
-      // std::cerr << "building " << vol << " daughter " << *daughter << "\n";
-      build(*daughter, scanner, transformation * local_transform);
+
+      for (auto daughter = vol->daughters(); daughter != vol->daughters_end();
+           daughter++) {
+        build(*daughter, scanner, transformation * local_transform);
+      }
     }
   }
 
