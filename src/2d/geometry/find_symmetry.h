@@ -47,7 +47,7 @@ typename Scanner::S find_symmetric(Scanner scanner,
 }
 
 template <typename Scanner>
-void fill_symmetry_descriptor(
+bool fill_symmetry_descriptor(
     PET2D::Barrel::SymmetryDescriptor<typename Scanner::S>& descriptor,
     Scanner scanner,
     typename Scanner::F epsilon) {
@@ -56,10 +56,13 @@ void fill_symmetry_descriptor(
 
   for (S d = 0; d < scanner.size(); d++) {
     for (S s = 0; s < descriptor.n_symmetries; s++) {
-      descriptor.set_symmetric_detector(
-          d, s, find_symmetric(scanner, s, d, epsilon));
+      auto symmetric = find_symmetric(scanner, s, d, epsilon);
+      if (symmetric < 0)
+        return false;
+      descriptor.set_symmetric_detector(d, s, symmetric);
     }
   }
+  return true;
 }
 
 #endif  // FIND_SYMMETRY_H
