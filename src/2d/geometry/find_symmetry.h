@@ -46,4 +46,20 @@ typename Scanner::S find_symmetric(Scanner scanner,
   return -1;
 }
 
+template <typename Scanner>
+void fill_symmetry_descriptor(
+    PET2D::Barrel::SymmetryDescriptor<typename Scanner::S>& descriptor,
+    Scanner scanner,
+    typename Scanner::F epsilon) {
+  using S = typename Scanner::S;
+  using F = typename Scanner::F;
+
+  for (S d = 0; d < scanner.size(); d++) {
+    for (S s = 0; s < descriptor.n_symmetries; s++) {
+      descriptor.set_symmetric_detector(
+          d, s, find_symmetric(scanner, s, d, epsilon));
+    }
+  }
+}
+
 #endif  // FIND_SYMMETRY_H

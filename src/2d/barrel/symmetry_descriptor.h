@@ -21,7 +21,6 @@ template <typename SType> class SymmetryDescriptor {
 
   SymmetryDescriptor(int n_detectors, int n_symmetries)
       : n_detectors(n_detectors), n_symmetries(n_symmetries) {
-    // FIXME: we are leaking there
     detectors_ = new S[n_detectors * n_symmetries];
   }
 
@@ -111,9 +110,10 @@ template <typename SType> class SymmetryDescriptor {
   }
 #endif
 
- private:
   const S n_detectors;
   const S n_symmetries;
+
+ private:
   S* detectors_;
 };
 
