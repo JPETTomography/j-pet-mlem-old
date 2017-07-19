@@ -2,7 +2,6 @@
 
 #include "2d/geometry/pixel.h"
 #include "2d/geometry/pixel_grid.h"
-#include "2d/geometry/transformation.h"
 
 #if !__CUDACC__
 #include "util/json.h"
@@ -17,7 +16,6 @@ enum Axis { X = 1, Y = 2, XY = 4 };
 template <typename SType> class SymmetryDescriptor {
  public:
   using S = SType;
-  template <typename F> using Transformation = PET2D::Transformation<F>;
 
   constexpr static const S EIGHT = 8;
 
@@ -93,29 +91,6 @@ template <typename SType> class SymmetryDescriptor {
           ((n_detectors + n_detectors / 4) - (detector + 1)) % n_detectors;
     }
     return detector;
-  }
-
-  template <typename F>
-  static Transformation<F> symmetry_transformation(S symmetry) {
-    using Vector = typename Transformation<F>::Vector;
-    switch (symmetry) {
-      case 0:
-        return Transformation<F>();
-      case 1:
-        return Transformation<F>(0, Vector(), true);
-      case 2:
-        return Transformation<F>(M_PI, Vector(), true);
-      case 3:
-        return Transformation<F>(M_PI, Vector(), false);
-      case 4:
-        return Transformation<F>(-M_PI / 2, Vector(), true);
-      case 5:
-        return Transformation<F>(-M_PI / 2, Vector(), false);
-      case 6:
-        return Transformation<F>(M_PI / 2, Vector(), false);
-      case 7:
-        return Transformation<F>(M_PI / 2, Vector(), true);
-    }
   }
 
   void set_symmetric_detector(S detector, S symmetry, S symmetric_detector) {

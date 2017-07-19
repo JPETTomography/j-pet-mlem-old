@@ -21,9 +21,8 @@ TEST("Symmetry transformations") {
 
   std::vector<Transformation> tr;
   tr.reserve(SymmetryDescriptor::EIGHT);
-  for (int i = 0; i < SymmetryDescriptor::EIGHT; i++) {
-    new (&tr[i])
-        Transformation(SymmetryDescriptor::symmetry_transformation<F>(i));
+  for (short i = 0; i < SymmetryDescriptor::EIGHT; i++) {
+    new (&tr[i]) Transformation(symmetry_transformation<F>(i));
   }
 
   Point p(0.3, 0.7);
