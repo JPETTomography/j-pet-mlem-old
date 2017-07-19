@@ -119,7 +119,11 @@ template <typename FType> class Volume {
     transformation_ = std::unique_ptr<Transformation>(t);
   }
 
-  virtual ~Volume() {}
+  virtual ~Volume() {
+    for (auto d : daughters_) {
+      delete d;
+    }
+  }
 
  private:
   VolumeList daughters_;
