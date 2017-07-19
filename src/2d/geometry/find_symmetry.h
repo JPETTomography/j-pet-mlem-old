@@ -30,7 +30,8 @@ static PET2D::Transformation<F> symmetry_transformation(S symmetry) {
 template <typename Scanner>
 static typename Scanner::S find_symmetric(Scanner scanner,
                                           typename Scanner::S symmetry,
-                                          typename Scanner::S detector) {
+                                          typename Scanner::S detector,
+                                          typename Scanner::F epsilon) {
   using F = typename Scanner::F;
   using S = typename Scanner::S;
 
@@ -38,7 +39,7 @@ static typename Scanner::S find_symmetric(Scanner scanner,
   auto t_detector = scanner[detector].transformed(t);
 
   for (S d = 0; d < scanner.size(); d++) {
-    if (t_detector.approx_equal_dihedral(scanner[d], 1e-4))
+    if (t_detector.approx_equal_dihedral(scanner[d], epsilon))
       return d;
   }
   return -1;

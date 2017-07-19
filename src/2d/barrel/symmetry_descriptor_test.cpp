@@ -71,7 +71,7 @@ TEST("Find symmetry") {
   for (S s = 0; s < SymmetryDescriptor::EIGHT; s++) {
     for (S d = 0; d < detector.size(); d++) {
       INFO("s = " << s << " d =  " << d);
-      REQUIRE(find_symmetric(detector, s, d) ==
+      REQUIRE(find_symmetric(detector, s, d, 1e-4) ==
               symmetry_descriptor.symmetric_detector(d, s));
     }
   }
