@@ -11,17 +11,17 @@ static PET2D::Transformation<F> symmetry_transformation(S symmetry) {
     case 0:
       return Transformation();
     case 1:
-      return Transformation(0, Vector(), true);
-    case 2:
       return Transformation(M_PI, Vector(), true);
+    case 2:
+      return Transformation(0, Vector(), true);
     case 3:
       return Transformation(M_PI, Vector(), false);
     case 4:
       return Transformation(-M_PI / 2, Vector(), true);
     case 5:
-      return Transformation(-M_PI / 2, Vector(), false);
-    case 6:
       return Transformation(M_PI / 2, Vector(), false);
+    case 6:
+      return Transformation(-M_PI / 2, Vector(), false);
     case 7:
       return Transformation(M_PI / 2, Vector(), true);
   }
@@ -31,8 +31,17 @@ template <typename Scanner>
 static typename Scanner::S find_symmetric(Scanner scanner,
                                           typename Scanner::S symmetry,
                                           typename Scanner::S detector) {
+  using F = typename Scanner::F;
+  using S = typename Scanner::S;
 
-  return 0;
+  auto t = symmetry_transformation<F>(symmetry);
+  auto t_detector = scanner[detector].transformed(t);
+
+  for (S d = 0; d < scanner.size(); d++) {
+    if (t_detector.approx_equal_dihedral(scanner[d], 1e-4))
+      return d;
+  }
+  return -1;
 }
 
 #endif  // FIND_SYMMETRY_H

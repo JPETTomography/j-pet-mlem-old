@@ -139,11 +139,34 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   bool approx_equal(const Polygon& rhs, F epsilon = 1e-5) {
     auto rit = rhs.begin();
     for (auto& p : *this) {
-      if (!p.approx_equal(*rit))
+      if (!p.approx_equal(*rit, epsilon))
         return false;
       rit++;
     }
     return true;
+  }
+
+  bool approx_equal_circular(const Polygon& rhs, F epsilon = 1e-5) {
+    Polygon p(rhs);
+    for (int i = 0; i < rhs.size(); i++) {
+      std::rotate(p.begin(), p.begin() + 1, p.end());
+      if (approx_equal(p, epsilon))
+        return true;
+    }
+    return false;
+  }
+
+  bool approx_equal_dihedral(const Polygon& rhs, F epsilon = 1e-5) {
+    if (approx_equal_circular(rhs, epsilon))
+      return true;
+    Polygon r(rhs);
+
+    std::reverse(r.begin(), r.end());
+
+    if (approx_equal_circular(r, epsilon))
+      return true;
+
+    return false;
   }
 
   using svg_ostream = util::svg_ostream<F>;

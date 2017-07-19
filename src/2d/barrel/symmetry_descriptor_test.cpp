@@ -28,13 +28,13 @@ TEST("Symmetry transformations") {
   Point p(0.3, 0.7);
 
   REQUIRE(tr[0](p) == p);
-  REQUIRE(tr[1](p) == Point(-p.x, p.y));
-  REQUIRE(tr[2](p).approx_equal(Point(p.x, -p.y)));
+  REQUIRE(tr[1](p).approx_equal(Point(p.x, -p.y)));
+  REQUIRE(tr[2](p).approx_equal(Point(-p.x, p.y)));
   REQUIRE(tr[3](p).approx_equal(Point(-p.x, -p.y)));
 
   REQUIRE(tr[4](p).approx_equal(Point(p.y, p.x)));
-  REQUIRE(tr[5](p).approx_equal(Point(p.y, -p.x)));
-  REQUIRE(tr[6](p).approx_equal(Point(-p.y, p.x)));
+  REQUIRE(tr[5](p).approx_equal(Point(-p.y, p.x)));
+  REQUIRE(tr[6](p).approx_equal(Point(p.y, -p.x)));
   REQUIRE(tr[7](p).approx_equal(Point(-p.y, -p.x)));
 }
 
@@ -49,6 +49,8 @@ TEST("Find symmetry") {
   // first ring
   for (short d = 0; d < 8; d++)
     REQUIRE(symmetry_descriptor.symmetric_detector(d, 0) == d);
+
+  REQUIRE(symmetry_descriptor.symmetric_detector(0, 1) == 0);
 
   REQUIRE(symmetry_descriptor.symmetric_detector(1, 1) == 7);
   REQUIRE(symmetry_descriptor.symmetric_detector(1, 2) == 3);
@@ -68,8 +70,9 @@ TEST("Find symmetry") {
 
   for (S s = 0; s < SymmetryDescriptor::EIGHT; s++) {
     for (S d = 0; d < detector.size(); d++) {
+      INFO("s = " << s << " d =  " << d);
       REQUIRE(find_symmetric(detector, s, d) ==
-              symmetry_descriptor.symmetric_detector(s, d));
+              symmetry_descriptor.symmetric_detector(d, s));
     }
   }
 }
