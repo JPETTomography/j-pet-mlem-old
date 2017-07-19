@@ -65,7 +65,28 @@ class GenericScannerBuilder {
     build(vol, scanner, Transformation());
   }
 
-  S count_cristals(const Volume* vol) { return 0; }
+  S count_cristals(const Volume* vol, S counter) {
+    S local_counter = counter;
+    Repeater* repeater;
+    if ((repeater = vol->repeater()) != nullptr) {
+      auto repeater = const_cast<Volume*>(vol)->detach_repeater();
+      for (int i = 0; i < repeater->n; i++)
+        local_counter = count_cristals(vol, local_counter);
+      const_cast<Volume*>(vol)->attach_repeater(repeater);
+    } else {
+
+      if (vol->is_sd()) {
+        local_counter++;
+      }
+
+      for (auto daughter = vol->daughters(); daughter != vol->daughters_end();
+           daughter++)
+        local_counter = count_cristals(*daughter, local_counter);
+    }
+    return local_counter;
+  }
+
+  S count_cristals(const Volume* vol) { return count_cristals(vol, 0); }
 
   Scanner build_with_8_symmetries(Volume* vol){
 
