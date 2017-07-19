@@ -336,6 +336,10 @@ TEST("2d Gate volume") {
     builder.build(world, &scanner);
     REQUIRE(13 * 24 + 48 + 48 + 96 == scanner.size());
 
+    auto n_detectors = builder.count_cristals(world);
+
+    REQUIRE(n_detectors == scanner.size());
+
     util::svg_ostream<F> out("new_full.svg", .9, .9, 1024., 1024l);
     out << scanner;
 

@@ -64,6 +64,12 @@ class GenericScannerBuilder {
   void build(Volume* vol, Scanner* scanner) {
     build(vol, scanner, Transformation());
   }
+
+  S count_cristals(const Volume* vol) { return 0; }
+
+  Scanner build_with_8_symmetries(Volume* vol){
+
+  };
 };
 }
 }
