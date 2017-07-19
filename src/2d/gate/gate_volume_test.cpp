@@ -8,6 +8,7 @@
 #include "2d/geometry/vector.h"
 #include "common/types.h"
 #include "common/mathematica_graphics.h"
+#include "2d/barrel/scanner_builder.h"
 
 #include "util/svg_ostream.h"
 
@@ -336,9 +337,59 @@ TEST("2d Gate volume") {
     builder.build(world, &scanner);
     REQUIRE(13 * 24 + 48 + 48 + 96 == scanner.size());
 
-    auto n_detectors = builder.count_cristals(world);
+    util::svg_ostream<F> out("new_full.svg", .9, .9, 1024., 1024l);
+    out << scanner;
 
+    std::ofstream mout("new_full.m");
+    Common::MathematicaGraphics<F> mgraphics(mout);
+    mgraphics.add(scanner);
+
+    auto n_detectors = builder.count_cristals(world);
     REQUIRE(n_detectors == scanner.size());
+  }
+}
+
+TEST("old multi ring") {
+  using Box = Gate::D2::Box<F>;
+  using Vector = Box::Vector;
+  using Cylinder = Gate::D2::Cylinder<F>;
+
+  auto world = new Box(2, 2);
+
+  auto layer_1 = new Cylinder(0.425 - 0.005, 0.425 + 0.005);
+  world->attach_daughter(layer_1);
+  auto scintillator_1 = new Box(0.021, 0.009);
+  scintillator_1->set_translation(Vector(0.425, 0));
+  scintillator_1->attach_repeater(new Gate::D2::Ring<F>(48, Vector(0, 0)));
+  scintillator_1->attach_crystal_sd();
+  layer_1->attach_daughter(scintillator_1);
+
+  auto layer_2 = new Cylinder(0.4675 - 0.005, 0.4675 + 0.005);
+  world->attach_daughter(layer_2);
+  auto scintillator_2 = new Box(0.021, 0.009);
+  scintillator_2->set_translation(Vector(0.4675, 0));
+  scintillator_2->attach_repeater(
+      new Gate::D2::Ring<F>(48, Vector(0, 0), M_PI / 48));
+  scintillator_2->attach_crystal_sd();
+  layer_2->attach_daughter(scintillator_2);
+
+  auto layer_3 = new Cylinder(0.575 - 0.005, 0.575 + 0.005);
+  world->attach_daughter(layer_3);
+  auto scintillator_3 = new Box(0.021, 0.009);
+  scintillator_3->set_translation(Vector(0.575, 0));
+  scintillator_3->attach_repeater(
+      new Gate::D2::Ring<F>(96, Vector(0, 0), M_PI / 96));
+  scintillator_3->attach_crystal_sd();
+  layer_3->attach_daughter(scintillator_3);
+
+  Gate::D2::GenericScannerBuilder<F, S, 512> builder;
+
+  SECTION("build") {
+
+    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S, 512>
+        scanner(0.4, 0.8);
+    builder.build(world, &scanner);
+    REQUIRE(48 + 48 + 96 == scanner.size());
 
     util::svg_ostream<F> out("new_full.svg", .9, .9, 1024., 1024l);
     out << scanner;
@@ -346,5 +397,32 @@ TEST("2d Gate volume") {
     std::ofstream mout("new_full.m");
     Common::MathematicaGraphics<F> mgraphics(mout);
     mgraphics.add(scanner);
+  }
+
+  SECTION("build_with*_symmetries") {
+    auto scanner = builder.build_with_8_symmetries(world);
+    REQUIRE(48 + 48 + 96 == scanner.size());
+
+    auto s_descriptor = scanner.symmetry_descriptor();
+
+    std::vector<F> rads = { 1, 2, 3 };
+    std::vector<F> rots = { 0, 0.5, 0.5 };
+    std::vector<int> n_dets = { 48, 48, 96 };
+
+    auto ref_scanner = PET2D::Barrel::ScannerBuilder<
+        PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>,
+                                      S,
+                                      512>>::build_multiple_rings(rads,
+                                                                  rots,
+                                                                  n_dets,
+                                                                  0.009,
+                                                                  0.021);
+
+    for (S s = 0; s < 8; s++) {
+      for (S d = 0; d < scanner.size(); d++) {
+        REQUIRE(s_descriptor.symmetric_detector(d, s) ==
+                ref_scanner.symmetry_descriptor().symmetric_detector(d, s));
+      }
+    }
   }
 }

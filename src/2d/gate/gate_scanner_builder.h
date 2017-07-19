@@ -5,6 +5,7 @@
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/square_detector.h"
 #include "2d/geometry/transformation.h"
+#include "2d/geometry/find_symmetry.h"
 
 namespace Gate {
 namespace D2 {
@@ -84,8 +85,17 @@ class GenericScannerBuilder {
 
   S count_cristals(const Volume* vol) { return count_cristals(vol, 0); }
 
-  Scanner build_with_8_symmetries(Volume* vol){
+  Scanner build_with_8_symmetries(Volume* vol) {
+    auto n_detectors = count_cristals(vol);
 
+    auto scanner = Scanner();
+
+    build(vol, &scanner);
+    auto descriptor = new PET2D::Barrel::SymmetryDescriptor<S>(n_detectors, 8);
+    fill_symmetry_descriptor(*descriptor, scanner, 1e-4);
+    scanner.set_symmetry_descriptor(descriptor);
+
+    return scanner;
   };
 };
 }
