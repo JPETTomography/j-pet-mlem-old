@@ -76,3 +76,25 @@ TEST("Find symmetry") {
     }
   }
 }
+
+TEST("Find symmetry make symetric descriptor") {
+  const S N_DETECTORS = 8;
+  const S N_SYMMETRIES = 8;
+  using Builder = PET2D::Barrel::ScannerBuilder<
+      PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S, 128>>;
+
+  auto scanner = Builder::build_single_ring(200.0, N_DETECTORS, 0.007, 0.019);
+
+  auto symmetry_descriptor = scanner.symmetry_descriptor();
+
+  PET2D::Barrel::SymmetryDescriptor<S> descriptor(N_DETECTORS, N_SYMMETRIES);
+
+  fill_symmetry_descriptor(descriptor, scanner, 1e-4);
+
+  for (S d = 0; d < N_DETECTORS; d++) {
+    for (S s = 0; s < N_SYMMETRIES; s++) {
+      REQUIRE(symmetry_descriptor.symmetric_detector(d, s) ==
+              descriptor.symmetric_detector(d, s));
+    }
+  }
+}
