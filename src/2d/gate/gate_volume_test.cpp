@@ -10,6 +10,8 @@
 #include "common/mathematica_graphics.h"
 #include "2d/barrel/scanner_builder.h"
 
+#include "gate_volume_builder.h"
+
 #include "util/svg_ostream.h"
 
 TEST("2d Gate volume") {
@@ -330,6 +332,27 @@ TEST("2d Gate volume") {
         new Gate::D2::Ring<F>(96, Vector(0, 0), M_PI / 96));
     scintillator_3->attach_crystal_sd();
     layer_3->attach_daughter(scintillator_3);
+
+    Gate::D2::GenericScannerBuilder<F, S, 512> builder;
+    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S, 512>
+        scanner(0.4, 0.8);
+    builder.build(world, &scanner);
+    REQUIRE(13 * 24 + 48 + 48 + 96 == scanner.size());
+
+    util::svg_ostream<F> out("new_full.svg", .9, .9, 1024., 1024l);
+    out << scanner;
+
+    std::ofstream mout("new_full.m");
+    Common::MathematicaGraphics<F> mgraphics(mout);
+    mgraphics.add(scanner);
+
+    auto n_detectors = builder.count_cristals(world);
+    REQUIRE(n_detectors == scanner.size());
+  }
+
+  SECTION("new full from builder") {
+
+    auto world = Gate::D2::build_new_full_scanner<F>();
 
     Gate::D2::GenericScannerBuilder<F, S, 512> builder;
     PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S, 512>
