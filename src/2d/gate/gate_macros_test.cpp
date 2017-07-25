@@ -34,7 +34,9 @@ TEST("Gate macros", "only world") {
     }
   }
 
+#if 0
   SECTION("1 0.5") {
+
     std::string macro_content(
         "/gate/geometry/setMaterialDatabase   ./GateMaterials.db\n");
     macro_content += +"/gate/world/geometry/setXLength 1. m\n";
@@ -54,4 +56,5 @@ TEST("Gate macros", "only world") {
       WARN("Cannot open string stream");
     }
   }
+#endif
 }
