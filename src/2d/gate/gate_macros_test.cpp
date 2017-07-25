@@ -13,22 +13,45 @@ TEST("Gate macros", "only world") {
   GateMacrosInterpreter<F, S> interpreter;
   std::string macro_name("src/2d/gate/world.txt");
 
-  std::string macro_content(
-      "/gate/geometry/setMaterialDatabase   ./GateMaterials.db\n");
-  macro_content += +"/gate/world/geometry/setXLength 2. m\n";
-  macro_content += "/gate/world/geometry/setYLength 2. m\n";
-  macro_content += "/gate/world/geometry/setZLength 1. m";
-  std::stringstream macro(macro_content);
+  SECTION("2 1") {
+    std::string macro_content(
+        "/gate/geometry/setMaterialDatabase   ./GateMaterials.db\n");
+    macro_content += +"/gate/world/geometry/setXLength 2. m\n";
+    macro_content += "/gate/world/geometry/setYLength 2. m\n";
+    macro_content += "/gate/world/geometry/setZLength 1. m";
+    std::stringstream macro(macro_content);
 
-  if (macro) {
-    interpreter.interpret(macro);
-    auto vol = interpreter.volume();
-    auto world = dynamic_cast<Box<F>*>(vol);
+    if (macro) {
+      interpreter.interpret(macro);
+      auto vol = interpreter.volume();
+      auto world = dynamic_cast<Box<F>*>(vol);
 
-    REQUIRE(world->lengthX == Approx(2.0));
-    REQUIRE(world->lengthY == Approx(1.0));
+      REQUIRE(world->lengthX == Approx(2.0));
+      REQUIRE(world->lengthY == Approx(1.0));
 
-  } else {
-    WARN("Cannot open string stream");
+    } else {
+      WARN("Cannot open string stream");
+    }
+  }
+
+  SECTION("1 0.5") {
+    std::string macro_content(
+        "/gate/geometry/setMaterialDatabase   ./GateMaterials.db\n");
+    macro_content += +"/gate/world/geometry/setXLength 1. m\n";
+    macro_content += "/gate/world/geometry/setYLength 0.5 m\n";
+    macro_content += "/gate/world/geometry/setZLength 1. m";
+    std::stringstream macro(macro_content);
+
+    if (macro) {
+      interpreter.interpret(macro);
+      auto vol = interpreter.volume();
+      auto world = dynamic_cast<Box<F>*>(vol);
+
+      REQUIRE(world->lengthX == Approx(1.0));
+      REQUIRE(world->lengthY == Approx(0.5));
+
+    } else {
+      WARN("Cannot open string stream");
+    }
   }
 }

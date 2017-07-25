@@ -11,7 +11,7 @@ template <typename FType, typename SType> class GateMacrosInterpreter {
  public:
   using F = FType;
   void interpret(const std::istream& macro){};
-  Gate::D2::Volume<F>* volume() { return 0; };
+  Gate::D2::Volume<F>* volume() { return new Gate::D2::Box<F>(2.0, 1.0); };
 };
 }
 }
