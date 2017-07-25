@@ -352,18 +352,16 @@ TEST("2d Gate volume") {
 
   SECTION("new full from builder") {
 
-    auto world = Gate::D2::build_new_full_scanner<F>();
+    auto world = Gate::D2::build_new_full_scanner_volume<F>();
 
     Gate::D2::GenericScannerBuilder<F, S, 512> builder;
-    PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S, 512>
-        scanner(0.4, 0.8);
-    builder.build(world, &scanner);
+    auto scanner = builder.build_with_8_symmetries(world);
     REQUIRE(13 * 24 + 48 + 48 + 96 == scanner.size());
 
-    util::svg_ostream<F> out("new_full.svg", .9, .9, 1024., 1024l);
+    util::svg_ostream<F> out("new_full_from_builder.svg", .9, .9, 1024., 1024l);
     out << scanner;
 
-    std::ofstream mout("new_full.m");
+    std::ofstream mout("new_full_from_builder.m");
     Common::MathematicaGraphics<F> mgraphics(mout);
     mgraphics.add(scanner);
 
