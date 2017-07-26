@@ -137,6 +137,10 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
            2 * 2;
   }
 
+  void set_symmetry_descriptor(SymmetryDescriptor<S>* desc) {
+    symmetry_descriptor_ = desc;
+  }
+
   SymmetryDescriptor<S>& symmetry_descriptor() const {
     return *symmetry_descriptor_;
   }

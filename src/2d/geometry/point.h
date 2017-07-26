@@ -111,6 +111,11 @@ template <typename FType> struct Point {
   }
 
 #if !__CUDACC__
+
+  bool approx_equal(const Point& rhs, F epsilon = 1e-5) {
+    return std::abs(x - rhs.x) < epsilon && std::abs(y - rhs.y) < epsilon;
+  }
+
   // serialize point to json
   operator json() const { return json{ x, y }; }
 

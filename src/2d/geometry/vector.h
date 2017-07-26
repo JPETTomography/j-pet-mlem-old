@@ -122,6 +122,8 @@ template <typename FType> struct Vector {
     return vec;
   }
 
+  _ Vector operator-() const { return Vector(0, 0) - *this; }
+
   _ F dot(const Vector& rhs) const { return x * rhs.x + y * rhs.y; }
 
 #if !__CUDACC__

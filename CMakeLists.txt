@@ -320,8 +320,8 @@ include_directories(lib/catch/include)
 if(POLICY CMP0037)
   cmake_policy(SET CMP0037 OLD) # allow "test" target
 endif()
-add_executable(test src/util/test.cpp ${TESTS} ${COMMON})
-set_target_properties(test PROPERTIES EXCLUDE_FROM_ALL 1)
+add_executable(utest src/util/test.cpp ${TESTS} ${COMMON})
+set_target_properties(utest PROPERTIES EXCLUDE_FROM_ALL 1)
 
 # clang doesn't print colored diagnostics when invoked from Ninja
 if(UNIX AND

@@ -16,7 +16,7 @@ TEST("2d/geometry/line_segment") {
   Point p(4, 3);
 
   auto distance_from = segment.distance_from(p);
-  REQUIRE(distance_from == -Approx(std::sqrt(5.0)).epsilon(1.0e-7));
+  REQUIRE(-distance_from == Approx(std::sqrt(F(5.0))).epsilon(1.0e-7));
 
   auto t = segment.projection_scaled(p);
   REQUIRE(t == Approx(1 / 3.0).epsilon(1.0e-7));

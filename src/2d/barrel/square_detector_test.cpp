@@ -32,7 +32,7 @@ TEST("2d/barrel/square_detector/intersection") {
     CHECK(std::min(i1[0].x, i1[1].x) == 0.5_e13);
     CHECK(std::max(i1[0].x, i1[1].x) == 1._e13);
 
-    CHECK(std::min(i1[0].y, i1[1].y) == -0.5_e13);
+    CHECK(std::min(i1[0].y, i1[1].y) == Approx(-0.5).epsilon(1e-13));
     CHECK(std::max(i1[0].y, i1[1].y) == 0._e13);
   }
 

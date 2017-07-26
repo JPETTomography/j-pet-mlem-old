@@ -157,3 +157,75 @@ TEST("2d/geometry/polygon/is_inside") {
   CHECK(ps.contains(Point(-1.0e-12, 0.5)) == false);
   CHECK(ps.contains(Point(-.01, .6)) == false);
 }
+
+TEST("2d/geometry/polygon/approx_equal") {
+  Polygon p;
+
+  p.emplace_back(0, 0);
+  p.emplace_back(0, 1);
+  p.emplace_back(1, 1);
+  p.emplace_back(1, 0);
+
+  Polygon q;
+
+  q.emplace_back(0, 0);
+  q.emplace_back(0, 1);
+  q.emplace_back(1, 1);
+  q.emplace_back(1, 0);
+
+  REQUIRE(p.approx_equal(q));
+}
+
+TEST("2d/geometry/polygon/approx_equal_circular") {
+  Polygon p;
+
+  p.emplace_back(0, 0);
+  p.emplace_back(0, 1);
+  p.emplace_back(1, 1);
+  p.emplace_back(1, 0);
+
+  Polygon q;
+
+  q.emplace_back(1, 0);
+  q.emplace_back(0, 0);
+  q.emplace_back(0, 1);
+  q.emplace_back(1, 1);
+
+  REQUIRE(p.approx_equal_circular(q));
+}
+
+TEST("2d/geometry/polygon/approx_equal_dihedral") {
+  Polygon p;
+
+  p.emplace_back(0, 0);
+  p.emplace_back(0, 1);
+  p.emplace_back(1, 1);
+  p.emplace_back(1, 0);
+
+  Polygon q;
+
+  q.emplace_back(1, 1);
+  q.emplace_back(0, 1);
+  q.emplace_back(0, 0);
+  q.emplace_back(1, 0);
+
+  REQUIRE(p.approx_equal_dihedral(q));
+}
+
+TEST("2d/geometry/polygon/approx_equal_dihedral 2") {
+  Polygon p;
+
+  p.emplace_back(200.019, -0.00350874);
+  p.emplace_back(200, -0.00350874);
+  p.emplace_back(200, 0.00349126);
+  p.emplace_back(200.019, 0.00349126);
+
+  Polygon q;
+
+  q.emplace_back(200.019, 0.00352623);
+  q.emplace_back(200, 0.00352623);
+  q.emplace_back(200, -0.00347377);
+  q.emplace_back(200.019, -0.00347377);
+
+  REQUIRE(p.approx_equal_dihedral(q, 1.e-4));
+}

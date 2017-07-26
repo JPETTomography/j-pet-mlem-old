@@ -4,6 +4,8 @@
 #include "2d/barrel/event.h"
 #include "util/array.h"
 #include "util/cuda/compat.h"
+#include "transformation.h"
+
 #if !__CUDACC__
 #include "util/json.h"
 #include "util/svg_ostream.h"
@@ -20,7 +22,20 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   using Point = PET2D::Point<F>;
   using Vector = PET2D::Vector<F>;
   using Event = Barrel::Event<F>;
+  using Transformation = PET2D::Transformation<F>;
   using Intersections = util::array<2, Point>;
+
+  Polygon& transform(Transformation tr) {
+    for (auto& p : *this) {
+      p = tr(p);
+    }
+    return *this;
+  }
+
+  Polygon& transformed(Transformation tr) {
+    Polygon tmp(*this);
+    return tmp.transform(tr);
+  }
 
   Polygon& rotate(Angle phi) {
     for (auto& p : *this) {
@@ -120,6 +135,40 @@ class Polygon : public util::array<NumPoints, Point<FType>> {
   }
 
 #if !__CUDACC__
+
+  bool approx_equal(const Polygon& rhs, F epsilon = 1e-5) {
+    auto rit = rhs.begin();
+    for (auto& p : *this) {
+      if (!p.approx_equal(*rit, epsilon))
+        return false;
+      rit++;
+    }
+    return true;
+  }
+
+  bool approx_equal_circular(const Polygon& rhs, F epsilon = 1e-5) {
+    Polygon p(rhs);
+    for (int i = 0; i < rhs.size(); i++) {
+      std::rotate(p.begin(), p.begin() + 1, p.end());
+      if (approx_equal(p, epsilon))
+        return true;
+    }
+    return false;
+  }
+
+  bool approx_equal_dihedral(const Polygon& rhs, F epsilon = 1e-5) {
+    if (approx_equal_circular(rhs, epsilon))
+      return true;
+    Polygon r(rhs);
+
+    std::reverse(r.begin(), r.end());
+
+    if (approx_equal_circular(r, epsilon))
+      return true;
+
+    return false;
+  }
+
   using svg_ostream = util::svg_ostream<F>;
 
   friend svg_ostream& operator<<(svg_ostream& svg, Polygon& pg) {

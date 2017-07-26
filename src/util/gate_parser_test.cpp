@@ -37,15 +37,13 @@ TEST("util/gate_parser") {
   SECTION("four arg parse") {
     Gate::Parser parser;
     auto command_chain =
-        parser.parse("/gate/world/box/setTranslation 0.0 1.0 2.0 cm");
+        parser.parse("/gate/box/setTranslation 0.0 1.0 2.0 cm");
     auto command = command_chain.commands();
 
-    CHECK(command_chain.command_length() == 4);
+    CHECK(command_chain.command_length() == 3);
     CHECK(command_chain.n_arguments() == 4);
 
     CHECK("gate" == *command);
-    command++;
-    CHECK("world" == *command);
     command++;
     CHECK("box" == *command);
     command++;

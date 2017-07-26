@@ -37,6 +37,9 @@ class SquareDetector : public PolygonalDetector<4, FType> {
       : Base(std::forward<typename Base::Base>(base)) {}
 #endif
 
+  F width() const { return ((*this)[0] - (*this)[3]).length(); }
+  F height() const { return ((*this)[0] - (*this)[1]).length(); }
+
   static F default_height_for_width(const F w) { return w; }
 
  private:

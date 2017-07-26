@@ -31,12 +31,12 @@ TEST("common/mathematica_graphics/detector") {
     graphics.add(detector);
   }
   REQUIRE(out.str() ==
-          "Graphics[{\n"
+          "{\n"
           "{Polygon[{\n"
           "  {0.00350000010803, 0.00949999969453},\n"
           "  {0.00350000010803, -0.00949999969453},\n"
           "  {-0.00350000010803, -0.00949999969453},\n"
-          "  {-0.00350000010803, 0.00949999969453}}]}}]\n");
+          "  {-0.00350000010803, 0.00949999969453}}]}}\n");
 }
 
 #define TEST_LINE(out, line, text) \
@@ -51,7 +51,7 @@ TEST("common/mathematica_graphics/big_barrel") {
     graphics.add(scanner);
   }
   std::string line;
-  TEST_LINE(out, line, "Graphics[{");
+  TEST_LINE(out, line, "{");
   TEST_LINE(out, line, "{{Polygon[{");
   TEST_LINE(out, line, "  {1.71421349049, -0.100000075996},");
 }
@@ -65,7 +65,7 @@ TEST("common/mathematica_graphics/big_barrel/lor") {
     graphics.add(scanner, LOR(10, 0));
   }
   std::string line;
-  TEST_LINE(out, line, "Graphics[{");
+  TEST_LINE(out, line, "{");
   TEST_LINE(out, line, "{{Polygon[{");
   TEST_LINE(out, line, "  {1.71421349049, -0.100000075996},");
 }
@@ -81,7 +81,7 @@ TEST("common/mathematica_graphics/big_barrel/segment") {
     graphics.add(segment);
   }
   std::string line;
-  TEST_LINE(out, line, "Graphics[{");
+  TEST_LINE(out, line, "{");
   TEST_LINE(out, line, "{{Polygon[{");
   TEST_LINE(out, line, "  {1.71421349049, -0.100000075996},");
 }
@@ -99,7 +99,7 @@ TEST("common/mathematica_graphics/big_barrel/circle") {
     }
   }
   std::string line;
-  TEST_LINE(out, line, "Graphics[{");
+  TEST_LINE(out, line, "{");
   TEST_LINE(out, line, "{{Polygon[{");
   TEST_LINE(out, line, "  {1.71421349049, -0.100000075996},");
 }
@@ -121,7 +121,7 @@ TEST("common/mathematica_graphics/big_barrel/pixel") {
     }
   }
   std::string line;
-  TEST_LINE(out, line, "Graphics[{");
+  TEST_LINE(out, line, "{");
   TEST_LINE(out, line, "{{Polygon[{");
   TEST_LINE(out, line, "  {1.71421349049, -0.100000075996},");
 }
