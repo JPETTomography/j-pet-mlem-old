@@ -177,6 +177,19 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
 
     return svg;
   }
+
+  void serialize(std::ostream& out) {
+    auto precision = out.precision();
+    out.precision(8);
+    for (auto d : *this) {
+      for (auto p : d) {
+        out << p.x << " " << p.y << " ";
+      }
+      out << "\n";
+    }
+    out.precision(precision);
+  }
+
 #endif
 
   void push_back(const Detector& detector) {

@@ -18,6 +18,22 @@ template <class ScannerClass> class ScannerBuilder {
   using Detector = typename Scanner::Detector;
   using Vector = PET2D::Vector<F>;
 
+  static Scanner deserialize(std::istream& in) {
+    using Point = PET2D::Point<F>;
+    Scanner detector_set(1, 1, 0);
+    std::string line;
+    while (std::getline(in, line)) {
+      std::istringstream sin(line);
+      F x, y;
+      Polygon<Detector::N, F> d;
+      while (sin >> x >> y) {
+        d.emplace_back(x, y);
+      }
+      detector_set.push_back(PolygonalDetector<Detector::N, F>(d));
+    }
+    return detector_set;
+  }
+
   static Scanner build_single_ring(F radius,
                                    int n_detectors,
                                    F w_detector,
