@@ -93,7 +93,7 @@ TEST("common/mathematica_graphics/big_barrel/circle") {
     MathematicaGraphics graphics(out);
     graphics.add(scanner);
     graphics.add_circle(0.400);
-    for (Detector& d : scanner) {
+    for (auto& d : scanner) {
       auto center = d.center();
       graphics.add_circle(center, 0.015);
     }
