@@ -287,6 +287,8 @@ pet_target(2d strip kernel_monte_carlo)
 
 pet_target(2d toy phantom)
 
+pet_target(2d barrel describe_scanner)
+
 set(CL_2D_OPTIONS 2d/barrel/options.cpp 2d/strip/options.cpp)
 set(CL_3D_OPTIONS 3d/hybrid/options.cpp)
 
