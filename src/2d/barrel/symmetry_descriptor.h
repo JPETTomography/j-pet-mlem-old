@@ -108,7 +108,21 @@ template <typename SType> class SymmetryDescriptor {
     }
   }
 
-  static SymmetryDescriptor* deserialize(const std::istream&) { return 0; }
+  static SymmetryDescriptor* deserialize(std::istream& in) {
+    S n_detectors, n_symmetries;
+    in >> n_detectors >> n_symmetries;
+    auto descriptor = new SymmetryDescriptor(n_detectors, n_symmetries);
+    S dd;
+    for (S d = 0; d < n_detectors; d++) {
+      in >> dd;
+      for (S s = 0; s < n_symmetries; s++) {
+        S ds;
+        in >> ds;
+        descriptor->set_symmetric_detector(dd, s, ds);
+      }
+    }
+    return descriptor;
+  }
 
   operator json() const {
     json j;
