@@ -178,7 +178,7 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
     return svg;
   }
 
-  void serialize(std::ostream& out) {
+  void serialize_detectors(std::ostream& out) {
     auto precision = out.precision();
     out.precision(8);
     for (auto d : *this) {
@@ -188,6 +188,17 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
       out << "\n";
     }
     out.precision(precision);
+  }
+
+  void serialize_symmetries(std::ostream& out) {
+    symmetry_descriptor_->serialize(out);
+  }
+
+  void serialize(std::ostream& dets, std::ostream& syms) {
+    serialize_detectors(dets);
+    if (symmetry_descriptor_ != nullptr) {
+      serialize_symmetries(syms);
+    }
   }
 
 #endif
