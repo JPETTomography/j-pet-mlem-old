@@ -102,9 +102,6 @@ using Scanner = PET2D::Barrel::GenericScanner<ScannerClass, S>;
 
 // all available detector shapes
 using SquareScanner = Scanner<PET2D::Barrel::SquareDetector<F>>;
-using CircleScanner = Scanner<PET2D::Barrel::CircleDetector<F>>;
-using TriangleScanner = Scanner<PET2D::Barrel::TriangleDetector<F>>;
-using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
 using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
 using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, Hit>;
 
@@ -116,8 +113,10 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser cl;
   PET2D::Barrel::add_matrix_options(cl);
-  cl.add(
-      "--detector-file", '\0', "loads  detector description from file", false);
+  cl.add<cmdline::path>(
+      "--detector-file", '\0', "detector description file", false);
+  cl.add<cmdline::path>(
+      "--detector-file-sym", '\0', "detector symmetries description file");
   cl.parse_check(argc, argv);
   cmdline::load_accompanying_config(cl, false);
   if (!cl.exist("tof-step")) {
@@ -146,22 +145,16 @@ int main(int argc, char* argv[]) {
   if (model_name == "always") {
     if (shape == "square") {
       run<SquareScanner, Common::AlwaysAccept<F>>(cl);
-    } else if (shape == "circle") {
-      run<CircleScanner, Common::AlwaysAccept<F>>(cl);
-    } else if (shape == "triangle") {
-      run<TriangleScanner, Common::AlwaysAccept<F>>(cl);
-    } else if (shape == "hexagon") {
-      run<HexagonalScanner, Common::AlwaysAccept<F>>(cl);
+    } else {
+      std::cerr << "shape `" << shape << "' is not supported\n";
+      exit(1);
     }
   } else if (model_name == "scintillator") {
     if (shape == "square") {
       run<SquareScanner, Common::ScintillatorAccept<F>>(cl, length_scale);
-    } else if (shape == "circle") {
-      run<CircleScanner, Common::ScintillatorAccept<F>>(cl, length_scale);
-    } else if (shape == "triangle") {
-      run<TriangleScanner, Common::ScintillatorAccept<F>>(cl, length_scale);
-    } else if (shape == "hexagon") {
-      run<HexagonalScanner, Common::ScintillatorAccept<F>>(cl, length_scale);
+    } else {
+      std::cerr << "shape `" << shape << "' is not supported\n";
+      exit(1);
     }
   }
 
