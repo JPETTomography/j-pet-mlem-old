@@ -98,3 +98,28 @@ TEST("Find symmetry make symetric descriptor") {
     }
   }
 }
+
+TEST("Serialization") {
+  const S N_DETECTORS = 8;
+  const S N_SYMMETRIES = 8;
+  using Builder = PET2D::Barrel::ScannerBuilder<
+      PET2D::Barrel::GenericScanner<PET2D::Barrel::SquareDetector<F>, S, 128>>;
+
+  auto scanner = Builder::build_single_ring(200.0, N_DETECTORS, 0.007, 0.019);
+
+  auto symmetry_descriptor = scanner.symmetry_descriptor();
+
+  std::ofstream out("det_8_scanner_sym.txt");
+  symmetry_descriptor.serialize(out);
+  out.close();
+
+  std::ifstream in("det_8_scanner_sym.txt");
+  auto symmetry_descriptor_copy = SymmetryDescriptor::deserialize(in);
+
+  for (S d = 0; d < N_DETECTORS; d++) {
+    for (S s = 0; s < N_SYMMETRIES; s++) {
+      REQUIRE(symmetry_descriptor.symmetric_detector(d, s) ==
+              symmetry_descriptor_copy->symmetric_detector(d, s));
+    }
+  }
+}

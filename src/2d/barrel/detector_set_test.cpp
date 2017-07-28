@@ -17,7 +17,6 @@ TEST("Serialise") {
   auto scanner = Builder::build_single_ring(200.0, 8, 0.007, 0.019);
 
   std::ofstream out("det_set_8.json");
-
   scanner.serialize(out);
   out.close();
 

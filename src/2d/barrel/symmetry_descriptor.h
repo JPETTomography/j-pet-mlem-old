@@ -97,6 +97,19 @@ template <typename SType> class SymmetryDescriptor {
   }
 
 #if !__CUDACC__
+
+  void serialize(std::ostream& out) {
+    out << n_detectors << " " << n_symmetries << "\n";
+    for (S d = 0; d < n_detectors; d++) {
+      out << d << " ";
+      for (S s = 0; s < n_symmetries; s++)
+        out << detectors_[d * EIGHT + s] << " ";
+      out << "\n";
+    }
+  }
+
+  static SymmetryDescriptor* deserialize(const std::istream&) { return 0; }
+
   operator json() const {
     json j;
     for (S i = 0; i < n_detectors; ++i) {
