@@ -306,7 +306,7 @@ if(Boost_FOUND)
 endif()
 
 # custom documentation and config files to be shown in project tree
-file(GLOB EXTRA scripts/* cmake/* config/* phantoms/* src/3d/gate_input/* src/3d/full/* src/2d/gate/*)
+file(GLOB EXTRA scripts/* cmake/* config/* phantoms/* src/3d/gate_input/* src/3d/full/* src/2d/gate/* testbed/*.py)
 add_custom_target(extra SOURCES
   README.md
   Doxyfile
