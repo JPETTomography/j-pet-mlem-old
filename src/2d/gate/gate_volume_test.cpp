@@ -303,7 +303,7 @@ TEST("2d Gate volume") {
     Common::MathematicaGraphics<F> mgraphics(mout);
     mgraphics.add(scanner);
 
-    auto n_detectors = builder.count_cristals(world);
+    auto n_detectors = Gate::D2::count_cristals<F, S>(world);
     REQUIRE(n_detectors == scanner.size());
   }
 }

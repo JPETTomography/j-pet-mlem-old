@@ -10,6 +10,32 @@
 namespace Gate {
 namespace D2 {
 
+template <typename F, typename S>
+S count_cristals(const Volume<F>* vol, S counter) {
+  S local_counter = counter;
+  Repeater<F>* repeater;
+  if ((repeater = vol->repeater()) != nullptr) {
+    auto repeater = const_cast<Volume<F>*>(vol)->detach_repeater();
+    for (int i = 0; i < repeater->n; i++)
+      local_counter = count_cristals(vol, local_counter);
+    const_cast<Volume<F>*>(vol)->attach_repeater(repeater);
+  } else {
+
+    if (vol->is_sd()) {
+      local_counter++;
+    }
+
+    for (auto daughter = vol->daughters(); daughter != vol->daughters_end();
+         daughter++)
+      local_counter = count_cristals(*daughter, local_counter);
+  }
+  return local_counter;
+}
+
+template <typename F, typename S> S count_cristals(const Volume<F>* vol) {
+  return count_cristals(vol, 0);
+}
+
 template <typename FType, typename SType, int MaxDetectors = MAX_DETECTORS>
 class GenericScannerBuilder {
  public:
@@ -62,31 +88,8 @@ class GenericScannerBuilder {
     build(vol, scanner, Transformation());
   }
 
-  S count_cristals(const Volume* vol, S counter) {
-    S local_counter = counter;
-    Repeater* repeater;
-    if ((repeater = vol->repeater()) != nullptr) {
-      auto repeater = const_cast<Volume*>(vol)->detach_repeater();
-      for (int i = 0; i < repeater->n; i++)
-        local_counter = count_cristals(vol, local_counter);
-      const_cast<Volume*>(vol)->attach_repeater(repeater);
-    } else {
-
-      if (vol->is_sd()) {
-        local_counter++;
-      }
-
-      for (auto daughter = vol->daughters(); daughter != vol->daughters_end();
-           daughter++)
-        local_counter = count_cristals(*daughter, local_counter);
-    }
-    return local_counter;
-  }
-
-  S count_cristals(const Volume* vol) { return count_cristals(vol, 0); }
-
   Scanner build_with_8_symmetries(Volume* vol) {
-    auto n_detectors = count_cristals(vol);
+    auto n_detectors = count_cristals<F, S>(vol);
 
     auto scanner = Scanner();
 
