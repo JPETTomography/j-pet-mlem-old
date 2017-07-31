@@ -115,8 +115,10 @@ int main(int argc, char* argv[]) {
   PET2D::Barrel::add_matrix_options(cl);
   cl.add<cmdline::path>(
       "--detector-file", '\0', "detector description file", false);
-  cl.add<cmdline::path>(
-      "--detector-file-sym", '\0', "detector symmetries description file");
+  cl.add<cmdline::path>("--detector-file-sym",
+                        '\0',
+                        "detector symmetries description file",
+                        false);
   cl.parse_check(argc, argv);
   cmdline::load_accompanying_config(cl, false);
   if (!cl.exist("tof-step")) {
@@ -142,20 +144,13 @@ int main(int argc, char* argv[]) {
   const auto& length_scale = cl.get<double>("base-length");
 
   // run simmulation on given detector model & shape
-  if (model_name == "always") {
-    if (shape == "square") {
-      run<SquareScanner, Common::AlwaysAccept<F>>(cl);
-    } else {
-      std::cerr << "shape `" << shape << "' is not supported\n";
-      exit(1);
-    }
-  } else if (model_name == "scintillator") {
-    if (shape == "square") {
-      run<SquareScanner, Common::ScintillatorAccept<F>>(cl, length_scale);
-    } else {
-      std::cerr << "shape `" << shape << "' is not supported\n";
-      exit(1);
-    }
+  if (model_name == "always")
+    run<SquareScanner, Common::AlwaysAccept<F>>(cl);
+  else if (model_name == "scintillator")
+    run<SquareScanner, Common::ScintillatorAccept<F>>(cl, length_scale);
+  else {
+    std::cerr << "model `" << model_name << "' is not supported\n";
+    exit(1);
   }
 
   CMDLINE_CATCH
