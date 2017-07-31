@@ -6,6 +6,8 @@
 namespace Gate {
 namespace D2 {
 
+template <typename F> Volume<F>* build_big_barrel_volume() { return 0; }
+
 template <typename F> Volume<F>* build_new_full_scanner_volume() {
   using Box = Gate::D2::Box<F>;
   using Vector = typename Box::Vector;

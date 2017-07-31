@@ -375,7 +375,7 @@ TEST("old multi ring") {
   using Vector = Box::Vector;
   using Cylinder = Gate::D2::Cylinder<F>;
 
-  auto world = new Box(2, 2);
+  Gate::D2::Volume<F>* world = new Box(2, 2);
 
   auto layer_1 = new Cylinder(0.425 - 0.005, 0.425 + 0.005);
   world->attach_daughter(layer_1);
@@ -404,6 +404,8 @@ TEST("old multi ring") {
   layer_3->attach_daughter(scintillator_3);
 
   Gate::D2::GenericScannerBuilder<F, S, 512> builder;
+
+  world = Gate::D2::build_big_barrel_volume<F>();
 
   SECTION("build") {
 
