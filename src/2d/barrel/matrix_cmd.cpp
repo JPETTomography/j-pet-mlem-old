@@ -76,6 +76,8 @@
 #include "polygonal_detector.h"
 #include "matrix_pixel_major.h"
 
+#include "2d/barrel/symmetry_descriptor.h"
+
 #include "2d/geometry/pixel.h"
 #include "lor.h"
 #include "common/model.h"
@@ -114,11 +116,9 @@ int main(int argc, char* argv[]) {
   cmdline::parser cl;
   PET2D::Barrel::add_matrix_options(cl);
   cl.add<cmdline::path>(
-      "--detector-file", '\0', "detector description file", false);
-  cl.add<cmdline::path>("--detector-file-sym",
-                        '\0',
-                        "detector symmetries description file",
-                        false);
+      "detector-file", '\0', "detector description file", false);
+  cl.add<cmdline::path>(
+      "detector-file-sym", '\0', "detector symmetries description file", false);
   cl.parse_check(argc, argv);
   cmdline::load_accompanying_config(cl, false);
   if (!cl.exist("tof-step")) {
@@ -159,9 +159,16 @@ int main(int argc, char* argv[]) {
 template <class ScannerClass, class ModelClass, typename... ModelArgs>
 static void run(cmdline::parser& cl, ModelArgs... args) {
 
+  std::ifstream in_dets(cl.get<cmdline::path>("detector-file"));
   auto scanner =
-      PET2D::Barrel::ScannerBuilder<ScannerClass>::build_multiple_rings(
-          PET2D_BARREL_SCANNER_CL(cl, F));
+      PET2D::Barrel::ScannerBuilder<ScannerClass>::deserialize(in_dets);
+  in_dets.close();
+
+  std::ifstream in_syms(cl.get<cmdline::path>("detector-file-sym"));
+  auto symmetry = PET2D::Barrel::SymmetryDescriptor<S>::deserialize(in_syms);
+  scanner.set_symmetry_descriptor(symmetry);
+  in_syms.close();
+
   ModelClass model(args...);
 
   auto& n_detectors = cl.get<std::vector<int>>("n-detectors");
