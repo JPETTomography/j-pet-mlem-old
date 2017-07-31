@@ -20,7 +20,7 @@ print(recalculate)
 print(rest)
 
 # Prepare system matrix
-n_emissions = 1000000
+n_emissions = 400000
 if not os.path.isfile("m_big"):
     print("m_big file does not exists: recalculating")
     recalculate=True
@@ -33,11 +33,14 @@ else:
 
 run(["../2d_barrel_describe_scanner","--big-barrel","-o","big_barrel"])
 
+info=0
 if recalculate :
-    run(["../2d_barrel_matrix", "-c", "m_big_ref.cfg", "--detector-file","big_barrel_dets.txt",
+    info=run(["../2d_barrel_matrix", "-c", "m_big_ref.cfg", "--detector-file","big_barrel_dets.txt",
     "--detector-file-sym","big_barrel_syms.txt",
     "-e", "%d" % (n_emissions,), "-o", "m_big",
          "-v"]+rest)
+if info.returncode !=0:
+    sys.exit()
 
 # Convert to full matrix
 if recalculate or not os.path.isfile("f_big"):
