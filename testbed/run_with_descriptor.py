@@ -19,6 +19,12 @@ recalculate = args.recalculate
 print(recalculate)
 print(rest)
 
+def run_and_check(cmd):
+    print("running " + ' '.join(cmd))
+    info=run(cmd)
+    if info.returncode !=0:
+        sys.exit()
+
 # Prepare system matrix
 n_emissions = 400000
 if not os.path.isfile("m_big"):
@@ -33,28 +39,32 @@ else:
 
 run(["../2d_barrel_describe_scanner","--big-barrel","-o","big_barrel"])
 
-info=0
+
 if recalculate :
-    info=run(["../2d_barrel_matrix", "-c", "m_big_ref.cfg", "--detector-file","big_barrel_dets.txt",
+    run_and_check(["../2d_barrel_matrix", "-c", "m_big_ref.cfg",
+    "--detector-file","big_barrel_dets.txt",
     "--detector-file-sym","big_barrel_syms.txt",
     "-e", "%d" % (n_emissions,), "-o", "m_big",
          "-v"]+rest)
-if info.returncode !=0:
-    sys.exit()
+
 
 # Convert to full matrix
 if recalculate or not os.path.isfile("f_big"):
-    run(["../2d_barrel_matrix", "-c", "m_big.cfg", "-o", "f_big", "-f", "m_big"])
+    run_and_check(["../2d_barrel_matrix", "-c", "m_big.cfg",
+    "--detector-file","big_barrel_dets.txt",
+    "--detector-file-sym","big_barrel_syms.txt",
+    "-o", "f_big", "-f", "m_big"])
+
 
 # Prepare phantom
 n_phantom_emissions = 100000000
 if recalculate:
-    run(["../3d_hybrid_phantom", "-c", "m_big.cfg", "-o", "p_sphere.txt",
+    run_and_check(["../3d_hybrid_phantom", "-c", "m_big.cfg", "-o", "p_sphere.txt",
          "-e", "%d" % (n_phantom_emissions,), "s_sphere.json", "-v"])
 
 # Alternatively prepare phantom wih GATE 
 
 # Reconstruct
 if recalculate:
-    run(["../3d_hybrid_reconstruction", "-c", "m_big.cfg", "--system", "f_big", "-o", "r_big",
+    run_and_check(["../3d_hybrid_reconstruction", "-c", "m_big.cfg", "--system", "f_big", "-o", "r_big",
          "-i", "10", "-v", "p_sphere.txt"])
