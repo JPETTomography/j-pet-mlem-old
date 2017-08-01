@@ -1,0 +1,6 @@
+/gate/geometry/setMaterialDatabase   ./GateMaterials.db
+
+/gate/world/geometry/setXLength 2. m
+/gate/world/geometry/setYLength 2. m
+/gate/world/geometry/setZLength 1. m
+

@@ -287,6 +287,8 @@ pet_target(2d strip kernel_monte_carlo)
 
 pet_target(2d toy phantom)
 
+pet_target(2d barrel describe_scanner)
+
 set(CL_2D_OPTIONS 2d/barrel/options.cpp 2d/strip/options.cpp)
 set(CL_3D_OPTIONS 3d/hybrid/options.cpp)
 
@@ -304,7 +306,7 @@ if(Boost_FOUND)
 endif()
 
 # custom documentation and config files to be shown in project tree
-file(GLOB EXTRA scripts/* cmake/* config/* phantoms/* src/3d/gate_input/* src/3d/full/* src/2d/gate/*)
+file(GLOB EXTRA scripts/* cmake/* config/* phantoms/* src/3d/gate_input/* src/3d/full/* src/2d/gate/* testbed/*.py)
 add_custom_target(extra SOURCES
   README.md
   Doxyfile

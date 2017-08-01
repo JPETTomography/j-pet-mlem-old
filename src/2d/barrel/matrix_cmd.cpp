@@ -76,6 +76,8 @@
 #include "polygonal_detector.h"
 #include "matrix_pixel_major.h"
 
+#include "2d/barrel/symmetry_descriptor.h"
+
 #include "2d/geometry/pixel.h"
 #include "lor.h"
 #include "common/model.h"
@@ -100,11 +102,7 @@ using LOR = PET2D::Barrel::LOR<S>;
 template <class ScannerClass>
 using Scanner = PET2D::Barrel::GenericScanner<ScannerClass, S>;
 
-// all available detector shapes
 using SquareScanner = Scanner<PET2D::Barrel::SquareDetector<F>>;
-using CircleScanner = Scanner<PET2D::Barrel::CircleDetector<F>>;
-using TriangleScanner = Scanner<PET2D::Barrel::TriangleDetector<F>>;
-using HexagonalScanner = Scanner<PET2D::Barrel::PolygonalDetector<6, F>>;
 using SparseMatrix = PET2D::Barrel::SparseMatrix<Pixel, LOR, Hit>;
 using ComputeMatrix = PET2D::Barrel::MatrixPixelMajor<Pixel, LOR, Hit>;
 
@@ -115,13 +113,57 @@ int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
   cmdline::parser cl;
-  PET2D::Barrel::add_matrix_options(cl);
+
+  std::ostringstream msg;
+  msg << "matrix_file ..." << std::endl;
+  msg << "build: " << VARIANT << std::endl;
+  msg << "note: All length options below should be expressed in meters.";
+  cl.footer(msg.str());
+
+  PET2D::Barrel::add_config_option(cl);
+  PET2D::Barrel::add_pixel_options(cl);
+  // PET2D::Barrel::add_scanner_options(cl);
+  PET2D::Barrel::add_model_options(cl);
+
+  cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
+  cl.add<size_t>("n-emissions",
+                 'e',
+                 "emissions per pixel",
+                 false,
+                 0,
+                 cmdline::not_from_file);
+  cl.add<cmdline::path>("output",
+                        'o',
+                        "output binary triangular/full sparse system matrix",
+                        cmdline::dontsave);
+  cl.add("full", 'f', "output full non-triangular sparse system matrix");
+
+  // visual debugging params
+  cl.add<cmdline::path>("png", 0, "output lor to png", cmdline::dontsave);
+  cl.add<int>("from", 0, "lor start detector to output", cmdline::dontsave, -1);
+  cl.add<int>("to", 0, "lor end detector to output", cmdline::dontsave, -1);
+  cl.add<int>("pos", 0, "position to output", cmdline::dontsave, -1);
+  // printing & stats params
+  cl.add("print", 0, "print triangular sparse system matrix");
+  cl.add("stats", 0, "show stats");
+  cl.add("wait", 0, "wait before exit");
+  cl.add("verbose", 'v', "prints the iterations information on std::out");
+  cl.add<util::random::tausworthe::seed_type>(
+      "seed", 'S', "random number generator seed", cmdline::dontsave);
+  Common::add_cuda_options(cl);
+  Common::add_openmp_options(cl);
+
+  cl.add<cmdline::path>(
+      "detector-file", '\0', "detector description file", false);
+  cl.add<cmdline::path>(
+      "detector-file-sym", '\0', "detector symmetries description file", false);
+
   cl.parse_check(argc, argv);
   cmdline::load_accompanying_config(cl, false);
+
   if (!cl.exist("tof-step")) {
     cl.dontsave("tof-step"), cl.dontsave("s-dl");
   }
-  PET2D::Barrel::calculate_scanner_options(cl, argc);
 
 #if _OPENMP
   if (cl.exist("n-threads")) {
@@ -136,31 +178,17 @@ int main(int argc, char* argv[]) {
     throw("need to specify output --png option when --from is specified");
   }
 
-  const auto& shape = cl.get<std::string>("shape");
   const auto& model_name = cl.get<std::string>("model");
   const auto& length_scale = cl.get<double>("base-length");
 
   // run simmulation on given detector model & shape
-  if (model_name == "always") {
-    if (shape == "square") {
-      run<SquareScanner, Common::AlwaysAccept<F>>(cl);
-    } else if (shape == "circle") {
-      run<CircleScanner, Common::AlwaysAccept<F>>(cl);
-    } else if (shape == "triangle") {
-      run<TriangleScanner, Common::AlwaysAccept<F>>(cl);
-    } else if (shape == "hexagon") {
-      run<HexagonalScanner, Common::AlwaysAccept<F>>(cl);
-    }
-  } else if (model_name == "scintillator") {
-    if (shape == "square") {
-      run<SquareScanner, Common::ScintillatorAccept<F>>(cl, length_scale);
-    } else if (shape == "circle") {
-      run<CircleScanner, Common::ScintillatorAccept<F>>(cl, length_scale);
-    } else if (shape == "triangle") {
-      run<TriangleScanner, Common::ScintillatorAccept<F>>(cl, length_scale);
-    } else if (shape == "hexagon") {
-      run<HexagonalScanner, Common::ScintillatorAccept<F>>(cl, length_scale);
-    }
+  if (model_name == "always")
+    run<SquareScanner, Common::AlwaysAccept<F>>(cl);
+  else if (model_name == "scintillator")
+    run<SquareScanner, Common::ScintillatorAccept<F>>(cl, length_scale);
+  else {
+    std::cerr << "model `" << model_name << "' is not supported\n";
+    exit(1);
   }
 
   CMDLINE_CATCH
@@ -169,12 +197,19 @@ int main(int argc, char* argv[]) {
 template <class ScannerClass, class ModelClass, typename... ModelArgs>
 static void run(cmdline::parser& cl, ModelArgs... args) {
 
+  std::ifstream in_dets(cl.get<cmdline::path>("detector-file"));
   auto scanner =
-      PET2D::Barrel::ScannerBuilder<ScannerClass>::build_multiple_rings(
-          PET2D_BARREL_SCANNER_CL(cl, F));
+      PET2D::Barrel::ScannerBuilder<ScannerClass>::deserialize(in_dets);
+  in_dets.close();
+
+  std::ifstream in_syms(cl.get<cmdline::path>("detector-file-sym"));
+  auto symmetry = PET2D::Barrel::SymmetryDescriptor<S>::deserialize(in_syms);
+  scanner.set_symmetry_descriptor(symmetry);
+  in_syms.close();
+
   ModelClass model(args...);
 
-  auto& n_detectors = cl.get<std::vector<int>>("n-detectors");
+  auto n_detectors = scanner.size();
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& m_pixel = cl.get<int>("m-pixel");
   auto& s_pixel = cl.get<double>("s-pixel");
@@ -352,7 +387,7 @@ static void run(cmdline::parser& cl, ModelArgs... args) {
     if (cl.exist("to")) {
       lor.second = cl.get<int>("to");
     } else {
-      lor.second = (lor.first + n_detectors[0] / 2) % n_detectors[0];
+      // lor.second = (lor.first + n_detectors[0] / 2) % n_detectors[0];
     }
     if (lor.first < lor.second)
       std::swap(lor.first, lor.second);
