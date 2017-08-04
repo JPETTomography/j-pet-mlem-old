@@ -45,7 +45,7 @@ if recalculate :
     "--detector-file","big_barrel_dets.txt",
     "--detector-file-sym","big_barrel_syms.txt",
     "-e", "%d" % (n_emissions,), "-o", "m_big",
-         "-v"]+rest)
+         "-v"])
 
 
 # Convert to full matrix
