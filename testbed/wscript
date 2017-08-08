@@ -3,11 +3,12 @@
 import os.path
 import sys
 
+sys.path.append("../scripts")
 from petmatrix import SparseMatrixHeader
 
 from subprocess import run
 
-sys.path.append("../scripts")
+
 
 out = '.'
 
@@ -84,17 +85,14 @@ def build(ctx):
     phantom = gen_phantom(env=ctx.env)
     phantom.set_inputs(
         [
-
+            to_f.outputs[0],
+            ctx.path.find_resource('s_sphere.json')
         ]
     )
+    phantom.set_outputs(ctx.path.find_or_declare("p_sphere.txt"))
+    ctx.add_to_group(phantom)
 
 
-
-# # Prepare phantom
-# n_phantom_emissions = 100000000
-# if recalculate:
-#     run_and_check(["../3d_hybrid_phantom", "-c", "m_big.cfg", "-o", "p_sphere.txt",
-#          "-e", "%d" % (n_phantom_emissions,), "s_sphere.json", "-v"])
 
 # # Alternatively prepare phantom wih GATE 
 
