@@ -301,16 +301,6 @@ static void run_with_geometry(cmdline::parser& cl,
 
   auto verbose = cl.count("verbose");
 
-  //  Scanner scanner(
-  //      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
-  //          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
-  //      F(cl.get<double>("length")));
-  //  scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
-
-  //  if (geometry.n_detectors != (int)scanner.barrel.size()) {
-  //    throw("n_detectors mismatch");
-  //  }
-
   std::ifstream in_dets(cl.get<cmdline::path>("detector-file"));
   if (!in_dets) {
     std::cerr << "cannot open detector description file `"
@@ -383,13 +373,8 @@ static void run_with_matrix(cmdline::parser& cl, int argc, Matrix& matrix) {
     cl.parse(ss, false);
   }
 
-  // PET3D::Hybrid::calculate_resonstruction_options(cl, argc);
-
   std::stringstream assumed;
   auto calculate_pixel = cl.exist("n-pixels");
-
-  // PET2D::Barrel::calculate_scanner_options(cl, argc, assumed,
-  // calculate_pixel);
 
   auto& n_pixels = cl.get<int>("n-pixels");
   auto& n_planes = cl.get<int>("n-planes");
@@ -412,12 +397,6 @@ static void run_with_matrix(cmdline::parser& cl, int argc, Matrix& matrix) {
   }
 
   auto verbose = cl.count("verbose");
-
-  //  Scanner scanner(
-  //      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
-  //          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
-  //      F(cl.get<double>("length")));
-  //  scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
 
   std::ifstream in_dets(cl.get<cmdline::path>("detector-file"));
   if (!in_dets) {
