@@ -250,6 +250,10 @@ int main(int argc, char* argv[]) {
   auto full = cl.exist("full");
 
   std::ifstream in_dets(cl.get<cmdline::path>("detector-file"));
+  if (!in_dets) {
+    std::cerr << "cannot open detector description file `"
+              << cl.get<cmdline::path>("detector-file") << "'\n";
+  }
   auto scanner2d =
       PET2D::Barrel::ScannerBuilder<Scanner2D>::deserialize(in_dets);
   in_dets.close();
@@ -257,6 +261,9 @@ int main(int argc, char* argv[]) {
   std::ifstream in_syms(cl.get<cmdline::path>("detector-file-sym"));
   auto symmetry = PET2D::Barrel::SymmetryDescriptor<S>::deserialize(in_syms);
   scanner2d.set_symmetry_descriptor(symmetry);
+  std::cout << "n_detectors "
+            << " " << Scanner2D::MaxDetectors << " " << scanner2d.size()
+            << std::endl;
   in_syms.close();
 
   Scanner scanner(scanner2d, F(cl.get<double>("length")));
