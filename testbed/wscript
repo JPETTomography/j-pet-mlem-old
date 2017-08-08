@@ -111,6 +111,7 @@ def build(ctx):
 
     rec = reconstruct(env=ctx.env)
     rec.set_inputs(phantom.outputs+[ctx.path.find_or_declare('f_big.cfg')])
+    rec.set_outputs(ctx.path.find_or_declare('r_big'));
     ctx.add_to_group(rec)
 
 
