@@ -105,6 +105,7 @@
 
 #include "scanner.h"
 #include "options.h"
+#include "2d/barrel/options.h"
 
 #include "common/model.h"
 #include "common/phantom_monte_carlo.h"
@@ -130,10 +131,101 @@ int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
   cmdline::parser cl;
-  PET3D::Hybrid::add_phantom_options(cl);
+
+  cl.add<int>("n-planes", 0, "number of voxels in z direction", false, 0);
+  cl.add<double>("z-left", 0, "left extent in z direction", false, 0);
+  cl.add<double>("fov-radius", '\0', "radius of the Field of View", false, 1);
+  cl.add<double>("length", 'l', "length of the detector", false, 2);
+  cl.add<double>(
+      "s-z", 0, "TOF sigma along z axis", cmdline::alwayssave, 0.015);
+  cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
+  cl.add<int>("tan-bins",
+              0,
+              "Bin reconstructed events using given number of tangent bins",
+              cmdline::dontsave);
+  cl.add("full", 0, "Emit additional full information", cmdline::dontsave);
+  cl.add("no-responses", 0, "Do not emit responses", cmdline::dontsave);
+
+  cl.footer("phantom_description ...");
+
+  PET2D::Barrel::add_config_option(cl);
+
+  cl.add<int>("n-pixels", 'n', "number of pixels in one dimension", false, 256);
+  cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
+
+  cl.add<size_t>("n-emissions",
+                 'e',
+                 "number of emissions",
+                 cmdline::optional,
+                 0,
+                 cmdline::default_reader<int>(),
+                 cmdline::not_from_file);
+  cl.add<double>("s-pixel", 'p', "pixel size", false);
+  cl.add<double>(
+      "tof-step", 't', "TOF quantisation step for distance delta", false);
+  cl.add<double>("s-dl", 0, "TOF sigma delta-l", cmdline::alwayssave, 0.06);
+  cl.add("lm", 0, "use list-mode instead number of hits in each lor position");
+  cl.add<double>(
+      "scale", 0, "Scale phantom with given constant", cmdline::alwayssave, 1);
+  cl.add("additive", 0, "phantom regions are additive, not disjunctive");
+
+  cl.add<std::string>(
+      "model",
+      'm',
+      "acceptance model",
+      false,
+      "scintillator",
+      cmdline::oneof<std::string>("always",
+                                  "scintillator",
+                                  /* obsolete */ "scintilator"));
+  // NOTE: this options is obsolete (use base-length instead)
+  cl.add<double>("acceptance",
+                 'a',
+                 "acceptance probability factor",
+                 cmdline::dontsave | cmdline::hidden,
+                 10.);
+  cl.add<double>("base-length",
+                 0,
+                 "scintillator emission base length P(l)=1-e^(-1)",
+                 false,
+                 0.1);
+  cl.add<cmdline::path>(
+      "output", 'o', "output lor hits for supplied phantom", cmdline::dontsave);
+  cl.add("detected", 0, "collects detected emissions");
+
+  // printing & stats params
+  cl.add("verbose", 'v', "prints the iterations information on std::out");
+  cl.add<util::random::tausworthe::seed_type>(
+      "seed", 'S', "random number generator seed", cmdline::dontsave);
+
+  Common::add_openmp_options(cl);
+
+  cl.add<cmdline::path>(
+      "detector-file", '\0', "detector description file", false);
+  cl.add<cmdline::path>(
+      "detector-file-sym", '\0', "detector symmetries description file", false);
+
   cl.footer("phantom_description.json ...");
   cl.parse_check(argc, argv);
-  PET3D::Hybrid::calculate_phantom_options(cl, argc);
+
+  std::stringstream assumed;
+  auto calculate_pixel = cl.exist("n-pixels");
+
+  auto& n_pixels = cl.get<int>("n-pixels");
+  auto& n_planes = cl.get<int>("n-planes");
+  auto& s_pixel = cl.get<double>("s-pixel");
+  auto& z_left = cl.get<double>("z-left");
+
+  if (calculate_pixel) {
+    if (!cl.exist("n-planes")) {
+      n_planes = n_pixels;
+      assumed << "--n-planes=" << n_planes << std::endl;
+    }
+    if (!cl.exist("z-left")) {
+      z_left = -n_planes * s_pixel / 2;
+      assumed << "--z-left=" << z_left << std::endl;
+    }
+  }
 
 #if _OPENMP
   if (cl.exist("n-threads")) {
@@ -157,10 +249,17 @@ int main(int argc, char* argv[]) {
   auto output_txt = ext == ".txt";
   auto full = cl.exist("full");
 
-  Scanner scanner(
-      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
-          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
-      F(cl.get<double>("length")));
+  std::ifstream in_dets(cl.get<cmdline::path>("detector-file"));
+  auto scanner2d =
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::deserialize(in_dets);
+  in_dets.close();
+
+  std::ifstream in_syms(cl.get<cmdline::path>("detector-file-sym"));
+  auto symmetry = PET2D::Barrel::SymmetryDescriptor<S>::deserialize(in_syms);
+  scanner2d.set_symmetry_descriptor(symmetry);
+  in_syms.close();
+
+  Scanner scanner(scanner2d, F(cl.get<double>("length")));
   scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
 
   if (output_base_name.length()) {
@@ -303,7 +402,7 @@ int main(int argc, char* argv[]) {
 
     // tangent 3D map, if tan-bins not given then we make just an 1 bin deep
     // map, but we won't write to it
-    auto first_radius = cl.get<std::vector<double>>("radius")[0];
+    auto first_radius = scanner2d.min_max_radius().first;
     auto tan_bins = cl.get<int>("tan-bins");
     auto max_tan = (F)1.1 * cl.get<double>("length") / (2 * first_radius);
     Grid::PixelGrid tan_pixel_grid(n_planes, n_columns, pixel_size);

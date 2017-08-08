@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 #include "square_detector.h"
 #include "circle_detector.h"
 #include "util/array.h"
@@ -202,6 +204,18 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
   }
 
 #endif
+
+  std::pair<F, F> min_max_radius() const {
+    F max = 0;
+    F min = std::numeric_limits<F>::max();
+
+    for (auto& d : *this) {
+      for (auto& p : d) {
+      }
+    }
+
+    return std::make_pair(F(0), F(0));
+  }
 
   void push_back(const Detector& detector) {
     Base::push_back(detector);
