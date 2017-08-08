@@ -15,7 +15,10 @@ using Scanner =
 using Builder = PET2D::Barrel::ScannerBuilder<Scanner>;
 
 TEST("Serialise") {
-  auto scanner = Builder::build_single_ring(200.0, 8, 0.007, 0.019);
+  F R = 200.0;
+  F w = 0.007;
+  F h = 0.019;
+  auto scanner = Builder::build_single_ring(R, 8, w, h);
 
   SECTION("serialize dets") {
     std::string name("det_set_8.txt");
@@ -65,5 +68,13 @@ TEST("Serialise") {
                 descriptor_copy.symmetric_detector(d, s));
       }
     }
+  }
+
+  SECTION("radius") {
+    auto rs = scanner.min_max_radius();
+    auto r_min = std::sqrt(R * R + w * w / 4);
+    auto r_max = std::sqrt((R + h) * (R + h) + w * w / 4);
+    REQUIRE(rs.first == Approx(r_min));
+    REQUIRE(rs.second == Approx(r_max));
   }
 }

@@ -211,10 +211,15 @@ class DetectorSet : public util::array<MaxDetetectorsSize, DetectorClass> {
 
     for (auto& d : *this) {
       for (auto& p : d) {
+        auto dist = std::sqrt(p.x * p.x + p.y * p.y);
+        if (max < dist)
+          max = dist;
+        if (min > dist)
+          min = dist;
       }
     }
 
-    return std::make_pair(F(0), F(0));
+    return std::make_pair(F(min), F(max));
   }
 
   void push_back(const Detector& detector) {
