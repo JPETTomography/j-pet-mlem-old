@@ -2,61 +2,92 @@
 
 import os.path
 import sys
-sys.path.append("../scripts")
 
 from petmatrix import SparseMatrixHeader
 
 from subprocess import run
 
-out='.'
+sys.path.append("../scripts")
+
+out = '.'
+
 
 def configure(ctx):
-	pass
+    pass
 
 
 from waflib.Task import Task
 
 
 def build(ctx):
-	pass
+    pass
+
 
 def run_and_check(cmd):
     print("running " + ' '.join(cmd))
-    info=run(cmd)
-    if info.returncode !=0:
+    info = run(cmd)
+    if info.returncode != 0:
         sys.exit()
 
+
+n_emissions = 1000000
+
+
 class gen_description(Task):
-	def run(self):
-		run(["../2d_barrel_describe_scanner","--big-barrel","-o","big_barrel"])
-		
-
-def build(ctx):
-	desc = gen_description(env=ctx.env)
-	desc.set_inputs(ctx.path.find_resource('../2d_barrel_describe_scanner'))
-	desc.set_outputs([ctx.path.find_or_declare("big_barrel_dets.txt"),
-		ctx.path.find_or_declare("big_barrel_syms.txt")])
-	print(desc.outputs)
-	ctx.add_to_group(desc)
-	
-
-# 
+    def run(self):
+        run_and_check(["../2d_barrel_describe_scanner", "--big-barrel", "-o", "big_barrel"])
 
 
-# if recalculate :
-#     run_and_check(["../2d_barrel_matrix", "-c", "m_big_ref.cfg",
-#     "--detector-file","big_barrel_dets.txt",
-#     "--detector-file-sym","big_barrel_syms.txt",
-#     "-e", "%d" % (n_emissions,), "-o", "m_big",
-#          "-v"])
+class gen_matrix(Task):
+    def run(self):
+        run_and_check(["../2d_barrel_matrix", "-c", "m_big_ref.cfg",
+                       "--detector-file", "big_barrel_dets.txt",
+                       "--detector-file-sym", "big_barrel_syms.txt",
+                       "-e", "%d" % (n_emissions,), "-o", "m_big",
+                       "-v"])
 
 
-# # Convert to full matrix
-# if recalculate or not os.path.isfile("f_big"):
-#     run_and_check(["../2d_barrel_matrix", "-c", "m_big.cfg",
-#     "--detector-file","big_barrel_dets.txt",
-#     "--detector-file-sym","big_barrel_syms.txt",
-#     "-o", "f_big", "-f", "m_big"])
+class to_full(Task):
+    def run(self):
+        run_and_check(["../2d_barrel_matrix", "-c", "m_big.cfg",
+                       "--detector-file", "big_barrel_dets.txt",
+                       "--detector-file-sym", "big_barrel_syms.txt",
+                       "-o", "f_big", "-f", "m_big"])
+
+class gen_phantom(Task):
+    def run(self):
+        n_phantom_emissions = 100000000
+        run_and_check(["../3d_hybrid_phantom", "-c", "f_big.cfg", "-o", "p_sphere.txt",
+         "-e", "%d" % (n_phantom_emissions,), "s_sphere.json", "-v"])
+
+def build(ctx): 
+    desc = gen_description(env=ctx.env)
+    desc.set_inputs(ctx.path.find_resource('../2d_barrel_describe_scanner'))
+    desc.set_outputs([ctx.path.find_or_declare("big_barrel_dets.txt"),
+                      ctx.path.find_or_declare("big_barrel_syms.txt")])
+    ctx.add_to_group(desc)
+
+    mat = gen_matrix(env=ctx.env)
+    print(desc.outputs)
+    mat.set_inputs(
+        [ctx.path.find_resource('m_big_ref.cfg')] + desc.outputs
+    )
+    mat.set_outputs([ctx.path.find_or_declare('m_big.cfg'),
+                     ctx.path.find_or_declare('m_big')])
+    ctx.add_to_group(mat)
+
+    to_f = to_full(env=ctx.env)
+    to_f.set_inputs(mat.outputs)
+    to_f.set_outputs([ctx.path.find_or_declare('f_big.cfg'), ctx.path.find_or_declare('f_big')])
+    ctx.add_to_group(to_f)
+
+    phantom = gen_phantom(env=ctx.env)
+    phantom.set_inputs(
+        [
+
+        ]
+    )
+
 
 
 # # Prepare phantom
