@@ -74,12 +74,15 @@
 #include "util/png_writer.h"
 #include "util/nrrd_writer.h"
 #include "util/progress.h"
+#include "util/variant.h"
+#include "util/random.h"
 
 #include "2d/barrel/generic_scanner.h"
 #include "2d/barrel/scanner_builder.h"
 #include "2d/barrel/lor_geometry.h"
 #include "2d/barrel/sparse_matrix.h"
 #include "2d/strip/gaussian_kernel.h"
+#include "2d/barrel/options.h"
 
 #include "scanner.h"
 #include "reconstruction.h"
@@ -125,7 +128,90 @@ int main(int argc, char* argv[]) {
   CMDLINE_TRY
 
   cmdline::parser cl;
-  PET3D::Hybrid::add_reconstruction_options(cl);
+
+  cl.add<cmdline::path>("system", 's', "system matrix file", false);
+  cl.add<std::string>(
+      "geometry", 0, "geometry information file (depreceated)", false);
+  cl.add<int>("n-planes", 0, "number of voxels in z direction", false, 0);
+  cl.add<double>("z-left", 0, "left extent in z direction", false, 0);
+  cl.add<double>("length", 'l', "length of the detector", false, 2);
+  cl.add<double>(
+      "s-z", 0, "TOF sigma along z axis", cmdline::alwayssave, 0.015);
+  cl.add<double>("s-dl", 0, "TOF sigma axis", cmdline::alwayssave, 0.060);
+  cl.add("sens-to-one", 0, "sets sensitivity to one", false);
+  cl.add<cmdline::path>("sensitivity", 0, "external 3D sensitivity", false);
+  cl.add<std::vector<int>>("inactive", 0, "list of inactive detectors", false);
+
+  cl.add<int>("crop", 0, "numer of pixel to crop the output image", false);
+  cl.add<int>("crop-x", 0, "crop origin pixel x", false);
+  cl.add<int>("crop-y", 0, "crop origin pixel y", false);
+  cl.add<int>("crop-z", 0, "crop origin pixel z", false);
+
+  std::ostringstream msg;
+  msg << "matrix_file ..." << std::endl;
+  msg << "build: " << VARIANT << std::endl;
+  msg << "note: All length options below should be expressed in meters.";
+  cl.footer(msg.str());
+
+  cl.add<cmdline::path>("config",
+                        'c',
+                        "load config file",
+                        cmdline::dontsave,
+                        cmdline::path(),
+                        cmdline::default_reader<cmdline::path>(),
+                        cmdline::load);
+
+  cl.add<int>("n-pixels", 'n', "number of pixels in one dimension", false, 256);
+  cl.add<double>("s-pixel", 'p', "pixel size", false);
+
+  cl.add<std::string>(
+      "shape",
+      0,
+      "detector shape (square, circle, triangle, hexagon)",
+      false,
+      "square",
+      cmdline::oneof<std::string>("square", "circle", "triangle", "hexagon"));
+
+  cl.add<double>("fov-radius", 0, "field of view radius", false);
+
+  cl.add<int>("m-pixel", 0, "starting pixel for partial matrix", false, 0);
+  cl.add<size_t>("n-emissions",
+                 'e',
+                 "emissions per pixel",
+                 false,
+                 0,
+                 cmdline::not_from_file);
+  cl.add<cmdline::path>("output",
+                        'o',
+                        "output binary triangular/full sparse system matrix",
+                        cmdline::dontsave);
+  cl.add("full", 'f', "output full non-triangular sparse system matrix");
+
+  // visual debugging params
+  cl.add<cmdline::path>("png", 0, "output lor to png", cmdline::dontsave);
+  cl.add<int>("from", 0, "lor start detector to output", cmdline::dontsave, -1);
+  cl.add<int>("to", 0, "lor end detector to output", cmdline::dontsave, -1);
+  cl.add<int>("pos", 0, "position to output", cmdline::dontsave, -1);
+  // printing & stats params
+  cl.add("print", 0, "print triangular sparse system matrix");
+  cl.add("stats", 0, "show stats");
+  cl.add("wait", 0, "wait before exit");
+  cl.add("verbose", 'v', "prints the iterations information on std::out");
+  cl.add<util::random::tausworthe::seed_type>(
+      "seed", 'S', "random number generator seed", cmdline::dontsave);
+  Common::add_cuda_options(cl);
+  Common::add_openmp_options(cl);
+
+  cl.add<int>("blocks", 'i', "number of iteration blocks", false, 0);
+  cl.add<int>("iterations", 'I', "number of iterations (per block)", false, 1);
+  cl.add<double>("z-position", 'z', "position of the z plane", false, 0);
+  cl.add<cmdline::path>("rho", 0, "start rho (eg. existing iteration)", false);
+  cl.footer("--system=file response ...");
+
+  cl.add<cmdline::path>(
+      "detector-file", '\0', "detector description file", false);
+  cl.add<cmdline::path>(
+      "detector-file-sym", '\0', "detector symmetries description file", false);
   cl.parse_check(argc, argv);
 
 #if _OPENMP
@@ -190,19 +276,60 @@ static void run_with_geometry(cmdline::parser& cl,
     cl.parse(ss, false);
   }
 
-  PET3D::Hybrid::calculate_resonstruction_options(cl, argc);
+  std::stringstream assumed;
+  auto calculate_pixel = cl.exist("n-pixels");
+
+  auto& n_pixels = cl.get<int>("n-pixels");
+  auto& n_planes = cl.get<int>("n-planes");
+  auto& s_pixel = cl.get<double>("s-pixel");
+  auto& z_left = cl.get<double>("z-left");
+
+  if (calculate_pixel) {
+    if (!cl.exist("n-planes")) {
+      n_planes = n_pixels;
+      assumed << "--n-planes=" << n_planes << std::endl;
+    }
+    if (!cl.exist("z-left")) {
+      z_left = -n_planes * s_pixel / 2;
+      assumed << "--z-left=" << z_left << std::endl;
+    }
+  }
+
+  if (cl.exist("verbose") && assumed.str().size()) {
+    std::cerr << "assumed:" << std::endl << assumed.str();
+  }
 
   auto verbose = cl.count("verbose");
 
-  Scanner scanner(
-      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
-          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
-      F(cl.get<double>("length")));
-  scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
+  //  Scanner scanner(
+  //      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
+  //          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
+  //      F(cl.get<double>("length")));
+  //  scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
 
-  if (geometry.n_detectors != (int)scanner.barrel.size()) {
-    throw("n_detectors mismatch");
+  //  if (geometry.n_detectors != (int)scanner.barrel.size()) {
+  //    throw("n_detectors mismatch");
+  //  }
+
+  std::ifstream in_dets(cl.get<cmdline::path>("detector-file"));
+  if (!in_dets) {
+    std::cerr << "cannot open detector description file `"
+              << cl.get<cmdline::path>("detector-file") << "'\n";
   }
+  auto scanner2d =
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::deserialize(in_dets);
+  in_dets.close();
+
+  std::ifstream in_syms(cl.get<cmdline::path>("detector-file-sym"));
+  auto symmetry = PET2D::Barrel::SymmetryDescriptor<S>::deserialize(in_syms);
+  scanner2d.set_symmetry_descriptor(symmetry);
+  std::cout << "n_detectors "
+            << " " << Scanner2D::MaxDetectors << " " << scanner2d.size()
+            << std::endl;
+  in_syms.close();
+
+  Scanner scanner(scanner2d, F(cl.get<double>("length")));
+  scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
 
   if (verbose) {
     std::cout << "3D hybrid reconstruction w/geometry:" << std::endl
@@ -256,14 +383,60 @@ static void run_with_matrix(cmdline::parser& cl, int argc, Matrix& matrix) {
     cl.parse(ss, false);
   }
 
-  PET3D::Hybrid::calculate_resonstruction_options(cl, argc);
+  // PET3D::Hybrid::calculate_resonstruction_options(cl, argc);
+
+  std::stringstream assumed;
+  auto calculate_pixel = cl.exist("n-pixels");
+
+  // PET2D::Barrel::calculate_scanner_options(cl, argc, assumed,
+  // calculate_pixel);
+
+  auto& n_pixels = cl.get<int>("n-pixels");
+  auto& n_planes = cl.get<int>("n-planes");
+  auto& s_pixel = cl.get<double>("s-pixel");
+  auto& z_left = cl.get<double>("z-left");
+
+  if (calculate_pixel) {
+    if (!cl.exist("n-planes")) {
+      n_planes = n_pixels;
+      assumed << "--n-planes=" << n_planes << std::endl;
+    }
+    if (!cl.exist("z-left")) {
+      z_left = -n_planes * s_pixel / 2;
+      assumed << "--z-left=" << z_left << std::endl;
+    }
+  }
+
+  if (cl.exist("verbose") && assumed.str().size()) {
+    std::cerr << "assumed:" << std::endl << assumed.str();
+  }
 
   auto verbose = cl.count("verbose");
 
-  Scanner scanner(
-      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
-          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
-      F(cl.get<double>("length")));
+  //  Scanner scanner(
+  //      PET2D::Barrel::ScannerBuilder<Scanner2D>::build_multiple_rings(
+  //          PET3D_LONGITUDINAL_SCANNER_CL(cl, F)),
+  //      F(cl.get<double>("length")));
+  //  scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
+
+  std::ifstream in_dets(cl.get<cmdline::path>("detector-file"));
+  if (!in_dets) {
+    std::cerr << "cannot open detector description file `"
+              << cl.get<cmdline::path>("detector-file") << "'\n";
+  }
+  auto scanner2d =
+      PET2D::Barrel::ScannerBuilder<Scanner2D>::deserialize(in_dets);
+  in_dets.close();
+
+  std::ifstream in_syms(cl.get<cmdline::path>("detector-file-sym"));
+  auto symmetry = PET2D::Barrel::SymmetryDescriptor<S>::deserialize(in_syms);
+  scanner2d.set_symmetry_descriptor(symmetry);
+  std::cout << "n_detectors "
+            << " " << Scanner2D::MaxDetectors << " " << scanner2d.size()
+            << std::endl;
+  in_syms.close();
+
+  Scanner scanner(scanner2d, F(cl.get<double>("length")));
   scanner.set_sigmas(cl.get<double>("s-z"), cl.get<double>("s-dl"));
 
   if (matrix.n_detectors() != (int)scanner.barrel.size()) {
