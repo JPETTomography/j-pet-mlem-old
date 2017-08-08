@@ -61,6 +61,23 @@ class gen_phantom(Task):
         run_and_check(["../3d_hybrid_phantom", "-c", "f_big.cfg", "-o", "p_sphere.txt",
          "-e", "%d" % (n_phantom_emissions,), "s_sphere.json", "-v"])
 
+
+
+# # Alternatively prepare phantom wih GATE
+
+
+class reconstruct(Task):
+    def run(self):
+        run_and_check(["../3d_hybrid_reconstruction", "-c", "f_big.cfg", "--system", "f_big", "-o", "r_big",
+                 "-i", "10", "-v", "p_sphere.txt"])
+
+# # Reconstruct
+# if recalculate:
+#     run_and_check(["../3d_hybrid_reconstruction", "-c", "m_big.cfg", "--system", "f_big", "-o", "r_big",
+#          "-i", "10", "-v", "p_sphere.txt"])
+
+
+
 def build(ctx): 
     desc = gen_description(env=ctx.env)
     desc.set_inputs(ctx.path.find_resource('../2d_barrel_describe_scanner'))
@@ -89,14 +106,13 @@ def build(ctx):
             ctx.path.find_resource('s_sphere.json')
         ]
     )
-    phantom.set_outputs(ctx.path.find_or_declare("p_sphere.txt"))
+    phantom.set_outputs([ctx.path.find_or_declare("p_sphere.txt")])
     ctx.add_to_group(phantom)
 
+    rec = reconstruct(env=ctx.env)
+    rec.set_inputs(phantom.outputs+[ctx.path.find_or_declare('f_big.cfg')])
+    ctx.add_to_group(rec)
 
 
-# # Alternatively prepare phantom wih GATE 
 
-# # Reconstruct
-# if recalculate:
-#     run_and_check(["../3d_hybrid_reconstruction", "-c", "m_big.cfg", "--system", "f_big", "-o", "r_big",
-#          "-i", "10", "-v", "p_sphere.txt"])
+
