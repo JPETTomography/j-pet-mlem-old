@@ -3,4 +3,4 @@
 	url =  git@github.com:philsquared/Catch.git
 [submodule "lib/cmdline"]
 	path = lib/cmdline
-	url = ../../ujhpc/cmdline.git
+	url = https://github.com/tanakh/cmdline
