@@ -1,6 +1,3 @@
 [submodule "lib/catch"]
 	path = lib/catch
 	url =  git@github.com:philsquared/Catch.git
-[submodule "lib/cmdline"]
-	path = lib/cmdline
-	url = https://github.com/tanakh/cmdline
