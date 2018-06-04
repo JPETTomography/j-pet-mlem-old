@@ -16,7 +16,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 project(PET CXX) # using only C++
 
 # configuration time options
-set(PET_MAX_DETECTORS 400
+set(PET_MAX_DETECTORS 512
     CACHE INTEGER
     "maximum number of detectors allowed in the scanner (impacts performance)")
 set(PET_GRANULARITY_TYPE "WARP"
