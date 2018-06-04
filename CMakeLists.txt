@@ -204,11 +204,12 @@ endforeach()
 
 file(GLOB CUDA_COMMON_SRC src/common/cuda/*.cu)
 if(CUDA_FOUND AND CUDA_COMMON_SRC )
-cuda_compile(_CUDA_COMMON ${CUDA_COMMON_SRC})
-set(CUDA_COMMON ${_CUDA_COMMON})
+  cuda_compile(_CUDA_COMMON ${CUDA_COMMON_SRC})
+  set(CUDA_COMMON ${_CUDA_COMMON})
+  message(${CUDA_COMMON})
 endif()
 
-message(${CUDA_COMMON})
+
 
 
 # custom function that creates executable for specific PET command
@@ -307,7 +308,7 @@ endif()
 
 # custom documentation and config files to be shown in project tree
 file(GLOB EXTRA scripts/* cmake/* config/* phantoms/* src/3d/gate_input/* src/3d/full/* src/2d/gate/* testbed/*.py testbed/wscript)
-add_custom_target(extra SOURCES
+add_custom_target(extra_mlem SOURCES
   README.md
   Doxyfile
   DoxygenLayout.xml
