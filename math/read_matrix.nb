@@ -1,0 +1,60 @@
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[TextData[{
+ "PET matrix ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ " reading functions"
+}], "Title",
+ CellChangeTimes->{{3.60009012081452*^9, 3.600090126529451*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"SetDirectory", "@", 
+   RowBox[{"NotebookDirectory", "[", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"<<", "2d_barrel_matrix.m"}]}], "Input"],
+
+Cell[CellGroupData[{
+
+Cell["Testing", "Section",
+ CellChangeTimes->{{3.6000901554761467`*^9, 3.600090156241067*^9}}],
+
+Cell[BoxData[
+ RowBox[{"SetDirectory", "@", 
+  RowBox[{"FileNameJoin", "@", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], ",", "\"\<..\>\"", ",", 
+     "\"\<data\>\"", ",", "\"\<201401\>\""}], "}"}]}]}]], "Input",
+ CellChangeTimes->{{3.600001056773471*^9, 3.600001090410128*^9}, {
+  3.600001123105895*^9, 3.6000011242342854`*^9}, {3.6000011767149343`*^9, 
+  3.600001196313262*^9}}],
+
+Cell[TextData[{
+ "Right click and select ",
+ StyleBox["Get Coordinates",
+  FontWeight->"Bold"],
+ " from plot below."
+}], "Text"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"PlotPETMatrix", "[", 
+   RowBox[{
+    RowBox[{"ReadPETMatrix", "[", "\"\<m_14x14-200m\>\"", "]"}], ",", 
+    RowBox[{"ColorFunction", "\[Rule]", 
+     RowBox[{"ColorData", "[", "\"\<DarkRainbow\>\"", "]"}]}]}], "]"}], "//", 
+  "AbsoluteTiming"}]], "Input"]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1300, 1036},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+TrackCellChangeTimes->False,
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (September 9, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+

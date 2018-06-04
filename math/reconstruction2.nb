@@ -1,0 +1,1327 @@
+Notebook[{
+Cell[BoxData[
+ RowBox[{"<<", " ", 
+  "FileNameJoin[{NotebookDirectory[],\"detector.m\"}]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"SetDirectory", "[", 
+  RowBox[{"FileNameJoin", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], ",", "\"\<..\>\"", ",", 
+     "\"\<doc\>\"", ",", "\"\<figures\>\""}], "}"}], "]"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"s", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"y_", ",", "z_"}], "}"}], ",", "R_", ",", "L_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "\[IndentingNewLine]", "\t", 
+     RowBox[{
+      RowBox[{"low", "=", 
+       RowBox[{"Max", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"-", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"1", "/", "2"}], " ", "L"}], "+", "z"}], ")"}]}], "/", 
+          RowBox[{"(", 
+           RowBox[{"R", "-", "y"}], ")"}]}], ",", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", "L"}], "/", "2"}], "+", "z"}], ")"}], "/", 
+          RowBox[{"(", 
+           RowBox[{"R", "+", "y"}], ")"}]}]}], "]"}]}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"up", "=", 
+       RowBox[{"Min", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"L", "/", "2"}], "-", "z"}], ")"}], "/", 
+          RowBox[{"(", 
+           RowBox[{"R", "-", "y"}], ")"}]}], ",", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"L", "/", "2"}], "+", "z"}], ")"}], "/", 
+          RowBox[{"(", 
+           RowBox[{"R", "+", "y"}], ")"}]}]}], "]"}]}]}], "}"}], ",", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"ArcTan", "[", "up", "]"}], "-", 
+       RowBox[{"ArcTan", "[", "low", "]"}]}], ")"}], "/", "Pi"}]}], 
+   "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"deltaE", "=", 
+  RowBox[{
+   RowBox[{"toProjectionSpaceTheta", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"y", ",", "z", ",", "\[Theta]"}], "}"}], ",", "R"}], "]"}], "-", 
+   RowBox[{"toProjectionSpaceTheta", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", "R"}], 
+    "]"}]}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"deltaE", "/.", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"y", "\[Rule]", 
+     RowBox[{"ty", "+", "dy"}]}], ",", 
+    RowBox[{"z", "\[Rule]", 
+     RowBox[{"tz", "+", "dz"}]}], ",", 
+    RowBox[{"\[Theta]", "\[Rule]", 
+     RowBox[{"t\[Theta]", "+", "\[Phi]"}]}]}], "}"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"%", "+", 
+  RowBox[{
+   RowBox[{"O", "[", "\[Phi]", "]"}], "^", "3"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"%", "//", "Simplify"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"%", "//", "Normal"}]], "Input"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"oVec", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"ty_", ",", "tz_", ",", "t\[Theta]_"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"dy_", ",", "dz_"}], "}"}], ",", "R_"}], "]"}], ":=", 
+  RowBox[{"{", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"-", 
+      RowBox[{"(", 
+       RowBox[{"dy", "+", "ty", " ", "-", "R"}], ")"}]}], " ", 
+     RowBox[{
+      RowBox[{"Tan", "[", "t\[Theta]", "]"}], "/", 
+      RowBox[{
+       RowBox[{"Cos", "[", "t\[Theta]", "]"}], "^", "2"}]}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"-", 
+      RowBox[{"(", 
+       RowBox[{"dy", "+", "ty", "+", "R"}], ")"}]}], 
+     RowBox[{
+      RowBox[{"Tan", "[", "t\[Theta]", "]"}], "/", 
+      RowBox[{
+       RowBox[{"Cos", "[", "t\[Theta]", "]"}], "^", "2"}]}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"-", 
+       RowBox[{"(", 
+        RowBox[{"dy", "+", "ty"}], ")"}]}], "/", 
+      RowBox[{"Cos", "[", "t\[Theta]", "]"}]}], 
+     RowBox[{"(", 
+      RowBox[{"1", "+", 
+       RowBox[{"2", " ", 
+        RowBox[{
+         RowBox[{"Tan", "[", "t\[Theta]", "]"}], "^", "2"}]}]}], ")"}]}]}], 
+   "\[IndentingNewLine]", "}"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"aVec", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"ty_", ",", "tz_", ",", "t\[Theta]_"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"dy_", ",", "dz_"}], "}"}], ",", "R_"}], "]"}], ":=", 
+  RowBox[{"{", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"-", 
+      RowBox[{"(", 
+       RowBox[{"dy", "+", "ty", " ", "-", "R"}], ")"}]}], "/", 
+     RowBox[{
+      RowBox[{"Cos", "[", "t\[Theta]", "]"}], "^", "2"}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"-", 
+      RowBox[{"(", 
+       RowBox[{"dy", "+", "ty", "+", "R"}], ")"}]}], "/", 
+     RowBox[{
+      RowBox[{"Cos", "[", "t\[Theta]", "]"}], "^", "2"}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"-", "2"}], 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"dy", "+", "ty"}], ")"}], "/", 
+      RowBox[{"Cos", "[", "t\[Theta]", "]"}]}], " ", 
+     RowBox[{"Tan", "[", "t\[Theta]", "]"}]}]}], "\[IndentingNewLine]", 
+   "}"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"bVec", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"ty_", ",", "tz_", ",", "t\[Theta]_"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"dy_", ",", "dz_"}], "}"}], ",", "R_"}], "]"}], ":=", 
+  RowBox[{"{", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"dz", "-", 
+     RowBox[{"dy", " ", 
+      RowBox[{"Tan", "[", "t\[Theta]", "]"}]}]}], ",", "\[IndentingNewLine]", 
+    
+    RowBox[{"dz", "-", 
+     RowBox[{"dy", " ", 
+      RowBox[{"Tan", "[", "t\[Theta]", "]"}]}]}], ",", "\[IndentingNewLine]", 
+    
+    RowBox[{
+     RowBox[{"-", "2"}], " ", 
+     RowBox[{"dy", "/", 
+      RowBox[{"Cos", "[", "t\[Theta]", "]"}]}]}]}], "}"}]}]}], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"makeGaussian", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"sz_", ",", "sl_", ",", "\[Eta]_"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"ty_", ",", "tz_", ",", "t\[Theta]_"}], "}"}], ",", "R_"}], 
+   "]"}], ":=", 
+  RowBox[{"Block", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+     "o", ",", "b", ",", "a", ",", "ic", ",", "dy", ",", "dz", ",", "f"}], 
+     "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"ic", "=", 
+      RowBox[{"iC", "[", 
+       RowBox[{"{", 
+        RowBox[{"sz", ",", "sl", ",", "\[Eta]"}], "}"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"o", "=", 
+      RowBox[{
+       RowBox[{"bVec", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], "//", 
+       "Evaluate"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"b", "=", 
+      RowBox[{
+       RowBox[{"bVec", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], "//", " ", 
+       "Evaluate"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"a", "=", 
+      RowBox[{
+       RowBox[{"aVec", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], "//", " ", 
+       "Evaluate"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"f", "=", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"1", "/", "2"}], " ", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"b", ".", "ic", ".", "b"}], " ", "-", " ", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"(", 
+               RowBox[{"b", ".", "ic", ".", "a"}], ")"}], "^", "2"}], "/", 
+             RowBox[{"(", 
+              RowBox[{
+               RowBox[{"a", ".", "ic", ".", "a"}], "+", 
+               RowBox[{"2", " ", 
+                RowBox[{"o", ".", "ic", ".", "b"}]}]}], " ", ")"}]}]}], ")"}],
+           "//", "Simplify"}], ")"}]}], "//", "N"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Function", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"dy", ",", "dz"}], "}"}], ",", 
+       RowBox[{"f", " ", "//", "Evaluate"}]}], "]"}]}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"makeGaussian1", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"sz_", ",", "sl_", ",", "\[Eta]_"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"ty_", ",", "tz_", ",", "t\[Theta]_"}], "}"}], ",", "R_"}], 
+   "]"}], ":=", 
+  RowBox[{"Block", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+     "o", ",", "b", ",", "a", ",", "ic", ",", "dy", ",", "dz", ",", "f"}], 
+     "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"ic", "=", 
+      RowBox[{"iC", "[", 
+       RowBox[{"{", 
+        RowBox[{"sz", ",", "sl", ",", "\[Eta]"}], "}"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"o", "=", 
+      RowBox[{
+       RowBox[{"bVec", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], "//", 
+       "Evaluate"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"b", "=", 
+      RowBox[{
+       RowBox[{"bVec", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], "//", " ", 
+       "Evaluate"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"a", "=", 
+      RowBox[{
+       RowBox[{"aVec", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], "//", " ", 
+       "Evaluate"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"f", "=", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"1", "/", "2"}], " ", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"b", ".", "ic", ".", "b"}], " ", ")"}], "//", "Simplify"}],
+          ")"}]}], "//", "N"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"Function", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"dy", ",", "dz"}], "}"}], ",", 
+       RowBox[{"f", " ", "//", "Evaluate"}]}], "]"}]}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"g", "=", 
+  RowBox[{"makeGaussian", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"10.", ",", "50.", ",", "0"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"300", ",", "0", ",", 
+      RowBox[{"15", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"g1", "=", 
+  RowBox[{"makeGaussian1", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"10.", ",", "50.", ",", "0"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"300", ",", "0", ",", 
+      RowBox[{"15", " ", "Degree"}]}], "}"}], ",", "450"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"g", "[", 
+  RowBox[{"0", ",", "0"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"makeEventApproximation", "[", 
+   RowBox[{"s_", ",", 
+    RowBox[{"{", 
+     RowBox[{"ty_", ",", "tz_", ",", "t\[Theta]_"}], "}"}], ",", "R_"}], 
+   "]"}], ":=", 
+  RowBox[{"Block", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+     "dy", ",", "dz", ",", "g", ",", "\[IndentingNewLine]", "ic", ",", "o", 
+      ",", "a", ",", "b", ",", "norm", ",", "expr"}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"ic", "=", 
+      RowBox[{"iC", "[", "s", "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"o", "=", 
+      RowBox[{
+       RowBox[{"oVec", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], "//", 
+       "Evaluate"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"a", "=", 
+      RowBox[{
+       RowBox[{"aVec", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], "//", 
+       "Evaluate"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"b", "=", 
+      RowBox[{
+       RowBox[{"bVec", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], "//", 
+       "Evaluate"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"norm", "=", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"a", ".", "ic", ".", "a"}], "+", 
+         RowBox[{"2", " ", 
+          RowBox[{"o", ".", "ic", ".", "b"}]}]}], ")"}], "//", "Evaluate"}]}],
+      ";", "\[IndentingNewLine]", 
+     RowBox[{"g", "=", 
+      RowBox[{"makeGaussian", "[", 
+       RowBox[{"s", ",", 
+        RowBox[{"{", 
+         RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", "R"}], 
+       "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"expr", "=", " ", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Sqrt", "[", 
+         RowBox[{
+          RowBox[{"Det", "[", "ic", "]"}], "/", "norm"}], "]"}], "/", 
+        RowBox[{"(", 
+         RowBox[{"2", 
+          RowBox[{"Pi", "^", "2"}]}], ")"}]}], " ", 
+       RowBox[{"Exp", "[", 
+        RowBox[{"-", 
+         RowBox[{"g", "[", 
+          RowBox[{"dy", ",", "dz"}], "]"}]}], "]"}]}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Function", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"dy", ",", "dz"}], "}"}], ",", 
+       RowBox[{"expr", "//", "Evaluate"}]}], "]"}]}]}], "  ", 
+   "\[IndentingNewLine]", "]"}]}]], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"resolution", "=", 
+  RowBox[{"{", 
+   RowBox[{"10", ",", "63", ",", "0"}], "}"}]}], "\[IndentingNewLine]", 
+ RowBox[{"event", "=", 
+  RowBox[{"{", 
+   RowBox[{"300", ",", "0", ",", 
+    RowBox[{"45", " ", "Degree"}]}], "}"}]}]}], "Input"],
+
+Cell[BoxData[
+ RowBox[{"ev", "=", 
+  RowBox[{"makeEventApproximation", "[", 
+   RowBox[{"resolution", ",", "event", ",", "450"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"ev", "[", 
+  RowBox[{"0", ",", "0"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Clear", "[", 
+  RowBox[{"dz", ",", "dy", ",", "tan"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"makeErrorFunction", "[", 
+   RowBox[{"s_", ",", 
+    RowBox[{"{", 
+     RowBox[{"ty_", ",", "tz_", ",", "ttheta_"}], "}"}], ",", "R_"}], "]"}], ":=",
+   " ", 
+  RowBox[{"Block", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+     "dy", ",", "dz", ",", "f", ",", "err", ",", "true", ",", "tan", ",", 
+      "meas", ",", "ic"}], "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"ic", "=", 
+      RowBox[{"iC", "[", "s", "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"true", "=", 
+      RowBox[{"toProjectionSpaceTan", "[", "    ", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"ty", "+", "dy"}], ",", 
+          RowBox[{"tz", "+", "dz"}], ",", "tan"}], "}"}], ",", "R"}], "]"}]}],
+      ";", "\[IndentingNewLine]", 
+     RowBox[{"meas", "=", 
+      RowBox[{"toProjectionSpaceTheta", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"ty", ",", "tz", ",", "ttheta"}], "}"}], ",", "R"}], "]"}]}],
+      ";", "\[IndentingNewLine]", 
+     RowBox[{"err", "=", " ", 
+      RowBox[{"true", "-", "meas"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"Function", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"dy", ",", "dz", ",", "tan"}], "}"}], ",", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"Exp", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "1"}], "/", "2"}], 
+           RowBox[{"err", ".", "ic", ".", "err"}]}], "]"}], 
+         RowBox[{
+          RowBox[{"Sqrt", "[", 
+           RowBox[{"Det", "[", "ic", "]"}], "]"}], "/", 
+          RowBox[{
+           RowBox[{"Sqrt", "[", 
+            RowBox[{"2", " ", "Pi"}], "]"}], "^", "3"}]}]}], " ", "//", 
+        "Evaluate"}]}], "]"}]}]}], "\[IndentingNewLine]", "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"ef", "=", 
+  RowBox[{"makeErrorFunction", "[", 
+   RowBox[{"resolution", ",", "event", ",", "450"}], "]"}]}]], "Input"],
+
+Cell[BoxData[""], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"makeP", "[", 
+   RowBox[{"s_", ",", "meas_", ",", "R_"}], "]"}], ":=", " ", 
+  RowBox[{"Block", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"f", ",", "ic", ",", "dy", ",", "dz", ",", "expr", ",", "g"}], 
+     "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"f", "=", 
+      RowBox[{"makeErrorFunction", "[", 
+       RowBox[{"s", ",", "meas", ",", "R"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"Function", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"dy", ",", "dz"}], "}"}], ",", 
+        RowBox[{
+         RowBox[{"\[Pi]", "^", 
+          RowBox[{"(", 
+           RowBox[{"-", "1"}], ")"}]}], 
+         RowBox[{"NIntegrate", "[", 
+          RowBox[{"expr", ",", 
+           RowBox[{"{", 
+            RowBox[{"\[Theta]", ",", 
+             RowBox[{
+              RowBox[{"-", "Pi"}], "/", "2"}], ",", " ", 
+             RowBox[{"Pi", "/", "2"}]}], "}"}]}], "]"}]}]}], "]"}], "/.", 
+      RowBox[{"expr", "\[Rule]", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"f", "[", 
+          RowBox[{"dy", ",", "dz", ",", 
+           RowBox[{"Tan", "[", "\[Theta]", "]"}]}], "]"}], "//", "Evaluate"}],
+         ")"}]}]}]}]}], "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"p", "=", 
+  RowBox[{"makeP", "[", 
+   RowBox[{"resolution", ",", "event", ",", "450"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Plot", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"ev", "[", 
+      RowBox[{"10", ",", "z"}], "]"}], ",", 
+     RowBox[{"p", "[", 
+      RowBox[{"10", ",", "z"}], "]"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"z", ",", 
+     RowBox[{"-", "50"}], ",", "50"}], "}"}]}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"g1", "[", 
+  RowBox[{"dy", ",", "dz"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"drawDetector", "[", 
+   RowBox[{"{", 
+    RowBox[{"R_", ",", "L_"}], "}"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"Line", "[", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "L"}], "/", "2"}], ",", "R"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"L", "/", "2"}], ",", "R"}], "}"}]}], "}"}], "]"}], ",", 
+      RowBox[{"Line", "[", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "L"}], "/", "2"}], ",", 
+           RowBox[{"-", "R"}]}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"L", "/", "2"}], ",", 
+           RowBox[{"-", "R"}]}], "}"}]}], "}"}], "]"}]}], "}"}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"drawEvent", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"y_", ",", "z_", ",", "\[Theta]_"}], "}"}], ",", "R_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"zu", ",", "zd", ",", "dl", ",", "m"}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"zu", ",", "zd", ",", "dl"}], "}"}], "=", " ", 
+      RowBox[{"toProjectionSpaceTheta", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"y", ",", "z", ",", "\[Theta]"}], "}"}], ",", "R"}], "]"}]}],
+      ";", "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"Line", "[", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"zu", ",", "R"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"zd", ",", 
+            RowBox[{"-", "R"}]}], "}"}]}], "}"}], "]"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"Red", ",", 
+         RowBox[{"PointSize", "[", "0.015", "]"}], ",", 
+         RowBox[{"Point", "[", 
+          RowBox[{"{", 
+           RowBox[{"z", ",", "y"}], "}"}], "]"}]}], "}"}]}], "}"}]}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"<<", 
+  "FileNameJoin[{NotebookDirectory[],\"ellipse.m\"}]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"coeffs", "[", 
+   RowBox[{"form_", ",", 
+    RowBox[{"{", 
+     RowBox[{"x_", ",", "y_"}], "}"}]}], "]"}], ":=", " ", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"Coefficient", "[", 
+     RowBox[{"form", ",", 
+      RowBox[{"x", "^", "2"}]}], "]"}], ",", 
+    RowBox[{"Coefficient", "[", 
+     RowBox[{"form", ",", 
+      RowBox[{"y", "^", "2"}]}], "]"}], ",", 
+    RowBox[{
+     RowBox[{"Coefficient", "[", 
+      RowBox[{"form", ",", 
+       RowBox[{"x", " ", "y"}]}], "]"}], "/", "2"}]}], "}"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"caseStudy", "[", 
+   RowBox[{"s_", ",", "meas_", ",", "R_", ",", "L_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+     "el", ",", "g", ",", "y", ",", "z", ",", "a", ",", "b", ",", "c", ",", 
+      RowBox[{"p", "=", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"meas", "[", 
+          RowBox[{"[", "2", "]"}], "]"}], ",", 
+         RowBox[{"meas", "[", 
+          RowBox[{"[", "1", "]"}], "]"}]}], "}"}]}], ",", "limits", ",", "ev",
+       ",", "ep"}], "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"g", "=", 
+      RowBox[{"makeGaussian1", "[", 
+       RowBox[{"s", ",", "meas", ",", "R"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"a", ",", "b", ",", "c"}], "}"}], "=", 
+      RowBox[{
+       RowBox[{"coeffs", "[", 
+        RowBox[{
+         RowBox[{"g", "[", 
+          RowBox[{"y", ",", "z"}], "]"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"z", ",", "y"}], "}"}]}], "]"}], "//", "N"}]}], ";", 
+     "\[IndentingNewLine]", "\[IndentingNewLine]", 
+     RowBox[{"el", "=", 
+      RowBox[{"reconstructEllipse", "[", 
+       RowBox[{"a", ",", "b", ",", "c", ",", "1"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"limits", "=", 
+      RowBox[{"ellipseLimits", "[", 
+       RowBox[{"a", ",", "b", ",", "c", ",", "1"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"ev", "=", 
+      RowBox[{"makeEventApproximation", "[", 
+       RowBox[{"resolution", ",", "meas", ",", "450"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"ep", "=", 
+      RowBox[{"makeP", "[", 
+       RowBox[{"resolution", ",", "meas", ",", "450"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"drawDetector", "[", 
+           RowBox[{"{", 
+            RowBox[{"R", ",", "L"}], "}"}], "]"}], ",", 
+          RowBox[{"drawEvent", "[", 
+           RowBox[{"meas", ",", "R"}], "]"}], ",", 
+          RowBox[{"ellipse", "[", 
+           RowBox[{"p", ",", "a", ",", "b", ",", "c", ",", "1"}], "]"}], ",", 
+          
+          RowBox[{"ellipse", "[", 
+           RowBox[{"p", ",", "a", ",", "b", ",", "c", ",", "3"}], "]"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"{", 
+           RowBox[{"Thin", ",", 
+            RowBox[{"ellipseBoundingBox", "[", 
+             RowBox[{"a", ",", "b", ",", "c", ",", "3", ",", 
+              RowBox[{"{", 
+               RowBox[{
+                RowBox[{"meas", "[", 
+                 RowBox[{"[", "2", "]"}], "]"}], ",", 
+                RowBox[{"meas", "[", 
+                 RowBox[{"[", "1", "]"}], "]"}]}], "}"}], ",", "Gray"}], 
+             "]"}]}], "}"}], ",", "\[IndentingNewLine]", 
+          RowBox[{"Line", "[", 
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"p", "-", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"1", ",", "3"}], "}"}], " ", "limits"}]}], " ", ",", 
+             RowBox[{"p", "+", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{"-", "1"}], ",", "3"}], "}"}], "limits"}]}]}], "}"}],
+            "]"}], ",", "\[IndentingNewLine]", 
+          RowBox[{"Line", "[", 
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"p", "-", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"0", ",", "3"}], "}"}], " ", "limits"}]}], " ", ",", 
+             RowBox[{"p", "+", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"0", ",", "3"}], "}"}], "limits"}]}]}], "}"}], "]"}], 
+          ",", "\[IndentingNewLine]", 
+          RowBox[{"Line", "[", 
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"p", "-", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{"-", "1"}], ",", "3"}], "}"}], " ", "limits"}]}], 
+             " ", ",", 
+             RowBox[{"p", "+", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"1", ",", "3"}], "}"}], "limits"}]}]}], "}"}], "]"}], 
+          ",", "\[IndentingNewLine]", 
+          RowBox[{"Line", "[", 
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"p", "-", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"3", ",", "1"}], "}"}], "limits"}]}], ",", 
+             RowBox[{"p", "+", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"3", ",", 
+                 RowBox[{"-", "1"}]}], "}"}], "limits"}]}]}], "}"}], "]"}], 
+          ",", "\[IndentingNewLine]", 
+          RowBox[{"Line", "[", 
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"p", "-", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"3", ",", "0"}], "}"}], "limits"}]}], ",", 
+             RowBox[{"p", "+", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"3", ",", "0"}], "}"}], "limits"}]}]}], "}"}], "]"}], 
+          ",", "\[IndentingNewLine]", 
+          RowBox[{"Line", "[", 
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"p", "-", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"3", ",", 
+                 RowBox[{"-", "1"}]}], "}"}], "limits"}]}], ",", 
+             RowBox[{"p", "+", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"3", ",", "1"}], "}"}], "limits"}]}]}], "}"}], 
+           "]"}]}], "\[IndentingNewLine]", "}"}], "//", "Graphics"}], 
+       "\[IndentingNewLine]", ",", "\[IndentingNewLine]", 
+       RowBox[{"GraphicsGrid", "[", 
+        RowBox[{
+         RowBox[{"{", "  ", 
+          RowBox[{
+           RowBox[{"Table", "[", 
+            RowBox[{
+             RowBox[{"Plot", "[", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{"ep", "[", 
+                  RowBox[{
+                   RowBox[{"q", " ", 
+                    RowBox[{"limits", "[", 
+                    RowBox[{"[", "2", "]"}], "]"}]}], ",", "z"}], "]"}], ",", 
+                 
+                 RowBox[{"ev", "[", 
+                  RowBox[{
+                   RowBox[{"q", " ", 
+                    RowBox[{"limits", "[", 
+                    RowBox[{"[", "2", "]"}], "]"}]}], ",", "z"}], "]"}]}], 
+                "}"}], ",", " ", 
+               RowBox[{"{", 
+                RowBox[{"z", ",", 
+                 RowBox[{
+                  RowBox[{"-", "3"}], 
+                  RowBox[{"limits", "[", 
+                   RowBox[{"[", "1", "]"}], "]"}]}], ",", 
+                 RowBox[{"3", 
+                  RowBox[{"limits", "[", 
+                   RowBox[{"[", "1", "]"}], "]"}]}]}], "}"}], ",", 
+               RowBox[{"PlotRange", "->", "All"}], ",", 
+               RowBox[{"PlotStyle", "\[Rule]", 
+                RowBox[{"{", 
+                 RowBox[{"Red", ",", "Blue"}], "}"}]}]}], "]"}], ",", 
+             RowBox[{"{", 
+              RowBox[{"q", ",", 
+               RowBox[{"-", "1"}], ",", "1"}], "}"}]}], "]"}], ",", 
+           "\[IndentingNewLine]", 
+           RowBox[{"Table", "[", 
+            RowBox[{
+             RowBox[{"Plot", "[", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{"ep", "[", 
+                  RowBox[{"y", ",", 
+                   RowBox[{"q", " ", 
+                    RowBox[{"limits", "[", 
+                    RowBox[{"[", "1", "]"}], "]"}]}]}], "]"}], ",", 
+                 RowBox[{"ev", "[", 
+                  RowBox[{"y", ",", 
+                   RowBox[{"q", " ", 
+                    RowBox[{"limits", "[", 
+                    RowBox[{"[", "1", "]"}], "]"}]}]}], " ", "]"}]}], "}"}], 
+               ",", 
+               RowBox[{"{", 
+                RowBox[{"y", ",", 
+                 RowBox[{
+                  RowBox[{"-", "3"}], 
+                  RowBox[{"limits", "[", 
+                   RowBox[{"[", "2", "]"}], "]"}]}], ",", 
+                 RowBox[{"3", 
+                  RowBox[{"limits", "[", 
+                   RowBox[{"[", "2", "]"}], "]"}]}]}], "}"}], ",", 
+               RowBox[{"PlotRange", "->", "All"}], ",", 
+               RowBox[{"PlotStyle", "\[Rule]", 
+                RowBox[{"{", 
+                 RowBox[{"Red", ",", "Blue"}], "}"}]}]}], "]"}], ",", 
+             RowBox[{"{", 
+              RowBox[{"q", ",", 
+               RowBox[{"-", "1"}], ",", "1"}], "}"}]}], "]"}]}], 
+          "\[IndentingNewLine]", "}"}], "//", "Transpose"}], 
+        "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "}"}]}]}], 
+   "\[IndentingNewLine]", "\[IndentingNewLine]", "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"el", "=", 
+  RowBox[{"caseStudy", "[", 
+   RowBox[{"resolution", ",", "event", ",", "450", ",", "1000"}], 
+   "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"caseStudyList", "[", 
+   RowBox[{"s_", ",", "events_", ",", "R_", ",", "L_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "res", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"res", "=", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"caseStudy", "[", 
+         RowBox[{"s", ",", "#", ",", "R", ",", "L"}], "]"}], "&"}], "/@", 
+       "events"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"Show", "[", 
+        RowBox[{"res", "[", 
+         RowBox[{"[", 
+          RowBox[{"All", ",", "1"}], "]"}], "]"}], " ", "]"}], ",", 
+       RowBox[{"res", "[", 
+        RowBox[{"[", 
+         RowBox[{"All", ",", "2"}], "]"}], "]"}]}], "}"}]}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"c300", "=", 
+  RowBox[{"caseStudyList", "[", 
+   RowBox[{"resolution", ",", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"300", ",", "0", ",", 
+        RowBox[{"0", " ", "Degree"}]}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"300", ",", "300", ",", " ", 
+        RowBox[{"45", " ", "Degree"}]}], "}"}]}], "}"}], ",", "450", ",", 
+    "1000"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"c000", "=", 
+  RowBox[{"caseStudyList", "[", 
+   RowBox[{"resolution", ",", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"0", ",", 
+        RowBox[{"-", "300"}], ",", 
+        RowBox[{"0", "Degree"}]}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"0", ",", "0", ",", " ", 
+        RowBox[{"45", " ", "Degree"}]}], "}"}]}], "}"}], ",", "450", ",", 
+    "1000"}], "]"}]}]], "Input"],
+
+Cell[BoxData[""], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\<cs000_ev.eps\>\"", ",", 
+   RowBox[{"c000", "[", 
+    RowBox[{"[", "1", "]"}], "]"}], ",", "\"\<EPS\>\""}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\<cs000_pl1.eps\>\"", ",", 
+   RowBox[{"c000", "[", 
+    RowBox[{"[", 
+     RowBox[{"2", ",", "1"}], "]"}], "]"}], ",", "\"\<EPS\>\""}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\<cs000_pl2.eps\>\"", ",", 
+   RowBox[{"c000", "[", 
+    RowBox[{"[", 
+     RowBox[{"2", ",", "2"}], "]"}], "]"}], ",", "\"\<EPS\>\""}], 
+  "]"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\<cs300_ev.eps\>\"", ",", 
+   RowBox[{"c300", "[", 
+    RowBox[{"[", "1", "]"}], "]"}], ",", "\"\<EPS\>\""}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\<cs300_pl1.eps\>\"", ",", 
+   RowBox[{"c300", "[", 
+    RowBox[{"[", 
+     RowBox[{"2", ",", "1"}], "]"}], "]"}], ",", "\"\<EPS\>\""}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\<cs300_pl2.eps\>\"", ",", 
+   RowBox[{"c300", "[", 
+    RowBox[{"[", 
+     RowBox[{"2", ",", "2"}], "]"}], "]"}], ",", "\"\<EPS\>\""}], 
+  "]"}]}], "Input"],
+
+Cell[BoxData[
+ RowBox[{"caseStudy", "[", 
+  RowBox[{"resolution", ",", 
+   RowBox[{"{", 
+    RowBox[{"0", ",", "0", ",", 
+     RowBox[{"0", " ", "Degree"}]}], "}"}], " ", ",", "180", ",", "300"}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"caseStudy", "[", 
+  RowBox[{"resolution", ",", 
+   RowBox[{"{", 
+    RowBox[{"100", ",", "50", ",", 
+     RowBox[{"35", " ", "Degree"}]}], "}"}], " ", ",", "180", ",", "300"}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"data", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"z", ",", 
+       RowBox[{"ev", "[", 
+        RowBox[{"10", ",", "z"}], "]"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"z", ",", 
+       RowBox[{"-", "50"}], ",", "50"}], "}"}]}], "]"}]}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"r", "=", 
+  RowBox[{"FindFit", "[", 
+   RowBox[{"data", ",", 
+    RowBox[{"c", " ", 
+     RowBox[{"Exp", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"-", "a"}], "/", "2"}], 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"z", "-", "m"}], ")"}], "^", "2"}]}], "]"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{"a", ",", "m", ",", "c"}], "}"}], ",", "z"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"c", " ", 
+   RowBox[{"Exp", "[", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"-", "a"}], "/", "2"}], 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"x", "-", "m"}], ")"}], "^", "2"}]}], "]"}]}], "/.", "r", 
+  " "}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Plot", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"ev", "[", 
+        RowBox[{"10", ",", "z"}], "]"}], ",", 
+       RowBox[{"c", " ", 
+        RowBox[{"Exp", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"-", "a"}], "/", "2"}], 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"z", "-", "m"}], ")"}], "^", "2"}]}], "]"}]}]}], "}"}], "/.",
+      "r"}], " ", "//", "Evaluate"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"z", ",", 
+     RowBox[{"-", "50"}], ",", "50"}], "}"}], ",", 
+   RowBox[{"PlotRange", "\[Rule]", "All"}]}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"makeGaussian", "[", 
+    RowBox[{"resolution", ",", 
+     RowBox[{"{", 
+      RowBox[{"0", ",", "0", ",", "0"}], "}"}], ",", "450"}], "]"}], "[", 
+   RowBox[{"y", ",", "0"}], "]"}], "//", "Chop"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"%", "//", "Simplify"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Plot", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     FractionBox[
+      RowBox[{
+       RowBox[{"405000.`", " ", 
+        SuperscriptBox["y", "2"]}], "+", 
+       RowBox[{"2.2015621063240114`", " ", 
+        SuperscriptBox["y", "4"]}]}], 
+      RowBox[{"8.037225`*^8", "+", 
+       RowBox[{"4369.`", " ", 
+        SuperscriptBox["y", "2"]}]}]], ",", 
+     FractionBox[
+      RowBox[{
+       RowBox[{"405000.`", " ", 
+        SuperscriptBox["y", "2"]}], "+", 
+       RowBox[{"0", " ", "2.2015621063240114`", " ", 
+        SuperscriptBox["y", "4"]}]}], 
+      RowBox[{"8.037225`*^8", "+", 
+       RowBox[{"0", " ", "4369.`", " ", 
+        SuperscriptBox["y", "2"]}]}]]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"y", ",", 
+     RowBox[{"-", "50"}], ",", "50"}], "}"}]}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"makeGaussian1", "[", 
+     RowBox[{"resolution", ",", 
+      RowBox[{"{", 
+       RowBox[{"0.0", ",", "0.0", ",", "0.0"}], "}"}], ",", "450"}], "]"}], 
+    "[", 
+    RowBox[{"y", ",", "0.0"}], "]"}], "//", "Simplify"}], 
+  "\[IndentingNewLine]", "\[IndentingNewLine]", 
+  "\[IndentingNewLine]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Solve", "[", 
+  RowBox[{
+   RowBox[{"0.000504", "\[Equal]", 
+    RowBox[{"1", "/", 
+     RowBox[{"(", 
+      RowBox[{"2", " ", 
+       RowBox[{"s", "^", "2"}]}], ")"}]}]}], ",", "s"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"makeGaussian", "[", 
+    RowBox[{"resolution", ",", 
+     RowBox[{"{", 
+      RowBox[{"0", ",", "0", ",", "0"}], "}"}], ",", "450"}], "]"}], "[", 
+   RowBox[{"y", ",", "z"}], "]"}], "//", "Chop"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   FractionBox[
+    RowBox[{"5.0390526581002774`*^-6", " ", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"436900.`", " ", 
+        SuperscriptBox["y", "4"]}], "+", 
+       RowBox[{"1.5876`*^6", " ", 
+        SuperscriptBox["y", "2"], " ", 
+        RowBox[{"(", 
+         RowBox[{"50625.`", "\[VeryThinSpace]", "+", 
+          SuperscriptBox["z", "2"]}], ")"}]}], "+", 
+       RowBox[{"1.5752961`*^7", " ", 
+        SuperscriptBox["z", "2"], " ", 
+        RowBox[{"(", 
+         RowBox[{"101250.`", "\[VeryThinSpace]", "+", 
+          SuperscriptBox["z", "2"]}], ")"}]}]}], ")"}]}], 
+    RowBox[{
+     RowBox[{"4369.`", " ", 
+      SuperscriptBox["y", "2"]}], "+", 
+     RowBox[{"7938.`", " ", 
+      RowBox[{"(", 
+       RowBox[{"101250.`", "\[VeryThinSpace]", "+", 
+        SuperscriptBox["z", "2"]}], ")"}]}]}]], 
+   RowBox[{"s", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"y_", ",", "z_"}], "}"}], ",", "R_", ",", "L_"}], "]"}]}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "\[IndentingNewLine]", "\t", 
+     RowBox[{
+      RowBox[{"low", "=", 
+       RowBox[{"Max", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"-", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"1", "/", "2"}], " ", "L"}], "+", "z"}], ")"}]}], "/", 
+          RowBox[{"(", 
+           RowBox[{"R", "-", "y"}], ")"}]}], ",", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", "L"}], "/", "2"}], "+", "z"}], ")"}], "/", 
+          RowBox[{"(", 
+           RowBox[{"R", "+", "y"}], ")"}]}]}], "]"}]}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"up", "=", 
+       RowBox[{"Min", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"L", "/", "2"}], "-", "z"}], ")"}], "/", 
+          RowBox[{"(", 
+           RowBox[{"R", "-", "y"}], ")"}]}], ",", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"L", "/", "2"}], "+", "z"}], ")"}], "/", 
+          RowBox[{"(", 
+           RowBox[{"R", "+", "y"}], ")"}]}]}], "]"}]}]}], "}"}], ",", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"ArcTan", "[", "up", "]"}], "-", 
+       RowBox[{"ArcTan", "[", "low", "]"}]}], ")"}], "/", "Pi"}]}], 
+   "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"ic", "=", 
+  RowBox[{"iC", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox["\[Sigma]", "z"], ",", 
+     SubscriptBox["\[Sigma]", "l"], ",", "0"}], "}"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"makeGaussian", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["\[Sigma]", "z"], ",", 
+      SubscriptBox["\[Sigma]", "l"], ",", "0"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", "R"}], "]"}], 
+  "[", 
+  RowBox[{"dy", ",", "dz"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"%", "//", "Simplify"}], " ", "//", "Chop"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"bVec", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], ".", "ic", ".", 
+  RowBox[{"bVec", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"%", "//", "Simplify"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"bVec", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], ".", "ic", ".", 
+   RowBox[{"aVec", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}]}], "//", 
+  "Simplify"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"aVec", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], ".", "ic", ".", 
+   RowBox[{"aVec", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}]}], "//", 
+  "Simplify"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"bVec", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}], ".", "ic", ".", 
+   RowBox[{"oVec", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"ty", ",", "tz", ",", "t\[Theta]"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"dy", ",", "dz"}], "}"}], ",", "R"}], "]"}]}], "//", 
+  "Simplify"}]], "Input"]
+},
+WindowSize->{1406, 1261},
+WindowMargins->{{61, Automatic}, {Automatic, 25}},
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+TrackCellChangeTimes->False,
+FrontEndVersion->"9.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (January 25, \
+2013)",
+StyleDefinitions->"Default.nb"
+]
+

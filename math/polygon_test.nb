@@ -1,0 +1,548 @@
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Setup test_input directory", "Section"],
+
+Cell[BoxData[
+ RowBox[{"SetDirectory", "@", 
+  RowBox[{"FileNameJoin", "@", 
+   RowBox[{"{", 
+    RowBox[{"NotebookDirectory", "[", "]"}], "}"}]}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"If", "[", 
+  RowBox[{
+   RowBox[{"DirectoryQ", "@", 
+    RowBox[{"FileNameJoin", "@", 
+     RowBox[{"{", 
+      RowBox[{"\"\<..\>\"", ",", "\"\<test_input\>\""}], "}"}]}]}], ",", ",", 
+   
+   RowBox[{"CreateDirectory", "@", 
+    RowBox[{"FileNameJoin", "@", 
+     RowBox[{"{", 
+      RowBox[{"\"\<..\>\"", ",", "\"\<test_input\>\""}], "}"}]}]}]}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"SetDirectory", "@", 
+  RowBox[{"FileNameJoin", "@", 
+   RowBox[{"{", 
+    RowBox[{"\"\<..\>\"", ",", "\"\<test_input\>\""}], "}"}]}]}]], "Input"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Prepare data", "Section"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"Zip", "[", 
+   RowBox[{"a_List", ",", "b_List"}], "]"}], ":=", 
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"a", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", 
+      RowBox[{"b", "[", 
+       RowBox[{"[", "i", "]"}], "]"}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"i", ",", "1", ",", 
+      RowBox[{"Length", "[", "a", "]"}]}], "}"}]}], "]"}]}], "\n", 
+ RowBox[{
+  RowBox[{"Zip", "[", 
+   RowBox[{"a_List", ",", "b_List", ",", "c_List"}], "]"}], ":=", 
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"a", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", 
+      RowBox[{"b", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", 
+      RowBox[{"c", "[", 
+       RowBox[{"[", "i", "]"}], "]"}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"i", ",", "1", ",", 
+      RowBox[{"Length", "[", "a", "]"}]}], "}"}]}], "]"}]}], "\n", 
+ RowBox[{
+  RowBox[{"Zip", "[", 
+   RowBox[{"a_List", ",", "b_List", ",", "c_List", ",", "d_List"}], "]"}], ":=", 
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"a", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", 
+      RowBox[{"b", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", 
+      RowBox[{"c", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", 
+      RowBox[{"d", "[", 
+       RowBox[{"[", "i", "]"}], "]"}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"i", ",", "1", ",", 
+      RowBox[{"Length", "[", "a", "]"}]}], "}"}]}], "]"}]}]}], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Intersect", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"a_", ",", "b_", ",", "c_"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"p1_", ",", "p2_"}], "}"}]}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"t", ",", "sol", ",", "line"}], "}"}], ",", 
+    RowBox[{
+     RowBox[{"line", "=", 
+      RowBox[{"(", 
+       RowBox[{"p1", "+", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"p2", "-", "p1"}], ")"}], "t"}]}], " ", ")"}]}], ";", " ", 
+     RowBox[{"sol", "=", 
+      RowBox[{"Solve", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"a", ",", "b"}], "}"}], ".", "line"}], "\[Equal]", "c"}], 
+        ",", "t"}], "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"tt", "=", 
+      RowBox[{"t", "/.", "sol"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"If", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"Length", "[", "tt", "]"}], ">", "0"}], " ", "&&", " ", 
+        RowBox[{
+         RowBox[{"tt", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], "\[GreaterEqual]", "0"}], " ", "&&",
+         " ", 
+        RowBox[{
+         RowBox[{"tt", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], " ", "<", "1"}]}], ",", 
+       RowBox[{"line", "/.", " ", 
+        RowBox[{"sol", "[", 
+         RowBox[{"[", "1", "]"}], "]"}]}], ",", 
+       RowBox[{"{", "}"}]}], " ", "]"}]}]}], "\[IndentingNewLine]", 
+   "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Intersect", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"1", ",", 
+     RowBox[{"-", "1"}], ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"0", ",", "0"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"1", ",", "1"}], "}"}]}], "}"}]}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"poly", "=", 
+  RowBox[{"Polygon", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"0", ",", "0"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"1", ",", "0"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"1", ",", "1"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"0", ",", "1"}], "}"}]}], "}"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Clear", "[", "rotate", "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"rotate", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"x_", ",", "y_"}], "}"}], ",", 
+    RowBox[{"phi_", " ", ":", " ", "0.0"}], " ", ",", " ", 
+    RowBox[{"center_", " ", ":", " ", 
+     RowBox[{"{", 
+      RowBox[{"0", ",", "0"}], "}"}]}]}], "]"}], ":=", " ", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"RotationMatrix", "[", "phi", "]"}], ".", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"x", ",", "y"}], "}"}], "-", "center"}], ")"}]}], "+", 
+   "center"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"rotate", "[", 
+   RowBox[{
+    RowBox[{"Polygon", "[", "p_List", "]"}], ",", 
+    RowBox[{"phi_:", "0"}], ",", " ", 
+    RowBox[{"center_", " ", ":", " ", 
+     RowBox[{"{", 
+      RowBox[{"0", ",", "0"}], "}"}]}]}], "]"}], ":=", " ", 
+  RowBox[{"Polygon", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"rotate", "[", 
+      RowBox[{"#", ",", "phi", ",", "center"}], "]"}], "&"}], "/@", "p"}], 
+   "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Intersect", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"a_", ",", "b_", ",", "c_"}], "}"}], ",", 
+    RowBox[{"Polygon", "[", "ps_List", "]"}]}], "]"}], ":=", 
+  "\[IndentingNewLine]", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "ins", "}"}], ",", 
+    RowBox[{
+     RowBox[{"ins", "=", 
+      RowBox[{"Partition", "[", 
+       RowBox[{"ps", ",", "2", ",", "1", ",", 
+        RowBox[{"{", 
+         RowBox[{"1", ",", "1"}], "}"}]}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Select", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"Intersect", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{"a", ",", "b", ",", "c"}], "}"}], ",", "#"}], "]"}], 
+         "&"}], "/@", "ins"}], ",", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"Length", "[", "#", "]"}], ">", "0"}], "&"}]}], "]"}]}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"eventToLine", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"x_", ",", "y_"}], "}"}], ",", "phi_"}], "}"}], "]"}], "=", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"Sin", "[", "phi", "]"}], ",", 
+    RowBox[{"-", 
+     RowBox[{"Cos", "[", "phi", "]"}]}], ",", 
+    RowBox[{
+     RowBox[{"x", " ", 
+      RowBox[{"Sin", "[", "phi", "]"}]}], " ", "-", 
+     RowBox[{"y", " ", 
+      RowBox[{"Cos", "[", "phi", "]"}]}]}]}], "}"}], "  "}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Graphics", "[", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"FaceForm", "[", "]"}], ",", 
+    RowBox[{"EdgeForm", "[", "Black", "]"}], ",", "poly", ",", "Red", ",", 
+    RowBox[{"PointSize", "[", "0.025", "]"}], ",", 
+    RowBox[{"Point", "/@", 
+     RowBox[{"Intersect", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"0", ",", "1", ",", "0.25"}], "}"}], ",", "poly"}], "]"}]}]}],
+    "}"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"p1", "=", 
+    RowBox[{"rotate", "[", 
+     RowBox[{
+      RowBox[{"Polygon", "[", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"0.25", ",", "0.25"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"0.5", ",", "0.25"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"0.5", ",", "0.75"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"0.25", ",", "0.75"}], "}"}]}], "}"}], "]"}], ",", 
+      RowBox[{
+       RowBox[{"-", "Pi"}], "/", "6"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"0.25", ",", "0.25"}], "}"}]}], "]"}]}], 
+   "\[IndentingNewLine]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Graphics", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"FaceForm", "[", "]"}], ",", 
+     RowBox[{"EdgeForm", "[", "Black", "]"}], ",", "p1"}], "}"}], ",", 
+   RowBox[{"PlotRange", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"0", ",", "1"}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"0", ",", "1"}], "}"}]}], "}"}]}], ",", 
+   RowBox[{"Frame", "\[Rule]", "True"}]}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"nEvents", "=", " ", "500"}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"events", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"RandomReal", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"0", ",", "1"}], "}"}], ",", "2"}], "]"}], ",", 
+       RowBox[{"RandomReal", "[", 
+        RowBox[{"2", "Pi"}], "]"}]}], "}"}], ",", 
+     RowBox[{"{", "nEvents", "}"}]}], "]"}]}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"lines", "=", " ", 
+   RowBox[{"eventToLine", "/@", "events"}]}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"inters", "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Intersect", "[", 
+      RowBox[{"#", ",", "p1"}], "]"}], "&"}], "/@", "lines"}]}], 
+  ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"lengths", "=", 
+   RowBox[{"Length", "/@", "inters"}]}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"exp", "=", 
+   RowBox[{"Flatten", "/@", 
+    RowBox[{"Zip", "[", 
+     RowBox[{"events", ",", "lines", ",", "lengths", ",", "inters"}], 
+     "]"}]}]}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"p1", "[", 
+  RowBox[{"[", "1", "]"}], "]"}]], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"out", "=", 
+  RowBox[{
+  "OpenWrite", "[", "\"\<polygon_test.tab\>\"", 
+   "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"Write", "[", 
+  RowBox[{"out", ",", "nEvents"}], "]"}], "\n", 
+ RowBox[{"Export", "[", 
+  RowBox[{"out", ",", 
+   RowBox[{"p1", "[", 
+    RowBox[{"[", "1", "]"}], "]"}], ",", "\"\<Table\>\""}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"Write", "[", "out", "]"}], "\[IndentingNewLine]", 
+ RowBox[{"Export", "[", 
+  RowBox[{"out", ",", "exp", ",", "\"\<Table\>\""}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"Close", "[", "out", "]"}], "\n", "\"\<polygon.test\>\""}], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Intersect", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"a_", ",", "b_", ",", "c_"}], "}"}], ",", "p_List"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "inters", "}"}], ",", 
+    RowBox[{
+     RowBox[{"inters", "=", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Intersect", "[", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"a", ",", "b", ",", "c"}], "}"}], ",", "#"}], "]"}], "&"}],
+        "/@", "p"}]}], ";", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"Position", "[", 
+        RowBox[{"inters", ",", 
+         RowBox[{"x_", "/;", 
+          RowBox[{
+           RowBox[{"Length", "[", "x", "]"}], ">", "0"}]}], ",", "1"}], "]"}],
+        ",", " ", 
+       RowBox[{"Select", "[", 
+        RowBox[{"inters", ",", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"Length", "[", "#", "]"}], ">", "0"}], " ", "&"}]}], 
+        "]"}]}], "}"}]}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"h", "=", "0.020"}], "\[IndentingNewLine]", 
+ RowBox[{"w", "=", "0.006"}], "\[IndentingNewLine]", 
+ RowBox[{"r", "=", "0.450"}], "\[IndentingNewLine]", 
+ RowBox[{"nDetectors", "=", "280"}]}], "Input"],
+
+Cell[BoxData[
+ RowBox[{"scintilator", "=", 
+  RowBox[{"Polygon", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"r", ",", 
+       RowBox[{
+        RowBox[{"-", "w"}], "/", "2"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"r", "+", "h"}], ",", 
+       RowBox[{
+        RowBox[{"-", "w"}], "/", "2"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"r", "+", "h"}], ",", 
+       RowBox[{"w", "/", "2"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"r", ",", 
+       RowBox[{"w", "/", "2"}]}], "}"}]}], "}"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"detector", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"rotate", "[", 
+      RowBox[{"scintilator", ",", 
+       RowBox[{"i", " ", "2", " ", 
+        RowBox[{"Pi", "/", "nDetectors"}]}]}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"i", ",", "0", ",", 
+       RowBox[{"nDetectors", "-", "1"}]}], "}"}]}], "]"}]}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Intersect", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"-", "1"}], "/", 
+      RowBox[{"Sqrt", "[", "2", "]"}]}], ",", 
+     RowBox[{"1", "/", 
+      RowBox[{"Sqrt", "[", "2", "]"}]}], ",", "0.2"}], "}"}], ",", 
+   "detector"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"sdata", "=", 
+   RowBox[{"Select", "[", 
+    RowBox[{
+     RowBox[{"Table", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"RandomReal", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{
+              RowBox[{"-", "r"}], ",", "r"}], "}"}], "/", 
+            RowBox[{"Sqrt", "[", "2", "]"}]}], ",", "2"}], "]"}], ",", 
+         RowBox[{"RandomReal", "[", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"-", "Pi"}], ",", "Pi"}], "}"}], "]"}]}], "}"}], ",", 
+       RowBox[{"{", "1000", "}"}]}], "]"}], ",", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"#", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], ".", 
+         RowBox[{"#", "[", 
+          RowBox[{"[", "1", "]"}], "]"}]}], "<", 
+        RowBox[{
+         RowBox[{"1", "/", "2"}], 
+         RowBox[{"r", "^", "2"}]}]}], ")"}], "&"}]}], "]"}]}], 
+  ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"lines", "=", 
+   RowBox[{"eventToLine", "/@", "sdata"}]}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"inters", "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Intersect", "[", 
+      RowBox[{"#", ",", "detector"}], "]"}], "&"}], "/@", "lines"}]}], 
+  ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"lengths", "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Length", "[", 
+      RowBox[{"#", "[", 
+       RowBox[{"[", "1", "]"}], "]"}], "]"}], "&"}], "/@", "inters"}]}], 
+  ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"exp", "=", 
+   RowBox[{"Flatten", "/@", 
+    RowBox[{"Zip", "[", 
+     RowBox[{"sdata", ",", "lengths", ",", "inters"}], "]"}]}]}], 
+  ";"}]], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"out", "=", 
+  RowBox[{
+  "OpenWrite", "[", "\"\<scanner_test.tab\>\"", 
+   "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"Export", "[", 
+  RowBox[{"out", ",", 
+   RowBox[{"{", 
+    RowBox[{"r", ",", "nDetectors", ",", "w", ",", "h", ",", 
+     RowBox[{"sdata", "//", "Length"}]}], "}"}], ",", "\"\<List\>\""}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"Write", "[", "out", "]"}], "\[IndentingNewLine]", 
+ RowBox[{"Export", "[", 
+  RowBox[{"out", ",", "exp", ",", "\"\<Table\>\""}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"Close", "[", "out", "]"}]}], "Input"]
+}, Open  ]]
+},
+WindowSize->{1219, 986},
+WindowMargins->{{Automatic, 12}, {Automatic, 0}},
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+TrackCellChangeTimes->False,
+FrontEndVersion->"10.2 for Mac OS X x86 (32-bit, 64-bit Kernel) (July 6, \
+2015)",
+StyleDefinitions->"Default.nb"
+]
+

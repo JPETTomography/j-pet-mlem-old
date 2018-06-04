@@ -1,32 +1,64 @@
-# Prerequisites
-*.d
+# ignore everything in root
+# and not files with extensions
+# but not in subfolders
+/*
+!/*/
+!/*.*
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# ignore data
+/data/
 
-# Precompiled Headers
-*.gch
-*.pch
+# ignore articles & pubs
+/articles/
+/pubs/
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+# generated test input
+/test_input/
 
-# Fortran module files
-*.mod
-*.smod
+# Doxygen output
+/doc/html/
+/doc/doxygen_sqlite3.db
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+# LaTeX output
+/pubs/*/*.pdf
+!/pubs/*/*/*.pdf
+!/pubs/figures/*.pdf
 
-# Executables
-*.exe
-*.out
-*.app
+# LaTeX temporary files
+/pubs/**/*-converted-to.*
+/pubs/**/*.aux
+/pubs/**/*.out
+/pubs/**/*.log
+/pubs/**/*.dvi
+/pubs/**/*.synctex.gz
+/pubs/**/*.toc
+/pubs/**/*.nav
+/pubs/**/*.snm
+/pubs/**/*.vrb
+
+# well known temporary files
+*~
+/*.bin
+/*.png
+/*.svg
+/*.txt
+/build*/
+*.pyc
+
+# build files
+/Makefile
+/src/Makefile*
+/src/**/*.o
+/src/**/*.d
+/CMakeFiles
+/CMakeLists.txt.user
+/build.ninja
+/rules.ninja
+/.ninja_deps
+/.ninja_log
+/cmake_install.cmake
+/PET.cbp
+
+# ignore OS X specific mess
+.DS_Store
+/*.dylib

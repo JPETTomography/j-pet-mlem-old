@@ -1,0 +1,246 @@
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"Detector", "[", 
+    RowBox[{"h_", ",", "w_"}], "]"}], " ", "=", " ", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"FaceForm", "[", "]"}], ",", 
+     RowBox[{"EdgeForm", "[", "Black", "]"}], ",", 
+     RowBox[{"Circle", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"0", ",", "0"}], "}"}], ",", "20"}], "]"}], ",", 
+     RowBox[{"Rectangle", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1"}], "/", "2"}], 
+        RowBox[{"{", 
+         RowBox[{"h", ",", "w"}], "}"}]}], ",", 
+       RowBox[{
+        RowBox[{"1", "/", "2"}], 
+        RowBox[{"{", 
+         RowBox[{"h", ",", "w"}], "}"}]}]}], "]"}]}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"PureDetector", "[", 
+    RowBox[{"h_", ",", "w_"}], "]"}], " ", "=", " ", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"FaceForm", "[", "]"}], ",", 
+     RowBox[{"EdgeForm", "[", "Black", "]"}], ",", 
+     RowBox[{"Rectangle", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1"}], "/", "2"}], 
+        RowBox[{"{", 
+         RowBox[{"h", ",", "w"}], "}"}]}], ",", 
+       RowBox[{
+        RowBox[{"1", "/", "2"}], 
+        RowBox[{"{", 
+         RowBox[{"h", ",", "w"}], "}"}]}]}], "]"}]}], "}"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.612684863585168*^9, 3.6126849413697863`*^9}, {
+  3.612685609976412*^9, 3.6126856610132732`*^9}, {3.620142842203107*^9, 
+  3.6201428573235817`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"Graphics", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"Detector", "[", 
+     RowBox[{"17", ",", "7"}], "]"}], "}"}], ",", 
+   RowBox[{"ImageSize", "\[Rule]", "Full"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.612684942739008*^9, 3.6126849631572866`*^9}, {
+  3.620143628510326*^9, 3.6201436315123777`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"DistributeOnCircle", "[", 
+    RowBox[{"g_", ",", " ", "r_", ",", " ", "n_", ",", " ", 
+     RowBox[{"phi_:", " ", "0"}]}], "]"}], ":=", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"dphi", "=", 
+        RowBox[{"2", " ", 
+         RowBox[{"Pi", "/", "n"}]}]}], ",", " ", 
+       RowBox[{"gt", " ", "=", " ", 
+        RowBox[{"Translate", "[", 
+         RowBox[{"g", ",", 
+          RowBox[{"{", 
+           RowBox[{"r", ",", "0"}], "}"}]}], "]"}]}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Table", "[", 
+      RowBox[{
+       RowBox[{"Rotate", "[", 
+        RowBox[{"gt", ",", 
+         RowBox[{
+          RowBox[{"dphi", "*", "i"}], "+", "phi"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"0", ",", "0"}], "}"}]}], "]"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"i", ",", "0", ",", 
+         RowBox[{"n", "-", "1"}]}], "}"}]}], "]"}]}], "\[IndentingNewLine]", 
+    "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.612684977568164*^9, 3.612685160841608*^9}, {
+   3.6126853156316433`*^9, 3.612685316243917*^9}, 3.6201430976663113`*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"Join", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", "360", ",", "48"}], "]"}], 
+     "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", "400", ",", "48", ",", " ", 
+       RowBox[{
+        RowBox[{"1", "/", "4"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", "440", ",", "48", ",", " ", 
+       RowBox[{
+        RowBox[{"2", "/", "4"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", "480", ",", "48", ",", " ", 
+       RowBox[{
+        RowBox[{"3", "/", "4"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{"Circle", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"0", ",", "0"}], "}"}], ",", "250"}], "]"}], "}"}]}], 
+    "\[IndentingNewLine]", "]"}], "//", 
+   RowBox[{
+    RowBox[{"Graphics", "[", 
+     RowBox[{"#", ",", 
+      RowBox[{"ImageSize", "\[Rule]", "Full"}]}], "]"}], "&"}]}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.6126851628139133`*^9, 3.612685352393001*^9}, {
+   3.612685454334326*^9, 3.612685463002079*^9}, {3.612685688922121*^9, 
+   3.6126857125403214`*^9}, {3.612685923155491*^9, 3.612685938313508*^9}, 
+   3.62014408887888*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"Join", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", "360", ",", "48"}], "]"}], 
+     "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", "400", ",", "48", ",", " ", 
+       RowBox[{
+        RowBox[{"1", "/", "2"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", 
+       RowBox[{"360", "*", "2"}], ",", "96", ",", " ", 
+       RowBox[{
+        RowBox[{"2", "/", "4"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"{", 
+      RowBox[{"Circle", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"0", ",", "0"}], "}"}], ",", "250"}], "]"}], "}"}]}], 
+    "\[IndentingNewLine]", "]"}], "//", 
+   RowBox[{
+    RowBox[{"Graphics", "[", 
+     RowBox[{"#", ",", 
+      RowBox[{"ImageSize", "\[Rule]", "Full"}]}], "]"}], "&"}]}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.6126851628139133`*^9, 3.612685352393001*^9}, {
+   3.612685454334326*^9, 3.612685463002079*^9}, {3.612685688922121*^9, 
+   3.6126857125403214`*^9}, {3.612685923155491*^9, 3.612685938313508*^9}, {
+   3.620110291642312*^9, 3.620110354727724*^9}, {3.6201104272876043`*^9, 
+   3.620110428365781*^9}, 3.620144090881106*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"Join", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", "360", ",", "48"}], "]"}], 
+     "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", "400", ",", "48", ",", " ", 
+       RowBox[{
+        RowBox[{"1", "/", "2"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"Detector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", 
+       RowBox[{"360", "*", "2"}], ",", "96", ",", " ", 
+       RowBox[{
+        RowBox[{"2", "/", "4"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"DistributeOnCircle", "[", 
+      RowBox[{
+       RowBox[{"PureDetector", "[", 
+        RowBox[{"17", ",", "7"}], "]"}], ",", 
+       RowBox[{
+        RowBox[{"360", "*", "2"}], "+", "40"}], ",", "192", ",", " ", 
+       RowBox[{
+        RowBox[{"2", "/", "4"}], " ", "2", " ", 
+        RowBox[{"Pi", "/", "48"}]}]}], "]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"{", 
+      RowBox[{"Circle", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"0", ",", "0"}], "}"}], ",", "250"}], "]"}], "}"}]}], 
+    "\[IndentingNewLine]", "]"}], "//", 
+   RowBox[{
+    RowBox[{"Graphics", "[", 
+     RowBox[{"#", ",", 
+      RowBox[{"ImageSize", "\[Rule]", "Full"}]}], "]"}], "&"}]}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.6126851628139133`*^9, 3.612685352393001*^9}, {
+   3.612685454334326*^9, 3.612685463002079*^9}, {3.612685688922121*^9, 
+   3.6126857125403214`*^9}, {3.612685923155491*^9, 3.612685938313508*^9}, {
+   3.620110291642312*^9, 3.620110354727724*^9}, {3.6201104272876043`*^9, 
+   3.620110445712434*^9}, {3.620142867313346*^9, 3.6201428992832336`*^9}, {
+   3.620143248942169*^9, 3.620143356365321*^9}, {3.620143429952499*^9, 
+   3.620143431377481*^9}, {3.620143495974585*^9, 3.6201435534294243`*^9}, 
+   3.620143781525593*^9, {3.620143831941869*^9, 3.620143869682722*^9}, {
+   3.620143934968212*^9, 3.620143976428967*^9}, {3.620144062363933*^9, 
+   3.620144078391802*^9}}]
+},
+WindowSize->{1188, 1036},
+WindowMargins->{{249, Automatic}, {Automatic, 0}},
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (June 27, \
+2014)",
+StyleDefinitions->"Default.nb"
+]

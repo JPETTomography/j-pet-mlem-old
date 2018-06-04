@@ -1,0 +1,153 @@
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"Scintillator", "[", 
+    RowBox[{"w_", ",", "h_", ",", "l_"}], "]"}], ":=", 
+   RowBox[{"Cuboid", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"-", "h"}], "/", "2"}], ",", 
+       RowBox[{
+        RowBox[{"-", "w"}], "/", "2"}], ",", 
+       RowBox[{
+        RowBox[{"-", "l"}], "/", "2"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"h", "/", "2"}], ",", 
+       RowBox[{"w", "/", "2"}], ",", 
+       RowBox[{"l", "/", "2"}]}], "}"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"DetectorRing", "[", 
+    RowBox[{"s_", ",", "R_", ",", "N_", ",", 
+     RowBox[{"a_:", "0"}]}], "]"}], ":=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"Rotate", "[", 
+      RowBox[{
+       RowBox[{"Translate", "[", 
+        RowBox[{"s", ",", 
+         RowBox[{"{", 
+          RowBox[{"R", ",", "0", ",", "0"}], "}"}]}], "]"}], ",", 
+       RowBox[{"2", 
+        RowBox[{"Pi", "/", "N"}], "*", 
+        RowBox[{"(", 
+         RowBox[{"i", "+", "a"}], ")"}]}], ",", 
+       RowBox[{"{", 
+        RowBox[{"0", ",", "0", ",", "1"}], "}"}]}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"i", ",", "N"}], "}"}]}], "]"}]}], ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"s", "=", 
+   RowBox[{"Scintillator", "[", 
+    RowBox[{"9", ",", "15", ",", "300"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"smallBarrel", "=", 
+  RowBox[{"Graphics3D", "[", 
+   RowBox[{
+    RowBox[{"Rotate", "[", 
+     RowBox[{
+      RowBox[{"{", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"EdgeForm", "[", 
+         RowBox[{"Opacity", "[", ".5", "]"}], "]"}], ",", 
+        "\[IndentingNewLine]", "Cyan", ",", 
+        RowBox[{"DetectorRing", "[", 
+         RowBox[{"s", ",", "180", ",", "24"}], "]"}], ","}], 
+       "\[IndentingNewLine]", "}"}], ",", 
+      RowBox[{"Pi", "/", "2"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"1", ",", "0", ",", "0"}], "}"}]}], "]"}], ",", 
+    RowBox[{"Boxed", "\[Rule]", "False"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"Axes", "\[Rule]", "True"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"AxesLabel", "\[Rule]", 
+     RowBox[{"{", "mm", "}"}]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"ViewPoint", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{".6", ",", 
+       RowBox[{"-", "5"}], ",", "1"}], "}"}]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"ViewAngle", "\[Rule]", "All"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"BaseStyle", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{"FontFamily", "\[Rule]", "\"\<Times\>\""}], "}"}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"ImageSize", "\[Rule]", " ", "Small"}]}], "]"}]}]}], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\</tmp/barrel_small_3d.pdf\>\"", ",", "\[IndentingNewLine]", 
+   RowBox[{"(*", " ", 
+    RowBox[{"workaround", " ", "Mathematica", " ", "rasterization"}], " ", 
+    "*)"}], "\[IndentingNewLine]", 
+   RowBox[{"Graphics", "[", 
+    RowBox[{"Inset", "[", 
+     RowBox[{"smallBarrel", ",", "Automatic", ",", "Automatic", ",", 
+      RowBox[{"Scaled", "[", "1", "]"}]}], "]"}], "]"}]}], "]"}]], "Input"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"s", "=", 
+   RowBox[{"Scintillator", "[", 
+    RowBox[{"7", ",", "19", ",", "500"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"bigBarrel", "=", 
+  RowBox[{"Graphics3D", "[", 
+   RowBox[{
+    RowBox[{"Rotate", "[", 
+     RowBox[{
+      RowBox[{"{", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"EdgeForm", "[", 
+         RowBox[{"Opacity", "[", ".2", "]"}], "]"}], ",", 
+        "\[IndentingNewLine]", "Cyan", ",", 
+        RowBox[{"DetectorRing", "[", 
+         RowBox[{"s", ",", "425", ",", "48"}], "]"}], ",", 
+        "\[IndentingNewLine]", "Red", ",", 
+        RowBox[{"DetectorRing", "[", 
+         RowBox[{"s", ",", "467.5", ",", "48", ",", 
+          RowBox[{"1", "/", "2"}]}], "]"}], ",", "\[IndentingNewLine]", 
+        "Yellow", ",", 
+        RowBox[{"DetectorRing", "[", 
+         RowBox[{"s", ",", "575", ",", "96"}], "]"}]}], "\[IndentingNewLine]",
+        "}"}], ",", 
+      RowBox[{"Pi", "/", "2"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"1", ",", "0", ",", "0"}], "}"}]}], "]"}], ",", 
+    RowBox[{"Boxed", "\[Rule]", "False"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"Axes", "\[Rule]", "True"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"AxesLabel", "\[Rule]", 
+     RowBox[{"{", "mm", "}"}]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"ViewPoint", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{".6", ",", 
+       RowBox[{"-", "3"}], ",", "1"}], "}"}]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"BaseStyle", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{"FontFamily", "\[Rule]", "\"\<Times\>\""}], "}"}]}]}], 
+   "]"}]}]}], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\</tmp/barrel_big_3d.pdf\>\"", ",", "\[IndentingNewLine]", 
+   RowBox[{"(*", " ", 
+    RowBox[{"workaround", " ", "Mathematica", " ", "rasterization"}], " ", 
+    "*)"}], "\[IndentingNewLine]", 
+   RowBox[{"Graphics", "[", 
+    RowBox[{"Inset", "[", 
+     RowBox[{"bigBarrel", ",", "Automatic", ",", "Automatic", ",", 
+      RowBox[{"Scaled", "[", "1", "]"}]}], "]"}], "]"}]}], "]"}]], "Input"]
+},
+WindowSize->{1541, 1031},
+WindowMargins->{{4, Automatic}, {0, Automatic}},
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+TrackCellChangeTimes->False,
+FrontEndVersion->"10.3 for Mac OS X x86 (32-bit, 64-bit Kernel) (October 9, \
+2015)",
+StyleDefinitions->"Default.nb"
+]

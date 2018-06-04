@@ -1,0 +1,271 @@
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Setup test_input directory", "Section"],
+
+Cell[BoxData[
+ RowBox[{"SetDirectory", "@", 
+  RowBox[{"FileNameJoin", "@", 
+   RowBox[{"{", 
+    RowBox[{"NotebookDirectory", "[", "]"}], "}"}]}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"If", "[", 
+  RowBox[{
+   RowBox[{"DirectoryQ", "@", 
+    RowBox[{"FileNameJoin", "@", 
+     RowBox[{"{", 
+      RowBox[{"\"\<..\>\"", ",", "\"\<test_input\>\""}], "}"}]}]}], ",", ",", 
+   
+   RowBox[{"CreateDirectory", "@", 
+    RowBox[{"FileNameJoin", "@", 
+     RowBox[{"{", 
+      RowBox[{"\"\<..\>\"", ",", "\"\<test_input\>\""}], "}"}]}]}]}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"SetDirectory", "@", 
+  RowBox[{"FileNameJoin", "@", 
+   RowBox[{"{", 
+    RowBox[{"\"\<..\>\"", ",", "\"\<test_input\>\""}], "}"}]}]}]], "Input"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Produce data", "Section"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Zip", "[", 
+   RowBox[{"a_List", ",", "b_List"}], "]"}], ":=", 
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"a", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", 
+      RowBox[{"b", "[", 
+       RowBox[{"[", "i", "]"}], "]"}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"i", ",", "1", ",", 
+      RowBox[{"Length", "[", "a", "]"}]}], "}"}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Zip", "[", 
+   RowBox[{"a_List", ",", "b_List", ",", "c_List"}], "]"}], ":=", 
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"a", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", 
+      RowBox[{"b", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", 
+      RowBox[{"c", "[", 
+       RowBox[{"[", "i", "]"}], "]"}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"i", ",", "1", ",", 
+      RowBox[{"Length", "[", "a", "]"}]}], "}"}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Zip", "[", 
+   RowBox[{"a_List", ",", "b_List", ",", "c_List", ",", "d_List"}], "]"}], ":=", 
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"a", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", 
+      RowBox[{"b", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", 
+      RowBox[{"c", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", 
+      RowBox[{"d", "[", 
+       RowBox[{"[", "i", "]"}], "]"}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"i", ",", "1", ",", 
+      RowBox[{"Length", "[", "a", "]"}]}], "}"}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"TestCase", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"x_", ",", "y_"}], "}"}], ",", "angle_", ",", "r_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"eqs", ",", "line", ",", "t", ",", "sol", ",", "intersections"}],
+      "}"}], ",", 
+    RowBox[{
+     RowBox[{"line", "=", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"x", ",", "y"}], "}"}], "+", 
+       RowBox[{"t", " ", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"Cos", "[", "angle", "]"}], ",", 
+          RowBox[{"Sin", "[", "angle", "]"}]}], "}"}]}]}]}], ";", 
+     RowBox[{"eqs", "=", " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"line", ".", "line"}], "\[Equal]", 
+        RowBox[{"r", "^", "2"}]}], ")"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"sol", "=", 
+      RowBox[{"Solve", "[", 
+       RowBox[{"eqs", ",", "t", ",", "Reals"}], "]"}]}], ";", 
+     RowBox[{"intersections", "=", 
+      RowBox[{"line", "/.", "sol"}]}]}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"TestCase", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"2", ",", "1"}], "}"}], "/", "3"}], ",", 
+    RowBox[{"Pi", "/", "2"}], ",", "1"}], "]"}], "//", "N"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"r", "=", "0.450"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"nDetectors", "=", "204"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"data", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"RandomReal", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"-", "r"}], ",", "r"}], "}"}], ",", "2"}], "]"}], ",", 
+       RowBox[{"RandomReal", "[", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "Pi"}], ",", "Pi"}], "}"}], "]"}]}], "}"}], ",", 
+     RowBox[{"{", "1000", "}"}]}], "]"}]}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"sdata", "=", 
+   RowBox[{"Select", "[", 
+    RowBox[{"data", ",", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"#", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], ".", 
+         RowBox[{"#", "[", 
+          RowBox[{"[", "1", "]"}], "]"}]}], "<", 
+        RowBox[{"r", "^", "2"}]}], ")"}], "&"}]}], "]"}]}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"tc", "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"TestCase", "[", 
+      RowBox[{
+       RowBox[{"#", "[", 
+        RowBox[{"[", "1", "]"}], "]"}], ",", 
+       RowBox[{"#", "[", 
+        RowBox[{"[", "2", "]"}], "]"}], ",", "r"}], "]"}], "&"}], "/@", 
+    "sdata"}]}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"angles", "=", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"ArcTan", "@@", 
+         RowBox[{"#", "[", 
+          RowBox[{"[", "1", "]"}], "]"}]}], ",", 
+        RowBox[{"ArcTan", "@@", 
+         RowBox[{"#", "[", 
+          RowBox[{"[", "2", "]"}], "]"}]}]}], "}"}], "&"}], "/@", "tc"}]}], 
+   ";"}], " "}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"angles", "[", 
+  RowBox[{"[", 
+   RowBox[{"1", ";;", "3"}], "]"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"sections", "=", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"d", "=", 
+       RowBox[{"2", 
+        RowBox[{"Pi", "/", "nDetectors"}]}]}], "}"}], ",", 
+     RowBox[{"Mod", "[", 
+      RowBox[{
+       RowBox[{"Round", "[", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"Mod", "[", 
+             RowBox[{"#", ",", 
+              RowBox[{"2", "Pi"}]}], "]"}], "&"}], "/@", "angles"}], ")"}], 
+         "/", "d"}], "]"}], ",", "nDetectors"}], "]"}]}], "]"}]}], 
+  ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"sections", "[", 
+  RowBox[{"[", 
+   RowBox[{"1", ";;", "6"}], "]"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"out", "=", 
+   RowBox[{"Zip", "[", 
+    RowBox[{"sdata", ",", "tc", ",", "angles", ",", "sections"}], "]"}]}], 
+  ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{"chanel", "=", 
+   RowBox[{"OpenWrite", "[", "\"\<secant_test.tab\>\"", "]"}]}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Export", "[", 
+  RowBox[{"chanel", ",", 
+   RowBox[{"{", 
+    RowBox[{"r", ",", "nDetectors"}], "}"}], ",", "\"\<List\>\""}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Write", "[", "chanel", "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Export", "[", 
+  RowBox[{"chanel", ",", 
+   RowBox[{"Flatten", "/@", "out"}], ",", "\"\<Table\>\""}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Close", "[", "chanel", "]"}]], "Input"]
+}, Open  ]]
+},
+WindowSize->{1434, 1040},
+WindowMargins->{{Automatic, 68}, {Automatic, 0}},
+PrivateNotebookOptions->{"FileOutlineCache"->False},
+TrackCellChangeTimes->False,
+FrontEndVersion->"10.2 for Mac OS X x86 (32-bit, 64-bit Kernel) (July 6, \
+2015)",
+StyleDefinitions->"Default.nb"
+]
+

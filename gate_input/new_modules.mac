@@ -1,0 +1,27 @@
+/gate/geometry/setMaterialDatabase   ./GateMaterials.db
+
+/gate/world/geometry/setXLength 2. m
+/gate/world/geometry/setYLength 2. m
+/gate/world/geometry/setZLength 1. m
+
+/gate/world/daughters/name module
+/gate/world/daughters/insert box
+/gate/module/geometry/setXLength 26 mm
+/gate/module/geometry/setYLength 8.5 mm
+/gate/module/geometry/setZLength 500 mm
+/gate/module/placement/setTranslation 372.36 0. 0. mm
+/gate/module/vis/forceWireframe
+
+/gate/module/daughters/name detector
+/gate/module/daughters/insert box
+/gate/detector/geometry/setXLength  24  mm
+/gate/detector/geometry/setYLength  6  mm
+/gate/detector/geometry/setZLength  500 mm
+/gate/detector/vis/forceWireframe
+/gate/detector/repeaters/insert linear
+/gate/detector/linear/setRepeatNumber 13
+/gate/detector/linear/setRepeatVector 0. 7.0 0. mm
+
+
+/gate/module/repeaters/insert ring
+/gate/module/ring/setRepeatNumber 24
