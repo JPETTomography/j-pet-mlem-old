@@ -18,37 +18,37 @@ project(PET CXX) # using only C++
 # configuration time options
 set(PET_MAX_DETECTORS 512
     CACHE INTEGER
-    "maximum number of detectors allowed in the scanner (impacts performance)")
+    "maximum number of detectors allowed in the scanner (impacts performance)"  )
 set(PET_GRANULARITY_TYPE "WARP"
     CACHE STRING
-    "warp, thread (or simple just for testing) granularity")
+    "warp, thread (or simple just for testing) granularity"  )
 set(PET_USE_STATISTICS OFF
     CACHE BOOL
-    "collect statistics and print them after program is finished")
+    "collect statistics and print them after program is finished"  )
 set(PET_CACHE_ELLIPSE_PIXELS OFF
     CACHE BOOL
-    "shared memory pixel buffer in error ellipse")
+    "shared memory pixel buffer in error ellipse"  )
 set(PET_USE_SENSITIVITY ON
     CACHE BOOL
-    "use sensitivity when calculating reconstruction")
+    "use sensitivity when calculating reconstruction"  )
 set(PET_USE_KERNEL ON
     CACHE BOOL
-    "use kernel (when off it uses constant 1 for kernel value)")
+    "use kernel (when off it uses constant 1 for kernel value)"  )
 set(PET_THROW_ON_ZERO_DENOMINATOR OFF
     CACHE BOOL
-    "throw on zero denominator (event outside FOV)")
+    "throw on zero denominator (event outside FOV)"  )
 set(PET_MAX_PIXELS_PER_THREAD 12
     CACHE INTEGER
-    "chosen arbitrarily, no more than 11 pixels per thread in current config")
+    "chosen arbitrarily, no more than 11 pixels per thread in current config"  )
 set(PET_WARP_SIZE 32
     CACHE INTEGER
-    "normally it should not be changed to anything else than 32")
+    "normally it should not be changed to anything else than 32"  )
 set(PET_MAX_THREADS_PER_BLOCK 512
     CACHE INTEGER
-    "not used in current implementation")
+    "not used in current implementation"  )
 set(PET_USE_FAST_TEXT_PARSER ON
     CACHE BOOL
-    "use fast text parser for loading events (around ~5x faster than C++)")
+    "use fast text parser for loading events (around ~5x faster than C++)"  )
 
 # extra verbosity
 option(CUDA_PTXAS_VERBOSE "show verbose information about CUDA registers" OFF)
@@ -331,4 +331,13 @@ if(UNIX AND
    CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
    CMAKE_GENERATOR STREQUAL "Ninja")
   add_definitions(-fcolor-diagnostics)
+endif()
+
+get_target_property(jpetmlem_include 3d_tool_convert INCLUDE_DIRECTORIES)
+get_directory_property(has_parent PARENT_DIRECTORY)
+if(has_parent)
+  set(MLEM_INCLUDE_DIRS
+    ${jpetmlem_include}
+    PARENT_SCOPE
+    )
 endif()
