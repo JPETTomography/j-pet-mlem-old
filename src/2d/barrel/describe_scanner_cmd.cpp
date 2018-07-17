@@ -1,10 +1,10 @@
 #include "cmdline.h"
-#include "util/cmdline_types.h"
-#include "util/cmdline_hooks.h"
 #include "util/backtrace.h"
+#include "util/cmdline_hooks.h"
+#include "util/cmdline_types.h"
 
-#include "2d/gate/gate_volume_builder.h"
 #include "2d/gate/gate_scanner_builder.h"
+#include "2d/gate/gate_volume_builder.h"
 
 #include "common/types.h"
 
@@ -20,6 +20,7 @@ int main(int argc, char* argv[]) {
   cl.add("small-barrel", 'b', "creates small barrel description");
   cl.add("new-module", 'n', "new modules description");
   cl.add("full", 'f', "full detector: new + big barrel");
+  cl.add("ideal", 'i', "ideal geometry with 1 layer and 384 strips ");
 
   cl.parse_check(argc, argv);
 
@@ -37,6 +38,8 @@ int main(int argc, char* argv[]) {
     world = Gate::D2::build_big_barrel_volume<F>();
   } else if (cl.exist("full")) {
     world = Gate::D2::build_new_full_scanner_volume<F>();
+  } else if (cl.exist("ideal")) {
+    world = Gate::D2::build_ideal_scanner_volume<F>();
   }
 
   const int n_detectors = Gate::D2::count_cristals<F, S>(world);
