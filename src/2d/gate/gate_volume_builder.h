@@ -3,13 +3,10 @@
 
 #include "gate_volume.h"
 
-namespace Gate
-{
-namespace D2
-{
+namespace Gate {
+namespace D2 {
 
-template <typename F> Volume<F>* build_big_barrel_volume()
-{
+template <typename F> Volume<F>* build_big_barrel_volume() {
   using Box = Box<F>;
   using Vector = typename Box::Vector;
   using Cylinder = Cylinder<F>;
@@ -29,7 +26,7 @@ template <typename F> Volume<F>* build_big_barrel_volume()
   auto scintillator_2 = new Box(0.021, 0.009);
   scintillator_2->set_translation(Vector(0.4675, 0));
   scintillator_2->attach_repeater(
-    new Gate::D2::Ring<F>(48, Vector(0, 0), M_PI / 48));
+      new Gate::D2::Ring<F>(48, Vector(0, 0), M_PI / 48));
   scintillator_2->attach_crystal_sd();
   layer_2->attach_daughter(scintillator_2);
 
@@ -38,15 +35,14 @@ template <typename F> Volume<F>* build_big_barrel_volume()
   auto scintillator_3 = new Box(0.021, 0.009);
   scintillator_3->set_translation(Vector(0.575, 0));
   scintillator_3->attach_repeater(
-    new Gate::D2::Ring<F>(96, Vector(0, 0), M_PI / 96));
+      new Gate::D2::Ring<F>(96, Vector(0, 0), M_PI / 96));
   scintillator_3->attach_crystal_sd();
   layer_3->attach_daughter(scintillator_3);
 
   return world;
 }
 
-template <typename F> Volume<F>* build_new_full_scanner_volume()
-{
+template <typename F> Volume<F>* build_new_full_scanner_volume() {
   using Box = Gate::D2::Box<F>;
   using Vector = typename Box::Vector;
   using Cylinder = Gate::D2::Cylinder<F>;
@@ -81,7 +77,7 @@ template <typename F> Volume<F>* build_new_full_scanner_volume()
   auto scintillator_2 = new Box(0.021, 0.009);
   scintillator_2->set_translation(Vector(0.4675, 0));
   scintillator_2->attach_repeater(
-    new Gate::D2::Ring<F>(48, Vector(0, 0), M_PI / 48));
+      new Gate::D2::Ring<F>(48, Vector(0, 0), M_PI / 48));
   scintillator_2->attach_crystal_sd();
   layer_2->attach_daughter(scintillator_2);
 
@@ -90,15 +86,14 @@ template <typename F> Volume<F>* build_new_full_scanner_volume()
   auto scintillator_3 = new Box(0.021, 0.009);
   scintillator_3->set_translation(Vector(0.575, 0));
   scintillator_3->attach_repeater(
-    new Gate::D2::Ring<F>(96, Vector(0, 0), M_PI / 96));
+      new Gate::D2::Ring<F>(96, Vector(0, 0), M_PI / 96));
   scintillator_3->attach_crystal_sd();
   layer_3->attach_daughter(scintillator_3);
 
   return world;
 }
 
-template <typename F> Volume<F>* build_new_module_scanner_volume()
-{
+template <typename F> Volume<F>* build_new_module_scanner_volume() {
   using Box = Gate::D2::Box<F>;
   using Vector = typename Box::Vector;
   using Cylinder = Gate::D2::Cylinder<F>;
@@ -119,6 +114,27 @@ template <typename F> Volume<F>* build_new_module_scanner_volume()
   scintillator->attach_crystal_sd();
 
   module->attach_daughter(scintillator);
+
+  return world;
+}
+
+template <typename F> Volume<F>* build_ideal_scanner_volume() {
+  using Box = Gate::D2::Box<F>;
+  using Vector = typename Box::Vector;
+  using Cylinder = Gate::D2::Cylinder<F>;
+
+  auto world = new Box(2, 2);
+  const auto layerRadius = 0.4373f;
+  const auto layerDiff = 0.005f;
+  auto layer_ideal =
+      new Cylinder(layerRadius - layerDiff, layerRadius + layerDiff);
+  world->attach_daughter(layer_ideal);
+
+  auto scintillator_1 = new Box(0.019, 0.007);
+  scintillator_1->set_translation(Vector(layerRadius, 0));
+  scintillator_1->attach_repeater(new Gate::D2::Ring<F>(384, Vector(0, 0)));
+  scintillator_1->attach_crystal_sd();
+  layer_ideal->attach_daughter(scintillator_1);
 
   return world;
 }
