@@ -73,7 +73,10 @@ endif()
 
 # enable C++11 and warnings
 if(NOT MSVC)
-  add_definitions(-std=c++11 -Wall -Wunused-parameter -Wno-comment)
+  #j-pet-mlem code invokes some horrible warnings, we turn it off
+  #to keep our build process clean.
+  #add_definitions(-std=c++11 -Wall -Wunused-parameter -Wno-comment)
+  add_definitions(-std=c++11)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g")
   if(WIN32)
     add_definitions(-D_USE_MATH_DEFINES)
@@ -132,7 +135,10 @@ if(CUDA_FOUND)
   endif()
   list(APPEND CUDA_NVCC_FLAGS_DEBUG -g -G)
   if(NOT MSVC)
-    list(APPEND CUDA_NVCC_FLAGS -Xcompiler -Wall,-Wno-unused-function)
+  #j-pet-mlem code invokes some horrible warnings, we turn it off
+  #to keep our build process clean.
+    #list(APPEND CUDA_NVCC_FLAGS -Xcompiler -Wall,-Wno-unused-function)
+    list(APPEND CUDA_NVCC_FLAGS -Xcompiler)
   else()
     list(APPEND CUDA_NVCC_FLAGS -Xcompiler /wd4244,/wd4800,/wd4267,/wd4996)
     list(APPEND CUDA_NVCC_FLAGS_RELEASE -Xcompiler /MD)
