@@ -352,15 +352,6 @@ if(UNIX AND
 endif()
 
 get_target_property(jpetmlem_include 3d_tool_convert INCLUDE_DIRECTORIES)
-get_target_property(jpet_mlem_include_matrix 2d_barrel_matrix INCLUDE_DIRECTORIES)
-foreach(inc ${jpet_mlem_include_matrix})
-  list(APPEND jpetmlem_include ${inc})
-endforeach()
-
-foreach(inc ${jpetmlem_include})
-    message(${inc})
-endforeach()
-
 
 get_directory_property(has_parent PARENT_DIRECTORY)
 if(has_parent)
