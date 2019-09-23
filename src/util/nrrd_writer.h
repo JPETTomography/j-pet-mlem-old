@@ -8,7 +8,7 @@ namespace util {
 /// Writes image header to \a NRRD file
 ////
 /// \see http://teem.sourceforge.net/nrrd/
-class nrrd_writer : std::ofstream {
+class nrrd_writer : public std::ofstream {
  public:
   /// Constructs new \a NRRD writer writing to given path
   nrrd_writer(std::string fn, std::string raw_fn, bool textual = false)
